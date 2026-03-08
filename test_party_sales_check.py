@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import requests
-import json
 
 BASE_URL = "http://localhost:5003"
 
@@ -18,7 +17,7 @@ def main():
         return
     
     admin_token = login_resp.json()["data"]["accessToken"]
-    print(f"✅ Logged in")
+    print("✅ Logged in")
     
     # Impersonate tenant
     print("\n🎭 Impersonating tenant...")
@@ -37,7 +36,7 @@ def main():
         return
     
     tenant_token = imp_resp.json()["data"]["token"]
-    print(f"✅ Impersonated")
+    print("✅ Impersonated")
     
     # Test party sales endpoint
     print("\n" + "="*60)
@@ -58,7 +57,7 @@ def main():
         
         if sales:
             sale = sales[0]
-            print(f"First Sale:")
+            print("First Sale:")
             print(f"  ID: {sale.get('id')}")
             print(f"  Date: {sale.get('saleDate')}")
             
@@ -73,9 +72,9 @@ def main():
                     print(f"  partyId: {device['partyId']}")
                     print(f"  name: {device.get('name')}")
                     print(f"  ear: {device.get('ear')}")
-                    print(f"\n🎉 FIX VERIFIED! Backend returns partyId in devices")
+                    print("\n🎉 FIX VERIFIED! Backend returns partyId in devices")
                 else:
-                    print(f"  ❌ partyId still missing!")
+                    print("  ❌ partyId still missing!")
                     print(f"  Available fields: {list(device.keys())}")
     else:
         print(f"❌ ERROR: {sales_resp.text[:500]}")

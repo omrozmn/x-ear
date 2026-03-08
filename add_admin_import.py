@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """Add get_current_admin_user import to files that need it"""
-import re
 
 files_to_fix = [
     "apps/api/routers/admin_settings.py",

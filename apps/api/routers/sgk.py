@@ -3,36 +3,34 @@ FastAPI SGK Router - Migrated from Flask routes/sgk.py
 Handles SGK document management and OCR processing
 """
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from typing import Optional, List, Dict, Any
-from datetime import datetime, timezone
+from typing import Optional, List
+from datetime import datetime
 from pydantic import BaseModel, Field, ConfigDict
 import logging
 import os
 import tempfile
 
 from sqlalchemy.orm import Session
-from sqlalchemy.orm import Session
-from sqlalchemy import or_, func
+from sqlalchemy import func
 import glob
 import re
 import random
 import hashlib
 
 from schemas.base import ResponseEnvelope
-from models.user import User
 from core.models.party import Party
 from schemas.parties import PartyRead
 from schemas.sgk import SgkDocumentRead
 
 from schemas.sgk import (
-    SgkDocumentRead, UploadSGKDocumentRequest, EReceiptQueryRequest,
+    UploadSGKDocumentRequest, EReceiptQueryRequest,
     PatientRightsQueryRequest, WorkflowCreateRequest, WorkflowUpdateRequest,
     WorkflowStatusUpdate,
     SgkDocumentListResponse, SgkDocumentResponse, SgkUploadResponse,
     SgkEReceiptResponse, SgkEReceiptListResponse, SgkPatientRightsResponse,
     SgkWorkflowResponse
 )
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
 
 logger = logging.getLogger(__name__)

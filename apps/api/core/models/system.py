@@ -1,6 +1,5 @@
 # System Models: Settings
-from sqlalchemy import Column, JSON, String, Text
-from core.models.base import Base
+from sqlalchemy import Column, String, Text
 from .base import db, BaseModel, JSONMixin
 
 class Settings(BaseModel, JSONMixin):

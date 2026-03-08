@@ -4,9 +4,8 @@ No Flask dependency - works with FastAPI
 """
 import os
 from pathlib import Path
-from sqlalchemy import create_engine, event, literal, bindparam
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker, scoped_session, declarative_base, Session
-from sqlalchemy.pool import QueuePool
 from contextvars import ContextVar
 from typing import Optional
 from datetime import datetime, timezone
@@ -367,7 +366,7 @@ def get_db():
             db.info['tenant_id'] = tenant_id
             logger.info(f"🔑 [GET_DB] Set session.info['tenant_id']: {tenant_id}")
         else:
-            logger.debug(f"⚠️ [GET_DB] No tenant_id available from any source")
+            logger.debug("⚠️ [GET_DB] No tenant_id available from any source")
         
         yield db
     except Exception:
@@ -415,7 +414,7 @@ def get_db_with_context(access: "UnifiedAccess" = None):
                 db.info['tenant_id'] = tenant_id
                 logger.info(f"🔑 [GET_DB_WITH_CONTEXT] Set session.info['tenant_id'] from ContextVar: {tenant_id}")
             else:
-                logger.warning(f"⚠️ [GET_DB_WITH_CONTEXT] No tenant_id available")
+                logger.warning("⚠️ [GET_DB_WITH_CONTEXT] No tenant_id available")
         
         yield db
     except Exception:
@@ -448,7 +447,6 @@ def json_load(raw) -> dict:
 
 # Tenant Isolation Logic
 from sqlalchemy.orm import with_loader_criteria
-from config.tenant_config import get_tenant_strict_mode, TenantBehavior
 
 @event.listens_for(Session, 'do_orm_execute')
 def receive_do_orm_execute(execute_state):
@@ -476,7 +474,7 @@ def receive_do_orm_execute(execute_state):
     
     # DEBUG: Log tenant filter application
     if not tenant_id:
-        logger.warning(f"⚠️ [TENANT FILTER] No tenant_id in context for SELECT query!")
+        logger.warning("⚠️ [TENANT FILTER] No tenant_id in context for SELECT query!")
         return
 
     from core.models.mixins import TenantScopedMixin

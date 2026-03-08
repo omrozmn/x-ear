@@ -100,7 +100,7 @@ class TestOpenAPIParser:
             assert isinstance(operation_id, str), \
                 f"operationId should be string: {operation_id}"
             assert len(operation_id) > 0, \
-                f"operationId should not be empty"
+                "operationId should not be empty"
 
 
 if __name__ == "__main__":

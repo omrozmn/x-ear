@@ -59,7 +59,7 @@ def check_plans():
             db.session.add(professional)
             db.session.commit()
             
-            logger.info(f"Created 2 sample plans successfully")
+            logger.info("Created 2 sample plans successfully")
 
 if __name__ == "__main__":
     check_plans()

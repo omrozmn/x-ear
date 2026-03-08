@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, JSON, DateTime, Enum, Float, ForeignKey, Text, Boolean
+from sqlalchemy import Column, String, JSON, DateTime, Enum, Float, Text, Boolean
 from datetime import datetime, timezone
 from core.models.base import BaseModel
 from ai.models.base import gen_id

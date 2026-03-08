@@ -1,4 +1,3 @@
-import os
 import re
 
 file_path = "apps/api/ai/capability_registry.py"

@@ -35,6 +35,7 @@ import type {
   ChatResponse,
   AIError,
   AIErrorCode,
+  MatchedSlot,
   UseAIChatReturn,
 } from '../types/ai.types';
 
@@ -65,6 +66,52 @@ interface InternalChatRequest {
   prompt: string;
   additionalContext?: Record<string, unknown>;
   idempotencyKey: string;
+}
+
+type JsonObject = Record<string, unknown>;
+
+function isObject(value: unknown): value is JsonObject {
+  return typeof value === 'object' && value !== null;
+}
+
+function asObject(value: unknown): JsonObject | null {
+  return isObject(value) ? value : null;
+}
+
+function getString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined;
+}
+
+function getNumber(value: unknown): number | undefined {
+  return typeof value === 'number' ? value : undefined;
+}
+
+function getBoolean(value: unknown): boolean | undefined {
+  return typeof value === 'boolean' ? value : undefined;
+}
+
+function getRecord(value: unknown): JsonObject | undefined {
+  return isObject(value) ? value : undefined;
+}
+
+function getStringArray(value: unknown): string[] | undefined {
+  return Array.isArray(value) && value.every((item) => typeof item === 'string') ? value : undefined;
+}
+
+function normalizeUiType(value: unknown): MatchedSlot['uiType'] {
+  switch (value) {
+    case 'entity_search':
+    case 'enum':
+    case 'date':
+    case 'number':
+    case 'text':
+    case 'file':
+    case 'boolean':
+    case 'time':
+      return value;
+    default:
+      return 'text';
+  }
 }
 
 // =============================================================================
@@ -123,46 +170,48 @@ function createErrorMessage(errorCode: AIErrorCode): ChatMessage {
  * Parse error response to AIError
  */
 function parseErrorResponse(error: unknown): AIError {
+  const axiosError = asObject(error);
+  const response = asObject(axiosError?.response);
+  const data = asObject(response?.data);
+  const headers = asObject(response?.headers);
+
   // Check if it's an axios error with response
   // Check if it's an axios error (Orval uses axios under the hood)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const axiosError = error as any;
-  if (axiosError?.response?.data || axiosError?.isAxiosError) {
-    const data = axiosError.response?.data || {};
-
+  if (data || getBoolean(axiosError?.isAxiosError)) {
     // Backend returns error in { code, message, ... } format
-    if (data.code && typeof data.code === 'string') {
+    const code = getString(data?.code);
+    if (code) {
       return {
-        code: data.code as AIErrorCode,
-        message: data.message || getAIErrorMessage(data.code),
-        requestId: data.request_id || data.requestId,
-        retryAfter: data.retry_after || data.retryAfter,
-        details: data.details,
+        code: code as AIErrorCode,
+        message: getString(data?.message) || getAIErrorMessage(code as AIErrorCode),
+        requestId: getString(data?.request_id) || getString(data?.requestId),
+        retryAfter: getNumber(data?.retry_after) || getNumber(data?.retryAfter),
+        details: getRecord(data?.details),
       };
     }
 
     // Map HTTP status to error code
-    const status = axiosError.response?.status;
-    let code: AIErrorCode = 'INFERENCE_ERROR';
+    const status = getNumber(response?.status);
+    let errorCode: AIErrorCode = 'INFERENCE_ERROR';
 
     if (status === 429) {
-      code = data.quota_exceeded ? 'QUOTA_EXCEEDED' : 'RATE_LIMITED';
+      errorCode = getBoolean(data?.quota_exceeded) ? 'QUOTA_EXCEEDED' : 'RATE_LIMITED';
     } else if (status === 403) {
-      code = 'PERMISSION_DENIED';
+      errorCode = 'PERMISSION_DENIED';
     } else if (status === 404) {
-      code = 'NOT_FOUND';
+      errorCode = 'NOT_FOUND';
     } else if (status === 400) {
-      code = 'INVALID_REQUEST';
+      errorCode = 'INVALID_REQUEST';
     } else if (status === 504) {
-      code = 'INFERENCE_TIMEOUT';
+      errorCode = 'INFERENCE_TIMEOUT';
     }
 
     return {
-      code,
-      message: getAIErrorMessage(code),
-      requestId: data.request_id,
-      retryAfter: axiosError.response?.headers?.['retry-after']
-        ? parseInt(axiosError.response.headers['retry-after'], 10)
+      code: errorCode,
+      message: getAIErrorMessage(errorCode),
+      requestId: getString(data?.request_id),
+      retryAfter: getString(headers?.['retry-after'])
+        ? parseInt(getString(headers?.['retry-after']) ?? '', 10)
         : undefined,
     };
   }
@@ -261,8 +310,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
         prompt: request.prompt,
         idempotency_key: request.idempotencyKey,
         session_id: sessionId || undefined,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        context: withAIContext(context, request.additionalContext || {}) as any,
+        context: withAIContext(context, request.additionalContext || {}) as ApiChatRequest['context'],
       };
 
       let lastError: AIError | null = null;
@@ -278,53 +326,62 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
           // NOTE: orval-mutator's response interceptor already converts ALL keys 
           // from snake_case to camelCase via humps.camelizeKeys(). So apiResponse
           // already has camelCase keys (requestId, matchedCapability, etc.)
-          const api = apiResponse as Record<string, unknown>;
+          const api = asObject(apiResponse);
+          const intent = asObject(api?.intent);
+          const actionPlan = asObject(api?.actionPlan);
+          const matchedCapability = asObject(api?.matchedCapability);
           const response: ChatResponse = {
-            requestId: api.requestId as string,
-            status: api.status as string,
-            intent: api.intent ? {
-              intentType: (api.intent as Record<string, unknown>).intentType as string,
-              confidence: (api.intent as Record<string, unknown>).confidence as number,
-              entities: ((api.intent as Record<string, unknown>).entities || {}) as Record<string, unknown>,
-              clarificationNeeded: (api.intent as Record<string, unknown>).clarificationNeeded as boolean || false,
-              clarificationQuestion: (api.intent as Record<string, unknown>).clarificationQuestion as string | undefined || undefined,
+            requestId: getString(api?.requestId) ?? '',
+            status: getString(api?.status) ?? 'unknown',
+            intent: intent ? {
+              intentType: getString(intent.intentType) ?? '',
+              confidence: getNumber(intent.confidence) ?? 0,
+              entities: getRecord(intent.entities) ?? {},
+              clarificationNeeded: getBoolean(intent.clarificationNeeded) ?? false,
+              clarificationQuestion: getString(intent.clarificationQuestion),
             } : undefined,
-            response: typeof api.response === 'string' ? api.response : JSON.stringify(api.response),
-            needsClarification: api.needsClarification as boolean || false,
-            clarificationQuestion: api.clarificationQuestion as string | undefined || undefined,
-            processingTimeMs: api.processingTimeMs as number,
-            piiDetected: api.piiDetected as boolean || false,
-            phiDetected: api.phiDetected as boolean || false,
-            actionPlan: api.actionPlan ? {
-              planId: (api.actionPlan as Record<string, unknown>).planId as string,
+            response: getString(api?.response) ?? JSON.stringify(api?.response),
+            needsClarification: getBoolean(api?.needsClarification) ?? false,
+            clarificationQuestion: getString(api?.clarificationQuestion),
+            processingTimeMs: getNumber(api?.processingTimeMs) ?? 0,
+            piiDetected: getBoolean(api?.piiDetected) ?? false,
+            phiDetected: getBoolean(api?.phiDetected) ?? false,
+            actionPlan: actionPlan ? {
+              planId: getString(actionPlan.planId) ?? '',
               status: 'pending',
-              steps: ((api.actionPlan as Record<string, unknown>).steps as Array<Record<string, unknown>> || []).map((s: Record<string, unknown>) => ({
-                stepNumber: s.stepNumber as number,
-                toolName: s.toolName as string,
+              steps: (Array.isArray(actionPlan.steps) ? actionPlan.steps : []).map((step) => {
+                const s = asObject(step) ?? {};
+                return {
+                stepNumber: getNumber(s.stepNumber) ?? 0,
+                toolName: getString(s.toolName) ?? '',
                 toolSchemaVersion: '',
-                parameters: s.parameters as Record<string, unknown>,
-                description: s.description as string,
-                riskLevel: ((s.riskLevel as string || 'low').toLowerCase()) as 'low' | 'medium' | 'high' | 'critical',
-                requiresApproval: s.requiresApproval as boolean
-              })),
-              overallRiskLevel: (((api.actionPlan as Record<string, unknown>).overallRiskLevel as string || 'low').toLowerCase()) as 'low' | 'medium' | 'high' | 'critical',
-              requiresApproval: (api.actionPlan as Record<string, unknown>).requiresApproval as boolean,
+                parameters: getRecord(s.parameters) ?? {},
+                description: getString(s.description) ?? '',
+                riskLevel: ((getString(s.riskLevel) ?? 'low').toLowerCase()) as 'low' | 'medium' | 'high' | 'critical',
+                requiresApproval: getBoolean(s.requiresApproval) ?? false,
+              };
+              }),
+              overallRiskLevel: ((getString(actionPlan.overallRiskLevel) ?? 'low').toLowerCase()) as 'low' | 'medium' | 'high' | 'critical',
+              requiresApproval: getBoolean(actionPlan.requiresApproval) ?? false,
               planHash: '',
               createdAt: new Date().toISOString()
             } : undefined,
-            matchedCapability: api.matchedCapability ? {
-              name: (api.matchedCapability as Record<string, unknown>).name as string,
-              displayName: (api.matchedCapability as Record<string, unknown>).displayName as string || (api.matchedCapability as Record<string, unknown>).name as string,
-              description: (api.matchedCapability as Record<string, unknown>).description as string,
-              category: (api.matchedCapability as Record<string, unknown>).category as string,
-              slots: ((api.matchedCapability as Record<string, unknown>).slots as Array<Record<string, unknown>> || []).map((s: Record<string, unknown>) => ({
-                name: s.name as string,
-                prompt: s.prompt as string,
-                uiType: s.uiType as string,
-                sourceEndpoint: s.sourceEndpoint as string | undefined || undefined,
-                enumOptions: s.enumOptions as string[] | undefined || undefined,
-                validationRules: s.validationRules as Record<string, unknown> | undefined || undefined,
-              })),
+            matchedCapability: matchedCapability ? {
+              name: getString(matchedCapability.name) ?? '',
+              displayName: getString(matchedCapability.displayName) ?? getString(matchedCapability.name),
+              description: getString(matchedCapability.description) ?? '',
+              category: getString(matchedCapability.category) ?? '',
+              slots: (Array.isArray(matchedCapability.slots) ? matchedCapability.slots : []).map((slot) => {
+                const s = asObject(slot) ?? {};
+                return {
+                name: getString(s.name) ?? '',
+                prompt: getString(s.prompt) ?? '',
+                uiType: normalizeUiType(s.uiType),
+                sourceEndpoint: getString(s.sourceEndpoint),
+                enumOptions: getStringArray(s.enumOptions),
+                validationRules: getRecord(s.validationRules),
+              };
+              }),
             } : undefined,
           };
 

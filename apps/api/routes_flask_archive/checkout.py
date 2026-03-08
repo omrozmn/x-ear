@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify
 from models.base import db
 from models.tenant import Tenant, TenantStatus
 from models.subscription import Subscription, SubscriptionStatus, PaymentHistory, PaymentStatus

@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from models.commission_ledger import CommissionLedger
 from services.commission_service import CommissionService
 from db import get_db
 from typing import List

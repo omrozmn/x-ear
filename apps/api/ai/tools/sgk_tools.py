@@ -3,7 +3,7 @@ SGK Tools for AI Layer
 
 Contains tools for managing SGK-specific operations like monthly invoice drafting.
 """
-from typing import Any, Dict, List
+from typing import Any, Dict
 import datetime
 import calendar
 from ai.tools import (  # type: ignore

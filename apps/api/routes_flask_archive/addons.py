@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint
 from models.addon import AddOn
 from utils.response_envelope import success_response, error_response
 

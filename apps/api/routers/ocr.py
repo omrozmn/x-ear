@@ -5,7 +5,6 @@ Handles OCR processing, NLP entity extraction, and document analysis
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, UploadFile, File
 from typing import Optional, List
 from datetime import datetime, timezone
-from pydantic import BaseModel
 import logging
 import os
 import uuid
@@ -14,9 +13,8 @@ import tempfile
 from sqlalchemy.orm import Session
 
 from database import get_db
-from schemas.base import ResponseEnvelope, ApiError
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
-from database import get_db
+from schemas.base import ResponseEnvelope
+from middleware.unified_access import UnifiedAccess, require_access
 from schemas.ocr import (
     OcrJobRead, OcrProcessRequest, SimilarityRequest, EntityExtractionRequest,
     PatientExtractionRequest, DebugNERRequest, CreateJobRequest,
@@ -189,7 +187,7 @@ def init_database(
         if not access.is_super_admin:
             raise HTTPException(status_code=403, detail="Only super admin can initialize database")
         
-        from core.database import Base, engine
+        from core.database import engine
         # Only create OCR-related tables, not AI tables
         from core.models.ocr_job import OCRJob
         

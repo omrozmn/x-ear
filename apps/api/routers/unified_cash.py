@@ -5,7 +5,6 @@ Provides unified view of all financial records (sales, payments, cash)
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional
 from datetime import datetime, timedelta, timezone
-from pydantic import BaseModel
 import logging
 
 from sqlalchemy.orm import Session
@@ -13,8 +12,7 @@ from sqlalchemy import func
 
 from database import get_db
 from schemas.base import ResponseEnvelope
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
-from database import get_db
+from middleware.unified_access import UnifiedAccess, require_access
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["UnifiedCash"])

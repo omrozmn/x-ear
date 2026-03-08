@@ -20,9 +20,8 @@ from __future__ import annotations
 import json
 import logging
 import os
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 
-from starlette.requests import Request
 from starlette.responses import Response
 from starlette.types import ASGIApp, Receive, Scope, Send
 from jose import jwt, JWTError

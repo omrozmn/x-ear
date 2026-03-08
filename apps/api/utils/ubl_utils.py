@@ -2,6 +2,7 @@ import os
 import uuid
 import json
 from datetime import datetime
+from datetime import timedelta
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 
@@ -131,6 +132,9 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
     }
     itype_key = str(itype_raw).lower().strip()
     resolved_type_code = INVOICE_TYPE_MAP.get(itype_key, str(itype_raw).upper() if itype_raw else 'SATIS')
+    invoice_type_code_for_xml = resolved_type_code
+    if resolved_type_code == 'IHRACAT':
+        invoice_type_code_for_xml = 'ISTISNA'
 
     # ProfileID resolution based on scenario + type
     PROFILE_MAP = {
@@ -185,8 +189,14 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
         cbc('IssueTime', itime)
     cbc('CopyIndicator', 'false')
     # InvoiceTypeCode — resolved above
-    cbc('InvoiceTypeCode', resolved_type_code)
+    cbc('InvoiceTypeCode', invoice_type_code_for_xml)
     cbc('DocumentCurrencyCode', currency)
+    exchange_rate = invoice.get('exchangeRate') or invoice.get('exchange_rate')
+    if currency and str(currency).upper() != 'TRY':
+        per = ET.SubElement(invoice_root, f"{{{NS['cac']}}}PricingExchangeRate")
+        cbc('SourceCurrencyCode', currency, parent=per)
+        cbc('TargetCurrencyCode', 'TRY', parent=per)
+        cbc('CalculationRate', exchange_rate or 1, parent=per)
 
     # BillingReference (for ALL return-type invoices: IADE, 50, 49, 15, 9)
     _return_types = {'iade', 'return', '50', '49', '15', '9'}
@@ -203,6 +213,8 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
                 if 'T' in str(ref_date):
                     ref_date = str(ref_date).split('T')[0]
                 cbc('IssueDate', ref_date, parent=inv_ref)
+            cbc('DocumentTypeCode', 'IADE', parent=inv_ref)
+            cbc('DocumentType', 'FATURA', parent=inv_ref)
 
     # Notes (sample files often include multiple cbc:Note entries)
     notes = invoice.get('notes') or invoice.get('notes_list')
@@ -241,6 +253,32 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
             pfa = ET.SubElement(pm, f"{{{NS['cac']}}}PayeeFinancialAccount")
             cbc('ID', payment_means['accountId'], parent=pfa)
 
+    payment_terms = invoice.get('payment_terms') or invoice.get('paymentTerms')
+    if payment_terms:
+        pt = ET.SubElement(invoice_root, f"{{{NS['cac']}}}PaymentTerms")
+        note_parts = []
+        payment_term_text = payment_terms.get('paymentTerm') or payment_terms.get('note')
+        if payment_term_text:
+            note_parts.append(str(payment_term_text))
+        payment_days = payment_terms.get('paymentDays')
+        if payment_days not in (None, ''):
+            note_parts.append(f"Odeme vadesi: {payment_days} gun")
+            if not payment_means:
+                try:
+                    pm = ET.SubElement(invoice_root, f"{{{NS['cac']}}}PaymentMeans")
+                    cbc('PaymentMeansCode', '1', parent=pm)
+                    if issue:
+                        due_date = (datetime.strptime(str(issue), "%Y-%m-%d") + timedelta(days=int(payment_days))).strftime("%Y-%m-%d")
+                        cbc('PaymentDueDate', due_date, parent=pm)
+                except Exception:
+                    pass
+        if payment_terms.get('earlyPaymentDiscount') not in (None, ''):
+            note_parts.append(f"Erken odeme indirimi %{payment_terms.get('earlyPaymentDiscount')}")
+        if payment_terms.get('latePaymentPenalty') not in (None, ''):
+            note_parts.append(f"Gec odeme cezasi %{payment_terms.get('latePaymentPenalty')}")
+        if note_parts:
+            cbc('Note', ' | '.join(note_parts), parent=pt)
+
     # AdditionalDocumentReference entries commonly expected by integrator
     try:
         adr_uuid = invoice.get('uuid') or invoice.get('invoiceNumber') or str(uuid.uuid4())
@@ -255,7 +293,7 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
         ]
         
         # Specialized SGK References
-        if itype == 'SGK' or invoice.get('sgk_data'):
+        if itype_key in ('14', 'sgk') or invoice.get('sgk_data'):
             sgk = invoice.get('sgk_data') or {}
             if sgk.get('dosya_no'):
                 refs.append(('DOSYA_NO', sgk['dosya_no']))
@@ -263,6 +301,27 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
                 refs.append(('MUKELLEF_KODU', sgk['mukellef_kodu']))
             if sgk.get('mukellef_adi'):
                 refs.append(('MUKELLEF_ADI', sgk['mukellef_adi']))
+
+        medical_refs = []
+        doc_medical = invoice.get('medical_device_data') or invoice.get('medicalDeviceData') or {}
+        if isinstance(doc_medical, dict) and doc_medical:
+            medical_refs.append(doc_medical)
+        for line in invoice.get('lines') or []:
+            if not isinstance(line, dict):
+                continue
+            line_medical = line.get('medical_device_data') or line.get('medicalDeviceData') or {}
+            if isinstance(line_medical, dict) and line_medical:
+                medical_refs.append(line_medical)
+        for medical in medical_refs:
+            license_number = medical.get('licenseNumber') or medical.get('license_number')
+            serial_number = medical.get('serialNumber') or medical.get('serial_number')
+            lot_number = medical.get('lotNumber') or medical.get('lot_number')
+            if license_number:
+                refs.append(('LICENSE_NO', license_number))
+            if serial_number:
+                refs.append(('SERIAL_NO', serial_number))
+            if lot_number:
+                refs.append(('LOT_NO', lot_number))
             
         for doc_code, doc_id in refs:
             adr = ET.SubElement(invoice_root, f"{{{NS['cac']}}}AdditionalDocumentReference")
@@ -302,7 +361,7 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
         ptax = ET.SubElement(party, f"{{{NS['cac']}}}PartyTaxScheme")
         cbc('RegistrationName', sdata.get('name', ''), parent=ptax)
         tscheme = ET.SubElement(ptax, f"{{{NS['cac']}}}TaxScheme")
-        cbc('TaxTypeCode', sdata.get('tax_office') or sdata.get('taxOffice'), parent=tscheme)
+        cbc('Name', sdata.get('tax_office') or sdata.get('taxOffice'), parent=tscheme)
     # PostalAddress
     addr = sdata.get('address') or {}
     # support address as string or dict
@@ -341,7 +400,7 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
     if cdata.get('tax_office') or cdata.get('taxOffice'):
         ptax_c = ET.SubElement(party_c, f"{{{NS['cac']}}}PartyTaxScheme")
         tscheme_c = ET.SubElement(ptax_c, f"{{{NS['cac']}}}TaxScheme")
-        cbc('TaxTypeCode', cdata.get('tax_office') or cdata.get('taxOffice'), parent=tscheme_c)
+        cbc('Name', cdata.get('tax_office') or cdata.get('taxOffice'), parent=tscheme_c)
     # Customer postal address
     caddr = cdata.get('address') or {}
     if isinstance(caddr, str):
@@ -365,19 +424,72 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
 
     # BuyerCustomerParty (required for IHRACAT, HASTANE)
     buyer = invoice.get('buyer_customer') or invoice.get('buyerCustomer')
+    if not buyer and (resolved_type_code in ('IHRACAT', 'IHRACKAYITLI') or str(scenario).lower() == 'medical'):
+        fallback_tax_id = cdata.get('tax_id') or cdata.get('taxNumber') or cdata.get('tc')
+        fallback_name = cdata.get('name')
+        if fallback_name or fallback_tax_id:
+            buyer = {
+                'name': fallback_name or '',
+                'tax_id': fallback_tax_id or '',
+            }
     if buyer:
         bcp = ET.SubElement(invoice_root, f"{{{NS['cac']}}}BuyerCustomerParty")
         bp = ET.SubElement(bcp, f"{{{NS['cac']}}}Party")
+        if resolved_type_code in ('IHRACAT', 'IHRACKAYITLI') or str(scenario).lower() == 'export':
+            buyer_party_type = ET.SubElement(bp, f"{{{NS['cac']}}}PartyIdentification")
+            cbc('ID', 'EXPORT', parent=buyer_party_type, attrs={'schemeID': 'PARTYTYPE'})
+        buyer_tax_id = buyer.get('tax_id')
+        if buyer_tax_id:
+            bpid = ET.SubElement(bp, f"{{{NS['cac']}}}PartyIdentification")
+            scheme = 'TCKN' if len(str(buyer_tax_id)) == 11 else 'VKN'
+            cbc('ID', buyer_tax_id, parent=bpid, attrs={'schemeID': scheme})
         bpn = ET.SubElement(bp, f"{{{NS['cac']}}}PartyName")
         cbc('Name', buyer.get('name', ''), parent=bpn)
-        if buyer.get('tax_id'):
-            bpid = ET.SubElement(bp, f"{{{NS['cac']}}}PartyIdentification")
-            cbc('ID', buyer['tax_id'], parent=bpid)
+        if resolved_type_code in ('IHRACAT', 'IHRACKAYITLI') or str(scenario).lower() == 'export':
+            bple = ET.SubElement(bp, f"{{{NS['cac']}}}PartyLegalEntity")
+            cbc('RegistrationName', buyer.get('name', ''), parent=bple)
+        baddr = buyer.get('address') or cdata.get('address') or {}
+        if isinstance(baddr, str):
+            baddr = {'street': baddr}
+        if baddr:
+            bpaddr = ET.SubElement(bp, f"{{{NS['cac']}}}PostalAddress")
+            if baddr.get('street'):
+                cbc('StreetName', baddr.get('street'), parent=bpaddr)
+            if baddr.get('buildingNumber'):
+                cbc('BuildingNumber', baddr.get('buildingNumber'), parent=bpaddr)
+            if baddr.get('district') or baddr.get('citySubdivisionName'):
+                cbc('CitySubdivisionName', baddr.get('district') or baddr.get('citySubdivisionName'), parent=bpaddr)
+            if baddr.get('city'):
+                cbc('CityName', baddr.get('city'), parent=bpaddr)
+            if baddr.get('postalZone'):
+                cbc('PostalZone', baddr.get('postalZone'), parent=bpaddr)
+            if baddr.get('country'):
+                cc = ET.SubElement(bpaddr, f"{{{NS['cac']}}}Country")
+                cbc('IdentificationCode', 'TR', parent=cc)
+                cbc('Name', baddr.get('country') or 'TÜRKİYE', parent=cc)
 
     # Delivery (for IHRACAT / export invoices)
     export_details = invoice.get('export_details') or invoice.get('exportDetails') or {}
     if export_details or resolved_type_code in ('IHRACAT', 'IHRACKAYITLI'):
         delivery = ET.SubElement(invoice_root, f"{{{NS['cac']}}}Delivery")
+        delivery_addr = export_details.get('deliveryAddress') if isinstance(export_details, dict) else None
+        if not isinstance(delivery_addr, dict):
+            delivery_addr = buyer.get('address') if isinstance(buyer, dict) else None
+        if not isinstance(delivery_addr, dict):
+            delivery_addr = cdata.get('address') if isinstance(cdata, dict) else None
+        if delivery_addr:
+            daddr = ET.SubElement(delivery, f"{{{NS['cac']}}}DeliveryAddress")
+            if delivery_addr.get('street'):
+                cbc('StreetName', delivery_addr.get('street'), parent=daddr)
+            if delivery_addr.get('district') or delivery_addr.get('citySubdivisionName'):
+                cbc('CitySubdivisionName', delivery_addr.get('district') or delivery_addr.get('citySubdivisionName'), parent=daddr)
+            if delivery_addr.get('city'):
+                cbc('CityName', delivery_addr.get('city'), parent=daddr)
+            if delivery_addr.get('postalZone'):
+                cbc('PostalZone', delivery_addr.get('postalZone'), parent=daddr)
+            cc = ET.SubElement(daddr, f"{{{NS['cac']}}}Country")
+            cbc('IdentificationCode', 'TR', parent=cc)
+            cbc('Name', delivery_addr.get('country') or 'TÜRKİYE', parent=cc)
         # DeliveryTerms (INCOTERMS)
         terms_code = export_details.get('deliveryTerms') or export_details.get('incoterm')
         if terms_code:
@@ -460,8 +572,10 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
         pass
     line_extension_total = 0.0
     tax_total_amount = 0.0
+    withholding_total_amount = 0.0
     # accumulate tax subtotals by rate (as percent label)
     tax_breakdown = {}
+    withholding_breakdown = {}
     for i, ln in enumerate(lines, start=1):
         try:
             amount = float(ln.get('line_extension_amount') or ln.get('lineExtensionAmount') or ln.get('line_extension') or 0)
@@ -478,6 +592,36 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
         cbc('LineExtensionAmount', fmt_amount(amount), parent=il, attrs={'currencyID': currency})
         item = ET.SubElement(il, f"{{{NS['cac']}}}Item")
         cbc('Name', ln.get('description', ln.get('name', '')), parent=item)
+
+        if export_details or resolved_type_code in ('IHRACAT', 'IHRACKAYITLI'):
+            line_delivery = ET.SubElement(il, f"{{{NS['cac']}}}Delivery")
+            line_delivery_addr = export_details.get('deliveryAddress') if isinstance(export_details, dict) else None
+            if not isinstance(line_delivery_addr, dict):
+                line_delivery_addr = buyer.get('address') if isinstance(buyer, dict) else None
+            if not isinstance(line_delivery_addr, dict):
+                line_delivery_addr = cdata.get('address') if isinstance(cdata, dict) else None
+            if line_delivery_addr:
+                ld_addr = ET.SubElement(line_delivery, f"{{{NS['cac']}}}DeliveryAddress")
+                if line_delivery_addr.get('street'):
+                    cbc('StreetName', line_delivery_addr.get('street'), parent=ld_addr)
+                if line_delivery_addr.get('district') or line_delivery_addr.get('citySubdivisionName'):
+                    cbc('CitySubdivisionName', line_delivery_addr.get('district') or line_delivery_addr.get('citySubdivisionName'), parent=ld_addr)
+                if line_delivery_addr.get('city'):
+                    cbc('CityName', line_delivery_addr.get('city'), parent=ld_addr)
+                if line_delivery_addr.get('postalZone'):
+                    cbc('PostalZone', line_delivery_addr.get('postalZone'), parent=ld_addr)
+                ld_country = ET.SubElement(ld_addr, f"{{{NS['cac']}}}Country")
+                cbc('IdentificationCode', 'TR', parent=ld_country)
+                cbc('Name', line_delivery_addr.get('country') or 'TÜRKİYE', parent=ld_country)
+            line_shipment = ET.SubElement(line_delivery, f"{{{NS['cac']}}}Shipment")
+            cbc('ID', str(i), parent=line_shipment)
+            line_gtip = None
+            if isinstance(export_details, dict):
+                line_gtip = export_details.get('gtipCode') or export_details.get('customsId')
+            line_gtip = line_gtip or ln.get('gtipCode') or ln.get('gtip_code')
+            if line_gtip:
+                line_goods_item = ET.SubElement(line_shipment, f"{{{NS['cac']}}}GoodsItem")
+                cbc('RequiredCustomsID', line_gtip, parent=line_goods_item)
 
         # Add Price element to match integrator samples (cbc:PriceAmount under cac:Price)
         try:
@@ -537,6 +681,7 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
         if ln.get('withholding_rate') or ln.get('withholdingRate'):
             w_rate = float(ln.get('withholding_rate') or ln.get('withholdingRate'))
             w_amount = tamount * (w_rate / 100.0)
+            w_code = str(ln.get('withholding_code') or '606')
             
             w_tax = ET.SubElement(il, f"{{{NS['cac']}}}WithholdingTaxTotal")
             cbc('TaxAmount', fmt_amount(w_amount), parent=w_tax, attrs={'currencyID': currency})
@@ -547,7 +692,17 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
             w_cat = ET.SubElement(w_sub, f"{{{NS['cac']}}}TaxCategory")
             w_ts = ET.SubElement(w_cat, f"{{{NS['cac']}}}TaxScheme")
             cbc('Name', 'KDV_TEVKIFAT', parent=w_ts)
-            cbc('TaxTypeCode', ln.get('withholding_code') or '9015', parent=w_ts)
+            cbc('TaxTypeCode', w_code, parent=w_ts)
+            withholding_key = (w_code, fmt_amount(w_rate))
+            withholding_breakdown.setdefault(withholding_key, {
+                'code': w_code,
+                'rate': w_rate,
+                'taxable': 0.0,
+                'tax': 0.0,
+            })
+            withholding_breakdown[withholding_key]['taxable'] += tamount
+            withholding_breakdown[withholding_key]['tax'] += w_amount
+            withholding_total_amount += w_amount
 
         # AllowanceCharge per line
         allowance = ln.get('allowance_charge') or ln.get('allowanceCharge')
@@ -626,6 +781,19 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
                 cbc('TaxTypeCode', str(invoice.get('tax_type_code')), parent=tax_scheme)
             except Exception:
                 pass
+
+    if withholding_breakdown:
+        withholding_total = ET.SubElement(invoice_root, f"{{{NS['cac']}}}WithholdingTaxTotal")
+        cbc('TaxAmount', fmt_amount(withholding_total_amount), parent=withholding_total, attrs={'currencyID': currency})
+        for vals in withholding_breakdown.values():
+            withholding_sub = ET.SubElement(withholding_total, f"{{{NS['cac']}}}TaxSubtotal")
+            cbc('TaxableAmount', fmt_amount(vals['taxable']), parent=withholding_sub, attrs={'currencyID': currency})
+            cbc('TaxAmount', fmt_amount(vals['tax']), parent=withholding_sub, attrs={'currencyID': currency})
+            cbc('Percent', fmt_amount(vals['rate']), parent=withholding_sub)
+            withholding_cat = ET.SubElement(withholding_sub, f"{{{NS['cac']}}}TaxCategory")
+            withholding_scheme = ET.SubElement(withholding_cat, f"{{{NS['cac']}}}TaxScheme")
+            cbc('Name', 'KDV_TEVKIFAT', parent=withholding_scheme)
+            cbc('TaxTypeCode', vals['code'], parent=withholding_scheme)
 
     # LegalMonetaryTotal
     legal = ET.SubElement(invoice_root, f"{{{NS['cac']}}}LegalMonetaryTotal")
@@ -941,6 +1109,13 @@ def generate_sgk_invoice_xml(invoice_data: dict, output_path: str = None) -> str
     
     # Tedarikçi bilgileri
     supplier = invoice_data.get('supplier', {})
+    supplier_tax_id = (
+        supplier.get('vkn')
+        or supplier.get('tax_id')
+        or supplier.get('taxNumber')
+        or supplier.get('tax_number')
+        or ''
+    )
     
     # XML oluştur
     xml_content = f'''<?xml version="1.0" encoding="UTF-8"?>
@@ -1008,7 +1183,7 @@ def generate_sgk_invoice_xml(invoice_data: dict, output_path: str = None) -> str
 <cac:Party>
 <cbc:WebsiteURI/>
 <cac:PartyIdentification>
-<cbc:ID schemeID="VKN">{supplier.get('vkn', '')}</cbc:ID>
+<cbc:ID schemeID="VKN">{supplier_tax_id}</cbc:ID>
 </cac:PartyIdentification>
 <cac:PartyIdentification>
 <cbc:ID schemeID="TICARETSICILNO"/>

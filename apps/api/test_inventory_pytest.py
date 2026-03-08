@@ -1,4 +1,3 @@
-import json
 from app import app
 import os
 from alembic.config import Config

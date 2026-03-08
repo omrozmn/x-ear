@@ -8,7 +8,6 @@ from flask import Blueprint, request, jsonify
 from models.base import db
 from models.sales import Sale, PaymentRecord
 from models.promissory_note import PromissoryNote
-from models.patient import Patient
 from datetime import datetime
 from decimal import Decimal
 import logging

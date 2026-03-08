@@ -1,5 +1,5 @@
 """Inventory Metadata - Categories, Brands, Features"""
-from flask import request, jsonify
+from flask import request
 from models.base import db
 from models.inventory import InventoryItem as Inventory
 from models.brand import Brand

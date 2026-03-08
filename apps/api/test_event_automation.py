@@ -1,7 +1,5 @@
 
-import pytest
 from unittest.mock import MagicMock, patch
-from datetime import datetime
 from sqlalchemy.orm import Session
 
 # Add api to path for imports

@@ -4,7 +4,6 @@ Represents approved purchase records created from invoices or manually.
 """
 from sqlalchemy import Column, String, DateTime, Numeric, ForeignKey, Text, Boolean
 from sqlalchemy.orm import relationship
-from datetime import datetime
 from .base import BaseModel
 from .mixins import TenantScopedMixin
 from core.database import gen_id

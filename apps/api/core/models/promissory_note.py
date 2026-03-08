@@ -1,7 +1,6 @@
 # Promissory Note Model
-from sqlalchemy import Column, Boolean, Date, DateTime, ForeignKey, Integer, Numeric, String, Text, Time, Index
-from core.models.base import Base
-from .base import db, BaseModel, gen_id
+from sqlalchemy import Column, Boolean, DateTime, ForeignKey, Integer, String, Text, Index
+from .base import BaseModel, gen_id
 from .mixins import TenantScopedMixin
 import sqlalchemy as sa
 

@@ -1,4 +1,3 @@
-import pytest
 from ai.agents.intent_refiner import IntentRefiner, IntentType
 
 def test_intent_followup_confirmations():

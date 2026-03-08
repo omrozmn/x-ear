@@ -4,7 +4,6 @@ Comprehensive tenant isolation test
 Tests all major endpoints to ensure tenant data is properly isolated
 """
 import requests
-import json
 import uuid
 
 BASE_URL = "http://localhost:5003/api"
@@ -131,7 +130,7 @@ for tenant in [tenant1, tenant2]:
     )
     
     if switch_response.status_code != 200:
-        print(f"❌ Tenant switch failed")
+        print("❌ Tenant switch failed")
         continue
     
     tenant_token = switch_response.json()["data"]["accessToken"]

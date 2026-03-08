@@ -86,12 +86,12 @@ def test_down_payment_sync_direct():
             print(f"Updated paid_amount: {updated_paid_amount}")
             
             if float(updated_paid_amount) == float(test_down_payment):
-                print(f"✅ DOWN PAYMENT SYNC SUCCESSFUL!")
+                print("✅ DOWN PAYMENT SYNC SUCCESSFUL!")
                 print(f"   Expected: {test_down_payment}")
                 print(f"   Actual: {updated_paid_amount}")
                 return True
             else:
-                print(f"❌ DOWN PAYMENT SYNC FAILED!")
+                print("❌ DOWN PAYMENT SYNC FAILED!")
                 print(f"   Expected: {test_down_payment}")
                 print(f"   Actual: {updated_paid_amount}")
                 

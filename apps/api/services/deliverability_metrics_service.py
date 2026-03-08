@@ -5,7 +5,7 @@ Tracks and calculates email deliverability metrics for monitoring and alerting.
 
 import logging
 from datetime import datetime, timezone, timedelta
-from typing import Dict, Optional
+from typing import Dict
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_
 

@@ -4,19 +4,17 @@ Device CRUD, categories, brands, stock management
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional, List, Union
-from datetime import datetime, timezone
-from pydantic import BaseModel, Field
+from datetime import datetime
 import logging
 import random
 
-from sqlalchemy.orm import Session, load_only
+from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
-from schemas.base import ResponseEnvelope, ResponseMeta, ApiError
+from schemas.base import ResponseEnvelope, ApiError
 from schemas.devices import (
     DeviceRead, DeviceCreate, DeviceUpdate, 
-    StockUpdateRequest, BrandCreate, TrialPeriod, Warranty,
-    DeviceLowStockResponse
+    StockUpdateRequest, BrandCreate, DeviceLowStockResponse
 )
 from schemas.auth import PasswordChangeRequest
 from schemas.notifications import NotificationUpdate
@@ -34,7 +32,7 @@ from core.models.device import Device
 from core.models.enums import ProductCode, AppErrorCode
 from models.tenant import Tenant
 from constants import CANONICAL_CATEGORY_HEARING_AID
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
 logger = logging.getLogger(__name__)
 

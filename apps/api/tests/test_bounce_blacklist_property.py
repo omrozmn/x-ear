@@ -18,7 +18,7 @@ IMPORTANT: These tests use REAL database operations (no mocks) as per X-Ear CRM 
 """
 
 import pytest
-from hypothesis import given, strategies as st, settings, assume, HealthCheck
+from hypothesis import given, strategies as st, settings, HealthCheck
 from datetime import datetime, timezone
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session

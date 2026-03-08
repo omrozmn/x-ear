@@ -1,7 +1,6 @@
 
-import requests
 from app import app
-from models import User, db
+from models import User
 
 def test_permissions_endpoint():
     with app.app_context():

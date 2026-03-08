@@ -1,8 +1,5 @@
 
-import sys
-import os
 import requests
-import json
 from datetime import datetime
 
 # Configuration

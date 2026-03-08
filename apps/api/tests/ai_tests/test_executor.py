@@ -16,7 +16,6 @@ Tests that:
 
 import sys
 from pathlib import Path
-import json
 import os
 
 # Add the api directory to the path
@@ -26,14 +25,11 @@ if str(_api_dir) not in sys.path:
     sys.path.insert(0, str(_api_dir))
 
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 from hypothesis import given, strategies as st, settings, HealthCheck
-from datetime import datetime, timezone
 
 from ai.agents.executor import (
     Executor,
-    ExecutionResult,
-    StepExecutionResult,
     ExecutorStatus,
     get_executor,
 )
@@ -43,7 +39,6 @@ from ai.tools import (
     RiskLevel, ToolExecutionMode, ToolExecutionResult,
 )
 from ai.schemas.llm_outputs import IntentOutput, IntentType
-from ai.config import AIPhase
 
 
 # =============================================================================

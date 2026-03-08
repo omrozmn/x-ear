@@ -8,7 +8,6 @@ All endpoints use @unified_access for tenant scoping and permission checks.
 from flask import request, jsonify
 from models.base import db
 from models.suppliers import Supplier
-from models.user import User
 from . import suppliers_bp
 from utils.decorators import unified_access
 from utils.query_policy import get_or_404_scoped

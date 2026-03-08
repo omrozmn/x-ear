@@ -15,7 +15,7 @@ This module coordinates the entire automated API testing workflow:
 
 import logging
 import time
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 from dataclasses import dataclass, field
 
 from .openapi_parser import OpenAPIParser
@@ -143,7 +143,7 @@ class TestRunner:
             # Step 6: Analyze failures
             self._log_step(6, "Analyzing failures")
             analysis = self.failure_analyzer.analyze(self.test_results)
-            logger.info(f"✓ Failure analysis completed")
+            logger.info("✓ Failure analysis completed")
             
             # Step 7: Generate report
             self._log_step(7, "Generating report")
@@ -471,7 +471,7 @@ class TestRunner:
         try:
             if resource_type == 'PARTY':
                 data = {
-                    "firstName": f"DeleteTest",
+                    "firstName": "DeleteTest",
                     "lastName": f"Party{suffix}",
                     "phone": self.data_generator.generate_phone(),
                     "email": f"delete-party-{suffix}@test.com",

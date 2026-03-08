@@ -2,7 +2,6 @@
 Upload Schemas
 """
 from typing import Optional, Dict, List, Any
-from pydantic import BaseModel
 from .base import AppBaseModel
 
 class PresignedUploadRequest(AppBaseModel):

@@ -1,6 +1,5 @@
 import sys
 import os
-import json
 from collections import defaultdict
 
 # Add current directory to path

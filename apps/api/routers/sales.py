@@ -1,14 +1,13 @@
 import logging
 import json
-import os
-from typing import List, Optional, Dict, Any, Union
+from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone
 from uuid import uuid4
 from decimal import Decimal
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import desc, or_, text
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+from sqlalchemy import desc, or_
 
 from database import gen_sale_id
 from models.sales import Sale, DeviceAssignment, PaymentPlan, PaymentRecord, PaymentInstallment
@@ -16,20 +15,18 @@ from core.models.party import Party
 from models.inventory import InventoryItem
 from models.invoice import Invoice
 from services.stock_service import create_stock_movement
-from services.device_assignment_service import DeviceAssignmentService
-from services.event_service import event_service
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status, BackgroundTasks
+from fastapi import BackgroundTasks
 
 from schemas.sales import (
     SaleRead, SaleCreate, SaleUpdate, 
-    PaymentRecordRead, PaymentRecordCreate, 
-    PaymentPlanRead, PaymentPlanCreate, InstallmentPayment,
+    PaymentRecordCreate, 
+    PaymentPlanCreate, InstallmentPayment,
     DeviceAssignmentRead, DeviceAssignmentUpdate,
     DeviceAssignmentCreate, DeviceAssignmentCreateResponse,
     SaleRecalcRequest, SaleRecalcResponse
 )
-from schemas.base import ResponseEnvelope, ResponseMeta, ApiError
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from schemas.base import ResponseEnvelope, ApiError
+from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
 # Logger
 logger = logging.getLogger(__name__)
@@ -815,7 +812,6 @@ def pay_installment(
     """Pay a specific installment - Flask parity"""
     access.require_permission("sale:write")
     
-    from datetime import timezone
     from uuid import uuid4
     from decimal import Decimal
     
@@ -1196,7 +1192,7 @@ def create_sale(
             payment_method=sale_in.payment_method or 'cash',
             payment_type='down_payment',
             status='paid',
-            notes=f"Ön ödeme (satış oluşturma sırasında)",
+            notes="Ön ödeme (satış oluşturma sırasında)",
             payment_date=sale_in.sale_date or datetime.utcnow(),
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow()
@@ -1417,7 +1413,7 @@ def update_sale(
                     raise HTTPException(
                         status_code=400,
                         detail=ApiError(
-                            message=f"Bilateral satış için yeterli stok yok. Lütfen stok ekleyin.",
+                            message="Bilateral satış için yeterli stok yok. Lütfen stok ekleyin.",
                             code="INSUFFICIENT_STOCK"
                         ).model_dump(mode="json")
                     )
@@ -2179,7 +2175,6 @@ def update_device_assignment(
     """
     from services.device_assignment_service import (
         ensure_loaner_serials_in_inventory,
-        load_sgk_amounts,
         recalculate_assignment_pricing,
         sync_sale_totals
     )

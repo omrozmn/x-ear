@@ -2,7 +2,7 @@
 Suppliers API Routes - Unified Architecture
 Manages supplier and product-supplier relationship endpoints
 """
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from sqlalchemy import or_, func
 from datetime import datetime
 from models.base import db

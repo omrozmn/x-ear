@@ -8,7 +8,7 @@
  * @requirements Requirement 7: Admin Audit Log Viewer
  */
 
-import { useQuery, useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '@/api/orval-mutator';
 import type {
   AuditLogEntry,
@@ -85,6 +85,43 @@ interface BackendAuditLogResponse {
   has_more: boolean;
 }
 
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function getString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined;
+}
+
+function parseAuditEntries(value: unknown): BackendAuditLogEntry[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((entry) => {
+    if (!isObject(entry)) {
+      return [];
+    }
+
+    return [{
+      id: getString(entry.id) ?? '',
+      timestamp: getString(entry.timestamp) ?? '',
+      event_type: getString(entry.event_type) ?? '',
+      tenant_id: getString(entry.tenant_id) ?? '',
+      user_id: getString(entry.user_id) ?? '',
+      party_id: getString(entry.party_id),
+      request_id: getString(entry.request_id),
+      action_id: getString(entry.action_id),
+      risk_level: getString(entry.risk_level),
+      outcome: getString(entry.outcome) ?? 'failure',
+      event_data: isObject(entry.event_data) ? entry.event_data : {},
+      diff_snapshot: isObject(entry.diff_snapshot) ? entry.diff_snapshot : undefined,
+      ip_address: getString(entry.ip_address),
+      user_agent: getString(entry.user_agent),
+    }];
+  });
+}
+
 /**
  * Fetches audit logs from the backend with filters and pagination
  */
@@ -112,11 +149,11 @@ async function fetchAuditLogs(
     params,
   });
 
-  const actualData = (response as any).data || response;
-  const rawEntries = actualData.entries || (Array.isArray(actualData) ? actualData : []);
+  const actualData = isObject(response) && 'data' in response && isObject(response.data) ? response.data : response;
+  const rawEntries = parseAuditEntries(isObject(actualData) ? actualData.entries : actualData);
 
   // Transform backend response to frontend types
-  const entries: AuditLogEntry[] = rawEntries.map((entry: any) => ({
+  const entries: AuditLogEntry[] = rawEntries.map((entry) => ({
     log_id: entry.id,
     timestamp: entry.timestamp,
     event_type: entry.event_type as AuditEventType,
@@ -135,10 +172,10 @@ async function fetchAuditLogs(
 
   return {
     entries,
-    total: actualData.total || entries.length,
+    total: isObject(actualData) && typeof actualData.total === 'number' ? actualData.total : entries.length,
     page: Math.floor(offset / pageSize) + 1,
-    page_size: actualData.page_size || pageSize,
-    has_more: actualData.has_more ?? false,
+    page_size: isObject(actualData) && typeof actualData.page_size === 'number' ? actualData.page_size : pageSize,
+    has_more: isObject(actualData) && typeof actualData.has_more === 'boolean' ? actualData.has_more : false,
   };
 }
 

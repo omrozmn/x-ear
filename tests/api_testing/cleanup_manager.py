@@ -1,6 +1,5 @@
 """Cleanup manager for test resource removal."""
 import requests
-from typing import List, Dict
 from .resource_manager import ResourceRegistry
 from .logging_config import logger
 

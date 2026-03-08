@@ -5,10 +5,10 @@
  * Backend API for x-ear CRM
  * OpenAPI spec version: 1.0.0
  */
-import type { SmsProviderConfigUpdateApiUsername } from './smsProviderConfigUpdateApiUsername';
-import type { SmsProviderConfigUpdateApiPassword } from './smsProviderConfigUpdateApiPassword';
-import type { SmsProviderConfigUpdateDocumentsEmail } from './smsProviderConfigUpdateDocumentsEmail';
-import type { SmsProviderConfigUpdateIsActive } from './smsProviderConfigUpdateIsActive';
+import type { SmsProviderConfigUpdateApiUsername } from './sMSProviderConfigUpdateApiUsername';
+import type { SmsProviderConfigUpdateApiPassword } from './sMSProviderConfigUpdateApiPassword';
+import type { SmsProviderConfigUpdateDocumentsEmail } from './sMSProviderConfigUpdateDocumentsEmail';
+import type { SmsProviderConfigUpdateIsActive } from './sMSProviderConfigUpdateIsActive';
 
 export interface SmsProviderConfigUpdate {
   apiUsername?: SmsProviderConfigUpdateApiUsername;

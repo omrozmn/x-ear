@@ -183,7 +183,6 @@ def test_capability_schema_validation():
 async def test_chat_endpoint_capability_inquiry():
     """Test capability inquiry through the chat endpoint."""
     from ai.api.chat import chat, ChatRequest
-    from unittest.mock import AsyncMock, Mock
     
     # Mock user context
     user_context = {

@@ -1,9 +1,5 @@
 
-import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import MagicMock, patch
-from datetime import datetime, timezone
-from uuid import uuid4
 
 from main import app
 

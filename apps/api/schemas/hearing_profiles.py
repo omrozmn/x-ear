@@ -1,7 +1,7 @@
 """
 Hearing Profile Schemas
 """
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import Field, model_validator
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 

@@ -14,13 +14,20 @@ export {
 } from '../generated/admin/admin';
 
 // Stub exports for backward compatibility - these endpoints don't exist in backend
-export const useListAdminDebugAvailableRoles = () => ({ data: null, isLoading: false });
-export const useCreateAdminDebugSwitchRole = () => ({
-  mutate: () => {
+export const useListAdminDebugAvailableRoles = (...args: [unknown?]) => {
+  void args;
+  return { data: null, isLoading: false };
+};
+export const useCreateAdminDebugSwitchRole = (...args: [unknown?]) => {
+  void args;
+  return {
+  mutate: (...variables: [unknown?]) => {
+    void variables;
     console.warn('useCreateAdminDebugSwitchRole: Role switching not available, only tenant switching');
   },
   isPending: false
-});
+};
+};
 export const getListAdminDebugAvailableRolesQueryKey = () => ['admin-debug-available-roles'];
 
 export type { } from '../generated/schemas';

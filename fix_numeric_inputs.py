@@ -5,7 +5,6 @@ Ensures that when user clicks on a numeric input with value 0, it clears to empt
 """
 
 import re
-import os
 from pathlib import Path
 
 def fix_numeric_input(content: str) -> tuple[str, int]:

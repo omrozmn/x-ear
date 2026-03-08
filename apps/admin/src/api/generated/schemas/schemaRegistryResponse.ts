@@ -28,7 +28,7 @@ export interface SchemaRegistryResponse {
   userRoleRead?: SchemaRegistryResponseUserRoleRead;
   smsHeaderRequestUpdate?: SchemaRegistryResponseSmsHeaderRequestUpdate;
   smsLogRead?: SchemaRegistryResponseSmsLogRead;
-  smsProviderConfigCreate?: SchemaRegistryResponseSmsProviderConfigCreate;
+  sMSProviderConfigCreate?: SchemaRegistryResponseSmsProviderConfigCreate;
   tenantStats?: SchemaRegistryResponseTenantStats;
   userProfile?: SchemaRegistryResponseUserProfile;
 }

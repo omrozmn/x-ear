@@ -2,7 +2,6 @@
 """Test price sync when unitListPrice changes"""
 
 import requests
-import json
 from datetime import datetime, timedelta
 from jose import jwt
 
@@ -38,7 +37,7 @@ print("=" * 60)
 PARTY_ID = "pat_01464a2b"
 PRODUCT_ID = "item_27022026112808_947d3a"
 
-print(f"\nTest Data:")
+print("\nTest Data:")
 print(f"  Party: {PARTY_ID}")
 print(f"  Product: {PRODUCT_ID}")
 
@@ -86,7 +85,7 @@ sale_full = get_response.json()["data"]
 device1 = sale_full["devices"][0]
 device2 = sale_full["devices"][1]
 
-print(f"\nInitial device prices:")
+print("\nInitial device prices:")
 print(f"  Device 1 ({device1['id']}): {device1['listPrice']}")
 print(f"  Device 2 ({device2['id']}): {device2['listPrice']}")
 
@@ -130,7 +129,7 @@ sale_full = get_response.json()["data"]
 new_device1 = sale_full["devices"][0]
 new_device2 = sale_full["devices"][1]
 
-print(f"\nAfter update (from sale endpoint):")
+print("\nAfter update (from sale endpoint):")
 print(f"  Device 1: {new_device1['listPrice']} (expected: 12000.0)")
 print(f"  Device 2: {new_device2['listPrice']} (expected: 12000.0)")
 
@@ -147,7 +146,7 @@ device2_response = requests.get(
 device1_direct = device1_response.json()["data"]["listPrice"]
 device2_direct = device2_response.json()["data"]["listPrice"]
 
-print(f"\nAfter update (from device assignment endpoint):")
+print("\nAfter update (from device assignment endpoint):")
 print(f"  Device 1: {device1_direct} (expected: 12000.0)")
 print(f"  Device 2: {device2_direct} (expected: 12000.0)")
 
@@ -162,8 +161,8 @@ if (new_device1['listPrice'] == 12000.0 and
 else:
     print("❌ PRICE SYNC TEST FAILED")
     print("Device assignments did NOT sync with new unitListPrice")
-    print(f"\nExpected: 12000.0 for all devices")
-    print(f"Got:")
+    print("\nExpected: 12000.0 for all devices")
+    print("Got:")
     print(f"  - Sale endpoint device 1: {new_device1['listPrice']}")
     print(f"  - Sale endpoint device 2: {new_device2['listPrice']}")
     print(f"  - Direct endpoint device 1: {device1_direct}")

@@ -27,7 +27,7 @@ tenant_id = tenants_resp.json()['data']['tenants'][0]['id']
 
 # Switch to tenant
 switch_resp = requests.post(
-    f'http://localhost:5003/api/admin/debug/switch-tenant',
+    'http://localhost:5003/api/admin/debug/switch-tenant',
     json={'targetTenantId': tenant_id},
     headers={
         'Authorization': f'Bearer {admin_token}',
@@ -39,7 +39,7 @@ switch_data = switch_resp.json()
 print(f'\nSwitch tenant response: {json.dumps(switch_data, indent=2)}')
 tenant_token = switch_data.get('data', {}).get('accessToken') or switch_data.get('accessToken')
 if not tenant_token:
-    print(f'Failed to switch tenant')
+    print('Failed to switch tenant')
     exit(1)
 
 # Get existing sale

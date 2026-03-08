@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Auto-test all 513 API endpoints"""
 import requests
-import json
 from datetime import datetime
 
 BASE_URL = "http://localhost:5003"
@@ -79,7 +78,7 @@ for path, methods in paths.items():
             failed += 1
             print(f"✗ {method.upper()} {path} (error: {str(e)[:50]})")
 
-print(f"\n=== Results ===")
+print("\n=== Results ===")
 print(f"PASS: {passed}")
 print(f"FAIL: {failed}")
 print(f"Total: {total}")

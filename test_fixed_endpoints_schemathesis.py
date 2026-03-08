@@ -27,7 +27,7 @@ def get_impersonation_token():
 if __name__ == "__main__":
     print("Getting impersonation token...")
     token = get_impersonation_token()
-    print(f"✓ Got token\n")
+    print("✓ Got token\n")
     
     # Test only the 11 fixed endpoints
     fixed_endpoints = [

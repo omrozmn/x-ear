@@ -21,19 +21,17 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, status, Path, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Path
 from pydantic import BaseModel, Field
 
 from ai.config import get_ai_config, AIPhase
 from ai.agents.action_planner import (
-    ActionPlanner,
     get_action_planner,
     ActionPlannerResult,
     PlannerStatus,
     ActionPlan,
 )
 from ai.agents.executor import (
-    Executor,
     get_executor,
     ExecutionResult,
     ExecutorStatus,
@@ -45,19 +43,13 @@ from ai.services.kill_switch import (
     AICapability,
     KillSwitchActiveError,
 )
-from ai.services.usage_tracker import get_usage_tracker
-from ai.models.ai_usage import UsageType
 from ai.services.approval_gate import (
-    ApprovalGate,
     get_approval_gate,
     ApprovalRequest,
-    ApprovalResult,
-    ApprovalDecision,
 )
 from ai.utils.approval_token import (
     ApprovalToken,
     validate_approval_token,
-    _compute_action_plan_hash,
 )
 from ai.middleware.rate_limiter import check_rate_limit, RateLimitExceededError
 from ai.api.errors import (
@@ -307,7 +299,7 @@ async def create_action(
             confidence=request.intent.confidence,
             entities=request.intent.entities,
         )
-    except ValueError as e:
+    except ValueError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=create_error_response(

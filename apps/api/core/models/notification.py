@@ -1,7 +1,6 @@
 # Notification Model
-from sqlalchemy import Column, Boolean, Date, DateTime, JSON, String, Text, Time, Index
-from core.models.base import Base
-from .base import db, BaseModel, gen_id, JSONMixin
+from sqlalchemy import Column, Boolean, DateTime, String, Text, Index
+from .base import BaseModel, gen_id, JSONMixin
 from .mixins import TenantScopedMixin
 
 class Notification(BaseModel, JSONMixin, TenantScopedMixin):

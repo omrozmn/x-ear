@@ -1,7 +1,6 @@
 from sqlalchemy import Column, Boolean, DateTime, ForeignKey, String, Text, Index
 from sqlalchemy.orm import relationship
 from .base import BaseModel, gen_id
-from datetime import datetime
 
 class Post(BaseModel):
     """

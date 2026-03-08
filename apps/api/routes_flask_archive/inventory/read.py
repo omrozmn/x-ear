@@ -1,13 +1,9 @@
 from flask import request, jsonify
 from models.base import db
-from models.user import User
 from models.inventory import InventoryItem as Inventory
 from models.stock_movement import StockMovement
 from . import inventory_bp
-from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime, timezone
-from uuid import uuid4
-import json
 from utils.decorators import unified_access
 
 def now_utc():

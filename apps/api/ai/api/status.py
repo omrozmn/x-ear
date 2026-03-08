@@ -14,7 +14,6 @@ Requirements:
 """
 
 import logging
-import os
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
@@ -22,26 +21,20 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from pydantic import BaseModel, Field
 
 from schemas.ai import AiStatusResponse as AiStatusResponseSchema
-from ai.config import get_ai_config, AIPhase
+from ai.config import get_ai_config
 from ai.services.kill_switch import (
-    KillSwitch,
     get_kill_switch,
-    KillSwitchState,
     AICapability,
 )
-from ai.services.usage_tracker import get_usage_tracker, UsageSummary
+from ai.services.usage_tracker import get_usage_tracker
 from ai.services.metrics import (
     get_metrics_collector,
-    SLAMetrics,
-    MetricType,
 )
 from ai.services.alerting import (
     get_alerting_service,
     AlertSeverity,
-    AlertType,
     check_and_alert,
 )
-from ai.models.ai_usage import UsageType
 
 logger = logging.getLogger(__name__)
 

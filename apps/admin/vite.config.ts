@@ -9,7 +9,7 @@ export default defineConfig({
   base: process.env.VITE_BASE || '/',
   plugins: [
     react(),
-    TanStackRouterVite() as any,
+    TanStackRouterVite(),
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {

@@ -9,7 +9,6 @@ Tests:
 
 import pytest
 from fastapi.testclient import TestClient
-from datetime import datetime
 
 
 def create_test_party(client: TestClient, auth_headers: dict, suffix: str = "") -> dict:
@@ -79,8 +78,6 @@ class TestHearingProfile:
         db_session
     ):
         """Test that hearing profiles are tenant-isolated"""
-        from datetime import timedelta
-        from jose import jwt
         
         # Create party in tenant-1
         party = create_test_party(client, auth_headers, "0002")

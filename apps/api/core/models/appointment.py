@@ -1,7 +1,6 @@
 # Appointment Models (formerly Patient appointment models)
-from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String, Text, Time, Index
-from core.models.base import Base
-from .base import db, BaseModel, gen_id
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text, Index
+from .base import BaseModel, gen_id
 from .mixins import TenantScopedMixin
 from schemas.enums import AppointmentStatus
 import sqlalchemy as sa

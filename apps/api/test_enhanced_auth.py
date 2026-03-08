@@ -8,7 +8,6 @@ Test script for enhanced authentication features:
 """
 
 import time
-import pytest
 
 
 def test_email_otp_fallback(client):

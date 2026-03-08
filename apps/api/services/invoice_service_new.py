@@ -12,16 +12,15 @@ Handles business logic for incoming/outgoing invoices.
 MAX 500 LOC per project rules.
 """
 import logging
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict
 from datetime import datetime, date
 from decimal import Decimal
-from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import and_, or_, func, desc
+from sqlalchemy.orm import Session
+from sqlalchemy import and_, func, desc
 from fastapi import HTTPException
 
 from core.models.purchase_invoice import PurchaseInvoice
 from core.models.invoice import Invoice
-from core.models.party import Party
 from core.models.suppliers import Supplier
 from core.models.purchase import Purchase
 from schemas.invoices_new import (
@@ -343,7 +342,7 @@ class InvoiceServiceNew:
         # Commit all changes
         try:
             self.db.commit()
-        except Exception as e:
+        except Exception:
             self.db.rollback()
             raise HTTPException(status_code=500, detail="Failed to save purchase conversions")
         

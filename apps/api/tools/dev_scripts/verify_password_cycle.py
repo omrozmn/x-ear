@@ -1,7 +1,4 @@
 import requests
-import json
-import sys
-import time
 
 BASE_URL = "http://localhost:5003/api"
 

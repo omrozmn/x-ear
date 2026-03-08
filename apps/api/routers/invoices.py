@@ -2,8 +2,8 @@
 FastAPI Invoices Router - Migrated from Flask routes/invoices/
 Handles invoice CRUD operations
 """
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
-from typing import Optional, List, Dict, Any
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from typing import Optional, List
 from datetime import datetime, timezone
 import logging
 import uuid
@@ -22,9 +22,8 @@ from sqlalchemy.exc import IntegrityError
 from schemas.base import ResponseEnvelope
 from schemas.invoices import (
     InvoiceCreate, InvoiceUpdate, InvoiceRead, BatchInvoiceGenerateRequest,
-    BulkUploadResponse, InvoicePrintQueueResponse, InvoiceAddToQueueRequest, InvoiceTemplate, InvoicePrintQueueItem
+    BulkUploadResponse, InvoicePrintQueueResponse, InvoiceAddToQueueRequest, InvoiceTemplate
 )
-from models.user import User
 from models.invoice import Invoice
 from core.models.party import Party
 from models.sales import Sale
@@ -32,7 +31,7 @@ from models.efatura_outbox import EFaturaOutbox
 from models.user import ActivityLog
 from utils.efatura import build_return_invoice_xml, write_outbox_file
 import os
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
 logger = logging.getLogger(__name__)
 

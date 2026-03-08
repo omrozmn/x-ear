@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Diagnose and fix sync - fetch all pages, count issues"""
-import os, sys, sqlite3
+import os
+import sys
+import sqlite3
 sys.path.insert(0, '.')
 os.environ['BIRFATURA_MOCK'] = '0'
 from dotenv import load_dotenv
@@ -85,7 +87,7 @@ while True:
         break
     page += 1
 
-print(f"\n=== RESULTS ===")
+print("\n=== RESULTS ===")
 print(f"Total from API: {total_api}")
 print(f"Total fetched: {len(all_uuids) + no_uuid}")
 print(f"Pages: {page}")
@@ -168,13 +170,13 @@ cur.execute("""
     GROUP BY sender_tax_number
     ORDER BY cnt DESC
 """)
-print(f"\n=== SUPPLIERS ===")
+print("\n=== SUPPLIERS ===")
 for row in cur.fetchall():
     print(f"  {row[1]} (VKN:{row[0]}) - {row[2]} fatura, {row[3]:.2f} TRY")
 
 # Final counts
 cur.execute("SELECT invoice_type, COUNT(*) FROM purchase_invoices WHERE tenant_id='95625589-a4ad-41ff-a99e-4955943bb421' GROUP BY invoice_type")
-print(f"\n=== FINAL DB COUNTS ===")
+print("\n=== FINAL DB COUNTS ===")
 for row in cur.fetchall():
     print(f"  {row[0]}: {row[1]}")
 

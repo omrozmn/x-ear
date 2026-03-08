@@ -1,12 +1,12 @@
 """Admin Scan Queue Router - FastAPI"""
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Optional, List
 import logging
 
 from database import get_db
 from models.scan_queue import ScanQueue
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from schemas.base import ResponseEnvelope
 from schemas.scan_queue import ScanQueueRead
 logger = logging.getLogger(__name__)

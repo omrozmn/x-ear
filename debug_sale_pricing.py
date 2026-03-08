@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import sys
-import os
 sys.path.append('apps/api')
 
 from core.database import get_db
@@ -21,7 +20,7 @@ def debug_sale_pricing():
             return
             
         print(f'🔍 DEBUGGING SALE: {sale.id}')
-        print(f'Database values:')
+        print('Database values:')
         print(f'  - list_price_total: {sale.list_price_total}')
         print(f'  - unit_list_price: {getattr(sale, "unit_list_price", "NOT_SET")}')
         print(f'  - total_amount: {sale.total_amount}')
@@ -43,7 +42,7 @@ def debug_sale_pricing():
             print()
             
         # Now simulate the _build_full_sale_data logic
-        print(f'🧮 SIMULATING _build_full_sale_data LOGIC:')
+        print('🧮 SIMULATING _build_full_sale_data LOGIC:')
         
         # Extract unit price logic from the function
         unit_list_price = float(sale.unit_list_price or sale.list_price_total) if (sale.unit_list_price or sale.list_price_total) else 0
@@ -56,7 +55,7 @@ def debug_sale_pricing():
         print()
         
         # Check what the API would return
-        print(f'🌐 API RESPONSE WOULD SHOW:')
+        print('🌐 API RESPONSE WOULD SHOW:')
         print(f'  - listPriceTotal: {unit_list_price} (this is what frontend sees as unit price)')
         print(f'  - actualListPriceTotal: {actual_list_price_total}')
         print(f'  - unitListPrice: {unit_list_price}')
@@ -64,13 +63,13 @@ def debug_sale_pricing():
         
         # The issue: frontend shows "Liste Fiyatı (birim): ₺5.000,00 x2"
         # But user expects "Liste Fiyatı (birim): ₺10.000,00 x2"
-        print(f'🐛 ISSUE ANALYSIS:')
+        print('🐛 ISSUE ANALYSIS:')
         print(f'  - Frontend shows: ₺{unit_list_price:,.2f} x{device_count}')
         print(f'  - User expects: ₺10,000.00 x{device_count}')
         print(f'  - Problem: unit_list_price = {unit_list_price} but should be 10000')
         
         if unit_list_price != 10000:
-            print(f'  - Root cause: sale.unit_list_price or sale.list_price_total is wrong in DB')
+            print('  - Root cause: sale.unit_list_price or sale.list_price_total is wrong in DB')
             print(f'  - sale.unit_list_price = {getattr(sale, "unit_list_price", "NOT_SET")}')
             print(f'  - sale.list_price_total = {sale.list_price_total}')
         

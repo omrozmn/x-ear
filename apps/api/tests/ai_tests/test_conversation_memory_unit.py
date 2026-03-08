@@ -15,7 +15,7 @@ Requirements tested:
 
 import pytest
 import time
-from datetime import datetime, timezone
+from datetime import datetime
 
 from ai.services.conversation_memory import (
     ConversationMemory,

@@ -3,8 +3,8 @@ FastAPI Admin Plans Router - Migrated from Flask routes/admin_plans.py
 Handles subscription plan management
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Optional, Dict, Any
-from datetime import datetime, timezone
+from typing import Optional
+from datetime import datetime
 import logging
 import uuid
 
@@ -12,9 +12,8 @@ from sqlalchemy.orm import Session
 
 from schemas.base import ResponseEnvelope
 from schemas.plans import PlanCreate, PlanUpdate, DetailedPlanRead
-from models.admin_user import AdminUser
 from models.plan import Plan, PlanType, BillingInterval
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_admin
 from database import get_db
 logger = logging.getLogger(__name__)
 

@@ -8,13 +8,10 @@ import json
 from typing import Optional, List
 from fastapi import APIRouter, Depends, Query, Body
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, desc
+from sqlalchemy import desc
 
 from core.dependencies import get_current_admin_user
 from core.database import get_db
-from core.dependencies import get_current_admin_user
-from core.database import get_db
-from middleware.unified_access import UnifiedAccess, require_access
 from schemas import ResponseEnvelope
 from core.models.email_deliverability import EmailApproval
 from services.email_approval_service import get_email_approval_service

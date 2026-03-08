@@ -1,4 +1,3 @@
-import pytest
 import uuid
 from core.models.affiliate_user import AffiliateUser
 

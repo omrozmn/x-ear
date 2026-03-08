@@ -839,7 +839,7 @@ export * from './getInvoiceDocumentFormat';
 export * from './getInvoiceDocumentParams';
 export * from './getMetricsApiAiMetricsGetParams';
 export * from './getOutBoxDocumentsRequest';
-export * from './getOutBoxDocumentsRequestInvoiceNo';
+export * from './getOutBoxDocumentsRequestInvoiceno';
 export * from './getPDFLinkRequest';
 export * from './getPendingApprovalsApiAiAdminPendingApprovalsGetParams';
 export * from './hTTPValidationError';

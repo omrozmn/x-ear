@@ -14,16 +14,58 @@ interface LineWithholdingModalProps {
 }
 
 const withholdingCodes = [
-  { code: 'TEV001', description: 'Serbest Meslek Makbuzu (%20)', rate: 20 },
-  { code: 'TEV002', description: 'Kira Geliri (%20)', rate: 20 },
-  { code: 'TEV003', description: 'Menkul Sermaye İradı (%15)', rate: 15 },
-  { code: 'TEV004', description: 'Ticari Kazanç (%20)', rate: 20 },
-  { code: 'TEV005', description: 'Yapım İşleri (%3)', rate: 3 },
-  { code: 'TEV006', description: 'Etüd, Proje, Plan (%5)', rate: 5 },
-  { code: 'TEV007', description: 'Makine, Teçhizat Kiralama (%5)', rate: 5 },
-  { code: 'TEV008', description: 'Yemek Servisi (%5)', rate: 5 },
-  { code: 'TEV009', description: 'Temizlik Hizmeti (%5)', rate: 5 },
-  { code: 'TEV010', description: 'Özel Güvenlik Hizmeti (%5)', rate: 5 }
+  { code: '601', description: 'Yapım İşleri', rate: 40 },
+  { code: '602', description: 'Etüt, Plan, Proje, Danışmanlık', rate: 90 },
+  { code: '603', description: 'Makine, Teçhizat, Demirbaş Tadil/Bakım', rate: 70 },
+  { code: '604', description: 'Yemek Servisi', rate: 50 },
+  { code: '605', description: 'Organizasyon Hizmeti', rate: 50 },
+  { code: '606', description: 'İş Gücü Temin Hizmeti', rate: 90 },
+  { code: '607', description: 'Özel Güvenlik Hizmeti', rate: 90 },
+  { code: '608', description: 'Yapı Denetim Hizmeti', rate: 90 },
+  { code: '609', description: 'Fason Tekstil ve Konfeksiyon', rate: 70 },
+  { code: '610', description: 'Turistik Mağazalara Verilen Müşteri Bulma', rate: 90 },
+  { code: '611', description: 'Spor Kulübü Yayın/Reklam/İsim Hakkı', rate: 90 },
+  { code: '612', description: 'Temizlik Hizmeti', rate: 90 },
+  { code: '613', description: 'Çevre ve Bahçe Bakım Hizmeti', rate: 90 },
+  { code: '614', description: 'Servis Taşımacılığı', rate: 50 },
+  { code: '615', description: 'Baskı ve Basım Hizmeti', rate: 70 },
+  { code: '616', description: '5018 Kapsamı Diğer Hizmetler', rate: 50 },
+  { code: '617', description: 'Hurda Metalden Elde Edilen Külçe', rate: 70 },
+  { code: '618', description: 'Bakır/Çinko/Alüminyum Külçe', rate: 70 },
+  { code: '619', description: 'Bakır/Çinko/Alüminyum Ürünleri', rate: 70 },
+  { code: '620', description: 'İstisnadan Vazgeçenlerin Hurda/Atık Teslimi', rate: 70 },
+  { code: '621', description: 'Hurda ve Atıklardan Elde Edilen Hammadde', rate: 90 },
+  { code: '622', description: 'Pamuk/Tiftik/Yün/Yapağı/Ham Post-Deri', rate: 90 },
+  { code: '623', description: 'Ağaç ve Orman Ürünleri', rate: 50 },
+  { code: '624', description: 'Yük Taşımacılığı', rate: 20 },
+  { code: '625', description: 'Ticari Reklam Hizmetleri', rate: 30 },
+  { code: '626', description: 'Diğer Teslimler', rate: 20 },
+  { code: '627', description: 'Demir-Çelik Ürünleri', rate: 50 },
+  { code: '801', description: 'Yapım İşleri (Tam Tevkifat)', rate: 100 },
+  { code: '802', description: 'Danışmanlık ve Benzeri (Tam Tevkifat)', rate: 100 },
+  { code: '803', description: 'Makine/Teçhizat Tadil-Bakım (Tam)', rate: 100 },
+  { code: '804', description: 'Yemek Servisi (Tam)', rate: 100 },
+  { code: '805', description: 'Organizasyon Hizmeti (Tam)', rate: 100 },
+  { code: '806', description: 'İş Gücü Temin Hizmeti (Tam)', rate: 100 },
+  { code: '807', description: 'Özel Güvenlik Hizmeti (Tam)', rate: 100 },
+  { code: '808', description: 'Yapı Denetim Hizmeti (Tam)', rate: 100 },
+  { code: '809', description: 'Fason Tekstil ve Konfeksiyon (Tam)', rate: 100 },
+  { code: '810', description: 'Müşteri Bulma / Götürme Hizmeti (Tam)', rate: 100 },
+  { code: '811', description: 'Spor Kulübü Gelirleri (Tam)', rate: 100 },
+  { code: '812', description: 'Temizlik Hizmeti (Tam)', rate: 100 },
+  { code: '813', description: 'Çevre ve Bahçe Bakım Hizmeti (Tam)', rate: 100 },
+  { code: '814', description: 'Servis Taşımacılığı (Tam)', rate: 100 },
+  { code: '815', description: 'Baskı ve Basım Hizmeti (Tam)', rate: 100 },
+  { code: '816', description: 'Hurda Metal Külçe Teslimi (Tam)', rate: 100 },
+  { code: '817', description: 'Bakır/Çinko/Demir-Çelik Külçe (Tam)', rate: 100 },
+  { code: '818', description: 'Bakır/Çinko/Alüminyum/Kurşun Ürünleri (Tam)', rate: 100 },
+  { code: '819', description: 'Hurda ve Atık Teslimi (Tam)', rate: 100 },
+  { code: '820', description: 'Hurda ve Atıktan Hammadde (Tam)', rate: 100 },
+  { code: '821', description: 'Pamuk/Tiftik/Yün/Yapağı/Ham Post-Deri (Tam)', rate: 100 },
+  { code: '822', description: 'Ağaç ve Orman Ürünleri (Tam)', rate: 100 },
+  { code: '823', description: 'Yük Taşımacılığı (Tam)', rate: 100 },
+  { code: '824', description: 'Ticari Reklam Hizmetleri (Tam)', rate: 100 },
+  { code: '825', description: 'Demir-Çelik Ürünleri (Tam)', rate: 100 }
 ];
 
 export function LineWithholdingModal({
@@ -96,7 +138,7 @@ export function LineWithholdingModal({
                       <span className="font-medium">Satır {itemIndex + 1}:</span> {itemName}
                     </p>
                     <p className="text-sm text-blue-700 mt-1">
-                      Tutar: {itemAmount.toFixed(2)} TL
+                      Referans satır tutarı: {itemAmount.toFixed(2)} TL
                     </p>
                   </div>
 
@@ -153,7 +195,7 @@ export function LineWithholdingModal({
                         className="w-full bg-gray-50"
                       />
                       <p className="mt-1 text-xs text-gray-500">
-                        Otomatik hesaplanır: ({formData.rate}% × {itemAmount.toFixed(2)} TL)
+                        Önizleme hesaplamasıdır. XML üretiminde provider kuralına göre tevkifat tutarı KDV/vergisel matrah üzerinden yeniden hesaplanır.
                       </p>
                     </div>
 

@@ -108,10 +108,10 @@ def test_down_payment_sync_direct():
                     print(f"💾 Final sale.paid_amount after commit: {final_paid_amount}")
                     
                     if float(final_paid_amount) == float(test_down_payment):
-                        print(f"✅ DOWN PAYMENT SYNC SUCCESSFUL!")
+                        print("✅ DOWN PAYMENT SYNC SUCCESSFUL!")
                         return True
                     else:
-                        print(f"❌ DOWN PAYMENT SYNC FAILED!")
+                        print("❌ DOWN PAYMENT SYNC FAILED!")
                         print(f"   Expected: {test_down_payment}")
                         print(f"   Actual: {final_paid_amount}")
                         return False
@@ -123,7 +123,7 @@ def test_down_payment_sync_direct():
                 print(f"❌ Failed to process down payment: {e}")
                 return False
         else:
-            print(f"❌ downPayment not found in data")
+            print("❌ downPayment not found in data")
             return False
             
     except Exception as e:

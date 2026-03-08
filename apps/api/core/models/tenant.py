@@ -5,7 +5,7 @@ from core.models.base import Base
 import uuid
 from datetime import datetime
 from enum import Enum
-from sqlalchemy import Column, String, Boolean, DateTime, Text, JSON, Date, ForeignKey, Integer, Time, Index
+from sqlalchemy import Column, String, DateTime, Text, JSON, ForeignKey, Integer, Index
 from sqlalchemy.orm import relationship
 
 

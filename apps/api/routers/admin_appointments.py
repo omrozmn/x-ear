@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from typing import Optional
-from datetime import datetime, timezone
+from datetime import datetime
 import logging
 
 from database import get_db
@@ -10,7 +10,7 @@ from core.database import unbound_session
 from models.appointment import Appointment
 from core.models.party import Party
 from models.tenant import Tenant
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from schemas.base import ResponseEnvelope
 from schemas.appointments import AppointmentRead  # Import AppointmentRead schema
 logger = logging.getLogger(__name__)

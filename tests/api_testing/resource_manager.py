@@ -4,7 +4,6 @@ import json
 import os
 from typing import Dict, Optional, List, Any
 from dataclasses import dataclass, field
-from datetime import datetime
 from .logging_config import logger
 
 # Cache file for persistent resource IDs
@@ -446,7 +445,6 @@ class ResourceManager:
             auth_manager: AuthManager instance for getting tokens
             data_generator: DataGenerator instance for test data
         """
-        from data_generator import DataGenerator
         
         logger.info("Creating prerequisite resources...")
         

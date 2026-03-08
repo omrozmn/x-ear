@@ -11,8 +11,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from schemas.base import ResponseEnvelope
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
-from database import get_db
+from middleware.unified_access import UnifiedAccess, require_access
 
 logger = logging.getLogger(__name__)
 

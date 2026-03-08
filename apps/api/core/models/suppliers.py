@@ -1,11 +1,8 @@
 """
 Suppliers and Product-Supplier Relationship Models
 """
-from sqlalchemy import Column, Boolean, Date, DateTime, ForeignKey, Integer, Numeric, String, Text, Time
+from sqlalchemy import Column, Boolean, DateTime, ForeignKey, Integer, Numeric, String, Text
 from sqlalchemy.orm import relationship
-from core.models.base import Base
-from datetime import datetime, timezone
-import json
 from .base import db, BaseModel
 from .mixins import TenantScopedMixin
 

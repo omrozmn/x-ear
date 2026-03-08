@@ -2,7 +2,6 @@
 Admin Example Documents Router
 Manages example documents (contract templates) for SMS integration
 """
-import os
 import logging
 from pathlib import Path
 from typing import List, Any

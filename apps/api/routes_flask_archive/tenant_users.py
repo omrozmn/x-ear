@@ -13,13 +13,12 @@ import os
 import uuid as uuid_lib
 import base64
 from io import BytesIO
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, current_app
 from models.base import db
 from models.user import User
 from models.tenant import Tenant
 from utils.decorators import unified_access
 from utils.response import success_response, error_response
-from werkzeug.utils import secure_filename
 import logging
 
 logger = logging.getLogger(__name__)
@@ -591,7 +590,7 @@ def serve_tenant_asset(ctx, tenant_id, filename):
             # Redirect to presigned URL
             from flask import redirect
             return redirect(presigned_url)
-        except Exception as e:
+        except Exception:
             return error_response('Asset not found', 404)
     else:
         # Serve from local disk
@@ -639,7 +638,7 @@ def get_asset_url(ctx, asset_type):
         try:
             url = s3_service.generate_presigned_url(object_key, expiration=3600)
             return success_response(data={'url': url, 'expiresIn': 3600})
-        except Exception as e:
+        except Exception:
             return error_response('Failed to generate URL', 500)
     else:
         url_field = f"{asset_type}Url"

@@ -15,9 +15,9 @@ from datetime import datetime, date, timezone
 from enum import Enum
 from typing import Optional, List, Dict, Any
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
-from schemas.base import AppBaseModel, IDMixin, TimestampMixin, ResponseMeta
+from schemas.base import AppBaseModel, IDMixin, ResponseMeta
 
 
 # =============================================================================

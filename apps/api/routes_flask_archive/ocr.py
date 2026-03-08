@@ -1,18 +1,15 @@
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, current_app
 from datetime import datetime
 import logging
 import os
 import uuid
 import threading
-from typing import Optional
 
 from models.base import db
-from models.patient import Patient
 from models.ocr_job import OCRJob, OCRJobStatus
 from services.ocr_service import get_nlp_service, initialize_nlp_service
 from utils.decorators import unified_access
 from utils.response import success_response, error_response
-from utils.tenant_security import UnboundSession
 from config.tenant_permissions import TenantPermissions
 from utils.admin_permissions import AdminPermissions
 

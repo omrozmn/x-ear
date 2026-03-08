@@ -3,14 +3,14 @@ FastAPI Dashboard Router - Migrated from Flask routes/dashboard.py
 Dashboard KPIs and analytics
 """
 from fastapi import APIRouter, Depends, HTTPException
-from typing import Optional, List, Dict, Any
-from datetime import datetime, timedelta, timezone
+from typing import List, Dict, Any
+from datetime import datetime, timedelta
 import logging
 
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from schemas.base import ResponseEnvelope, ApiError
+from schemas.base import ResponseEnvelope
 
 from models.user import ActivityLog
 from core.models.user import User
@@ -20,7 +20,7 @@ from models.sales import Sale
 from models.appointment import Appointment
 from models.tenant import Tenant
 from models.branch import Branch
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
 
 from schemas.audit import AuditLogRead

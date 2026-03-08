@@ -34,8 +34,6 @@ import {
   ChevronDown,
   ChevronUp,
   Gauge,
-  Percent,
-  Users,
   FileCheck,
 } from 'lucide-react';
 import toast from 'react-hot-toast';

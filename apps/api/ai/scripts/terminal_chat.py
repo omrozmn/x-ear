@@ -10,11 +10,9 @@ Runs 16 end-to-end scenarios covering every tool and every parameter.
 
 import sys
 import os
-import json
-import re
 sys.path.append(os.path.join(os.getcwd(), "apps/api"))
 
-from ai.agents.intent_refiner import IntentRefiner, IntentType
+from ai.agents.intent_refiner import IntentRefiner
 from ai.tools import get_tool_registry, ToolExecutionMode
 
 refiner = IntentRefiner()

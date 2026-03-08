@@ -56,7 +56,7 @@ def add_field_serializer(file_path: Path) -> bool:
     modified = False
     for model_name in read_models:
         # Check if model already has field_serializer
-        if f'@field_serializer' in content and model_name in content:
+        if '@field_serializer' in content and model_name in content:
             continue
         
         # Find the model class

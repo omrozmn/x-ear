@@ -79,6 +79,7 @@ from . import pos_commission
 # from . import uts  # Temporarily disabled due to router not defined
 # Phase 7 migrated routers - Final modules
 from . import invoice_management
+from . import invoice_draft_issue
 from . import invoices_actions
 from . import communications
 from . import sms_integration
@@ -163,6 +164,7 @@ __all__ = [
     # "uts",  # Temporarily disabled
     # Phase 7 - Final modules
     "invoice_management",
+    "invoice_draft_issue",
     "invoices_actions",
     "communications",
     "sms_integration",

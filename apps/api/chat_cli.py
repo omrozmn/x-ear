@@ -5,7 +5,6 @@ Allows chatting with the AI layer from the terminal.
 """
 
 import requests
-import json
 import uuid
 import sys
 import time
@@ -57,9 +56,9 @@ def print_slow(text):
 
 def chat_loop():
     print(f"{BLUE}=" * 60)
-    print(f"🤖 X-Ear AI Terminal Interface")
-    print(f"Type 'exit', 'quit', or 'q' to end the session.")
-    print(f"=" * 60 + f"{RESET}\n")
+    print("🤖 X-Ear AI Terminal Interface")
+    print("Type 'exit', 'quit', or 'q' to end the session.")
+    print("=" * 60 + f"{RESET}\n")
 
     session_id = f"cli_{uuid.uuid4().hex[:8]}"
     context = {}

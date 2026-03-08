@@ -3,9 +3,7 @@ UTS (Ulusal Takip Sistemi) API Routes
 Handles hearing aid device registration with UTS system
 """
 
-from flask import Blueprint, request, jsonify
-from models.base import db
-from models.user import User
+from flask import Blueprint, request
 from utils.decorators import unified_access
 from utils.response import success_response, error_response
 import logging

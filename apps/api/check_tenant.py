@@ -1,7 +1,5 @@
 from __future__ import annotations
-from typing import Optional, Any, Union, List, Dict
 import sys
-import os
 
 # Add apps/api to path
 sys.path.insert(0, "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api")

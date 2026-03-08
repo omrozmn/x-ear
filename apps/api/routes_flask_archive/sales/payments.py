@@ -14,7 +14,6 @@ from uuid import uuid4
 import logging
 
 from .helpers import (
-    build_installment_data,
     build_payment_plan_data,
     ERROR_SALE_NOT_FOUND,
     ERROR_NO_DATA_PROVIDED

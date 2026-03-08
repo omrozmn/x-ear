@@ -1,9 +1,8 @@
 import logging
-from typing import Optional
 from sqlalchemy.orm import Session
 from ai.models.opportunity import AIOpportunity, OpportunityStatus
 from ai.agents.action_planner import get_action_planner
-from ai.agents.intent_refiner import IntentRefinerResult, IntentType
+from ai.agents.intent_refiner import IntentType
 
 logger = logging.getLogger(__name__)
 

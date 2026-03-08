@@ -36,7 +36,7 @@ from ai.api import (
     status_router,
     admin_router,
 )
-from ai.services.kill_switch import KillSwitch, get_kill_switch
+from ai.services.kill_switch import get_kill_switch
 
 
 # =============================================================================

@@ -5,7 +5,6 @@ Tests all 4 data points: Backend, Frontend, Database, API
 """
 
 import sqlite3
-import json
 import sys
 
 def check_database(sale_id):
@@ -87,12 +86,12 @@ def verify_consistency(sale, assignments):
         total_sgk += float(a['sgk_support'] or 0) * qty
         total_net += float(a['net_payable'] or 0)  # net_payable is already total
     
-    print(f"\nCalculated from Assignments:")
+    print("\nCalculated from Assignments:")
     print(f"  Total List Price: {total_list}")
     print(f"  Total SGK: {total_sgk}")
     print(f"  Total Net Payable: {total_net}")
     
-    print(f"\nSale Record Values:")
+    print("\nSale Record Values:")
     print(f"  list_price_total: {sale['list_price_total']}")
     print(f"  sgk_coverage: {sale['sgk_coverage']}")
     print(f"  final_amount: {sale['final_amount']}")

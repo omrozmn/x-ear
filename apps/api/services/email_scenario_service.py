@@ -1,7 +1,6 @@
 """Email Scenario Service for integrating email sending into business flows"""
 
 import logging
-from typing import Dict, Optional
 from fastapi import BackgroundTasks
 from sqlalchemy.orm import Session
 

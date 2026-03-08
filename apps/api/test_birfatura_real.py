@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import os
 import sys
-import json
 import base64
 import uuid
 import datetime
@@ -122,7 +121,6 @@ def test_real_send_document():
             print("\n✓ SendDocument test passed!")
             
             # --- EXTRA VERIFICATION ---
-            import time
             print("\n" + "-"*40)
             print("VERIFYING: Outbox Query & PDF Download")
             print("-"*40)

@@ -1,8 +1,6 @@
-from sqlalchemy import Column, Boolean, Date, DateTime, Float, Integer, JSON, String, Text, Time
-from core.models.base import Base
-from .base import db, BaseModel, gen_id, JSONMixin
+from sqlalchemy import Column, Boolean, DateTime, Float, Integer, String, Text
+from .base import BaseModel, gen_id, JSONMixin
 from .mixins import TenantScopedMixin
-from datetime import datetime, timezone
 
 class SMSProviderConfig(BaseModel, JSONMixin, TenantScopedMixin):
     """SMS Provider Configuration for a Tenant (VatanSMS)"""

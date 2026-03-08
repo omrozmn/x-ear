@@ -19,7 +19,6 @@ sgk_bp = Blueprint('sgk', __name__)
 
 import os
 import tempfile
-from werkzeug.utils import secure_filename
 import pdfkit
 
 # Simple upload limits

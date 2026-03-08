@@ -1,5 +1,5 @@
 """Inventory Write Operations - Create, Update, Delete"""
-from flask import request, jsonify
+from flask import request
 from models.base import db
 from models.inventory import InventoryItem as Inventory
 from . import inventory_bp

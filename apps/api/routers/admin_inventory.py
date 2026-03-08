@@ -8,7 +8,7 @@ from database import get_db
 from core.database import unbound_session
 from models.device import Device
 from models.tenant import Tenant
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from schemas.base import ResponseEnvelope
 from schemas.devices import DeviceRead
 logger = logging.getLogger(__name__)

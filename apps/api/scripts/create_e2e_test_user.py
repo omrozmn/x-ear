@@ -36,7 +36,7 @@ def create_test_user():
             existing.is_active = True
             existing.is_phone_verified = True
             db.commit()
-            print(f"✅ Updated existing user: e2etest")
+            print("✅ Updated existing user: e2etest")
         else:
             # Create new user
             user = User(
@@ -50,7 +50,7 @@ def create_test_user():
             )
             db.add(user)
             db.commit()
-            print(f"✅ Created user: e2etest")
+            print("✅ Created user: e2etest")
         
         print("\n📋 E2E Test Credentials:")
         print("Username: e2etest")

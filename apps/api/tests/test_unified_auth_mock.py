@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import MagicMock, patch
 from flask import Flask, g
-from utils.auth_principal import get_current_principal, Principal, PrincipalKind
-from utils.access_context import get_access_context, AccessContext
+from utils.auth_principal import get_current_principal, PrincipalKind
+from utils.access_context import get_access_context
 from config.tenant_permissions import TenantPermissions
 
 class TestUnifiedAuth(unittest.TestCase):

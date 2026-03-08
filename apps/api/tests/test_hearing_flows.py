@@ -9,7 +9,7 @@ Run with: pytest tests/test_hearing_flows.py -v -m hearing_flow
 
 import pytest
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 
 pytestmark = pytest.mark.hearing_flow
 

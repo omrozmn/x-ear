@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """Fix admin routers - remove access.* references"""
-import re
 
 files_to_fix = [
     "apps/api/routers/bounce_management.py",

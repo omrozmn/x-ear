@@ -2,13 +2,11 @@ from flask import request, jsonify
 from models.base import db
 from models.patient import Patient
 from models.sales import Sale, DeviceAssignment, PaymentRecord
-from models.user import User
 from datetime import datetime
 import logging
 from . import patients_bp
 from utils.decorators import unified_access
 from utils.response import success_response
-from flask_jwt_extended import jwt_required, get_jwt_identity
 
 logger = logging.getLogger(__name__)
 

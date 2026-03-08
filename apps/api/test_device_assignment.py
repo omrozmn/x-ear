@@ -2,11 +2,10 @@ import os
 import sys
 import requests
 import json
-from datetime import datetime
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from app import app, db
+from app import app
 from models.sales import DeviceAssignment, Sale
 from models.user import User
 from models.patient import Patient
@@ -24,7 +23,7 @@ def get_auth_token():
     if response.status_code == 200:
         data = response.json()
         token = data.get('token') or data.get('access_token')
-        print(f"✅ Login successful")
+        print("✅ Login successful")
         return token
     print(f"❌ Login failed: {response.text}")
     return None
@@ -50,7 +49,6 @@ def test_device_assignment_with_discount():
         print(f"   Tenant: {admin.tenant_id}")
         
         # Find an inventory item
-        from models.inventory import InventoryItem
         item = Inventory.query.filter_by(tenant_id=admin.tenant_id).first()
         
         if not item:
@@ -60,7 +58,7 @@ def test_device_assignment_with_discount():
         print(f"   Inventory: {item.id} - {item.brand} {item.model} (₺{item.price})")
     
     # Create device assignment via inventory assign endpoint
-    print(f"\n🔧 Creating device assignment...")
+    print("\n🔧 Creating device assignment...")
     assign_payload = {
         "patientId": patient.id,
         "reason": "Sale",
@@ -85,7 +83,7 @@ def test_device_assignment_with_discount():
     
     if assign_resp.status_code in [200, 201]:
         data = assign_resp.json()
-        print(f"✅ Assignment created successfully")
+        print("✅ Assignment created successfully")
         print(f"   Response: {json.dumps(data, indent=2)[:500]}")
         
         # Check DB
@@ -97,7 +95,7 @@ def test_device_assignment_with_discount():
             ).order_by(DeviceAssignment.created_at.desc()).first()
             
             if assignment:
-                print(f"\n🗄️  DB Check - Device Assignment:")
+                print("\n🗄️  DB Check - Device Assignment:")
                 print(f"   ID: {assignment.id}")
                 print(f"   List Price: ₺{assignment.list_price}")
                 print(f"   SGK Support (per ear): ₺{assignment.sgk_support}")
@@ -112,30 +110,30 @@ def test_device_assignment_with_discount():
                 expected_price_after_sgk = 20000 - expected_sgk
                 expected_price_after_discount = expected_price_after_sgk - 2000
                 
-                print(f"\n🧮 Calculation Verification:")
+                print("\n🧮 Calculation Verification:")
                 print(f"   Expected SGK: ₺{expected_sgk}")
                 print(f"   Actual SGK: ₺{float(assignment.sgk_support)}")
-                print(f"   ✅ Match" if abs(float(assignment.sgk_support) - expected_sgk) < 1 else "❌ Mismatch")
+                print("   ✅ Match" if abs(float(assignment.sgk_support) - expected_sgk) < 1 else "❌ Mismatch")
                 
                 print(f"\n   Expected Sale Price: ₺{expected_price_after_discount}")
                 print(f"   Actual Sale Price: ₺{float(assignment.sale_price)}")
-                print(f"   ✅ Match" if abs(float(assignment.sale_price) - expected_price_after_discount) < 1 else "❌ Mismatch")
+                print("   ✅ Match" if abs(float(assignment.sale_price) - expected_price_after_discount) < 1 else "❌ Mismatch")
                 
                 # Check sale record
                 if assignment.sale_id:
                     sale = Sale.query.get(assignment.sale_id)
                     if sale:
-                        print(f"\n💰 Sale Record:")
+                        print("\n💰 Sale Record:")
                         print(f"   ID: {sale.id}")
                         print(f"   Paid Amount (from down_payment): ₺{float(sale.paid_amount)}")
-                        print(f"   Expected: ₺5000")
-                        print(f"   ✅ Match" if abs(float(sale.paid_amount) - 5000) < 1 else "❌ Mismatch")
+                        print("   Expected: ₺5000")
+                        print("   ✅ Match" if abs(float(sale.paid_amount) - 5000) < 1 else "❌ Mismatch")
                         print(f"   Notes (contains KDV): {sale.notes[:100] if sale.notes else 'N/A'}")
                         print(f"   Payment Method: {sale.payment_method}")
                 else:
-                    print(f"\n⚠️  No sale record linked")
+                    print("\n⚠️  No sale record linked")
             else:
-                print(f"\n❌ No assignment found in DB")
+                print("\n❌ No assignment found in DB")
     else:
         print(f"❌ Assignment failed: {assign_resp.text}")
 
@@ -157,7 +155,7 @@ def test_bilateral_sgk():
             print("❌ Missing patient or inventory")
             return
     
-    print(f"\n\n🔧 Testing Bilateral Device Assignment...")
+    print("\n\n🔧 Testing Bilateral Device Assignment...")
     assign_payload = {
         "patientId": patient.id,
         "reason": "Sale",
@@ -186,7 +184,7 @@ def test_bilateral_sgk():
             ).order_by(DeviceAssignment.created_at.desc()).first()
             
             if assignment:
-                print(f"\n🗄️  DB Check - Bilateral Assignment:")
+                print("\n🗄️  DB Check - Bilateral Assignment:")
                 print(f"   Ear: {assignment.ear}")
                 print(f"   SGK Support (should be PER EAR): ₺{assignment.sgk_support}")
                 print(f"   Sale Price (per ear): ₺{assignment.sale_price}")
@@ -194,7 +192,7 @@ def test_bilateral_sgk():
                 
                 expected_sgk_per_ear = 6104.44
                 print(f"\n   Expected SGK per ear: ₺{expected_sgk_per_ear}")
-                print(f"   ✅ SGK is per-ear" if abs(float(assignment.sgk_support) - expected_sgk_per_ear) < 1 else "❌ SGK is doubled!")
+                print("   ✅ SGK is per-ear" if abs(float(assignment.sgk_support) - expected_sgk_per_ear) < 1 else "❌ SGK is doubled!")
     else:
         print(f"❌ Assignment failed: {assign_resp.text}")
 

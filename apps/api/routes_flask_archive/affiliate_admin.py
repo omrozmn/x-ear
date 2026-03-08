@@ -4,7 +4,6 @@ This wraps the FastAPI endpoints for compatibility with the existing Flask app
 """
 from flask import Blueprint, request, jsonify
 from models.base import db
-from models.affiliate_user import AffiliateUser
 from services.affiliate_service import AffiliateService
 from models.tenant import Tenant
 from models.subscription import Subscription

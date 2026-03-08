@@ -1,15 +1,30 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useEffect, useState } from 'react';
+import { isAxiosError } from 'axios';
 import { useAuthStore } from '@/stores/authStore';
 import { useCreateAdminAuthLogin } from '@/lib/api-client';
 import { tokenManager, adminApiInstance } from '@/lib/api';
-import { LoginCredentials, AdminUser as TypeAdminUser } from '@/types';
+import { AdminRole, LoginCredentials, AdminUser as TypeAdminUser } from '@/types';
+import type {
+    ResponseEnvelopeAdminLoginResponse,
+    ResponseEnvelopeRefreshTokenResponse,
+} from '@/api/generated/schemas';
 import toast from 'react-hot-toast';
 
-interface AuthContextType {
+type LoginResult = {
+    user?: TypeAdminUser;
+    token?: string;
+    requires_mfa?: boolean;
+    tokens?: {
+        token: string;
+        refreshToken?: string;
+    };
+};
+
+export interface AuthContextType {
     user: TypeAdminUser | null;
     isAuthenticated: boolean;
     isLoading: boolean;
-    login: (credentials: LoginCredentials & { mfa_token?: string }) => Promise<{ user?: TypeAdminUser; token?: string; requires_mfa?: boolean; tokens?: any }>;
+    login: (credentials: LoginCredentials & { mfa_token?: string }) => Promise<LoginResult>;
     logout: () => void;
 }
 
@@ -48,7 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     if (!token && currentToken) {
                         // We set user to null initially, ideally we should fetch profile here
                         // But this ensures isAuthenticated becomes true
-                        setAuth(user || { id: 'rehydrated', email: '', role: 'ADMIN' } as any, currentToken);
+                        setAuth(user || createRehydratedAdminUser(), currentToken);
 
                         // Optional: Fetch profile to get real user data
                         // const response = await adminApi.get('/admin/auth/me');
@@ -64,35 +79,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
 
         initAuth();
-    }, [token, clearAuth, _hasHydrated]);
+    }, [token, clearAuth, _hasHydrated, setAuth, user]);
 
-    const silentRefresh = async () => {
+    const logout = useCallback(() => {
+        console.warn('[AuthContext] Logout called', new Error().stack);
+        clearAuth();
+        tokenManager.clearToken();
+        tokenManager.clearRefreshToken();
+        toast.success('Çıkış yapıldı');
+        // window.location.href = '/login'; // Disable redirect to see logs
+    }, [clearAuth]);
+
+    const silentRefresh = useCallback(async () => {
         const refreshToken = tokenManager.getRefreshToken();
         if (!refreshToken || !isAuthenticated) return;
 
         try {
             // BUG-010: Silent refresh using the backend refresh endpoint
             // We use adminApiInstance directly to provide the custom Authorization header
-            const response = await adminApiInstance.post('/api/auth/refresh', {}, {
+            const response = await adminApiInstance.post<ResponseEnvelopeRefreshTokenResponse>('/api/auth/refresh', {}, {
                 headers: {
                     'Authorization': `Bearer ${refreshToken}`
                 }
-            }) as any;
+            });
 
-            const newToken = response.data?.access_token || response.data?.data?.access_token;
+            const newToken = response.data?.data?.accessToken;
             if (newToken) {
                 if (user) setAuth(user, newToken);
                 tokenManager.setToken(newToken);
                 console.log('[Auth] Token silently refreshed');
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('[Auth] Silent refresh failed:', error);
             // If refresh fails with 401/403, our refresh token is likely invalid/expired
-            if (error.response?.status === 401 || error.response?.status === 403) {
+            if (isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
                 logout();
             }
         }
-    };
+    }, [isAuthenticated, logout, setAuth, user]);
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -100,47 +124,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const interval = setInterval(silentRefresh, 30 * 60 * 1000);
             return () => clearInterval(interval);
         }
-    }, [isAuthenticated]);
+    }, [isAuthenticated, silentRefresh]);
 
-    const login = async (credentials: LoginCredentials & { mfa_token?: string }) => {
+    const login = async (credentials: LoginCredentials & { mfa_token?: string }): Promise<LoginResult> => {
         try {
-            const response = await adminLogin({ data: credentials }) as any;
+            const response = await adminLogin({ data: credentials });
+            const payload = response.data;
 
             console.log('Login response (unwrapped):', response);
 
             // Handle MFA requirement
-            if (response.requires_mfa || response.requiresMfa) {
+            if (payload?.requires_mfa) {
                 return { requires_mfa: true };
             }
 
             // Response is already unwrapped by mutator: {token, user, refreshToken, requiresMfa}
-            if (response.token && response.user) {
-                const { token, user, refreshToken, refresh_token } = response;
-                const rToken = refreshToken || refresh_token;
+            if (payload?.token && payload.user) {
+                const currentUser = mapAdminUser(payload.user);
+                const currentToken = payload.token;
+                const refreshToken = payload.refresh_token;
 
-                setAuth(user as unknown as TypeAdminUser, token);
-                tokenManager.setToken(token);
-                if (rToken) tokenManager.setRefreshToken(rToken);
+                setAuth(currentUser, currentToken);
+                tokenManager.setToken(currentToken);
+                if (refreshToken) tokenManager.setRefreshToken(refreshToken);
 
                 toast.success('Giriş başarılı');
-                return { user: user as unknown as TypeAdminUser, token, tokens: { token, refreshToken: rToken } };
+                return {
+                    user: currentUser,
+                    token: currentToken,
+                    tokens: { token: currentToken, refreshToken }
+                };
             }
 
             console.error('Unexpected login response format:', response);
             throw new Error('Invalid login response format');
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Login error:', error);
             throw error;
         }
-    };
-
-    const logout = () => {
-        console.warn('[AuthContext] Logout called', new Error().stack);
-        clearAuth();
-        tokenManager.clearToken();
-        tokenManager.clearRefreshToken();
-        toast.success('Çıkış yapıldı');
-        // window.location.href = '/login'; // Disable redirect to see logs
     };
 
     return (
@@ -150,10 +171,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 };
 
-export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (context === undefined) {
-        throw new Error('useAuth must be used within an AuthProvider');
-    }
-    return context;
-};
+function createRehydratedAdminUser(): TypeAdminUser {
+    const now = new Date().toISOString();
+    return {
+        id: 'rehydrated',
+        email: '',
+        role: AdminRole.ADMIN,
+        is_active: true,
+        created_at: now,
+    };
+}
+
+function mapAdminUser(user: NonNullable<ResponseEnvelopeAdminLoginResponse['data']>['user']): TypeAdminUser {
+    const now = new Date().toISOString();
+    return {
+        id: typeof user.id === 'string' ? user.id : 'unknown',
+        email: typeof user.email === 'string' ? user.email : '',
+        first_name: typeof user.first_name === 'string' ? user.first_name : undefined,
+        last_name: typeof user.last_name === 'string' ? user.last_name : undefined,
+        name: typeof user.name === 'string' ? user.name : undefined,
+        role: isAdminRole(user.role) ? user.role : AdminRole.ADMIN,
+        is_active: typeof user.is_active === 'boolean' ? user.is_active : true,
+        status: user.status === 'active' || user.status === 'inactive' ? user.status : undefined,
+        last_login: typeof user.last_login === 'string' ? user.last_login : undefined,
+        tenant_id: typeof user.tenant_id === 'string' ? user.tenant_id : undefined,
+        created_at: typeof user.created_at === 'string' ? user.created_at : now,
+    };
+}
+
+function isAdminRole(value: unknown): value is TypeAdminUser['role'] {
+    return value === AdminRole.SUPER_ADMIN
+        || value === AdminRole.OWNER
+        || value === AdminRole.ADMIN
+        || value === AdminRole.STAFF
+        || value === AdminRole.VIEWER;
+}
+
+export { AuthContext };

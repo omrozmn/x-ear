@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Quick check of BirFatura sync status"""
-import os, sys
+import os
+import sys
 sys.path.insert(0, '.')
 os.environ['BIRFATURA_MOCK'] = '0'
 from dotenv import load_dotenv

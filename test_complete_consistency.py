@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import requests
-import json
 
 def test_complete_consistency():
     """Test consistency across all views: sale, edit modal, sales table, device assignments"""
@@ -41,7 +40,7 @@ def test_complete_consistency():
         
         # 2. Test Device Assignment endpoints
         devices = sale_data.get('devices', [])
-        print(f"\n2️⃣ DEVICE ASSIGNMENT ENDPOINTS:")
+        print("\n2️⃣ DEVICE ASSIGNMENT ENDPOINTS:")
         
         assignment_ids = []
         for i, device in enumerate(devices):
@@ -65,7 +64,7 @@ def test_complete_consistency():
                     print(f"     - ❌ Assignment endpoint failed: {assignment_response.status_code}")
         
         # 3. Consistency Checks
-        print(f"\n3️⃣ CONSISTENCY CHECKS:")
+        print("\n3️⃣ CONSISTENCY CHECKS:")
         
         expected_unit_price = 10000.0
         expected_total_price = 20000.0
@@ -93,7 +92,7 @@ def test_complete_consistency():
                 success = False
         
         # Check that frontend will display correctly
-        print(f"\n4️⃣ FRONTEND DISPLAY VERIFICATION:")
+        print("\n4️⃣ FRONTEND DISPLAY VERIFICATION:")
         unit_price = sale_data.get('unitListPrice', 0)
         device_count = len(devices)
         
@@ -101,9 +100,9 @@ def test_complete_consistency():
         print(f"   Expected display: 'Liste Fiyatı (birim): ₺{expected_unit_price:,.2f} x{expected_device_count}'")
         
         if unit_price == expected_unit_price and device_count == expected_device_count:
-            print(f"   ✅ Frontend display will be CORRECT!")
+            print("   ✅ Frontend display will be CORRECT!")
         else:
-            print(f"   ❌ Frontend display will be WRONG!")
+            print("   ❌ Frontend display will be WRONG!")
             success = False
         
         print(f"\n{'✅ ALL CONSISTENCY TESTS PASSED!' if success else '❌ CONSISTENCY TESTS FAILED!'}")

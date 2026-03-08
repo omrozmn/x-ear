@@ -15,7 +15,6 @@ Requirements:
 - 11.6: EACH audit record SHALL include model_id and model_version for A/B test traceability
 """
 
-import os
 import sys
 from pathlib import Path
 
@@ -24,10 +23,7 @@ _api_dir = Path(__file__).resolve().parent.parent.parent
 if str(_api_dir) not in sys.path:
     sys.path.insert(0, str(_api_dir))
 
-import pytest
-from hypothesis import given, strategies as st, settings, assume
-from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from hypothesis import given, strategies as st, settings
 from uuid import uuid4
 
 
@@ -224,7 +220,6 @@ class TestAuditLogCompletenessProperty:
         """
         reset_audit_service()
         from ai.services.audit_service import AuditService
-        from ai.models.ai_audit_log import AuditEventType
         
         service = AuditService.get()
         action_plan_hash = f"sha256_{uuid4().hex}"
@@ -286,7 +281,6 @@ class TestAuditLogCompletenessProperty:
         """
         reset_audit_service()
         from ai.services.audit_service import AuditService
-        from ai.models.ai_audit_log import AuditEventType
         
         service = AuditService.get()
         action_plan_hash = f"sha256_{uuid4().hex}"

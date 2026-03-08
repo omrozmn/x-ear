@@ -21,7 +21,7 @@ if __name__ == '__main__':
     runner = test_runner.TestRunner(cfg)
     stats, report = runner.run_tests()
     
-    print(f'\n=== TEST RESULTS ===')
+    print('\n=== TEST RESULTS ===')
     print(f'Total: {stats.total}')
     print(f'Passed: {stats.passed}')
     print(f'Failed: {stats.failed}')

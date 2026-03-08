@@ -31,6 +31,7 @@ import {
   Building,
   Shield,
   AlertTriangle,
+  Banknote,
   ChevronDown,
   ChevronUp
 } from 'lucide-react';

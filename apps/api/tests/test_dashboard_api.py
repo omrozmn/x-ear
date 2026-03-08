@@ -1,5 +1,3 @@
-import pytest
-from datetime import datetime
 
 
 def test_dashboard_kpis_endpoint(client):

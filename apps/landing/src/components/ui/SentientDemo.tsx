@@ -1,17 +1,29 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { HyperGlassCard } from "./HyperGlassCard";
 import { TextReveal } from "./TextReveal";
 import { useLocale } from "@/lib/i18n";
 
 type DemoPhase = "messages" | "thinking" | "prompt" | "processing" | "result";
+type DemoMessage = { role: "user" | "ai"; sublabel: string; content: string };
+type DemoScenario = {
+    id: string;
+    title: string;
+    messages: DemoMessage[];
+    thoughts: string[];
+    slotFilling: {
+        prompt: string;
+        options: string[];
+        results: string[];
+    };
+};
 
 export function SentientDemo() {
     const { t } = useLocale();
 
-    const scenarios = [
+    const scenarios = useMemo<DemoScenario[]>(() => [
         {
             id: "mass_sms",
             title: t("sms.title"),
@@ -40,7 +52,7 @@ export function SentientDemo() {
             thoughts: [t("ocr.thought1"), t("ocr.thought2"), t("ocr.thought3"), t("ocr.thought4"), t("ocr.thought5"), t("ocr.thought6")],
             slotFilling: { prompt: t("ocr.prompt"), options: [t("ocr.opt1"), t("ocr.opt2")], results: [t("ocr.result1"), t("ocr.result2")] },
         },
-    ];
+    ], [t]);
 
     const [activeScenario, setActiveScenario] = useState(0);
     const sectionRef = useRef<HTMLDivElement>(null);
@@ -87,7 +99,7 @@ export function SentientDemo() {
             schedule(next, 400);
         }, 800);
         return () => { cancelled = true; timers.forEach(clearTimeout); };
-    }, [activeScenario]);
+    }, [activeData.thoughts, activeScenario]);
 
     const handleActionClick = (optIndex: number) => {
         setSelectedOptionIndex(optIndex);
@@ -125,7 +137,7 @@ export function SentientDemo() {
                 </p>
                 {(phase === "prompt" || phase === "processing") && (
                     <div className="flex flex-col sm:flex-row gap-2 mt-2">
-                        {activeData.slotFilling.options.map((opt, oIdx) => (
+                        {activeData.slotFilling.options.map((opt: string, oIdx: number) => (
                             <button
                                 key={oIdx}
                                 onClick={() => handleActionClick(oIdx)}
@@ -200,7 +212,7 @@ export function SentientDemo() {
                                 {/* COL 1 (mobile: row 1): User/System Message */}
                                 <div className="w-full lg:flex-1 flex flex-col space-y-3 order-1 lg:order-1 min-h-0 pb-1">
                                     <AnimatePresence mode="popLayout">
-                                        {activeData.messages.map((msg, idx) => (
+                                        {activeData.messages.map((msg: DemoMessage, idx: number) => (
                                             <motion.div key={`${activeData.id}-msg-${idx}`} layout
                                                 initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
                                                 exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.3 }}
@@ -294,7 +306,7 @@ export function SentientDemo() {
 
                     {/* Scroll indicator */}
                     <div className="flex justify-center gap-2 mt-3 md:mt-6 shrink-0">
-                        {scenarios.map((_, idx) => (
+                        {scenarios.map((_: DemoScenario, idx: number) => (
                             <div key={idx} className={`h-1 rounded-full transition-all duration-500 ${activeScenario === idx ? "w-8 bg-accent-blue" : "w-2 bg-foreground/15"}`} />
                         ))}
                     </div>

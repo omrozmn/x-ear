@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from utils.decorators import unified_access
 from utils.response import success_response, error_response
 from utils.admin_permissions import AdminPermissions
@@ -6,7 +6,7 @@ from models.base import db
 from models.invoice import Invoice
 from models.purchase_invoice import PurchaseInvoice
 from models.user import ActivityLog
-from sqlalchemy import func, desc, or_
+from sqlalchemy import func, or_
 import logging
 
 # Not sure if logger was initialized, assuming yes or not critical

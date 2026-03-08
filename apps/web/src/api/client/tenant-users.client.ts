@@ -12,6 +12,7 @@ export {
   useCreateTenantUser as useCreateTenantUsers,
   useUpdateTenantUser,
   useDeleteTenantUser,
+  useGetTenantCompany,
   getListTenantUsersQueryKey,
 } from '@/api/generated/index';
 

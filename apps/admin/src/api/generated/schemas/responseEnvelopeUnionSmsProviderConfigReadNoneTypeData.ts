@@ -5,6 +5,6 @@
  * Backend API for x-ear CRM
  * OpenAPI spec version: 1.0.0
  */
-import type { SmsProviderConfigRead } from './smsProviderConfigRead';
+import type { SmsProviderConfigRead } from './sMSProviderConfigRead';
 
 export type ResponseEnvelopeUnionSmsProviderConfigReadNoneTypeData = SmsProviderConfigRead | null;

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Analyze 404 errors and categorize them"""
 
-import re
 from collections import defaultdict
 
 # Read failed endpoints

@@ -4,13 +4,11 @@ Provides API endpoints for email deliverability monitoring and metrics.
 """
 
 import logging
-from typing import Optional
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from core.dependencies import get_current_admin_user
 from core.database import get_db
-from middleware.unified_access import UnifiedAccess, require_access
 from schemas import ResponseEnvelope
 from services.deliverability_metrics_service import get_deliverability_metrics_service
 from services.deliverability_alert_service import get_deliverability_alert_service

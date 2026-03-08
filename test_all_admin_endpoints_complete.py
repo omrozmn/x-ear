@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Test ALL admin endpoints from OpenAPI spec"""
 import requests
-import json
 
 # Login first
 response = requests.post(
@@ -75,7 +74,7 @@ for method, path in sorted(admin_endpoints):
         failed_other += 1
         results.append((path, "ERROR", 0))
 
-print(f"\n=== Summary ===")
+print("\n=== Summary ===")
 print(f"Total Endpoints: {len([r for r in results])}")
 print(f"Passed (200): {passed}")
 print(f"Failed (401): {failed_401}")
@@ -85,7 +84,7 @@ print(f"Failed (Other): {failed_other}")
 print(f"Success Rate: {passed}/{len([r for r in results])} ({100*passed//max(1,len([r for r in results]))}%)")
 
 # Group by status
-print(f"\n=== Failed Endpoints by Type ===")
+print("\n=== Failed Endpoints by Type ===")
 for status_type in ["FAIL_401", "FAIL_404", "FAIL_500"]:
     endpoints = [r[0] for r in results if r[1] == status_type]
     if endpoints:

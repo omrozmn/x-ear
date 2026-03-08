@@ -1,7 +1,7 @@
 """
 Marketplace Integration Schemas
 """
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
 from typing import Optional
 from datetime import datetime
 

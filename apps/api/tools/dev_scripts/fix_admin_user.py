@@ -22,7 +22,7 @@ def fix_admin():
             user.role = 'admin'
             db.session.commit()
             
-            logger.info(f"Updated: is_super_admin=True, role=admin")
+            logger.info("Updated: is_super_admin=True, role=admin")
         else:
             logger.error("User not found!")
 

@@ -2,7 +2,6 @@
 UTS Schemas
 """
 from typing import Optional, List, Dict, Any
-from pydantic import Field
 from .base import AppBaseModel
 
 class BulkRegistration(AppBaseModel):

@@ -21,7 +21,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from contextvars import copy_context
 from typing import Any, Awaitable, TypeVar, Coroutine
 
 from core.database import (

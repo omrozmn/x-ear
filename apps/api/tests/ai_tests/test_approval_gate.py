@@ -22,23 +22,17 @@ os.environ["AI_APPROVAL_SECRET_KEY"] = "test_secret_key_for_approval_tokens_1234
 
 import pytest
 from hypothesis import given, strategies as st, settings, assume
-from datetime import datetime, timedelta, timezone
 
 from ai.services.approval_gate import (
-    ApprovalGate,
     ApprovalDecision,
     ApprovalRequest,
-    ApprovalResult,
-    ApprovalQueueItem,
     get_approval_gate,
     reset_approval_gate,
     requires_approval,
 )
 from ai.models.ai_action import RiskLevel
 from ai.utils.approval_token import (
-    ApprovalToken,
     reset_token_registry,
-    _compute_action_plan_hash,
 )
 
 

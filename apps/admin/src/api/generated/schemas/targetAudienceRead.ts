@@ -7,7 +7,7 @@
  */
 import type { TargetAudienceReadCreatedAt } from './targetAudienceReadCreatedAt';
 import type { TargetAudienceReadUpdatedAt } from './targetAudienceReadUpdatedAt';
-import type { SmsSourceType } from './smsSourceType';
+import type { SmsSourceType } from './sMSSourceType';
 import type { TargetAudienceReadFilterCriteria } from './targetAudienceReadFilterCriteria';
 
 export interface TargetAudienceRead {

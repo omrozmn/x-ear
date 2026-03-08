@@ -1,13 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Request, UploadFile, File
-from typing import List, Optional, Any, Dict
-from datetime import datetime, timezone
-from sqlalchemy import or_
-from sqlalchemy.orm import Session, joinedload
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
+from typing import List, Optional
+from datetime import datetime
+from sqlalchemy.orm import Session
 import json
-import base64
 import csv
 import io
-from enum import Enum
 
 try:
     from openpyxl import load_workbook
@@ -15,15 +12,12 @@ except ImportError:
     load_workbook = None
 
 from schemas.parties import (
-    PartyRead, PartyCreate, PartyUpdate, PartySearchFilters, BulkUploadResponse,
-    BulkUpdateRequest, BulkUpdateResponse, BulkUpdateResult,
-    BulkEmailRequest, BulkEmailResponse, BulkEmailResult
+    PartyRead, PartyCreate, PartyUpdate, BulkUploadResponse,
+    BulkUpdateRequest, BulkUpdateResponse, BulkEmailRequest, BulkEmailResponse
 )
-from schemas.base import ResponseEnvelope, ResponseMeta
+from schemas.base import ResponseEnvelope
 from schemas.base import ApiError
 from core.models.party import Party
-from models.sales import Sale, DeviceAssignment, PaymentRecord
-from models.inventory import InventoryItem
 
 from services.party_service import PartyService
 
@@ -690,7 +684,7 @@ async def bulk_update_parties(
     Returns success/failure count and individual results.
     """
     try:
-        from schemas.parties import BulkUpdateRequest, BulkUpdateResponse, BulkUpdateResult
+        from schemas.parties import BulkUpdateResponse, BulkUpdateResult
         
         service = PartyService(db)
         results = []
@@ -759,7 +753,7 @@ async def bulk_email_parties(
     Returns success/failure count and individual results.
     """
     try:
-        from schemas.parties import BulkEmailRequest, BulkEmailResponse, BulkEmailResult
+        from schemas.parties import BulkEmailResponse, BulkEmailResult
         
         service = PartyService(db)
         results = []

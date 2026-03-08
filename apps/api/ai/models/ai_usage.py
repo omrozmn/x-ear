@@ -10,13 +10,12 @@ Requirements:
 This model tracks AI usage for quota enforcement and billing.
 """
 
-from datetime import datetime, date
+from datetime import date
 from enum import Enum
 from typing import Optional
 from uuid import uuid4
 
 from sqlalchemy import Column, String, Integer, DateTime, Date, Index, UniqueConstraint
-from sqlalchemy import text
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from database import Base, now_utc

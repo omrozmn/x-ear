@@ -27,7 +27,6 @@ from fastapi import Request
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 
-from core.database import Base
 # Import AI models to ensure their tables are created
 from ai.models import AIRequest, AIAction, AIAuditLog, AIUsage
 

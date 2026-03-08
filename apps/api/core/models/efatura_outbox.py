@@ -1,6 +1,6 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Text
-from .base import db, BaseModel
+from .base import BaseModel
 from .mixins import TenantScopedMixin
 
 

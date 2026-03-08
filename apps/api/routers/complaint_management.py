@@ -7,12 +7,11 @@ import logging
 from typing import Optional, List
 from fastapi import APIRouter, Depends, Query, Body
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, desc
+from sqlalchemy import desc
 from datetime import datetime, timedelta, timezone
 
 from core.dependencies import get_current_admin_user
 from core.database import get_db
-from middleware.unified_access import UnifiedAccess, require_access
 from schemas.response import ResponseEnvelope
 from core.models.email_deliverability import EmailComplaint
 from services.complaint_handler_service import get_complaint_handler_service

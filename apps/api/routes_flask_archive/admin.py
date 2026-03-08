@@ -1,7 +1,7 @@
 """
 Admin routes for admin panel
 """
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from flask_jwt_extended import create_access_token, create_refresh_token
 from datetime import datetime, timedelta
 from models.base import db
@@ -14,7 +14,6 @@ from utils.admin_permissions import AdminPermissions
 from utils.tenant_security import UnboundSession
 import logging
 import uuid
-import traceback
 from os import getenv
 
 logger = logging.getLogger(__name__)

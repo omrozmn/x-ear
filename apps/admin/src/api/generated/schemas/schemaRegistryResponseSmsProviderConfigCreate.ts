@@ -5,6 +5,6 @@
  * Backend API for x-ear CRM
  * OpenAPI spec version: 1.0.0
  */
-import type { SmsProviderConfigCreate } from './smsProviderConfigCreate';
+import type { SmsProviderConfigCreate } from './sMSProviderConfigCreate';
 
 export type SchemaRegistryResponseSmsProviderConfigCreate = SmsProviderConfigCreate | null;

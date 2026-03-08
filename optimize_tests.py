@@ -5,7 +5,6 @@ Current: 302/513 (58.87%)
 Target: 513/513 (100%)
 """
 
-import json
 import sys
 from pathlib import Path
 
@@ -156,7 +155,7 @@ def print_report(failures, recommendations):
         print(f"   Issue: {rec['description']}")
         print(f"   Action: {rec['action']}")
         if rec['examples']:
-            print(f"   Examples:")
+            print("   Examples:")
             for ex in rec['examples'][:3]:
                 print(f"     - {ex['endpoint']}: {ex.get('error', 'N/A')}")
     
@@ -177,7 +176,7 @@ def print_report(failures, recommendations):
     print(f"  - Fix 401/403 errors: +{len(failures['401']) + len(failures['403'])} tests")
     print(f"  - Total potential: +{total_failures} tests")
     print()
-    print(f"Current: 302/513 (58.87%)")
+    print("Current: 302/513 (58.87%)")
     print(f"Target: {302 + total_failures}/513 ({(302 + total_failures) / 513 * 100:.1f}%)")
     print()
 

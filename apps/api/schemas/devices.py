@@ -2,7 +2,6 @@
 Device Schemas - Pydantic models for Device domain
 """
 from typing import Optional, List
-from datetime import datetime
 from pydantic import Field
 from .base import AppBaseModel, IDMixin, TimestampMixin
 

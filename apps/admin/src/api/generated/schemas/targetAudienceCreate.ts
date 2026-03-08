@@ -5,7 +5,7 @@
  * Backend API for x-ear CRM
  * OpenAPI spec version: 1.0.0
  */
-import type { SmsSourceType } from './smsSourceType';
+import type { SmsSourceType } from './sMSSourceType';
 import type { TargetAudienceCreateFilterCriteria } from './targetAudienceCreateFilterCriteria';
 import type { TargetAudienceCreateFilePath } from './targetAudienceCreateFilePath';
 

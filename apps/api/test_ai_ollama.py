@@ -5,7 +5,6 @@ Tests both direct Ollama API and the AI chat endpoint.
 """
 
 import requests
-import json
 import sys
 import os
 
@@ -21,7 +20,7 @@ def test_ollama_direct():
         response = requests.get(f"{base_url}/api/tags", timeout=5)
         if response.status_code == 200:
             models = response.json().get("models", [])
-            print(f"✅ Ollama is running")
+            print("✅ Ollama is running")
             print(f"✅ Available models: {len(models)}")
             for model in models:
                 print(f"   - {model['name']}")
@@ -64,7 +63,7 @@ def test_ollama_generate():
         if response.status_code == 200:
             result = response.json()
             generated_text = result.get("response", "")
-            print(f"✅ Generation successful")
+            print("✅ Generation successful")
             print(f"📥 Response: {generated_text[:200]}...")
             return True
         else:
@@ -113,7 +112,7 @@ def test_ai_chat_endpoint():
         
         if response.status_code == 200:
             result = response.json()
-            print(f"✅ Chat endpoint successful")
+            print("✅ Chat endpoint successful")
             print(f"📥 Request ID: {result.get('request_id')}")
             print(f"📥 Status: {result.get('status')}")
             print(f"📥 Processing time: {result.get('processing_time_ms'):.2f}ms")

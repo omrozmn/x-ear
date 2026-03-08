@@ -14,7 +14,6 @@ import pytest
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch, Mock
 from fastapi.testclient import TestClient
-from sqlalchemy.orm import Session
 
 from core.models.email import SMTPEmailLog, TenantSMTPConfig
 from routers.tool_api.email_notifications import (

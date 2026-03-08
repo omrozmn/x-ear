@@ -1,12 +1,11 @@
 # Inventory Model for X-Ear CRM
 # Manages product inventory, stock levels, and serial numbers
 
-from sqlalchemy import Column, Boolean, Float, ForeignKey, Integer, JSON, String, Text, Time
+from sqlalchemy import Column, Boolean, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
-from core.models.base import Base
 from datetime import datetime, timezone
 import json
-from .base import db, BaseModel
+from .base import BaseModel
 from .mixins import TenantScopedMixin
 
 def now_utc():

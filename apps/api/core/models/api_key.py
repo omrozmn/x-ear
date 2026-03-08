@@ -1,7 +1,6 @@
 # API Key Model
-from sqlalchemy import Column, Boolean, Date, DateTime, ForeignKey, Integer, String, Text, Time
-from core.models.base import Base
-from .base import db, BaseModel, gen_id
+from sqlalchemy import Column, Boolean, DateTime, ForeignKey, Integer, String, Text
+from .base import BaseModel, gen_id
 from .mixins import TenantScopedMixin
 import secrets
 

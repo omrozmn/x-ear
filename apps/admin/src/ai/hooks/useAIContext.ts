@@ -21,6 +21,7 @@ import { CURRENT_TENANT_ID } from '../../constants/storage-keys';
 import { useAuthStore } from '../../stores/authStore';
 import { useAISessionStore } from '../stores/aiSessionStore';
 import type { AIContext, AIRole, AIProfile, AICapability } from '../types/ai.types';
+import type { AdminUser } from '@/types';
 
 // =============================================================================
 // Constants
@@ -92,7 +93,7 @@ function mapUserRole(userRole: string | undefined): AIRole {
  * @param user - AdminUser object from auth store
  * @returns Tenant ID or null
  */
-function extractTenantId(user: any): string | null {
+function extractTenantId(user: AdminUser | null): string | null {
   // 1. Check tenant_id from user
   if (user?.tenant_id) {
     return user.tenant_id;

@@ -1,4 +1,3 @@
-import pytest
 import uuid
 from datetime import datetime
 from unittest.mock import patch
@@ -7,7 +6,6 @@ import hashlib
 import base64
 
 from core.models.tenant import Tenant
-from core.models.user import User
 from core.models.party import Party
 from core.models.sales import Sale, PaymentRecord
 

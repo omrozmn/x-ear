@@ -16,7 +16,7 @@ For production, consider using Redis for distributed state.
 """
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
 from threading import Lock

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Fix remaining admin POST endpoints by checking required fields"""
 import requests
-import json
 
 TOKEN = requests.post(
     "http://localhost:5003/api/auth/login",

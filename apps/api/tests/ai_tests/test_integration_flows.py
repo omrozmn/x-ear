@@ -15,8 +15,7 @@ import os
 import pytest
 from datetime import datetime, timedelta, timezone
 from jose import jwt
-from unittest.mock import Mock, patch, AsyncMock
-from sqlalchemy.orm import Session
+from unittest.mock import Mock, patch
 
 from fastapi.testclient import TestClient
 
@@ -31,7 +30,6 @@ from main import app as main_app
 from core.database import get_db
 from ai.models.ai_request import AIRequest, RequestStatus
 from ai.services.data_retention import DataRetentionService
-from ai.services.conversation_memory import ConversationMemory
 
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "test-secret-key-for-testing")
 ALGORITHM = "HS256"
@@ -296,8 +294,8 @@ class TestSlotFillingFlowWithTimeout:
         """Test slot-filling flow with missing parameters."""
         from ai.agents.intent_refiner import IntentRefinerResult, RefinerStatus
         from ai.schemas.llm_outputs import IntentOutput, IntentType
-        from ai.agents.action_planner import ActionPlannerResult, PlannerStatus, ActionPlan, ActionStep, RiskLevel
-        from ai.models.ai_request import AIRequest, RequestStatus
+        from ai.agents.action_planner import ActionPlannerResult, PlannerStatus, ActionPlan, RiskLevel
+        from ai.models.ai_request import AIRequest
         from datetime import datetime, timedelta
         from unittest.mock import Mock
         
@@ -468,7 +466,7 @@ class TestCapabilityInquiryFlow:
         """Test capability inquiry from detection to response."""
         from ai.agents.intent_refiner import IntentRefinerResult, RefinerStatus
         from ai.schemas.llm_outputs import IntentOutput, IntentType
-        from ai.models.ai_request import AIRequest, RequestStatus
+        from ai.models.ai_request import AIRequest
         from unittest.mock import Mock
         
         # Mock the request logger to avoid database operations
@@ -688,7 +686,7 @@ class TestConversationContextPersistence:
     ):
         """Test that conversation context is maintained across turns."""
         from ai.services.conversation_memory import get_conversation_memory
-        from ai.models.ai_request import AIRequest, RequestStatus
+        from ai.models.ai_request import AIRequest
         
         # Mock the request logger to avoid database operations
         mock_logger = Mock()

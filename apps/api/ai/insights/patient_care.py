@@ -1,7 +1,7 @@
 import logging
 from typing import List, Dict, Any
 from datetime import datetime, timedelta, timezone
-from sqlalchemy import func, and_, or_, extract
+from sqlalchemy import func, or_, extract
 from ai.insights.base import BaseAnalyzer
 from core.models.appointment import Appointment
 from core.models.party import Party
@@ -9,7 +9,7 @@ from core.models.device import Device
 from core.models.medical import HearingTest, PatientNote
 from core.models.hearing_profile import HearingProfile
 from core.models.sales import Sale, DeviceAssignment
-from schemas.enums import AppointmentStatus, PartyStatus, AppointmentType
+from schemas.enums import AppointmentStatus, PartyStatus
 from ai.models.opportunity import OpportunityPriority
 
 logger = logging.getLogger(__name__)

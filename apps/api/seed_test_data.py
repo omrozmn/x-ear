@@ -4,7 +4,6 @@ Comprehensive seed data script for testing party filters and features
 Creates diverse test data including parties, branches, users, and more
 """
 import sys
-import os
 from pathlib import Path
 
 # Add parent directory to path to import app modules
@@ -14,7 +13,7 @@ from sqlalchemy.orm import Session
 from core.database import get_db
 from core.models import (
     Party, Branch, User, Tenant,
-    Invoice, Device, DeviceAssignment, Supplier
+    Device, DeviceAssignment, Supplier
 )
 from datetime import datetime, timedelta
 import random
@@ -268,8 +267,8 @@ def main():
         devices = create_test_devices(db, tenant.id, parties, suppliers)
         
         print("\n✅ Seed data creation completed successfully!")
-        print(f"\nCreated:")
-        print(f"  • 1 Tenant")
+        print("\nCreated:")
+        print("  • 1 Tenant")
         print(f"  • {len(branches)} Branches")
         print(f"  • {len(users)} Users")
         print(f"  • {len(parties)} Parties")

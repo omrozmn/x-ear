@@ -10,7 +10,7 @@ from core.models.party import Party
 from models.tenant import Tenant
 from models.sales import DeviceAssignment, Sale
 from models.user import ActivityLog
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from schemas.base import ResponseEnvelope
 from schemas.parties import PartyRead
 from schemas.sales import DeviceAssignmentRead, SaleRead

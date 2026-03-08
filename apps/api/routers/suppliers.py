@@ -18,7 +18,7 @@ from schemas.suppliers import SupplierStats, SupplierSearchResponse
 
 from models.suppliers import Supplier, ProductSupplier
 from models.tenant import Tenant
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
 
 logger = logging.getLogger(__name__)

@@ -1,6 +1,5 @@
 from sqlalchemy import Column, Integer, JSON, String
-from core.models.base import Base
-from .base import db, BaseModel, gen_id
+from .base import BaseModel, gen_id
 from .mixins import TenantScopedMixin
 
 class Lead(BaseModel, TenantScopedMixin):

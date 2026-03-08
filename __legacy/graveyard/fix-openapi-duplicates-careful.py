@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import yaml
-import re
 from collections import OrderedDict
 
 def represent_ordereddict(dumper, data):

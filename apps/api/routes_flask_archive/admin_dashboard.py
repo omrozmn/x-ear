@@ -3,7 +3,6 @@ Admin Dashboard routes for metrics and analytics
 """
 from flask import Blueprint, jsonify
 from models.base import db
-from models.admin_user import AdminUser
 from models.user import User
 from models.tenant import Tenant
 from models.plan import Plan

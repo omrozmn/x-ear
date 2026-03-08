@@ -4,7 +4,6 @@ from models.base import db
 from models.appointment import Appointment
 from models.patient import Patient
 from models.tenant import Tenant
-from sqlalchemy import or_
 import logging
 from datetime import datetime
 

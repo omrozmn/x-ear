@@ -3,8 +3,7 @@ Invoice Sync Service
 Handles synchronization of invoices from BirFatura API to local database
 """
 from datetime import datetime, timedelta, timezone
-from decimal import Decimal
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional
 
 from sqlalchemy.orm import Session
 from models.purchase_invoice import PurchaseInvoice, PurchaseInvoiceItem, SuggestedSupplier

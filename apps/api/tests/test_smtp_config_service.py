@@ -21,18 +21,16 @@ Requirements tested:
 
 import pytest
 import os
-import time
 from datetime import datetime, timedelta, timezone
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import sessionmaker
 from hypothesis import given, settings, strategies as st
 
 from core.models.email import TenantSMTPConfig
 from core.database import Base
 from services.smtp_config_service import SMTPConfigService
 from services.encryption_service import EncryptionService
-from utils.exceptions import SecurityException
 
 
 # Test database setup

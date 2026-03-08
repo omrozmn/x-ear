@@ -15,10 +15,10 @@
  * Requirements: 2 (AI Chat Widget), 8 (Graceful Degradation), 17 (Phase A Banner)
  */
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { useAIChat } from './hooks/useAIChat';
 import { useComposerStore } from '../stores/composerStore';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/useAuth';
 import { useAIStatus } from './hooks/useAIStatus';
 import { AIStatusIndicator } from './components/AIStatusIndicator';
 import { PhaseABanner } from './components/PhaseABanner';
@@ -244,7 +244,7 @@ export function AIChatWidget({
 
   const {
     mode, selectedAction: currentAction, currentSlot, slots,
-    updateSlot, nextSlot, reset, executionResult, isDryRun
+    updateSlot, nextSlot, reset, executionResult
   } = useComposerStore();
 
   // Derived state
@@ -252,6 +252,12 @@ export function AIChatWidget({
   const isEnabled = status?.enabled ?? false;
   const isPhaseA = status?.phase?.currentPhase === 'A';
   const positionClasses = POSITION_CLASSES[position];
+
+  useEffect(() => {
+    if (defaultOpen) {
+      setIsOpen(true);
+    }
+  }, [defaultOpen, setIsOpen]);
 
   // Get unavailable reason
   const getUnavailableReason = useCallback((): string | undefined => {
@@ -296,7 +302,7 @@ export function AIChatWidget({
   const handleClose = useCallback(() => {
     setIsOpen(false);
     onClose?.();
-  }, [onClose]);
+  }, [onClose, setIsOpen]);
 
   /**
    * Handle sending a message

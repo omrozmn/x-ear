@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
-// eslint-disable-next-line no-restricted-imports
 import axios from 'axios';
 import type {
   CreateActionRequest,

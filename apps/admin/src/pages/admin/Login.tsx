@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation, Navigate } from '@tanstack/react-router';
+import { useLocation, Navigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Eye as EyeIcon, EyeOff as EyeSlashIcon, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/useAuth';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -14,6 +14,18 @@ const loginSchema = z.object({
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
+type LoginLocationState = { from?: { pathname?: string } };
+type ApiFieldErrors = Partial<Record<keyof LoginFormData, string>>;
+type LoginApiError = {
+  response?: {
+    data?: {
+      error?: {
+        message?: string;
+        fields?: ApiFieldErrors;
+      };
+    };
+  };
+};
 
 const Login: React.FC = () => {
   const { login, isAuthenticated, isLoading } = useAuth();
@@ -34,7 +46,7 @@ const Login: React.FC = () => {
 
   // Redirect if already authenticated
   if (isAuthenticated) {
-    const from = (location.state as any)?.from?.pathname || '/dashboard';
+    const from = (location.state as LoginLocationState | undefined)?.from?.pathname || '/dashboard';
     return <Navigate to={from} replace />;
   }
 
@@ -54,8 +66,8 @@ const Login: React.FC = () => {
         await new Promise(resolve => setTimeout(resolve, 100));
         window.location.href = '/';
       }
-    } catch (error: any) {
-      const apiError = error.response?.data?.error;
+    } catch (error: unknown) {
+      const apiError = (error as LoginApiError).response?.data?.error;
 
       if (apiError?.fields) {
         Object.entries(apiError.fields).forEach(([field, message]) => {

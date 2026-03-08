@@ -3,9 +3,7 @@ FastAPI Timeline Router - Migrated from Flask routes/timeline.py
 Handles patient timeline events and activity logging
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Optional, List
 from datetime import datetime, timezone
-from pydantic import BaseModel
 import logging
 import uuid
 import json
@@ -17,8 +15,7 @@ logger = logging.getLogger(__name__)
 
 from schemas.timeline import TimelineEventCreate, TimelineEventRead, TimelineListResponse
 from schemas.base import ResponseEnvelope, ResponseMeta
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
-from database import get_db
+from middleware.unified_access import UnifiedAccess, require_access
 router = APIRouter(tags=["Timeline"])
 
 # --- Schemas ---

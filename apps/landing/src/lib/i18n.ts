@@ -242,7 +242,8 @@ const translations: Record<string, Record<Locale, string>> = {
 // --------------- Locale Detection ---------------
 export function detectLocale(): Locale {
     if (typeof navigator === "undefined") return "tr"; // SSR default
-    const lang = navigator.language || (navigator as any).userLanguage || "tr";
+    const navigatorWithLegacyLanguage = navigator as Navigator & { userLanguage?: string };
+    const lang = navigator.language || navigatorWithLegacyLanguage.userLanguage || "tr";
     return lang.toLowerCase().startsWith("tr") ? "tr" : "en";
 }
 
@@ -265,11 +266,7 @@ const LocaleContext = createContext<LocaleContextValue>({
 });
 
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
-    const [locale, setLocale] = useState<Locale>("tr");
-
-    useEffect(() => {
-        setLocale(detectLocale());
-    }, []);
+    const [locale] = useState<Locale>(() => detectLocale());
 
     const translate = (key: string) => t(key, locale);
 

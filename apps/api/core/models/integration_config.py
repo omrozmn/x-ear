@@ -1,8 +1,6 @@
 from sqlalchemy import Column, Boolean, String, Text
-from core.models.base import Base
 from .base import BaseModel
 from .mixins import TenantScopedMixin
-from datetime import datetime
 from core.database import gen_id
 
 class IntegrationConfig(BaseModel, TenantScopedMixin):

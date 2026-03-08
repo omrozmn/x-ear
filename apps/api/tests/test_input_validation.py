@@ -1,4 +1,3 @@
-import pytest
 from core.models.user import User
 
 def ensure_admin(session):

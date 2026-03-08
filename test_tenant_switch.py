@@ -32,7 +32,7 @@ if login_response.status_code != 200:
 
 login_data = login_response.json()
 admin_token = login_data["data"]["accessToken"]
-print(f"✅ Login successful")
+print("✅ Login successful")
 print(f"Token preview: {admin_token[:50]}...")
 
 # Decode JWT to see claims
@@ -89,7 +89,7 @@ if switch_response.status_code != 200:
 
 switch_data = switch_response.json()
 impersonation_token = switch_data["data"]["accessToken"]
-print(f"✅ Tenant switch successful")
+print("✅ Tenant switch successful")
 print(f"New token preview: {impersonation_token[:50]}...")
 
 # Decode new JWT to see claims
@@ -147,7 +147,7 @@ if dashboard_response.status_code != 200:
 
 dashboard_data = dashboard_response.json()
 kpis = dashboard_data["data"]["kpis"]
-print(f"✅ Dashboard KPIs:")
+print("✅ Dashboard KPIs:")
 print(f"  - Total Patients: {kpis['totalPatients']}")
 print(f"  - Total Devices: {kpis['totalDevices']}")
 print(f"  - Available Devices: {kpis['availableDevices']}")
@@ -156,7 +156,7 @@ print(f"  - Estimated Revenue: {kpis['estimatedRevenue']}")
 # Step 6: Switch to another tenant
 if len(tenants) >= 2:
     target_tenant2 = tenants[1]
-    print(f"\n" + "=" * 60)
+    print("\n" + "=" * 60)
     print(f"STEP 6: Switch to another tenant: {target_tenant2['name']}")
     print("=" * 60)
     

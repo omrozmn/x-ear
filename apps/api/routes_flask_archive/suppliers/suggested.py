@@ -4,7 +4,7 @@ Suggested Suppliers Operations
 Manages suggested supplier proposals from invoice imports.
 """
 
-from flask import request, jsonify
+from flask import jsonify
 from datetime import datetime
 from models.base import db
 from models.suppliers import Supplier

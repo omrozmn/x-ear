@@ -1,7 +1,7 @@
-from typing import Optional, List, Dict, Any
+from typing import Optional, Dict, Any
 from enum import Enum
 from datetime import datetime
-from pydantic import Field, field_validator
+from pydantic import Field
 from .base import AppBaseModel, IDMixin, TimestampMixin
 
 # Enums

@@ -1,8 +1,6 @@
 from flask import Blueprint, request, jsonify, send_from_directory
-from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
-from models import db, SMSProviderConfig, SMSHeaderRequest, SMSPackage, TenantSMSCredit, TargetAudience, User, Tenant, ActivityLog, Notification
-from utils.authorization import admin_required, role_required
+from models import db, SMSProviderConfig, SMSHeaderRequest, SMSPackage, TenantSMSCredit, TargetAudience, User, Tenant, Notification
 from utils.decorators import unified_access
 from utils.response import success_response, error_response
 from utils.query_policy import tenant_scoped_query
@@ -10,8 +8,6 @@ from datetime import datetime, timezone
 import logging
 import os
 import uuid
-from utils.tenant_security import UnboundSession
-from utils.admin_permissions import require_admin_permission, AdminPermissions
 
 logger = logging.getLogger(__name__)
 

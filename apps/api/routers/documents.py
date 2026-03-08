@@ -4,9 +4,8 @@ Handles patient document storage and retrieval
 """
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import FileResponse
-from typing import Optional, List
+from typing import List
 from datetime import datetime, timezone
-from pydantic import BaseModel, Field
 import logging
 import uuid
 import os
@@ -17,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from schemas.base import ResponseEnvelope
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from schemas.documents import DocumentRead, DocumentCreate
 
 logger = logging.getLogger(__name__)

@@ -1,11 +1,9 @@
 import asyncio
 import logging
-from sqlalchemy.orm import Session
 from database import SessionLocal
 from ai.insights.stock_guardian import get_stock_guardian
 from ai.insights.refiner import get_insight_refiner
 from ai.services.insight_bridge.bridge import get_insight_bridge
-from ai.models.opportunity import AIOpportunity, OpportunityStatus
 from core.models.tenant import Tenant
 
 logging.basicConfig(level=logging.INFO)

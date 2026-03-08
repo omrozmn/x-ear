@@ -1,5 +1,4 @@
 import sqlite3
-import os
 from passlib.context import CryptContext
 
 db_path = "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/xear_crm.db"

@@ -6,6 +6,11 @@ import { AudiologyWave } from "./AudiologyWave";
 import { Float } from "@react-three/drei";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import type { ElementType } from "react";
+
+const AmbientLight = "ambientLight" as ElementType;
+const DirectionalLight = "directionalLight" as ElementType;
+const Fog = "fog" as ElementType;
 
 export function Scene() {
     const { resolvedTheme } = useTheme();
@@ -25,12 +30,12 @@ export function Scene() {
         <div className="fixed inset-0 -z-10 bg-background overflow-hidden transition-colors duration-300">
             {mounted && (
                 <Canvas camera={{ position: [0, 2, 8], fov: 50 }} dpr={[1, 2]}>
-                    <ambientLight intensity={isDark ? 0.5 : 0.8} />
-                    <directionalLight position={[10, 10, 5]} intensity={1} color={lightColor} />
+                    <AmbientLight intensity={isDark ? 0.5 : 0.8} />
+                    <DirectionalLight position={[10, 10, 5]} intensity={1} color={lightColor} />
                     <Float speed={2} rotationIntensity={0.5} floatIntensity={1}>
                         <AudiologyWave isDark={isDark} />
                     </Float>
-                    <fog attach="fog" args={[fogColor, 5, 15]} />
+                    <Fog attach="fog" args={[fogColor, 5, 15]} />
                 </Canvas>
             )}
         </div>

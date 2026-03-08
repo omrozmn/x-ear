@@ -1,7 +1,7 @@
 """API Keys Schemas"""
 from typing import Optional, List
 from pydantic import Field, field_validator
-from .base import AppBaseModel, IDMixin, TimestampMixin, ResponseEnvelope
+from .base import AppBaseModel, IDMixin, TimestampMixin
 
 class ApiKeyCreate(AppBaseModel):
     tenant_id: str = Field(..., alias="tenantId")

@@ -1,8 +1,6 @@
-from sqlalchemy import Column, Date, DateTime, JSON, String, Text, Time
-from core.models.base import Base
-from .base import db, BaseModel, gen_id, JSONMixin, now_utc
+from sqlalchemy import Column, DateTime, String, Text
+from .base import BaseModel, gen_id, JSONMixin, now_utc
 from .mixins import TenantScopedMixin
-import sqlalchemy as sa
 
 class HearingProfile(BaseModel, JSONMixin, TenantScopedMixin):
     __tablename__ = 'hearing_profiles'

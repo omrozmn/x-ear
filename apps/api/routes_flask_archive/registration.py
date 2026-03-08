@@ -1,7 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app
 from datetime import datetime, timezone
 import os
-import json
 from models.base import db
 from models.user import User
 from uuid import uuid4
@@ -16,7 +15,6 @@ def now_utc():
 registration_bp = Blueprint('registration', __name__)
 
 # Use shared OTP store attached to app extensions; fallback to InMemoryOTPStore if absent
-from services.otp_store import InMemoryOTPStore
 
 @registration_bp.route('/api/config/turnstile', methods=['GET'])
 def get_turnstile_config():

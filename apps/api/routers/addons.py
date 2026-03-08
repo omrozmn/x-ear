@@ -3,7 +3,7 @@ FastAPI Addons Router - Migrated from Flask routes/addons.py
 Handles subscription addons
 """
 from fastapi import APIRouter, Depends, HTTPException
-from typing import Optional, List
+from typing import List
 import logging
 
 from sqlalchemy.orm import Session
@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from schemas.base import ResponseEnvelope
 from schemas.addons import AddonRead, AddonCreate, AddonUpdate
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 
 logger = logging.getLogger(__name__)
 

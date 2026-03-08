@@ -15,7 +15,6 @@ from sqlalchemy.orm import sessionmaker
 
 from core.models.base import Base, gen_id
 from core.models.tenant import Tenant
-from core.models.email_deliverability import EmailUnsubscribe
 from services.unsubscribe_service import UnsubscribeService
 
 

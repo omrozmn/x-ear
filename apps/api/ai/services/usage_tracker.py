@@ -14,14 +14,13 @@ and quota bypass under concurrent load.
 """
 
 from dataclasses import dataclass
-from datetime import date, datetime
-from typing import Optional, Any
-from enum import Enum
+from datetime import date
+from typing import Optional
 from threading import Lock
 from collections import defaultdict
 
 from ai.config import AIConfig, AIQuotaExceededError
-from ai.models.ai_usage import AIUsage, UsageType
+from ai.models.ai_usage import UsageType
 
 
 @dataclass

@@ -1,7 +1,6 @@
 # System Settings Model
-from sqlalchemy import Column, Boolean, JSON, String, Text
-from core.models.base import Base
-from .base import db, BaseModel
+from sqlalchemy import Column, Boolean, String, Text
+from .base import BaseModel
 
 class SystemSetting(BaseModel):
     __tablename__ = 'system_settings'

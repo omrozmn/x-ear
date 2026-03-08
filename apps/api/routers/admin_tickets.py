@@ -1,7 +1,7 @@
 """Admin Tickets Router - FastAPI"""
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import func, or_
+from sqlalchemy import or_
 from typing import Optional
 from datetime import datetime, timezone
 import logging
@@ -9,10 +9,9 @@ import logging
 from core.database import get_db
 from core.database import unbound_session
 from middleware.unified_access import UnifiedAccess, require_access
-from schemas.tickets import TicketCreate, TicketUpdate, TicketRead, TicketResponseCreate
+from schemas.tickets import TicketCreate, TicketUpdate, TicketResponseCreate
 from schemas.base import ResponseEnvelope
 from core.models.ticket import Ticket, TicketResponse, TicketStatus, TicketPriority
-from core.models.admin_user import AdminUser
 from core.models.tenant import Tenant
 
 logger = logging.getLogger(__name__)

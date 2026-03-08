@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, File, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
 from typing import List, Optional, Any, Dict
 from datetime import datetime, timezone
 from sqlalchemy import or_, func, desc, asc
@@ -8,14 +8,13 @@ from schemas.inventory import (
     InventoryItemRead, InventoryItemCreate, InventoryItemUpdate,
     InventoryStats, StockMovementRead, InventorySearchResponse
 )
-from schemas.base import ResponseEnvelope, ResponseMeta, ApiError
+from schemas.base import ResponseEnvelope, ApiError
 from models.inventory import InventoryItem
 from models.stock_movement import StockMovement
-from models.tenant import Tenant
 
 
 import logging
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
 logger = logging.getLogger(__name__)
 
@@ -302,11 +301,11 @@ def create_inventory(
 ):
     """Create inventory item"""
     from uuid import uuid4
-    from datetime import datetime, timezone
+    from datetime import datetime
     from core.tenant_utils import get_effective_tenant_id
     
     # DEBUG: Log incoming data with detailed field inspection
-    logger.info(f"[CREATE_INVENTORY] ===== START =====")
+    logger.info("[CREATE_INVENTORY] ===== START =====")
     logger.info(f"[CREATE_INVENTORY] Raw Pydantic object: {item_in}")
     logger.info(f"[CREATE_INVENTORY] Category field: {item_in.category}")
     logger.info(f"[CREATE_INVENTORY] Brand field: {item_in.brand}")
@@ -346,7 +345,7 @@ def create_inventory(
         
         item = InventoryItem(tenant_id=tenant_id, **data)
         
-        logger.info(f"[CREATE_INVENTORY] Model created successfully")
+        logger.info("[CREATE_INVENTORY] Model created successfully")
         logger.info(f"[CREATE_INVENTORY] item.category = {item.category}")
         logger.info(f"[CREATE_INVENTORY] item.brand = {item.brand}")
         logger.info(f"[CREATE_INVENTORY] item.supplier = {item.supplier}")
@@ -354,7 +353,7 @@ def create_inventory(
         db.add(item)
         db.commit() # Commit to get ID
         
-        logger.info(f"[CREATE_INVENTORY] Database commit successful")
+        logger.info("[CREATE_INVENTORY] Database commit successful")
         logger.info(f"[CREATE_INVENTORY] Saved item.category = {item.category}")
         
         # Add serials if any
@@ -363,13 +362,13 @@ def create_inventory(
             for s in serials:
                 item.add_serial_number(s)
             db.commit()
-            logger.info(f"[CREATE_INVENTORY] Serials added successfully")
+            logger.info("[CREATE_INVENTORY] Serials added successfully")
             
-        logger.info(f"[CREATE_INVENTORY] ===== SUCCESS =====")
+        logger.info("[CREATE_INVENTORY] ===== SUCCESS =====")
         return ResponseEnvelope(data=item)
     except Exception as e:
         db.rollback()
-        logger.error(f"[CREATE_INVENTORY] ===== ERROR =====")
+        logger.error("[CREATE_INVENTORY] ===== ERROR =====")
         logger.error(f"[CREATE_INVENTORY] Error type: {type(e).__name__}")
         logger.error(f"[CREATE_INVENTORY] Error message: {str(e)}")
         import traceback
@@ -448,7 +447,6 @@ async def bulk_upload_inventory(
 ):
     """Bulk upload inventory items from CSV/XLSX"""
     try:
-        from fastapi import UploadFile, File
         import csv
         import io
         

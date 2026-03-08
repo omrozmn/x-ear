@@ -1,8 +1,6 @@
-from sqlalchemy import Column, Boolean, JSON, String, Text
-from core.models.base import Base
+from sqlalchemy import Column, Boolean, String, Text
 from .base import BaseModel, gen_id
 from .mixins import TenantScopedMixin
-import sqlalchemy as sa
 
 class NotificationTemplate(BaseModel, TenantScopedMixin):
     __tablename__ = 'notification_templates'

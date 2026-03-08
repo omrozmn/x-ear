@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
 /**
  * Retry configuration for failed requests
@@ -11,6 +11,8 @@ const RETRY_CONFIG = {
   retryableStatusCodes: [429, 503, 502, 504],
   retryableErrors: ['ECONNRESET', 'ETIMEDOUT', 'ECONNREFUSED', 'ERR_NETWORK']
 };
+
+type RetryableRequestConfig = AxiosRequestConfig<unknown>;
 
 /**
  * Create axios instance for Orval mutator
@@ -45,7 +47,7 @@ function calculateBackoffDelay(attempt: number): number {
 /**
  * Check if error is retryable
  */
-function isRetryableError(error: any): boolean {
+function isRetryableError(error: AxiosError<unknown>): boolean {
   // Check error codes
   if (error.code && RETRY_CONFIG.retryableErrors.includes(error.code)) {
     return true;
@@ -71,12 +73,16 @@ function sleep(ms: number): Promise<void> {
  */
 async function retryRequest<T>(
   requestFn: () => Promise<T>,
-  config: any,
+  config: RetryableRequestConfig,
   attempt: number = 1
 ): Promise<T> {
   try {
     return await requestFn();
-  } catch (error: any) {
+  } catch (error: unknown) {
+    if (!axios.isAxiosError(error)) {
+      throw error;
+    }
+
     // Don't retry if we've exceeded max attempts
     if (attempt >= RETRY_CONFIG.maxRetries) {
       console.error(`Request failed after ${attempt} attempts:`, {
@@ -134,7 +140,7 @@ export const adminApi = <T>(requestConfig: AxiosRequestConfig): Promise<T> => {
 
     // Wrap in retry logic
     return retryRequest(
-      () => axiosInstance(requestConfig).then(response => response.data),
+      () => axiosInstance<T>(requestConfig).then(response => response.data),
       requestConfig
     );
 };

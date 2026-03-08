@@ -5,7 +5,6 @@ This script checks what values are currently in the database
 """
 
 import sys
-import os
 from pathlib import Path
 
 # Add backend to path

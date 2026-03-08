@@ -1,12 +1,8 @@
 # Sales Models (formerly Patient sales models)
-from sqlalchemy import Column, Boolean, Date, DateTime, Float, ForeignKey, Integer, JSON, Numeric, String, Text, Time, Index
+from sqlalchemy import Column, Boolean, DateTime, Float, ForeignKey, Integer, JSON, String, Text, Index
 from sqlalchemy.orm import relationship, backref
-from core.models.base import Base
-from .base import db, BaseModel, gen_id, gen_sale_id, JSONMixin
+from .base import BaseModel, gen_id, gen_sale_id
 from .mixins import TenantScopedMixin
-from .enums import DeviceSide
-from .device import Device
-from decimal import Decimal
 import sqlalchemy as sa
 
 class PaymentRecord(BaseModel, TenantScopedMixin):

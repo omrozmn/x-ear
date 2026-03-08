@@ -35,7 +35,7 @@ if status == 'running':
     print("✅ Instance already running!")
     ip = instance.get('public_ipaddr')
     port = instance.get('ssh_port')
-    print(f"\n🔌 Connection Info:")
+    print("\n🔌 Connection Info:")
     print(f"IP: {ip}")
     print(f"SSH Port: {port}")
     sys.exit(0)
@@ -68,11 +68,11 @@ if status in ['exited', 'stopped']:
                 if current_status == 'running':
                     ip = check_instances[0].get('public_ipaddr')
                     port = check_instances[0].get('ssh_port')
-                    print(f"\n✅ Instance is running!")
-                    print(f"\n🔌 Connection Info:")
+                    print("\n✅ Instance is running!")
+                    print("\n🔌 Connection Info:")
                     print(f"IP: {ip}")
                     print(f"SSH Port: {port}")
-                    print(f"\n🚇 Open tunnel with:")
+                    print("\n🚇 Open tunnel with:")
                     print(f"./open_tunnel.sh {ip} {port}")
                     sys.exit(0)
         

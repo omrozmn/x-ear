@@ -15,9 +15,7 @@ from datetime import datetime
 import logging
 
 from .helpers import (
-    ERROR_SALE_NOT_FOUND,
     ERROR_PATIENT_NOT_FOUND,
-    build_device_info,
     build_sale_data,
     create_device_name
 )

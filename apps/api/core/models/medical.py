@@ -1,9 +1,7 @@
 # Medical Models (formerly Patient medical models)
-from sqlalchemy import Column, Boolean, Date, DateTime, ForeignKey, JSON, String, Text, Time, Index
-from core.models.base import Base
-from .base import db, BaseModel, gen_id, JSONMixin
+from sqlalchemy import Column, Boolean, DateTime, ForeignKey, String, Text, Index
+from .base import BaseModel, gen_id, JSONMixin
 from .mixins import TenantScopedMixin
-import json
 
 class PatientNote(BaseModel, TenantScopedMixin, JSONMixin):
     __tablename__ = 'patient_notes'

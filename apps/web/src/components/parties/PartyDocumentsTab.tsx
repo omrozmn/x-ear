@@ -20,6 +20,16 @@ import { tokenManager } from '../../utils/token-manager';
 import DocumentViewer from '../sgk/DocumentViewer';
 import type { SGKDocument } from '../../types/sgk';
 
+interface HttpLikeError {
+  message?: string;
+  status?: number;
+  body?: unknown;
+}
+
+function getHttpLikeError(error: unknown): HttpLikeError {
+  return typeof error === 'object' && error !== null ? error as HttpLikeError : {};
+}
+
 
 interface Document {
   id: string;
@@ -233,6 +243,33 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
     await processFileUploads(selectedFiles);
   };
 
+  const fetchDocumentBlob = async (documentUrl: string): Promise<Blob> => {
+    const token = tokenManager.accessToken;
+    const response = await fetch(
+      `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5003'}${documentUrl}`,
+      {
+        method: 'GET',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      }
+    );
+
+    if (!response.ok) {
+      let body: unknown;
+      try {
+        body = await response.clone().json();
+      } catch {
+        body = await response.text();
+      }
+      throw {
+        message: `HTTP ${response.status}`,
+        status: response.status,
+        body,
+      } satisfies HttpLikeError;
+    }
+
+    return response.blob();
+  };
+
   const handleViewDocument = async (documentId: string) => {
     const document = documents.find(doc => doc.id === documentId);
     if (!document?.url) {
@@ -247,28 +284,13 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
         name: document.name
       });
 
-      // CRITICAL: Use raw axios (not apiClient/customInstance) for blob responses
-      // customInstance unwraps response.data which breaks blob handling
-      const token = tokenManager.accessToken;
-      const response = await axios({
-        url: `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5003'}${document.url}`,
-        method: 'GET',
-        responseType: 'blob',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const blob = await fetchDocumentBlob(document.url);
 
       console.log('✅ Document fetched successfully:', {
-        status: response.status,
-        contentType: response.headers['content-type'],
-        dataType: typeof response.data,
-        isBlob: response.data instanceof Blob,
-        blobSize: response.data instanceof Blob ? response.data.size : 'N/A'
+        dataType: typeof blob,
+        isBlob: blob instanceof Blob,
+        blobSize: blob instanceof Blob ? blob.size : 'N/A'
       });
-
-      // For blob responses, data is the blob itself
-      const blob = response.data;
       
       if (!(blob instanceof Blob)) {
         throw new Error(`Expected Blob but got ${typeof blob}`);
@@ -295,11 +317,12 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
       setViewerDocument(sgkDoc);
       setIsViewerOpen(true);
     } catch (err: unknown) {
+      const httpError = getHttpLikeError(err);
       console.error('❌ Error loading document:', {
         error: err,
         message: err instanceof Error ? err.message : String(err),
-        response: err.response?.data,
-        status: err.response?.status,
+        response: httpError.body,
+        status: httpError.status,
         url: document.url
       });
       error('Doküman görüntülenirken bir hata oluştu.');
@@ -320,26 +343,13 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
         name: document.name
       });
 
-      // CRITICAL: Use raw axios (not apiClient/customInstance) for blob responses
-      const token = tokenManager.accessToken;
-      const response = await axios({
-        url: `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5003'}${document.url}`,
-        method: 'GET',
-        responseType: 'blob',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const blob = await fetchDocumentBlob(document.url);
 
       console.log('✅ Document downloaded successfully:', {
-        status: response.status,
-        dataType: typeof response.data,
-        isBlob: response.data instanceof Blob,
-        blobSize: response.data instanceof Blob ? response.data.size : 'N/A'
+        dataType: typeof blob,
+        isBlob: blob instanceof Blob,
+        blobSize: blob instanceof Blob ? blob.size : 'N/A'
       });
-
-      // Create blob and download
-      const blob = response.data;
       
       if (!(blob instanceof Blob)) {
         throw new Error(`Expected Blob but got ${typeof blob}`);
@@ -364,12 +374,12 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
       window.document.body.removeChild(link);
       URL.revokeObjectURL(blobUrl);
     } catch (err: unknown) {
-      const error = err as { message?: string; response?: { data?: unknown } };
+      const httpError = getHttpLikeError(err);
       console.error('❌ Error downloading document:', {
         error: err,
-        message: error.message,
-        response: error.response?.data,
-        status: err.response?.status,
+        message: httpError.message,
+        response: httpError.body,
+        status: httpError.status,
         url: document.url
       });
       error('Doküman indirilirken bir hata oluştu.');

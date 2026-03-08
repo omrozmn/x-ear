@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 import sys
-import os
-from uuid import uuid4
 
 # Add backend to path
 backend_dir = "/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api"

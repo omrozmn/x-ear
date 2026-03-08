@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, current_app, make_response
+from flask import Blueprint, request, jsonify, make_response
 from models.base import db
 from models.patient import Patient
 from utils.idempotency import idempotent
@@ -30,7 +30,6 @@ def get_patient_devices(patient_id):
 
     # Get all device assignments (active/inactive) for this patient
     from models.sales import DeviceAssignment
-    from models.device import Device
     from models.inventory import InventoryItem
 
     assignments = DeviceAssignment.query.filter_by(patient_id=patient_id).all()

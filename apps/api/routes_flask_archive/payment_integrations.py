@@ -1,11 +1,9 @@
 
-from flask import Blueprint, request, jsonify, redirect
+from flask import Blueprint, request
 from models.base import db, gen_id
-from models.user import User
 from models.tenant import Tenant
 from models.sales import Sale, PaymentRecord
 from services.paytr_service import PayTRService
-import json
 import logging
 from datetime import datetime
 import os

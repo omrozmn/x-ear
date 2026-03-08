@@ -4,7 +4,7 @@ Dashboard Management
 Dashboard KPIs and analytics with unified access control.
 """
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify
 from models.base import db
 from models.user import ActivityLog
 from models.patient import Patient

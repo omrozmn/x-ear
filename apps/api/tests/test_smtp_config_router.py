@@ -4,7 +4,6 @@ Integration tests for SMTP Configuration Router
 Basic tests to verify endpoints are registered and working.
 """
 
-import pytest
 from fastapi.testclient import TestClient
 
 

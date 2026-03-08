@@ -10,10 +10,9 @@ from sqlalchemy.orm import Session
 
 from core.dependencies import get_current_admin_user
 from core.database import get_db
-from middleware.unified_access import UnifiedAccess, require_access
 from schemas import ResponseEnvelope, AppBaseModel
 from services.spam_filter_service import get_spam_filter_service
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 logger = logging.getLogger(__name__)
 

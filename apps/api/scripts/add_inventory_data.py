@@ -8,14 +8,12 @@ import os
 from decimal import Decimal
 import random
 import json
-from datetime import datetime
 
 # Add the backend directory to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import the Flask app instance directly
 import app
-from models.inventory import InventoryItem
 from models.base import db
 
 def create_sample_inventory_data():

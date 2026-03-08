@@ -3,7 +3,7 @@ Supplier Schemas - Pydantic models for Supplier domain
 """
 from typing import Optional, List, Union, Any, Dict
 from pydantic import Field, field_validator, model_validator
-from .base import AppBaseModel, IDMixin, TimestampMixin
+from .base import AppBaseModel, TimestampMixin
 
 
 class SupplierBase(AppBaseModel):

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask import make_response
-from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
+from flask_jwt_extended import get_jwt_identity, get_jwt
 from models.base import db, gen_sale_id
 from models.patient import Patient
 from models.device import Device
@@ -13,7 +13,6 @@ from services.pricing import (
 )
 from services.stock_service import create_stock_movement
 from utils.idempotency import idempotent
-from utils.authorization import crm_permission_required
 from utils.decorators import unified_access
 from utils.response import success_response, error_response
 from datetime import datetime
@@ -580,7 +579,6 @@ def create_sale(ctx):
         )
 
     except Exception as e:
-        import traceback
         try:
             db.session.rollback()
         except:
@@ -1220,7 +1218,6 @@ def _load_settings_and_patient(patient_id):
 def _create_sale_record(patient_id, pricing_calculation, paid_amount, payment_plan_type, tenant_id, branch_id=None):
     """Create sale record with pricing data."""
     # Generate tenant-specific sale ID
-    from models.base import gen_sale_id
     sale_id = gen_sale_id(tenant_id=tenant_id)
     
     sale = Sale(
@@ -2134,7 +2131,6 @@ def _create_product_sale_record(patient_id, product_id, base_price, discount, fi
         sale_notes = kdv_note
 
     # Generate tenant-specific sale ID
-    from models.base import gen_sale_id
     sale_id = gen_sale_id(tenant_id=tenant_id)
 
     sale = Sale(

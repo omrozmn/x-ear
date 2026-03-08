@@ -25,7 +25,6 @@ from sqlalchemy.orm import sessionmaker
 from core.models.invoice import Invoice
 from core.models.suppliers import Supplier
 from core.models.tenant import Tenant
-from core.models.base import Base
 import uuid
 
 

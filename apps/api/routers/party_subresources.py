@@ -5,20 +5,17 @@ Handles patient devices, hearing tests, notes, ereceipts, and appointments
 from fastapi import APIRouter, Depends, HTTPException, Request
 from typing import Optional, List
 from datetime import datetime, timezone
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 import logging
-import uuid
-import json
 
 from sqlalchemy.orm import Session
 
 from database import get_db
 from schemas.base import ResponseEnvelope
-from schemas.sales import DeviceAssignmentRead, SaleRead, PaymentPlanRead, PaymentRecordRead
+from schemas.sales import DeviceAssignmentRead, SaleRead
 from schemas.party_subresources import PartyNoteRead
 from schemas.appointments import AppointmentRead
-from schemas.invoices import InvoiceRead
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +66,6 @@ class EReceiptUpdate(BaseModel):
     doctorName: Optional[str] = None
 
 from services.party_service import PartyService
-from services.hearing_profile_service import HearingProfileService
 
 # --- Patient Devices ---
 

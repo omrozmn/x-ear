@@ -1,9 +1,7 @@
 # Scan Queue Model (formerly Patient scan queue)
-from sqlalchemy import Column, Date, DateTime, Integer, String, Text, Time
-from core.models.base import Base
-from .base import db, BaseModel, gen_id
+from sqlalchemy import Column, DateTime, Integer, String, Text
+from .base import BaseModel, gen_id
 from .mixins import TenantScopedMixin
-from datetime import datetime
 
 class ScanQueue(BaseModel, TenantScopedMixin):
     __tablename__ = 'scan_queue'

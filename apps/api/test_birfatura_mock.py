@@ -3,7 +3,6 @@
 
 import os
 import sys
-import json
 import base64
 import gzip
 
@@ -126,7 +125,7 @@ def test_integration_flow():
     pdf_link = send_response.get('Result', {}).get('pdfLink')
     
     print("\n3. Data to store in database:")
-    print(f"   - edocument_status: 'approved'")
+    print("   - edocument_status: 'approved'")
     print(f"   - ettn: '{ettn}'")
     print(f"   - gib_pdf_data: {len(pdf_data) if pdf_data else 0} chars (base64)")
     print(f"   - gib_pdf_link: '{pdf_link}'")

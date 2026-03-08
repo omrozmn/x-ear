@@ -1,12 +1,10 @@
 import sys
 import os
-import io
-import datetime
 # Add the project root to sys.path so we can import from `apps.api`
 sys.path.append(os.getcwd())
 sys.path.append(os.path.join(os.getcwd(), "x-ear/apps/api"))
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from unittest.mock import MagicMock, patch
 
@@ -16,7 +14,7 @@ sys.modules['middleware.unified_access'] = MagicMock()
 sys.modules['services.birfatura.service'] = MagicMock()
 
 # Import the router and dependencies
-from routers.birfatura import router, get_configured_client
+from routers.birfatura import router
 from middleware.unified_access import UnifiedAccess
 
 # Create a minimal app with the router
@@ -66,7 +64,6 @@ def test_endpoints(mock_get_client):
     # let's try assuming the `mock_access` bypass might fail if we don't override correctly.
     # Actually, let's just use `app.dependency_overrides`.
     # We need to find the `require_access` function object used in the router.
-    from middleware.unified_access import require_access
     # This is tricky because `require_access()` returns a closure.
     # A simpler way for this unit test is to mock the `request.state` or just rely on `get_configured_client` mock
     # IF the auth passes. But auth won't pass without a token.
@@ -91,7 +88,6 @@ def test_endpoints(mock_get_client):
 # OR we simply trust that if we can import the router, we can inspect it.
 # Let's try to run it and see if we can override the authentication.
 
-from middleware.unified_access import require_access
 # We need to find the exact closure or override `UnifiedAccess` itself?
 # Actually, `require_access` is a function that returns a dependency.
 # `start_time = time.time()`...

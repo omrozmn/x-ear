@@ -23,10 +23,10 @@ from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional, Set
 from enum import Enum
 
-from ai.config import get_ai_config, AIPhase
-from ai.schemas.llm_outputs import IntentOutput, IntentType, ActionPlanOutput, OperationOutput
-from ai.tools import ToolRegistry, get_tool_registry, RiskLevel, ToolDefinition, ToolExecutionMode
-from ai.runtime.model_client import LocalModelClient, get_model_client, ModelResponse
+from ai.config import get_ai_config
+from ai.schemas.llm_outputs import IntentOutput, IntentType
+from ai.tools import ToolRegistry, get_tool_registry, RiskLevel
+from ai.runtime.model_client import LocalModelClient, get_model_client
 from ai.runtime.circuit_breaker import get_inference_circuit_breaker, CircuitBreakerOpenError
 from ai.capability_registry import get_allowed_tool_names
 

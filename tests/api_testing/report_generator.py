@@ -1,9 +1,7 @@
 """Test report generation."""
 from datetime import datetime
-from typing import List
 from pathlib import Path
 from .failure_analyzer import FailureAnalyzer
-from .test_executor import TestResult
 
 
 class ReportGenerator:

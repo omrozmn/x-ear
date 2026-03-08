@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from models.base import db
 from models.notification import Notification
 from models.notification_template import NotificationTemplate
@@ -8,7 +8,6 @@ from utils.decorators import unified_access
 from utils.response import success_response, error_response
 from utils.admin_permissions import AdminPermissions
 import logging
-import json
 from utils.tenant_security import UnboundSession
 
 logger = logging.getLogger(__name__)

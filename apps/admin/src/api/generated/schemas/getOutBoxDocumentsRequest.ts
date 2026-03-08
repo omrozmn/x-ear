@@ -5,7 +5,7 @@
  * Backend API for x-ear CRM
  * OpenAPI spec version: 1.0.0
  */
-import type { GetOutBoxDocumentsRequestInvoiceNo } from './getOutBoxDocumentsRequestInvoiceNo';
+import type { GetOutBoxDocumentsRequestInvoiceNo } from './getOutBoxDocumentsRequestInvoiceno';
 
 /**
  * Request schema for GetOutBoxDocuments

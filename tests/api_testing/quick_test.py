@@ -40,7 +40,7 @@ def main():
     
     # Print summary
     print(f"\n{'='*80}")
-    print(f"QUICK TEST RESULTS")
+    print("QUICK TEST RESULTS")
     print(f"{'='*80}")
     print(f"Total:   {runner.stats.total}")
     print(f"Passed:  {runner.stats.passed} ({runner.stats.success_rate:.1f}%)")

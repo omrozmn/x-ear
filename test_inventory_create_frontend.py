@@ -44,11 +44,11 @@ frontend_data = {
 print("=" * 80)
 print("TEST: Frontend Inventory Creation")
 print("=" * 80)
-print(f"\n1. Frontend sends data (camelCase):")
+print("\n1. Frontend sends data (camelCase):")
 print(json.dumps(frontend_data, indent=2))
 
 # Step 1: Validate with Pydantic schema
-print(f"\n2. Pydantic schema validation:")
+print("\n2. Pydantic schema validation:")
 try:
     item_schema = InventoryItemCreate(**frontend_data)
     print("✅ Schema validation passed")
@@ -58,7 +58,7 @@ except Exception as e:
     sys.exit(1)
 
 # Step 2: Convert to dict (what router does)
-print(f"\n3. Convert to dict (by_alias=False):")
+print("\n3. Convert to dict (by_alias=False):")
 data = item_schema.model_dump(exclude_unset=True, by_alias=False)
 print(f"   Keys: {list(data.keys())}")
 print(f"   Category: {data.get('category')}")
@@ -66,13 +66,13 @@ print(f"   Category: {data.get('category')}")
 # Step 3: Extract serials
 serials = data.pop('available_serials', [])
 data.pop('tenant_id', None)
-print(f"\n4. After popping serials and tenant_id:")
+print("\n4. After popping serials and tenant_id:")
 print(f"   Keys: {list(data.keys())}")
 print(f"   Category: {data.get('category')}")
 print(f"   Serials: {serials}")
 
 # Step 4: Create model instance
-print(f"\n5. Create InventoryItem model:")
+print("\n5. Create InventoryItem model:")
 try:
     # Add required fields
     data['id'] = 'test_item_001'
@@ -82,29 +82,29 @@ try:
     print(f"   Data keys: {list(data.keys())}")
     
     item = InventoryItem(tenant_id=tenant_id, **data)
-    print(f"✅ Model instance created")
+    print("✅ Model instance created")
     print(f"   item.category = {item.category}")
     print(f"   item.name = {item.name}")
     print(f"   item.brand = {item.brand}")
     print(f"   item.supplier = {item.supplier}")
     
     # Try to add to database (rollback after)
-    print(f"\n6. Test database insertion:")
+    print("\n6. Test database insertion:")
     db.add(item)
     db.flush()  # Flush to catch any DB errors
-    print(f"✅ Database flush successful")
+    print("✅ Database flush successful")
     print(f"   DB item.category = {item.category}")
     
     # Add serials
     if serials:
-        print(f"\n7. Adding serial numbers:")
+        print("\n7. Adding serial numbers:")
         for s in serials:
             item.add_serial_number(s)
         print(f"✅ Serials added: {serials}")
     
     # Rollback (don't actually save)
     db.rollback()
-    print(f"\n✅ TEST PASSED - All operations successful")
+    print("\n✅ TEST PASSED - All operations successful")
     
 except Exception as e:
     db.rollback()

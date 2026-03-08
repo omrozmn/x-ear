@@ -1,5 +1,3 @@
-import json
-import pytest
 import uuid
 from core.models.user import User
 from core.models.app import App

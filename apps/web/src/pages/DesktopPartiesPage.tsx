@@ -49,14 +49,7 @@ export function DesktopPartiesPage() {
   const deletePartyMutation = useDeleteParty();
   
   // Tag update mutation
-  const updatePartyMutation = useUpdateParty({
-    mutation: {
-      onSuccess: async () => {
-        // Immediately refetch to update the list
-        await refetch();
-      }
-    }
-  });
+  const updatePartyMutation = useUpdateParty();
 
   // Handlers
   const handleSearch = (value: string) => {
@@ -129,7 +122,7 @@ export function DesktopPartiesPage() {
     try {
       await updatePartyMutation.mutateAsync({ 
         partyId, 
-        data: updates as Record<string, unknown>
+        updates
       });
       // Wait for refetch to complete before closing modal
       await refetch();
@@ -331,7 +324,7 @@ export function DesktopPartiesPage() {
               variant="outline"
               size="sm"
               onClick={() => {
-                navigate({ to: '/settings', search: (prev: Record<string, unknown>) => ({ ...prev, tab: 'parties' }) });
+                navigate({ to: '/settings/parties' });
               }}
             >
               <Settings className="h-4 w-4 mr-2" />

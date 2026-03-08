@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from models.affiliate_user import AffiliateUser
 from services.affiliate_service import AffiliateService
 from db import get_db
 from typing import List

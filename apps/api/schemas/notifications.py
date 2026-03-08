@@ -1,7 +1,7 @@
 """
 Notification Schemas
 """
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum

@@ -4,15 +4,12 @@ Unit tests for device sales endpoints
 Tests device assignment, sales, payment plans, and pricing calculations
 """
 import requests
-import json
 import sys
 import os
 
 # Add the backend directory to the path so we can import modules
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from models import db, Patient, DeviceAssignment, Sale, PaymentPlan
-from app import app
 
 class DeviceSalesTester:
     def __init__(self, base_url="http://localhost:5003"):

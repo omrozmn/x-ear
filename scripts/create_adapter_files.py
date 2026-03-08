@@ -1,6 +1,5 @@
 
 import os
-import glob
 
 # Assumes running from root x-ear directory
 GENERATED_DIR = "apps/web/src/api/generated"

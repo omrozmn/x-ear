@@ -17,9 +17,7 @@ import json
 import logging
 import os
 from datetime import datetime, timedelta
-from typing import Dict, Any, Optional, Callable
-from starlette.requests import Request
-from starlette.responses import Response
+from typing import Dict, Any
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 logger = logging.getLogger(__name__)

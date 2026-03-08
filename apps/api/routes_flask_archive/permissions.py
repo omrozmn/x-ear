@@ -1,13 +1,12 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from utils.decorators import unified_access
 from utils.response import success_response, error_response
 from models.base import db
 from models.permission import Permission
-from models.user import User
 from models.role import Role
 from utils.validation import is_valid_permission_name
 from utils.admin_permissions import AdminPermissions
-from config.tenant_permissions import TenantPermissions, get_permissions_for_role
+from config.tenant_permissions import get_permissions_for_role
 
 permissions_bp = Blueprint('permissions', __name__)
 

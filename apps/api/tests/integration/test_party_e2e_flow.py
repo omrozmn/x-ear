@@ -69,7 +69,7 @@ def test_complete_party_flow(
     }
     
     profile_response = client.post(
-        f"/api/hearing-profiles",
+        "/api/hearing-profiles",
         json={"partyId": party_id, **profile_data},
         headers=auth_headers
     )
@@ -131,7 +131,7 @@ def test_party_role_profile_isolation(
     
     # Create profile (skip if endpoint doesn't exist)
     profile_response = client.post(
-        f"/api/hearing-profiles",
+        "/api/hearing-profiles",
         json={
             "partyId": party_id,
             "sgkInfo": {"sgkNumber": "98765432109"}
@@ -243,7 +243,7 @@ def test_party_deletion_cascade(
     
     # Add profile (skip if endpoint doesn't exist)
     profile_response = client.post(
-        f"/api/hearing-profiles",
+        "/api/hearing-profiles",
         json={
             "partyId": party_id,
             "sgkInfo": {"sgkNumber": "11111111111"}

@@ -15,7 +15,7 @@ Usage:
         __tablename__ = 'parties'
         # ... other columns
 """
-from sqlalchemy import Column, String, ForeignKey, Index
+from sqlalchemy import Column, String, ForeignKey
 from sqlalchemy.orm import declared_attr
 
 

@@ -1,9 +1,7 @@
 # Production Order Model
-from sqlalchemy import Column, Date, DateTime, String, Text, Time
-from core.models.base import Base
-from .base import db, BaseModel, gen_id
+from sqlalchemy import Column, DateTime, String, Text
+from .base import BaseModel, gen_id
 from .mixins import TenantScopedMixin
-from datetime import datetime
 
 class ProductionOrder(BaseModel, TenantScopedMixin):
     __tablename__ = 'production_orders'

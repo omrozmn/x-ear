@@ -2,8 +2,6 @@
 """Test admin permission middleware"""
 import requests
 import jwt
-import os
-from datetime import datetime, timedelta
 
 # Generate a test JWT token with ADMIN role
 SECRET_KEY = 'super-secret-jwt-key-for-development'

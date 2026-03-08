@@ -32,7 +32,6 @@ from ai.runtime.prompt_registry import (
     TemplateCategory,
     PromptTemplateHashMismatchError,
     PromptTemplateNotFoundError,
-    get_registry,
 )
 
 

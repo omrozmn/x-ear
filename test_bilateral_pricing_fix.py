@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import requests
-import json
 
 def test_bilateral_pricing_fix():
     """Test that bilateral sales now have correct pricing"""
@@ -25,7 +24,7 @@ def test_bilateral_pricing_fix():
         
     sale_data = sale_response.json().get('data', {})
     
-    print(f"Sale-level pricing:")
+    print("Sale-level pricing:")
     print(f"  - listPriceTotal (unit): {sale_data.get('listPriceTotal')}")
     print(f"  - unitListPrice: {sale_data.get('unitListPrice')}")
     print(f"  - actualListPriceTotal: {sale_data.get('actualListPriceTotal')}")
@@ -70,7 +69,7 @@ def test_bilateral_pricing_fix():
         print(f"❌ Expected 2 devices, found {len(devices)}")
         success = False
     else:
-        print(f"✅ Correct number of devices: 2")
+        print("✅ Correct number of devices: 2")
     
     print(f"\n{'✅ BILATERAL PRICING FIX SUCCESSFUL!' if success else '❌ BILATERAL PRICING FIX FAILED!'}")
     return success

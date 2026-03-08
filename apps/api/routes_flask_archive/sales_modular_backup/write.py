@@ -4,11 +4,10 @@ Sales Write Operations - Unified Access
 POST/PUT/PATCH endpoints for sale creation and updates
 """
 
-from flask import request, jsonify
+from flask import request
 from models.base import db, gen_sale_id
 from models.sales import Sale
 from models.patient import Patient
-from models.user import User
 from utils.decorators import unified_access
 from utils.response import success_response, error_response
 from utils.idempotency import idempotent

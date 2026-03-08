@@ -1,7 +1,6 @@
 # Marketplace Integration Models
-from sqlalchemy import Column, Boolean, Date, DateTime, ForeignKey, Integer, JSON, Numeric, String, Text, Time
-from core.models.base import Base
-from .base import db, BaseModel, gen_id
+from sqlalchemy import Column, Boolean, DateTime, ForeignKey, Integer, Numeric, String, Text
+from .base import BaseModel, gen_id
 from .mixins import TenantScopedMixin
 from sqlalchemy.orm import relationship
 

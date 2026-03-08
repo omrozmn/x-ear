@@ -3,8 +3,7 @@
 import asyncio
 import logging
 import time
-import time
-from datetime import datetime, timezone, timedelta, timedelta
+from datetime import datetime, timezone, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate, make_msgid
@@ -26,7 +25,6 @@ from services.smtp_config_service import SMTPConfigService
 from utils.background_task import tenant_task_async
 from utils.email_monitoring import (
     email_metrics,
-    log_email_operation,
     log_metrics_summary,
     log_smtp_connection_stats,
     mask_email,
@@ -244,7 +242,7 @@ class EmailService:
                 )
                 return True, "SMTP connection successful"
                 
-        except SMTPAuthenticationError as e:
+        except SMTPAuthenticationError:
             connection_time_ms = (time.time() - start_time) * 1000
             log_smtp_connection_stats(
                 host=smtp_config["host"],

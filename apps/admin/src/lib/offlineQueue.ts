@@ -5,15 +5,19 @@
  * Provides UI feedback through custom events.
  */
 
+import type { AxiosError, AxiosRequestConfig } from 'axios';
+
 interface QueuedRequest {
   id: string;
   url: string;
   method: string;
-  data?: any;
+  data?: unknown;
   headers?: Record<string, string>;
   timestamp: number;
   retryCount: number;
 }
+
+type QueueableRequestConfig = AxiosRequestConfig<unknown>;
 
 class OfflineQueue {
   private queue: QueuedRequest[] = [];
@@ -67,13 +71,13 @@ class OfflineQueue {
   /**
    * Add a request to the queue
    */
-  addRequest(config: any) {
+  addRequest(config: QueueableRequestConfig) {
     const request: QueuedRequest = {
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      url: config.url,
+      url: config.url ?? '',
       method: config.method?.toUpperCase() || 'GET',
       data: config.data,
-      headers: config.headers,
+      headers: normalizeHeaders(config.headers),
       timestamp: Date.now(),
       retryCount: 0
     };
@@ -152,7 +156,7 @@ class OfflineQueue {
           }
         }));
 
-      } catch (error: any) {
+      } catch (error: unknown) {
         failCount++;
         console.error(`[OfflineQueue] ❌ Failed to process: ${request.method} ${request.url}`, error);
 
@@ -172,7 +176,7 @@ class OfflineQueue {
                 method: request.method,
                 url: request.url
               },
-              error: error.message
+              error: getErrorMessage(error)
             }
           }));
         }
@@ -197,15 +201,15 @@ class OfflineQueue {
   /**
    * Check if error is retryable
    */
-  private isRetryableError(error: any): boolean {
+  private isRetryableError(error: unknown): boolean {
     const retryableStatusCodes = [429, 503, 502, 504];
     const retryableErrorCodes = ['ECONNRESET', 'ETIMEDOUT', 'ECONNREFUSED', 'ERR_NETWORK'];
 
-    if (error.code && retryableErrorCodes.includes(error.code)) {
+    if (isAxiosError(error) && error.code && retryableErrorCodes.includes(error.code)) {
       return true;
     }
 
-    if (error.response?.status && retryableStatusCodes.includes(error.response.status)) {
+    if (isAxiosError(error) && error.response?.status && retryableStatusCodes.includes(error.response.status)) {
       return true;
     }
 
@@ -253,3 +257,34 @@ export const offlineQueue = new OfflineQueue();
 
 // Export types for external use
 export type { QueuedRequest };
+
+function normalizeHeaders(headers: QueueableRequestConfig['headers']): Record<string, string> | undefined {
+  if (!headers) {
+    return undefined;
+  }
+
+  const normalized = typeof headers.toJSON === 'function'
+    ? headers.toJSON()
+    : headers;
+
+  const result: Record<string, string> = {};
+  for (const [key, value] of Object.entries(normalized)) {
+    if (typeof value === 'string') {
+      result[key] = value;
+    } else if (Array.isArray(value)) {
+      result[key] = value.join(', ');
+    } else if (typeof value === 'number' || typeof value === 'boolean') {
+      result[key] = String(value);
+    }
+  }
+
+  return Object.keys(result).length > 0 ? result : undefined;
+}
+
+function isAxiosError(error: unknown): error is AxiosError<unknown> {
+  return typeof error === 'object' && error !== null && 'isAxiosError' in error;
+}
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Unknown error';
+}

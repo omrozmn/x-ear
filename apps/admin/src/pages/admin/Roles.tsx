@@ -6,7 +6,6 @@ import {
     Pencil,
     Trash2,
     Users,
-    ChevronRight,
     AlertTriangle,
     Loader2,
     Search,
@@ -25,29 +24,24 @@ import {
     useUpdateAdminRolePermissions,
     getListAdminRolesQueryKey
 } from '@/api/generated/admin-roles/admin-roles';
-import { RoleRead } from '@/api/generated/schemas/roleRead';
-import { PermissionRead as AdminPermission } from '@/api/generated/schemas/permissionRead';
-import { useHasPermission, useIsSuperAdmin, PermissionGate } from '@/hooks/useAdminPermission';
+import type { RoleRead } from '@/api/generated/schemas/roleRead';
+import type { PermissionRead as AdminPermission } from '@/api/generated/schemas/permissionRead';
+import { useHasPermission, useIsSuperAdmin } from '@/hooks/useAdminPermission';
+import { PermissionGate } from '@/hooks/PermissionGate';
 import { AdminPermissions } from '@/types';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
+import { isAxiosError } from 'axios';
 
-// Permission category display names
-const CATEGORY_NAMES: Record<string, string> = {
-    tenants: 'Tenant Yönetimi',
-    users: 'Kullanıcı Yönetimi',
-    roles: 'Rol Yönetimi',
-    billing: 'Fatura & Ödeme',
-    settings: 'Ayarlar',
-    integrations: 'Entegrasyonlar',
-    logs: 'Loglar',
-    system: 'Sistem',
-    special: 'Özel İzinler',
+type PermissionGroup = {
+    category: string;
+    label: string;
+    permissions: AdminPermission[];
 };
 
 const Roles: React.FC = () => {
     const { isMobile } = useAdminResponsive();
     const queryClient = useQueryClient();
-    const canManageRoles = useHasPermission(AdminPermissions.ROLES_MANAGE);
+    useHasPermission(AdminPermissions.ROLES_MANAGE);
     const isSuperAdmin = useIsSuperAdmin();
 
     const [searchTerm, setSearchTerm] = useState('');
@@ -78,8 +72,8 @@ const Roles: React.FC = () => {
                 setIsCreateModalOpen(false);
                 resetForm();
             },
-            onError: (error: any) => {
-                toast.error(error.response?.data?.error?.message || 'Rol oluşturulurken hata oluştu');
+            onError: (error: unknown) => {
+                toast.error(getMutationErrorMessage(error, 'Rol oluşturulurken hata oluştu'));
             },
         }
     });
@@ -93,8 +87,8 @@ const Roles: React.FC = () => {
                 setIsEditModalOpen(false);
                 setSelectedRole(null);
             },
-            onError: (error: any) => {
-                toast.error(error.response?.data?.error?.message || 'Rol güncellenirken hata oluştu');
+            onError: (error: unknown) => {
+                toast.error(getMutationErrorMessage(error, 'Rol güncellenirken hata oluştu'));
             },
         }
     });
@@ -106,8 +100,8 @@ const Roles: React.FC = () => {
                 toast.success('İzinler başarıyla güncellendi');
                 queryClient.invalidateQueries({ queryKey: getListAdminRolesQueryKey() });
             },
-            onError: (error: any) => {
-                toast.error(error.response?.data?.error?.message || 'İzinler güncellenirken hata oluştu');
+            onError: (error: unknown) => {
+                toast.error(getMutationErrorMessage(error, 'İzinler güncellenirken hata oluştu'));
             },
         }
     });
@@ -121,8 +115,8 @@ const Roles: React.FC = () => {
                 setIsDeleteModalOpen(false);
                 setSelectedRole(null);
             },
-            onError: (error: any) => {
-                toast.error(error.response?.data?.error?.message || 'Rol silinirken hata oluştu');
+            onError: (error: unknown) => {
+                toast.error(getMutationErrorMessage(error, 'Rol silinirken hata oluştu'));
             },
         }
     });
@@ -172,7 +166,9 @@ const Roles: React.FC = () => {
 
     const roles = rolesResponse?.data?.roles || [];
     // Backend returns ResponseEnvelope, Orval unwraps to {data: [...]}
-    const permissionGroups = Array.isArray(permissionsResponse?.data) ? permissionsResponse.data : [];
+    const permissionGroups = Array.isArray(permissionsResponse?.data)
+        ? permissionsResponse.data.filter(isPermissionGroup)
+        : [];
 
     // Filter roles by search
     const filteredRoles = roles.filter(role =>
@@ -382,7 +378,7 @@ const Roles: React.FC = () => {
                                                             }}
                                                             className="rounded border-gray-300 text-primary focus:ring-primary"
                                                         />
-                                                        <span className="text-sm text-gray-700 dark:text-gray-300">{(perm as any).label || perm.name}</span>
+                                                        <span className="text-sm text-gray-700 dark:text-gray-300">{perm.description || perm.name}</span>
                                                     </label>
                                                 ))}
                                             </div>
@@ -507,7 +503,7 @@ const Roles: React.FC = () => {
                                                                 : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-500'
                                                                 }`}
                                                         >
-                                                            <span className="text-sm truncate">{(perm as any).label || perm.name}</span>
+                                                            <span className="text-sm truncate">{perm.description || perm.name}</span>
                                                             {isActive ? (
                                                                 <Check className="h-4 w-4 flex-shrink-0" />
                                                             ) : (
@@ -581,3 +577,22 @@ const Roles: React.FC = () => {
 };
 
 export default Roles;
+
+function isPermissionGroup(value: unknown): value is PermissionGroup {
+    if (!value || typeof value !== 'object') {
+        return false;
+    }
+
+    const group = value as { category?: unknown; label?: unknown; permissions?: unknown };
+    return typeof group.category === 'string'
+        && typeof group.label === 'string'
+        && Array.isArray(group.permissions);
+}
+
+function getMutationErrorMessage(error: unknown, fallback: string): string {
+    if (isAxiosError<{ error?: { message?: string } }>(error)) {
+        return error.response?.data?.error?.message || fallback;
+    }
+
+    return fallback;
+}

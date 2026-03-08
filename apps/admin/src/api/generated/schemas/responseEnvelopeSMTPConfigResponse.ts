@@ -5,11 +5,11 @@
  * Backend API for x-ear CRM
  * OpenAPI spec version: 1.0.0
  */
-import type { ResponseEnvelopeSmtpConfigResponseData } from './responseEnvelopeSmtpConfigResponseData';
-import type { ResponseEnvelopeSmtpConfigResponseMessage } from './responseEnvelopeSmtpConfigResponseMessage';
-import type { ResponseEnvelopeSmtpConfigResponseError } from './responseEnvelopeSmtpConfigResponseError';
-import type { ResponseEnvelopeSmtpConfigResponseMeta } from './responseEnvelopeSmtpConfigResponseMeta';
-import type { ResponseEnvelopeSmtpConfigResponseRequestId } from './responseEnvelopeSmtpConfigResponseRequestId';
+import type { ResponseEnvelopeSmtpConfigResponseData } from './responseEnvelopeSMTPConfigResponseData';
+import type { ResponseEnvelopeSmtpConfigResponseMessage } from './responseEnvelopeSMTPConfigResponseMessage';
+import type { ResponseEnvelopeSmtpConfigResponseError } from './responseEnvelopeSMTPConfigResponseError';
+import type { ResponseEnvelopeSmtpConfigResponseMeta } from './responseEnvelopeSMTPConfigResponseMeta';
+import type { ResponseEnvelopeSmtpConfigResponseRequestId } from './responseEnvelopeSMTPConfigResponseRequestId';
 
 export interface ResponseEnvelopeSmtpConfigResponse {
   success?: boolean;

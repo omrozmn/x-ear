@@ -2,9 +2,7 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_, desc
-from pydantic import BaseModel, Field, ConfigDict
-from pydantic.alias_generators import to_camel
-from typing import Optional, List, Dict, Any
+from typing import Optional, List
 from datetime import datetime, timezone, timedelta
 import logging
 
@@ -12,8 +10,8 @@ from database import get_db
 from models.communication import EmailLog, CommunicationTemplate, CommunicationHistory
 from models.campaign import SmsLog as SMSLog
 from core.models.party import Party
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
-from schemas.base import ResponseEnvelope, ResponseMeta
+from middleware.unified_access import UnifiedAccess, require_access
+from schemas.base import ResponseEnvelope
 from schemas.campaigns import SmsLogRead
 from schemas.communications import (
     EmailLogRead, CommunicationTemplateRead, CommunicationHistoryRead,

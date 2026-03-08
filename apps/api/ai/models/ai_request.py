@@ -9,9 +9,7 @@ Requirements:
 This model stores the initial AI request before processing.
 """
 
-from datetime import datetime
 from enum import Enum
-from typing import Optional
 from uuid import uuid4
 
 from sqlalchemy import Column, String, Text, DateTime, Integer, Boolean, Index

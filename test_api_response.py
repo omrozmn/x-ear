@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import requests
-import json
 
 def test_api_response():
     """Test what the API actually returns for sale 2603020114"""
@@ -22,7 +21,7 @@ def test_api_response():
         
     sale_data = sale_response.json().get('data', {})
     
-    print(f"🔍 SALE API RESPONSE:")
+    print("🔍 SALE API RESPONSE:")
     print(f"  - listPriceTotal: {sale_data.get('listPriceTotal')}")
     print(f"  - unitListPrice: {sale_data.get('unitListPrice')}")
     print(f"  - actualListPriceTotal: {sale_data.get('actualListPriceTotal')}")
@@ -48,7 +47,7 @@ def test_api_response():
             
             if assignment_response.status_code == 200:
                 assignment_data = assignment_response.json().get('data', {})
-                print(f"🔍 DEVICE ASSIGNMENT API RESPONSE:")
+                print("🔍 DEVICE ASSIGNMENT API RESPONSE:")
                 print(f"  - listPrice: {assignment_data.get('listPrice')}")
                 print(f"  - salePrice: {assignment_data.get('salePrice')}")
                 print(f"  - netPayable: {assignment_data.get('netPayable')}")

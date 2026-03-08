@@ -23,9 +23,8 @@ Critical actions (is_critical=True):
 - Tenant settings changes
 """
 import logging
-import json
 from functools import wraps
-from flask import request, g
+from flask import request
 from flask_jwt_extended import get_jwt_identity, get_jwt, verify_jwt_in_request
 from models.base import db
 from models.user import ActivityLog

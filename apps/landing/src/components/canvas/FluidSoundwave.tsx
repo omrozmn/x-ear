@@ -1,8 +1,11 @@
 "use client";
 
 import { useRef, useMemo, useState } from "react";
+import type { ElementType } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+
+const PointsMaterial = "pointsMaterial" as ElementType;
 
 export function FluidSoundwave({ isDark = true }: { isDark?: boolean }) {
     const pointsRef = useRef<THREE.Points>(null);
@@ -86,7 +89,7 @@ export function FluidSoundwave({ isDark = true }: { isDark?: boolean }) {
                     itemSize={3}
                 />
             </bufferGeometry>
-            <pointsMaterial
+            <PointsMaterial
                 size={0.06}
                 color={isDark ? "#22d3ee" : "#0284c7"}
                 transparent

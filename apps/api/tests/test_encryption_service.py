@@ -12,8 +12,8 @@ Tests cover:
 
 import pytest
 import os
-from unittest.mock import patch, MagicMock
-from cryptography.fernet import Fernet, InvalidToken
+from unittest.mock import patch
+from cryptography.fernet import Fernet
 from hypothesis import given, settings, strategies as st
 
 from services.encryption_service import (
@@ -601,8 +601,8 @@ class TestEncryptionServicePropertyBased:
         
         # CRITICAL: Ciphertexts must be different (unique nonces)
         assert ciphertext1 != ciphertext2, (
-            f"Encrypting the same plaintext twice should produce different "
-            f"ciphertext due to unique nonces"
+            "Encrypting the same plaintext twice should produce different "
+            "ciphertext due to unique nonces"
         )
         
         # Both should decrypt to the same original plaintext

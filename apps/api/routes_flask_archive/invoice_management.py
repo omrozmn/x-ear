@@ -11,10 +11,8 @@ import uuid
 
 from models.base import db
 from models.invoice import Invoice
-from models.patient import Patient
 from models.system import Settings
 from utils.idempotency import idempotent
-from utils.optimistic_locking import optimistic_lock, with_transaction
 from utils.authorization import permission_required
 
 invoice_management_bp = Blueprint('invoice_management', __name__)

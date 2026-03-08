@@ -5,7 +5,7 @@ from core.models.base import Base
 import uuid
 from datetime import datetime
 from enum import Enum as PyEnum
-from sqlalchemy import Column, String, Boolean, DateTime, Text, Numeric, Integer, Date, Time, Enum as SQLEnum
+from sqlalchemy import Column, String, Boolean, DateTime, Text, Numeric, Integer, Enum as SQLEnum
 
 class AddOnType(PyEnum):
     """AddOn type enumeration"""

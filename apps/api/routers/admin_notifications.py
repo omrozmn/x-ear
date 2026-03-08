@@ -11,10 +11,10 @@ from models.notification import Notification
 from models.notification_template import NotificationTemplate
 from models.tenant import Tenant
 from models.user import User
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from core.dependencies import get_current_admin_user
 from schemas.base import ResponseEnvelope
-from schemas.notifications import NotificationRead, NotificationTemplateCreate
+from schemas.notifications import NotificationRead
 from schemas.notification_templates import EmailTemplateRead
 logger = logging.getLogger(__name__)
 

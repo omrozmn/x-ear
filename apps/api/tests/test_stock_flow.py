@@ -1,13 +1,11 @@
-import pytest
 import uuid
 from datetime import datetime
 import json
 
 from core.models.user import User
 from core.models.inventory import InventoryItem
-from core.models.sales import Sale, DeviceAssignment
+from core.models.sales import Sale
 from core.models.stock_movement import StockMovement
-from core.models.base import db
 from routers.sales import _create_single_device_assignment
 
 def test_stock_flow(db_session):

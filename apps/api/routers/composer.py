@@ -1,10 +1,8 @@
 from typing import List, Optional, Any
-from fastapi import APIRouter, Depends, HTTPException, Query, Body
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from core.database import get_db
-from core.dependencies import get_current_user
-from models.user import User
 from models.inventory import InventoryItem
 from services.party_service import PartyService
 from middleware.unified_access import UnifiedAccess, require_access
@@ -444,7 +442,6 @@ async def analyze_documents(
     try:
         if suggestions:
             from core.models.user import ActivityLog
-            import uuid
             
             audit_entry = ActivityLog(
                 tenant_id=access.tenant_id,

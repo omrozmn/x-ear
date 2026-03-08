@@ -1,6 +1,5 @@
 from core.models.base import Base
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, func, Date, Time
-from .base import db
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, func
 from sqlalchemy.orm import validates
 import re
 

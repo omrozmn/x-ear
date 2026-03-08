@@ -1,8 +1,7 @@
 """
 Party Subresources Schemas - Pydantic models for Party Notes, etc.
 """
-from typing import Optional, List, Any
-from datetime import datetime
+from typing import Optional, List
 from pydantic import Field, ConfigDict
 from .base import AppBaseModel, IDMixin, TimestampMixin
 

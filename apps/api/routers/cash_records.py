@@ -5,16 +5,15 @@ Handles cash register records for cashflow management
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional
 from datetime import datetime, timezone
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict
 import logging
 
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
 from database import get_db
-from core.database import gen_id
 from schemas.base import ResponseEnvelope
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["CashRecords"])

@@ -143,7 +143,7 @@ def main():
             print(f"  ⏭ Skipped: {model_file.name}")
     
     print(f"\n{'='*60}")
-    print(f"Migration complete!")
+    print("Migration complete!")
     print(f"  Modified: {modified_count} files")
     print(f"  Skipped:  {skipped_count} files")
     print(f"{'='*60}")

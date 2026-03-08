@@ -17,13 +17,12 @@ Requirements:
 import pytest
 from hypothesis import given, strategies as st, settings, HealthCheck
 from datetime import datetime, timezone, timedelta
-from typing import Dict, Any
 import logging
 
-from ai.agents.intent_refiner import IntentRefiner, IntentRefinerResult, RefinerStatus
-from ai.agents.action_planner import ActionPlanner, ActionPlan, ActionPlannerResult, PlannerStatus
+from ai.agents.intent_refiner import IntentRefiner
+from ai.agents.action_planner import ActionPlanner, ActionPlan
 from ai.schemas.llm_outputs import IntentType, IntentOutput, RiskLevel
-from ai.services.conversation_memory import ConversationMemory, MemoryConversationMemory
+from ai.services.conversation_memory import MemoryConversationMemory
 
 
 # =============================================================================
@@ -168,17 +167,17 @@ def test_property_17_slot_value_extraction(slot_value, slot_name):
     assert extracted, f"Expected extracted value for slot {slot_name}"
     
     # Assert extracted value is related to input (at least contains some characters)
-    assert len(extracted) > 0, f"Expected non-empty extraction"
+    assert len(extracted) > 0, "Expected non-empty extraction"
     
     # For normal input, expect stripped value
     # For whitespace-only input, expect original value (to be validated by Action Planner)
     stripped = slot_value.strip()
     if stripped:
         assert extracted == stripped, \
-            f"Expected extracted value to match stripped input"
+            "Expected extracted value to match stripped input"
     else:
         assert extracted == slot_value, \
-            f"Expected whitespace-only input to be preserved for validation"
+            "Expected whitespace-only input to be preserved for validation"
 
 
 # =============================================================================

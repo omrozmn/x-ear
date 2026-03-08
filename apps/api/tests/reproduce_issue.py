@@ -27,7 +27,7 @@ def test_filter():
         db.session.add_all([p1, p2])
         db.session.commit()
         
-        print(f"Created:")
+        print("Created:")
         print(f"  User {u1.id} (Tenant {t1.id})")
         print(f"  User {u2.id} (Tenant {t2.id})")
         print(f"  Patient {p1.id} (Tenant {t1.id})")

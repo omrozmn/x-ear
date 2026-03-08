@@ -4,7 +4,6 @@ import sys
 sys.path.insert(0, 'apps/api')
 
 from sqlalchemy import create_engine, inspect
-import os
 
 # Use the actual database path
 db_url = 'sqlite:////Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/instance/xear_crm.db'

@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
-from datetime import datetime, timezone
+from datetime import datetime
 import os
 import logging
 
@@ -11,20 +11,17 @@ from models.invoice import Invoice
 from models.user import ActivityLog
 from models.efatura_outbox import EFaturaOutbox
 from models.integration_config import IntegrationConfig
-from utils.efatura import build_return_invoice_xml, write_outbox_file
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from schemas.invoices import (
     InvoiceRead, InvoiceIssueResponse, 
     InvoiceCopyCancelResponse
 )
 from schemas.efatura import EFaturaOutboxRead
 from schemas.base import ResponseEnvelope
-from database import get_db
 from models.tenant import Tenant
-from utils.ubl_utils import generate_ubl_xml, map_unit_code
+from utils.ubl_utils import generate_ubl_xml
 from services.birfatura.service import BirfaturaClient
 import base64
-from typing import Optional
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/invoices", tags=["Invoice Actions"])

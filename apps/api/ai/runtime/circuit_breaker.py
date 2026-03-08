@@ -13,10 +13,10 @@ Requirements:
 import asyncio
 import logging
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Callable, Optional, TypeVar, Generic
+from typing import Any, Callable, Optional, TypeVar
 from functools import wraps
 
 logger = logging.getLogger(__name__)
@@ -239,7 +239,7 @@ class CircuitBreaker:
             self._record_success()
             return result
             
-        except Exception as e:
+        except Exception:
             self._record_failure()
             raise
     
@@ -271,7 +271,7 @@ class CircuitBreaker:
             result = func(*args, **kwargs)
             self._record_success()
             return result
-        except Exception as e:
+        except Exception:
             self._record_failure()
             raise
     

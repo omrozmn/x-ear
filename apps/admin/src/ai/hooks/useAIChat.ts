@@ -20,7 +20,7 @@
 import { useCallback, useMemo } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { chatApiAiChatPost } from '@/api/generated';
-import type { ChatRequest as ApiChatRequest, ChatResponse as ApiChatResponse } from '@/api/generated/schemas';
+import type { ChatRequest as ApiChatRequest } from '@/api/generated/schemas';
 import { useAIContext, withAIContext } from './useAIContext';
 import { useAISessionStore } from '../stores/aiSessionStore';
 import { useAIRuntimeStore } from '../stores/aiRuntimeStore';
@@ -65,6 +65,32 @@ interface InternalChatRequest {
   prompt: string;
   additionalContext?: Record<string, unknown>;
   idempotencyKey: string;
+}
+
+type JsonObject = Record<string, unknown>;
+
+function isObject(value: unknown): value is JsonObject {
+  return typeof value === 'object' && value !== null;
+}
+
+function asObject(value: unknown): JsonObject | null {
+  return isObject(value) ? value : null;
+}
+
+function getString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined;
+}
+
+function getNumber(value: unknown): number | undefined {
+  return typeof value === 'number' ? value : undefined;
+}
+
+function getBoolean(value: unknown): boolean | undefined {
+  return typeof value === 'boolean' ? value : undefined;
+}
+
+function getRecord(value: unknown): JsonObject | undefined {
+  return isObject(value) ? value : undefined;
 }
 
 // =============================================================================
@@ -123,46 +149,46 @@ function createErrorMessage(errorCode: AIErrorCode): ChatMessage {
  * Parse error response to AIError
  */
 function parseErrorResponse(error: unknown): AIError {
-  // Check if it's an axios error with response
-  // Check if it's an axios error (Orval uses axios under the hood)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const axiosError = error as any;
-  if (axiosError?.response?.data || axiosError?.isAxiosError) {
-    const data = axiosError.response?.data || {};
+  const axiosError = asObject(error);
+  const response = asObject(axiosError?.response);
+  const data = asObject(response?.data);
+  const headers = asObject(response?.headers);
+  if (data || getBoolean(axiosError?.isAxiosError)) {
 
     // Backend returns error in { code, message, ... } format
-    if (data.code && typeof data.code === 'string') {
+    const responseCode = getString(data?.code);
+    if (responseCode) {
       return {
-        code: data.code as AIErrorCode,
-        message: data.message || getAIErrorMessage(data.code),
-        requestId: data.request_id || data.requestId,
-        retryAfter: data.retry_after || data.retryAfter,
-        details: data.details,
+        code: responseCode as AIErrorCode,
+        message: getString(data?.message) || getAIErrorMessage(responseCode as AIErrorCode),
+        requestId: getString(data?.request_id) || getString(data?.requestId),
+        retryAfter: getNumber(data?.retry_after) || getNumber(data?.retryAfter),
+        details: getRecord(data?.details),
       };
     }
 
     // Map HTTP status to error code
-    const status = axiosError.response?.status;
-    let code: AIErrorCode = 'INFERENCE_ERROR';
+    const status = getNumber(response?.status);
+    let mappedCode: AIErrorCode = 'INFERENCE_ERROR';
 
     if (status === 429) {
-      code = data.quota_exceeded ? 'QUOTA_EXCEEDED' : 'RATE_LIMITED';
+      mappedCode = getBoolean(data?.quota_exceeded) ? 'QUOTA_EXCEEDED' : 'RATE_LIMITED';
     } else if (status === 403) {
-      code = 'PERMISSION_DENIED';
+      mappedCode = 'PERMISSION_DENIED';
     } else if (status === 404) {
-      code = 'NOT_FOUND';
+      mappedCode = 'NOT_FOUND';
     } else if (status === 400) {
-      code = 'INVALID_REQUEST';
+      mappedCode = 'INVALID_REQUEST';
     } else if (status === 504) {
-      code = 'INFERENCE_TIMEOUT';
+      mappedCode = 'INFERENCE_TIMEOUT';
     }
 
     return {
-      code,
-      message: getAIErrorMessage(code),
-      requestId: data.request_id,
-      retryAfter: axiosError.response?.headers?.['retry-after']
-        ? parseInt(axiosError.response.headers['retry-after'], 10)
+      code: mappedCode,
+      message: getAIErrorMessage(mappedCode),
+      requestId: getString(data?.request_id),
+      retryAfter: getString(headers?.['retry-after'])
+        ? parseInt(getString(headers?.['retry-after']) ?? '', 10)
         : undefined,
     };
   }
@@ -261,8 +287,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
         prompt: request.prompt,
         idempotency_key: request.idempotencyKey,
         session_id: sessionId || undefined,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        context: withAIContext(context, request.additionalContext || {}) as any,
+        context: withAIContext(context, request.additionalContext || {}) as ApiChatRequest['context'],
       };
 
       let lastError: AIError | null = null;
@@ -273,24 +298,26 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
         try {
           // Make API request (returns ApiChatResponse)
           const apiResponse = await chatApiAiChatPost(payload);
+          const api = asObject(apiResponse);
+          const intent = asObject(api?.intent);
 
           // Map back to local type (camelCase)
           const response: ChatResponse = {
-            requestId: apiResponse.request_id,
-            status: apiResponse.status,
-            intent: apiResponse.intent ? {
-              intentType: apiResponse.intent.intent_type,
-              confidence: apiResponse.intent.confidence,
-              entities: apiResponse.intent.entities || {},
-              clarificationNeeded: apiResponse.intent.clarification_needed || false,
-              clarificationQuestion: apiResponse.intent.clarification_question || undefined,
+            requestId: getString(api?.requestId) ?? getString(api?.request_id) ?? '',
+            status: getString(api?.status) ?? 'unknown',
+            intent: intent ? {
+              intentType: getString(intent.intentType) ?? getString(intent.intent_type) ?? '',
+              confidence: getNumber(intent.confidence) ?? 0,
+              entities: getRecord(intent.entities) ?? {},
+              clarificationNeeded: getBoolean(intent.clarificationNeeded) ?? getBoolean(intent.clarification_needed) ?? false,
+              clarificationQuestion: getString(intent.clarificationQuestion) ?? getString(intent.clarification_question),
             } : undefined,
-            response: typeof apiResponse.response === 'string' ? apiResponse.response : JSON.stringify(apiResponse.response),
-            needsClarification: apiResponse.needs_clarification || false,
-            clarificationQuestion: apiResponse.clarification_question || undefined,
-            processingTimeMs: apiResponse.processing_time_ms,
-            piiDetected: apiResponse.pii_detected || false,
-            phiDetected: apiResponse.phi_detected || false,
+            response: getString(api?.response) ?? JSON.stringify(api?.response),
+            needsClarification: getBoolean(api?.needsClarification) ?? getBoolean(api?.needs_clarification) ?? false,
+            clarificationQuestion: getString(api?.clarificationQuestion) ?? getString(api?.clarification_question),
+            processingTimeMs: getNumber(api?.processingTimeMs) ?? getNumber(api?.processing_time_ms) ?? 0,
+            piiDetected: getBoolean(api?.piiDetected) ?? getBoolean(api?.pii_detected) ?? false,
+            phiDetected: getBoolean(api?.phiDetected) ?? getBoolean(api?.phi_detected) ?? false,
           };
 
           return response;

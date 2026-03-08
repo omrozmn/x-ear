@@ -1,7 +1,6 @@
 import pytest
 import uuid
 from core.database import set_current_tenant_id, _current_tenant_id
-from core.models.base import db
 from core.models.user import User
 from core.models.party import Party
 from core.models.tenant import Tenant

@@ -6,7 +6,7 @@ from datetime import datetime
 from enum import Enum
 from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Integer, Numeric, JSON
 from sqlalchemy.orm import relationship, backref
-from models.base import db, BaseModel
+from models.base import BaseModel
 from models.mixins import TenantScopedMixin
 
 class SubscriptionStatus(str, Enum):

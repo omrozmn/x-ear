@@ -20,7 +20,7 @@ Endpoints:
     PUT    /api/admin/admin-users/<id>/roles   - Kullanıcıya rol ata
 """
 import logging
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 
 from models import db, AdminUser
 from models.admin_permission import AdminRoleModel, AdminPermissionModel

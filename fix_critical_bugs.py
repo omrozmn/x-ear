@@ -5,7 +5,6 @@ Fix critical bugs found by Schemathesis:
 2. Fix response schema violations
 3. Add missing 404/500 status codes to OpenAPI
 """
-import os
 import re
 from pathlib import Path
 

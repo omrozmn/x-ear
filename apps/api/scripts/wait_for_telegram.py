@@ -33,9 +33,9 @@ while True:
     msg, all_msgs = get_unprocessed()
     if msg:
         mark_processed(msg, all_msgs)
-        print(f"\n--- TELEGRAM SYNC ALERT ---")
+        print("\n--- TELEGRAM SYNC ALERT ---")
         print(f"USER: {msg['user']}")
         print(f"MESSAGE: {msg['text']}")
-        print(f"---------------------------\n")
+        print("---------------------------\n")
         break
     time.sleep(1)

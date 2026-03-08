@@ -7,7 +7,6 @@ in PUT endpoints to prevent concurrent modification conflicts.
 
 from functools import wraps
 from flask import request, jsonify
-from datetime import datetime
 from models.base import db
 import logging
 

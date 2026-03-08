@@ -12,7 +12,6 @@ Fixes:
 """
 import re
 from pathlib import Path
-from typing import List, Tuple
 
 def fix_patient_name_references(file_path: Path) -> bool:
     """Fix patient_name variable references"""
@@ -280,37 +279,37 @@ def main():
             stats['patient_name'] += 1
             print(f"  ✓ {file_path.name}")
     
-    print(f"\n2. Fixing invoice.patient references...")
+    print("\n2. Fixing invoice.patient references...")
     for file_path in all_files:
         if fix_invoice_patient_references(file_path):
             stats['invoice_patient'] += 1
             print(f"  ✓ {file_path.name}")
     
-    print(f"\n3. Fixing Pydantic attribute access...")
+    print("\n3. Fixing Pydantic attribute access...")
     for file_path in all_files:
         if fix_pydantic_attribute_access(file_path):
             stats['pydantic_attrs'] += 1
             print(f"  ✓ {file_path.name}")
     
-    print(f"\n4. Fixing models.sgk imports...")
+    print("\n4. Fixing models.sgk imports...")
     for file_path in all_files:
         if fix_sgk_imports(file_path):
             stats['sgk_imports'] += 1
             print(f"  ✓ {file_path.name}")
     
-    print(f"\n5. Ensuring timezone imports...")
+    print("\n5. Ensuring timezone imports...")
     for file_path in all_files:
         if ensure_timezone_import(file_path):
             stats['timezone'] += 1
             print(f"  ✓ {file_path.name}")
     
-    print(f"\n6. Adding safe date parsing...")
+    print("\n6. Adding safe date parsing...")
     for file_path in routers_dir.glob('*.py'):
         if add_safe_date_parsing(file_path):
             stats['date_parsing'] += 1
             print(f"  ✓ {file_path.name}")
     
-    print(f"\n7. Fixing undefined variables...")
+    print("\n7. Fixing undefined variables...")
     for file_path in all_files:
         if fix_undefined_variables(file_path):
             stats['undefined_vars'] += 1

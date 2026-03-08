@@ -77,14 +77,14 @@ for method, path in sorted(admin_endpoints):
                 get_failed += 1
             else:
                 post_failed += 1
-    except Exception as e:
+    except Exception:
         print(f"✗ {method:4} {path} [ERROR]")
         if method == "GET":
             get_failed += 1
         else:
             post_failed += 1
 
-print(f"\n=== Summary ===")
+print("\n=== Summary ===")
 print(f"GET Endpoints:  {get_passed}/{get_passed + get_failed} passed ({100*get_passed//(get_passed + get_failed) if (get_passed + get_failed) > 0 else 0}%)")
 print(f"POST Endpoints: {post_passed}/{post_passed + post_failed} passed ({100*post_passed//(post_passed + post_failed) if (post_passed + post_failed) > 0 else 0}%)")
 print(f"TOTAL:          {get_passed + post_passed}/{len(admin_endpoints)} passed ({100*(get_passed + post_passed)//len(admin_endpoints)}%)")

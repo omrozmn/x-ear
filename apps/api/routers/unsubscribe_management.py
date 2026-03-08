@@ -7,14 +7,11 @@ import logging
 from typing import Optional, List
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, desc
+from sqlalchemy import desc
 from datetime import datetime, timedelta, timezone
 
 from core.dependencies import get_current_admin_user
 from core.database import get_db
-from core.dependencies import get_current_admin_user
-from core.database import get_db
-from middleware.unified_access import UnifiedAccess, require_access
 from schemas import ResponseEnvelope
 from core.models.email_deliverability import EmailUnsubscribe
 from pydantic import BaseModel, Field

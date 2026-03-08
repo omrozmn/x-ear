@@ -174,7 +174,7 @@ def seed_permissions():
         
         db.commit()
         
-        print(f"✅ Permission seeding completed!")
+        print("✅ Permission seeding completed!")
         print(f"   Created: {created_count}")
         print(f"   Updated: {updated_count}")
         print(f"   Total: {len(permissions)}")

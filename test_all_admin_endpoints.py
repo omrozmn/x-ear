@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Test all admin endpoints systematically."""
 import requests
-import json
 import sys
 import time
-from typing import Dict, Any, Optional
+from typing import Dict, Optional
 
 BASE_URL = "http://localhost:5003"
 TOKEN = None
@@ -27,8 +26,8 @@ def get_admin_token() -> str:
     except Exception as e:
         print(f"❌ Cannot connect to backend at {BASE_URL}")
         print(f"   Error: {str(e)}")
-        print(f"\n💡 Make sure the backend is running:")
-        print(f"   cd x-ear/apps/api && python main.py")
+        print("\n💡 Make sure the backend is running:")
+        print("   cd x-ear/apps/api && python main.py")
         sys.exit(1)
 
 def test_endpoint(method: str, endpoint: str, params: Optional[Dict] = None, 
@@ -195,7 +194,7 @@ def main():
     # Get authentication token
     print("🔐 Authenticating...")
     TOKEN = get_admin_token()
-    print(f"✓ Authenticated successfully\n")
+    print("✓ Authenticated successfully\n")
     
     # Test all endpoints
     passed = 0

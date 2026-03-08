@@ -19,9 +19,9 @@ try:
         user.is_active = True
         db.commit()
         
-        print(f'\n✅ Password set to: admin123')
-        print(f'✅ Email: admin@xear.com')
-        print(f'✅ Password: admin123')
+        print('\n✅ Password set to: admin123')
+        print('✅ Email: admin@xear.com')
+        print('✅ Password: admin123')
         
         # Verify
         is_valid = user.check_password('admin123')

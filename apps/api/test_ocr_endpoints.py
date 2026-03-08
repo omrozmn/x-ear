@@ -1,4 +1,3 @@
-import json
 import pytest
 pytest.importorskip('paddleocr')
 pytest.importorskip('PIL')

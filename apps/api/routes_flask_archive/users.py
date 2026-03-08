@@ -29,7 +29,6 @@ def list_users(ctx):
     if not ctx.is_super_admin and not ctx.is_tenant_admin:
         return jsonify({'success': False, 'error': 'Forbidden'}), 403
     
-    from sqlalchemy import select, func
     
     query = tenant_scoped_query(ctx, User)
     total = query.count()

@@ -1,11 +1,10 @@
 from flask import Blueprint, request, jsonify
-from datetime import datetime, timedelta
+from datetime import datetime
 import os
 
 from services.birfatura.service import BirfaturaClient
 from services.birfatura.mappers import invoice_to_basic_model, invoice_xml_to_base64
 from services.birfatura.invoice_sync import InvoiceSyncService
-from models.user import User
 from models.tenant import Tenant
 from models.integration_config import IntegrationConfig
 from models.base import db

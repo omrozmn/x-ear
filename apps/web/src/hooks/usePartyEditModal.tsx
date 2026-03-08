@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Party } from '../types/party';
 import { useUpdateParty } from '@/api/client/parties.client';
+import type { PartyCreate, PartyRead } from '@/api/generated/schemas';
 
 export function usePartyEditModal(refetch: () => Promise<unknown>) {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,7 +26,7 @@ export function usePartyEditModal(refetch: () => Promise<unknown>) {
     setEditingParty(null);
   };
 
-  const handleSubmit = async (updates: Record<string, unknown>) => {
+  const handleSubmit = async (updates: PartyCreate): Promise<PartyRead | null> => {
     try {
       if (!editingParty?.id) return null;
       
@@ -37,7 +38,7 @@ export function usePartyEditModal(refetch: () => Promise<unknown>) {
       // Wait for refetch to complete before closing modal
       await refetch();
       closeModal();
-      return result;
+      return result.data ?? null;
     } catch (e) {
       console.error('Failed to update party', e);
       throw e;

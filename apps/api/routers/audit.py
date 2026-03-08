@@ -6,7 +6,7 @@ import logging
 
 from database import get_db
 from models.user import ActivityLog
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from schemas.base import ResponseEnvelope
 from schemas.audit import AuditLogRead
 logger = logging.getLogger(__name__)

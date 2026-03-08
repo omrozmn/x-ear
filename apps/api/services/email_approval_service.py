@@ -110,7 +110,7 @@ class EmailApprovalService:
         self.db.commit()
         
         logger.info(
-            f"Email approval request created",
+            "Email approval request created",
             extra={
                 "tenant_id": tenant_id,
                 "approval_id": approval.id,
@@ -159,7 +159,7 @@ class EmailApprovalService:
         self.db.commit()
         
         logger.info(
-            f"Email approved",
+            "Email approved",
             extra={
                 "tenant_id": tenant_id,
                 "approval_id": approval_id,
@@ -207,7 +207,7 @@ class EmailApprovalService:
         self.db.commit()
         
         logger.info(
-            f"Email rejected",
+            "Email rejected",
             extra={
                 "tenant_id": tenant_id,
                 "approval_id": approval_id,

@@ -70,6 +70,18 @@ export interface UseAIAlertsOptions {
   refetchInterval?: number;
 }
 
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function getNumber(value: unknown): number {
+  return typeof value === 'number' ? value : 0;
+}
+
+function getString(value: unknown): string {
+  return typeof value === 'string' ? value : '';
+}
+
 // =============================================================================
 // API Functions
 // =============================================================================
@@ -151,44 +163,48 @@ async function fetchMetrics(windowMinutes: number): Promise<AIMetricsResponse> {
     params: { window_minutes: windowMinutes },
   });
 
-  const actualData = (response as any).data || response;
+  const actualData = isObject(response) && 'data' in response && isObject(response.data) ? response.data : response;
+  const inferenceLatency = isObject(actualData) && isObject(actualData.inference_latency) ? actualData.inference_latency : {};
+  const rates = isObject(actualData) && isObject(actualData.rates) ? actualData.rates : {};
+  const approvals = isObject(actualData) && isObject(actualData.approvals) ? actualData.approvals : {};
+  const quota = isObject(actualData) && isObject(actualData.quota) ? actualData.quota : {};
 
   // Transform backend response to frontend types
   return {
-    window_minutes: actualData.window_minutes,
-    timestamp: actualData.timestamp,
+    window_minutes: isObject(actualData) ? getNumber(actualData.window_minutes) : 0,
+    timestamp: isObject(actualData) ? getString(actualData.timestamp) : '',
     latency: {
-      p50: actualData.inference_latency?.p50_ms || 0,
-      p95: actualData.inference_latency?.p95_ms || 0,
-      p99: actualData.inference_latency?.p99_ms || 0,
-      avg: actualData.inference_latency?.mean_ms || 0,
-      max: actualData.inference_latency?.max_ms || 0,
-      sample_count: actualData.inference_latency?.count || 0,
+      p50: getNumber(inferenceLatency.p50_ms),
+      p95: getNumber(inferenceLatency.p95_ms),
+      p99: getNumber(inferenceLatency.p99_ms),
+      avg: getNumber(inferenceLatency.mean_ms),
+      max: getNumber(inferenceLatency.max_ms),
+      sample_count: getNumber(inferenceLatency.count),
     },
     errors: {
-      total_requests: actualData.rates?.total_count || 0,
-      error_count: actualData.rates?.error_count || 0,
-      error_rate: actualData.rates?.error_rate || 0,
-      timeout_count: actualData.rates?.timeout_count || 0,
-      timeout_rate: actualData.rates?.timeout_rate || 0,
+      total_requests: getNumber(rates.total_count),
+      error_count: getNumber(rates.error_count),
+      error_rate: getNumber(rates.error_rate),
+      timeout_count: getNumber(rates.timeout_count),
+      timeout_rate: getNumber(rates.timeout_rate),
       errors_by_code: {}, // Not provided by backend in this endpoint
     },
     approvals: {
       pending_count: 0, // Would need separate endpoint
-      approved_count: actualData.approvals?.approvals_granted || 0,
-      rejected_count: actualData.approvals?.approvals_rejected || 0,
+      approved_count: getNumber(approvals.approvals_granted),
+      rejected_count: getNumber(approvals.approvals_rejected),
       expired_count: 0, // Not provided
-      avg_approval_time_ms: actualData.approvals?.avg_approval_latency_ms || 0,
-      rejection_rate: actualData.approvals?.human_rejection_rate || 0,
+      avg_approval_time_ms: getNumber(approvals.avg_approval_latency_ms),
+      rejection_rate: getNumber(approvals.human_rejection_rate),
     },
     quotas: {
-      quota_rejections: actualData.quota?.quota_rejections || 0,
-      quota_rejection_rate: actualData.quota?.quota_rejection_rate || 0,
+      quota_rejections: getNumber(quota.quota_rejections),
+      quota_rejection_rate: getNumber(quota.quota_rejection_rate),
       tenants_at_limit: 0, // Not provided
       by_capability: {}, // Not provided in this format
     },
     usage: {
-      total_requests: actualData.rates?.total_count || 0,
+      total_requests: getNumber(rates.total_count),
       unique_users: 0, // Not provided
       unique_tenants: 0, // Not provided
       by_capability: {}, // Not provided
@@ -239,31 +255,44 @@ async function fetchAlerts(options: {
     params,
   });
 
-  const actualData = (response as any).data || response;
-  const rawAlerts = actualData.alerts || (Array.isArray(actualData) ? actualData : []);
+  const actualData = isObject(response) && 'data' in response && isObject(response.data) ? response.data : response;
+  const alertsSource = isObject(actualData) ? actualData.alerts : actualData;
+  const rawAlerts: unknown[] = Array.isArray(alertsSource)
+    ? alertsSource
+    : [];
 
   // Transform backend response to frontend types
-  const alerts: AIAlert[] = rawAlerts.map((alert: any) => ({
-    alert_id: alert.alert_id,
-    type: alert.alert_type as AIAlert['type'],
-    severity: alert.severity as AIAlert['severity'],
-    message: alert.message,
+  const alerts: AIAlert[] = rawAlerts.flatMap((alert: unknown) => {
+    if (!isObject(alert)) {
+      return [];
+    }
+
+    return [{
+    alert_id: getString(alert.alert_id),
+    type: getString(alert.alert_type) as AIAlert['type'],
+    severity: getString(alert.severity) as AIAlert['severity'],
+    message: getString(alert.message),
     details: {
-      metric_value: alert.metric_value,
-      threshold_value: alert.threshold_value,
+      metric_value: getNumber(alert.metric_value),
+      threshold_value: getNumber(alert.threshold_value),
     },
-    created_at: alert.timestamp,
-    acknowledged: alert.acknowledged,
-    acknowledged_by: alert.acknowledged_by,
-    acknowledged_at: alert.acknowledged_at,
+    created_at: getString(alert.timestamp),
+    acknowledged: alert.acknowledged === true,
+    acknowledged_by: typeof alert.acknowledged_by === 'string' ? alert.acknowledged_by : undefined,
+    acknowledged_at: typeof alert.acknowledged_at === 'string' ? alert.acknowledged_at : undefined,
     auto_resolved: false, // Not provided by backend
     resolved_at: undefined,
-  }));
+  }];
+  });
 
   return {
     alerts,
-    active_count: actualData.active_count ?? alerts.filter((a: any) => !a.acknowledged).length,
-    total_count: actualData.total_count ?? alerts.length,
+    active_count: isObject(actualData) && typeof actualData.active_count === 'number'
+      ? actualData.active_count
+      : alerts.filter((alert) => !alert.acknowledged).length,
+    total_count: isObject(actualData) && typeof actualData.total_count === 'number'
+      ? actualData.total_count
+      : alerts.length,
   };
 }
 

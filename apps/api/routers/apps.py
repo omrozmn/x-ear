@@ -1,17 +1,15 @@
 """Apps Router - FastAPI"""
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
 import logging
 
-from schemas.base import ResponseEnvelope
 from schemas.apps import AppRead, AppCreate, AppUpdate
 from models.user import User
-from models.role import Role
 from models.user_app_role import UserAppRole
 from models.app import App
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
 
 logger = logging.getLogger(__name__)

@@ -128,7 +128,7 @@ def main():
     print(f"  Total: {len(fixed_pydantic)} files")
     
     print("\n✅ Critical bugs fixed!")
-    print(f"\nSummary:")
+    print("\nSummary:")
     print(f"  - SGK imports: {fixed_sgk}")
     print(f"  - Invoice.patient: {fixed_invoice}")
     print(f"  - Pydantic attributes: {len(fixed_pydantic)}")

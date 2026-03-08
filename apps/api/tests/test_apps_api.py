@@ -1,4 +1,3 @@
-import pytest
 from core.models.user import User
 from core.models.app import App
 import importlib

@@ -1,12 +1,10 @@
 from app import app, db
 from models.base import gen_id
 from models.user import User
-from models.inventory import InventoryItem
 from models.sales import Sale, DeviceAssignment
-from routes.sales import _create_single_device_assignment, update_device_assignment
+from routes.sales import _create_single_device_assignment
 import uuid
 from datetime import datetime
-import json
 
 def verify_persistence():
     with app.app_context():

@@ -1,7 +1,5 @@
 
-import sys
 import os
-import re
 
 # We will read the file as text and perform string replacement
 # This preserves comments and formatting exactly.

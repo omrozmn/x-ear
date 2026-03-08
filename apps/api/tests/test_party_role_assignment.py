@@ -1,7 +1,4 @@
 
-import pytest
-from core.models.party import Party
-from core.models.party_role import PartyRole
 from services.party_service import PartyService
 
 def test_party_role_defaults(db_session, test_tenant):

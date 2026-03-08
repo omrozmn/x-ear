@@ -12,8 +12,6 @@ CRITICAL TESTS:
 """
 import pytest
 import asyncio
-from unittest.mock import patch, MagicMock, AsyncMock
-from contextlib import contextmanager
 
 # Configure pytest-asyncio
 pytestmark = pytest.mark.asyncio(loop_scope="function")
@@ -28,13 +26,11 @@ from core.database import (
     set_tenant_context,
     reset_tenant_context,
     get_current_tenant_id,
-    unbound_session,
-    TenantContextToken
+    unbound_session
 )
 from utils.background_task import tenant_task, tenant_task_async
 from utils.async_context import (
     gather_with_tenant_context,
-    create_task_with_tenant_context,
     TenantContextTaskGroup
 )
 from utils.exceptions import TenantContextMissingError

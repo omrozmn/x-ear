@@ -15,13 +15,12 @@ This service provides:
 """
 
 from dataclasses import dataclass
-from datetime import date, datetime
 from typing import Optional, Callable, Any
 from functools import wraps
 from enum import Enum
 import logging
 
-from ai.config import AIConfig, AIQuotaExceededError
+from ai.config import AIQuotaExceededError
 from ai.services.usage_tracker import UsageTracker, get_usage_tracker
 from ai.models.ai_usage import UsageType
 

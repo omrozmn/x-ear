@@ -1,7 +1,7 @@
 """
 Admin Add-ons routes for managing additional features/packages
 """
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from datetime import datetime
 from models.base import db
 from models.addon import AddOn, AddOnType

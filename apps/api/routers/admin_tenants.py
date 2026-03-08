@@ -3,8 +3,8 @@ FastAPI Admin Tenants Router - Migrated from Flask routes/admin_tenants.py
 Handles tenant/organization management for admin panel
 """
 from fastapi import APIRouter, Depends, HTTPException
-from typing import Optional, List, Dict, Any
-from datetime import datetime, timedelta, timezone
+from typing import Optional
+from datetime import datetime, timedelta
 from pydantic import BaseModel
 import logging
 import uuid
@@ -13,15 +13,13 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 from schemas.base import ResponseEnvelope
-from models.admin_user import AdminUser
 from models.tenant import Tenant, TenantStatus
 from models.user import User
 from models.plan import Plan
-from models.plan import Plan
 from models.addon import AddOn
 from schemas.tenants import TenantCreate, TenantUpdate, TenantRead, TenantStatus
-from schemas.users import UserRead, UserListResponse, UserResponse
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from schemas.users import UserListResponse, UserResponse
+from middleware.unified_access import UnifiedAccess, require_admin
 from core.dependencies import get_current_admin_user
 from database import get_db
 from core.models.enums import ProductCode
@@ -576,7 +574,6 @@ def get_tenant_sms_documents(
         logger.error(f"Get tenant SMS documents error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-from fastapi.responses import Response
 import os
 @router.get("/{tenant_id}/sms-documents/{document_type}/download", operation_id="listAdminTenantSmsDocumentDownload")
 def download_tenant_sms_document(

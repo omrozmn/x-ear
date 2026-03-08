@@ -1,17 +1,17 @@
 """Admin Marketplaces Router - FastAPI"""
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime, timezone
+from datetime import datetime
 import logging
 
 from database import get_db
 from core.database import unbound_session
 from models.marketplace import MarketplaceIntegration, MarketplaceProduct
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from schemas.base import ResponseEnvelope
-from schemas.marketplaces import MarketplaceIntegrationRead, MarketplaceIntegrationCreate
+from schemas.marketplaces import MarketplaceIntegrationRead
 
 logger = logging.getLogger(__name__)
 

@@ -343,7 +343,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
         <PartyFormModal
           isOpen={editModal.isOpen}
           onClose={editModal.closeModal}
-          onSubmit={editModal.handleSubmit as (updates: Record<string, unknown>) => Promise<unknown>}
+          onSubmit={editModal.handleSubmit}
           initialData={party}
           title="Hasta Düzenle"
           isLoading={editModal.isLoading}

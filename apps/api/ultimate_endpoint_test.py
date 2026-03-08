@@ -11,12 +11,10 @@ Features:
 """
 
 import requests
-import json
 import sys
 import os
 import time
 from datetime import datetime
-from typing import Dict, List, Any, Optional
 
 # --- Configuration ---
 BASE_URL = os.getenv("API_URL", "http://localhost:5003")

@@ -41,11 +41,11 @@ try:
         if inst.get('actual_status') == 'running':
             ip = inst.get('public_ipaddr')
             port = inst.get('ssh_port')
-            print(f"\n🔌 SSH Tunnel Command:")
+            print("\n🔌 SSH Tunnel Command:")
             print(f"ssh -i vast_temp_key -p {port} -L 5901:localhost:5901 -L 8000:localhost:8000 -N root@{ip}")
-            print(f"\n🖥️  VNC Connection:")
+            print("\n🖥️  VNC Connection:")
             print(f"vnc://{ip}:5901")
-            print(f"Password: xear2025")
+            print("Password: xear2025")
             
 except requests.exceptions.RequestException as e:
     print(f"❌ API Error: {e}")

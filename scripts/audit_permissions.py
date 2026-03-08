@@ -3,8 +3,6 @@ import sys
 import os
 import re
 import glob
-import ast
-from typing import Dict, List, Tuple
 
 # Add backend to path to import permissions_map
 BACKEND_PATH = os.path.join(os.getcwd(), 'apps', 'backend')

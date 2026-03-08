@@ -25,7 +25,6 @@ Properties:
 import os
 import pytest
 from datetime import datetime, timedelta, timezone
-from unittest.mock import patch, MagicMock
 from hypothesis import given, strategies as st, settings, HealthCheck
 from jose import jwt
 

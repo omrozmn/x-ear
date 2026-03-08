@@ -17,12 +17,11 @@ Requirements:
 """
 
 import hashlib
-import json
 import logging
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Set
+from typing import Dict, List, Optional
 from enum import Enum
 
 from ai.config import get_ai_config, AIPhase

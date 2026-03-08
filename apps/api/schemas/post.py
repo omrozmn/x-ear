@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional
 from datetime import datetime
 from pydantic import Field, field_validator
 from .base import AppBaseModel, IDMixin, TimestampMixin

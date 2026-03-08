@@ -1,5 +1,3 @@
-import os
-import re
 
 file_path = "apps/api/ai/tools/allowlist.py"
 with open(file_path, "r", encoding="utf-8") as f:

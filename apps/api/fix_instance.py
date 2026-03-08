@@ -28,7 +28,7 @@ if instances:
     instance_id = instance.get('id')
     status = instance.get('actual_status')
     
-    print(f"\n📊 Current Instance:")
+    print("\n📊 Current Instance:")
     print(f"ID: {instance_id}")
     print(f"Status: {status}")
     print(f"GPU: {instance.get('gpu_name')}")
@@ -152,14 +152,14 @@ if rent_response.status_code == 200:
                 if current_status == 'running':
                     ip = inst.get('public_ipaddr')
                     port = inst.get('ssh_port')
-                    print(f"\n✅ Instance is RUNNING!")
-                    print(f"\n🔌 Connection Info:")
+                    print("\n✅ Instance is RUNNING!")
+                    print("\n🔌 Connection Info:")
                     print(f"IP: {ip}")
                     print(f"SSH Port: {port}")
-                    print(f"\n🚇 Open tunnel:")
+                    print("\n🚇 Open tunnel:")
                     print(f"./open_tunnel.sh {ip} {port}")
-                    print(f"\n🖥️  Setup VNC:")
-                    print(f"./vast_connect.sh vnc")
+                    print("\n🖥️  Setup VNC:")
+                    print("./vast_connect.sh vnc")
                     sys.exit(0)
                 elif current_status == 'exited':
                     print("\n❌ Instance failed to start (exited)")
@@ -167,11 +167,11 @@ if rent_response.status_code == 200:
                     sys.exit(1)
         
         print("\n⚠️  Instance is still starting. Check status with:")
-        print(f"python3 check_vast.py")
+        print("python3 check_vast.py")
     else:
         print(f"⚠️  Unexpected response: {result}")
 else:
-    print(f"\n❌ Failed to rent instance")
+    print("\n❌ Failed to rent instance")
     print(f"Status: {rent_response.status_code}")
     print(f"Response: {rent_response.text}")
     sys.exit(1)

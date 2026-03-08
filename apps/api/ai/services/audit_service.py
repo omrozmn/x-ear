@@ -21,11 +21,10 @@ import json
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from enum import Enum
 from typing import Any, Dict, List, Optional, Set
 from uuid import uuid4
 
-from ai.models.ai_audit_log import AIAuditLog, AuditEventType, IncidentTag
+from ai.models.ai_audit_log import AuditEventType, IncidentTag
 
 logger = logging.getLogger(__name__)
 

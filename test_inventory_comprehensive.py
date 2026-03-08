@@ -5,7 +5,6 @@ Tests ALL inventory operations: create, read, update, delete, pricing, VAT, seri
 """
 
 import requests
-import json
 import time
 
 BASE_URL = "http://localhost:5003"
@@ -254,7 +253,7 @@ def test_inventory_operations():
     
     if response.status_code == 200:
         stats = response.json()["data"]
-        print(f"✅ Stats retrieved:")
+        print("✅ Stats retrieved:")
         print(f"   Total Items: {stats.get('totalItems', 'N/A')}")
         print(f"   Low Stock: {stats.get('lowStock', 'N/A')}")
     else:
@@ -292,7 +291,7 @@ def test_inventory_operations():
             print(response.text)
         
         # 5b. Update stock quantity
-        print(f"\n5b. Updating stock quantity...")
+        print("\n5b. Updating stock quantity...")
         update_data = {
             "availableInventory": 8,
             "totalInventory": 10
@@ -311,7 +310,7 @@ def test_inventory_operations():
             print(f"❌ Failed: {response.status_code}")
         
         # 5c. Add serial numbers
-        print(f"\n5c. Adding serial numbers...")
+        print("\n5c. Adding serial numbers...")
         response = requests.post(
             f"{BASE_URL}/api/inventory/{item_id}/serials",
             json={"serials": ["PH003", "PH004", "PH005"]},
@@ -320,7 +319,7 @@ def test_inventory_operations():
         
         if response.status_code == 200:
             result = response.json()["data"]
-            print(f"✅ Added serials")
+            print("✅ Added serials")
             
             # Verify stock didn't change
             response = requests.get(
@@ -339,7 +338,7 @@ def test_inventory_operations():
             print(f"❌ Failed: {response.status_code}")
         
         # 5d. Update description and warranty
-        print(f"\n5d. Updating description and warranty...")
+        print("\n5d. Updating description and warranty...")
         update_data = {
             "description": "Updated premium hearing aid with extended warranty",
             "warranty": 36
@@ -403,7 +402,7 @@ def test_inventory_operations():
         )
         
         if response.status_code in [200, 204]:
-            print(f"✅ Deleted successfully")
+            print("✅ Deleted successfully")
             
             # Verify deletion
             response = requests.get(

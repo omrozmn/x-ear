@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Comprehensive test of ALL admin POST endpoints"""
 import requests
-import json
 import uuid
 
 # Login
@@ -101,7 +100,7 @@ for path in sorted(admin_posts):
         failed += 1
         results.append((path, "ERROR", 0))
 
-print(f"\n=== Summary ===")
+print("\n=== Summary ===")
 print(f"Total: {passed + failed}")
 print(f"Passed: {passed}")
 print(f"Failed: {failed}")

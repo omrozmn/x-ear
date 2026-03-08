@@ -5,7 +5,7 @@ Implements Contract #14: FeatureGate Fail-Mode Policy.
 import logging
 import os
 from enum import Enum
-from typing import Literal, Optional
+from typing import Literal
 
 # Configure logging
 logger = logging.getLogger(__name__)

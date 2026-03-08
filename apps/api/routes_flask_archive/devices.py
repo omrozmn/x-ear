@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, make_response
+from flask import Blueprint, request, make_response
 from models.base import db
 from models.device import Device
 from models.inventory import InventoryItem

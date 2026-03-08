@@ -1,13 +1,12 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from utils.decorators import unified_access
 from utils.response import success_response, error_response
-from models import db, Campaign, SMSLog, Patient, SMSProviderConfig, TenantSMSCredit, User
+from models import db, Campaign, SMSLog, Patient, SMSProviderConfig, TenantSMSCredit
 from services.sms_service import VatanSMSService
 from datetime import datetime, timezone
 from config.tenant_permissions import TenantPermissions
 from utils.tenant_security import UnboundSession
 import logging
-import json
 
 logger = logging.getLogger(__name__)
 campaigns_bp = Blueprint('campaigns', __name__)

@@ -1,8 +1,7 @@
 from core.models.base import Base
-from .base import db, BaseModel, gen_id
+from .base import BaseModel, gen_id
 from sqlalchemy import Table, Column, String, ForeignKey, Boolean, Text
-from sqlalchemy.orm import relationship, joinedload
-from .permission import Permission
+from sqlalchemy.orm import relationship
 
 # Association table for role <-> permission
 role_permissions = Table(

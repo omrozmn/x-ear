@@ -31,7 +31,7 @@ def main():
                         telegram_bot.send_message(chat_id, f"📥 '{text}' mesajınız doğrudan sistem çekirdeğine iletildi. Antigravity bir sonraki kontrolünde bunu değerlendirecek.")
             
             time.sleep(2)
-        except Exception as e:
+        except Exception:
             time.sleep(5)
 
 if __name__ == "__main__":

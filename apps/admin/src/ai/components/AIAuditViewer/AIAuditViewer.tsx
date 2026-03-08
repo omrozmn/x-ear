@@ -9,7 +9,7 @@
  * @requirements Requirement 7: Admin Audit Log Viewer
  */
 
-import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useAIAudit } from '../../hooks/useAIAudit';
 import type {
   AIAuditViewerProps,
@@ -19,7 +19,6 @@ import type {
 } from '../../types/ai-admin.types';
 import {
   FileText,
-  Search,
   Filter,
   Download,
   RefreshCw,

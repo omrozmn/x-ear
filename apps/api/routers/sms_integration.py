@@ -1,9 +1,9 @@
 """SMS Integration Router - FastAPI"""
-from fastapi import APIRouter, Depends, Query, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, Query, HTTPException, UploadFile, File
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from typing import Optional, List, Dict, Any
+from typing import Optional, List
 from datetime import datetime, timezone
 import os
 import uuid
@@ -15,10 +15,8 @@ from schemas.base import ResponseEnvelope
 from schemas.sms import (
     SmsProviderConfigRead,
     SmsProviderConfigUpdate,
-    SmsHeaderRequestBase,
     SmsHeaderRequestRead,
     SmsHeaderRequestCreate,
-    SmsHeaderRequestUpdate,
     SmsPackageRead,
     TenantSmsCreditRead,
     TargetAudienceRead,
@@ -274,10 +272,7 @@ async def create_target_audience(
 
 # --- Additional SMS Endpoints (Migrated from Flask) ---
 
-from fastapi import UploadFile, File
-from fastapi.responses import FileResponse
 import os
-import tempfile
 @router.post("/documents/upload", operation_id="createSmDocumentUpload")
 async def upload_sms_document(
     file: UploadFile = File(...),

@@ -2,7 +2,6 @@
 SGK Schemas - Pydantic models for SGK domain
 """
 from typing import Optional, Any, List, Dict
-from datetime import datetime
 from pydantic import Field, ConfigDict
 from .base import AppBaseModel, IDMixin, TimestampMixin
 

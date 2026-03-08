@@ -15,7 +15,6 @@ from core.models.sales import Sale
 from core.models.inventory import InventoryItem
 from core.models.party import Party
 from datetime import datetime
-import json
 
 def create_full_device_assignment():
     """Create device assignment with ALL fields populated"""
@@ -141,7 +140,7 @@ def create_full_device_assignment():
         print(f"   Brand: {assignment.brand}")
         print(f"   Model: {assignment.model}")
         
-        print(f"\n📋 TEST DATA:")
+        print("\n📋 TEST DATA:")
         print(f"   Party ID: {party.id}")
         print(f"   Sale ID: {sale.id}")
         print(f"   Assignment ID: {assignment.id}")
@@ -162,8 +161,8 @@ if __name__ == '__main__':
     result = create_full_device_assignment()
     if result:
         print("\n✅ Test data created successfully!")
-        print(f"\nNow test these endpoints:")
+        print("\nNow test these endpoints:")
         print(f"1. GET /api/parties/{result['party_id']}/devices")
-        print(f"2. GET /api/sales (filter by party)")
+        print("2. GET /api/sales (filter by party)")
         print(f"3. GET /api/sales/{result['sale_id']}")
         print(f"4. Database: SELECT * FROM device_assignments WHERE id='{result['assignment_id']}'")

@@ -4,7 +4,7 @@ Admin Schemas
 from typing import Optional, List, Dict, Any, Union
 from pydantic import Field
 from .base import AppBaseModel
-from .users import UserRead, AdminUserRead
+from .users import AdminUserRead
 
 # --- Auth/Debug ---
 

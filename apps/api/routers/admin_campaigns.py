@@ -2,15 +2,15 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from typing import Optional, List
-from datetime import datetime, timezone
+from typing import Optional
+from datetime import datetime
 import logging
 
 from database import get_db
 from core.database import unbound_session
 from models.campaign import Campaign
 from models.user import User
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from schemas.campaigns import CampaignCreate, CampaignUpdate, CampaignRead
 from schemas.base import ResponseEnvelope
 logger = logging.getLogger(__name__)

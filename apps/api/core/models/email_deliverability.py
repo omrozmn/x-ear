@@ -2,10 +2,10 @@
 
 Models for tracking bounces, unsubscribes, DMARC reports, complaints, and metrics.
 """
-from sqlalchemy import Column, Boolean, Date, DateTime, Float, ForeignKey, Integer, JSON, String, Text, Time, Index
+from sqlalchemy import Column, Boolean, Date, DateTime, Float, ForeignKey, Integer, String, Text, Index
 from sqlalchemy.orm import relationship
 from core.models.base import Base
-from .base import db, BaseModel, gen_id, JSONMixin
+from .base import BaseModel, gen_id, JSONMixin
 from .mixins import TenantScopedMixin
 from datetime import datetime, timezone
 

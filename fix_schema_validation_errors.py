@@ -98,7 +98,7 @@ def main():
             stats['documents'] += 1
             print(f"  ✓ Fixed 'documents' in {schema_file.name}")
     
-    print(f"\n✅ Summary:")
+    print("\n✅ Summary:")
     print(f"  - details fields fixed: {stats['details']}")
     print(f"  - price fields fixed: {stats['price']}")
     print(f"  - documents fields fixed: {stats['documents']}")

@@ -106,8 +106,9 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
 
     // 1. Calculate SGK reduction per unit
     let sgkReductionPerUnit = 0;
-    if (formData.sgkScheme && formData.sgkScheme !== 'no_coverage') {
-      const sgkAmount = sgkAmounts[formData.sgkScheme];
+    const sgkScheme = formData.sgkScheme as keyof typeof sgkAmounts | '';
+    if (sgkScheme && sgkScheme !== 'no_coverage') {
+      const sgkAmount = sgkAmounts[sgkScheme];
       if (sgkAmount !== undefined) {
         sgkReductionPerUnit = Math.min(sgkAmount, listPrice);
       }

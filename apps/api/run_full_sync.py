@@ -8,8 +8,6 @@ import os
 import sys
 import sqlite3
 from datetime import datetime, timedelta, timezone
-from decimal import Decimal
-import uuid as uuid_lib
 
 sys.path.insert(0, os.path.dirname(__file__))
 
@@ -318,7 +316,7 @@ def main():
             print(f"  - {g['name']} (VKN: {vkn})")
             print(f"    Fatura: {len(g['invoices'])} adet | Toplam: {g['total_amount']:,.2f} TRY")
     
-    print(f"\nTamamlandı!")
+    print("\nTamamlandı!")
 
 
 if __name__ == "__main__":

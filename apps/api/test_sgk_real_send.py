@@ -204,7 +204,7 @@ def test_sgk_real_send():
                     uuid_val = found.get('UUID')
                     pdf_resp = client.get_pdf_link_by_uuid({"uuids": [uuid_val], "systemType": "EFATURA"})
                     if pdf_resp.get('Success') and pdf_resp.get('Result'):
-                         print(f"\n📄 PDF INFO:")
+                         print("\n📄 PDF INFO:")
                          print(f"Link: {pdf_resp.get('Result')[0]}")
                          
                          # Try to download

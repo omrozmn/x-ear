@@ -13,9 +13,9 @@ Key Features:
 
 import logging
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List
+from typing import Dict
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response
+from fastapi import APIRouter, BackgroundTasks, Depends, Response
 from pydantic import EmailStr, Field
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -224,7 +224,7 @@ async def send_ai_email_notification(
         within_quota, quota_error = _check_quota(tenant_id, db)
         if not within_quota:
             logger.warning(
-                f"AI email quota exceeded",
+                "AI email quota exceeded",
                 extra={
                     "tenant_id": tenant_id,
                     "scenario": request.scenario,

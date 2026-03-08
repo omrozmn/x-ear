@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import sys
-import os
 sys.path.append('apps/api')
 
 from core.database import get_db
@@ -53,14 +52,14 @@ def fix_device_assignment_prices():
                     print(f'  - ❌ FIXING: sale_price {assignment.sale_price} → {correct_unit_price}')
                     assignment.sale_price = correct_unit_price
             else:
-                print(f'  - ✅ Already correct')
+                print('  - ✅ Already correct')
         
         # Commit changes
         db.commit()
         print(f'\n✅ FIXED: Updated device assignment prices to {correct_unit_price}')
         
         # Verify the fix
-        print(f'\n🔍 VERIFICATION:')
+        print('\n🔍 VERIFICATION:')
         for i, assignment in enumerate(assignments):
             db.refresh(assignment)
             print(f'Assignment {i+1}: list_price={assignment.list_price}, sale_price={assignment.sale_price}')

@@ -29,6 +29,6 @@ try:
     response = client.get("/health")
     print(f"Status: {response.status_code}")
     print(f"Body: {response.text}")
-except Exception as e:
+except Exception:
     import traceback
     traceback.print_exc()

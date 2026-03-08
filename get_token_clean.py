@@ -26,7 +26,7 @@ try:
         sys.stdout.flush()
     else:
         sys.exit(1)
-except Exception as e:
+except Exception:
     sys.exit(1)
 finally:
     db.close()

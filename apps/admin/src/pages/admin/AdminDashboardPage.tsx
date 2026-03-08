@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/useAuth';
 import { useGetAdminDashboard } from '@/lib/api-client';
 import { KillSwitchRecommendation } from '@/ai';
-import { PermissionGate } from '@/hooks/useAdminPermission';
+import { PermissionGate } from '@/hooks/PermissionGate';
+import type { ResponseEnvelopeAdminDashboardMetrics } from '@/api/generated/schemas';
 import { AdminPermissions } from '@/types';
 import { useAdminResponsive } from '@/hooks';
 import {
@@ -19,7 +20,6 @@ import {
     FileText,
     ShieldCheck,
     XCircle,
-    Plus,
     Settings,
     Headphones,
     RefreshCw
@@ -43,9 +43,9 @@ export default function AdminDashboardPage() {
         }
     });
 
-    const metrics = (dashboardData as any)?.data?.metrics || (dashboardData as any)?.metrics;
+    const metrics = getDashboardMetrics(dashboardData);
     const loading = metricsLoading;
-    const errorMessage = metricsError ? (metricsError as any).response?.data?.error?.message || (metricsError as any).message || 'Sunucuyla bağlantı kurulamadı' : null;
+    const errorMessage = getErrorMessage(metricsError);
 
     const alerts = metrics?.alerts;
     const overview = metrics?.overview;
@@ -181,9 +181,9 @@ export default function AdminDashboardPage() {
 
             {/* KPI Cards Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                {cards.map((card, idx) => (
+                {cards.map((card) => (
                     <div
-                        key={idx}
+                        key={card.title}
                         className={`${card.color} rounded-xl ${isMobile ? 'p-3' : 'p-4'} shadow-md shadow-gray-100 dark:shadow-gray-900 transform transition-all duration-300 hover:scale-[1.02] hover:shadow-lg relative overflow-hidden group`}
                     >
                         <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-xl group-hover:bg-white/20 transition-all duration-500"></div>
@@ -361,7 +361,7 @@ export default function AdminDashboardPage() {
                                 </tr>
                             </thead>
                             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-50 dark:divide-gray-700">
-                                {(recentErrors as any[]).map((error) => (
+                                {recentErrors.map((error) => (
                                     <tr key={error.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
                                         <td className={`${isMobile ? 'px-4 py-3' : 'px-6 py-4'} whitespace-nowrap text-sm text-gray-600 dark:text-gray-300`}>
                                             {new Date(error.created_at).toLocaleString('tr-TR')}
@@ -394,4 +394,183 @@ export default function AdminDashboardPage() {
             )}
         </div>
     );
+}
+
+type DashboardOverview = {
+    active_tenants: number;
+    active_users: number;
+};
+
+type DashboardRevenue = {
+    monthly_recurring_revenue: number;
+};
+
+type DashboardHealth = {
+    churn_rate_percent: number;
+    avg_seat_utilization_percent: number;
+};
+
+type DashboardAlerts = {
+    expiring_soon: number;
+    high_churn: number;
+    low_utilization: number;
+};
+
+type DashboardDailyStats = {
+    today_appointments: number;
+    fitted_patients: number;
+    daily_uploads: number;
+    sgk_processed: number;
+};
+
+type DashboardRecentActivity = {
+    new_tenants_7d: number;
+    expiring_memberships_30d: number;
+};
+
+type DashboardRecentError = {
+    id: string;
+    action: string;
+    details: string;
+    created_at: string;
+    user_id: string;
+    user_name: string;
+    tenant_name: string;
+    user_email: string;
+};
+
+type DashboardMetrics = {
+    overview: DashboardOverview | null;
+    revenue: DashboardRevenue | null;
+    health_metrics: DashboardHealth | null;
+    alerts: DashboardAlerts | null;
+    daily_stats: DashboardDailyStats | null;
+    recent_activity: DashboardRecentActivity | null;
+    recent_errors: DashboardRecentError[];
+};
+
+function getDashboardMetrics(
+    dashboardData: ResponseEnvelopeAdminDashboardMetrics | undefined
+): DashboardMetrics {
+    const rawMetrics = asRecord(dashboardData?.data?.metrics);
+    return {
+        overview: parseOverview(rawMetrics?.overview),
+        revenue: parseRevenue(rawMetrics?.revenue),
+        health_metrics: parseHealth(rawMetrics?.health_metrics),
+        alerts: parseAlerts(rawMetrics?.alerts),
+        daily_stats: parseDailyStats(rawMetrics?.daily_stats),
+        recent_activity: parseRecentActivity(rawMetrics?.recent_activity),
+        recent_errors: parseRecentErrors(rawMetrics?.recent_errors),
+    };
+}
+
+function getErrorMessage(error: unknown): string | null {
+    if (!error) {
+        return null;
+    }
+
+    if (typeof error === 'object' && error !== null) {
+        const maybeError = error as {
+            message?: string;
+            response?: {
+                data?: {
+                    error?: {
+                        message?: string;
+                    };
+                };
+            };
+        };
+
+        return maybeError.response?.data?.error?.message
+            ?? maybeError.message
+            ?? 'Sunucuyla bağlantı kurulamadı';
+    }
+
+    return 'Sunucuyla bağlantı kurulamadı';
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+    return typeof value === 'object' && value !== null ? value as Record<string, unknown> : null;
+}
+
+function getNumber(value: unknown): number {
+    return typeof value === 'number' ? value : 0;
+}
+
+function getString(value: unknown): string {
+    return typeof value === 'string' ? value : '';
+}
+
+function parseOverview(value: unknown): DashboardOverview | null {
+    const record = asRecord(value);
+    return record ? {
+        active_tenants: getNumber(record.active_tenants),
+        active_users: getNumber(record.active_users),
+    } : null;
+}
+
+function parseRevenue(value: unknown): DashboardRevenue | null {
+    const record = asRecord(value);
+    return record ? {
+        monthly_recurring_revenue: getNumber(record.monthly_recurring_revenue),
+    } : null;
+}
+
+function parseHealth(value: unknown): DashboardHealth | null {
+    const record = asRecord(value);
+    return record ? {
+        churn_rate_percent: getNumber(record.churn_rate_percent),
+        avg_seat_utilization_percent: getNumber(record.avg_seat_utilization_percent),
+    } : null;
+}
+
+function parseAlerts(value: unknown): DashboardAlerts | null {
+    const record = asRecord(value);
+    return record ? {
+        expiring_soon: getNumber(record.expiring_soon),
+        high_churn: getNumber(record.high_churn),
+        low_utilization: getNumber(record.low_utilization),
+    } : null;
+}
+
+function parseDailyStats(value: unknown): DashboardDailyStats | null {
+    const record = asRecord(value);
+    return record ? {
+        today_appointments: getNumber(record.today_appointments),
+        fitted_patients: getNumber(record.fitted_patients),
+        daily_uploads: getNumber(record.daily_uploads),
+        sgk_processed: getNumber(record.sgk_processed),
+    } : null;
+}
+
+function parseRecentActivity(value: unknown): DashboardRecentActivity | null {
+    const record = asRecord(value);
+    return record ? {
+        new_tenants_7d: getNumber(record.new_tenants_7d),
+        expiring_memberships_30d: getNumber(record.expiring_memberships_30d),
+    } : null;
+}
+
+function parseRecentErrors(value: unknown): DashboardRecentError[] {
+    if (!Array.isArray(value)) {
+        return [];
+    }
+
+    return value.flatMap((item) => {
+        const record = asRecord(item);
+        if (!record) {
+            return [];
+        }
+
+        return [{
+            id: getString(record.id),
+            action: getString(record.action),
+            details: getString(record.details),
+            created_at: getString(record.created_at),
+            user_id: getString(record.user_id),
+            user_name: getString(record.user_name),
+            tenant_name: getString(record.tenant_name),
+            user_email: getString(record.user_email),
+        }];
+    });
 }

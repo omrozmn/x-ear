@@ -5,9 +5,7 @@ Handles activity log viewing and filtering for audit purposes
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional, List
 from datetime import datetime, timedelta, timezone
-from pydantic import BaseModel
 import logging
-import json
 
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func, desc

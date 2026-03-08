@@ -1,10 +1,8 @@
 # Campaign and SMS Models
-from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, JSON, String, Text, Time, Index
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Text, Index
 from sqlalchemy.orm import relationship
-from core.models.base import Base
-from .base import db, BaseModel, gen_id, JSONMixin
+from .base import BaseModel, gen_id, JSONMixin
 from .mixins import TenantScopedMixin
-import json
 
 class Campaign(BaseModel, JSONMixin, TenantScopedMixin):
     __tablename__ = 'campaigns'

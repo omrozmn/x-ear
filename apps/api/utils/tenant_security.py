@@ -8,9 +8,7 @@ For FastAPI, use:
 
 This file will be removed after Flask migration is complete.
 """
-from contextvars import ContextVar
-from flask import g, request, current_app
-from sqlalchemy import event, inspect
+from sqlalchemy import inspect
 from sqlalchemy.orm import Session, Query
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity, get_jwt
 import logging
@@ -27,7 +25,6 @@ warnings.warn(
 from database import (
     get_current_tenant_id, 
     set_current_tenant_id,
-    should_skip_tenant_filter,
     _skip_tenant_filter as _skip_filter,  # Alias for backward compat
     _current_tenant_id  # For token-based reset
 )

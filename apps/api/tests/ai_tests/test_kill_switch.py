@@ -13,7 +13,6 @@ Requirements tested:
 
 import pytest
 from datetime import datetime, timezone
-from unittest.mock import MagicMock, patch
 
 from ai.services.kill_switch import (
     KillSwitch,

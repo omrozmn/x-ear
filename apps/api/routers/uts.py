@@ -1,15 +1,12 @@
 """UTS (Ulusal Takip Sistemi) Router - FastAPI"""
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional
 import uuid
-import logging
 
 from database import get_db
 from schemas.base import ResponseEnvelope
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
-from database import get_db
+from middleware.unified_access import UnifiedAccess, require_access
 from schemas.uts import (
     BulkRegistration, UtsRegistrationListResponse, UtsJobStartResponse,
     UtsJobStatusResponse, UtsCancelResponse

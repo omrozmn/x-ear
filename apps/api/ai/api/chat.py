@@ -14,50 +14,42 @@ Requirements:
 
 import logging
 import time
-from datetime import datetime, timezone
 from typing import Any, Dict, Optional, List
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from ai.config import get_ai_config, AIUnavailableError
+from ai.config import get_ai_config
 from ai.agents.intent_refiner import (
-    IntentRefiner, 
     get_intent_refiner, 
     IntentRefinerResult,
     RefinerStatus,
 )
 from ai.services.kill_switch import (
-    KillSwitch, 
     get_kill_switch, 
     AICapability,
     KillSwitchActiveError,
 )
 from ai.services.usage_tracker import (
-    UsageTracker,
     get_usage_tracker,
 )
 from ai.services.conversation_memory import (
-    ConversationMemory,
     get_conversation_memory,
 )
 from ai.services.request_logger import get_request_logger
 from ai.models.ai_usage import UsageType
 from ai.middleware.rate_limiter import check_rate_limit, RateLimitExceededError
 from ai.api.errors import (
-    AIErrorResponse,
     AIErrorCode,
     create_error_response,
 )
 from ai.agents.action_planner import (
-    ActionPlanner,
     get_action_planner,
-    ActionPlannerResult,
     PlannerStatus
 )
-from ai.schemas.llm_outputs import IntentType, RiskLevel
+from ai.schemas.llm_outputs import IntentType
 from ai.capability_registry import (
     get_all_capabilities,
     filter_capabilities_by_permissions,

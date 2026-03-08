@@ -1,10 +1,7 @@
 # Device Model with Enhanced Type Safety
-from sqlalchemy import Column, Date, DateTime, ForeignKey, Numeric, String, Text, Time, Index
-from core.models.base import Base
-from .base import db, BaseModel, gen_id
+from sqlalchemy import Column, DateTime, ForeignKey, String, Text, Index
+from .base import BaseModel, gen_id
 from .mixins import TenantScopedMixin
-from .enums import DeviceSide, DeviceStatus, DeviceCategory
-from decimal import Decimal
 import sqlalchemy as sa
 
 class Device(BaseModel, TenantScopedMixin):

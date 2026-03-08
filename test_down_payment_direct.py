@@ -28,19 +28,19 @@ def test_down_payment_field_mapping():
     try:
         # Create Pydantic model (this is what happens in the API endpoint)
         update = DeviceAssignmentUpdate(**frontend_data)
-        print(f"✅ Pydantic model created successfully")
+        print("✅ Pydantic model created successfully")
         print(f"   down_payment field value: {update.down_payment}")
         
         # Test serialization methods (this is what happens in the endpoint)
         data_default = update.model_dump(exclude_unset=True)
         data_alias = update.model_dump(exclude_unset=True, by_alias=True)
         
-        print(f"\n📊 Serialization results:")
-        print(f"1. model_dump(exclude_unset=True):")
+        print("\n📊 Serialization results:")
+        print("1. model_dump(exclude_unset=True):")
         print(f"   Keys: {list(data_default.keys())}")
         print(f"   down_payment value: {data_default.get('down_payment', 'NOT_FOUND')}")
         
-        print(f"\n2. model_dump(exclude_unset=True, by_alias=True):")
+        print("\n2. model_dump(exclude_unset=True, by_alias=True):")
         print(f"   Keys: {list(data_alias.keys())}")
         print(f"   downPayment value: {data_alias.get('downPayment', 'NOT_FOUND')}")
         
@@ -48,7 +48,7 @@ def test_down_payment_field_mapping():
         data = update.model_dump(exclude_unset=True, by_alias=True)
         down_payment_value = data.get('downPayment')
         
-        print(f"\n🔍 Endpoint simulation:")
+        print("\n🔍 Endpoint simulation:")
         print(f"   data.get('downPayment'): {down_payment_value}")
         print(f"   Type: {type(down_payment_value)}")
         
@@ -57,14 +57,14 @@ def test_down_payment_field_mapping():
                 down_val = float(down_payment_value)
                 print(f"   ✅ Successfully converted to float: {down_val}")
                 if down_val >= 0:
-                    print(f"   ✅ Value is valid (>= 0)")
+                    print("   ✅ Value is valid (>= 0)")
                     print(f"   🎯 This should sync to sale.paid_amount = {down_val}")
                 else:
                     print(f"   ❌ Value is negative: {down_val}")
             except Exception as e:
                 print(f"   ❌ Failed to convert to float: {e}")
         else:
-            print(f"   ❌ downPayment not found in data")
+            print("   ❌ downPayment not found in data")
             
         return True
         
@@ -81,7 +81,7 @@ def check_backend_logs():
     update = DeviceAssignmentUpdate(**frontend_data)
     data = update.model_dump(exclude_unset=True, by_alias=True)
     
-    print(f"📝 Simulated endpoint log:")
+    print("📝 Simulated endpoint log:")
     print(f"   UPDATE PAYLOAD: {json.dumps(data, default=str)}")
     print(f"   DOWN_PAYMENT CHECK: 'down_payment' in data = {'down_payment' in data}")
     print(f"   DOWN_PAYMENT CHECK: 'downPayment' in data = {'downPayment' in data}")
@@ -94,13 +94,13 @@ def check_backend_logs():
         print(f"   ✅ Found downPayment: {down_payment_value}")
         print(f"   🔄 Would sync to sale.paid_amount = {float(down_payment_value)}")
     else:
-        print(f"   ❌ downPayment not found - sync would NOT happen")
+        print("   ❌ downPayment not found - sync would NOT happen")
 
 if __name__ == "__main__":
     success = test_down_payment_field_mapping()
     check_backend_logs()
     
     if success:
-        print(f"\n🎉 Field mapping test PASSED - down payment sync should work")
+        print("\n🎉 Field mapping test PASSED - down payment sync should work")
     else:
-        print(f"\n❌ Field mapping test FAILED")
+        print("\n❌ Field mapping test FAILED")

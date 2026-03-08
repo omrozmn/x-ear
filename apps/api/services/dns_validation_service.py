@@ -70,13 +70,13 @@ class DNSValidationService:
             # Note: Full SPF validation requires recursive lookups, which is complex
             # For MVP, we just check if IP is explicitly listed
             if "include:" in spf_record:
-                logger.info(f"SPF record contains include: mechanism - manual verification recommended")
+                logger.info("SPF record contains include: mechanism - manual verification recommended")
                 return True, f"SPF record found with include: mechanism. Verify {server_ip} is authorized by included domains."
             
             # Check for +all or ?all (permissive policies)
             if "+all" in spf_record or "?all" in spf_record:
                 logger.warning(f"SPF record for {domain} has permissive policy (+all or ?all)")
-                return True, f"SPF record found but has permissive policy. Consider using ~all or -all for better security."
+                return True, "SPF record found but has permissive policy. Consider using ~all or -all for better security."
             
             # IP not explicitly authorized
             return False, f"SPF record found but does not authorize {server_ip}. Add 'ip4:{server_ip}' to SPF record."
@@ -136,7 +136,7 @@ class DNSValidationService:
             # Extract public key from DKIM record (p= tag)
             match = re.search(r'p=([A-Za-z0-9+/=]+)', dkim_record)
             if not match:
-                return False, f"DKIM record found but missing public key (p= tag)"
+                return False, "DKIM record found but missing public key (p= tag)"
             
             dns_public_key = match.group(1)
             
@@ -145,9 +145,9 @@ class DNSValidationService:
             dns_key_normalized = dns_public_key.replace('\n', '').replace(' ', '')
             
             if expected_key_normalized == dns_key_normalized:
-                return True, f"DKIM record found and public key matches"
+                return True, "DKIM record found and public key matches"
             else:
-                return False, f"DKIM record found but public key does not match. Update DNS record with correct key."
+                return False, "DKIM record found but public key does not match. Update DNS record with correct key."
             
         except dns.resolver.NXDOMAIN:
             return False, f"DKIM record not found at {dkim_domain}. Add DNS TXT record."
@@ -206,7 +206,7 @@ class DNSValidationService:
             # Extract policy (p= tag)
             policy_match = re.search(r'p=(none|quarantine|reject)', dmarc_record)
             if not policy_match:
-                return False, f"DMARC record found but missing or invalid policy (p= tag)"
+                return False, "DMARC record found but missing or invalid policy (p= tag)"
             
             policy = policy_match.group(1)
             
@@ -217,11 +217,11 @@ class DNSValidationService:
             
             # Validate policy strength
             if policy == 'none':
-                return True, f"DMARC record found with policy=none (monitoring only). Consider upgrading to p=quarantine or p=reject for better protection."
+                return True, "DMARC record found with policy=none (monitoring only). Consider upgrading to p=quarantine or p=reject for better protection."
             elif policy == 'quarantine':
-                return True, f"DMARC record found with policy=quarantine (recommended for production)"
+                return True, "DMARC record found with policy=quarantine (recommended for production)"
             else:  # reject
-                return True, f"DMARC record found with policy=reject (strongest protection)"
+                return True, "DMARC record found with policy=reject (strongest protection)"
             
         except dns.resolver.NXDOMAIN:
             return False, f"DMARC record not found at {dmarc_domain}. Add DNS TXT record."

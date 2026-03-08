@@ -80,7 +80,7 @@ def generate_report(issues):
     
     report = []
     report.append("# Schemathesis Test Results - Detailed Analysis\n")
-    report.append(f"Generated: 2026-02-17\n\n")
+    report.append("Generated: 2026-02-17\n\n")
     
     # Server Errors
     report.append(f"## 1. Server Errors (500) - {len(issues['server_errors'])} issues\n\n")
@@ -154,7 +154,7 @@ if __name__ == "__main__":
     print("📊 Analyzing Schemathesis results...")
     issues = parse_log_file('schemathesis_final_test.log')
     
-    print(f"Found:")
+    print("Found:")
     print(f"  - {len(issues['server_errors'])} server errors")
     print(f"  - {len(issues['schema_violations'])} schema violations")
     print(f"  - {len(issues['accepted_invalid'])} accepted invalid requests")

@@ -29,11 +29,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from ai.agents.intent_refiner import (
     IntentRefiner,
-    IntentRefinerResult,
     RefinerStatus,
     get_intent_refiner,
 )
-from ai.schemas.llm_outputs import IntentOutput, IntentType
+from ai.schemas.llm_outputs import IntentType
 from ai.runtime.model_client import ModelResponse
 from ai.runtime.circuit_breaker import CircuitBreakerOpenError
 from datetime import datetime, timezone

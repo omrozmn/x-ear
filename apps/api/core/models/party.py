@@ -1,13 +1,10 @@
 # Party Model (formerly Patient)
-from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, JSON, String, Text, Time
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
-from core.models.base import Base
-from .base import db, BaseModel, gen_id, JSONMixin, now_utc, LowercaseEnum
+from .base import BaseModel, gen_id, JSONMixin, LowercaseEnum
 from .mixins import TenantScopedMixin
 from schemas.enums import PartyStatus
 from datetime import datetime
-import json
-import sqlalchemy as sa
 
 class Party(BaseModel, TenantScopedMixin, JSONMixin):
     __tablename__ = 'parties'

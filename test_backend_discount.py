@@ -12,7 +12,7 @@ try:
     sale = db.query(Sale).filter_by(id='2603020114').first()
     if sale:
         print(f"Testing Sale: {sale.id}")
-        print(f"DB values:")
+        print("DB values:")
         print(f"  list_price_total: {sale.list_price_total}")
         print(f"  discount_amount: {sale.discount_amount}")
         print(f"  total_amount: {sale.total_amount}")
@@ -20,7 +20,7 @@ try:
         print()
         
         sale_data = _build_full_sale_data(db, sale)
-        print(f"Calculated values:")
+        print("Calculated values:")
         print(f"  listPriceTotal: {sale_data.get('listPriceTotal')}")
         print(f"  discountAmount: {sale_data.get('discountAmount')}")
         print(f"  discountType: {sale_data.get('discountType')}")

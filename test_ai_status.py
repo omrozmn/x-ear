@@ -20,5 +20,5 @@ print(f"Status Code: {response.status_code}")
 print("Response JSON:")
 try:
     print(response.json())
-except Exception as e:
+except Exception:
     print("Not JSON:", response.text)

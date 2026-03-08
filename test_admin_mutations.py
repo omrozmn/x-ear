@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Test admin POST/PUT/PATCH/DELETE endpoints."""
 import requests
-import json
 import sys
 import time
-from typing import Dict, Any, Optional
+from typing import Dict, Optional
 
 BASE_URL = "http://localhost:5003"
 TOKEN = None
@@ -255,7 +254,7 @@ def main():
     # Get authentication token
     print("🔐 Authenticating...")
     TOKEN = get_admin_token()
-    print(f"✓ Authenticated successfully\n")
+    print("✓ Authenticated successfully\n")
     
     # Test all mutation endpoints
     passed = 0

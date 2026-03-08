@@ -1,6 +1,5 @@
 """Invoice Management Router - FastAPI"""
-from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
@@ -14,8 +13,7 @@ import logging
 from database import get_db
 from models.invoice import Invoice
 from models.system_setting import SystemSetting
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
-from database import get_db
+from middleware.unified_access import UnifiedAccess, require_access
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api", tags=["Invoice Management"])

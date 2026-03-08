@@ -3,14 +3,13 @@ from uuid import uuid4
 import logging
 import json
 import os
-from typing import Optional, Tuple, List, Dict, Any
+from typing import Optional, Tuple, Dict
 from decimal import Decimal
 
 from sqlalchemy.orm import Session
 from models.device import Device
 from models.inventory import InventoryItem
-from models.sales import DeviceAssignment, Sale, PaymentRecord
-from models.enums import DeviceSide, DeviceStatus, DeviceCategory
+from models.sales import DeviceAssignment, Sale
 from services.stock_service import create_stock_movement
 
 logger = logging.getLogger(__name__)

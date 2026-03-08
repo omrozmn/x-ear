@@ -1,8 +1,7 @@
 import logging
-import os
 from typing import List, Dict, Any
 from datetime import datetime, timedelta, timezone
-from sqlalchemy import func, and_, or_
+from sqlalchemy import or_
 from ai.insights.base import BaseAnalyzer
 from core.models.party import Party
 from core.models.invoice import Invoice

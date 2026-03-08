@@ -3,7 +3,7 @@ from sqlalchemy import Column, String, Integer, DateTime, Text, Boolean, Foreign
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import json
-from .base import db, BaseModel
+from .base import BaseModel
 from .mixins import TenantScopedMixin
 
 class Invoice(BaseModel, TenantScopedMixin):

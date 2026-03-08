@@ -9,7 +9,7 @@ tenant context cleanup, and audit logging.
 import pytest
 import asyncio
 from datetime import datetime, timezone
-from unittest.mock import Mock, AsyncMock, patch, MagicMock
+from unittest.mock import Mock, AsyncMock, patch
 from hypothesis import given, strategies as st, settings, HealthCheck
 from aiosmtplib.errors import (
     SMTPAuthenticationError,
@@ -25,7 +25,6 @@ EmailService = email_service_module.EmailService
 from services.smtp_config_service import SMTPConfigService
 from services.email_template_service import EmailTemplateService
 from core.models.email import SMTPEmailLog
-from utils.exceptions import SMTPError
 
 
 # Fixtures
@@ -676,7 +675,7 @@ async def test_multipart_message_structure(email_service):
     # Assert 8: Verify message headers
     assert message["Subject"] == subject, f"Subject should be '{subject}', got '{message['Subject']}'"
     assert message["To"] == recipient, f"To should be '{recipient}', got '{message['To']}'"
-    assert message["From"] == f"X-Ear CRM <noreply@example.com>", \
+    assert message["From"] == "X-Ear CRM <noreply@example.com>", \
         f"From should include name and email, got '{message['From']}'"
     assert message["Date"] is not None, "Date header should be set"
     assert message["Message-ID"] is not None, "Message-ID header should be set"
@@ -1546,7 +1545,7 @@ async def test_property_successful_send_logging(scenario, recipient, subject, ht
     # Assert 7: body_preview is populated (first 500 chars)
     expected_preview = text_body[:500]
     assert mock_log.body_preview == expected_preview, \
-        f"body_preview should be first 500 chars of text body"
+        "body_preview should be first 500 chars of text body"
     
     # Assert 8: retry_count is 0 for first-attempt success
     assert mock_log.retry_count == 0, \

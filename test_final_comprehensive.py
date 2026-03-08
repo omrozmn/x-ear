@@ -11,7 +11,6 @@ Tests ALL fields across ALL endpoints and ALL scenarios as requested by user:
 """
 
 import requests
-import json
 from datetime import datetime, timedelta
 from jose import jwt
 
@@ -47,7 +46,7 @@ PRODUCT_ID = "item_27022026112808_947d3a"
 print("=" * 80)
 print("🔬 FINAL COMPREHENSIVE CONSISTENCY TEST")
 print("=" * 80)
-print(f"\nTest Data:")
+print("\nTest Data:")
 print(f"  Party: {PARTY_ID}")
 print(f"  Product: {PRODUCT_ID}")
 print()
@@ -147,7 +146,7 @@ update_response = requests.put(
 
 # Verify price sync
 updated_sale = requests.get(f"{BASE_URL}/api/sales/{bilateral_sale_id}", headers=headers).json()["data"]
-print(f"✅ Updated unitListPrice to 12000")
+print("✅ Updated unitListPrice to 12000")
 print(f"   - Sale unitListPrice: {updated_sale.get('unitListPrice', 'N/A')}")
 if updated_sale.get('devices') and len(updated_sale['devices']) >= 2:
     print(f"   - Device 1 listPrice: {updated_sale['devices'][0]['listPrice']}")
@@ -182,7 +181,7 @@ update_response = requests.put(
 )
 
 updated_sale = requests.get(f"{BASE_URL}/api/sales/{bilateral_sale_id}", headers=headers).json()["data"]
-print(f"✅ Added 10% discount")
+print("✅ Added 10% discount")
 print(f"   - discountType: {updated_sale.get('discountType', 'N/A')}")
 print(f"   - discountValue: {updated_sale.get('discountValue', 'N/A')}")
 print(f"   - discountAmount: {updated_sale.get('discountAmount', 'N/A')}")
@@ -212,7 +211,7 @@ update_response = requests.put(
 )
 
 updated_sale = requests.get(f"{BASE_URL}/api/sales/{bilateral_sale_id}", headers=headers).json()["data"]
-print(f"✅ Changed SGK scheme to over18_retired")
+print("✅ Changed SGK scheme to over18_retired")
 print(f"   - sgkScheme: {updated_sale.get('sgkScheme', 'N/A')}")
 print(f"   - sgkCoverage: {updated_sale.get('sgkCoverage', 'N/A')}")
 if updated_sale.get('devices') and len(updated_sale['devices']) >= 2:
@@ -243,7 +242,7 @@ update_response = requests.put(
 )
 
 updated_sale = requests.get(f"{BASE_URL}/api/sales/{bilateral_sale_id}", headers=headers).json()["data"]
-print(f"✅ Converted to single ear (right)")
+print("✅ Converted to single ear (right)")
 print(f"   - devices count: {len(updated_sale.get('devices', []))}")
 if updated_sale.get('devices'):
     print(f"   - device ear: {updated_sale['devices'][0]['ear']}")
@@ -273,7 +272,7 @@ update_response = requests.put(
 )
 
 updated_sale = requests.get(f"{BASE_URL}/api/sales/{bilateral_sale_id}", headers=headers).json()["data"]
-print(f"✅ Converted back to bilateral")
+print("✅ Converted back to bilateral")
 print(f"   - devices count: {len(updated_sale.get('devices', []))}")
 if updated_sale.get('devices') and len(updated_sale['devices']) >= 2:
     print(f"   - device 1 ear: {updated_sale['devices'][0]['ear']}, listPrice: {updated_sale['devices'][0]['listPrice']}")
@@ -293,7 +292,7 @@ device2_id = updated_sale['devices'][1]['id']
 device1_direct = requests.get(f"{BASE_URL}/api/device-assignments/{device1_id}", headers=headers).json()["data"]
 device2_direct = requests.get(f"{BASE_URL}/api/device-assignments/{device2_id}", headers=headers).json()["data"]
 
-print(f"✅ Device assignment endpoint check:")
+print("✅ Device assignment endpoint check:")
 print(f"   Device 1 (from sale): listPrice={updated_sale['devices'][0]['listPrice']}, sgkScheme={updated_sale['devices'][0].get('sgkScheme', 'N/A')}")
 print(f"   Device 1 (direct):    listPrice={device1_direct['listPrice']}, sgkScheme={device1_direct.get('sgkScheme', 'N/A')}")
 print(f"   Device 2 (from sale): listPrice={updated_sale['devices'][1]['listPrice']}, sgkScheme={updated_sale['devices'][1].get('sgkScheme', 'N/A')}")
@@ -311,25 +310,25 @@ else:
 print("\n" + "=" * 80)
 print("🎉 FINAL COMPREHENSIVE TEST COMPLETE")
 print("=" * 80)
-print(f"\nTest Sales Created:")
+print("\nTest Sales Created:")
 print(f"  - Single sale: {single_sale_id}")
 print(f"  - Bilateral sale: {bilateral_sale_id}")
-print(f"\nScenarios Tested:")
-print(f"  ✅ Create single device sale")
-print(f"  ✅ Create bilateral sale")
-print(f"  ✅ Edit sale - change unit list price (price sync)")
-print(f"  ✅ Edit sale - change discount")
-print(f"  ✅ Edit sale - change SGK scheme")
-print(f"  ✅ Convert bilateral → single")
-print(f"  ✅ Convert single → bilateral")
-print(f"  ✅ Verify device assignment endpoint consistency")
-print(f"\n📝 Manual Frontend Verification:")
-print(f"  1. Open http://localhost:8080")
+print("\nScenarios Tested:")
+print("  ✅ Create single device sale")
+print("  ✅ Create bilateral sale")
+print("  ✅ Edit sale - change unit list price (price sync)")
+print("  ✅ Edit sale - change discount")
+print("  ✅ Edit sale - change SGK scheme")
+print("  ✅ Convert bilateral → single")
+print("  ✅ Convert single → bilateral")
+print("  ✅ Verify device assignment endpoint consistency")
+print("\n📝 Manual Frontend Verification:")
+print("  1. Open http://localhost:8080")
 print(f"  2. Navigate to party: {PARTY_ID}")
-print(f"  3. Check sales table shows both sales correctly")
+print("  3. Check sales table shows both sales correctly")
 print(f"  4. Open edit sale modal for: {bilateral_sale_id}")
-print(f"  5. Verify all fields match API values")
-print(f"  6. Check device assignment cards show correct prices")
-print(f"  7. Open device assignment modal")
-print(f"  8. Verify all fields are consistent across all views")
+print("  5. Verify all fields match API values")
+print("  6. Check device assignment cards show correct prices")
+print("  7. Open device assignment modal")
+print("  8. Verify all fields are consistent across all views")
 print()

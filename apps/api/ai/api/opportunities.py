@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 from core.database import get_db
@@ -6,7 +6,6 @@ from ai.models.opportunity import AIOpportunity, OpportunityStatus
 from ai.schemas.opportunity import (
     OpportunitySummary, 
     OpportunityFull, 
-    OpportunityListResponse,
     OpportunityUpdateState
 )
 from schemas.base import ResponseEnvelope

@@ -3,13 +3,13 @@ from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from typing import Optional
-from datetime import datetime, timezone
+from datetime import datetime
 import logging
 
 from database import get_db
 from core.database import unbound_session
 from models.suppliers import Supplier
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from schemas.suppliers import SupplierCreate, SupplierUpdate, SupplierRead
 from schemas.base import ResponseEnvelope
 logger = logging.getLogger(__name__)

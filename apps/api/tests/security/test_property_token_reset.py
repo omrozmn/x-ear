@@ -3,7 +3,7 @@ Property-based tests for token-based context reset (G-02)
 Tests that context cleanup works correctly across all scenarios
 """
 import pytest
-from contextvars import ContextVar, Token
+from contextvars import Token
 from core.database import _current_tenant_id, set_tenant_context, reset_tenant_context
 
 

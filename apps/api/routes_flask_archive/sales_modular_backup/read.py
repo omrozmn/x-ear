@@ -4,14 +4,13 @@ Sales Read Operations - Unified Access
 GET endpoints for sales data retrieval using AccessContext
 """
 
-from flask import request, jsonify
+from flask import request
 from models.base import db
 from models.sales import Sale, PaymentRecord
 from models.patient import Patient
 from models.user import User
 from utils.decorators import unified_access
 from utils.response import success_response, error_response
-from datetime import datetime
 import logging
 
 logger = logging.getLogger(__name__)

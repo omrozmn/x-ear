@@ -8,7 +8,6 @@ Tests:
 - parties.delete permission enforcement
 """
 
-import pytest
 from fastapi.testclient import TestClient
 from datetime import datetime, timedelta
 from jose import jwt

@@ -7,8 +7,8 @@ G-03: Auth Boundary Migration
 - NO to_dict() usage - use AuthUserRead.from_user_model() instead
 - All endpoints have explicit response_model for OpenAPI generation
 """
-from fastapi import APIRouter, Depends, HTTPException, status, Request, Body, Header
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from fastapi import APIRouter, Depends, HTTPException, Body, Header
+from fastapi.security import OAuth2PasswordBearer
 from typing import Optional, Union
 from datetime import datetime, timezone, timedelta
 import logging
@@ -28,23 +28,18 @@ from schemas.auth import (
     ResetPasswordRequest,
     SetPasswordRequest,
     SendVerificationOtpRequest,
-    PasswordChangeRequest,
-    # Response schemas
     LoginResponse,
     LookupPhoneResponse,
     VerifyOtpResponse,
     ResetPasswordResponse,
     RefreshTokenResponse,
     MessageResponse,
-    MessageResponse,
     AuthUserRead,
     AuthAdminUserRead,
 )
-from schemas.users import UserRead
 from models.user import User
 from models.admin_user import AdminUser
 
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from database import get_db
 from utils.error_messages import get_error_message
 
@@ -675,7 +670,7 @@ def refresh_token(
                 code="TOKEN_EXPIRED"
             ).model_dump(mode="json")
         )
-    except jwt.JWTError as e:
+    except jwt.JWTError:
         raise HTTPException(
             status_code=401,
             detail=ApiError(

@@ -1,6 +1,5 @@
-from sqlalchemy import Column, ForeignKey, Integer, Numeric, String
-from core.models.base import Base
-from .base import db, BaseModel, gen_id
+from sqlalchemy import Column, Numeric, String
+from .base import BaseModel, gen_id
 from .mixins import TenantScopedMixin
 import sqlalchemy as sa
 

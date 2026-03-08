@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Fix admin endpoint permissions - replace require_access with get_current_admin_user"""
 import re
-import glob
 
 files_to_fix = [
     "apps/api/routers/email_approval.py",

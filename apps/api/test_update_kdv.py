@@ -1,5 +1,3 @@
-import json
-import random
 from app import app
 
 

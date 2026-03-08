@@ -1,5 +1,4 @@
 import pytest
-import json
 import uuid
 import time
 from jose import jwt

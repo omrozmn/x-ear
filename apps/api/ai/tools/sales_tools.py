@@ -3,7 +3,7 @@ Sales Tools for AI Layer
 
 Contains tools for managing Sales and Invoices.
 """
-from typing import Any, Dict, List
+from typing import Any, Dict
 from ai.tools import (  # type: ignore
     register_tool,
     ToolParameter,

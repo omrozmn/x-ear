@@ -1,8 +1,6 @@
-from typing import Optional, List, Union, Dict, Any
-from enum import Enum
+from typing import Optional, List, Dict, Any
 from datetime import datetime
-from pydantic import Field, validator
-from decimal import Decimal
+from pydantic import Field
 from .base import AppBaseModel, IDMixin, TimestampMixin
 
 # ==================== PAYMENT SCHEMAS ====================

@@ -8,10 +8,9 @@ Usage:
 """
 
 import requests
-import json
 import sys
 from datetime import datetime
-from typing import Dict, List, Tuple
+from typing import Dict, Tuple
 from colorama import init, Fore, Style
 
 # Initialize colorama for colored output
@@ -281,7 +280,7 @@ class EndpointTester:
         success, response = self.test_endpoint("GET", "/api/admin/dashboard/metrics")
         if success and response["status_code"] in [200, 404]:
             self.log_test("GET /api/admin/dashboard/metrics", "PASS", 
-                         f"Metrics retrieved successfully")
+                         "Metrics retrieved successfully")
         else:
             self.log_test("GET /api/admin/dashboard/metrics", "FAIL", 
                          f"Status: {response.get('status_code')}, Error: {response.get('data', {}).get('error', 'Unknown')}")
@@ -294,7 +293,7 @@ class EndpointTester:
         success, response = self.test_endpoint("GET", "/api/admin/analytics")
         if success and response["status_code"] in [200, 404]:
             self.log_test("GET /api/admin/analytics", "PASS", 
-                         f"Analytics data retrieved")
+                         "Analytics data retrieved")
         else:
             self.log_test("GET /api/admin/analytics", "FAIL", 
                          f"Status: {response.get('status_code')}")
@@ -317,7 +316,7 @@ class EndpointTester:
         success, response = self.test_endpoint("GET", "/api/admin/tenants/stats")
         if success and response["status_code"] in [200, 404]:
             self.log_test("GET /api/admin/tenants/stats", "PASS", 
-                         f"Tenant stats retrieved")
+                         "Tenant stats retrieved")
         else:
             self.log_test("GET /api/admin/tenants/stats", "FAIL", 
                          f"Status: {response.get('status_code')}")
@@ -340,7 +339,7 @@ class EndpointTester:
         success, response = self.test_endpoint("GET", "/api/admin/plans/stats")
         if success and response["status_code"] in [200, 404]:
             self.log_test("GET /api/admin/plans/stats", "PASS", 
-                         f"Plan stats retrieved")
+                         "Plan stats retrieved")
         else:
             self.log_test("GET /api/admin/plans/stats", "FAIL", 
                          f"Status: {response.get('status_code')}")

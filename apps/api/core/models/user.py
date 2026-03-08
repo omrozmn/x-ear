@@ -1,11 +1,9 @@
-from sqlalchemy import Table, Column, Boolean, Date, DateTime, ForeignKey, Integer, JSON, String, Text, Time, Index
+from sqlalchemy import Table, Column, Boolean, DateTime, ForeignKey, Integer, String, Text, Index
 from sqlalchemy.orm import relationship, backref
 # User and Activity Models
 from core.models.base import Base
-from .base import db, BaseModel, gen_id, JSONMixin
+from .base import BaseModel, gen_id, JSONMixin
 from .mixins import TenantScopedMixin
-from werkzeug.security import generate_password_hash, check_password_hash
-import json
 
 # Association table for User-Branch many-to-many relationship
 user_branches = Table('user_branches', Base.metadata,

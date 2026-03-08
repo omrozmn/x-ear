@@ -22,6 +22,7 @@ import {
 import { getCurrentUserId } from '@/utils/auth-utils';
 import { useListInventory } from '@/api/client/inventory.client';
 import { useCreatePatientDocuments } from '@/api/client/documents.client';
+import type { InventoryItemRead } from '@/api/generated/schemas';
 
 import { Party } from '../../../types/party';
 import ProductSearchComponent from './components/ProductSearchComponent';
@@ -125,18 +126,18 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
       'other': 'Diğer'
     };
 
-    const mapped = items.map((item: Record<string, unknown>) => ({
-      id: item.id as string,
-      name: (item.name as string) || `${item.brand} ${item.model}`,
+    const mapped = items.map((item: InventoryItemRead) => ({
+      id: item.id,
+      name: item.name || `${item.brand} ${item.model ?? ''}`.trim(),
       brand: item.brand || '',
       model: item.model || '',
-      category: categoryMap[item.category] || item.category || 'İşitme Cihazı',
+      category: categoryMap[item.category ?? ''] || item.category || 'İşitme Cihazı',
       listPrice: item.price || 0,
       salePrice: item.price || 0,
       vatRate: item.vatRate || 18,
       stock: item.availableInventory || 0,
-      serialNumber: item.barcode,
-      barcode: item.barcode,
+      serialNumber: item.barcode ?? undefined,
+      barcode: item.barcode ?? undefined,
       sgkSupported: false,
       sgkCode: ''
     }));

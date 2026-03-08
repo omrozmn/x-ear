@@ -4,8 +4,7 @@ Handles appointment CRUD, scheduling, availability
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional, List
-from datetime import datetime, timedelta, timezone
-from pydantic import BaseModel, Field
+from datetime import datetime, timedelta
 import logging
 
 from sqlalchemy.orm import Session, joinedload
@@ -13,9 +12,8 @@ from sqlalchemy import func
 
 from database import get_db
 from middleware.unified_access import UnifiedAccess, require_access
-from schemas.base import ResponseEnvelope, ResponseMeta, ApiError
+from schemas.base import ResponseEnvelope, ApiError
 from schemas.appointments import (
-    AppointmentRead, AppointmentCreate, AppointmentUpdate, 
     AppointmentRead, AppointmentCreate, AppointmentUpdate, 
     RescheduleRequest, AppointmentAvailability
 )
@@ -24,7 +22,7 @@ from models.enums import AppointmentStatus
 from core.models.party import Party
 from models.tenant import Tenant
 from services.event_service import event_service
-from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
+from fastapi import BackgroundTasks
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Appointments"])

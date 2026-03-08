@@ -4,9 +4,9 @@ Sales Payments Operations - Unified Access
 Payment-related endpoints for sales
 """
 
-from flask import request, jsonify
+from flask import request
 from models.base import db
-from models.sales import Sale, PaymentRecord, PaymentPlan, PaymentInstallment
+from models.sales import Sale, PaymentRecord, PaymentPlan
 from utils.decorators import unified_access
 from utils.response import success_response, error_response
 from utils.idempotency import idempotent

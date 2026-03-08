@@ -6,7 +6,6 @@ sys.path.insert(0, '/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/backend')
 app = create_app()
 with app.app_context():
     from models import StockMovement, DeviceAssignment, Patient
-    from database import db
     
     # Get a recent movement
     movement = StockMovement.query.filter_by(inventory_id='item_29112025125106_be0419').order_by(StockMovement.created_at.desc()).first()

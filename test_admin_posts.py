@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Test ALL admin POST endpoints with proper request bodies"""
 import requests
-import json
 
 # Login first
 response = requests.post(
@@ -178,7 +177,7 @@ for path, methods in openapi["paths"].items():
         failed += 1
         results.append((path, "ERROR", 0))
 
-print(f"\n=== Summary ===")
+print("\n=== Summary ===")
 print(f"Total POST Endpoints: {passed + failed}")
 print(f"Passed (200/201): {passed}")
 print(f"Failed: {failed}")

@@ -96,6 +96,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
 
   // Data states
   const [paymentRecords, setPaymentRecords] = useState<PaymentRecord[]>([]);
+  const [, setPromissoryNotes] = useState<PromissoryNote[]>([]);
   const [installments, setInstallments] = useState<Installment[]>([]);
   const [paymentSummary, setPaymentSummary] = useState<PaymentSummary>({
     totalAmount: 0,
@@ -466,7 +467,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      handleRecordPayment(e as React.MouseEvent<HTMLButtonElement>);
+                      void handleRecordPayment();
                     }}
                     disabled={isLoading} 
                     className="w-full" 

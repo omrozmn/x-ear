@@ -13,7 +13,6 @@ import hashlib
 import logging
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any
-from uuid import uuid4
 
 from sqlalchemy.orm import Session
 

@@ -1,6 +1,5 @@
 import os
 import time
-import json
 from typing import Optional
 
 REDIS_URL = os.getenv('REDIS_URL')

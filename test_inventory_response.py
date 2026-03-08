@@ -37,10 +37,10 @@ def test_inventory_response():
     )
     
     print(f"\nStatus Code: {response.status_code}")
-    print(f"\nResponse Headers:")
+    print("\nResponse Headers:")
     print(f"  Content-Type: {response.headers.get('content-type')}")
     
-    print(f"\nResponse Body:")
+    print("\nResponse Body:")
     data = response.json()
     print(json.dumps(data, indent=2, ensure_ascii=False))
     

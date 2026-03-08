@@ -15,18 +15,16 @@ Requirements:
 import json
 import logging
 import time
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 from enum import Enum
 
-from ai.config import get_ai_config, AIPhase
+from ai.config import get_ai_config
 from ai.utils.pii_redactor import PIIRedactor, get_redactor, RedactionResult
-from ai.utils.prompt_sanitizer import PromptSanitizer, sanitize_prompt, SanitizationResult
-from ai.runtime.prompt_registry import get_registry, PromptTemplate
-from ai.runtime.model_client import LocalModelClient, get_model_client, get_fast_model_client, ModelResponse, ModelTimeoutError
+from ai.utils.prompt_sanitizer import PromptSanitizer, SanitizationResult
+from ai.runtime.model_client import LocalModelClient, get_fast_model_client, ModelResponse, ModelTimeoutError
 from ai.runtime.circuit_breaker import get_inference_circuit_breaker, CircuitBreakerOpenError
-from ai.schemas.llm_outputs import IntentOutput, IntentType, ConfidenceLevel
+from ai.schemas.llm_outputs import IntentOutput, IntentType
 
 logger = logging.getLogger(__name__)
 

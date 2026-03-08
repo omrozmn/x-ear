@@ -13,7 +13,6 @@ Requirements: 1.4, 5.1, 5.2, 20.1, 20.2, 20.3, 20.5
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '20260125_add_email_system_tables'

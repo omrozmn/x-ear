@@ -7,16 +7,14 @@ import logging
 from typing import Optional, List
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, desc
+from sqlalchemy import and_, desc
 
 from core.dependencies import get_current_admin_user
 from core.database import get_db
-from middleware.unified_access import UnifiedAccess, require_access
 from schemas import ResponseEnvelope
 from core.models.email_deliverability import EmailBounce
 from services.bounce_handler_service import get_bounce_handler_service
 from pydantic import BaseModel, Field
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 

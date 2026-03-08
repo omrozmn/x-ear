@@ -1,4 +1,3 @@
-import json
 
 
 def test_create_patient_with_identity_and_dob(client):

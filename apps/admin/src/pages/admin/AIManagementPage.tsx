@@ -26,7 +26,9 @@ import {
   AIAuditViewer,
   AISettingsPanel,
 } from '@/ai';
-import { PermissionGate, useIsSuperAdmin, useHasAnyPermission } from '@/hooks/useAdminPermission';
+import { useIsSuperAdmin } from '@/hooks/useAdminPermission';
+import { PermissionGate } from '@/hooks/PermissionGate';
+import type { AdminPermissionCode } from '@/types';
 import { AdminPermissions } from '@/types';
 
 // =============================================================================
@@ -106,6 +108,7 @@ interface TabNavigationProps {
 }
 
 function TabNavigation({ activeTab, onTabChange, isSuperAdmin }: TabNavigationProps) {
+  void isSuperAdmin;
   return (
     <div className="border-b border-gray-200 bg-white rounded-t-lg">
       <nav className="flex -mb-px overflow-x-auto" aria-label="Tabs">
@@ -188,14 +191,14 @@ function OverviewTabContent() {
  * Tab Content Wrapper with Permission Check
  */
 interface TabContentWrapperProps {
-  permissions: string[];
+  permissions: AdminPermissionCode[];
   children: React.ReactNode;
 }
 
 function TabContentWrapper({ permissions, children }: TabContentWrapperProps) {
   return (
     <PermissionGate
-      permissions={permissions as any}
+      permissions={permissions}
       mode="any"
       fallback={
         <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
@@ -245,13 +248,8 @@ export default function AIManagementPage() {
   const [activeTab, setActiveTab] = useState<AIManagementTab>('overview');
   const isSuperAdmin = useIsSuperAdmin();
 
-  // Get the current tab config
-  const currentTab = TABS.find(t => t.id === activeTab);
-
   // Render tab content based on active tab with permission checks
   const renderTabContent = () => {
-    const permissions = currentTab?.requiredPermissions || [AdminPermissions.AI_READ];
-    
     switch (activeTab) {
       case 'overview':
         return <OverviewTabContent />;

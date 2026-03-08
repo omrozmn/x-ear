@@ -1,4 +1,4 @@
-from .base import db, BaseModel
+from .base import BaseModel
 from sqlalchemy import Column, String, Integer, UniqueConstraint
 
 class Sequence(BaseModel):

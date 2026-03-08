@@ -1,7 +1,5 @@
 from __future__ import annotations
-from typing import Optional, Any, Union, List, Dict
 import sqlite3
-import os
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt", "pbkdf2_sha256"], deprecated="auto")

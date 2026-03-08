@@ -1,5 +1,5 @@
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify
 from datetime import datetime, timedelta
 from models.base import db
 from models.tenant import Tenant
@@ -198,7 +198,6 @@ def get_admin_analytics(ctx):
             from models.medical import EReceipt, HearingTest
             from models.appointment import Appointment
             from models.patient import Patient
-            from models.device import Device
             
             domain_metrics["ereceipt_count"] = EReceipt.query.count()
             domain_metrics["hearing_test_count"] = HearingTest.query.count()

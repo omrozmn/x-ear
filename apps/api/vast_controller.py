@@ -3,7 +3,6 @@ import time
 import subprocess
 import requests
 import logging
-from datetime import datetime
 
 # Logging setup
 logging.basicConfig(
@@ -155,7 +154,7 @@ def health_check(ip, port):
     """Check if vLLM server is responding."""
     try:
         # vLLM OpenAI endpoint
-        resp = requests.get(f"http://localhost:8000/v1/models", timeout=5)
+        resp = requests.get("http://localhost:8000/v1/models", timeout=5)
         return resp.status_code == 200
     except:
         return False
@@ -284,7 +283,7 @@ if __name__ == "__main__":
         print("Set it in .env file or export VAST_API_KEY=your-key")
         exit(1)
     
-    logger.info(f"Configuration:")
+    logger.info("Configuration:")
     logger.info(f"  GPU Type: {GPU_TYPE}")
     logger.info(f"  Max Price: ${MAX_PRICE}/hr")
     logger.info(f"  Min Disk: {MIN_DISK}GB")

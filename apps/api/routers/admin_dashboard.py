@@ -12,9 +12,8 @@ import json
 from schemas.base import ResponseEnvelope
 from schemas.admin import (
     AdminDashboardMetrics, AdminDashboardStats,
-    RecentTenantItem, RecentErrorItem
+    RecentTenantItem
 )
-from models.admin_user import AdminUser
 from models.user import User
 from models.tenant import Tenant
 from models.plan import Plan
@@ -22,9 +21,8 @@ from models.appointment import Appointment
 from core.models.party import Party
 from models.device import Device
 from models.invoice import Invoice
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_admin
 from database import get_db
-from typing import Optional
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin/dashboard", tags=["Admin Dashboard"])

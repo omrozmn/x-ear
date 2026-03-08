@@ -31,6 +31,14 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
     return `₺${amount.toLocaleString('tr-TR')}`;
   };
 
+  const legacyDownPayment = (() => {
+    if (typeof device.downPayment === 'number') {
+      return device.downPayment;
+    }
+    const candidate = (device as unknown as { down_payment?: unknown }).down_payment;
+    return typeof candidate === 'number' ? candidate : 0;
+  })();
+
   const getReasonText = (reason?: string) => {
     const reasons: Record<string, string> = {
       'sale': 'Satış',
@@ -286,7 +294,7 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
               <div>
                 <span className="text-gray-500 dark:text-gray-400">Ön Ödeme:</span>
                 <p className="font-medium text-blue-600 dark:text-blue-400">
-                  {formatCurrency(device.downPayment ?? (device as Record<string, unknown>).down_payment as number ?? 0)}
+                  {formatCurrency(legacyDownPayment)}
                 </p>
               </div>
             </>

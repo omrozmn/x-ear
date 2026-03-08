@@ -68,7 +68,7 @@ def generate_script():
         },
         "INVENTORY_ITEM": {
             "name": f"Digital Hearing Aid {suffix}",
-            "brand": f"Ear-X",
+            "brand": "Ear-X",
             "model": "X100",
             "category": "hearing_aid",
             "barcode": f"bc-{suffix}"
@@ -133,7 +133,7 @@ def generate_script():
         },
         "ROLE": {
             "name": f"Test Role {suffix}",
-            "code": f"TEST_ROLE",
+            "code": "TEST_ROLE",
             "description": "Test role"
         },
         "NOTIFICATION": {

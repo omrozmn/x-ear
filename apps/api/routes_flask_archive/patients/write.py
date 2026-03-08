@@ -5,7 +5,7 @@ POST/PUT/DELETE endpoints for patient CRUD operations.
 All endpoints use @unified_access for tenant scoping and permission checks.
 """
 
-from flask import request, jsonify, make_response
+from flask import request, jsonify
 from models.base import db
 from models.patient import Patient
 from datetime import datetime
@@ -18,7 +18,6 @@ from utils.query_policy import get_or_404_scoped
 from utils.idempotency import idempotent
 from utils.optimistic_locking import optimistic_lock, with_transaction
 from utils.activity_logging import log_action
-from utils.tc_validator import validate_tc_number
 
 logger = logging.getLogger(__name__)
 

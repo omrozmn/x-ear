@@ -2,7 +2,6 @@
 Activity Log Schemas - Pydantic models for Activity Log domain
 """
 from typing import Optional, List, Dict, Any
-from datetime import datetime
 from pydantic import Field
 from .base import AppBaseModel, IDMixin, TimestampMixin
 

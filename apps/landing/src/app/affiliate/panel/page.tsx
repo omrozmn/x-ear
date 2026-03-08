@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from 'next/navigation';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Scene } from "@/components/canvas/Scene";
@@ -10,9 +10,33 @@ import { getAffiliate, updateAffiliatePaymentInfo, getAffiliateCommissions, Comm
 import { Loader2, LogOut, Wallet, User as UserIcon, Building2, CheckCircle, AlertCircle, Copy, Check, Link as LinkIcon, Phone, History, Banknote, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 
+interface AffiliateUser {
+  id: number;
+  email?: string;
+  accountHolderName?: string;
+  account_holder_name?: string;
+  iban?: string;
+  phoneNumber?: string;
+  phone_number?: string;
+  referralCode?: string;
+  code?: string;
+}
+
+interface ApiErrorLike {
+  response?: {
+    data?: {
+      detail?: string;
+    };
+  };
+}
+
+function isAffiliateUser(value: AffiliateUser | { data?: AffiliateUser }): value is AffiliateUser {
+  return "id" in value;
+}
+
 const PanelPage = () => {
   const router = useRouter();
-  const [affiliate, setAffiliate] = useState<any>(null);
+  const [affiliate, setAffiliate] = useState<AffiliateUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,60 +53,22 @@ const PanelPage = () => {
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem('affiliate_user');
-    if (!storedUser) {
-      router.push('/affiliate/login');
-      return;
-    }
-
-    try {
-      const user = JSON.parse(storedUser);
-      // user might be wrapped in {success: true, data: {id: 1, ...}} or it might be just {id: 1, ...}
-      const userData = user.data && user.id === undefined ? user.data : user;
-
-      if (!userData || !userData.id) {
-        localStorage.removeItem('affiliate_user');
-        router.push('/affiliate/login');
-        return;
-      }
-
-      setAffiliate(userData);
-
-      if (userData.id) {
-        fetchData(userData.id);
-        fetchCommissionsData(userData.id);
-      }
-    } catch (e) {
-      localStorage.removeItem('affiliate_user');
-      router.push('/affiliate/login');
-    }
-  }, [router]);
-
-  useEffect(() => {
-    if (affiliate) {
-      setFormName(affiliate.accountHolderName || affiliate.account_holder_name || '');
-      setFormIban(affiliate.iban || '');
-      setFormPhone(affiliate.phoneNumber || affiliate.phone_number || '');
-    }
-  }, [affiliate]);
-
-  const fetchData = async (id: string | number) => {
+  const fetchData = useCallback(async (id: string | number) => {
     try {
       if (!id) return;
       if (!affiliate) setLoading(true);
 
       const data = await getAffiliate(Number(id));
-      setAffiliate(data);
+      setAffiliate(data as AffiliateUser);
       localStorage.setItem('affiliate_user', JSON.stringify(data));
-    } catch (err: any) {
+    } catch {
       setError('Veriler güncellenemedi.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [affiliate]);
 
-  const fetchCommissionsData = async (id: number) => {
+  const fetchCommissionsData = useCallback(async (id: number) => {
     try {
       setLoadingCommissions(true);
       const data = await getAffiliateCommissions(id);
@@ -92,7 +78,41 @@ const PanelPage = () => {
     } finally {
       setLoadingCommissions(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('affiliate_user');
+    if (!storedUser) {
+      router.push('/affiliate/login');
+      return;
+    }
+
+    try {
+      const user = JSON.parse(storedUser) as AffiliateUser | { data?: AffiliateUser };
+      const userData = isAffiliateUser(user) ? user : user.data;
+
+      if (!userData || !userData.id) {
+        localStorage.removeItem('affiliate_user');
+        router.push('/affiliate/login');
+        return;
+      }
+
+      setAffiliate(userData);
+      void fetchData(userData.id);
+      void fetchCommissionsData(userData.id);
+    } catch {
+      localStorage.removeItem('affiliate_user');
+      router.push('/affiliate/login');
+    }
+  }, [fetchCommissionsData, fetchData, router]);
+
+  useEffect(() => {
+    if (affiliate) {
+      setFormName(affiliate.accountHolderName || affiliate.account_holder_name || '');
+      setFormIban(affiliate.iban || '');
+      setFormPhone(affiliate.phoneNumber || affiliate.phone_number || '');
+    }
+  }, [affiliate]);
 
   const handleUpdatePayment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,8 +127,9 @@ const PanelPage = () => {
       localStorage.setItem('affiliate_user', JSON.stringify(newAffiliate));
       setPaymentSuccess("Bilgiler güncellendi.");
       setTimeout(() => setPaymentSuccess(null), 3000);
-    } catch (err: any) {
-      setPaymentError(err?.response?.data?.detail || "Güncelleme başarısız.");
+    } catch (err) {
+      const apiError = err as ApiErrorLike;
+      setPaymentError(apiError.response?.data?.detail || "Güncelleme başarısız.");
     }
   };
 
@@ -164,7 +185,7 @@ const PanelPage = () => {
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
                   <h1 className="text-3xl font-display font-bold text-glow">Partner Paneli</h1>
-                  <p className="text-foreground/50 mt-1">Hoş geldiniz, <span className="text-accent-blue font-semibold">{affiliate.email}</span></p>
+                  <p className="text-foreground/50 mt-1">Hoş geldiniz, <span className="text-accent-blue font-semibold">{affiliate?.email ?? "-"}</span></p>
                 </div>
                 <div className="flex gap-4 items-center w-full md:w-auto">
                   <div className="flex flex-col items-end px-6 border-r border-foreground/10">

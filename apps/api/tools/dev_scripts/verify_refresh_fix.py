@@ -46,7 +46,7 @@ def test_refresh_flow():
     access_token = data.get('access_token')
     refresh_token = data.get('refreshToken') # Note: Check casing from your auth.py return
     
-    print(f"   Login successful.")
+    print("   Login successful.")
     
     print("\n2. Inspecting Tokens...")
     at_payload = decode_jwt_payload(access_token)
@@ -68,10 +68,10 @@ def test_refresh_flow():
     
     if refresh_resp.status_code == 200:
         new_at = refresh_resp.json().get('access_token')
-        print(f"SUCCESS: Refresh endpoint accepted token. New Access Token received.")
+        print("SUCCESS: Refresh endpoint accepted token. New Access Token received.")
         print(f"   New AT Preview: {new_at[:10]}...")
     else:
-        print(f"FAILED: Refresh endpoint rejected token.")
+        print("FAILED: Refresh endpoint rejected token.")
         print(f"   Status: {refresh_resp.status_code}")
         print(f"   Response: {refresh_resp.text}")
         sys.exit(1)

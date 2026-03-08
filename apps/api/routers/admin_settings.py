@@ -12,7 +12,6 @@ from sqlalchemy.orm import Session
 from core.dependencies import get_current_admin_user
 from database import get_db
 from schemas.base import ResponseEnvelope
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
 from schemas.system_settings import SystemSettingRead
 
 logger = logging.getLogger(__name__)

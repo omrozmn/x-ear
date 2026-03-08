@@ -19,7 +19,6 @@ from schemas.email import (
     SMTPConfigUpdate,
     SMTPConfigResponse,
     SendTestEmailRequest,
-    SendTestEmailResponse,
     SendEmailRequest,
     SendEmailResponse,
     EmailLogResponse,

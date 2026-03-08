@@ -4,8 +4,6 @@ Phase 1 Verification Script
 Tests the refactored patients endpoints for proper unified access control.
 """
 import requests
-import json
-import sys
 
 BASE_URL = "http://localhost:5003"
 

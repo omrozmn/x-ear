@@ -1,16 +1,20 @@
 import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/useAuth';
 import {
   useGetAdminAnalytics,
   AxiosError
 } from '@/lib/api-client';
+import type {
+  RevenueTrendItem,
+  TopTenantItem,
+} from '@/api/generated/schemas';
 
 const Dashboard = () => {
   const { user } = useAuth();
 
   // Use new Analytics hook
   const { data: analyticsData, isLoading, error } = useGetAdminAnalytics();
-  const data = (analyticsData as any)?.data;
+  const data = analyticsData?.data ?? null;
   const overview = data?.overview;
 
   const formatNumber = (num: number | undefined) => {
@@ -52,7 +56,7 @@ const Dashboard = () => {
                   </div>
                   <div className="ml-3">
                     <h3 className="text-sm font-medium text-red-800">Error loading dashboard</h3>
-                    <p className="text-sm text-red-700 mt-1">{(error as AxiosError<any>)?.response?.data?.error?.message || 'Failed to load dashboard data'}</p>
+                    <p className="text-sm text-red-700 mt-1">{getAnalyticsErrorMessage(error)}</p>
                   </div>
                 </div>
               </div>
@@ -79,10 +83,10 @@ const Dashboard = () => {
                           Aktif Aboneler
                         </dt>
                         <dd className="text-lg font-medium text-gray-900">
-                          {isLoading ? '-' : formatNumber(overview?.active_tenants)}
+                          {isLoading ? '-' : formatNumber(overview?.activeTenants)}
                         </dd>
                         <dd className="text-xs text-green-600 mt-1">
-                          +{overview?.tenants_growth}% geçen aya göre
+                          +{overview?.tenantsGrowth}% geçen aya göre
                         </dd>
                       </dl>
                     </div>
@@ -106,10 +110,10 @@ const Dashboard = () => {
                           Aylık Aktif Kullanıcı
                         </dt>
                         <dd className="text-lg font-medium text-gray-900">
-                          {isLoading ? '-' : formatNumber(overview?.monthly_active_users)}
+                          {isLoading ? '-' : formatNumber(overview?.monthlyActiveUsers)}
                         </dd>
                         <dd className="text-xs text-green-600 mt-1">
-                          +{overview?.mau_growth}% geçen aya göre
+                          +{overview?.mauGrowth}% geçen aya göre
                         </dd>
                       </dl>
                     </div>
@@ -133,10 +137,10 @@ const Dashboard = () => {
                           Toplam Ciro
                         </dt>
                         <dd className="text-lg font-medium text-gray-900">
-                          {isLoading ? '-' : formatCurrency(overview?.total_revenue)}
+                          {isLoading ? '-' : formatCurrency(overview?.totalRevenue)}
                         </dd>
                         <dd className="text-xs text-green-600 mt-1">
-                          +{overview?.revenue_growth}% geçen aya göre
+                          +{overview?.revenueGrowth}% geçen aya göre
                         </dd>
                       </dl>
                     </div>
@@ -164,7 +168,7 @@ const Dashboard = () => {
                             Churn Rate
                           </dt>
                           <dd className="text-lg font-medium text-gray-900">
-                            {overview.churn_rate?.toFixed(1)}%
+                            {overview.churnRate?.toFixed(1)}%
                           </dd>
                         </dl>
                       </div>
@@ -215,9 +219,9 @@ const Dashboard = () => {
                 <h3 className="text-lg font-medium text-gray-900">Top Tenants</h3>
               </div>
               <div className="card-body">
-                {data?.top_tenants?.length ? (
+                {data?.topTenants?.length ? (
                   <ul className="divide-y divide-gray-200">
-                    {data.top_tenants.map((tenant: any) => (
+                    {data.topTenants.map((tenant: TopTenantItem) => (
                       <li key={tenant.id} className="py-4 flex justify-between">
                         <div>
                           <p className="text-sm font-medium text-gray-900">{tenant.name}</p>
@@ -243,10 +247,10 @@ const Dashboard = () => {
                 <h3 className="text-lg font-medium text-gray-900">Revenue Trend</h3>
               </div>
               <div className="card-body">
-                {data?.revenue_trend?.length ? (
+                {data?.revenueTrend?.length ? (
                   <div className="space-y-4">
-                    {data.revenue_trend.map((item: any, idx: number) => (
-                      <div key={idx} className="flex items-center">
+                    {data.revenueTrend.map((item: RevenueTrendItem) => (
+                      <div key={item.month} className="flex items-center">
                         <span className="w-12 text-sm text-gray-500">{item.month}</span>
                         <div className="flex-1 mx-4 bg-gray-100 rounded-full h-2">
                           <div
@@ -273,3 +277,8 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
+function getAnalyticsErrorMessage(error: unknown): string {
+  const axiosError = error as AxiosError<{ error?: { message?: string } }> | null;
+  return axiosError?.response?.data?.error?.message || 'Failed to load dashboard data';
+}

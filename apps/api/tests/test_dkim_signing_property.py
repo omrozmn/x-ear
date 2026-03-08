@@ -24,11 +24,10 @@ from pathlib import Path
 api_path = Path(__file__).parent.parent
 sys.path.insert(0, str(api_path))
 
-from hypothesis import given, strategies as st, settings, assume, HealthCheck
+from hypothesis import given, strategies as st, settings, HealthCheck
 from email.message import EmailMessage
 from datetime import datetime, timezone
 
-import pytest
 dkim = pytest.importorskip("dkim")
 from services.dkim_signing_service import DKIMSigningService
 

@@ -31,9 +31,6 @@ from hypothesis import given, strategies as st, settings
 
 from ai.agents.action_planner import (
     ActionPlanner,
-    ActionPlannerResult,
-    ActionPlan,
-    ActionStep,
     PlannerStatus,
     get_action_planner,
 )
@@ -65,7 +62,7 @@ def mock_tool_registry():
     
     # Register test tools
     def dummy_handler(params, mode):
-        from ai.tools import ToolExecutionResult, ToolExecutionMode
+        from ai.tools import ToolExecutionResult
         return ToolExecutionResult(
             tool_id="test",
             success=True,

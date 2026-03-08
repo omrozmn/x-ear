@@ -11,12 +11,12 @@ import re
 from sqlalchemy.orm import Session
 
 from schemas.base import ResponseEnvelope, ApiError
-from schemas.roles import RoleRead, RoleCreate as SchemaRoleCreate, RoleUpdate as SchemaRoleUpdate
+from schemas.roles import RoleRead
 from models.role import Role
 from models.permission import Permission
 from models.user import User
 
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
 
 logger = logging.getLogger(__name__)

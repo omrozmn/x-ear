@@ -1,7 +1,6 @@
 from flask import Blueprint, request, jsonify
-from models.user import ActivityLog, User
-from utils.authorization import admin_required, permission_required
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from models.user import ActivityLog
+from utils.authorization import admin_required
 
 audit_bp = Blueprint('audit', __name__)
 

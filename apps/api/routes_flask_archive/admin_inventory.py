@@ -3,7 +3,6 @@ from utils.admin_permissions import AdminPermissions
 from models.base import db
 from models.device import Device
 from models.tenant import Tenant
-from sqlalchemy import or_
 import logging
 from utils.decorators import unified_access
 

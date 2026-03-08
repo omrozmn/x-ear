@@ -17,7 +17,6 @@ from dataclasses import dataclass
 from enum import Enum
 
 from sqlalchemy import text
-from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 

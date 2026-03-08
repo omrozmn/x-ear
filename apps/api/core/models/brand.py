@@ -2,7 +2,7 @@
 Brand Model
 Simple table to store inventory brands
 """
-from sqlalchemy import Column, Date, DateTime, Integer, String, Time
+from sqlalchemy import Column, DateTime, Integer, String
 from core.models.base import Base
 from datetime import datetime, timezone
 

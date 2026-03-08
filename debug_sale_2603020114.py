@@ -12,7 +12,7 @@ try:
     sale = db.query(Sale).filter_by(id="2603020114").first()
     
     if sale:
-        print(f"\n🔍 Sale 2603020114 Debug:")
+        print("\n🔍 Sale 2603020114 Debug:")
         print(f"  total_amount: {sale.total_amount}")
         print(f"  discount_type: {sale.discount_type}")
         print(f"  discount_value: {sale.discount_value}")

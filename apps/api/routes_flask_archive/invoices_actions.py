@@ -3,10 +3,9 @@ from models.base import db
 from models.invoice import Invoice
 from models.user import ActivityLog
 from models.efatura_outbox import EFaturaOutbox
-from utils.efatura import build_return_invoice_xml, write_outbox_file, generate_simple_ettn
+from utils.efatura import build_return_invoice_xml, write_outbox_file
 from datetime import datetime
 import os
-from uuid import uuid4
 
 invoices_actions_bp = Blueprint('invoices_actions', __name__, url_prefix='/api')
 

@@ -5,11 +5,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'
 
 from database import SessionLocal, UnboundSession
 from models.tenant import Tenant
-from models.user import User
 from models.sms_package import SmsPackage
-from models.campaign import Campaign
 from models.sms_integration import SMSHeaderRequest
-from datetime import datetime, timedelta
 import random
 
 def seed_admin_data():

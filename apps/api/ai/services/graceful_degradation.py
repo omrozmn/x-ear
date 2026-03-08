@@ -17,7 +17,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from functools import wraps
 from threading import Lock
-from typing import Any, Callable, Dict, Optional, TypeVar, Generic
+from typing import Any, Callable, Dict, Optional, TypeVar
 
 logger = logging.getLogger(__name__)
 

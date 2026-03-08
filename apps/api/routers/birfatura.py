@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime, timezone
+from datetime import datetime
 import os
 import logging
 
@@ -13,14 +13,11 @@ from models.integration_config import IntegrationConfig
 from services.birfatura.service import BirfaturaClient
 from services.birfatura.mappers import invoice_to_basic_model, invoice_xml_to_base64
 from services.birfatura.invoice_sync import InvoiceSyncService
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
-from database import get_db
+from middleware.unified_access import UnifiedAccess, require_access
 
 logger = logging.getLogger(__name__)
 
 from schemas.base import ResponseEnvelope
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
-from database import get_db
 from schemas.birfatura import (
     InvoiceSyncRequest, BirfaturaResponse, InvoiceSyncResponse,
     MockSearchRequest, MockDetailRequest,

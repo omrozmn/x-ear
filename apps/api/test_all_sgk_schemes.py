@@ -63,10 +63,10 @@ def test_sgk_scheme(scheme_name, settings):
         expected_total_coverage = min(expected_coverage_per_device * 2, expected_max_per_device * 2)
         
         if abs(total_sgk_coverage - expected_total_coverage) < 0.01:
-            print(f"✅ SGK Coverage calculation is CORRECT")
+            print("✅ SGK Coverage calculation is CORRECT")
             return True
         else:
-            print(f"❌ SGK Coverage calculation is INCORRECT")
+            print("❌ SGK Coverage calculation is INCORRECT")
             print(f"   Expected: {expected_total_coverage} TL")
             print(f"   Got: {total_sgk_coverage} TL")
             return False

@@ -1,15 +1,12 @@
 import sys
 import os
 import pytest
-import hashlib
-import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 # Add apps/backend to sys.path
 sys.path.append(os.path.join(os.getcwd(), "apps/backend"))
 
-from ai.tools import get_tool_registry, ToolExecutionMode
-from core.database import SessionLocal
+from ai.tools import get_tool_registry
 
 @pytest.fixture
 def registry():

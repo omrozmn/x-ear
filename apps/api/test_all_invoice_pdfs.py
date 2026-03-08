@@ -4,7 +4,6 @@ Tum fatura tiplerini test eden script.
 Her tip icin ornek PDF uretir.
 """
 import os
-import sys
 
 # Set library path for macOS
 os.environ['DYLD_LIBRARY_PATH'] = '/opt/homebrew/lib'

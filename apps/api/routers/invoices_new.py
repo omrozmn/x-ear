@@ -10,30 +10,24 @@ import logging
 import os
 import uuid
 import zipfile
-from typing import Optional, List, Literal
+from typing import Optional, Literal
 from datetime import datetime, date
 from decimal import Decimal
-import requests as http_requests
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
-from fastapi.responses import RedirectResponse
-from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import and_, or_, func, desc
+from sqlalchemy.orm import Session
 
 from core.database import get_db, unbound_session
 from middleware.unified_access import UnifiedAccess, require_access
 from schemas.response import ResponseEnvelope
 from schemas.invoices_new import (
-    IncomingInvoiceResponse, IncomingInvoiceListResponse,
-    OutgoingInvoiceResponse, OutgoingInvoiceListResponse,
+    IncomingInvoiceListResponse,
+    OutgoingInvoiceListResponse,
     ConvertToPurchaseRequest, ConvertToPurchaseResponse,
-    PartySearchResult, InvoiceStatus, InvoiceSummaryStats,
+    InvoiceStatus, InvoiceSummaryStats,
     InvoiceActionResponse, InvoiceRejectRequest, InvoiceCancelRequest,
     InvoiceDraftRequest, InvoiceDraftResponse
 )
 from core.models.purchase_invoice import PurchaseInvoice
-from core.models.invoice import Invoice
-from core.models.party import Party
-from core.models.suppliers import Supplier
 from core.models.tenant import Tenant
 from core.models.integration_config import IntegrationConfig
 from core.models.purchase import Purchase
@@ -781,7 +775,9 @@ def get_invoice_draft(
 
     raw = draft.raw_data or {}
 
-    if raw.get("_is_form_draft"):
+    if raw.get("_source_form_data") and isinstance(raw.get("_source_form_data"), dict):
+        form_data = dict(raw["_source_form_data"])
+    elif raw.get("_is_form_draft"):
         # User-created draft: raw_data IS the serialized form state
         form_data = {k: v for k, v in raw.items() if k != "_is_form_draft"}
     else:
@@ -853,7 +849,7 @@ def copy_invoice(
         subtotal=original.subtotal,
         tax_amount=original.tax_amount,
         total_amount=original.total_amount,
-        raw_data=original.raw_data,
+        raw_data=dict(original.raw_data) if isinstance(original.raw_data, dict) else original.raw_data,
         status="DRAFT",
         is_matched=False,
         notes=f"Fatura #{original.id} kopyası",

@@ -2,7 +2,6 @@
 """
 Fix all missing imports in model files after SQLAlchemy 2.0 migration
 """
-import os
 import re
 from pathlib import Path
 

@@ -30,7 +30,8 @@ class TurkishMedicalOCR:
 
         # Decide whether to use an external worker to isolate native crashes
         try:
-            import sys, platform
+            import sys
+            import platform
             py_ver = tuple(sys.version_info[:2])
             machine = platform.machine().lower() if hasattr(platform, 'machine') else ''
             # On macOS Apple Silicon (arm64) and newer Python versions we prefer an external worker
@@ -771,7 +772,6 @@ class TurkishMedicalOCR:
         import subprocess
         import json
         import shutil
-        import os
         import sys
 
         # Prefer the current virtualenv's python executable first, then common locations

@@ -1,17 +1,14 @@
 """Replacements Router - FastAPI"""
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
-from typing import Optional
-from datetime import datetime, timezone
+from datetime import datetime
 import json
 import time
 import logging
 
 from database import get_db
 from models.replacement import Replacement
-from core.models.party import Party
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from schemas.base import ResponseEnvelope
 from schemas.replacements import (
     ReplacementRead, ReplacementCreate, 

@@ -4,7 +4,7 @@ Auth Schemas - Pydantic models for Authentication domain
 G-03: Auth Boundary Migration - Type-safe auth response schemas
 All auth endpoints MUST use these schemas for serialization (by_alias=True)
 """
-from typing import Optional, List, Union
+from typing import Optional, Union
 from datetime import datetime
 from pydantic import Field, EmailStr
 from .base import AppBaseModel

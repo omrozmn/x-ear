@@ -10,8 +10,6 @@ This test file ensures:
 - Tenant isolation is maintained
 """
 
-import pytest
-from sqlalchemy.orm import Session
 
 from ai.models.ai_request import AIRequest, RequestStatus
 from ai.models.ai_action import AIAction, ActionStatus, RiskLevel

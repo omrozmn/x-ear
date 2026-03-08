@@ -2,7 +2,7 @@
 FastAPI Permissions Router - Migrated from Flask routes/permissions.py
 Handles permission management and role-permission assignments
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from typing import Optional, List
 from pydantic import BaseModel
 import logging
@@ -10,14 +10,13 @@ import logging
 from sqlalchemy.orm import Session
 
 from database import get_db
-from schemas.base import ResponseEnvelope, ApiError
+from schemas.base import ResponseEnvelope
 from schemas.roles import (
     PermissionRead, RoleRead, 
     PermissionListResponse, UserPermissionsResponse,
     RolePermissionsResponse
 )
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
-from database import get_db
+from middleware.unified_access import UnifiedAccess, require_access
 
 logger = logging.getLogger(__name__)
 

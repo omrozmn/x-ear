@@ -1,7 +1,7 @@
 """
 Admin Tenants routes for customer/organization management
 """
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, current_app
 from flask_mail import Message
 from datetime import datetime
 from models.base import db

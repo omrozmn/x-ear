@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_
-from typing import Optional, List
+from typing import Optional
 import logging
 
 from database import get_db
@@ -12,7 +12,7 @@ from schemas.birfatura import BirFaturaStats, BirFaturaLogsResponse, BirFaturaIn
 from models.invoice import Invoice
 from models.purchase_invoice import PurchaseInvoice
 from models.user import ActivityLog
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from schemas.invoices import InvoiceRead
 from schemas.purchase_invoices import PurchaseInvoiceRead
 from schemas.audit import AuditLogRead

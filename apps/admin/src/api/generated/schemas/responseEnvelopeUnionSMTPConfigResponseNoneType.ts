@@ -5,11 +5,11 @@
  * Backend API for x-ear CRM
  * OpenAPI spec version: 1.0.0
  */
-import type { ResponseEnvelopeUnionSmtpConfigResponseNoneTypeData } from './responseEnvelopeUnionSmtpConfigResponseNoneTypeData';
-import type { ResponseEnvelopeUnionSmtpConfigResponseNoneTypeMessage } from './responseEnvelopeUnionSmtpConfigResponseNoneTypeMessage';
-import type { ResponseEnvelopeUnionSmtpConfigResponseNoneTypeError } from './responseEnvelopeUnionSmtpConfigResponseNoneTypeError';
-import type { ResponseEnvelopeUnionSmtpConfigResponseNoneTypeMeta } from './responseEnvelopeUnionSmtpConfigResponseNoneTypeMeta';
-import type { ResponseEnvelopeUnionSmtpConfigResponseNoneTypeRequestId } from './responseEnvelopeUnionSmtpConfigResponseNoneTypeRequestId';
+import type { ResponseEnvelopeUnionSmtpConfigResponseNoneTypeData } from './responseEnvelopeUnionSMTPConfigResponseNoneTypeData';
+import type { ResponseEnvelopeUnionSmtpConfigResponseNoneTypeMessage } from './responseEnvelopeUnionSMTPConfigResponseNoneTypeMessage';
+import type { ResponseEnvelopeUnionSmtpConfigResponseNoneTypeError } from './responseEnvelopeUnionSMTPConfigResponseNoneTypeError';
+import type { ResponseEnvelopeUnionSmtpConfigResponseNoneTypeMeta } from './responseEnvelopeUnionSMTPConfigResponseNoneTypeMeta';
+import type { ResponseEnvelopeUnionSmtpConfigResponseNoneTypeRequestId } from './responseEnvelopeUnionSMTPConfigResponseNoneTypeRequestId';
 
 export interface ResponseEnvelopeUnionSmtpConfigResponseNoneType {
   success?: boolean;

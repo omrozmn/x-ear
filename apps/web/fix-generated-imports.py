@@ -5,7 +5,6 @@ This script analyzes the imports and maps them to the correct generated module.
 """
 
 import re
-import os
 from pathlib import Path
 
 # Mapping of function/hook names to their module paths

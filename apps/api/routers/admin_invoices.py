@@ -2,14 +2,14 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from typing import Optional
-from datetime import datetime, timezone
+from datetime import datetime
 import logging
 
 from database import get_db
 from core.database import unbound_session
 from models.invoice import Invoice
 from models.tenant import Tenant
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_admin
 from schemas.invoices import InvoiceCreate, InvoiceRead
 from schemas.base import ResponseEnvelope
 logger = logging.getLogger(__name__)

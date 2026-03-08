@@ -58,7 +58,7 @@ def create_test_user():
 if __name__ == "__main__":
     email, password = create_test_user()
     if email and password:
-        print(f"\n📋 Test credentials:")
+        print("\n📋 Test credentials:")
         print(f"   Email: {email}")
         print(f"   Password: {password}")
     else:

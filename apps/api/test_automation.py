@@ -1,4 +1,3 @@
-import json
 
 
 def test_automation_status_and_backup(client):

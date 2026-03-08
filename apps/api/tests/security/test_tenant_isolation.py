@@ -12,8 +12,7 @@ CRITICAL RULES TESTED:
 """
 import pytest
 import asyncio
-from unittest.mock import patch, MagicMock
-from contextvars import copy_context
+from unittest.mock import patch
 
 # Configure pytest-asyncio
 pytestmark = pytest.mark.asyncio(loop_scope="function")
@@ -29,9 +28,7 @@ from core.database import (
     set_tenant_context,
     reset_tenant_context,
     get_current_tenant_id,
-    set_current_tenant_id,
-    unbound_session,
-    TenantContextToken
+    unbound_session
 )
 from utils.background_task import (
     tenant_task,
@@ -40,10 +37,7 @@ from utils.background_task import (
     run_in_tenant_context_async
 )
 from utils.async_context import (
-    gather_with_tenant_context,
-    create_task_with_tenant_context,
-    run_with_tenant_context,
-    TenantContextTaskGroup
+    gather_with_tenant_context
 )
 from utils.exceptions import (
     TenantContextError,

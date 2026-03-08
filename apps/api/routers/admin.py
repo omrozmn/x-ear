@@ -3,11 +3,10 @@ Admin Router - Global admin endpoints (not tenant-specific)
 Provides cross-tenant admin operations
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Optional, List, Dict, Any
+from typing import Optional, Dict, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import func
 from pydantic import BaseModel
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 import logging
 import uuid
 from jose import jwt
@@ -15,7 +14,7 @@ from jose import jwt
 from core.database import get_db
 from middleware.unified_access import UnifiedAccess, require_admin
 from schemas.base import ResponseEnvelope
-from schemas.users import UserCreate, UserRead, UserResponse
+from schemas.users import UserCreate, UserRead
 from core.models.user import User
 from core.models.party import Party
 from core.models.sales import Sale

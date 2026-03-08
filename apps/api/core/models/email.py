@@ -6,10 +6,9 @@ This module contains the database models for the SMTP Email Integration feature:
 - SMTPEmailLog: Audit trail of all email sending attempts
 - EmailTemplate: Email templates with Jinja2 syntax (Phase 2 - admin-editable)
 """
-from core.models.base import Base
-from .base import db, BaseModel, gen_id, now_utc
+from .base import BaseModel, gen_id, now_utc
 from .mixins import TenantScopedMixin
-from sqlalchemy import Column, Index, Boolean, Date, DateTime, Integer, JSON, String, Text, Time
+from sqlalchemy import Column, Index, Boolean, DateTime, Integer, JSON, String, Text
 from sqlalchemy.orm import relationship
 
 

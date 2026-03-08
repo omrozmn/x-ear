@@ -1,7 +1,6 @@
 """
 Tests for Orval-migrated endpoints: Roles, Brands, and Categories
 """
-import pytest
 
 
 def test_roles_crud_endpoints(client):

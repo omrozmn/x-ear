@@ -1,7 +1,7 @@
 """
 Admin Plans routes for subscription plan management
 """
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from datetime import datetime
 from models.base import db
 from models.plan import Plan, PlanType, BillingInterval

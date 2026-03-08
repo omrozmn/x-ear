@@ -2,11 +2,9 @@
 Purchase Invoice Models
 Handles incoming and outgoing invoices from/to suppliers via BirFatura integration
 """
-from sqlalchemy import Column, Boolean, Date, DateTime, ForeignKey, Integer, JSON, Numeric, String, Text, Time
+from sqlalchemy import Column, Boolean, DateTime, ForeignKey, Integer, JSON, Numeric, String, Text
 from sqlalchemy.orm import relationship
-from core.models.base import Base
-from datetime import datetime
-from .base import db, BaseModel
+from .base import BaseModel
 from .mixins import TenantScopedMixin
 
 

@@ -1,5 +1,3 @@
-import os
-import re
 
 file_path = "apps/api/ai/tools/allowlist.py"
 with open(file_path, "r", encoding="utf-8") as f:
@@ -20,15 +18,15 @@ tool_names = [
 
 for name in tool_names:
     content = content.replace(
-        f"return ToolExecutionResult(success=False, result=None, error=",
+        "return ToolExecutionResult(success=False, result=None, error=",
         f"return ToolExecutionResult(tool_id='{name}', mode=mode, success=False, result=None, error="
     )
     content = content.replace(
-        f"return ToolExecutionResult(\n            success=True,\n            result=",
+        "return ToolExecutionResult(\n            success=True,\n            result=",
         f"return ToolExecutionResult(\n            tool_id='{name}',\n            mode=mode,\n            success=True,\n            result="
     )
     content = content.replace(
-        f"return ToolExecutionResult(\n        success=True,\n        result=",
+        "return ToolExecutionResult(\n        success=True,\n        result=",
         f"return ToolExecutionResult(\n        tool_id='{name}',\n        mode=mode,\n        success=True,\n        result="
     )
 

@@ -5,7 +5,6 @@ Tests: Parties, Users, Branches, Roles, Devices, Suppliers, Appointments, Sales,
 """
 
 import requests
-import json
 from typing import Dict, Any
 
 BASE_URL = "http://localhost:5003"
@@ -107,7 +106,7 @@ def main():
     results = {}
     
     # Test current tenant (test user's tenant)
-    print(f"\n2. Testing CURRENT TENANT (test@test.com's tenant)")
+    print("\n2. Testing CURRENT TENANT (test@test.com's tenant)")
     print("-" * 80)
     
     results["current"] = {}
@@ -120,7 +119,7 @@ def main():
             print(f"  ❌ {name}: {result['error']}")
     
     # Try to impersonate if possible
-    print(f"\n3. Attempting to test with tenant impersonation...")
+    print("\n3. Attempting to test with tenant impersonation...")
     print("-" * 80)
     try:
         token1 = impersonate_tenant(token, TENANT_1)

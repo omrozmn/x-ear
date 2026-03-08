@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, g
+from flask import Blueprint, request, jsonify
 from models.base import db
 from models.patient import Patient
 from models.appointment import Appointment
@@ -16,7 +16,6 @@ reports_bp = Blueprint('reports', __name__)
 
 
 from utils.decorators import unified_access
-from utils.access_context import AccessContext
 
 def get_user_branch_filter(ctx):
     """Get branch IDs that current user has access to"""

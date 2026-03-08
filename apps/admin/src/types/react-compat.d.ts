@@ -116,7 +116,7 @@ declare module '@x-ear/ui-web' {
   export const Pagination: FC<PaginationProps>;
 
   // Additional exports
-  export interface Column<T = any> {
+  export interface Column<T = unknown> {
     key: string;
     header: string;
     render?: (item: T) => React.ReactNode;

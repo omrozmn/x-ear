@@ -2,8 +2,8 @@
 Communication API Routes
 Handles SMS, Email, Templates, and Communication History endpoints
 """
-from flask import Blueprint, request, jsonify, make_response
-from sqlalchemy import or_, func, desc, and_
+from flask import Blueprint, request, jsonify
+from sqlalchemy import or_, desc, and_
 import sys
 from pathlib import Path
 from datetime import datetime, timezone, timedelta

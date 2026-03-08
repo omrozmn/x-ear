@@ -2,7 +2,6 @@ import os
 import sys
 import time
 import requests
-import json
 from dotenv import load_dotenv
 
 load_dotenv("/Users/omerozmen/Desktop/x-ear web app/x-ear/apps/api/.env")
@@ -48,7 +47,7 @@ def listen():
                         text = msg.get("text", "")
                         chat_id = msg.get("chat", {}).get("id")
 
-                        print(f"\n🚀 WAKE UP TRIGGER RECEIVED 🚀")
+                        print("\n🚀 WAKE UP TRIGGER RECEIVED 🚀")
                         print(f"FROM: {user} | CHAT_ID: {chat_id}")
                         print(f"COMMAND: {text}")
                         return  # Exit script to wake up the Agent

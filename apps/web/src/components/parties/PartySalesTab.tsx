@@ -79,6 +79,8 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
   const [sales, setSales] = useState<SaleRead[]>([]);
   const [salesLoading, setSalesLoading] = useState(false);
   const [salesError, setSalesError] = useState<string | null>(null);
+  const [, setDeviceReplacements] = useState<unknown[]>([]);
+  const [, setReplacementsLoading] = useState(false);
 
   const [showDeviceReplacementModal, setShowDeviceReplacementModal] = useState(false);
   // const [selectedReplacement, setSelectedReplacement] = useState<DeviceReplacement | null>(null);
@@ -304,6 +306,15 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
     return filtered;
   }, [sales, searchTerm, statusFilter, paymentMethodFilter, amountRangeMin, amountRangeMax, sortBy, sortOrder]);
 
+  const tableSales = useMemo(
+    () =>
+      filteredSales.map((sale) => ({
+        ...sale,
+        saleDate: sale.saleDate ?? sale.createdAt ?? '',
+      })),
+    [filteredSales]
+  );
+
   // Event handlers with proper typing
   /*
   const handleNewSale = (saleData: SaleRead) => {
@@ -371,7 +382,6 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
       {/* Sales Summary Cards */}
       <SalesSummaryCards
         sales={filteredSales as unknown as SaleRead[]}
-        sgkCoverageCalculation={sgkCoverageCalculation}
       />
 
       {/* Action Buttons */}
@@ -470,7 +480,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
             // viewMode === 'table' ? (
             // console.log('📋 Rendering table view, sales count:', filteredSales.length),
             <SalesTableView
-              sales={filteredSales}
+              sales={tableSales as never}
               partyId={party.id || ''}
               onSaleClick={(sale) => handleEditSaleClick(sale as SaleRead)}
               onEditSale={(sale) => handleEditSaleClick(sale as SaleRead)}

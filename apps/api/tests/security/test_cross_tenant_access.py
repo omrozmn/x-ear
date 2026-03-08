@@ -13,8 +13,7 @@ CRITICAL TESTS:
 import pytest
 import asyncio
 import os
-from unittest.mock import patch, MagicMock
-from datetime import datetime
+from unittest.mock import patch
 
 # Configure pytest-asyncio
 pytestmark = pytest.mark.asyncio(loop_scope="function")
@@ -30,16 +29,12 @@ from core.database import (
     reset_tenant_context,
     get_current_tenant_id,
     unbound_session,
-    should_skip_tenant_filter,
-    SessionLocal,
-    Base,
-    engine
+    should_skip_tenant_filter
 )
 from utils.background_task import tenant_task, tenant_task_async
 from utils.async_context import gather_with_tenant_context
 from utils.exceptions import (
     TenantContextError,
-    TenantContextRequiredError,
     TenantMismatchError
 )
 

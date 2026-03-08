@@ -96,7 +96,7 @@ print(f"Item response status: {item_resp.status_code}")
 print(f"Item response: {json.dumps(item_json, indent=2)}")
 item_id = item_json.get('data', {}).get('item', {}).get('id') or item_json.get('data', {}).get('id')
 if not item_id:
-    print(f"Failed to extract item ID")
+    print("Failed to extract item ID")
     exit(1)
 print(f"✓ Item ID: {item_id}")
 
@@ -147,7 +147,7 @@ invoice_resp = requests.post(
     }
 )
 
-print(f"\n8. Invoice creation result:")
+print("\n8. Invoice creation result:")
 print(f"Status: {invoice_resp.status_code}")
 print(f"Response: {json.dumps(invoice_resp.json(), indent=2)}")
 
@@ -155,4 +155,4 @@ if invoice_resp.status_code in [200, 201]:
     invoice_id = invoice_resp.json().get('data', {}).get('invoice', {}).get('id')
     print(f"\n✓ SUCCESS! Invoice ID: {invoice_id}")
 else:
-    print(f"\n✗ FAILED!")
+    print("\n✗ FAILED!")

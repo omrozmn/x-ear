@@ -6,7 +6,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'
 import sys
 import os
 import random
-from datetime import datetime, timedelta, timezone
+from datetime import timezone
 from faker import Faker
 import json
 import uuid
@@ -296,10 +296,10 @@ def run_seed():
         
         tenant = Tenant.query.get(admin_user.tenant_id)
         if not tenant:
-            print(f"❌ Tenant not found for admin user!")
+            print("❌ Tenant not found for admin user!")
             return
         
-        print(f"\n📋 Target Info:")
+        print("\n📋 Target Info:")
         print(f"   User: {admin_user.email}")
         print(f"   Tenant: {tenant.name} (ID: {tenant.id})")
         print(f"   Slug: {tenant.slug}")
@@ -316,16 +316,16 @@ def run_seed():
         print("\n" + "="*60)
         print("✅ SEEDING COMPLETED SUCCESSFULLY!")
         print("="*60)
-        print(f"\n📊 Summary:")
-        print(f"   - 3 Branches")
-        print(f"   - 5 Suppliers")
-        print(f"   - 50 Inventory Items")
-        print(f"   - 100 Patients")
-        print(f"   - 80 Appointments")
-        print(f"   - 60 Sales")
-        print(f"\n🚀 You can now login and test the system!")
-        print(f"   Email: admin@x-ear.com")
-        print(f"   Password: (your admin password)")
+        print("\n📊 Summary:")
+        print("   - 3 Branches")
+        print("   - 5 Suppliers")
+        print("   - 50 Inventory Items")
+        print("   - 100 Patients")
+        print("   - 80 Appointments")
+        print("   - 60 Sales")
+        print("\n🚀 You can now login and test the system!")
+        print("   Email: admin@x-ear.com")
+        print("   Password: (your admin password)")
         print("="*60)
 
 if __name__ == "__main__":

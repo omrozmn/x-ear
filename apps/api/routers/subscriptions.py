@@ -14,10 +14,9 @@ from sqlalchemy.orm.attributes import flag_modified
 from database import get_db
 from schemas.base import ResponseEnvelope
 from schemas.tenants import (
-    SubscriptionResponse, SignupResponse, CurrentSubscriptionResponse,
-    TenantRead, PlanRead
+    SubscriptionResponse, SignupResponse, CurrentSubscriptionResponse
 )
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/subscriptions", tags=["Subscriptions"])
@@ -102,7 +101,6 @@ def subscribe(
     """Subscribe to a plan (Mock Payment)"""
     from models.tenant import Tenant, TenantStatus
     from models.plan import Plan
-    from models.user import User
     
     user = access.user
     if not user:

@@ -4,7 +4,6 @@ COMPREHENSIVE SEED DATA - Using actual schema
 Creates: parties, appointments, sales, devices, inventory, suppliers
 """
 import sys
-import os
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -15,7 +14,7 @@ from core.models import (
     Sale, Device, DeviceAssignment, Supplier,
     InventoryItem, Invoice
 )
-from datetime import datetime, timedelta, time
+from datetime import datetime, timedelta
 import random
 import uuid
 
@@ -269,17 +268,17 @@ def main():
         print(f"✅ Created {len(devices)} devices")
         
         create_appointments(db, tenant.id, parties, branches, users, 150)
-        print(f"✅ Created 150 appointments")
+        print("✅ Created 150 appointments")
         
         create_sales(db, tenant.id, parties, devices, branches, 50)
-        print(f"✅ Created 50 sales with invoices")
+        print("✅ Created 50 sales with invoices")
         
         print()
         print("=" * 60)
         print("✅ COMPLETE!")
         print("=" * 60)
         print(f"\n🎯 Tenant ID: {tenant.id}")
-        print(f"📧 Login: user1@demo.com, user2@demo.com, user3@demo.com")
+        print("📧 Login: user1@demo.com, user2@demo.com, user3@demo.com")
         
     except Exception as e:
         print(f"\n❌ Error: {e}")

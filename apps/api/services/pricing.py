@@ -1,8 +1,6 @@
 from uuid import uuid4
 from datetime import timedelta, datetime, timezone
-from models.base import db
 from models.sales import PaymentPlan, PaymentInstallment
-from models.device import Device
 import logging
 
 def now_utc():

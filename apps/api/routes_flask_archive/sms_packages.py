@@ -1,7 +1,5 @@
 from flask import Blueprint, jsonify, request
 from models.sms_package import SmsPackage, db
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from models.user import User
 
 # Public Blueprint
 sms_packages_public_bp = Blueprint('sms_packages_public', __name__, url_prefix='/api/sms-packages')

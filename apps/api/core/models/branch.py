@@ -1,6 +1,6 @@
-from .base import db, BaseModel, gen_id
+from .base import BaseModel, gen_id
 from .mixins import TenantScopedMixin
-from sqlalchemy import Column, String, ForeignKey
+from sqlalchemy import Column, String
 
 class Branch(BaseModel, TenantScopedMixin):
     """Branch model for managing tenant branches/locations"""

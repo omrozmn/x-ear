@@ -1,6 +1,3 @@
-import pytest
-import uuid
-from core.models.user import User
 from core.models.role import Role
 from core.models.permission import Permission
 

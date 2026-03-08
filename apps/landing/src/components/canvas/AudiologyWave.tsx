@@ -3,6 +3,7 @@
 import { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import type { Object3D } from "three";
 
 export function AudiologyWave({ isDark }: { isDark: boolean }) {
     const groupRef = useRef<THREE.Group>(null);
@@ -42,7 +43,7 @@ export function AudiologyWave({ isDark }: { isDark: boolean }) {
         const time = state.clock.getElapsedTime();
         const pointerX = state.pointer.x;
 
-        groupRef.current.children.forEach((child, i) => {
+        groupRef.current.children.forEach((child: Object3D, i: number) => {
             const line = child as THREE.Line;
             const positions = line.geometry.attributes.position.array as Float32Array;
 

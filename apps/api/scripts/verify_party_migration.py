@@ -5,7 +5,6 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from core.database import SessionLocal, UnboundSession
-from core.models.party import Party
 from core.models.party_role import PartyRole
 from core.models.hearing_profile import HearingProfile
 import logging

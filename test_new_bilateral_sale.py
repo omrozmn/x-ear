@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import requests
-import json
 
 def test_new_bilateral_sale():
     """Test creating a new bilateral sale to verify the pricing fix works for new sales"""
@@ -73,7 +72,7 @@ def test_new_bilateral_sale():
         idempotency_key = f"test-{int(time.time())}-{uuid.uuid4().hex[:8]}"
         create_headers = {**headers, 'Idempotency-Key': idempotency_key}
         
-        print(f"\n📝 Creating bilateral sale...")
+        print("\n📝 Creating bilateral sale...")
         create_response = requests.post(f'{base_url}/api/sales', json=sale_data, headers=create_headers)
         
         if create_response.status_code not in [200, 201]:
@@ -86,7 +85,7 @@ def test_new_bilateral_sale():
         print(f"✅ Created sale: {new_sale_id}")
         
         # Verify the created sale has correct pricing
-        print(f"\n🔍 Verifying created sale pricing...")
+        print("\n🔍 Verifying created sale pricing...")
         sale_response = requests.get(f'{base_url}/api/sales/{new_sale_id}', headers=headers)
         
         if sale_response.status_code != 200:
@@ -95,7 +94,7 @@ def test_new_bilateral_sale():
             
         sale_data = sale_response.json().get('data', {})
         
-        print(f"Sale-level pricing:")
+        print("Sale-level pricing:")
         print(f"   - unitListPrice: {sale_data.get('unitListPrice')}")
         print(f"   - listPriceTotal: {sale_data.get('listPriceTotal')}")
         print(f"   - actualListPriceTotal: {sale_data.get('actualListPriceTotal')}")
@@ -147,10 +146,10 @@ def test_new_bilateral_sale():
         print(f"\n{'✅ NEW BILATERAL SALE PRICING CORRECT!' if success else '❌ NEW BILATERAL SALE PRICING FAILED!'}")
         
         # Clean up - delete the test sale
-        print(f"\n🧹 Cleaning up test sale...")
+        print("\n🧹 Cleaning up test sale...")
         delete_response = requests.delete(f'{base_url}/api/sales/{new_sale_id}', headers=headers)
         if delete_response.status_code in [200, 204]:
-            print(f"✅ Test sale deleted")
+            print("✅ Test sale deleted")
         else:
             print(f"⚠️ Could not delete test sale: {delete_response.status_code}")
         

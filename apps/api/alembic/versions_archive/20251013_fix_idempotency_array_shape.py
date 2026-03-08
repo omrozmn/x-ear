@@ -10,8 +10,6 @@ Create Date: 2025-10-13 00:00:00.000000
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.sql import table, column
-from sqlalchemy import String, Integer, Text
 import json
 
 # revision identifiers, used by Alembic.

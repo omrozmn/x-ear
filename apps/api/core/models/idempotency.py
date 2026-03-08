@@ -1,6 +1,5 @@
-from sqlalchemy import Column, Boolean, Date, DateTime, Integer, String, Text, Time
+from sqlalchemy import Column, Boolean, DateTime, Integer, String, Text
 from core.models.base import Base
-from datetime import datetime
 import json
 from uuid import uuid4
 

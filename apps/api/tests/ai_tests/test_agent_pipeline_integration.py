@@ -32,20 +32,16 @@ from datetime import datetime, timezone
 
 from ai.agents.intent_refiner import (
     IntentRefiner,
-    IntentRefinerResult,
-    RefinerStatus,
 )
 from ai.agents.action_planner import (
     ActionPlanner,
-    ActionPlannerResult,
     PlannerStatus,
 )
 from ai.agents.executor import (
     Executor,
-    ExecutionResult,
     ExecutorStatus,
 )
-from ai.schemas.llm_outputs import IntentOutput, IntentType
+from ai.schemas.llm_outputs import IntentType
 from ai.tools import (
     ToolRegistry, ToolDefinition, ToolParameter, ToolCategory,
     RiskLevel, ToolExecutionMode, ToolExecutionResult,
@@ -759,7 +755,6 @@ class TestFallbackModeInPipeline:
         assert intent.intent_type == IntentType.QUERY
         
         # Fallback planning
-        import asyncio
         planner_result = action_planner.create_plan_without_llm(
             intent=intent,
             tenant_id="tenant_1",

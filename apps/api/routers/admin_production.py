@@ -1,5 +1,5 @@
 """Admin Production Router - FastAPI"""
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
@@ -8,7 +8,7 @@ import logging
 from database import get_db
 from core.database import unbound_session
 from models.production_order import ProductionOrder
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from schemas.base import ResponseEnvelope
 from schemas.production import ProductionOrderRead
 logger = logging.getLogger(__name__)

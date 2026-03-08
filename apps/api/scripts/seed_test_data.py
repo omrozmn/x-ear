@@ -21,8 +21,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from core.models import (
-    Tenant, User, Party, Role, Branch,
-    HearingProfile, Base
+    Tenant, User, Party, Role, Branch
 )
 from core.models.inventory import InventoryItem
 from werkzeug.security import generate_password_hash
@@ -111,7 +110,7 @@ def seed_test_data():
                 assigned_at=datetime.utcnow()
             )
             db.add(role)
-            print(f"✅ Assigned TENANT_ADMIN role to test user")
+            print("✅ Assigned TENANT_ADMIN role to test user")
         
         # Create sample branches
         branch_names = ["Ana Şube", "Kadıköy Şubesi"]
@@ -202,7 +201,7 @@ def seed_test_data():
         print("\n📊 Summary:")
         print(f"   Tenant ID: {tenant_id}")
         print(f"   Test User: {test_user_phone}")
-        print(f"   Password: password123")
+        print("   Password: password123")
         print(f"   Branches: {len(branch_names)}")
         print(f"   Inventory Items: {len(hearing_aids)}")
         print(f"   Sample Parties: {len(sample_parties)}")

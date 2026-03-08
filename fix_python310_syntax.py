@@ -4,7 +4,6 @@ Fix Python 3.10 syntax issues - replace str | None with Optional[str]
 """
 import re
 from pathlib import Path
-from typing import List
 
 def fix_union_syntax(file_path: Path) -> bool:
     """Replace str | None with Optional[str] for Python 3.10 compatibility"""

@@ -1,5 +1,4 @@
 import sys
-import os
 from pathlib import Path
 
 # Add api to path
@@ -8,8 +7,7 @@ sys.path.insert(0, str(api_dir))
 
 from schemas.parties import PartyRead
 from schemas.base import ResponseEnvelope
-from core.database import Base, engine, SessionLocal
-from core.models.party import Party
+from core.database import Base
 from services.party_service import PartyService
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker

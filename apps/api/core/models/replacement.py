@@ -1,8 +1,7 @@
 from datetime import datetime
 import json
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, JSON, Numeric
-from sqlalchemy.dialects.sqlite import DATETIME
-from .base import db, BaseModel
+from sqlalchemy import Column, String, DateTime, Boolean, Text, JSON, Numeric
+from .base import BaseModel
 from .mixins import TenantScopedMixin
 
 

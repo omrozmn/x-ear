@@ -5,7 +5,6 @@ from sqlalchemy import or_
 from fastapi import HTTPException
 
 from core.models.party import Party
-from models.branch import Branch
 from models.enums import PatientStatus as ModelPatientStatus
 from models.medical import PatientNote
 from models.sales import DeviceAssignment, Sale, PaymentRecord
@@ -236,7 +235,6 @@ class PartyService:
 
     def list_roles(self, party_id: str, tenant_id: str) -> List[Dict[str, Any]]:
         """List all roles for a party"""
-        from core.models.party_role import PartyRole
         party = self.get_party(party_id, tenant_id)
         return [
             {'code': r.role_code, 'assignedAt': r.assigned_at} 
@@ -577,7 +575,7 @@ class PartyService:
             )
             self.db.add(activity_log)
             self.db.commit()
-        except Exception as log_error:
+        except Exception:
             # logger.error ... but service typically doesn't log unless injected logger. 
             # We silently fail log creation as per original pattern if not critical, 
             # but ideally should propagate or log.

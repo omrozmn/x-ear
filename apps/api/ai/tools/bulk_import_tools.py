@@ -3,7 +3,7 @@ Bulk Import and Rollback Tools for AI Layer
 """
 import os
 import pandas as pd
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 from datetime import datetime, timezone
 import logging
 

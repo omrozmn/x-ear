@@ -1,6 +1,3 @@
-import pytest
-import hashlib
-import json
 import os
 from uuid import uuid4
 import random
@@ -11,8 +8,6 @@ os.environ["ENABLE_IDEMPOTENCY_TESTS"] = "true"
 # Assuming standard test fixtures for client and db_session are available
 # Adjust imports based on actual test suite structure
 from fastapi.testclient import TestClient
-from main import app
-from core.models.idempotency import IdempotencyKey
 
 
 def test_idempotent_replay_success(client: TestClient, db_session, auth_headers):

@@ -1,16 +1,5 @@
 
-import os
-import io
-import json
-import pytest
-from datetime import datetime
-from jose import jwt
-from fastapi.testclient import TestClient
 
-from main import app
-from core.models.user import User
-from core.models.party import Party
-from core.database import Base, engine, SessionLocal
 
 # Setup Test User in a cleaner way or use conftest ones
 # This file seems to be a standalone integration test, but lets try to make it work with existing fixtures

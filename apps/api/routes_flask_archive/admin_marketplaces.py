@@ -1,10 +1,9 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from utils.decorators import unified_access
 from utils.response import success_response, error_response
 from utils.admin_permissions import AdminPermissions
 from models.base import db
 from models.marketplace import MarketplaceIntegration, MarketplaceProduct
-from models.tenant import Tenant
 from utils.tenant_security import UnboundSession
 from datetime import datetime
 import logging

@@ -474,12 +474,6 @@ export function ProductLinesSection({
 
   // Modal handlers
   const openWithholdingModal = (index: number) => {
-    // If parent supplied an onRequestLineEditor prop, prefer that to opening a modal
-    if (typeof onRequestLineEditor === 'function') {
-      onRequestLineEditor('withholding', index);
-      return;
-    }
-
     setCurrentLineIndex(index);
     setWithholdingModalOpen(true);
   };

@@ -1,10 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from database import get_db
 from core.models.post import Post
 from schemas.post import PostRead
-from datetime import datetime
 
 router = APIRouter(prefix="/blog", tags=["Blog"])
 

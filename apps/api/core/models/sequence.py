@@ -1,6 +1,5 @@
 # Sequence Model for auto-incrementing numbers (invoices, etc.)
 from sqlalchemy import Column, Integer, String
-from core.models.base import Base
 from .base import db, BaseModel, gen_id
 from .mixins import TenantScopedMixin
 

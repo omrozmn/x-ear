@@ -31,7 +31,6 @@ from email_validator import validate_email, EmailNotValidError
 from core.models.email import TenantSMTPConfig
 from services.encryption_service import EncryptionService
 from services.dns_validation_service import DNSValidationService
-from utils.exceptions import ConfigurationError
 
 logger = logging.getLogger(__name__)
 

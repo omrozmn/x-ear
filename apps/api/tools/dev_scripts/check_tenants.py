@@ -10,7 +10,6 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from app import app
 from models.tenant import Tenant
-from models.base import db
 
 with app.app_context():
     try:

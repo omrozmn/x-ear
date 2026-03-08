@@ -74,7 +74,7 @@ for endpoint in fixed_endpoints:
         print()
         
     except KeyError:
-        print(f"  ⊘ Endpoint not found in schema")
+        print("  ⊘ Endpoint not found in schema")
         print()
     except Exception as e:
         print(f"  ⊘ Error: {str(e)[:50]}")

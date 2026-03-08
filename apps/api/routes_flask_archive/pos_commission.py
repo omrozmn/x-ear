@@ -3,9 +3,8 @@ POS Commission Rates System
 Handles installment-based commission calculations
 """
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from models.base import db
-from models.user import User
 from models.tenant import Tenant
 from utils.decorators import unified_access
 from utils.response import success_response, error_response

@@ -19,7 +19,7 @@ data1 = {
 party1 = Party.from_dict(data1)
 print(f"  Input tc_number: {data1.get('tc_number')}")
 print(f"  Party.tc_number: {party1.tc_number}")
-print(f"  ✅ PASS" if party1.tc_number == '12345678901' else f"  ❌ FAIL")
+print("  ✅ PASS" if party1.tc_number == '12345678901' else "  ❌ FAIL")
 print()
 
 # Test 2: camelCase (from frontend)
@@ -35,7 +35,7 @@ data2 = {
 party2 = Party.from_dict(data2)
 print(f"  Input tcNumber: {data2.get('tcNumber')}")
 print(f"  Party.tc_number: {party2.tc_number}")
-print(f"  ✅ PASS" if party2.tc_number == '98765432109' else f"  ❌ FAIL")
+print("  ✅ PASS" if party2.tc_number == '98765432109' else "  ❌ FAIL")
 print()
 
 # Test 3: Mixed (edge case)
@@ -51,7 +51,7 @@ data3 = {
 party3 = Party.from_dict(data3)
 print(f"  Input tc_number: {data3.get('tc_number')}")
 print(f"  Party.tc_number: {party3.tc_number}")
-print(f"  ✅ PASS" if party3.tc_number == '11111111111' else f"  ❌ FAIL")
+print("  ✅ PASS" if party3.tc_number == '11111111111' else "  ❌ FAIL")
 print()
 
 print("All tests completed!")

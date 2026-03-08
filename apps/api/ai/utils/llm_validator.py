@@ -12,7 +12,7 @@ Requirements:
 
 import json
 import logging
-from typing import Any, Dict, List, Optional, Type, TypeVar, Union
+from typing import Any, Dict, List, Optional, Type, TypeVar
 from pydantic import BaseModel, ValidationError
 
 from ai.schemas.llm_outputs import (
@@ -20,7 +20,6 @@ from ai.schemas.llm_outputs import (
     OperationOutput,
     ActionPlanOutput,
     ChatResponseOutput,
-    ErrorOutput,
     ValidationResult,
 )
 from ai.utils.pii_redactor import PIIRedactor, get_redactor

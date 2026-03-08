@@ -4,7 +4,7 @@ Payment records and promissory notes management
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional, List
-from datetime import datetime, timezone
+from datetime import datetime
 from decimal import Decimal
 from pydantic import BaseModel, Field
 import logging
@@ -16,11 +16,10 @@ from schemas.sales import PaymentRecordRead
 
 from models.sales import Sale, PaymentRecord
 from models.promissory_note import PromissoryNote
-from core.models.party import Party
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
 from schemas.sales import (
-    PaymentRecordRead, PromissoryNoteRead,
+    PromissoryNoteRead,
     PromissoryNoteCollectionResponse
 )
 

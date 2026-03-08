@@ -1,8 +1,8 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from utils.decorators import unified_access
 from utils.response import success_response, error_response
 from models.tenant import Tenant, TenantStatus
-from models.plan import Plan, BillingInterval
+from models.plan import Plan
 from models.user import User
 from models.base import db
 from datetime import datetime, timedelta

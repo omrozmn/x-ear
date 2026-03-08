@@ -3,9 +3,10 @@ import os
 # Add backend root to path to allow imports from app, models, etc.
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 """Fill ALL empty admin pages with test data"""
-import sys, os, random
+import sys
+import os
+import random
 from datetime import datetime, timedelta
-import uuid
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from app import app
 from models.base import db, gen_id

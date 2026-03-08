@@ -38,7 +38,7 @@ def test_backward_compatibility():
     
     try:
         # This should work exactly like before
-        from models import db, Patient, Device
+        from models import Patient, Device
         
         # Test creating instances
         patient = Patient()
@@ -67,7 +67,7 @@ def test_relationship_compatibility():
     print("\n🧪 Testing relationship compatibility...")
     
     try:
-        from models import Patient, Device, Appointment
+        from models import Patient
         
         # Check that relationships are defined
         assert hasattr(Patient, 'devices'), "Patient missing devices relationship"
@@ -84,7 +84,7 @@ def test_enhanced_features():
     print("\n🧪 Testing enhanced features...")
     
     try:
-        from models import Patient, Device, gen_id, BaseModel
+        from models import Patient, gen_id
         
         # Test BaseModel
         patient = Patient()

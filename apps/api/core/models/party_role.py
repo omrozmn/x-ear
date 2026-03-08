@@ -1,8 +1,6 @@
-from sqlalchemy import Column, Date, DateTime, ForeignKey, String, Time
-from core.models.base import Base
-from .base import db, BaseModel, gen_id, now_utc
+from sqlalchemy import Column, DateTime, ForeignKey, String
+from .base import BaseModel, gen_id, now_utc
 from .mixins import TenantScopedMixin
-import sqlalchemy as sa
 
 class PartyRole(BaseModel, TenantScopedMixin):
     __tablename__ = 'party_roles'

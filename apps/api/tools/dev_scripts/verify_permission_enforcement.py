@@ -3,8 +3,6 @@ import os
 # Add backend root to path to allow imports from app, models, etc.
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
-import requests
-import json
 from app import app
 from models import User, Role, Permission, db
 

@@ -259,7 +259,7 @@ def crm_any_permission_required(*permission_names):
             )
             return jsonify({
                 'success': False, 
-                'error': f'Bu işlem için yetkiniz yok'
+                'error': 'Bu işlem için yetkiniz yok'
             }), 403
         return wrapper
     return decorator

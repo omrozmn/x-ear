@@ -2,7 +2,6 @@ from sqlalchemy import Column, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from core.models.base import BaseModel, gen_id
 from core.models.mixins import TenantScopedMixin
-from core.database import Base
 
 class BulkImportBatch(BaseModel, TenantScopedMixin):
     __tablename__ = "bulk_import_batches"

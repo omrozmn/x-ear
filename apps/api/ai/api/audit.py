@@ -18,9 +18,7 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from pydantic import BaseModel, Field
 
-from ai.config import get_ai_config
-from ai.models.ai_audit_log import AIAuditLog, AuditEventType, IncidentTag
-from ai.services.kill_switch import get_kill_switch, KillSwitchActiveError
+from ai.models.ai_audit_log import AuditEventType
 from ai.api.errors import AIErrorCode, create_error_response
 
 logger = logging.getLogger(__name__)

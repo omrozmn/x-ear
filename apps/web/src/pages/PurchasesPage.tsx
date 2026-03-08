@@ -4,7 +4,7 @@ import { ShoppingCart, Download, Filter, Search, FileText, ArrowRight, ChevronLe
 import { formatCurrency, formatDate } from '@/utils/format';
 import { useNavigate } from '@tanstack/react-router';
 import { useListIncomingInvoices } from '@/api/client/invoices.client';
-import type { IncomingInvoiceResponse } from '@/api/generated/schemas';
+import type { IncomingInvoiceResponse, SchemasInvoicesNewInvoiceStatus } from '@/api/generated/schemas';
 import { ONBOARDING_PURCHASES_DISMISSED } from '@/constants/storage-keys';
 import { useDebounce } from '@/hooks/useDebounce';
 import toast from 'react-hot-toast';
@@ -38,7 +38,7 @@ export function PurchasesPage() {
   const { data, isLoading, refetch } = useListIncomingInvoices({
     page: currentPage,
     per_page: perPage,
-    status: statusFilter !== 'all' ? statusFilter as 'RECEIVED' | 'PROCESSED' | 'PAID' : undefined,
+    status: statusFilter !== 'all' ? statusFilter as SchemasInvoicesNewInvoiceStatus : undefined,
     supplier_name: debouncedSearch || undefined,
     date_from: dateFrom || undefined,
     date_to: dateTo || undefined,

@@ -21,7 +21,7 @@ Common injection patterns:
 import re
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Tuple, Optional, Set
+from typing import List, Tuple, Set
 
 
 class InjectionType(str, Enum):

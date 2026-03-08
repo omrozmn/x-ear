@@ -1,9 +1,7 @@
-from sqlalchemy import Column, Boolean, Date, DateTime, ForeignKey, String, Text, Time
+from sqlalchemy import Column, Boolean, Date, DateTime, ForeignKey, String, Text
 from sqlalchemy.orm import relationship
-from core.models.base import Base
-from .base import db, BaseModel
+from .base import BaseModel
 from .mixins import TenantScopedMixin
-from datetime import datetime
 import json
 
 class DeviceReplacement(BaseModel, TenantScopedMixin):

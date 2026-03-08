@@ -6,8 +6,7 @@ from core.models.base import Base
 import uuid
 from datetime import datetime
 from enum import Enum as PyEnum
-from sqlalchemy import Column, String, Boolean, DateTime, Text, JSON, Numeric, Integer, Date, Time, Index, Enum as SQLEnum
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, String, Boolean, DateTime, Text, JSON, Numeric, Integer, Index, Enum as SQLEnum
 
 
 class PlanType(PyEnum):

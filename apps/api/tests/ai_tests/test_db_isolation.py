@@ -14,7 +14,7 @@ import os
 import sys
 import pytest
 from hypothesis import given, strategies as st, settings
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from pathlib import Path
 
 # Add the api directory to the path

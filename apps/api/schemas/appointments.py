@@ -1,7 +1,7 @@
 from typing import Optional, List
-from datetime import datetime, date
+from datetime import datetime
 from pydantic import Field, field_validator, ValidationInfo
-from .base import AppBaseModel, IDMixin, TimestampMixin
+from .base import AppBaseModel, IDMixin
 from .enums import AppointmentStatus, AppointmentType
 
 # --- Appointment Schemas ---

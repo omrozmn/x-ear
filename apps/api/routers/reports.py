@@ -2,19 +2,18 @@
 FastAPI Reports Router - Migrated from Flask routes/reports.py
 Report endpoints for analytics and statistics
 """
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from typing import Optional, List, Dict, Any
-from datetime import datetime, timedelta, timezone
+from fastapi import APIRouter, Depends, HTTPException, Query
+from typing import Optional, List
+from datetime import datetime, timedelta
 import logging
 
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract, and_, or_, case
 
-from schemas.base import ResponseEnvelope, ApiError, ResponseMeta
+from schemas.base import ResponseEnvelope
 from schemas.reports import (
     ReportOverviewResponse, ReportPatientsResponse, ReportFinancialResponse,
     ReportCampaignsResponse, ReportRevenueResponse, ReportPromissoryNotesResponse,
-    ReportPromissoryNotesByPatientResponse, ReportRemainingPaymentsResponse,
     ReportCashflowResponse, PosMovementItem, PosMovementSummary,
     PatientSegments, ProductSalesData, PaymentMethodData, CampaignReportItem,
     PromissoryNotesSummary, MonthlyCount, MonthlyRevenue, PromissoryNotePatientItem,
@@ -29,7 +28,7 @@ from models.device import Device
 from models.campaign import Campaign, SmsLog as SMSLog
 from models.promissory_note import PromissoryNote
 from models.enums import AppointmentStatus
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
 logger = logging.getLogger(__name__)
 

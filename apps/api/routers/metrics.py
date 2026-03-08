@@ -12,7 +12,6 @@ from core.database import get_db
 from core.models.email import SMTPEmailLog
 from core.models.email_deliverability import EmailBounce, EmailComplaint
 from sqlalchemy import func, and_
-from typing import Optional
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/metrics", tags=["monitoring"])

@@ -3,18 +3,16 @@ FastAPI Settings Router - Migrated from Flask routes/settings.py (via app.py log
 Handles system settings and pricing configuration
 """
 from fastapi import APIRouter, Depends, HTTPException, Body
-from typing import Optional, Dict, Any
-from datetime import datetime, timezone
+from typing import Dict, Any
 from pydantic import BaseModel
 import logging
 import json
 import os
 
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, func
 
 from schemas.base import ResponseEnvelope
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
 from schemas.system_settings import SystemSettingsResponse, PricingSettingsResponse
 from core.models.system import Settings

@@ -8,7 +8,6 @@
 # ║  değiştirmeyin! Akış bozulursa PDF görüntüleme çalışmaz.               ║
 # ╚═══════════════════════════════════════════════════════════════════════════╝
 import os
-import json
 import datetime
 import requests
 import base64
@@ -238,7 +237,6 @@ class BirfaturaClient:
         """
         if self._use_mock:
             import gzip
-            import uuid
             
             file_ext = payload.get('fileExtension', 'XML')
             uuid_val = payload.get('documentUUID', 'UNKNOWN')

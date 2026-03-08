@@ -12,7 +12,7 @@ import {
     useListActivityLogs
 } from '@/api/client/activity-logs.client';
 import { useExecuteToolApiAiComposerExecutePost } from '@/api/client/ai-composer.client';
-import type { ActivityLogRead, ListActivityLogsParams } from '@/api/generated/schemas';
+import type { ActivityLogRead, ExecuteResponse, ListActivityLogsParams } from '@/api/generated/schemas';
 import { Button, Input, Select } from '@x-ear/ui-web';
 
 // Extended interface to cover properties present in API response but missing from current schema
@@ -148,7 +148,7 @@ export default function ActivityLogsPage() {
 
     const { mutate: executeTool, isPending: isRollingBack } = useExecuteToolApiAiComposerExecutePost({
         mutation: {
-            onSuccess: (data) => {
+            onSuccess: (data: ExecuteResponse) => {
                 if (data.status === 'error') {
                     alert('Geri alma işleminde hata: ' + data.error);
                 } else {
@@ -157,7 +157,7 @@ export default function ActivityLogsPage() {
                     window.location.reload();
                 }
             },
-            onError: (error) => {
+            onError: (error: unknown) => {
                 const msg = error instanceof Error ? error.message : JSON.stringify(error);
                 alert('Geri alma işleminde teknik bir hata oluştu: ' + msg);
             }

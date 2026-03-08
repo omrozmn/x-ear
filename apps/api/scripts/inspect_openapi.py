@@ -1,7 +1,6 @@
 
 import sys
 import os
-import json
 import logging
 
 # Add project root to path

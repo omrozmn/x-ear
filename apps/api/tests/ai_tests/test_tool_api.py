@@ -26,7 +26,7 @@ if str(_api_dir) not in sys.path:
     sys.path.insert(0, str(_api_dir))
 
 import pytest
-from hypothesis import given, strategies as st, settings, assume
+from hypothesis import given, strategies as st, settings
 
 from ai.tools import (
     ToolDefinition,

@@ -1,8 +1,6 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Time
+from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-from core.models.base import Base
-from datetime import datetime, timezone
-from .base import db, BaseModel, gen_id
+from .base import BaseModel, gen_id
 from .mixins import TenantScopedMixin
 
 class StockMovement(BaseModel, TenantScopedMixin):

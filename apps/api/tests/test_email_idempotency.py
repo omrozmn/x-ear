@@ -3,7 +3,6 @@ Property-based tests for email idempotency.
 
 Tests idempotency key deduplication and tenant-scoped idempotency.
 """
-import pytest
 from datetime import datetime, timezone, timedelta
 from hypothesis import given, strategies as st, settings, HealthCheck
 from sqlalchemy.orm import Session

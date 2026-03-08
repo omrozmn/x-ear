@@ -3,7 +3,7 @@ FastAPI SMS Packages Router - Migrated from Flask routes/sms_packages.py
 Handles SMS package management
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Optional, List
+from typing import List
 import logging
 
 from sqlalchemy.orm import Session
@@ -11,7 +11,6 @@ from sqlalchemy.orm import Session
 from core.dependencies import get_current_admin_user
 from database import get_db
 from schemas.base import ResponseEnvelope, ResponseMeta
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
 
 from schemas.sms import (
     SmsPackageCreate,

@@ -1,14 +1,13 @@
 import logging
 from typing import List, Dict, Any
 from datetime import datetime, timedelta, timezone
-from sqlalchemy import func, and_, or_, extract
+from sqlalchemy import func, or_
 from ai.insights.base import BaseAnalyzer
 import sqlalchemy as sa
 from core.models.appointment import Appointment
-from core.models.party import Party
 from core.models.inventory import InventoryItem
 from core.models.sales import Sale
-from schemas.enums import AppointmentStatus, PartyStatus, AppointmentType
+from schemas.enums import AppointmentStatus
 from ai.models.opportunity import OpportunityPriority
 
 logger = logging.getLogger(__name__)

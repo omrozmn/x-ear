@@ -14,7 +14,6 @@ Requirements:
 
 import pytest
 from hypothesis import given, strategies as st, settings, HealthCheck
-from typing import List, Dict
 
 from ai.agents.intent_refiner import IntentRefiner
 from ai.schemas.llm_outputs import IntentType
@@ -194,7 +193,7 @@ def test_property_25_capability_schema_completeness():
     # Check each capability has all required fields
     for cap in all_capabilities:
         # Required string fields
-        assert cap.name, f"Capability missing name"
+        assert cap.name, "Capability missing name"
         assert cap.description, f"Capability '{cap.name}' missing description"
         assert cap.category, f"Capability '{cap.name}' missing category"
         
@@ -234,7 +233,6 @@ def test_property_26_response_envelope_compliance():
     
     Validates: Requirements 5.6
     """
-    from ai.capability_registry import Capability
     
     # Create a sample capability
     cap = Capability(

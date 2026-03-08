@@ -6,7 +6,6 @@ Test script to reproduce:
 """
 
 import requests
-import json
 from datetime import datetime
 
 BASE_URL = "http://localhost:5003/api"
@@ -27,7 +26,7 @@ def login_as_super_admin():
     token = data.get("data", {}).get("accessToken")
     user_id = data.get("data", {}).get("user", {}).get("id")
     
-    print(f"✅ Logged in as super admin")
+    print("✅ Logged in as super admin")
     print(f"   User ID: {user_id}")
     print(f"   Token: {token[:50]}...")
     
@@ -92,7 +91,7 @@ def test_kdv_inventory_creation(token):
         "features": ["Test feature 1", "Test feature 2"]
     }
     
-    print(f"\n📤 Creating inventory with KDV fields:")
+    print("\n📤 Creating inventory with KDV fields:")
     print(f"   vatRate: {inventory_data['vatRate']}")
     print(f"   priceIncludesKdv: {inventory_data['priceIncludesKdv']}")
     print(f"   costIncludesKdv: {inventory_data['costIncludesKdv']}")
@@ -106,7 +105,7 @@ def test_kdv_inventory_creation(token):
     print(f"\n📥 Response: {response.status_code}")
     
     if response.status_code not in [200, 201]:
-        print(f"❌ Creation failed!")
+        print("❌ Creation failed!")
         print(f"Response: {response.text}")
         return None
     
@@ -116,7 +115,7 @@ def test_kdv_inventory_creation(token):
     print(f"✅ Inventory created: {inventory_id}")
     
     # Read back to verify KDV fields
-    print(f"\n📤 Reading back inventory to verify KDV fields...")
+    print("\n📤 Reading back inventory to verify KDV fields...")
     
     response = requests.get(
         f"{BASE_URL}/inventory/{inventory_id}",
@@ -130,7 +129,7 @@ def test_kdv_inventory_creation(token):
     data = response.json()
     item = data.get("data", {})
     
-    print(f"\n📥 Retrieved inventory:")
+    print("\n📥 Retrieved inventory:")
     print(f"   vatRate: {item.get('vatRate')} (expected: 18)")
     print(f"   kdv: {item.get('kdv')} (expected: 18)")
     print(f"   priceIncludesKdv: {item.get('priceIncludesKdv')} (expected: True)")
@@ -138,17 +137,17 @@ def test_kdv_inventory_creation(token):
     
     # Verify
     if item.get('vatRate') == 18 or item.get('kdv') == 18:
-        print(f"   ✅ VAT rate saved correctly")
+        print("   ✅ VAT rate saved correctly")
     else:
         print(f"   ❌ VAT rate NOT saved! Got vatRate: {item.get('vatRate')}, kdv: {item.get('kdv')}")
     
     if item.get('priceIncludesKdv') == True:
-        print(f"   ✅ priceIncludesKdv saved correctly")
+        print("   ✅ priceIncludesKdv saved correctly")
     else:
         print(f"   ❌ priceIncludesKdv NOT saved! Got: {item.get('priceIncludesKdv')}")
     
     if item.get('costIncludesKdv') == False:
-        print(f"   ✅ costIncludesKdv saved correctly")
+        print("   ✅ costIncludesKdv saved correctly")
     else:
         print(f"   ❌ costIncludesKdv NOT saved! Got: {item.get('costIncludesKdv')}")
     
@@ -193,7 +192,7 @@ def test_device_assignment(token, party_id, inventory_id):
     print(f"\n📥 Response: {response.status_code}")
     
     if response.status_code != 200:
-        print(f"❌ Device assignment failed!")
+        print("❌ Device assignment failed!")
         print(f"Response: {response.text}")
         return False
     
@@ -201,7 +200,7 @@ def test_device_assignment(token, party_id, inventory_id):
     sale_id = data.get("data", {}).get("saleId")
     assignment_ids = data.get("data", {}).get("assignmentIds", [])
     
-    print(f"✅ Device assigned successfully!")
+    print("✅ Device assigned successfully!")
     print(f"   Sale ID: {sale_id}")
     print(f"   Assignment IDs: {assignment_ids}")
     

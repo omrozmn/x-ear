@@ -21,16 +21,13 @@ from pydantic import BaseModel, Field
 
 from ai.config import get_ai_config
 from ai.services.kill_switch import (
-    KillSwitch,
     get_kill_switch,
     KillSwitchState,
     KillSwitchScope,
     AICapability,
 )
 from ai.services.approval_gate import (
-    ApprovalGate,
     get_approval_gate,
-    ApprovalQueueItem,
 )
 from ai.api.errors import AIErrorCode, create_error_response
 

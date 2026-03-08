@@ -1,6 +1,5 @@
 import sqlite3
 import os
-import json
 
 # Database path
 DB_PATH = 'instance/xear_crm.db'

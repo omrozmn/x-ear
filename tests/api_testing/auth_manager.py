@@ -1,6 +1,6 @@
 """Authentication manager for API testing."""
 import requests
-from typing import Optional, Dict
+from typing import Optional
 from enum import Enum
 from .logging_config import logger
 

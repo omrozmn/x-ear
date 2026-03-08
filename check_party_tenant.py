@@ -12,7 +12,7 @@ try:
         print(f"Party ID: {party.id}")
         print(f"Party Name: {party.first_name} {party.last_name}")
         print(f"Party Tenant ID: {party.tenant_id}")
-        print(f"\nJWT tenant_id: 95625589-a4ad-41ff-a99e-4955943bb421")
+        print("\nJWT tenant_id: 95625589-a4ad-41ff-a99e-4955943bb421")
         print(f"Match: {party.tenant_id == '95625589-a4ad-41ff-a99e-4955943bb421'}")
     else:
         print("Party not found in database")

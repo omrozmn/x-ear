@@ -8,7 +8,6 @@ from flask import Blueprint, request, jsonify, make_response, send_file
 from models.base import db
 from models.patient import Patient
 from datetime import datetime
-import json
 import logging
 import uuid
 import os

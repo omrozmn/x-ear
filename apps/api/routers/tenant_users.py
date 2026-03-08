@@ -2,29 +2,26 @@
 FastAPI Tenant Users Router - Migrated from Flask routes/tenant_users.py
 Tenant user management and company settings
 """
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
-from fastapi.responses import RedirectResponse, FileResponse
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi.responses import FileResponse
 from typing import Optional, List
 from pydantic import BaseModel, Field
 from pathlib import Path
 import logging
 import os
-import uuid as uuid_lib
-import base64
-from io import BytesIO
 
 from sqlalchemy.orm import Session
 
 from schemas.base import ResponseEnvelope, ApiError
 from schemas.users import UserRead
 from schemas.tenants import (
-    TenantCompanyResponse, TenantAssetResponse, TenantAssetUrlResponse
+    TenantCompanyResponse
 )
 
 from models.user import User
 from models.tenant import Tenant
 from models.branch import Branch
-from middleware.unified_access import UnifiedAccess, require_access, require_admin
+from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
 
 logger = logging.getLogger(__name__)

@@ -13,7 +13,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'apps/api'))
 from core.database import SessionLocal
 from core.models.user import User
 from core.models.role import Role
-from core.models.permission import Permission
 
 def add_permissions_to_test_user():
     """Add necessary permissions to test user"""

@@ -5,7 +5,6 @@ Serial numbers should NOT affect inventory quantities.
 """
 
 import requests
-import json
 
 BASE_URL = "http://localhost:5003"
 

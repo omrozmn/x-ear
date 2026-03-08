@@ -1,6 +1,5 @@
 from sqlalchemy import Column, JSON, String, Text
-from core.models.base import Base
-from .base import BaseModel, gen_id
+from .base import BaseModel
 from .mixins import TenantScopedMixin
 import enum
 import sqlalchemy as sa

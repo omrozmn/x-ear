@@ -1,17 +1,13 @@
 # Base Model and Common Utilities - Pure SQLAlchemy (No Flask)
 from datetime import datetime, timezone
-from uuid import uuid4
-import json
-from sqlalchemy import Column, DateTime, event, String
-from sqlalchemy.orm import declarative_base, Query as BaseQuery
+from sqlalchemy import Column, DateTime, String
+from sqlalchemy.orm import Query as BaseQuery
 from sqlalchemy.types import TypeDecorator
 
 # Import from centralized database module
 from database import (
     engine, SessionLocal, ScopedSession,
-    get_current_tenant_id, set_current_tenant_id,
-    should_skip_tenant_filter, UnboundSession,
-    now_utc, gen_id, format_datetime_utc,
+    get_current_tenant_id, should_skip_tenant_filter, now_utc, format_datetime_utc,
     json_dump, json_load
 )
 
@@ -19,7 +15,6 @@ from database import (
 from database import Base
 
 # Context var for skip filter (backward compatibility alias)
-from database import _skip_tenant_filter as _skip_filter
 
 
 class LowercaseEnum(TypeDecorator):
@@ -62,7 +57,6 @@ def gen_sale_id(tenant_id=None):
     database UNIQUE constraint. The tenant_id parameter is kept for backward
     compatibility but not used in ID generation.
     """
-    from datetime import datetime, timezone
     from sqlalchemy import func
     now = datetime.now(timezone.utc)
     yy = str(now.year)[-2:]

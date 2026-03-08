@@ -26,7 +26,7 @@ def check_inventory():
                 
                 # Get first few items
                 items = Inventory.query.limit(5).all()
-                print(f"First 5 items:")
+                print("First 5 items:")
                 for item in items:
                     print(f"  - {item.id}: {item.name} ({item.brand} {item.model})")
             else:

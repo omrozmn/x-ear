@@ -1,6 +1,5 @@
 
 import requests
-import sys
 
 BASE_URL = "http://localhost:5003/api"
 

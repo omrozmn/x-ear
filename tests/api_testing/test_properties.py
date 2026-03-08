@@ -165,7 +165,7 @@ class TestFailureAnalysis:
         assert isinstance(category, str), \
             f"Category must be a string: {category}"
         assert len(category) > 0, \
-            f"Category must not be empty"
+            "Category must not be empty"
 
 
 class TestSuccessRateCalculation:
@@ -650,7 +650,6 @@ if __name__ == "__main__":
     def test_schema_data_generation(self, schema_type):
         """Property 4: Generated Data Schema Compliance."""
         from schema_data_generator import SchemaDataGenerator
-        from openapi_parser import OpenAPIParser
         
         # Create a simple schema
         schema = {'type': schema_type}

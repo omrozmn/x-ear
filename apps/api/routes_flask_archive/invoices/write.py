@@ -8,7 +8,6 @@ All endpoints use @unified_access for tenant scoping.
 from flask import request, jsonify
 from sqlalchemy import desc
 from datetime import datetime
-from uuid import uuid4
 import os
 
 from models.base import db

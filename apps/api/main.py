@@ -3,7 +3,7 @@ import logging
 import json
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse as DefaultJSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -325,8 +325,9 @@ app.include_router(admin_example_documents.router, prefix="/api")
 # Additional routers
 # New invoices router MUST be before legacy invoices router
 # to avoid /invoices/{invoice_id} catching /invoices/incoming
-from routers import invoices_new
+from routers import invoices_new, invoice_draft_issue
 app.include_router(invoices_new.router, prefix="/api")
+app.include_router(invoice_draft_issue.router, prefix="/api")
 app.include_router(invoices.router, prefix="/api")
 app.include_router(sgk.router, prefix="/api")
 

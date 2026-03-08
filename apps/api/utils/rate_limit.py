@@ -1,6 +1,5 @@
 import time
 import asyncio
-import functools
 from typing import Callable, Optional
 try:
     from fastapi import Request, HTTPException

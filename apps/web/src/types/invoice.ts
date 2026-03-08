@@ -634,6 +634,7 @@ export interface WithholdingData {
   taxFreeAmount: number;
   withholdingType?: 'partial' | 'full';
   withholdingCode?: string;
+  code?: string;
 }
 
 export interface WithholdingCalculation {

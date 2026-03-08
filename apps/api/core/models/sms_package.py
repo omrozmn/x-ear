@@ -1,7 +1,6 @@
-from sqlalchemy import Column, Boolean, Date, DateTime, Float, Integer, JSON, String, Time
+from sqlalchemy import Column, Boolean, DateTime, Float, Integer, String
 from core.models.base import Base
 from datetime import datetime
-from sqlalchemy.dialects.postgresql import JSON
 import uuid
 
 class SmsPackage(Base):
