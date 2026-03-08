@@ -11,7 +11,10 @@ import {
   CardTitle,
   Badge,
   Spinner,
-  DatePicker
+  DatePicker,
+  Checkbox,
+  Select,
+  Textarea
 } from '@x-ear/ui-web';
 import {
   FileText,
@@ -21,7 +24,6 @@ import {
   XCircle,
   Clock,
   Trash2,
-  Banknote,
   Calendar,
   User,
   MapPin,
@@ -35,7 +37,6 @@ import {
 import type { SaleRead } from '@/api/client/sales.client';
 import type { PromissoryNoteRead } from '@/api/generated/schemas';
 import {
-  useListSalePromissoryNotes,
   getListSalePromissoryNotesQueryKey,
   getListPartyPaymentRecordsQueryKey,
   createPromissoryNotes,
@@ -57,17 +58,17 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
   isLoading
 }) => {
   const queryClient = useQueryClient();
-  
+
   // Fetch party data to get full details
   const { data: partyData } = useGetParty(sale.partyId || '', {
     query: {
       enabled: !!sale.partyId
     }
   });
-  
+
   // Fetch company info for authorized court
   const [companyCity, setCompanyCity] = useState('İstanbul');
-  
+
   useEffect(() => {
     const fetchCompanyInfo = async () => {
       try {
@@ -81,51 +82,51 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
     };
     fetchCompanyInfo();
   }, []);
-  
+
   // Calculate remaining amount from sale
   const remainingAmount = (sale.finalAmount || 0) - (sale.paidAmount || 0);
-  
+
   // Get party info for defaults
   const party = partyData?.data;
   const partyName = party ? `${party.firstName || ''} ${party.lastName || ''}`.trim() : '';
   const partyAddressObj = party?.address;
-  const partyAddress = typeof partyAddressObj === 'string' ? partyAddressObj : 
-                       party?.addressFull ||
-                       (partyAddressObj as any)?.fullAddress || 
-                       (partyAddressObj as any)?.street || '';
+  const partyAddress = typeof partyAddressObj === 'string' ? partyAddressObj :
+    party?.addressFull ||
+    (partyAddressObj as Record<string, unknown> | undefined)?.fullAddress as string ||
+    (partyAddressObj as Record<string, unknown> | undefined)?.street as string || '';
   const partyPhone = party?.phone || '';
   const partyTc = party?.tcNumber || party?.identityNumber || '';
-  
+
   // Calculate default first due date (1 month from today)
   const getDefaultFirstDueDate = () => {
     const date = new Date();
     date.setMonth(date.getMonth() + 1);
     return date;
   };
-  
+
   // Form state - LEGACY FIELDS with defaults from sale/party
   const [noteCount, setNoteCount] = useState(1);
   const [totalAmount, setTotalAmount] = useState(remainingAmount > 0 ? remainingAmount : 0);
   const [authorizedCourt, setAuthorizedCourt] = useState(`${companyCity} (Çağlayan)`);
   const [issueDate, setIssueDate] = useState<Date | null>(new Date());
   const [firstDueDate, setFirstDueDate] = useState<Date | null>(getDefaultFirstDueDate());
-  
+
   // Update authorized court when company city changes
   useEffect(() => {
     setAuthorizedCourt(`${companyCity} (Çağlayan)`);
   }, [companyCity]);
-  
+
   // Installment plan preview
-  const [installments, setInstallments] = useState<Array<{amount: number, dueDate: string}>>([]);
+  const [installments, setInstallments] = useState<Array<{ amount: number, dueDate: string }>>([]);
   const [showInstallmentPreview, setShowInstallmentPreview] = useState(false);
-  
+
   // Debtor info - defaults from party
   const [debtorName, setDebtorName] = useState('');
   const [debtorTc, setDebtorTc] = useState('');
   const [debtorAddress, setDebtorAddress] = useState('');
   const [debtorTaxOffice, setDebtorTaxOffice] = useState('OSMANGAZİ');
   const [debtorPhone, setDebtorPhone] = useState('');
-  
+
   // Update debtor info when party data loads
   useEffect(() => {
     if (party) {
@@ -135,14 +136,14 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
       setDebtorPhone(partyPhone);
     }
   }, [party, partyName, partyTc, partyAddress, partyPhone]);
-  
+
   // Guarantor info
   const [hasGuarantor, setHasGuarantor] = useState(false);
   const [guarantorName, setGuarantorName] = useState('');
   const [guarantorTc, setGuarantorTc] = useState('');
   const [guarantorAddress, setGuarantorAddress] = useState('');
   const [guarantorPhone, setGuarantorPhone] = useState('');
-  
+
   // Collection modal
   const [collectModal, setCollectModal] = useState<{
     isOpen: boolean;
@@ -159,7 +160,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
     paymentMethod: 'cash',
     notes: ''
   });
-  
+
   // Delete confirmation modal
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
@@ -170,13 +171,13 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
     noteId: null,
     noteNumber: null
   });
-  
+
   // Collapsible sections
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
   const [isListOpen, setIsListOpen] = useState(true);
-  
+
   // Helper: Log to timeline
-  const logToTimeline = async (eventType: string, title: string, description: string, details: any = {}) => {
+  const logToTimeline = async (eventType: string, title: string, description: string, details: Record<string, unknown> = {}) => {
     try {
       await apiClient.post(`/api/parties/${sale.partyId}/timeline`, {
         type: eventType,
@@ -199,39 +200,39 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
     if (noteCount > 0 && totalAmount > 0 && firstDueDate) {
       const amountPerNote = totalAmount / noteCount;
       const newInstallments = [];
-      
+
       for (let i = 0; i < noteCount; i++) {
         const dueDate = new Date(firstDueDate);
         dueDate.setMonth(dueDate.getMonth() + i);
-        
+
         newInstallments.push({
           amount: parseFloat(amountPerNote.toFixed(2)),
           dueDate: dueDate.toISOString().split('T')[0]
         });
       }
-      
+
       setInstallments(newInstallments);
       setShowInstallmentPreview(true);
     } else {
       setShowInstallmentPreview(false);
     }
   }, [noteCount, totalAmount, firstDueDate]);
-  
+
   const updateInstallmentAmount = (index: number, amount: number) => {
     const newInstallments = [...installments];
     newInstallments[index].amount = amount;
     setInstallments(newInstallments);
-    
+
     // Don't update total automatically - just let user edit freely
   };
-  
+
   const updateInstallmentDate = (index: number, date: Date | null) => {
     if (!date) return;
     const newInstallments = [...installments];
     newInstallments[index].dueDate = date.toISOString().split('T')[0];
     setInstallments(newInstallments);
   };
-  
+
   const autoFillInstallments = () => {
     if (noteCount > 0 && totalAmount > 0) {
       const amountPerNote = totalAmount / noteCount;
@@ -249,32 +250,32 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
       toast.error('Senet sayısı 1-24 arasında olmalıdır');
       return;
     }
-    
+
     if (totalAmount <= 0) {
       toast.error('Toplam tutar 0\'dan büyük olmalıdır');
       return;
     }
-    
+
     if (!firstDueDate) {
       toast.error('İlk vade tarihi seçilmelidir');
       return;
     }
-    
+
     if (!debtorName) {
       toast.error('Borçlu adı girilmelidir');
       return;
     }
-    
+
     if (!debtorTc || debtorTc.length !== 11) {
       toast.error('Geçerli bir TC kimlik numarası girilmelidir');
       return;
     }
-    
+
     if (hasGuarantor && (!guarantorName || !guarantorTc)) {
       toast.error('Kefil bilgileri eksik');
       return;
     }
-    
+
     try {
       const notes = installments.map((inst, index) => ({
         noteNumber: index + 1,
@@ -294,18 +295,18 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
         authorizedCourt,
         fileName: `Senet-${debtorName}-${index + 1}.pdf`
       }));
-      
+
       await createPromissoryNotes({
         partyId: sale.partyId!,
         saleId: sale.id,
         totalAmount,
         notes
       });
-      
+
       await queryClient.invalidateQueries({
         queryKey: getListSalePromissoryNotesQueryKey(sale.id!)
       });
-      
+
       // Log to timeline
       await logToTimeline(
         'promissory_note_created',
@@ -319,20 +320,21 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
           saleId: sale.id
         }
       );
-      
+
       toast.success(`${noteCount} adet senet başarıyla oluşturuldu`);
-      
+
       // Reset form
       setNoteCount(1);
       setTotalAmount(0);
       setFirstDueDate(getDefaultFirstDueDate());
       setInstallments([]);
       setShowInstallmentPreview(false);
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.error?.message || 
-                          error?.response?.data?.message ||
-                          error?.message || 
-                          'Senet oluşturulurken hata oluştu';
+    } catch (error) {
+      const err = error as { response?: { data?: { error?: { message?: string }; message?: string } }; message?: string };
+      const errorMessage = err?.response?.data?.error?.message ||
+        err?.response?.data?.message ||
+        err?.message ||
+        'Senet oluşturulurken hata oluştu';
       toast.error(errorMessage);
     }
   };
@@ -347,21 +349,21 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
       notes: ''
     });
   };
-  
+
   const handleCollect = async () => {
     if (!collectModal.note) return;
-    
+
     if (collectModal.amount <= 0) {
       toast.error('Tahsilat tutarı 0\'dan büyük olmalıdır');
       return;
     }
-    
+
     const remainingAmount = collectModal.note.amount - (collectModal.note.paidAmount || 0);
     if (collectModal.amount > remainingAmount) {
       toast.error('Tahsilat tutarı kalan tutardan fazla olamaz');
       return;
     }
-    
+
     try {
       await createPromissoryNoteCollect(collectModal.note.id, {
         amount: collectModal.amount,
@@ -369,17 +371,17 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
         paymentMethod: collectModal.paymentMethod,
         notes: collectModal.notes
       });
-      
+
       // Invalidate promissory notes query
       await queryClient.invalidateQueries({
         queryKey: getListSalePromissoryNotesQueryKey(sale.id!)
       });
-      
+
       // Invalidate payment records query to show collected payment in Ödeme Takibi tab
       await queryClient.invalidateQueries({
         queryKey: getListPartyPaymentRecordsQueryKey(sale.partyId)
       });
-      
+
       // Log to timeline
       await logToTimeline(
         'promissory_note_collected',
@@ -393,9 +395,9 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
           saleId: sale.id
         }
       );
-      
+
       toast.success('Tahsilat başarıyla kaydedildi');
-      
+
       // Close modal after successful collection
       setCollectModal({
         isOpen: false,
@@ -405,38 +407,39 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
         paymentMethod: 'cash',
         notes: ''
       });
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.error?.message || 
-                          error?.response?.data?.message ||
-                          error?.message || 
-                          'Tahsilat kaydedilirken hata oluştu';
+    } catch (error) {
+      const err = error as { response?: { data?: { error?: { message?: string }; message?: string } }; message?: string };
+      const errorMessage = err?.response?.data?.error?.message ||
+        err?.response?.data?.message ||
+        err?.message ||
+        'Tahsilat kaydedilirken hata oluştu';
       toast.error(errorMessage);
     }
   };
-  
+
   const handleCancelNote = async (noteId: string) => {
     const note = promissoryNotes.find(n => n.id === noteId);
     if (!note) return;
-    
+
     setDeleteModal({
       isOpen: true,
       noteId,
       noteNumber: note.noteNumber
     });
   };
-  
+
   const confirmDelete = async () => {
     if (!deleteModal.noteId) return;
-    
+
     try {
       await apiClient.patch(`/api/promissory-notes/${deleteModal.noteId}`, {
         status: 'cancelled'
       });
-      
+
       await queryClient.invalidateQueries({
         queryKey: getListSalePromissoryNotesQueryKey(sale.id!)
       });
-      
+
       // Log to timeline
       await logToTimeline(
         'promissory_note_cancelled',
@@ -448,19 +451,20 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
           saleId: sale.id
         }
       );
-      
+
       toast.success('Senet başarıyla iptal edildi');
-      
+
       setDeleteModal({
         isOpen: false,
         noteId: null,
         noteNumber: null
       });
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.error?.message || 
-                          error?.response?.data?.message ||
-                          error?.message || 
-                          'Senet iptal edilirken hata oluştu';
+    } catch (error) {
+      const err = error as { response?: { data?: { error?: { message?: string }; message?: string } }; message?: string };
+      const errorMessage = err?.response?.data?.error?.message ||
+        err?.response?.data?.message ||
+        err?.message ||
+        'Senet iptal edilirken hata oluştu';
       toast.error(errorMessage);
     }
   };
@@ -471,12 +475,12 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
       toast.error('Senet bulunamadı');
       return;
     }
-    
+
     // Get all notes for this sale to generate complete document with muacceliyet
     const allNotes = promissoryNotes.filter(n => n.saleId === sale.id);
-    
+
     const creditorName = 'ÖZMEN TIBBİ CİHAZLAR İÇ VE DIŞ TİCARET SANAYİ LİMİTED ŞİRKETİ';
-    
+
     // Generate complete HTML with muacceliyet agreement
     let html = `
       <!DOCTYPE html>
@@ -511,12 +515,12 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
       </head>
       <body>
     `;
-    
+
     // Muacceliyet ve Yetki Sözleşmesi (First Page)
     const totalAmount = allNotes.reduce((sum, n) => sum + (n.amount || 0), 0);
     const authorizedCourt = note.authorizedCourt || 'İstanbul (Çağlayan)';
     const issueDate = note.issueDate || new Date().toISOString();
-    
+
     html += `
       <div class="page">
         <div class="contract-date">${formatDate(issueDate)}</div>
@@ -536,7 +540,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
           </thead>
           <tbody>
     `;
-    
+
     // Senet listesi tablosu
     allNotes.forEach((n) => {
       const nIssueDate = n.issueDate || new Date().toISOString();
@@ -552,7 +556,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
             </tr>
       `;
     });
-    
+
     html += `
             <tr style="font-weight: bold;">
               <td colspan="2">TOPLAM</td>
@@ -600,7 +604,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
         </div>
       </div>
     `;
-    
+
     // Generate notes (2 per page)
     allNotes.forEach((n, index: number) => {
       const lira = Math.floor(n.amount || 0);
@@ -608,13 +612,13 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
       const amountText = numberToText(lira) + ' TÜRKLİRASI';
       const nIssueDate = n.issueDate || new Date().toISOString();
       const nDueDate = n.dueDate || '';
-      
+
       // Start new page every 2 notes
       if (index % 2 === 0) {
         if (index > 0) html += '</div>'; // Close previous page
         html += '<div class="page">';
       }
-      
+
       html += `
       <div class="note">
         <div class="header">
@@ -700,13 +704,13 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
       </div>
       `;
     });
-    
+
     html += `
         </div>
       </body>
       </html>
     `;
-    
+
     const printWindow = window.open('', '_blank');
     if (printWindow) {
       printWindow.document.write(html);
@@ -714,7 +718,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
       printWindow.onload = () => {
         setTimeout(() => printWindow.print(), 250);
       };
-      
+
       // Log to timeline
       logToTimeline(
         'promissory_note_downloaded',
@@ -726,16 +730,16 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
           saleId: sale.id
         }
       );
-      
+
       toast.success('PDF yazdırma penceresi açıldı');
     }
   };
-  
+
   const numberToText = (num: number): string => {
     const ones = ['', 'BİR', 'İKİ', 'ÜÇ', 'DÖRT', 'BEŞ', 'ALTI', 'YEDİ', 'SEKİZ', 'DOKUZ'];
     const tens = ['', 'ON', 'YİRMİ', 'OTUZ', 'KIRK', 'ELLİ', 'ALTMIŞ', 'YETMİŞ', 'SEKSEN', 'DOKSAN'];
     const hundreds = ['', 'YÜZ', 'İKİYÜZ', 'ÜÇYÜZ', 'DÖRTYÜZ', 'BEŞYÜZ', 'ALTIYÜZ', 'YEDİYÜZ', 'SEKİZYÜZ', 'DOKUZYÜZ'];
-    
+
     if (num === 0) return 'SIFIR';
     if (num < 10) return ones[num];
     if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 ? ' ' + ones[num % 10] : '');
@@ -747,15 +751,15 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
     }
     return num.toString();
   };
-  
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('tr-TR', {
       style: 'currency',
       currency: 'TRY'
     }).format(amount);
   };
-  
-  const formatDate = (dateString: string | undefined | any) => {
+
+  const formatDate = (dateString: string | undefined | null) => {
     if (!dateString) return '';
     try {
       return new Date(dateString).toLocaleDateString('tr-TR');
@@ -763,7 +767,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
       return '';
     }
   };
-  
+
   const getStatusBadge = (status: string | undefined) => {
     const statusConfig = {
       active: { color: 'bg-blue-100 text-blue-800', label: 'Aktif', icon: Clock },
@@ -772,10 +776,10 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
       overdue: { color: 'bg-red-100 text-red-800', label: 'Gecikmiş', icon: Clock },
       cancelled: { color: 'bg-gray-100 text-gray-800', label: 'İptal', icon: XCircle }
     };
-    
+
     const config = statusConfig[(status || 'active') as keyof typeof statusConfig] || statusConfig.active;
     const Icon = config.icon;
-    
+
     return (
       <Badge className={`${config.color} text-xs px-2 py-1 flex items-center gap-1`}>
         <Icon className="w-3 h-3" />
@@ -788,7 +792,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
     <div className="space-y-6">
       {/* Yeni Senet Oluştur Formu - LEGACY STYLE - COLLAPSIBLE */}
       <Card>
-        <CardHeader 
+        <CardHeader
           className="cursor-pointer hover:bg-gray-50 transition-colors"
           onClick={() => setIsCreateFormOpen(!isCreateFormOpen)}
         >
@@ -805,263 +809,189 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
           </CardTitle>
         </CardHeader>
         {isCreateFormOpen && (
-        <CardContent>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <p className="text-sm text-blue-800 flex items-center">
-              <FileText className="w-4 h-4 mr-2" />
-              Bu form ile resmi senet oluşturabilirsiniz. Bilgileri kontrol edip düzenleyebilirsiniz. 
-              Bir sayfada 2 senet oluşturulacaktır.
-            </p>
-          </div>
-          
-          {/* Senet Bilgileri */}
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="w-full">
-                <Label className="flex items-center">
-                  <FileText className="w-4 h-4 mr-2 text-blue-600" />
-                  Senet Sayısı <span className="text-red-500 ml-1">*</span>
-                </Label>
-                <Input
-                  type="number"
-                  min="1"
-                  max="24"
-                  value={noteCount}
-                  onChange={(e) => setNoteCount(parseInt(e.target.value) || 1)}
-                  onFocus={(e) => e.target.select()}
-                  placeholder="1-24 arası"
-                />
-                <p className="text-xs text-gray-500 mt-1">Maksimum 24 senet oluşturabilirsiniz</p>
-              </div>
-              
-              <div className="w-full">
-                <Label className="flex items-center">
-                  <Banknote className="w-4 h-4 mr-2 text-green-600" />
-                  Toplam Tutar (TL) <span className="text-red-500 ml-1">*</span>
-                </Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={totalAmount === 0 ? '' : totalAmount}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setTotalAmount(val === '' ? 0 : parseFloat(val) || 0);
-                  }}
-                  placeholder="0.00"
-                />
-                <p className="text-xs text-gray-500 mt-1">Kalan tutar: {formatCurrency(remainingAmount)}</p>
-              </div>
-              
-              <div className="w-full">
-                <Label className="flex items-center">
-                  <Building className="w-4 h-4 mr-2 text-purple-600" />
-                  Yetkili Mahkeme <span className="text-red-500 ml-1">*</span>
-                </Label>
-                <Input
-                  value={authorizedCourt}
-                  onChange={(e) => setAuthorizedCourt(e.target.value)}
-                  placeholder="İstanbul (Çağlayan)"
-                />
-              </div>
-            </div>
-            
-            {/* Tarihler */}
-            <div className="border-t border-gray-200 pt-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <Calendar className="w-5 h-5 mr-2 text-blue-600" />
-                Tarihler
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="w-full">
-                  <Label className="flex items-center">
-                    <Calendar className="w-4 h-4 mr-2 text-blue-600" />
-                    Düzenlenme Tarihi <span className="text-red-500 ml-1">*</span>
-                  </Label>
-                  <DatePicker
-                    value={issueDate}
-                    onChange={(date) => setIssueDate(date)}
-                    placeholder="Düzenlenme tarihi seçin"
-                    fullWidth
-                  />
-                </div>
-                
-                <div className="w-full">
-                  <Label className="flex items-center">
-                    <Calendar className="w-4 h-4 mr-2 text-green-600" />
-                    İlk Vade Tarihi <span className="text-red-500 ml-1">*</span>
-                  </Label>
-                  <DatePicker
-                    value={firstDueDate}
-                    onChange={(date) => setFirstDueDate(date)}
-                    placeholder="İlk vade tarihi seçin"
-                    fullWidth
-                  />
-                  <p className="text-xs text-gray-500 mt-1">İlk vade tarihi, düzenlenme tarihinden en az 1 gün sonra olmalıdır.</p>
-                </div>
-              </div>
+          <CardContent>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <p className="text-sm text-blue-800 flex items-center">
+                <FileText className="w-4 h-4 mr-2" />
+                Bu form ile resmi senet oluşturabilirsiniz. Bilgileri kontrol edip düzenleyebilirsiniz.
+                Bir sayfada 2 senet oluşturulacaktır.
+              </p>
             </div>
 
-            {/* Taksit Planı Önizleme */}
-            {showInstallmentPreview && (
-              <div className="border-t border-gray-200 pt-4">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Taksit Planı</h3>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={autoFillInstallments}
-                  >
-                    <FileText className="w-4 h-4 mr-1" />
-                    Otomatik Doldur
-                  </Button>
-                </div>
-                <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {installments.map((inst, index) => (
-                    <div key={index} className="grid grid-cols-12 gap-3 bg-gray-50 p-3 rounded-lg items-center">
-                      <span className="col-span-2 font-medium text-gray-700">Taksit {index + 1}:</span>
-                      <div className="col-span-5 flex items-center gap-2">
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={inst.amount}
-                          onChange={(e) => updateInstallmentAmount(index, parseFloat(e.target.value) || 0)}
-                          className="flex-1"
-                        />
-                        <span className="text-gray-500 text-sm">TL</span>
-                      </div>
-                      <div className="col-span-5">
-                        <DatePicker
-                          value={inst.dueDate ? new Date(inst.dueDate) : null}
-                          onChange={(date) => updateInstallmentDate(index, date)}
-                          placeholder="Vade tarihi"
-                          fullWidth
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold text-gray-900">Taksitler Toplamı:</span>
-                    <span className={`font-bold text-lg ${
-                      installments.reduce((sum, inst) => sum + inst.amount, 0) > totalAmount 
-                        ? 'text-red-600' 
-                        : 'text-blue-600'
-                    }`}>
-                      {formatCurrency(installments.reduce((sum, inst) => sum + inst.amount, 0))}
-                    </span>
-                  </div>
-                  {installments.reduce((sum, inst) => sum + inst.amount, 0) > totalAmount && (
-                    <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-2">
-                      <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                      <div className="text-sm text-yellow-800">
-                        <strong>Uyarı:</strong> Taksitlerin toplamı ({formatCurrency(installments.reduce((sum, inst) => sum + inst.amount, 0))}) 
-                        belirlenen toplam tutarı ({formatCurrency(totalAmount)}) geçiyor.
-                      </div>
-                    </div>
-                  )}
-                  <div className="mt-2 flex justify-between items-center text-sm text-gray-600">
-                    <span>Belirlenen Toplam Tutar:</span>
-                    <span className="font-semibold">{formatCurrency(totalAmount)}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {/* Borçlu Bilgileri */}
-            <div className="border-t border-gray-200 pt-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <User className="w-5 h-5 mr-2 text-blue-600" />
-                Borçlu Bilgileri
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Senet Bilgileri */}
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="w-full">
-                  <Label>Ad Soyad <span className="text-red-500">*</span></Label>
-                  <Input
-                    value={debtorName}
-                    onChange={(e) => setDebtorName(e.target.value)}
-                    placeholder="Borçlu adı soyadı"
-                  />
-                </div>
-                <div className="w-full">
-                  <Label>T.C. Kimlik No <span className="text-red-500">*</span></Label>
-                  <Input
-                    value={debtorTc}
-                    onChange={(e) => setDebtorTc(e.target.value)}
-                    maxLength={11}
-                    placeholder="11 haneli TC no"
-                  />
-                </div>
-                <div className="col-span-1 md:col-span-2 w-full">
                   <Label className="flex items-center">
-                    <MapPin className="w-4 h-4 mr-2 text-red-600" />
-                    Adres <span className="text-red-500 ml-1">*</span>
+                    <FileText className="w-4 h-4 mr-2 text-blue-600" />
+                    Senet Sayısı <span className="text-red-500 ml-1">*</span>
                   </Label>
-                  <textarea
-                    value={debtorAddress}
-                    onChange={(e) => setDebtorAddress(e.target.value)}
-                    rows={2}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
-                    placeholder="Borçlu adresi"
+                  <Input
+                    type="number"
+                    min="1"
+                    max="24"
+                    value={noteCount}
+                    onChange={(e) => setNoteCount(parseInt(e.target.value) || 1)}
+                    onFocus={(e) => e.target.select()}
+                    placeholder="1-24 arası"
                   />
+                  <p className="text-xs text-gray-500 mt-1">Maksimum 24 senet oluşturabilirsiniz</p>
                 </div>
+
+                <div className="w-full">
+                  <Label className="flex items-center">
+                    <Banknote className="w-4 h-4 mr-2 text-green-600" />
+                    Toplam Tutar (TL) <span className="text-red-500 ml-1">*</span>
+                  </Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={totalAmount === 0 ? '' : totalAmount}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setTotalAmount(val === '' ? 0 : parseFloat(val) || 0);
+                    }}
+                    placeholder="0.00"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Kalan tutar: {formatCurrency(remainingAmount)}</p>
+                </div>
+
                 <div className="w-full">
                   <Label className="flex items-center">
                     <Building className="w-4 h-4 mr-2 text-purple-600" />
-                    Vergi Dairesi <span className="text-red-500 ml-1">*</span>
+                    Yetkili Mahkeme <span className="text-red-500 ml-1">*</span>
                   </Label>
                   <Input
-                    value={debtorTaxOffice}
-                    onChange={(e) => setDebtorTaxOffice(e.target.value)}
-                    placeholder="Vergi dairesi"
-                  />
-                </div>
-                <div className="w-full">
-                  <Label className="flex items-center">
-                    <Phone className="w-4 h-4 mr-2 text-green-600" />
-                    Telefon <span className="text-red-500 ml-1">*</span>
-                  </Label>
-                  <Input
-                    value={debtorPhone}
-                    onChange={(e) => setDebtorPhone(e.target.value)}
-                    placeholder="5XXXXXXXXX"
+                    value={authorizedCourt}
+                    onChange={(e) => setAuthorizedCourt(e.target.value)}
+                    placeholder="İstanbul (Çağlayan)"
                   />
                 </div>
               </div>
-            </div>
-            
-            {/* Kefil Bilgileri (Opsiyonel) */}
-            <div className="border-t border-gray-200 pt-4">
-              <div className="flex items-center mb-4">
-                <input
-                  type="checkbox"
-                  id="hasGuarantor"
-                  checked={hasGuarantor}
-                  onChange={(e) => setHasGuarantor(e.target.checked)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <label htmlFor="hasGuarantor" className="ml-2 text-sm font-medium text-gray-700 flex items-center">
-                  <Shield className="w-4 h-4 mr-2 text-orange-600" />
-                  Kefil Ekle
-                </label>
-              </div>
-              
-              {hasGuarantor && (
+
+              {/* Tarihler */}
+              <div className="border-t border-gray-200 pt-4">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <Calendar className="w-5 h-5 mr-2 text-blue-600" />
+                  Tarihler
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="w-full">
-                    <Label>Kefil Ad Soyad</Label>
+                    <Label className="flex items-center">
+                      <Calendar className="w-4 h-4 mr-2 text-blue-600" />
+                      Düzenlenme Tarihi <span className="text-red-500 ml-1">*</span>
+                    </Label>
+                    <DatePicker
+                      value={issueDate}
+                      onChange={(date) => setIssueDate(date)}
+                      placeholder="Düzenlenme tarihi seçin"
+                      fullWidth
+                    />
+                  </div>
+
+                  <div className="w-full">
+                    <Label className="flex items-center">
+                      <Calendar className="w-4 h-4 mr-2 text-green-600" />
+                      İlk Vade Tarihi <span className="text-red-500 ml-1">*</span>
+                    </Label>
+                    <DatePicker
+                      value={firstDueDate}
+                      onChange={(date) => setFirstDueDate(date)}
+                      placeholder="İlk vade tarihi seçin"
+                      fullWidth
+                    />
+                    <p className="text-xs text-gray-500 mt-1">İlk vade tarihi, düzenlenme tarihinden en az 1 gün sonra olmalıdır.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Taksit Planı Önizleme */}
+              {showInstallmentPreview && (
+                <div className="border-t border-gray-200 pt-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Taksit Planı</h3>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={autoFillInstallments}
+                    >
+                      <FileText className="w-4 h-4 mr-1" />
+                      Otomatik Doldur
+                    </Button>
+                  </div>
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {installments.map((inst, index) => (
+                      <div key={index} className="grid grid-cols-12 gap-3 bg-gray-50 p-3 rounded-lg items-center">
+                        <span className="col-span-2 font-medium text-gray-700">Taksit {index + 1}:</span>
+                        <div className="col-span-5 flex items-center gap-2">
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={inst.amount}
+                            onChange={(e) => updateInstallmentAmount(index, parseFloat(e.target.value) || 0)}
+                            className="flex-1"
+                          />
+                          <span className="text-gray-500 text-sm">TL</span>
+                        </div>
+                        <div className="col-span-5">
+                          <DatePicker
+                            value={inst.dueDate ? new Date(inst.dueDate) : null}
+                            onChange={(date) => updateInstallmentDate(index, date)}
+                            placeholder="Vade tarihi"
+                            fullWidth
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold text-gray-900">Taksitler Toplamı:</span>
+                      <span className={`font-bold text-lg ${installments.reduce((sum, inst) => sum + inst.amount, 0) > totalAmount
+                        ? 'text-red-600'
+                        : 'text-blue-600'
+                        }`}>
+                        {formatCurrency(installments.reduce((sum, inst) => sum + inst.amount, 0))}
+                      </span>
+                    </div>
+                    {installments.reduce((sum, inst) => sum + inst.amount, 0) > totalAmount && (
+                      <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-2">
+                        <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                        <div className="text-sm text-yellow-800">
+                          <strong>Uyarı:</strong> Taksitlerin toplamı ({formatCurrency(installments.reduce((sum, inst) => sum + inst.amount, 0))})
+                          belirlenen toplam tutarı ({formatCurrency(totalAmount)}) geçiyor.
+                        </div>
+                      </div>
+                    )}
+                    <div className="mt-2 flex justify-between items-center text-sm text-gray-600">
+                      <span>Belirlenen Toplam Tutar:</span>
+                      <span className="font-semibold">{formatCurrency(totalAmount)}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Borçlu Bilgileri */}
+              <div className="border-t border-gray-200 pt-4">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <User className="w-5 h-5 mr-2 text-blue-600" />
+                  Borçlu Bilgileri
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="w-full">
+                    <Label>Ad Soyad <span className="text-red-500">*</span></Label>
                     <Input
-                      value={guarantorName}
-                      onChange={(e) => setGuarantorName(e.target.value)}
-                      placeholder="Kefil adı soyadı"
+                      value={debtorName}
+                      onChange={(e) => setDebtorName(e.target.value)}
+                      placeholder="Borçlu adı soyadı"
                     />
                   </div>
                   <div className="w-full">
-                    <Label>Kefil T.C. Kimlik No</Label>
+                    <Label>T.C. Kimlik No <span className="text-red-500">*</span></Label>
                     <Input
-                      value={guarantorTc}
-                      onChange={(e) => setGuarantorTc(e.target.value)}
+                      value={debtorTc}
+                      onChange={(e) => setDebtorTc(e.target.value)}
                       maxLength={11}
                       placeholder="11 haneli TC no"
                     />
@@ -1069,52 +999,123 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
                   <div className="col-span-1 md:col-span-2 w-full">
                     <Label className="flex items-center">
                       <MapPin className="w-4 h-4 mr-2 text-red-600" />
-                      Kefil Adres
+                      Adres <span className="text-red-500 ml-1">*</span>
                     </Label>
-                    <textarea
-                      value={guarantorAddress}
-                      onChange={(e) => setGuarantorAddress(e.target.value)}
+                    <Textarea
+                      value={debtorAddress}
+                      onChange={(e) => setDebtorAddress(e.target.value)}
                       rows={2}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
-                      placeholder="Kefil adresi"
+                      className="w-full"
+                      placeholder="Borçlu adresi"
+                    />
+                  </div>
+                  <div className="w-full">
+                    <Label className="flex items-center">
+                      <Building className="w-4 h-4 mr-2 text-purple-600" />
+                      Vergi Dairesi <span className="text-red-500 ml-1">*</span>
+                    </Label>
+                    <Input
+                      value={debtorTaxOffice}
+                      onChange={(e) => setDebtorTaxOffice(e.target.value)}
+                      placeholder="Vergi dairesi"
                     />
                   </div>
                   <div className="w-full">
                     <Label className="flex items-center">
                       <Phone className="w-4 h-4 mr-2 text-green-600" />
-                      Kefil Telefon
+                      Telefon <span className="text-red-500 ml-1">*</span>
                     </Label>
                     <Input
-                      value={guarantorPhone}
-                      onChange={(e) => setGuarantorPhone(e.target.value)}
+                      value={debtorPhone}
+                      onChange={(e) => setDebtorPhone(e.target.value)}
                       placeholder="5XXXXXXXXX"
                     />
                   </div>
                 </div>
-              )}
+              </div>
+
+              {/* Kefil Bilgileri (Opsiyonel) */}
+              <div className="border-t border-gray-200 pt-4">
+                <div className="flex items-center mb-4">
+                  <div className="flex items-center">
+                    <Shield className="w-4 h-4 mr-2 text-orange-600" />
+                    <Checkbox
+                      id="hasGuarantor"
+                      checked={hasGuarantor}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setHasGuarantor(e.target.checked)}
+                      label="Kefil Ekle"
+                    />
+                  </div>
+                </div>
+
+                {hasGuarantor && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="w-full">
+                      <Label>Kefil Ad Soyad</Label>
+                      <Input
+                        value={guarantorName}
+                        onChange={(e) => setGuarantorName(e.target.value)}
+                        placeholder="Kefil adı soyadı"
+                      />
+                    </div>
+                    <div className="w-full">
+                      <Label>Kefil T.C. Kimlik No</Label>
+                      <Input
+                        value={guarantorTc}
+                        onChange={(e) => setGuarantorTc(e.target.value)}
+                        maxLength={11}
+                        placeholder="11 haneli TC no"
+                      />
+                    </div>
+                    <div className="col-span-1 md:col-span-2 w-full">
+                      <Label className="flex items-center">
+                        <MapPin className="w-4 h-4 mr-2 text-red-600" />
+                        Kefil Adres
+                      </Label>
+                      <Textarea
+                        value={guarantorAddress}
+                        onChange={(e) => setGuarantorAddress(e.target.value)}
+                        rows={2}
+                        className="w-full"
+                        placeholder="Kefil adresi"
+                      />
+                    </div>
+                    <div className="w-full">
+                      <Label className="flex items-center">
+                        <Phone className="w-4 h-4 mr-2 text-green-600" />
+                        Kefil Telefon
+                      </Label>
+                      <Input
+                        value={guarantorPhone}
+                        onChange={(e) => setGuarantorPhone(e.target.value)}
+                        placeholder="5XXXXXXXXX"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                <Button
+                  type="button"
+                  onClick={handleCreateNotes}
+                  disabled={isLoading}
+                  className="bg-blue-600 text-white px-6 py-2"
+                >
+                  {isLoading && <Spinner className="w-4 h-4 mr-2" />}
+                  <Download className="w-4 h-4 mr-2" />
+                  Senet Oluştur ve İndir
+                </Button>
+              </div>
             </div>
-            
-            {/* Action Buttons */}
-            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-              <Button
-                type="button"
-                onClick={handleCreateNotes}
-                disabled={isLoading}
-                className="bg-blue-600 text-white px-6 py-2"
-              >
-                {isLoading && <Spinner className="w-4 h-4 mr-2" />}
-                <Download className="w-4 h-4 mr-2" />
-                Senet Oluştur ve İndir
-              </Button>
-            </div>
-          </div>
-        </CardContent>
+          </CardContent>
         )}
       </Card>
 
       {/* Senet Listesi - COLLAPSIBLE */}
       <Card>
-        <CardHeader 
+        <CardHeader
           className="flex flex-row items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
           onClick={() => setIsListOpen(!isListOpen)}
         >
@@ -1145,88 +1146,88 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
           )}
         </CardHeader>
         {isListOpen && (
-        <CardContent>
-          {promissoryNotes.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <FileText className="w-12 h-12 mx-auto mb-2 opacity-50" />
-              <p>Henüz senet bulunmuyor</p>
-              <p className="text-sm mt-2">Yukarıdaki formu kullanarak yeni senet oluşturabilirsiniz</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Senet No</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tutar</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vade Tarihi</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Durum</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ödeme Tarihi</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">İşlemler</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {promissoryNotes.map((note) => (
-                    <tr key={note.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                        {note.noteNumber}
-                      </td>
-                      <td className="px-4 py-3 text-sm font-semibold text-gray-900">
-                        {formatCurrency(note.amount)}
-                        {note.paidAmount && note.paidAmount > 0 && (
-                          <div className="text-xs text-green-600">
-                            Ödenen: {formatCurrency(note.paidAmount)}
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
-                        {formatDate(note.dueDate)}
-                      </td>
-                      <td className="px-4 py-3">
-                        {getStatusBadge(note.status)}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
-                        {note.paidDate ? formatDate(note.paidDate) : '-'}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          {note.status === 'active' && (
-                            <Button
-                              size="sm"
-                              variant="default"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openCollectModal(note);
-                              }}
-                              className="bg-green-600 hover:bg-green-700 text-white whitespace-nowrap"
-                            >
-                              <Banknote className="w-4 h-4 mr-1" />
-                              Tahsil Et
-                            </Button>
-                          )}
-                          {note.status === 'active' && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleCancelNote(note.id);
-                              }}
-                              title="İptal Et"
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </td>
+          <CardContent>
+            {promissoryNotes.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <FileText className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <p>Henüz senet bulunmuyor</p>
+                <p className="text-sm mt-2">Yukarıdaki formu kullanarak yeni senet oluşturabilirsiniz</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Senet No</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tutar</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vade Tarihi</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Durum</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ödeme Tarihi</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">İşlemler</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {promissoryNotes.map((note) => (
+                      <tr key={note.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                          {note.noteNumber}
+                        </td>
+                        <td className="px-4 py-3 text-sm font-semibold text-gray-900">
+                          {formatCurrency(note.amount)}
+                          {note.paidAmount && note.paidAmount > 0 && (
+                            <div className="text-xs text-green-600">
+                              Ödenen: {formatCurrency(note.paidAmount)}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-600">
+                          {formatDate(note.dueDate)}
+                        </td>
+                        <td className="px-4 py-3">
+                          {getStatusBadge(note.status)}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-600">
+                          {note.paidDate ? formatDate(note.paidDate) : '-'}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            {note.status === 'active' && (
+                              <Button
+                                size="sm"
+                                variant="default"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openCollectModal(note);
+                                }}
+                                className="bg-green-600 hover:bg-green-700 text-white whitespace-nowrap"
+                              >
+                                <Banknote className="w-4 h-4 mr-1" />
+                                Tahsil Et
+                              </Button>
+                            )}
+                            {note.status === 'active' && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCancelNote(note.id);
+                                }}
+                                title="İptal Et"
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
         )}
       </Card>
 
@@ -1303,9 +1304,9 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
                     value={collectModal.amount === 0 ? '' : collectModal.amount}
                     onChange={(e) => {
                       const val = e.target.value;
-                      setCollectModal(prev => ({ 
-                        ...prev, 
-                        amount: val === '' ? 0 : parseFloat(val) || 0 
+                      setCollectModal(prev => ({
+                        ...prev,
+                        amount: val === '' ? 0 : parseFloat(val) || 0
                       }));
                     }}
                     placeholder="0.00"
@@ -1315,9 +1316,9 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
                   <Label>Tahsilat Tarihi *</Label>
                   <DatePicker
                     value={collectModal.date ? new Date(collectModal.date) : null}
-                    onChange={(date) => setCollectModal(prev => ({ 
-                      ...prev, 
-                      date: date ? date.toISOString().split('T')[0] : '' 
+                    onChange={(date) => setCollectModal(prev => ({
+                      ...prev,
+                      date: date ? date.toISOString().split('T')[0] : ''
                     }))}
                     placeholder="Tahsilat tarihi seçin"
                     fullWidth
@@ -1327,16 +1328,17 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
 
               <div>
                 <Label>Ödeme Yöntemi *</Label>
-                <select
+                <Select
                   value={collectModal.paymentMethod}
-                  onChange={(e) => setCollectModal(prev => ({ ...prev, paymentMethod: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="cash">Nakit</option>
-                  <option value="card">Kredi Kartı</option>
-                  <option value="bank_transfer">Havale</option>
-                  <option value="check">Çek</option>
-                </select>
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCollectModal(prev => ({ ...prev, paymentMethod: e.target.value }))}
+                  options={[
+                    { value: 'cash', label: 'Nakit' },
+                    { value: 'card', label: 'Kredi Kartı' },
+                    { value: 'bank_transfer', label: 'Havale' },
+                    { value: 'check', label: 'Çek' }
+                  ]}
+                  className="w-full"
+                />
               </div>
 
               <div>

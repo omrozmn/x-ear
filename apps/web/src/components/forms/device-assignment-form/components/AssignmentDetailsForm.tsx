@@ -73,8 +73,7 @@ interface AssignmentDetailsFormProps {
 export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
   formData,
   onFormDataChange,
-  errors = {},
-  isManualMode = false
+  errors = {}
 }) => {
   const updateFormData = useCallback((field: keyof DeviceAssignment, value: string | number | boolean | null) => {
     onFormDataChange({ [field]: value });
@@ -225,8 +224,6 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
             
             // Gradient colors based on position
             let gradientClass = '';
-            let borderClass = '';
-            let textClass = '';
             
             if (ear.position === 'left') {
               // Right ear - Red gradient

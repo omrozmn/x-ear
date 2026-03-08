@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Input, Textarea, Select } from '@x-ear/ui-web';
+import { Button, Textarea } from '@x-ear/ui-web';
 import { Modal } from '../ui/Modal';
-import { FileText, User } from 'lucide-react';
 import { getCurrentUserId } from '@/utils/auth-utils';
 
 interface PartyNote {

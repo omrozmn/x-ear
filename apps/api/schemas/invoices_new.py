@@ -154,3 +154,14 @@ class InvoiceRejectRequest(AppBaseModel):
 class InvoiceCancelRequest(AppBaseModel):
     """Request body for cancelling an invoice"""
     reason: Optional[str] = Field(None, description="Cancellation reason")
+
+
+class InvoiceDraftRequest(AppBaseModel):
+    """Request body for creating or updating an invoice draft"""
+    form_data: Dict[str, Any] = Field(default_factory=dict, description="Form state as JSON")
+
+
+class InvoiceDraftResponse(AppBaseModel):
+    """Response schema for invoice draft form data"""
+    draft_id: int = Field(..., description="Draft invoice ID")
+    form_data: Dict[str, Any] = Field(..., description="Form data to pre-fill the invoice form")

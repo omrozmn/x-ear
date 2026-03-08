@@ -24,18 +24,19 @@ import { AIStatusIndicator } from '../AIStatusIndicator';
 import { PhaseABanner } from '../PhaseABanner';
 import { ChatMessage as ChatMessageComponent } from './ChatMessage';
 import { ChatInput } from './ChatInput';
-import { Search, Zap, User, Box, Check, X, Calendar, Edit3, Hash, Loader2, Clock, Trash2 } from 'lucide-react';
+import { Search, Zap, User, Box, Calendar, Edit3, Hash, Loader2, Clock, Trash2 } from 'lucide-react';
 import { useAutocompleteApiAiComposerAutocompleteGet } from '../../../api/generated';
-import { EntityItem } from '../../../api/generated/schemas';
+import { EntityItem, Capability } from '../../../api/generated/schemas';
+import type { ActionPlan, MatchedCapability } from '../../types/ai.types';
 import { useChatStore } from '../../stores/chatStore';
 import { useMobile } from '../../../hooks/useMobile';
 import { useAIRuntimeStore } from '../../stores/aiRuntimeStore';
 import { QuickActions } from './QuickActions';
 import { ActionProgress } from './ActionProgress';
 import { ActionResultCard } from './ActionResultCard';
-import { ConfirmDialog } from '../../../components/ui/ConfirmDialog';
 import { useAIActions } from '../../hooks/useAIActions';
 import { customInstance } from '../../../api/orval-mutator';
+import { Button, Input } from '@x-ear/ui-web';
 
 // =============================================================================
 // Types
@@ -213,60 +214,6 @@ function UnavailableState({ reason }: { reason?: string }): React.ReactElement {
   );
 }
 
-
-/**
- * Helper component for entity search in chat flow
- */
-function EntitySearchSlot({ currentSlot, onSelect }: { currentSlot: any, onSelect: (id: string, label: string) => void }) {
-  const { t } = useTranslation();
-  const [query, setQuery] = React.useState('');
-  const slotEntityType = currentSlot?.sourceEndpoint?.includes('inventory') ? 'device' : 'patient';
-  const { data, isLoading } = useAutocompleteApiAiComposerAutocompleteGet(
-    { q: query, context_entity_type: slotEntityType },
-    { query: { enabled: query.length > 1 } }
-  );
-
-  return (
-    <div className="space-y-2">
-      <div className="relative">
-        <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <input
-          className="w-full pl-8 pr-4 py-1.5 bg-white border border-blue-200 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Ara..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          autoFocus
-        />
-      </div>
-
-      {isLoading && (
-        <div className="flex items-center gap-2 text-[10px] text-gray-400">
-          <Loader2 className="w-3 h-3 animate-spin" /> {t('common.searching', 'Arıyor...')}
-        </div>
-      )}
-
-      {data?.entities && data.entities.length > 0 && (
-        <div className="bg-white border rounded shadow-sm max-h-32 overflow-y-auto divide-y divide-gray-50">
-          {data.entities.map((e: EntityItem) => (
-            <button
-              key={e.id}
-              onClick={() => onSelect(e.id, e.label)}
-              className="w-full flex items-center gap-2 p-1.5 hover:bg-blue-50 transition-colors text-left"
-            >
-              <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0">
-                {e.type === 'patient' ? <User size={12} /> : <Box size={12} />}
-              </div>
-              <div className="min-w-0">
-                <div className="text-xs font-bold text-gray-900 truncate">{e.label}</div>
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 /**
  * AIChatWidget Component
  * 
@@ -316,7 +263,7 @@ export function AIChatWidget({
   const {
     mode, selectedAction: currentAction, currentSlot, slots,
     updateSlot, nextSlot, reset, executionResult, executionStatus,
-    setContext, context, query, setPlan, selectAction
+    setContext, context, setPlan, selectAction
   } = useComposerStore();
   const isExecuting = useAIRuntimeStore((state) => state.isExecuting);
   const executionProgress = useAIRuntimeStore((state) => state.executionProgress);
@@ -332,8 +279,8 @@ export function AIChatWidget({
     onSuccess: (response) => {
       // If there's an action plan, set it in the composer
       if (response.actionPlan) {
-        setPlan(response.actionPlan);
-        useAIRuntimeStore.getState().setCurrentPlan(response.actionPlan as any);
+        setPlan(response.actionPlan as ActionPlan);
+        useAIRuntimeStore.getState().setCurrentPlan(response.actionPlan as ActionPlan);
 
         if (!response.actionPlan.requiresApproval) {
           executeAction({
@@ -344,17 +291,18 @@ export function AIChatWidget({
       }
       // If matchedCapability is returned, auto-trigger slot-filling/execution UI
       if (response.matchedCapability) {
-        const cap = response.matchedCapability;
+        const cap = response.matchedCapability as MatchedCapability;
         selectAction({
           name: cap.name,
-          displayName: cap.displayName,
+          displayNameTr: cap.displayName || cap.name,
+          displayNameEn: cap.displayName || cap.name,
           description: cap.description,
-          category: cap.category,
+          category: cap.category || 'AI Operation',
           examplePhrases: [],
           requiredPermissions: [],
           toolOperations: [],
           limitations: [],
-          slots: cap.slots.map(s => ({
+          slots: (cap.slots || []).map(s => ({
             name: s.name,
             prompt: s.prompt,
             uiType: s.uiType,
@@ -362,14 +310,13 @@ export function AIChatWidget({
             enumOptions: s.enumOptions || null,
             validationRules: s.validationRules || null,
           })),
-        } as any);
+        } as Capability);
       }
     }
   });
 
   // Derived state
   const isAvailable = status?.available ?? false;
-  const isEnabled = status?.enabled ?? false;
   const isPhaseA = status?.phase?.currentPhase === 'A';
   const positionClasses = POSITION_CLASSES[position];
 
@@ -427,12 +374,7 @@ export function AIChatWidget({
     }
   }, [isOpen, onOpen, onClose, setIsOpen]);
 
-  /**
-   * Reset conversation
-   */
-  const handleReset = useCallback(() => {
-    setShowResetConfirm(true);
-  }, []);
+
 
   const confirmReset = useCallback(() => {
     clearHistory();
@@ -450,6 +392,18 @@ export function AIChatWidget({
   }, [onClose]); // setIsOpen is stable and doesn't need to be in deps
 
   /**
+   * Handle sending a message
+   */
+  const handleSend = useCallback(async (message: string) => {
+    try {
+      await sendMessage(message);
+    } catch (error) {
+      // Error is handled by useAIChat hook and displayed in chat
+      console.error('[AIChatWidget] Send error:', error);
+    }
+  }, [sendMessage]);
+
+  /**
    * Handle File Upload for AI OCR processing
    */
   const handleFileUpload = useCallback(async (files: FileList) => {
@@ -463,7 +417,7 @@ export function AIChatWidget({
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await customInstance<{ data: { result: { text?: string; ocr_text?: string; patient_info?: any } } }>({
+      const response = await customInstance<{ data: { result: { text?: string; ocr_text?: string; patient_info?: unknown } } }>({
         url: '/ocr/upload',
         method: 'POST',
         data: formData,
@@ -488,19 +442,7 @@ export function AIChatWidget({
     } finally {
       setIsUploading(false);
     }
-  }, []);
-
-  /**
-   * Handle sending a message
-   */
-  const handleSend = useCallback(async (message: string) => {
-    try {
-      await sendMessage(message);
-    } catch (error) {
-      // Error is handled by useAIChat hook and displayed in chat
-      console.error('[AIChatWidget] Send error:', error);
-    }
-  }, [sendMessage]);
+  }, [handleSend]);
 
   // Handle Handoff from Spotlight (startWithCommand)
   useEffect(() => {
@@ -628,7 +570,7 @@ export function AIChatWidget({
       onKeyDown={handleKeyDown}
     >
       {/* Floating Button (Hidden on Mobile when open) */}
-      <button data-allow-raw="true"
+      <Button
         onClick={handleToggle}
         className={`
           fixed ${positionClasses.button}
@@ -653,7 +595,7 @@ export function AIChatWidget({
             {messages.length > 9 ? '9+' : messages.length}
           </span>
         )}
-      </button>
+      </Button>
 
       {/* Chat Window */}
       {isOpen && (
@@ -682,7 +624,7 @@ export function AIChatWidget({
             <div className="flex items-center gap-1">
               {messages.length > 0 && (
                 showResetConfirm ? (
-                  <button data-allow-raw="true"
+                  <Button
                     onClick={() => { confirmReset(); setShowResetConfirm(false); }}
                     onBlur={() => setShowResetConfirm(false)}
                     className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -690,24 +632,24 @@ export function AIChatWidget({
                     autoFocus
                   >
                     Emin misiniz?
-                  </button>
+                  </Button>
                 ) : (
-                  <button data-allow-raw="true"
+                  <Button
                     onClick={() => setShowResetConfirm(true)}
                     className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all focus:outline-none focus:ring-1 focus:ring-red-200"
                     title="Sohbeti Temizle"
                   >
                     <Trash2 size={16} />
-                  </button>
+                  </Button>
                 )
               )}
-              <button data-allow-raw="true"
+              <Button
                 onClick={handleClose}
                 className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
                 aria-label="Chat'i kapat"
               >
                 <CloseIcon />
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -768,7 +710,7 @@ export function AIChatWidget({
                     <div className="space-y-2">
                       <div className="relative group">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
-                        <input data-allow-raw="true"
+                        <Input
                           className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
                           placeholder="Aramak için yazın..."
                           value={slotSearchQuery}
@@ -786,7 +728,7 @@ export function AIChatWidget({
                       {slotEntityData?.entities && slotEntityData.entities.length > 0 && (
                         <div className="bg-white border rounded-lg shadow-sm max-h-40 overflow-y-auto divide-y divide-gray-50 border-blue-50">
                           {slotEntityData.entities.map((e: EntityItem) => (
-                            <button
+                            <Button
                               key={e.id}
                               onClick={() => handleSlotEntitySelect(e)}
                               className="w-full flex items-center gap-2 p-2 hover:bg-blue-50 transition-colors text-left"
@@ -798,7 +740,7 @@ export function AIChatWidget({
                                 <div className="text-xs font-bold text-gray-900 truncate">{e.label}</div>
                                 <div className="text-[10px] text-gray-500 truncate">{e.subLabel}</div>
                               </div>
-                            </button>
+                            </Button>
                           ))}
                         </div>
                       )}
@@ -808,7 +750,7 @@ export function AIChatWidget({
                   {currentSlot.uiType === 'enum' && (
                     <div className="grid grid-cols-2 gap-2">
                       {currentSlot.enumOptions?.map((opt: string) => (
-                        <button data-allow-raw="true"
+                        <Button
                           key={opt}
                           onClick={() => {
                             updateSlot(currentSlot.name, opt);
@@ -817,7 +759,7 @@ export function AIChatWidget({
                           className="flex items-center justify-center px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 transition-all shadow-sm"
                         >
                           {opt}
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   )}
@@ -825,7 +767,7 @@ export function AIChatWidget({
                   {currentSlot.uiType === 'date' && (
                     <div className="relative group">
                       <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
-                      <input data-allow-raw="true"
+                      <Input
                         type="date"
                         className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
                         onChange={(e) => {
@@ -839,11 +781,11 @@ export function AIChatWidget({
                   {currentSlot.uiType === 'text' && (
                     <div className="relative group">
                       <Edit3 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
-                      <input data-allow-raw="true"
+                      <Input
                         className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
                         placeholder="Yazmaya başlayın..."
                         autoFocus
-                        onKeyDown={(e) => {
+                        onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                           if (e.key === 'Enter') {
                             updateSlot(currentSlot.name, e.currentTarget.value);
                             nextSlot();

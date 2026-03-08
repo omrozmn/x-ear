@@ -306,19 +306,19 @@ class AuditService:
         """
         missing = []
         
-        # Check base required fields
-        for field in REQUIRED_BASE_FIELDS:
-            if not entry.get(field):
-                missing.append(field)
+        # Check base required field
+        for required_field in REQUIRED_BASE_FIELDS:
+            if not entry.get(required_field):
+                missing.append(required_field)
         
         # Check event-specific required fields
         if event_type in [
             AuditEventType.REQUEST_RECEIVED,
             AuditEventType.INTENT_CLASSIFIED,
         ]:
-            for field in REQUIRED_REQUEST_FIELDS:
-                if not entry.get(field):
-                    missing.append(field)
+            for required_field in REQUIRED_REQUEST_FIELDS:
+                if not entry.get(required_field):
+                    missing.append(required_field)
         
         if event_type in [
             AuditEventType.ACTION_PLANNED,
@@ -326,18 +326,18 @@ class AuditService:
             AuditEventType.APPROVAL_GRANTED,
             AuditEventType.APPROVAL_REJECTED,
         ]:
-            for field in REQUIRED_ACTION_FIELDS:
-                if not entry.get(field):
-                    missing.append(field)
+            for required_field in REQUIRED_ACTION_FIELDS:
+                if not entry.get(required_field):
+                    missing.append(required_field)
         
         if event_type in [
             AuditEventType.EXECUTION_COMPLETED,
             AuditEventType.EXECUTION_FAILED,
             AuditEventType.ROLLBACK_EXECUTED,
         ]:
-            for field in REQUIRED_EXECUTION_FIELDS:
-                if not entry.get(field):
-                    missing.append(field)
+            for required_field in REQUIRED_EXECUTION_FIELDS:
+                if not entry.get(required_field):
+                    missing.append(required_field)
         
         return missing
 

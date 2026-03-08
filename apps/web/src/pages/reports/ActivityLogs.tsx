@@ -11,7 +11,7 @@ import {
 import {
     useListActivityLogs
 } from '@/api/client/activity-logs.client';
-import { useExecuteToolApiAiComposerExecutePost } from '@/api/generated/ai-composer/ai-composer';
+import { useExecuteToolApiAiComposerExecutePost } from '@/api/client/ai-composer.client';
 import type { ActivityLogRead, ListActivityLogsParams } from '@/api/generated/schemas';
 import { Button, Input, Select } from '@x-ear/ui-web';
 

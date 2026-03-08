@@ -14,7 +14,6 @@ import type {
   ResponseEnvelopeListDocumentRead,
   DocumentRead
 } from '@/api/generated/schemas';
-import axios from 'axios';
 import { tokenManager } from '../../utils/token-manager';
 
 // PDF Viewer Modal
@@ -54,7 +53,7 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
   const [isViewerOpen, setIsViewerOpen] = useState(false);
 
   // Toast helpers
-  const { success, error, info } = useToastHelpers();
+  const { success, error } = useToastHelpers();
   
   // Delete confirmation state
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -282,7 +281,7 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
         id: document.id,
         partyId: partyId,
         filename: document.name,
-        documentType: document.type as any,
+        documentType: document.type as SGKDocument['documentType'],
         fileUrl: blobUrl,
         fileSize: blob.size,
         mimeType: 'application/pdf',
@@ -295,10 +294,10 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
       
       setViewerDocument(sgkDoc);
       setIsViewerOpen(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ Error loading document:', {
         error: err,
-        message: err.message,
+        message: err instanceof Error ? err.message : String(err),
         response: err.response?.data,
         status: err.response?.status,
         url: document.url
@@ -364,11 +363,12 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
       link.click();
       window.document.body.removeChild(link);
       URL.revokeObjectURL(blobUrl);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as { message?: string; response?: { data?: unknown } };
       console.error('❌ Error downloading document:', {
         error: err,
-        message: err.message,
-        response: err.response?.data,
+        message: error.message,
+        response: error.response?.data,
         status: err.response?.status,
         url: document.url
       });

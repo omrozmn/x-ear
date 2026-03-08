@@ -83,7 +83,7 @@ export interface ExtendedSaleRead extends Omit<SaleRead, 'devices'> {
 }
 
 // Type guard to check if a sale has the extended fields
-export function isExtendedSale(sale: any): sale is ExtendedSaleRead {
+export function isExtendedSale(sale: unknown): sale is ExtendedSaleRead {
     return true; // Runtime objects imply this is always true for our app due to interceptors
 }
 

@@ -1,7 +1,7 @@
 import { Input, Select, DatePicker } from '@x-ear/ui-web';
 import { SGKInvoiceData } from '../../types/invoice';
 import { useEffect } from 'react';
-import { useGetTenantCompany } from '@/api/generated/tenant-users/tenant-users';
+import { useGetTenantCompany } from '@/api/client/tenant-users.client';
 
 interface SGKInvoiceSectionProps {
     sgkData?: SGKInvoiceData;

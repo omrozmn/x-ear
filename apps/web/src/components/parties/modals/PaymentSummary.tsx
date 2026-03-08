@@ -131,9 +131,7 @@ export const PaymentSummary: React.FC<PaymentSummaryProps> = ({ sale: rawSale, o
         onClose={() => setShowPaymentModal(false)}
         // We pass 'sale' (ExtendedSaleRead) to 'sale' prop of PaymentTrackingModal
         // PaymentTrackingModal must accept ExtendedSaleRead or compatible
-        // Casting to any to temporarily bypass strict check while types stabilize
-        // Ideally PaymentTrackingModal should accept ExtendedSaleRead
-        sale={sale as any}
+        sale={sale as SaleRead}
         onPaymentUpdate={handlePaymentUpdate}
       />
     </>

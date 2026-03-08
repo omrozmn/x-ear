@@ -155,6 +155,7 @@ export default function SgkSettingsPage() {
           Varsayılan Şema
         </h2>
         <select
+          data-allow-raw="true"
           value={settings.default_scheme}
           onChange={(e) => setSettings({ ...settings, default_scheme: e.target.value })}
           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -185,6 +186,7 @@ export default function SgkSettingsPage() {
                   Şema Adı
                 </label>
                 <input
+                  data-allow-raw="true"
                   type="text"
                   value={scheme.name}
                   disabled
@@ -196,6 +198,7 @@ export default function SgkSettingsPage() {
                   Destek Tutarı (₺)
                 </label>
                 <input
+                  data-allow-raw="true"
                   type="number"
                   step="0.01"
                   value={scheme.coverage_amount}
@@ -208,6 +211,7 @@ export default function SgkSettingsPage() {
                   Maksimum Tutar (₺)
                 </label>
                 <input
+                  data-allow-raw="true"
                   type="number"
                   step="0.01"
                   value={scheme.max_amount}
@@ -227,6 +231,7 @@ export default function SgkSettingsPage() {
             Özel Şemalar
           </h2>
           <button
+            data-allow-raw="true"
             onClick={addCustomScheme}
             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
           >
@@ -250,6 +255,7 @@ export default function SgkSettingsPage() {
                     Şema Adı
                   </label>
                   <input
+                    data-allow-raw="true"
                     type="text"
                     value={scheme.name}
                     onChange={(e) => updateCustomScheme(index, 'name', e.target.value)}
@@ -262,6 +268,7 @@ export default function SgkSettingsPage() {
                     Destek Tutarı (₺)
                   </label>
                   <input
+                    data-allow-raw="true"
                     type="number"
                     step="0.01"
                     value={scheme.coverage_amount}
@@ -274,6 +281,7 @@ export default function SgkSettingsPage() {
                     Maksimum Tutar (₺)
                   </label>
                   <input
+                    data-allow-raw="true"
                     type="number"
                     step="0.01"
                     value={scheme.max_amount}
@@ -283,6 +291,7 @@ export default function SgkSettingsPage() {
                 </div>
                 <div className="flex items-end">
                   <button
+                    data-allow-raw="true"
                     onClick={() => removeCustomScheme(index)}
                     className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                   >
@@ -298,6 +307,7 @@ export default function SgkSettingsPage() {
       {/* Save Button */}
       <div className="flex justify-end">
         <button
+          data-allow-raw="true"
           onClick={handleSave}
           disabled={saving}
           className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"

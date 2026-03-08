@@ -2,14 +2,12 @@ import React, { useEffect, useRef } from 'react';
 import {
   Input,
   Label,
-  Textarea,
   Card,
   CardContent,
   CardHeader,
-  CardTitle,
-  Button
+  CardTitle
 } from '@x-ear/ui-web';
-import { Package, Search, Calendar } from 'lucide-react';
+import { Package, Calendar } from 'lucide-react';
 import type { SaleFormData, EditSaleState } from '../types';
 // Local type for inventory items to avoid import errors
 export interface InventoryItem {

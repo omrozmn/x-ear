@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useToastHelpers, Button, Input, Select, Textarea } from '@x-ear/ui-web';
+import { useToastHelpers, Button, Input, Select, Textarea, Label } from '@x-ear/ui-web';
 import { PartyApiService } from '../../../services/party/party-api.service';
 import { listInventory } from '@/api/client/inventory.client';
 import { unwrapArray } from '../../../utils/response-unwrap';
@@ -384,7 +384,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
     }
 
     try {
-      const saleData: any = {
+      const saleData: Record<string, unknown> = {
         devices: [{
           inventoryId: selectedProduct.id,
           id: selectedProduct.id,
@@ -424,7 +424,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
       const response = await partyApiService.createSale(partyId || '', saleData);
 
       // Create timeline and sales logs
-      const saleId = (response as any).data?.id || (response as any).id;
+      const saleId = (response as { id?: string; data?: { id?: string } }).data?.id || (response as { id?: string }).id;
       if (saleId && partyId) {
         try {
           const timelineData = {
@@ -442,7 +442,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
             user: 'Sistem', // TODO: Get from auth context
             category: 'sales'
           };
-          await createPartyTimeline(partyId, timelineData as any);
+          await createPartyTimeline(partyId, timelineData as never);
         } catch (e) {
           console.error('Error creating timeline log:', e);
         }
@@ -465,7 +465,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
             },
             category: 'sales'
           };
-          await createPartyActivities(partyId, activityData as any);
+          await createPartyActivities(partyId, activityData as never);
         } catch (e) {
           console.error('Error creating sales log:', e);
         }
@@ -511,9 +511,9 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
       <form onSubmit={handleSubmit} className="space-y-4" data-testid="sale-form">
         {/* Product Selection */}
         <div data-testid="sale-form-product-section">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <Label className="mb-1">
             Ürün Seçimi *
-          </label>
+          </Label>
           <ProductDropdown
             selectedProduct={selectedProduct}
             onProductSelect={setSelectedProduct}
@@ -526,10 +526,10 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
         <div className="grid grid-cols-2 gap-4" data-testid="sale-form-quantity-price">
           {isHearingAid ? (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <Label className="mb-1">
                 Kulak *
-              </label>
-              <select
+              </Label>
+              <Select
                 value={ear}
                 onChange={(e) => {
                   const newEar = e.target.value as 'left' | 'right' | 'both';
@@ -537,20 +537,21 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
                   // Auto-set quantity based on ear selection
                   setQuantity(newEar === 'both' ? 2 : 1);
                 }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
                 data-testid="sale-form-ear-selector"
-              >
-                <option value="left">Sol Kulak</option>
-                <option value="right">Sağ Kulak</option>
-                <option value="both">İki Kulak (Bilateral)</option>
-              </select>
+                fullWidth
+                options={[
+                  { value: 'left', label: 'Sol Kulak' },
+                  { value: 'right', label: 'Sağ Kulak' },
+                  { value: 'both', label: 'İki Kulak (Bilateral)' }
+                ]}
+              />
             </div>
           ) : (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <Label className="mb-1">
                 Miktar *
-              </label>
+              </Label>
               <Input
                 type="number"
                 min="1"
@@ -565,9 +566,9 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <Label className="mb-1">
               Birim Fiyat (₺) *
-            </label>
+            </Label>
             <Input
               type="number"
               min="0"
@@ -588,9 +589,9 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
             {ear === 'both' ? (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <Label className="mb-1">
                     <span className="text-blue-600">Sol Kulak</span> Seri No
-                  </label>
+                  </Label>
                   <Input
                     type="text"
                     value={serialNumberLeft}
@@ -601,9 +602,9 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <Label className="mb-1">
                     <span className="text-red-600">Sağ Kulak</span> Seri No
-                  </label>
+                  </Label>
                   <Input
                     type="text"
                     value={serialNumberRight}
@@ -616,11 +617,11 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
               </>
             ) : (
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <Label className="mb-1">
                   <span className={ear === 'left' ? 'text-blue-600' : 'text-red-600'}>
                     {ear === 'left' ? 'Sol Kulak' : 'Sağ Kulak'}
                   </span> Seri No
-                </label>
+                </Label>
                 <Input
                   type="text"
                   value={serialNumber}
@@ -637,9 +638,9 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
         {/* Discount Section */}
         <div className="grid grid-cols-2 gap-4" data-testid="sale-form-discount-section">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <Label className="mb-1">
               İndirim Tipi
-            </label>
+            </Label>
             <Select
               value={discountType}
               onChange={(e) => setDiscountType(e.target.value as 'amount' | 'percentage')}
@@ -652,9 +653,9 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <Label className="mb-1">
               İndirim Değeri
-            </label>
+            </Label>
             <Input
               type="number"
               min="0"
@@ -672,9 +673,9 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
         {/* SGK Section - Only for Hearing Aids */}
         {isHearingAid && (
           <div className="bg-gray-50 p-3 rounded-lg">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <Label className="mb-1">
               SGK Destek Türü
-            </label>
+            </Label>
             <Select
               value={sgkSupportType}
               onChange={(e) => setSgkSupportType(e.target.value)}
@@ -769,9 +770,9 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
         {/* Payment Method and Sale Date Row */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <Label className="mb-1">
               Ödeme Yöntemi *
-            </label>
+            </Label>
             <Select
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value)}
@@ -787,9 +788,9 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <Label className="mb-1">
               Satış Tarihi *
-            </label>
+            </Label>
             <Input
               type="date"
               value={saleDate}
@@ -803,9 +804,9 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
         {/* Collected Amount and Report Status Row */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <Label className="mb-1">
               Tahsil Edilen Tutar (₺)
-            </label>
+            </Label>
             <Input
               type="number"
               min="0"
@@ -822,9 +823,9 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <Label className="mb-1">
               Rapor Durumu
-            </label>
+            </Label>
             <Select
               value={reportStatus}
               onChange={(e) => setReportStatus(e.target.value)}
@@ -841,9 +842,9 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
 
         {/* Notes */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <Label className="mb-1">
             Notlar
-          </label>
+          </Label>
           <Textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}

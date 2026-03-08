@@ -278,52 +278,52 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
           // NOTE: orval-mutator's response interceptor already converts ALL keys 
           // from snake_case to camelCase via humps.camelizeKeys(). So apiResponse
           // already has camelCase keys (requestId, matchedCapability, etc.)
-          const api = apiResponse as any;
+          const api = apiResponse as Record<string, unknown>;
           const response: ChatResponse = {
-            requestId: api.requestId,
-            status: api.status,
+            requestId: api.requestId as string,
+            status: api.status as string,
             intent: api.intent ? {
-              intentType: api.intent.intentType,
-              confidence: api.intent.confidence,
-              entities: api.intent.entities || {},
-              clarificationNeeded: api.intent.clarificationNeeded || false,
-              clarificationQuestion: api.intent.clarificationQuestion || undefined,
+              intentType: (api.intent as Record<string, unknown>).intentType as string,
+              confidence: (api.intent as Record<string, unknown>).confidence as number,
+              entities: ((api.intent as Record<string, unknown>).entities || {}) as Record<string, unknown>,
+              clarificationNeeded: (api.intent as Record<string, unknown>).clarificationNeeded as boolean || false,
+              clarificationQuestion: (api.intent as Record<string, unknown>).clarificationQuestion as string | undefined || undefined,
             } : undefined,
             response: typeof api.response === 'string' ? api.response : JSON.stringify(api.response),
-            needsClarification: api.needsClarification || false,
-            clarificationQuestion: api.clarificationQuestion || undefined,
-            processingTimeMs: api.processingTimeMs,
-            piiDetected: api.piiDetected || false,
-            phiDetected: api.phiDetected || false,
+            needsClarification: api.needsClarification as boolean || false,
+            clarificationQuestion: api.clarificationQuestion as string | undefined || undefined,
+            processingTimeMs: api.processingTimeMs as number,
+            piiDetected: api.piiDetected as boolean || false,
+            phiDetected: api.phiDetected as boolean || false,
             actionPlan: api.actionPlan ? {
-              planId: api.actionPlan.planId,
+              planId: (api.actionPlan as Record<string, unknown>).planId as string,
               status: 'pending',
-              steps: (api.actionPlan.steps || []).map((s: any) => ({
-                stepNumber: s.stepNumber,
-                toolName: s.toolName,
+              steps: ((api.actionPlan as Record<string, unknown>).steps as Array<Record<string, unknown>> || []).map((s: Record<string, unknown>) => ({
+                stepNumber: s.stepNumber as number,
+                toolName: s.toolName as string,
                 toolSchemaVersion: '',
-                parameters: s.parameters,
-                description: s.description,
-                riskLevel: (s.riskLevel || 'low').toLowerCase() as any,
-                requiresApproval: s.requiresApproval
+                parameters: s.parameters as Record<string, unknown>,
+                description: s.description as string,
+                riskLevel: ((s.riskLevel as string || 'low').toLowerCase()) as 'low' | 'medium' | 'high' | 'critical',
+                requiresApproval: s.requiresApproval as boolean
               })),
-              overallRiskLevel: (api.actionPlan.overallRiskLevel || 'low').toLowerCase() as any,
-              requiresApproval: api.actionPlan.requiresApproval,
+              overallRiskLevel: (((api.actionPlan as Record<string, unknown>).overallRiskLevel as string || 'low').toLowerCase()) as 'low' | 'medium' | 'high' | 'critical',
+              requiresApproval: (api.actionPlan as Record<string, unknown>).requiresApproval as boolean,
               planHash: '',
               createdAt: new Date().toISOString()
             } : undefined,
             matchedCapability: api.matchedCapability ? {
-              name: api.matchedCapability.name,
-              displayName: api.matchedCapability.displayName || api.matchedCapability.name,
-              description: api.matchedCapability.description,
-              category: api.matchedCapability.category,
-              slots: (api.matchedCapability.slots || []).map((s: any) => ({
-                name: s.name,
-                prompt: s.prompt,
-                uiType: s.uiType,
-                sourceEndpoint: s.sourceEndpoint || undefined,
-                enumOptions: s.enumOptions || undefined,
-                validationRules: s.validationRules || undefined,
+              name: (api.matchedCapability as Record<string, unknown>).name as string,
+              displayName: (api.matchedCapability as Record<string, unknown>).displayName as string || (api.matchedCapability as Record<string, unknown>).name as string,
+              description: (api.matchedCapability as Record<string, unknown>).description as string,
+              category: (api.matchedCapability as Record<string, unknown>).category as string,
+              slots: ((api.matchedCapability as Record<string, unknown>).slots as Array<Record<string, unknown>> || []).map((s: Record<string, unknown>) => ({
+                name: s.name as string,
+                prompt: s.prompt as string,
+                uiType: s.uiType as string,
+                sourceEndpoint: s.sourceEndpoint as string | undefined || undefined,
+                enumOptions: s.enumOptions as string[] | undefined || undefined,
+                validationRules: s.validationRules as Record<string, unknown> | undefined || undefined,
               })),
             } : undefined,
           };

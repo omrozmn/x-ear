@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import {
@@ -16,13 +16,8 @@ import {
 import {
   X,
   CreditCard,
-  Banknote,
-  CheckCircle,
-  AlertCircle,
   Clock,
-  FileText,
   Plus,
-  Trash2,
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
@@ -38,7 +33,6 @@ import {
 } from '@/api/client/payments.client';
 import type { RoutersPaymentsPaymentRecordCreate } from '@/api/generated/schemas';
 import { unwrapArray } from '../../utils/response-unwrap';
-import { PromissoryNotesTab } from './PromissoryNotesTab';
 
 // interface ExtendedSaleRead extends SaleRead {
 //   partyPayment?: number;
@@ -103,7 +97,6 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
   // Data states
   const [paymentRecords, setPaymentRecords] = useState<PaymentRecord[]>([]);
   const [installments, setInstallments] = useState<Installment[]>([]);
-  const [promissoryNotes, setPromissoryNotes] = useState<PromissoryNote[]>([]);
   const [paymentSummary, setPaymentSummary] = useState<PaymentSummary>({
     totalAmount: 0,
     totalPaid: 0,
@@ -125,13 +118,6 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
     paymentDate: new Date().toISOString().split('T')[0],
     notes: '',
     referenceNumber: generateReferenceNumber()
-  });
-
-  const [newPromissoryNote, setNewPromissoryNote] = useState({
-    amount: 0,
-    dueDate: '',
-    description: '',
-    noteNumber: ''
   });
 
   // Orval Hooks for real data - FILTER BY SALE ID
@@ -193,13 +179,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
     }
   }, [isOpen, paymentRecordsResponse, promissoryNotesResponse, sale.id, sale.paidAmount, sale.saleDate, sale.paymentMethod]);
 
-  // Calculate summary
-  useEffect(() => {
-    const summary = calculatePaymentSummary(paymentRecords, installments);
-    setPaymentSummary(summary);
-  }, [paymentRecords, installments, sale]);
-
-  const calculatePaymentSummary = (payments: PaymentRecord[], installmentList: Installment[]): PaymentSummary => {
+  const calculatePaymentSummary = useCallback((payments: PaymentRecord[], installmentList: Installment[]): PaymentSummary => {
     const totalPaid = payments
       .filter(p => p.status === 'paid')
       .reduce((sum, p) => sum + p.amount, 0);
@@ -221,10 +201,16 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
       nextDueDate: nextDue?.dueDate,
       nextDueAmount: nextDue?.amount
     };
-  };
+  }, [sale]);
+
+  // Calculate summary
+  useEffect(() => {
+    const summary = calculatePaymentSummary(paymentRecords, installments);
+    setPaymentSummary(summary);
+  }, [paymentRecords, installments, calculatePaymentSummary]);
 
   // Record new payment using Orval mutation
-  const handleRecordPayment = async (e: React.FormEvent) => {
+  const handleRecordPayment = async () => {
     if (!sale.id) {
       return;
     }
@@ -268,10 +254,11 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
       await new Promise(resolve => setTimeout(resolve, 500));
       onPaymentUpdate();
 
-    } catch (err: any) {
-      const errorMessage = err?.response?.data?.error?.message || 
-                          err?.response?.data?.message ||
-                          err?.message || 
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: { message?: string }; message?: string } }; message?: string };
+      const errorMessage = error?.response?.data?.error?.message || 
+                          error?.response?.data?.message ||
+                          error?.message || 
                           'Ödeme kaydedilirken hata oluştu';
       
       toast.error(errorMessage);
@@ -479,7 +466,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      handleRecordPayment(e as any);
+                      handleRecordPayment(e as React.MouseEvent<HTMLButtonElement>);
                     }}
                     disabled={isLoading} 
                     className="w-full" 

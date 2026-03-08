@@ -63,7 +63,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
       onMutate: () => {
         console.log('[DebugRoleSwitcher] Mutation starting...');
       },
-      onSuccess: async (response: any) => {
+      onSuccess: async (response: unknown) => {
         console.log('[DebugRoleSwitcher] ===== ROLE SWITCH SUCCESS =====');
 
         // CRITICAL: Clear ALL caches to prevent data leakage between tenant contexts
@@ -118,7 +118,7 @@ export const DebugRoleSwitcher: React.FC<DebugRoleSwitcherProps> = ({ darkMode =
           console.error('[DebugRoleSwitcher] Response:', response);
         }
       },
-      onError: (error: any) => {
+      onError: (error: unknown) => {
         console.error('[DebugRoleSwitcher] Role switch failed:', error);
         alert('Rol değiştirme başarısız oldu');
       }

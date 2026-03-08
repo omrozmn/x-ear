@@ -13,7 +13,6 @@ from core.database import SessionLocal
 
 @pytest.fixture
 def registry():
-    from ai.tools import get_tool_registry
     return get_tool_registry()
 
 class TestTransactionIntegrity:

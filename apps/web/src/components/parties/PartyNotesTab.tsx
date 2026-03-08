@@ -14,7 +14,7 @@ import type {
   TimelineEventCreate,
 } from '@/api/generated/schemas';
 import type { Party, PartyNote } from '../../types/party/index';
-import { getCurrentUserId, getCurrentUserName, getCurrentUser } from '@/utils/auth-utils';
+import { getCurrentUserId, getCurrentUserName } from '@/utils/auth-utils';
 
 interface PartyNotesTabProps {
   party: Party;
@@ -58,7 +58,7 @@ export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party }) => {
         // Map API response to PartyNote interface
         const notesList: PartyNote[] = responseData.map((note) => {
           // Use createdByName from backend if available, fallback to createdBy or 'System'
-          let authorName = note.createdByName || note.createdBy || 'System';
+          const authorName = note.createdByName || note.createdBy || 'System';
           
           return {
             id: note.id || '',

@@ -390,11 +390,16 @@ def rollback_bulk_import(
                     tool_id = record.entity_type
                     table_name = None
                     
-                    if "Party" in tool_id: table_name = "parties"
-                    elif "Sale" in tool_id: table_name = "sales"
-                    elif "Inventory" in tool_id: table_name = "inventory_items"
-                    elif "Device" in tool_id: table_name = "devices"
-                    elif "Appointment" in tool_id: table_name = "appointments"
+                    if "Party" in tool_id:
+                        table_name = "parties"
+                    elif "Sale" in tool_id:
+                        table_name = "sales"
+                    elif "Inventory" in tool_id:
+                        table_name = "inventory_items"
+                    elif "Device" in tool_id:
+                        table_name = "devices"
+                    elif "Appointment" in tool_id:
+                        table_name = "appointments"
                     
                     if table_name:
                         # Use raw SQL for simplicity in a generic tool

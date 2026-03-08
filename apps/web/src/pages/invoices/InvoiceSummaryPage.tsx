@@ -1,7 +1,7 @@
 import { Card } from '@x-ear/ui-web';
 import { FileText, TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
 import { formatCurrency } from '@/utils/format';
-import { useGetInvoiceSummary } from '@/api/generated/invoices/invoices';
+import { useGetInvoiceSummary } from '@/api/client/invoices.client';
 
 export function InvoiceSummaryPage() {
   const { data, isLoading } = useGetInvoiceSummary();

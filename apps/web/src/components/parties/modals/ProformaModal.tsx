@@ -20,8 +20,8 @@ import {
   User
 } from 'lucide-react';
 import { getCurrentUserId } from '@/utils/auth-utils';
-import { useListInventory } from '@/api/generated/inventory/inventory';
-import { useCreatePatientDocuments } from '@/api/generated/documents/documents';
+import { useListInventory } from '@/api/client/inventory.client';
+import { useCreatePatientDocuments } from '@/api/client/documents.client';
 
 import { Party } from '../../../types/party';
 import ProductSearchComponent from './components/ProductSearchComponent';
@@ -97,25 +97,25 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
     page: 1,
     per_page: 100
   });
-  
+
   const { mutateAsync: createDocument } = useCreatePatientDocuments();
-  
+
   // Toast helpers
   const { success, error: showError } = useToastHelpers();
 
   // Convert inventory to ProformaProduct format
   const products: ProformaProduct[] = useMemo(() => {
     console.log('🔍 Inventory Data:', inventoryData);
-    
+
     // Backend returns ResponseEnvelope: {success: true, data: [...]}
     // Orval unwraps the outer response, so we get {data: [...]} directly
     const items = Array.isArray(inventoryData?.data) ? inventoryData.data : [];
-    
+
     if (!items || items.length === 0) {
       console.log('❌ No inventory items available');
       return [];
     }
-    
+
     // Category translation map
     const categoryMap: Record<string, string> = {
       'hearing_aid': 'İşitme Cihazı',
@@ -124,10 +124,10 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
       'earmold': 'Kulak Kalıbı',
       'other': 'Diğer'
     };
-    
-    const mapped = items.map((item: any) => ({
-      id: item.id,
-      name: item.name || `${item.brand} ${item.model}`,
+
+    const mapped = items.map((item: Record<string, unknown>) => ({
+      id: item.id as string,
+      name: (item.name as string) || `${item.brand} ${item.model}`,
       brand: item.brand || '',
       model: item.model || '',
       category: categoryMap[item.category] || item.category || 'İşitme Cihazı',
@@ -246,7 +246,7 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
     });
 
     const grandTotal = subtotal - totalDiscount + vatAmount;
-    
+
     // Determine VAT label
     let vatLabel = 'KDV';
     if (vatRates.size === 1) {
@@ -302,13 +302,13 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
       // Generate proforma number
       const proformaNumber = `PF-${Date.now()}`;
       const proformaDate = new Date().toLocaleDateString('tr-TR');
-      
+
       // Generate PDF
       const pdfBlob = await generateProformaPDFBlob();
-      
+
       // Save as document to backend
       const fileName = `Proforma_${proformaNumber}_${party.firstName}_${party.lastName}_${proformaDate}.pdf`;
-      
+
       try {
         console.log('📄 Saving document to backend...', {
           partyId: party.id,
@@ -316,7 +316,7 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
           documentType: 'proforma',
           notes: notes || `Proforma Fatura - ${proformaNumber}`
         });
-        
+
         // Convert PDF blob to base64
         const reader = new FileReader();
         const base64Promise = new Promise<string>((resolve, reject) => {
@@ -329,9 +329,9 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
           reader.onerror = reject;
           reader.readAsDataURL(pdfBlob);
         });
-        
+
         const base64Content = await base64Promise;
-        
+
         const docResult = await createDocument({
           partyId: party.id,
           data: {
@@ -348,9 +348,9 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
             createdBy: getCurrentUserId() || 'system'
           }
         });
-        
+
         console.log('✅ Document saved successfully:', docResult);
-        
+
         // Show success toast
         success('Proforma belgelere kaydedildi');
       } catch (docError) {
@@ -373,10 +373,10 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
       };
 
       setShowSuccess(true);
-      
+
       // Call parent callback with PDF blob and filename to open viewer in parent
       onProformaCreate(finalProformaData, pdfBlob, fileName);
-      
+
       // Close proforma creation modal
       onClose();
 
@@ -518,13 +518,14 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
                 </p>
               </div>
             </div>
-            <button
-              type="button"
+            <Button
+              variant="ghost"
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors !h-auto"
+              aria-label="Kapat"
             >
               <X className="w-6 h-6 text-gray-700" />
-            </button>
+            </Button>
           </div>
 
           <div className="p-6 space-y-6">

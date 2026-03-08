@@ -407,6 +407,7 @@ export default function PartySegmentsSettings() {
           <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Yeni Segment Ekle</h4>
           <div className="flex gap-3">
             <input
+              data-allow-raw="true"
               type="text"
               placeholder="Etiket (örn: Premium Müşteri)"
               value={newSegmentLabel}
@@ -441,6 +442,7 @@ export default function PartySegmentsSettings() {
                     {segment.value}
                   </span>
                   <input
+                    data-allow-raw="true"
                     type="text"
                     value={editLabel}
                     onChange={(e) => setEditLabel(e.target.value)}
@@ -525,6 +527,7 @@ export default function PartySegmentsSettings() {
           <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Yeni Kazanım Türü Ekle</h4>
           <div className="flex gap-3">
             <input
+              data-allow-raw="true"
               type="text"
               placeholder="Etiket (örn: İş Ortağı)"
               value={newAcquisitionLabel}
@@ -559,6 +562,7 @@ export default function PartySegmentsSettings() {
                     {acquisition.value}
                   </span>
                   <input
+                    data-allow-raw="true"
                     type="text"
                     value={editLabel}
                     onChange={(e) => setEditLabel(e.target.value)}

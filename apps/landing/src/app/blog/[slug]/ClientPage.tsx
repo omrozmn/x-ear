@@ -8,12 +8,14 @@ import { Scene } from "@/components/canvas/Scene";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import { AISummary } from "@/components/ui/AISummary";
 
 interface BlogPost {
     id: string;
     title: string;
     slug: string;
     content: string;
+    excerpt?: string;
     imageUrl?: string;
     category?: string;
     authorName: string;
@@ -151,6 +153,30 @@ export default function BlogDetailPage({ slug }: { slug: string }) {
                         transition={{ delay: 0.5, duration: 0.8 }}
                         className="relative mx-auto"
                     >
+                        <script
+                            type="application/ld+json"
+                            dangerouslySetInnerHTML={{
+                                __html: JSON.stringify({
+                                    "@context": "https://schema.org",
+                                    "@type": "BlogPosting",
+                                    "headline": post.title,
+                                    "description": post.excerpt || post.title,
+                                    "image": post.imageUrl ? [post.imageUrl] : [],
+                                    "datePublished": post.publishedAt,
+                                    "author": [{
+                                        "@type": "Person",
+                                        "name": post.authorName
+                                    }]
+                                })
+                            }}
+                        />
+
+                        {post.excerpt && (
+                            <div className="mb-16 -mx-4 md:-mx-8">
+                                <AISummary content={post.excerpt} label="Yazı Özeti" />
+                            </div>
+                        )}
+
                         <div className="absolute inset-0 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-xl rounded-[2.5rem] shadow-[-10px_-10px_30px_4px_rgba(0,0,0,0.05),_10px_10px_30px_4px_rgba(45,78,255,0.05)] border border-white/50 dark:border-white/5 -m-8 md:-m-12 p-8 md:p-12 z-0" />
 
                         {/* The actual content rendered safely with typography enhancements */}

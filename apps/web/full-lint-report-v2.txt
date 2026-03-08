@@ -1,0 +1,288 @@
+
+> @x-ear/web@0.1.0 lint
+> eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0
+
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/ai/hooks/useAIChat.ts
+  281:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  301:59  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  307:68  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  310:93  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  320:66  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/appointments/AppointmentForm.tsx
+  1:72  error  'TimePicker' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/forms/PartyNoteForm.tsx
+  2:18  error  'Input' is defined but never used     @typescript-eslint/no-unused-vars
+  2:35  error  'Select' is defined but never used    @typescript-eslint/no-unused-vars
+  4:10  error  'FileText' is defined but never used  @typescript-eslint/no-unused-vars
+  4:20  error  'User' is defined but never used      @typescript-eslint/no-unused-vars
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/forms/device-assignment-form/components/AssignmentDetailsForm.tsx
+   77:3   error  'isManualMode' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  228:17  error  'borderClass' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  228:17  error  'borderClass' is never reassigned. Use 'const' instead  prefer-const
+  229:17  error  'textClass' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  229:17  error  'textClass' is never reassigned. Use 'const' instead    prefer-const
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/invoices/ConvertToPurchaseModal.tsx
+  85:9  warning  The 'availableSuppliers' logical expression could make the dependencies of useEffect Hook (at line 135) change on every render. To fix this, wrap the initialization of 'availableSuppliers' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/invoices/InvoiceFormExtended.tsx
+  35:1  error  '@/api/generated/tenant-users/tenant-users' import is restricted from being used by a pattern. Deep imports from generated API are forbidden. Import from @/api/client/ instead  no-restricted-imports
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/invoices/SGKInvoiceSection.tsx
+  4:1  error  '@/api/generated/tenant-users/tenant-users' import is restricted from being used by a pattern. Deep imports from generated API are forbidden. Import from @/api/client/ instead  no-restricted-imports
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/layout/BottomNav.tsx
+  41:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  70:62  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/layout/DebugRoleSwitcher.tsx
+   66:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  121:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/layout/MainLayout.tsx
+  153:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/parties/PartyDocumentsTab.tsx
+   17:1   error  'axios' import is restricted from being used. Use generated API client from @x-ear/core instead of direct axios calls  no-restricted-imports
+   57:27  error  'info' is assigned a value but never used                                                                              @typescript-eslint/no-unused-vars
+  285:40  error  Unexpected any. Specify a different type                                                                               @typescript-eslint/no-explicit-any
+  298:19  error  Unexpected any. Specify a different type                                                                               @typescript-eslint/no-explicit-any
+  367:19  error  Unexpected any. Specify a different type                                                                               @typescript-eslint/no-explicit-any
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/parties/PartyFilters.tsx
+    5:28   error  'PartySegment' is defined but never used  @typescript-eslint/no-unused-vars
+  216:68   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  218:68   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  220:136  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/parties/PartyHeader.tsx
+  67:3  error  'onGenerateReport' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/parties/PartyNotesTab.tsx
+  17:48  error  'getCurrentUser' is defined but never used             @typescript-eslint/no-unused-vars
+  61:15  error  'authorName' is never reassigned. Use 'const' instead  prefer-const
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/parties/PartyOverviewTab.tsx
+  41:9  error  'getStatusBadge' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  52:9  error  'getStatusText' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  65:9  error  'getSegmentText' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  78:9  error  'getAcquisitionTypeText' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/parties/PartySalesTab.tsx
+   10:16  error  'RefreshCw' is defined but never used                            @typescript-eslint/no-unused-vars
+   10:27  error  'FileText' is defined but never used                             @typescript-eslint/no-unused-vars
+   10:37  error  'Eye' is defined but never used                                  @typescript-eslint/no-unused-vars
+   10:42  error  'CheckCircle' is defined but never used                          @typescript-eslint/no-unused-vars
+   10:55  error  'Send' is defined but never used                                 @typescript-eslint/no-unused-vars
+   10:61  error  'AlertCircle' is defined but never used                          @typescript-eslint/no-unused-vars
+   30:10  error  'ReturnExchangeModal' is defined but never used                  @typescript-eslint/no-unused-vars
+   38:10  error  'listSales' is defined but never used                            @typescript-eslint/no-unused-vars
+   74:10  error  'showReturnExchangeModal' is assigned a value but never used     @typescript-eslint/no-unused-vars
+   74:35  error  'setShowReturnExchangeModal' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  123:10  error  'deviceReplacements' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  124:10  error  'replacementsLoading' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  396:9   error  'handleSaleAction' is assigned a value but never used            @typescript-eslint/no-unused-vars
+  515:39  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  517:35  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  518:34  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  519:47  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/parties/PartyTabContent.tsx
+  13:10  error  'PartyHearingTestsTab' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/parties/PartyTabs.tsx
+  11:3  error  'Stethoscope' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/parties/PartyTagUpdateModal.tsx
+  125:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/parties/PartyTimelineTab.tsx
+  70:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/parties/modals/PaymentSummary.tsx
+  136:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/parties/modals/ProformaModal.tsx
+   23:1   error  '@/api/generated/inventory/inventory' import is restricted from being used by a pattern. Deep imports from generated API are forbidden. Import from @/api/client/ instead  no-restricted-imports
+   24:1   error  '@/api/generated/documents/documents' import is restricted from being used by a pattern. Deep imports from generated API are forbidden. Import from @/api/client/ instead  no-restricted-imports
+  128:37  error  Unexpected any. Specify a different type                                                                                                                                   @typescript-eslint/no-explicit-any
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/parties/modals/ReportModal.tsx
+  117:15  error  'payload' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/parties/modals/components/ProductSearchComponent.tsx
+  76:9  error  'getRelevanceColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  85:9  error  'getRelevanceIcon' is assigned a value but never used   @typescript-eslint/no-unused-vars
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/parties/modals/edit-sale-modal/components/SaleFormFields.tsx
+   5:3   error  'Textarea' is defined but never used  @typescript-eslint/no-unused-vars
+  10:3   error  'Button' is defined but never used    @typescript-eslint/no-unused-vars
+  12:19  error  'Search' is defined but never used    @typescript-eslint/no-unused-vars
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/parties/modals/edit-sale-modal/hooks/useEditSale.ts
+   77:9   warning  The 'sgkAmounts' object makes the dependencies of useMemo Hook (at line 141) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'sgkAmounts' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  234:13  error    'totalListPrice' is assigned a value but never used                                                                                                                                                                         @typescript-eslint/no-unused-vars
+  244:67  error    Unexpected any. Specify a different type                                                                                                                                                                                    @typescript-eslint/no-explicit-any
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/parties/party/SalesTableView.tsx
+   12:24  error  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+   14:36  error  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+   15:35  error  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+   16:40  error  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+   17:38  error  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+   18:48  error  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+   19:37  error  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  158:55  error  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  161:40  error  Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  294:21  error  'listPrice' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/party/PartyDeviceCard.tsx
+  289:68  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/payments/PaymentTrackingModal.tsx
+   19:3   error    'Banknote' is defined but never used                                                                                        @typescript-eslint/no-unused-vars
+   20:3   error    'CheckCircle' is defined but never used                                                                                     @typescript-eslint/no-unused-vars
+   21:3   error    'AlertCircle' is defined but never used                                                                                     @typescript-eslint/no-unused-vars
+   23:3   error    'FileText' is defined but never used                                                                                        @typescript-eslint/no-unused-vars
+   25:3   error    'Trash2' is defined but never used                                                                                          @typescript-eslint/no-unused-vars
+   41:10  error    'PromissoryNotesTab' is defined but never used                                                                              @typescript-eslint/no-unused-vars
+  106:10  error    'promissoryNotes' is assigned a value but never used                                                                        @typescript-eslint/no-unused-vars
+  130:10  error    'newPromissoryNote' is assigned a value but never used                                                                      @typescript-eslint/no-unused-vars
+  130:29  error    'setNewPromissoryNote' is assigned a value but never used                                                                   @typescript-eslint/no-unused-vars
+  200:6   warning  React Hook useEffect has a missing dependency: 'calculatePaymentSummary'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  227:38  error    'e' is defined but never used                                                                                               @typescript-eslint/no-unused-vars
+  271:19  error    Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+  482:48  error    Unexpected any. Specify a different type                                                                                    @typescript-eslint/no-explicit-any
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/payments/PromissoryNotesTab.tsx
+   41:3   error  'useListSalePromissoryNotes' is defined but never used  @typescript-eslint/no-unused-vars
+   97:25  error  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+   98:25  error  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  182:96  error  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  334:21  error  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  411:21  error  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  462:21  error  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  761:56  error  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/sgk/DocumentViewer.tsx
+  11:3  error  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/suppliers/SuggestedSuppliersList.tsx
+    2:10  error  'Button' is defined but never used                                                                                                @typescript-eslint/no-unused-vars
+   36:21  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  188:45  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  201:45  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  213:45  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  250:73  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/components/ui/SearchableSelect.tsx
+  107:13  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/hooks/party/usePartyTimeline.ts
+  26:10  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/hooks/usePartyEditModal.tsx
+   3:1   error  '@/api/generated/parties/parties' import is restricted from being used by a pattern. Deep imports from generated API are forbidden. Import from @/api/client/ instead  no-restricted-imports
+   5:58  error  Unexpected any. Specify a different type                                                                                                                               @typescript-eslint/no-explicit-any
+  28:40  error  Unexpected any. Specify a different type                                                                                                                               @typescript-eslint/no-explicit-any
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/hooks/useSupplierInvoices.ts
+  10:1  error  '@/api/generated/invoices/invoices' import is restricted from being used by a pattern. Deep imports from generated API are forbidden. Import from @/api/client/ instead  no-restricted-imports
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/pages/DesktopPartiesPage.tsx
+   11:1   error  '@/api/generated/parties/parties' import is restricted from being used by a pattern. Deep imports from generated API are forbidden. Import from @/api/client/ instead  no-restricted-imports
+   13:37  error  'Headphones' is defined but never used                                                                                                                                 @typescript-eslint/no-unused-vars
+  133:26  error  Unexpected any. Specify a different type                                                                                                                               @typescript-eslint/no-explicit-any
+  335:60  error  Unexpected any. Specify a different type                                                                                                                               @typescript-eslint/no-explicit-any
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/pages/DesktopPartyDetailsPage.tsx
+   31:1   error  '@/api/generated/parties/parties' import is restricted from being used by a pattern. Deep imports from generated API are forbidden. Import from @/api/client/ instead  no-restricted-imports
+  346:47  error  Unexpected any. Specify a different type                                                                                                                               @typescript-eslint/no-explicit-any
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/pages/DesktopSettingsPage.tsx
+  1:17  error  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/pages/NewInvoicePage.tsx
+   90:19  error    Unexpected any. Specify a different type                                                                                          @typescript-eslint/no-explicit-any
+  112:6   warning  React Hook useEffect has a missing dependency: 'searchDraftId'. Either include it or remove the dependency array                  react-hooks/exhaustive-deps
+  136:20  error    Unexpected any. Specify a different type                                                                                          @typescript-eslint/no-explicit-any
+  602:13  error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  635:13  error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  672:17  error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  693:17  error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  724:13  error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/pages/PaymentsPage.tsx
+  187:13  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  196:13  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/pages/PurchasesPage.tsx
+    6:1   error    '@/api/generated/invoices/invoices' import is restricted from being used by a pattern. Deep imports from generated API are forbidden. Import from @/api/client/ instead                                no-restricted-imports
+   41:54  error    Unexpected any. Specify a different type                                                                                                                                                               @typescript-eslint/no-explicit-any
+   47:9   warning  The 'invoiceList' logical expression could make the dependencies of useMemo Hook (at line 54) change on every render. To fix this, wrap the initialization of 'invoiceList' in its own useMemo() Hook  react-hooks/exhaustive-deps
+   47:9   warning  The 'invoiceList' logical expression could make the dependencies of useMemo Hook (at line 73) change on every render. To fix this, wrap the initialization of 'invoiceList' in its own useMemo() Hook  react-hooks/exhaustive-deps
+   61:15  error    Unexpected any. Specify a different type                                                                                                                                                               @typescript-eslint/no-explicit-any
+   61:24  error    Unexpected any. Specify a different type                                                                                                                                                               @typescript-eslint/no-explicit-any
+  207:13  error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional                                                                       no-restricted-syntax
+  225:13  error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional                                                                          no-restricted-syntax
+  234:13  error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional                                                                          no-restricted-syntax
+  240:13  error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional                                                                          no-restricted-syntax
+  246:13  error    Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional                                                                       no-restricted-syntax
+  271:19  error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional                                                                          no-restricted-syntax
+  285:21  error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional                                                                          no-restricted-syntax
+  377:11  error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional                                                                       no-restricted-syntax
+  381:11  error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional                                                                       no-restricted-syntax
+  402:15  error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional                                                                       no-restricted-syntax
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/pages/SalesPage.tsx
+    5:1   error    '@/api/generated/sales/sales' import is restricted from being used by a pattern. Deep imports from generated API are forbidden. Import from @/api/client/ instead  no-restricted-imports
+   63:15  error    Unexpected any. Specify a different type                                                                                                                           @typescript-eslint/no-explicit-any
+   63:24  error    Unexpected any. Specify a different type                                                                                                                           @typescript-eslint/no-explicit-any
+   65:33  error    Unexpected any. Specify a different type                                                                                                                           @typescript-eslint/no-explicit-any
+   65:62  error    Unexpected any. Specify a different type                                                                                                                           @typescript-eslint/no-explicit-any
+   78:6   warning  React Hook useMemo has missing dependencies: 'dateFrom' and 'dateTo'. Either include them or remove the dependency array                                           react-hooks/exhaustive-deps
+  104:31  error    Unexpected any. Specify a different type                                                                                                                           @typescript-eslint/no-explicit-any
+  113:30  error    Unexpected any. Specify a different type                                                                                                                           @typescript-eslint/no-explicit-any
+  223:13  error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional                                      no-restricted-syntax
+  233:13  error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional                                      no-restricted-syntax
+  242:13  error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional                                      no-restricted-syntax
+  264:19  error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional                                      no-restricted-syntax
+  278:21  error    Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional                                      no-restricted-syntax
+  332:13  error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional                                   no-restricted-syntax
+  336:13  error    Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional                                   no-restricted-syntax
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/pages/inventory/components/SupplierAutocomplete.tsx
+  272:15  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  281:15  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/pages/reports/ActivityLogs.tsx
+  14:1  error  '@/api/generated/ai-composer/ai-composer' import is restricted from being used by a pattern. Deep imports from generated API are forbidden. Import from @/api/client/ instead  no-restricted-imports
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/pages/settings/Company.tsx
+  584:17  error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/pages/settings/PartySegmentsSettings.tsx
+  409:13  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional  no-restricted-syntax
+  443:19  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional  no-restricted-syntax
+  527:13  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional  no-restricted-syntax
+  561:19  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional  no-restricted-syntax
+
+/Users/ozmen/Desktop/x-ear web app/x-ear/apps/web/src/pages/settings/SgkSettings.tsx
+  157:9   error  Use Select component from @x-ear/ui-web instead of raw <select> elements. Add data-allow-raw="true" if raw select is intentional  no-restricted-syntax
+  187:17  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  198:17  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  210:17  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  229:11  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  252:19  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  264:19  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  276:19  error  Use Input component from @x-ear/ui-web instead of raw <input> elements. Add data-allow-raw="true" if raw input is intentional     no-restricted-syntax
+  285:19  error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+  300:9   error  Use Button component from @x-ear/ui-web instead of raw <button> elements. Add data-allow-raw="true" if raw button is intentional  no-restricted-syntax
+
+✖ 184 problems (177 errors, 7 warnings)
+  3 errors and 0 warnings potentially fixable with the `--fix` option.
+

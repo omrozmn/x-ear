@@ -114,15 +114,16 @@ export const ReportModal: React.FC<ReportModalProps> = ({
 
     try {
       if (formData.type === 'audiogram') {
-        const payload = {
-          testDate: new Date().toISOString(),
-          audiologist: 'Current User', // Should ideally come from auth context
-          audiogramData: {
-            title: formData.title, // Store title in JSON data
-            status: 'draft',
-            notes: 'Created via web UI'
-          }
-        };
+        // Payload will be used when API is ready
+        // const payload = {
+        //   testDate: new Date().toISOString(),
+        //   audiologist: 'Current User',
+        //   audiogramData: {
+        //     title: formData.title,
+        //     status: 'draft',
+        //     notes: 'Created via web UI'
+        //   }
+        // };
 
         // await createHearingTest(party.id!, payload); // Endpoint removed/renamed in backend
         console.warn('createHearingTest endpoint not available - skipping');

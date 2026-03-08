@@ -23,7 +23,7 @@ export interface TimelineEvent {
   timestamp?: string;
   createdAt: string;
   priority?: 'low' | 'medium' | 'high';
-  type?: any;
+  type?: string;
 }
 
 /**

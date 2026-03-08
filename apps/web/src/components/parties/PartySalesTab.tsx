@@ -7,7 +7,7 @@ import {
   CardTitle,
   Loading
 } from '@x-ear/ui-web';
-import { Plus, RefreshCw, FileText, Eye, CheckCircle, Send, AlertCircle } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Party } from '../../types/party/party-base.types';
 import { Sale } from '../../types/party/party-communication.types';
 import { ResponseEnvelopeListSaleRead } from '../../api/generated/schemas/responseEnvelopeListSaleRead';
@@ -27,51 +27,27 @@ import { PartySaleFormRefactored } from '../forms/party-sale-form/PartySaleFormR
 import { CollectionModal } from './modals/CollectionModal';
 import PromissoryNoteModal from './modals/PromissoryNoteModal';
 import EditSaleModal from './modals/EditSaleModal';
-import { ReturnExchangeModal } from './modals/ReturnExchangeModal';
+
 import ProformaModal from './modals/ProformaModal';
 import DocumentViewer from '../sgk/DocumentViewer';
 import type { SGKDocument } from '../../types/sgk';
-import { useToastHelpers } from '@x-ear/ui-web';
 import { SalesSummaryCards } from './SalesSummaryCards';
 import { SalesFilters } from './SalesFilters';
 import { SalesTableView } from './party/SalesTableView';
-import { listSales } from '@/api/client/sales.client';
+
 import { listPartySales } from '@/api/client/parties.client';
 import { PARTY_SALES_DATA } from '../../constants/storage-keys';
-
-interface DeviceReplacement {
-  id: string;
-  partyId: string;
-  oldDeviceId?: string;
-  newInventoryId?: string;
-  oldDeviceInfo: string;
-  newDeviceInfo: string;
-  status: 'pending_invoice' | 'invoice_created' | 'completed';
-  createdAt: string;
-  returnInvoice?: {
-    id: string;
-    invoiceNumber: string;
-    supplierName?: string;
-    supplierInvoiceNumber?: string;
-    gibSent?: boolean;
-    gibSentDate?: string;
-    invoiceNote?: string;
-  };
-}
 
 interface PartySalesTabProps {
   party: Party;
 }
 
 export default function PartySalesTab({ party }: PartySalesTabProps) {
-  const { warning } = useToastHelpers(); // Add toast helper
-
   // Modal states
   const [showNewSaleModal, setShowNewSaleModal] = useState(false);
   const [showCollectionModal, setShowCollectionModal] = useState(false);
   const [showPromissoryNoteModal, setShowPromissoryNoteModal] = useState(false);
   const [showEditSaleModal, setShowEditSaleModal] = useState(false);
-  const [showReturnExchangeModal, setShowReturnExchangeModal] = useState(false);
   const [showProformaModal, setShowProformaModal] = useState(false);
   const [selectedSale, setSelectedSale] = useState<SaleRead | undefined>(undefined);
   const [editSaleInitialTab, setEditSaleInitialTab] = useState<'details' | 'payments' | 'notes'>('details');
@@ -98,30 +74,12 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
   //   coveragePercentage: number;
   // } | null>(null);
   // const [sgkLoading, setSgkLoading] = useState(false);
-  const [sgkCoverageCalculation,] = useState<{
-    totalCoverage: number;
-    partyPayment: number;
-    deviceCoverage?: {
-      maxCoverage: number;
-      coveragePercentage: number;
-      remainingEntitlement: number;
-    } | null;
-    batteryCoverage?: {
-      maxCoverage: number;
-      coveragePercentage: number;
-      remainingEntitlement: number;
-    } | null;
-    totalCoveragePercentage?: number;
-  } | null>(null);
 
   // Sales data state
   const [sales, setSales] = useState<SaleRead[]>([]);
   const [salesLoading, setSalesLoading] = useState(false);
   const [salesError, setSalesError] = useState<string | null>(null);
 
-  // Device replacements state
-  const [deviceReplacements, setDeviceReplacements] = useState<DeviceReplacement[]>([]);
-  const [replacementsLoading, setReplacementsLoading] = useState(false);
   const [showDeviceReplacementModal, setShowDeviceReplacementModal] = useState(false);
   // const [selectedReplacement, setSelectedReplacement] = useState<DeviceReplacement | null>(null);
 
@@ -393,11 +351,11 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
   */
 
   // Function to safely open modals that require a sale
-  const handleSaleAction = () => {
-    // This logic is tricky because the header buttons don't have a sale selected contextually
-    // So we just warn the user.
-    warning('Lütfen işlem yapmak istediğiniz satışı listeden seçiniz.');
-  };
+  // const handleSaleAction = () => {
+  //   // This logic is tricky because the header buttons don't have a sale selected contextually
+  //   // So we just warn the user.
+  //   warning('Lütfen işlem yapmak istediğiniz satışı listeden seçiniz.');
+  // };
 
   return (
     <div className="space-y-6">
@@ -512,11 +470,11 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
             // viewMode === 'table' ? (
             // console.log('📋 Rendering table view, sales count:', filteredSales.length),
             <SalesTableView
-              sales={filteredSales as any}
+              sales={filteredSales}
               partyId={party.id || ''}
-              onSaleClick={(sale: any) => handleEditSaleClick(sale as SaleRead)}
-              onEditSale={(sale: any) => handleEditSaleClick(sale as SaleRead)}
-              onManagePromissoryNotes={(sale: any) => handlePromissoryNoteClick(sale as SaleRead)}
+              onSaleClick={(sale) => handleEditSaleClick(sale as SaleRead)}
+              onEditSale={(sale) => handleEditSaleClick(sale as SaleRead)}
+              onManagePromissoryNotes={(sale) => handlePromissoryNoteClick(sale as SaleRead)}
             />
           )}
         </CardContent>
@@ -531,15 +489,16 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
             <div className="p-4">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Yeni Satış</h2>
-                <button
+                <Button
+                  variant="ghost"
                   onClick={() => setShowNewSaleModal(false)}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1"
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 !p-1 !h-auto"
                   aria-label="Kapat"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                </button>
+                </Button>
               </div>
               <PartySaleFormRefactored
                 partyId={party.id || ''}

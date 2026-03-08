@@ -249,7 +249,7 @@ async def create_action(
     user_permissions: Set[str] = set(user_context.get("permissions", []))
     
     logger.info(
-        f"Create action request received",
+        "Create action request received",
         extra={
             "request_id": request_id,
             "tenant_id": tenant_id,

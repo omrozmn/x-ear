@@ -1,0 +1,13 @@
+{
+  "source_directories": [
+    "apps/api"
+  ],
+  "search_path": [
+    "apps/api",
+    "apps/api/.venv/lib/python3.11/site-packages"
+  ],
+  "exclude": [
+    ".*/tests/.*",
+    ".*/migrations/.*"
+  ]
+}

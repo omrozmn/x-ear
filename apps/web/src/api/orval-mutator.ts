@@ -52,10 +52,15 @@ export const hybridCamelize = (data: unknown): unknown => {
   return data;
 };
 
-// API Configuration - NO /api suffix because Orval paths already include it
-const API_BASE_URL = typeof window !== 'undefined' && import.meta?.env?.VITE_API_URL
-  ? import.meta.env.VITE_API_URL.replace(/\/api$/, '') // Remove trailing /api if present
-  : 'http://localhost:5003'; // Just host+port, Orval adds /api
+// API Configuration - NO /api suffix because Orval paths already include it.
+// In development, default to same-origin so Vite's /api proxy is used.
+// This avoids browser-side localhost/CORS/network mismatches while preserving
+// explicit VITE_API_URL overrides for non-proxied environments.
+const configuredApiUrl = import.meta?.env?.VITE_API_URL?.replace(/\/api$/, '');
+const API_BASE_URL = configuredApiUrl
+  || (import.meta.env.DEV
+    ? ''
+    : (typeof window !== 'undefined' ? window.location.origin : ''));
 
 // Connection pooling and retry configuration
 const CONNECTION_CONFIG = {
@@ -280,7 +285,14 @@ apiClient.interceptors.request.use(
         tokenPayload: tokenManager.payload
       });
     } else {
-      console.warn('[orval-mutator] İstek için token bulunamadı:', config.url);
+      const isPublicEndpoint = config.url?.includes('/auth/login') ||
+        config.url?.includes('/auth/register') ||
+        config.url?.includes('/auth/verify-otp') ||
+        config.url?.includes('/auth/forgot-password') ||
+        config.url?.includes('/auth/reset-password');
+      if (!isPublicEndpoint) {
+        console.warn('[orval-mutator] İstek için token bulunamadı:', config.url);
+      }
     }
 
     // URL rewriting logic has been removed as backend now supports Unified Endpoints.

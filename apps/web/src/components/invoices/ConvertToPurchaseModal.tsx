@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Modal, Button, Card } from '@x-ear/ui-web';
+import { useState, useEffect, useMemo } from 'react';
+import { Modal, Button, Card, Input, Select, Label } from '@x-ear/ui-web';
 import { ShoppingCart, AlertCircle, CheckCircle, X, Plus } from 'lucide-react';
 import { formatCurrency } from '@/utils/format';
 import { useListSuppliers } from '@/api/generated';
@@ -15,11 +15,7 @@ interface IncomingInvoice {
   currency: string;
 }
 
-interface SupplierOption {
-  id: string | number;
-  name: string;
-  taxNumber?: string;
-}
+// SupplierOption interface removed as it was unused
 
 interface ConvertToPurchaseModalProps {
   isOpen: boolean;
@@ -29,8 +25,28 @@ interface ConvertToPurchaseModalProps {
 }
 
 // Mock API hooks until the real ones are generated
-const useConvertInvoicesToPurchases = (options: any) => ({
-  mutate: (data: any) => {
+interface ConvertOptions {
+  mutation: {
+    onSuccess: (data: { data: ConvertResult }) => void;
+    onError: (error: unknown) => void;
+  };
+}
+
+interface ConvertResult {
+  successCount: number;
+  errorCount: number;
+  createdPurchases: unknown[];
+  supplierMappings: unknown[];
+  errors: string[];
+}
+
+interface ConvertData {
+  invoiceIds: string[];
+  supplierMappings: Record<string, string>;
+}
+
+const useConvertInvoicesToPurchases = (options: ConvertOptions) => ({
+  mutate: (data: ConvertData) => {
     // Mock implementation
     setTimeout(() => {
       options.mutation.onSuccess({
@@ -66,11 +82,11 @@ export function ConvertToPurchaseModal({
 
   // Use real suppliers API
   const { data: suppliersData } = useListSuppliers({});
-  const availableSuppliers = suppliersData?.data || [];
+  const availableSuppliers = useMemo(() => suppliersData?.data || [], [suppliersData?.data]);
 
   const convertMutation = useConvertInvoicesToPurchases({
     mutation: {
-      onSuccess: (data: any) => {
+      onSuccess: (data: { data: ConvertResult }) => {
         const result = data.data;
         if (result.successCount > 0) {
           toast.success(`${result.successCount} fatura başarıyla alışa dönüştürüldü`);
@@ -81,7 +97,7 @@ export function ConvertToPurchaseModal({
           toast.error(`${result.errorCount} faturada hata oluştu`);
         }
       },
-      onError: (error: any) => {
+      onError: (error: unknown) => {
         toast.error('Dönüştürme işlemi başarısız: ' + extractErrorMessage(error));
       }
     }
@@ -90,31 +106,31 @@ export function ConvertToPurchaseModal({
   // Auto-map suppliers based on name/tax number similarity
   useEffect(() => {
     if (!availableSuppliers.length) return;
-    
+
     const autoMappings: Record<string, string> = {};
-    
+
     selectedInvoices.forEach(invoice => {
       // Try to find exact match by tax number
       const exactMatch = availableSuppliers.find(
         (supplier) => supplier.taxNumber === invoice.supplierTaxNumber
       );
-      
+
       if (exactMatch) {
         autoMappings[invoice.invoiceId] = String(exactMatch.id);
         return;
       }
-      
+
       // Try to find fuzzy match by name
       const nameMatch = availableSuppliers.find(
         (supplier) => supplier.name.toLowerCase().includes(invoice.supplierName.toLowerCase()) ||
-                   invoice.supplierName.toLowerCase().includes(supplier.name.toLowerCase())
+          invoice.supplierName.toLowerCase().includes(supplier.name.toLowerCase())
       );
-      
+
       if (nameMatch) {
         autoMappings[invoice.invoiceId] = String(nameMatch.id);
       }
     });
-    
+
     setSupplierMappings(autoMappings);
   }, [selectedInvoices, availableSuppliers]);
 
@@ -130,16 +146,16 @@ export function ConvertToPurchaseModal({
       toast.error('Tedarikçi adı gerekli');
       return;
     }
-    
+
     // Mock implementation - gerçekte API call yapılacak
     const newSupplierId = `new_${Date.now()}`;
     toast.success(`Yeni tedarikçi "${newSupplierName}" oluşturuldu`);
-    
+
     setSupplierMappings(prev => ({
       ...prev,
       [invoiceId]: newSupplierId
     }));
-    
+
     setNewSupplierName('');
     setShowNewSupplierForm(null);
   };
@@ -149,12 +165,12 @@ export function ConvertToPurchaseModal({
     const unmappedInvoices = selectedInvoices.filter(
       invoice => !supplierMappings[invoice.invoiceId]
     );
-    
+
     if (unmappedInvoices.length > 0) {
       toast.error('Tüm faturalar için tedarikçi seçimi yapılmalı');
       return;
     }
-    
+
     convertMutation.mutate({
       invoiceIds: selectedInvoices.map(inv => inv.invoiceId),
       supplierMappings
@@ -206,7 +222,7 @@ export function ConvertToPurchaseModal({
             <h3 className="font-medium text-gray-900 dark:text-white">
               Tedarikçi Eşleştirmeleri
             </h3>
-            
+
             {selectedInvoices.map((invoice) => (
               <Card key={invoice.invoiceId} className="p-4">
                 <div className="flex items-start justify-between gap-4">
@@ -228,18 +244,18 @@ export function ConvertToPurchaseModal({
                   </div>
 
                   <div className="flex-1 max-w-xs">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <Label className="mb-2">
                       Sistem Tedarikçisi
-                    </label>
-                    
+                    </Label>
+
                     {showNewSupplierForm === invoice.invoiceId ? (
                       <div className="space-y-2">
-                        <input
+                        <Input
                           type="text"
                           placeholder="Yeni tedarikçi adı"
                           value={newSupplierName}
                           onChange={(e) => setNewSupplierName(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                          fullWidth
                         />
                         <div className="flex gap-2">
                           <Button
@@ -263,20 +279,19 @@ export function ConvertToPurchaseModal({
                       </div>
                     ) : (
                       <div className="space-y-2">
-                        <select
+                        <Select
                           value={supplierMappings[invoice.invoiceId] || ''}
                           onChange={(e) => handleSupplierChange(invoice.invoiceId, e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
-                        >
-                          <option value="">Tedarikçi Seçin</option>
-                          {availableSuppliers.map((supplier) => (
-                            <option key={supplier.id} value={String(supplier.id)}>
-                              {supplier.name}
-                              {supplier.taxNumber && ` (${supplier.taxNumber})`}
-                            </option>
-                          ))}
-                        </select>
-                        
+                          fullWidth
+                          options={[
+                            { value: '', label: 'Tedarikçi Seçin' },
+                            ...availableSuppliers.map((supplier) => ({
+                              value: String(supplier.id),
+                              label: `${supplier.name}${supplier.taxNumber ? ` (${supplier.taxNumber})` : ''}`
+                            }))
+                          ]}
+                        />
+
                         <Button
                           size="sm"
                           variant="outline"

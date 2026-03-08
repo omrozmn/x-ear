@@ -64,7 +64,7 @@ export const PartyHeader: React.FC<PartyHeaderProps> = ({
   // onExport, // Currently unused
   onSendSMS,
   // onCopyInfo, // Currently unused
-  onGenerateReport,
+  // onGenerateReport, // Currently unused
   onAddNote,
   isLoading,
 }) => {

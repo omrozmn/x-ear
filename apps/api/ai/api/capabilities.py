@@ -225,7 +225,7 @@ async def get_capabilities(request: Request):
     )
     
     logger.info(
-        f"Capabilities endpoint called",
+        "Capabilities endpoint called",
         extra={
             "tenant_id": getattr(request.state, "tenant_id", None),
             "user_id": getattr(request.state, "user_id", None),

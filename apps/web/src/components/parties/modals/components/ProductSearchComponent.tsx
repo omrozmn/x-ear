@@ -7,7 +7,7 @@ import {
   CardTitle,
   Badge
 } from '@x-ear/ui-web';
-import { Search, Star } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { searchProducts, SearchableItem } from '../../../../utils/fuzzy-search';
 
 interface Product extends SearchableItem {
@@ -72,22 +72,6 @@ export const ProductSearchComponent: React.FC<ProductSearchComponentProps> = ({
       threshold: 0.2
     });
   }, [searchResults, searchTerm, enableFuzzySearch, maxResults]);
-
-  const getRelevanceColor = (relevance: 'high' | 'medium' | 'low') => {
-    switch (relevance) {
-      case 'high': return 'text-green-600';
-      case 'medium': return 'text-yellow-600';
-      case 'low': return 'text-gray-600';
-      default: return 'text-gray-600';
-    }
-  };
-
-  const getRelevanceIcon = (relevance: 'high' | 'medium' | 'low') => {
-    const stars = relevance === 'high' ? 3 : relevance === 'medium' ? 2 : 1;
-    return Array.from({ length: stars }, (_, i) => (
-      <Star key={i} className="w-3 h-3 fill-current" />
-    ));
-  };
 
   return (
     <Card>

@@ -111,7 +111,50 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
     # UBL and customization metadata
     cbc('UBLVersionID', '2.1')
     cbc('CustomizationID', 'TR1.2')
-    profile = invoice.get('profile') or ( 'TEMELFATURA' if invoice.get('invoiceType') == 'standard' or not invoice.get('invoiceType') else invoice.get('invoiceType').upper() )
+
+    # --- InvoiceTypeCode & ProfileID resolution ---
+    itype_raw = invoice.get('invoiceType') or invoice.get('type') or invoice.get('invoice_type') or ''
+    scenario = invoice.get('scenario') or invoice.get('profile_scenario') or ''
+
+    INVOICE_TYPE_MAP = {
+        'standard': 'SATIS', '0': 'SATIS', '8': 'SATIS', '16': 'SATIS', '21': 'SATIS', '30': 'SATIS',
+        'ihracat': 'IHRACAT', 'export': 'IHRACAT', '5': 'IHRACAT', '27': 'IHRACKAYITLI',
+        'return': 'IADE', 'iade': 'IADE', '9': 'IADE', '50': 'IADE', '49': 'IADE', '15': 'IADE',
+        'istisna': 'ISTISNA', '10': 'ISTISNA', '13': 'ISTISNA', '17': 'ISTISNA', '23': 'ISTISNA', '29': 'ISTISNA', '31': 'ISTISNA',
+        'tevkifat': 'TEVKIFAT', '11': 'TEVKIFAT', '18': 'TEVKIFAT', '24': 'TEVKIFAT', '32': 'TEVKIFAT',
+        'ozelmatrah': 'OZELMATRAH', '12': 'OZELMATRAH', '19': 'OZELMATRAH', '25': 'OZELMATRAH', '33': 'OZELMATRAH',
+        '14': 'SATIS',  # SGK uses SATIS with special profile
+        '35': 'SATIS',  # Teknoloji destek
+        'sgk': 'SATIS',
+        'hks': 'SATIS',
+        'sarj': 'SATIS',
+    }
+    itype_key = str(itype_raw).lower().strip()
+    resolved_type_code = INVOICE_TYPE_MAP.get(itype_key, str(itype_raw).upper() if itype_raw else 'SATIS')
+
+    # ProfileID resolution based on scenario + type
+    PROFILE_MAP = {
+        'export': 'IHRACAT',
+        'ihracat': 'IHRACAT',
+    }
+    if invoice.get('profile'):
+        profile = invoice['profile']
+    elif str(scenario).lower() in PROFILE_MAP:
+        profile = PROFILE_MAP[str(scenario).lower()]
+    elif itype_key in ('14', 'sgk'):
+        profile = 'TEMELFATURA'
+    elif itype_key in ('35',):
+        profile = 'TEMELFATURA'
+    elif itype_key in ('15', '49', '50'):
+        profile = 'TEMELFATURA'  # return invoices default to temel
+    else:
+        # Default: TICARIFATURA for non-basic, TEMELFATURA otherwise
+        scenario_lower = str(scenario).lower()
+        if scenario_lower == 'government':
+            profile = 'TEMELFATURA'
+        else:
+            profile = invoice.get('profileId') or 'TICARIFATURA'
+
     cbc('ProfileID', profile)
     cbc('ID', invoice.get('invoiceNumber') or invoice.get('id'))
     # Line count (helpful for parity with samples)
@@ -141,30 +184,25 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
     if itime:
         cbc('IssueTime', itime)
     cbc('CopyIndicator', 'false')
-    # InvoiceTypeCode mapping (basic)
-    itype = invoice.get('invoiceType') or invoice.get('type') or invoice.get('invoice_type')
-    if itype:
-        mapping = {
-            'standard': 'SATIS',
-            'ihracat': 'IHRACAT',
-            'export': 'IHRACAT',
-            'return': 'IADE',
-            'istisna': 'ISTISNA',
-            'tevkifat': 'TEVKIFAT'
-        }
-        cbc('InvoiceTypeCode', mapping.get(str(itype).lower(), str(itype).upper()))
+    # InvoiceTypeCode — resolved above
+    cbc('InvoiceTypeCode', resolved_type_code)
     cbc('DocumentCurrencyCode', currency)
 
-    # BillingReference (for IADE/Return invoices)
-    if itype == 'IADE' and (invoice.get('return_reference_number') or invoice.get('return_invoice_number')):
-        bref = ET.SubElement(invoice_root, f"{{{NS['cac']}}}BillingReference")
-        inv_ref = ET.SubElement(bref, f"{{{NS['cac']}}}InvoiceDocumentReference")
-        cbc('ID', invoice.get('return_reference_number') or invoice.get('return_invoice_number'), parent=inv_ref)
-        if invoice.get('return_reference_date') or invoice.get('return_invoice_date'):
-            ref_date = invoice.get('return_reference_date') or invoice.get('return_invoice_date')
-            if 'T' in str(ref_date):
-                ref_date = str(ref_date).split('T')[0]
-            cbc('IssueDate', ref_date, parent=inv_ref)
+    # BillingReference (for ALL return-type invoices: IADE, 50, 49, 15, 9)
+    _return_types = {'iade', 'return', '50', '49', '15', '9'}
+    if itype_key in _return_types or resolved_type_code == 'IADE':
+        ref_no = (invoice.get('return_reference_number') or invoice.get('return_invoice_number')
+                  or (invoice.get('return_invoice_details') or {}).get('returnInvoiceNumber'))
+        ref_date = (invoice.get('return_reference_date') or invoice.get('return_invoice_date')
+                    or (invoice.get('return_invoice_details') or {}).get('returnInvoiceDate'))
+        if ref_no:
+            bref = ET.SubElement(invoice_root, f"{{{NS['cac']}}}BillingReference")
+            inv_ref = ET.SubElement(bref, f"{{{NS['cac']}}}InvoiceDocumentReference")
+            cbc('ID', ref_no, parent=inv_ref)
+            if ref_date:
+                if 'T' in str(ref_date):
+                    ref_date = str(ref_date).split('T')[0]
+                cbc('IssueDate', ref_date, parent=inv_ref)
 
     # Notes (sample files often include multiple cbc:Note entries)
     notes = invoice.get('notes') or invoice.get('notes_list')
@@ -189,6 +227,19 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
     if invoice.get('despatch_document_reference') or invoice.get('despatchDocumentReference'):
         dref = ET.SubElement(invoice_root, f"{{{NS['cac']}}}DespatchDocumentReference")
         cbc('ID', invoice.get('despatch_document_reference') or invoice.get('despatchDocumentReference'), parent=dref)
+
+    # PaymentMeans (if provided — needed for ISTISNA, IHRACAT)
+    payment_means = invoice.get('payment_means') or invoice.get('paymentMeans')
+    if payment_means:
+        pm = ET.SubElement(invoice_root, f"{{{NS['cac']}}}PaymentMeans")
+        cbc('PaymentMeansCode', payment_means.get('code', '1'), parent=pm)
+        if payment_means.get('channelCode'):
+            cbc('PaymentChannelCode', payment_means['channelCode'], parent=pm)
+        if payment_means.get('dueDate'):
+            cbc('PaymentDueDate', payment_means['dueDate'], parent=pm)
+        if payment_means.get('accountId'):
+            pfa = ET.SubElement(pm, f"{{{NS['cac']}}}PayeeFinancialAccount")
+            cbc('ID', payment_means['accountId'], parent=pfa)
 
     # AdditionalDocumentReference entries commonly expected by integrator
     try:
@@ -312,6 +363,57 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
             cbc('IdentificationCode', 'TR', parent=cc)
             cbc('Name', caddr.get('country') or 'TÜRKİYE', parent=cc)
 
+    # BuyerCustomerParty (required for IHRACAT, HASTANE)
+    buyer = invoice.get('buyer_customer') or invoice.get('buyerCustomer')
+    if buyer:
+        bcp = ET.SubElement(invoice_root, f"{{{NS['cac']}}}BuyerCustomerParty")
+        bp = ET.SubElement(bcp, f"{{{NS['cac']}}}Party")
+        bpn = ET.SubElement(bp, f"{{{NS['cac']}}}PartyName")
+        cbc('Name', buyer.get('name', ''), parent=bpn)
+        if buyer.get('tax_id'):
+            bpid = ET.SubElement(bp, f"{{{NS['cac']}}}PartyIdentification")
+            cbc('ID', buyer['tax_id'], parent=bpid)
+
+    # Delivery (for IHRACAT / export invoices)
+    export_details = invoice.get('export_details') or invoice.get('exportDetails') or {}
+    if export_details or resolved_type_code in ('IHRACAT', 'IHRACKAYITLI'):
+        delivery = ET.SubElement(invoice_root, f"{{{NS['cac']}}}Delivery")
+        # DeliveryTerms (INCOTERMS)
+        terms_code = export_details.get('deliveryTerms') or export_details.get('incoterm')
+        if terms_code:
+            dt = ET.SubElement(delivery, f"{{{NS['cac']}}}DeliveryTerms")
+            cbc('ID', terms_code, parent=dt, attrs={'schemeID': 'INCOTERMS'})
+        # Shipment
+        shipment = ET.SubElement(delivery, f"{{{NS['cac']}}}Shipment")
+        cbc('ID', '1', parent=shipment)
+        # TransportHandlingUnit
+        thu = ET.SubElement(shipment, f"{{{NS['cac']}}}TransportHandlingUnit")
+        ap = ET.SubElement(thu, f"{{{NS['cac']}}}ActualPackage")
+        cbc('ID', '1', parent=ap)
+        cbc('PackagingTypeCode', export_details.get('packagingType', 'AF'), parent=ap)
+        # ShipmentStage
+        transport_mode = export_details.get('transportMode') or export_details.get('transportModeCode')
+        if transport_mode:
+            ss = ET.SubElement(shipment, f"{{{NS['cac']}}}ShipmentStage")
+            cbc('TransportModeCode', transport_mode, parent=ss)
+        # GoodsItem (GTİP code)
+        gtip = export_details.get('gtipCode') or export_details.get('customsId')
+        if gtip:
+            gi = ET.SubElement(shipment, f"{{{NS['cac']}}}GoodsItem")
+            cbc('RequiredCustomsID', gtip, parent=gi)
+
+    # TaxExemption at document level (for ISTISNA, OZELMATRAH)
+    tax_exemption_code = invoice.get('tax_exemption_code') or invoice.get('taxExemptionReasonCode')
+    tax_exemption_reason = invoice.get('tax_exemption_reason') or invoice.get('taxExemptionReason')
+    # Auto-set exemption code based on invoice type if not explicitly provided
+    if not tax_exemption_code:
+        if resolved_type_code == 'ISTISNA':
+            tax_exemption_code = invoice.get('governmentExemptionReason') or '301'
+        elif resolved_type_code == 'OZELMATRAH':
+            tax_exemption_code = '806'
+            if not tax_exemption_reason:
+                tax_exemption_reason = 'Özel matrah'
+
     # Invoice lines and line totals
     lines = invoice.get('lines') or []
     # If no explicit lines provided, try to synthesize one from invoice fields
@@ -408,15 +510,17 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
         except Exception:
             pass
         tax_cat = ET.SubElement(lt_sub, f"{{{NS['cac']}}}TaxCategory")
-        # include tax exemption fields if present
-        if ln.get('tax_exemption_code'):
+        # include tax exemption fields if present (per-line or document-level)
+        line_exemption_code = ln.get('tax_exemption_code') or tax_exemption_code
+        line_exemption_reason = ln.get('tax_exemption_reason') or tax_exemption_reason
+        if line_exemption_code:
             try:
-                cbc('TaxExemptionReasonCode', str(ln.get('tax_exemption_code')), parent=tax_cat)
+                cbc('TaxExemptionReasonCode', str(line_exemption_code), parent=tax_cat)
             except Exception:
                 pass
-        if ln.get('tax_exemption_reason'):
+        if line_exemption_reason:
             try:
-                cbc('TaxExemptionReason', str(ln.get('tax_exemption_reason')), parent=tax_cat)
+                cbc('TaxExemptionReason', str(line_exemption_reason), parent=tax_cat)
             except Exception:
                 pass
         tax_scheme = ET.SubElement(tax_cat, f"{{{NS['cac']}}}TaxScheme")
@@ -503,6 +607,17 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
             except Exception:
                 pass
         tax_category = ET.SubElement(tax_sub, f"{{{NS['cac']}}}TaxCategory")
+        # Document-level TaxExemption (ISTISNA, OZELMATRAH)
+        if tax_exemption_code:
+            try:
+                cbc('TaxExemptionReasonCode', str(tax_exemption_code), parent=tax_category)
+            except Exception:
+                pass
+        if tax_exemption_reason:
+            try:
+                cbc('TaxExemptionReason', str(tax_exemption_reason), parent=tax_category)
+            except Exception:
+                pass
         tax_scheme = ET.SubElement(tax_category, f"{{{NS['cac']}}}TaxScheme")
         cbc('Name', invoice.get('tax_name', 'KDV'), parent=tax_scheme)
         # include TaxTypeCode at subtotal level if provided

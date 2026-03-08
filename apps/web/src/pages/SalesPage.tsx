@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Card, Button } from '@x-ear/ui-web';
 import { ShoppingCart, Download, Filter, Search, FileText, DollarSign, ChevronLeft, ChevronRight, ChevronUp, ChevronDown as ChevronDownIcon, X } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
-import { useListSales } from '@/api/generated/sales/sales';
+import { useListSales } from '@/api/client/sales.client';
 import type { SaleRead } from '@/api/generated/schemas';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useNavigate } from '@tanstack/react-router';
@@ -60,9 +60,10 @@ export function SalesPage() {
     if (dateTo) list = list.filter(s => s.saleDate && String(s.saleDate) <= dateTo);
     if (!sortField) return list;
     list.sort((a: SaleRead, b: SaleRead) => {
-      let av: any, bv: any;
+      let av: string | number, bv: string | number;
       if (sortField === 'patient') {
-        const pa = a.patient as any; const pb = b.patient as any;
+        const pa = a.patient as { firstName?: string; lastName?: string } | undefined;
+        const pb = b.patient as { firstName?: string; lastName?: string } | undefined;
         av = pa ? `${pa.firstName || ''} ${pa.lastName || ''}`.trim() : '';
         bv = pb ? `${pb.firstName || ''} ${pb.lastName || ''}`.trim() : '';
       } else if (sortField === 'productName') { av = a.productName || a.brand || ''; bv = b.productName || b.brand || ''; }
@@ -75,7 +76,7 @@ export function SalesPage() {
       return 0;
     });
     return list;
-  }, [salesList, sortField, sortDir]);
+  }, [salesList, sortField, sortDir, dateFrom, dateTo]);
 
   const getStatusBadge = (status?: string | null) => {
     const styles: Record<string, string> = {
@@ -101,7 +102,7 @@ export function SalesPage() {
   };
 
   const getPatientName = (sale: SaleRead) => {
-    const p = sale.patient as any;
+    const p = sale.patient as { firstName?: string; lastName?: string } | undefined;
     if (p?.firstName || p?.lastName) return `${p.firstName || ''} ${p.lastName || ''}`.trim();
     return null;
   };
@@ -110,7 +111,7 @@ export function SalesPage() {
     const items = selectedIds.size > 0 ? sortedSales.filter((s: SaleRead) => selectedIds.has(String(s.id))) : sortedSales;
     const headers = ['Hasta Adı', 'Hasta ID', 'Ürün', 'Marka', 'Model', 'Tutar', 'Tarih', 'Durum', 'Seri No'];
     const rows = items.map((s: SaleRead) => {
-      const p = s.patient as any;
+      const p = s.patient as { firstName?: string; lastName?: string } | undefined;
       const name = (p?.firstName || p?.lastName) ? `${p.firstName || ''} ${p.lastName || ''}`.trim() : '';
       return [
         name,
@@ -221,6 +222,7 @@ export function SalesPage() {
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
             <input
+              data-allow-raw="true"
               type="text"
               placeholder="Hasta adı, ürün veya seri no ara..."
               value={searchTerm}
@@ -231,6 +233,7 @@ export function SalesPage() {
           <div className="flex items-center gap-2">
             <label className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">Başlangıç</label>
             <input
+              data-allow-raw="true"
               type="date"
               value={dateFrom}
               onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1); }}
@@ -240,6 +243,7 @@ export function SalesPage() {
           <div className="flex items-center gap-2">
             <label className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">Bitiş</label>
             <input
+              data-allow-raw="true"
               type="date"
               value={dateTo}
               onChange={(e) => { setDateTo(e.target.value); setCurrentPage(1); }}
@@ -261,7 +265,7 @@ export function SalesPage() {
             <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
               <tr>
                 <th className="px-3 py-3 w-10">
-                  <input type="checkbox" checked={sortedSales.length > 0 && selectedIds.size === sortedSales.length} onChange={toggleSelectAll} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                  <input data-allow-raw="true" type="checkbox" checked={sortedSales.length > 0 && selectedIds.size === sortedSales.length} onChange={toggleSelectAll} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('patient')}>Hasta<SortIcon field="patient" /></th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('productName')}>Ürün<SortIcon field="productName" /></th>
@@ -275,7 +279,7 @@ export function SalesPage() {
               {sortedSales.map((sale: SaleRead) => (
                 <tr key={sale.id} className={`hover:bg-gray-50 dark:hover:bg-gray-800 ${selectedIds.has(String(sale.id)) ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`}>
                   <td className="px-3 py-4">
-                    <input type="checkbox" checked={selectedIds.has(String(sale.id))} onChange={() => toggleSelect(String(sale.id))} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                    <input data-allow-raw="true" type="checkbox" checked={selectedIds.has(String(sale.id))} onChange={() => toggleSelect(String(sale.id))} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
@@ -329,11 +333,11 @@ export function SalesPage() {
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl px-6 py-3 flex items-center gap-4">
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{selectedIds.size} kayıt seçildi</span>
             <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
-            <button onClick={exportToCsv} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors">
+            <button data-allow-raw="true" onClick={exportToCsv} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors">
               <Download className="w-4 h-4" /> CSV Dışa Aktar
             </button>
             <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
-            <button onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <button data-allow-raw="true" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
               <X className="w-4 h-4" /> Seçimi Kaldır
             </button>
           </div>

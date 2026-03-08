@@ -758,7 +758,7 @@ class TimingContext:
             )
             
             if exc_type is not None:
-                if exc_type == TimeoutError:
+                if exc_type is TimeoutError:
                     record_timeout(self.tenant_id)
                 else:
                     record_error(self.tenant_id)

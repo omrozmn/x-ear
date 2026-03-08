@@ -122,7 +122,7 @@ export function PartyTagUpdateModal({
             variant="outline" 
             size="md"
             onClick={() => {
-              navigate({ to: '/settings', search: (prev: any) => ({ ...prev, tab: 'parties' }) });
+              navigate({ to: '/settings', search: (prev: Record<string, unknown>) => ({ ...prev, tab: 'parties' }) });
             }}
             icon={<Settings className="w-5 h-5" />}
             iconPosition="left"

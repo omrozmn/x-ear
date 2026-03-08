@@ -53,22 +53,21 @@ function SortableHeader({ field, label, sortBy, sortOrder, onSort }: SortableHea
   const isActive = sortBy === field;
 
   return (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
       onClick={() => onSort?.(field)}
-      className={`flex items-center space-x-1 text-left font-medium transition-colors ${
-        isActive 
-          ? 'text-blue-600 dark:text-blue-400' 
+      className={`!p-0 !h-auto flex items-center space-x-1 text-left font-medium transition-colors ${isActive
+          ? 'text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300'
           : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
-      }`}
+        }`}
     >
       <span>{label}</span>
       {isActive && (
-        <span className="text-xs">
+        <span className="text-xs ml-1">
           {sortOrder === 'asc' ? '↑' : '↓'}
         </span>
       )}
-    </button>
+    </Button>
   );
 }
 
@@ -428,28 +427,28 @@ export function PartyList({
                   {showActions && (
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
-                        <button
-                          type="button"
+                        <Button
+                          variant="ghost"
                           onClick={(e) => {
                             e.stopPropagation();
                             setCommunicationParty(party);
                           }}
-                          className="h-11 w-11 p-0 inline-flex items-center justify-center rounded-md hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 text-gray-400 dark:text-gray-500 transition-colors"
+                          className="h-11 w-11 !p-0 inline-flex items-center justify-center rounded-md hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 text-gray-400 dark:text-gray-500 transition-colors"
                           title={t('nav.communication', { ns: 'layout' })}
                         >
                           <MessageSquare className="h-6 w-6" />
-                        </button>
-                        <button
-                          type="button"
+                        </Button>
+                        <Button
+                          variant="ghost"
                           onClick={(e) => {
                             e.stopPropagation();
                             onDelete?.(party);
                           }}
-                          className="h-11 w-11 p-0 inline-flex items-center justify-center rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 text-gray-400 dark:text-gray-500 transition-colors"
+                          className="h-11 w-11 !p-0 inline-flex items-center justify-center rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 text-gray-400 dark:text-gray-500 transition-colors"
                           title={t('delete', { ns: 'common' })}
                         >
                           <Trash2 className="h-6 w-6" />
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   )}

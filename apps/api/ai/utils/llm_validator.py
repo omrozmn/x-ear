@@ -101,7 +101,7 @@ class LLMOutputValidator:
             result = output_type.model_validate(data)
         except ValidationError as e:
             for error in e.errors():
-                loc = ".".join(str(l) for l in error["loc"])
+                loc = ".".join(str(loc_item) for loc_item in error["loc"])
                 errors.append(f"{loc}: {error['msg']}")
             
             self._log_validation_failure(output_type.__name__, errors, raw_output)
@@ -152,7 +152,7 @@ class LLMOutputValidator:
             result = output_type.model_validate(data)
         except ValidationError as e:
             for error in e.errors():
-                loc = ".".join(str(l) for l in error["loc"])
+                loc = ".".join(str(loc_item) for loc_item in error["loc"])
                 errors.append(f"{loc}: {error['msg']}")
             
             self._log_validation_failure(output_type.__name__, errors, str(data))
@@ -245,7 +245,7 @@ class LLMOutputValidator:
             result = output_type.model_validate(data)
         except ValidationError as e:
             for error in e.errors():
-                loc = ".".join(str(l) for l in error["loc"])
+                loc = ".".join(str(loc_item) for loc_item in error["loc"])
                 errors.append(f"{loc}: {error['msg']}")
             
             return ValidationResult(

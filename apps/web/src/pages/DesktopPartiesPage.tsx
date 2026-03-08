@@ -7,10 +7,9 @@
 import React, { useState } from 'react';
 import { Button, Input, Modal, Pagination } from '@x-ear/ui-web';
 import { useNavigate, useParams } from '@tanstack/react-router';
-import { useParties, useCreateParty, useDeleteParty } from '../hooks/useParties';
-import { useUpdateParty } from '@/api/generated/parties/parties';
+import { useParties, useCreateParty, useDeleteParty, useUpdateParty } from '../hooks/useParties';
 import { Party } from '../types/party';
-import { Users, CheckCircle, Flame, Headphones, Filter, Search, Plus, RefreshCw, Upload, Trash2, Settings } from 'lucide-react';
+import { Users, CheckCircle, Flame, Filter, Search, Plus, RefreshCw, Upload, Trash2, Settings } from 'lucide-react';
 import { PartyFormModal } from '../components/parties/PartyFormModal';
 import { PartyFilters } from '../components/parties/PartyFilters';
 import { PartyList } from '../components/parties/PartyList';
@@ -130,7 +129,7 @@ export function DesktopPartiesPage() {
     try {
       await updatePartyMutation.mutateAsync({ 
         partyId, 
-        data: updates as any
+        data: updates as Record<string, unknown>
       });
       // Wait for refetch to complete before closing modal
       await refetch();
@@ -332,7 +331,7 @@ export function DesktopPartiesPage() {
               variant="outline"
               size="sm"
               onClick={() => {
-                navigate({ to: '/settings', search: (prev: any) => ({ ...prev, tab: 'parties' }) });
+                navigate({ to: '/settings', search: (prev: Record<string, unknown>) => ({ ...prev, tab: 'parties' }) });
               }}
             >
               <Settings className="h-4 w-4 mr-2" />

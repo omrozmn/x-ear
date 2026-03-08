@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Settings as SettingsIcon } from 'lucide-react';
 import { useSearch } from '@tanstack/react-router';
 

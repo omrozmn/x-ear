@@ -218,6 +218,25 @@ const translations: Record<string, Record<Locale, string>> = {
     "footer.rights": { tr: "Tüm hakları saklıdır.", en: "All rights reserved." },
     "footer.privacy": { tr: "Gizlilik Sözleşmesi", en: "Privacy Policy" },
     "footer.terms": { tr: "Kullanım Koşulları", en: "Terms of Service" },
+
+    // ---- AEO Extras ----
+    "aeo.summary": { tr: "AI Özet", en: "AI Summary" },
+    "aeo.key_insight": { tr: "Kritik İçgörü", en: "Key Insight" },
+    "aeo.entity_definition": { tr: "Varlık Tanımı", en: "Entity Definition" },
+    "aeo.faq_title": { tr: "Sıkça Sorulan Sorular (SSS)", en: "Frequently Asked Questions (FAQ)" },
+
+    // Entity: X-Ear
+    "entity.xear.title": { tr: "X-Ear Nedir?", en: "What is X-Ear?" },
+    "entity.xear.desc": {
+        tr: "X-Ear, işitme merkezleri için geliştirilmiş yapay zeka destekli bir CRM ekosistemidir.",
+        en: "X-Ear is an AI-powered CRM ecosystem developed for hearing centers."
+    },
+    "entity.xear.type_label": { tr: "Tür", en: "Type" },
+    "entity.xear.type_val": { tr: "SaaS / AI İşitme CRM", en: "SaaS / AI Hearing CRM" },
+    "entity.xear.purpose_label": { tr: "Amaç", en: "Purpose" },
+    "entity.xear.purpose_val": { tr: "Klinik Yönetimi ve Büyüme", en: "Clinic Management & Growth" },
+    "entity.xear.feature_label": { tr: "Ana Özellik", en: "Key Feature" },
+    "entity.xear.feature_val": { tr: "Otopilot İş Akışları", en: "Autopilot Workflows" },
 };
 
 // --------------- Locale Detection ---------------

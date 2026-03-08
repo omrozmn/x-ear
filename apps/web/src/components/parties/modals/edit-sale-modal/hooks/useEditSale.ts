@@ -74,7 +74,7 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
   });
 
   // SGK support amounts (matching device assignment form)
-  const sgkAmounts: Record<string, number> = {
+  const sgkAmounts = useMemo(() => ({
     'no_coverage': 0,
     'under4_parent_working': 6104.44,
     'under4_parent_retired': 7630.56,
@@ -86,7 +86,7 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
     'over18_retired': 4239.20,
     'under18': 5000,
     'standard': 0
-  };
+  }), []);
 
   // Reactive pricing calculation (matching device assignment form logic)
   const calculatedPricing = useMemo(() => {
@@ -231,7 +231,6 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
       const firstDevice = devices[0];
 
       // Calculate totals from ALL devices (for bilateral sales)
-      const totalListPrice = devices.reduce((sum, d) => sum + (d.listPrice || 0), 0);
       const totalSgkCoverage = devices.reduce((sum, d) => sum + (d.sgkSupport || d.sgkCoverageAmount || 0), 0);
 
       // ✅ FIXED: Get serial numbers from correct devices for bilateral sales
@@ -241,7 +240,7 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
       setFormData(prev => ({
         ...prev,
         // ✅ FIXED: Use productName from sale-level data (real inventory name)
-        productName: (s.productName as string) || (firstDevice as any)?.productName || firstDevice?.name || productDetails?.name || (s.product_name as string) || sale.productId || '',
+        productName: (s.productName as string) || (firstDevice as Record<string, unknown> | undefined)?.productName as string || firstDevice?.name || productDetails?.name || (s.product_name as string) || sale.productId || '',
         brand: firstDevice?.brand || productDetails?.brand || (s.brand as string) || (s.productBrand as string) || (s.product_brand as string) || '',
         model: firstDevice?.model || productDetails?.model || (s.model as string) || (s.productModel as string) || (s.product_model as string) || '',
         category: firstDevice?.category || productDetails?.category || (s.category as string) || '',

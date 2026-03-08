@@ -5,7 +5,8 @@ import {
   Loading,
   Modal,
   Select,
-  Textarea
+  Textarea,
+  Input
 } from '@x-ear/ui-web';
 import { CheckCircle, AlertCircle, FileText, CreditCard, FileSignature } from 'lucide-react';
 import { useEditSale } from './edit-sale-modal/hooks/useEditSale';
@@ -26,7 +27,7 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
   initialTab = 'details' // Add initialTab prop with default value
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
-  
+
   const {
     formData,
     state,
@@ -80,7 +81,7 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
   // Get assignment UID - prefer from devices array
   // Note: For bilateral sales, there may be multiple assignments
   const assignmentUids = sale.devices?.map(d => d.assignmentUid).filter(Boolean) || [];
-  const displayAssignmentId = assignmentUids.length > 0 
+  const displayAssignmentId = assignmentUids.length > 0
     ? assignmentUids.join(', ')
     : '';
 
@@ -118,11 +119,11 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
       {/* Tab Navigation */}
       <div className="border-b border-gray-200 mb-6">
         <nav className="-mb-px flex space-x-8">
-          <button
-            type="button"
+          <Button
+            variant="ghost"
             onClick={() => setActiveTab('details')}
             className={`
-              py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2
+              !py-4 !px-1 border-b-2 font-medium text-sm flex items-center gap-2 rounded-none !bg-transparent h-auto
               ${activeTab === 'details'
                 ? 'border-blue-500 text-blue-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -131,12 +132,12 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
           >
             <FileText className="w-4 h-4" />
             Satış Detayları
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            variant="ghost"
             onClick={() => setActiveTab('payments')}
             className={`
-              py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2
+              !py-4 !px-1 border-b-2 font-medium text-sm flex items-center gap-2 rounded-none !bg-transparent h-auto
               ${activeTab === 'payments'
                 ? 'border-blue-500 text-blue-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -145,12 +146,12 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
           >
             <CreditCard className="w-4 h-4" />
             Ödeme Takibi
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            variant="ghost"
             onClick={() => setActiveTab('notes')}
             className={`
-              py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2
+              !py-4 !px-1 border-b-2 font-medium text-sm flex items-center gap-2 rounded-none !bg-transparent h-auto
               ${activeTab === 'notes'
                 ? 'border-blue-500 text-blue-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -159,7 +160,7 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
           >
             <FileSignature className="w-4 h-4" />
             Senetler
-          </button>
+          </Button>
         </nav>
       </div>
 
@@ -193,29 +194,30 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-xs text-gray-600 block mb-1">Liste Fiyatı (birim)</label>
-                      <input
+                      <Input
                         type="number"
                         value={formData.listPrice === 0 ? '' : formData.listPrice}
                         onChange={(e) => updateFormData({ listPrice: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder="0.00"
                         step="0.01"
+                        className="w-full"
                       />
                     </div>
                     <div>
                       <label className="text-xs text-gray-600 block mb-1">İndirim Türü</label>
-                      <select data-allow-raw="true"
+                      <Select
                         value={formData.discountType || 'amount'}
-                        onChange={(e) => updateFormData({ discountType: e.target.value as 'none' | 'percentage' | 'amount' })}
-                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      >
-                        <option value="none">İndirim Yok</option>
-                        <option value="percentage">Yüzde (%)</option>
-                        <option value="amount">Tutar (₺)</option>
-                      </select>
+                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateFormData({ discountType: e.target.value as 'none' | 'percentage' | 'amount' })}
+                        options={[
+                          { value: 'none', label: 'İndirim Yok' },
+                          { value: 'percentage', label: 'Yüzde (%)' },
+                          { value: 'amount', label: 'Tutar (₺)' }
+                        ]}
+                        className="w-full"
+                      />
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-xs text-gray-600 block mb-1">Birim Satış Fiyatı</label>
@@ -229,24 +231,24 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
                     </div>
                     <div>
                       <label className="text-xs text-gray-600 block mb-1">İndirim Değeri</label>
-                      <input
+                      <Input
                         type="number"
                         value={formData.discountValue === 0 ? '' : formData.discountValue}
                         onChange={(e) => updateFormData({ discountValue: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder="0.00"
                         step="0.01"
                         disabled={formData.discountType === 'none'}
+                        className="w-full"
                       />
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-xs text-gray-600 block mb-1">SGK Destek Türü</label>
-                      <select data-allow-raw="true"
+                      <Select
                         value={formData.sgkScheme || ''}
-                        onChange={(e) => {
+                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                           const scheme = e.target.value;
                           updateFormData({ sgkScheme: scheme });
                           // Auto-calculate SGK coverage based on scheme (from settings/fallback)
@@ -266,30 +268,31 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
                           const amount = sgkAmounts[scheme] || 0;
                           updateFormData({ sgkCoverage: amount });
                         }}
-                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      >
-                        <option value="">SGK Desteği Yok</option>
-                        <option value="under4_parent_working">4 Yaş Altı (Veli Çalışan)</option>
-                        <option value="under4_parent_retired">4 Yaş Altı (Veli Emekli)</option>
-                        <option value="age5_12_parent_working">5-12 Yaş (Veli Çalışan)</option>
-                        <option value="age5_12_parent_retired">5-12 Yaş (Veli Emekli)</option>
-                        <option value="age13_18_parent_working">13-18 Yaş (Veli Çalışan)</option>
-                        <option value="age13_18_parent_retired">13-18 Yaş (Veli Emekli)</option>
-                        <option value="over18_working">18+ Yaş (Çalışan)</option>
-                        <option value="over18_retired">18+ Yaş (Emekli)</option>
-                        <option value="under18">Genel (18 Yaş Altı)</option>
-                        <option value="standard">Standart</option>
-                      </select>
+                        options={[
+                          { value: '', label: 'SGK Desteği Yok' },
+                          { value: 'under4_parent_working', label: '4 Yaş Altı (Veli Çalışan)' },
+                          { value: 'under4_parent_retired', label: '4 Yaş Altı (Veli Emekli)' },
+                          { value: 'age5_12_parent_working', label: '5-12 Yaş (Veli Çalışan)' },
+                          { value: 'age5_12_parent_retired', label: '5-12 Yaş (Veli Emekli)' },
+                          { value: 'age13_18_parent_working', label: '13-18 Yaş (Veli Çalışan)' },
+                          { value: 'age13_18_parent_retired', label: '13-18 Yaş (Veli Emekli)' },
+                          { value: 'over18_working', label: '18+ Yaş (Çalışan)' },
+                          { value: 'over18_retired', label: '18+ Yaş (Emekli)' },
+                          { value: 'under18', label: 'Genel (18 Yaş Altı)' },
+                          { value: 'standard', label: 'Standart' }
+                        ]}
+                        className="w-full"
+                      />
                     </div>
                     <div>
                       <label className="text-xs text-gray-600 block mb-1">Ön Ödeme</label>
-                      <input
+                      <Input
                         type="number"
                         value={formData.downPayment === 0 ? '' : formData.downPayment}
                         onChange={(e) => updateFormData({ downPayment: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder="0.00"
                         step="0.01"
+                        className="w-full"
                       />
                     </div>
                   </div>
@@ -311,7 +314,7 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
                         </span>
                       </div>
                     )}
-                    
+
                     {/* SGK Deduction (shown before discount per correct calculation order) */}
                     {calculatedPricing.sgkReduction > 0 && (
                       <div className="flex justify-between text-gray-700">
@@ -321,21 +324,21 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
                         </span>
                       </div>
                     )}
-                    
+
                     {/* Discount */}
                     {formData.discountValue > 0 && formData.discountType !== 'none' && (
                       <div className="flex justify-between text-gray-700">
                         <span>İndirim {formData.discountType === 'percentage' ? `(%${formData.discountValue})` : ''}:</span>
                         <span className="font-medium text-red-600">
                           -{new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(
-                            formData.discountType === 'percentage' 
+                            formData.discountType === 'percentage'
                               ? (formData.listPrice - (calculatedPricing.sgkReduction / (formData.ear === 'both' ? 2 : 1))) * (formData.ear === 'both' ? 2 : 1) * (formData.discountValue / 100)
                               : formData.discountValue
                           )}
                         </span>
                       </div>
                     )}
-                    
+
                     {/* KDV */}
                     {sale.kdvAmount != null && sale.kdvAmount > 0 && (
                       <div className="flex justify-between text-gray-500 pt-1 border-t border-blue-200">
@@ -476,9 +479,9 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
           <div className="payment-tracking-wrapper">
             <PaymentTrackingModal
               isOpen={true}
-              onClose={() => {}}
+              onClose={() => { }}
               sale={sale}
-              onPaymentUpdate={() => {}}
+              onPaymentUpdate={() => { }}
             />
           </div>
         </div>

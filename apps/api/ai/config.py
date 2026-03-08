@@ -18,10 +18,14 @@ Environment Variables:
 """
 
 import os
+import logging
 from enum import Enum
 from functools import wraps
 from typing import Callable, Any
 from dataclasses import dataclass
+
+
+logger = logging.getLogger(__name__)
 
 
 class AIPhase(Enum):

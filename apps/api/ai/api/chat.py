@@ -221,7 +221,7 @@ async def chat(
             detail="Authentication required"
         )
     logger.info(
-        f"Chat request received",
+        "Chat request received",
         extra={
             "request_id": request_id,
             "tenant_id": tenant_id,
@@ -458,7 +458,7 @@ async def chat(
         
         # Log cancellation event (Requirement 4.7)
         logger.info(
-            f"Operation cancelled by user",
+            "Operation cancelled by user",
             extra={
                 "tenant_id": tenant_id,
                 "user_id": user_id,
@@ -530,7 +530,7 @@ async def chat(
             latency_ms=int(processing_time_ms),
         )
         logger.info(
-            f"Capability inquiry handled",
+            "Capability inquiry handled",
             extra={
                 "tenant_id": tenant_id,
                 "user_id": user_id,
@@ -574,7 +574,7 @@ async def chat(
                     
                     # Log timeout event (Requirement 4.7)
                     logger.info(
-                        f"Action plan timed out",
+                        "Action plan timed out",
                         extra={
                             "tenant_id": tenant_id,
                             "user_id": user_id,

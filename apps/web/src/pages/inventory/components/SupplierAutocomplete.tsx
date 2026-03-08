@@ -270,6 +270,7 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
             </span>
             <div className="flex items-center gap-2">
               <button
+                data-allow-raw="true"
                 onClick={() => {
                   toast.dismiss(t.id);
                   onSupplierCreated?.(newSupplier, createdId);
@@ -279,6 +280,7 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
                 Tedarikçiye Git
               </button>
               <button
+                data-allow-raw="true"
                 onClick={() => toast.dismiss(t.id)}
                 className="px-3 py-1 text-xs font-medium bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 whitespace-nowrap"
               >

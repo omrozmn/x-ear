@@ -7,6 +7,7 @@ import type {
     SlotConfig,
     ExecuteResponse
 } from '../api/generated/schemas';
+import type { ActionPlan, ActionStep } from '../ai/types/ai.types';
 
 // Define modes for the state machine
 export type ComposerMode = 'idle' | 'context_locked' | 'action_selection' | 'slot_filling' | 'confirmation' | 'executing';
@@ -58,7 +59,7 @@ interface ComposerState {
     addExecutionStep: (step: ExecutionStep) => void;
     updateExecutionStep: (id: string, updates: Partial<ExecutionStep>) => void;
     setExecutionError: (error: string | null) => void;
-    setPlan: (plan: any) => void;
+    setPlan: (plan: ActionPlan | null) => void;
 }
 
 export type ExecutionStatus = 'idle' | 'init' | 'running' | 'waiting' | 'success' | 'error';
@@ -206,7 +207,7 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
         const firstStep = plan.steps[0];
 
         // Convert Steps to ExecutionSteps for progress UI
-        const executionSteps: ExecutionStep[] = plan.steps.map((s: any) => ({
+        const executionSteps: ExecutionStep[] = plan.steps.map((s: ActionStep) => ({
             id: `step-${s.stepNumber}`,
             label: s.description,
             status: 'pending'
@@ -216,8 +217,13 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
             selectedAction: {
                 name: firstStep.toolName,
                 description: firstStep.description,
+                category: 'AI Operation',
+                examplePhrases: [],
+                requiredPermissions: [],
+                toolOperations: [],
+                limitations: [],
                 slots: [] // Handled by chat
-            } as any,
+            } as Capability,
             executionSteps,
             executionStatus: 'waiting', // Waiting for user confirmation
             mode: 'confirmation',

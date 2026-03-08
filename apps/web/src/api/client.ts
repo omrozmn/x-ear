@@ -60,7 +60,7 @@ class ApiClient {
     this.baseURL = baseURL;
   }
 
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+  public async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
     const url = `${this.baseURL}${endpoint}`;
     const token = tokenManager.accessToken;
 

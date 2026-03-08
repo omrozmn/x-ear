@@ -213,11 +213,11 @@ export function PartyFilters({
                 variant="ghost"
                 size="sm"
                 onClick={() => handleFilterChange('segment',
-                  (filters.segment || []).includes(option.value as any)
+                  (filters.segment || []).includes(option.value as PartySegment)
                     ? (filters.segment || []).filter((s) => s !== option.value)
-                    : [...(filters.segment || []), option.value as any]
+                    : [...(filters.segment || []), option.value as PartySegment]
                 )}
-                className={`px-2 py-1 text-xs rounded-full border transition-colors ${(filters.segment || []).includes(option.value as any)
+                className={`px-2 py-1 text-xs rounded-full border transition-colors ${(filters.segment || []).includes(option.value as PartySegment)
                   ? 'bg-green-100 border-green-300 text-green-800 dark:bg-green-900/30 dark:border-green-800 dark:text-green-300'
                   : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100 dark:bg-slate-700 dark:border-slate-600 dark:text-gray-300 dark:hover:bg-slate-600'
                   }`}

@@ -185,6 +185,7 @@ export function PaymentsPage() {
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
             <input
+              data-allow-raw="true"
               type="text"
               placeholder="Fatura no veya hasta ara..."
               value={searchTerm}
@@ -194,6 +195,7 @@ export function PaymentsPage() {
           </div>
           <div className="flex gap-2">
             <select
+              data-allow-raw="true"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"

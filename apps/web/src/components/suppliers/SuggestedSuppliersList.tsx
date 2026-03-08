@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Button } from '@x-ear/ui-web';
 import { Building2, CheckCircle, XCircle, Info, ChevronDown, ChevronUp, FileText, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { apiClient } from '@/api/orval-mutator';
@@ -33,7 +32,7 @@ function PdfViewerModal({ blobUrl, title, onClose }: { blobUrl: string; title: s
                         <FileText className="w-4 h-4 text-blue-500 shrink-0" />
                         <span className="text-sm font-medium text-gray-800 truncate">{title}</span>
                     </div>
-                    <button onClick={onClose} className="p-1 rounded hover:bg-gray-200 transition-colors ml-2">
+                    <button data-allow-raw="true" onClick={onClose} className="p-1 rounded hover:bg-gray-200 transition-colors ml-2">
                         <X className="w-5 h-5 text-gray-600" />
                     </button>
                 </div>
@@ -186,6 +185,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
                                         <div className="flex items-center justify-center gap-1.5">
                                             {/* i button — show/hide invoices */}
                                             <button
+                                                data-allow-raw="true"
                                                 type="button"
                                                 title="Fatura listesini göster"
                                                 onClick={() => setExpandedRow(expandedRow === supplier.id ? null : supplier.id)}
@@ -199,6 +199,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
 
                                             {/* Listeme Ekle */}
                                             <button
+                                                data-allow-raw="true"
                                                 type="button"
                                                 title="Tedarikçi listeme ekle"
                                                 onClick={() => handleAccept(supplier)}
@@ -211,6 +212,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
 
                                             {/* Reddet */}
                                             <button
+                                                data-allow-raw="true"
                                                 type="button"
                                                 title="Reddet"
                                                 onClick={() => handleReject(supplier)}
@@ -248,6 +250,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
                                                                     <td className="py-1.5 pr-1 text-right font-semibold text-gray-800">{fmt(inv.totalAmount || 0)}</td>
                                                                     <td className="py-1.5 text-center">
                                                                         <button
+                                                                            data-allow-raw="true"
                                                                             type="button"
                                                                             onClick={() => handleViewInvoice(inv)}
                                                                             disabled={invoiceLoading === String(inv.invoiceId)}

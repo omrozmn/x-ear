@@ -7,8 +7,7 @@ import {
   CreditCard,
   FileText,
   Clock,
-  StickyNote,
-  Stethoscope
+  StickyNote
 } from 'lucide-react';
 
 // Geçici olarak kendi Tabs bileşenini tanımlıyorum

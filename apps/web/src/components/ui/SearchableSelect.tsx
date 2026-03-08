@@ -105,6 +105,7 @@ export function SearchableSelect({
           </div>
           {value && !disabled && (
             <button
+              data-allow-raw="true"
               type="button"
               onClick={handleClear}
               className="absolute inset-y-0 right-8 flex items-center pointer-events-auto"

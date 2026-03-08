@@ -21,14 +21,14 @@ export {
   useCreateParties as useCreateParty,
   useUpdateParty,
   useDeleteParty,
-} from '@/api/generated/parties/parties';
+} from '../generated/parties/parties';
 
 // Import from admin-parties module
 export {
   listAdminPartySales,
   getListAdminPartySalesQueryKey,
   useListAdminPartySales,
-} from '@/api/generated/admin-parties/admin-parties';
+} from '../generated/admin-parties/admin-parties';
 
 // Import from party-subresources module (only what exists)
 export {
@@ -50,6 +50,6 @@ export {
   listPartyDevices,
   getListPartyDevicesQueryKey,
   useListPartyDevices,
-} from '@/api/generated/party-subresources/party-subresources';
+} from '../generated/party-subresources/party-subresources';
 
-export type { PartyCreate, PartyRead, PartyReadGender, PartyReadStatus } from '@/api/generated/schemas';
+export type { PartyCreate, PartyRead, PartyReadGender, PartyReadStatus } from '../generated/schemas';

@@ -7,7 +7,9 @@ import {
   Button,
   DatePicker,
   Modal,
-  Autocomplete
+  Autocomplete,
+  Select,
+  Label
 } from '@x-ear/ui-web';
 import type { AutocompleteOption } from '@x-ear/ui-web';
 import citiesData from '../../data/cities.json';
@@ -138,7 +140,7 @@ export function PartyFormModal({
       console.log('[PartyFormModal] gender from initialData:', initialData.gender);
       console.log('[PartyFormModal] addressCity from initialData:', initialData.addressCity);
       console.log('[PartyFormModal] addressDistrict from initialData:', initialData.addressDistrict);
-      
+
       const newFormData = {
         firstName: initialData.firstName || '',
         lastName: initialData.lastName || '',
@@ -180,7 +182,7 @@ export function PartyFormModal({
       });
     }
     setErrors({});
-  }, [initialData, isOpen]);
+  }, [initialData, isOpen, acquisitionOptions, segmentOptions]);
 
   const validateForm = useCallback((): boolean => {
     const newErrors: Record<string, string> = {};
@@ -395,9 +397,9 @@ export function PartyFormModal({
           {/* Row 1: TC Kimlik No (left) + Cinsiyet (right) - align with other two-column rows */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <Label className="mb-1">
                 TC Kimlik No
-              </label>
+              </Label>
               <Input
                 type="text"
                 value={formData.tcNumber}
@@ -412,7 +414,7 @@ export function PartyFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cinsiyet</label>
+              <Label className="mb-1">Cinsiyet</Label>
               <div className="flex items-center space-x-2 mt-1">
                 <Button
                   type="button"
@@ -437,9 +439,9 @@ export function PartyFormModal({
           {/* Row 2: Ad, Soyad */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <Label className="mb-1">
                 Ad <span className="text-red-500">*</span>
-              </label>
+              </Label>
               <Input
                 type="text"
                 value={formData.firstName}
@@ -454,9 +456,9 @@ export function PartyFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <Label className="mb-1">
                 Soyad <span className="text-red-500">*</span>
-              </label>
+              </Label>
               <Input
                 type="text"
                 value={formData.lastName}
@@ -474,9 +476,9 @@ export function PartyFormModal({
           {/* Row 2: Telefon + Doğum Tarihi (swapped) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <Label className="mb-1">
                 Telefon <span className="text-red-500">*</span>
-              </label>
+              </Label>
               <Input
                 type="text"
                 value={formData.phone}
@@ -540,9 +542,9 @@ export function PartyFormModal({
           {/* Row 4: Adres (left) + E-posta (right) (email moved under address) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <Label className="mb-2">
                 Adres
-              </label>
+              </Label>
               <Textarea
                 value={formData.address}
                 onChange={(e) => handleInputChange('address', e.target.value)}
@@ -557,9 +559,9 @@ export function PartyFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <Label className="mb-1">
                 E-posta
-              </label>
+              </Label>
               <Input
                 type="text"
                 value={formData.email}
@@ -577,37 +579,46 @@ export function PartyFormModal({
           {/* Row 5: Segment + Acquisition Type */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <Label className="mb-1">
                 Segment
-              </label>
-              <select
+              </Label>
+              <Select
                 value={formData.segment || ''}
                 onChange={(e) => handleInputChange('segment', e.target.value)}
-                className="w-full h-10 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                {segmentOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                fullWidth
+                options={segmentOptions}
+              />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <Label className="mb-1">
                 Kazanım Türü
-              </label>
-              <select
+              </Label>
+              <Select
                 value={formData.acquisitionType || ''}
                 onChange={(e) => handleInputChange('acquisitionType', e.target.value)}
-                className="w-full h-10 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                {acquisitionOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                fullWidth
+                options={acquisitionOptions}
+              />
+            </div>
+          </div>
+
+          {/* Row 6: Branch Selection */}
+          <div className="grid grid-cols-1 gap-4 mt-4">
+            <div>
+              <Label className="mb-1">Şube</Label>
+              <Select
+                value={formData.branchId || ''}
+                onChange={(e) => handleInputChange('branchId', e.target.value)}
+                fullWidth
+                options={[
+                  { value: '', label: 'Şube Seçiniz' },
+                  ...branches.map(branch => ({
+                    value: branch.id,
+                    label: branch.name
+                  }))
+                ]}
+              />
             </div>
           </div>
         </div>

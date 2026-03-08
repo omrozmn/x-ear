@@ -456,14 +456,14 @@ from ai.api import (
     audit_router as ai_audit_router,
     status_router as ai_status_router,
     admin_router as ai_admin_router,
+    opportunities_router as ai_opportunities_router,
 )
 app.include_router(ai_chat_router, prefix="/api")
 app.include_router(ai_actions_router, prefix="/api")
 app.include_router(ai_audit_router, prefix="/api")
 app.include_router(ai_status_router, prefix="/api")
-app.include_router(ai_audit_router, prefix="/api")
-app.include_router(ai_status_router, prefix="/api")
 app.include_router(ai_admin_router, prefix="/api")
+app.include_router(ai_opportunities_router, prefix="/api")
 
 # AI Composer Router (Unified Intent/Entity/Action)
 from routers import composer

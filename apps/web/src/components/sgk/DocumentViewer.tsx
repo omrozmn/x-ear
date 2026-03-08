@@ -8,7 +8,6 @@ import {
   Download, 
   RotateCw, 
   Move,
-  X,
   FileText,
   Eye
 } from 'lucide-react';

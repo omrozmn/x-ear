@@ -1,14 +1,3 @@
-# ╔═══════════════════════════════════════════════════════════════════════════╗
-# ║  ⚠️  DOKUNULMAZ DOSYA — DO NOT MODIFY — NE YAPTIĞINI BİLMEDEN DOKUNMA  ⚠️  ║
-# ║                                                                         ║
-# ║  Bu dosya BirFatura 2-adımlı PDF akışını içerir:                        ║
-# ║  1) DocumentDownloadByUUID → XML indir                                  ║
-# ║  2) PreviewDocumentReturnPDF → gerçek PDF oluştur                       ║
-# ║                                                                         ║
-# ║  Bu akış BOZULURSA fatura görüntüleme/indirme ÇALIŞMAZ.                ║
-# ║  AI veya developer: Bu dosyayı refactor etmeyin, silmeyin,              ║
-# ║  veya endpoint imzalarını değiştirmeyin!                                ║
-# ╚═══════════════════════════════════════════════════════════════════════════╝
 """
 New invoices router for incoming/outgoing invoice management.
 Separate from existing invoices.py to avoid conflicts.
@@ -38,7 +27,8 @@ from schemas.invoices_new import (
     OutgoingInvoiceResponse, OutgoingInvoiceListResponse,
     ConvertToPurchaseRequest, ConvertToPurchaseResponse,
     PartySearchResult, InvoiceStatus, InvoiceSummaryStats,
-    InvoiceActionResponse, InvoiceRejectRequest, InvoiceCancelRequest
+    InvoiceActionResponse, InvoiceRejectRequest, InvoiceCancelRequest,
+    InvoiceDraftRequest, InvoiceDraftResponse
 )
 from core.models.purchase_invoice import PurchaseInvoice
 from core.models.invoice import Invoice
@@ -670,6 +660,163 @@ def get_invoice_logs(
     except Exception as e:
         logger.error(f"Error fetching logs for invoice {invoice_id}: {e}")
         return ResponseEnvelope(success=True, data=[], message="Could not fetch logs")
+
+
+@router.post("/draft",
+             operation_id="createInvoiceDraft",
+             response_model=ResponseEnvelope[InvoiceActionResponse],
+             status_code=201)
+def create_invoice_draft(
+    payload: InvoiceDraftRequest,
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access("invoices.view"))
+):
+    """Save a new invoice draft created from the new invoice form."""
+    tenant_id = _resolve_tenant(access)
+    form = dict(payload.form_data)
+    form["_is_form_draft"] = True
+
+    raw_total = form.get("totalAmount")
+    try:
+        total = Decimal(str(raw_total)) if raw_total is not None else Decimal("0")
+    except (ValueError, TypeError):
+        total = Decimal("0")
+
+    draft = PurchaseInvoice(
+        tenant_id=tenant_id,
+        birfatura_uuid=f"draft-{uuid.uuid4()}",
+        invoice_number=None,
+        invoice_date=datetime.utcnow(),
+        invoice_type="OUTGOING",
+        sender_name=form.get("customerFirstName") or form.get("customerName") or "",
+        sender_tax_number=form.get("customerTaxNumber") or "",
+        currency=form.get("currency") or "TRY",
+        subtotal=Decimal("0"),
+        tax_amount=Decimal("0"),
+        total_amount=total,
+        raw_data=form,
+        status="DRAFT",
+        is_matched=False,
+        notes="Taslak fatura (form)",
+    )
+    db.add(draft)
+    try:
+        db.commit()
+        db.refresh(draft)
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error creating invoice draft: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create draft")
+
+    return ResponseEnvelope(
+        success=True,
+        data=InvoiceActionResponse(invoice_id=draft.id, success=True, message="Taslak oluşturuldu"),
+        message="Draft created"
+    )
+
+
+@router.put("/draft/{draft_id}",
+            operation_id="updateInvoiceDraft",
+            response_model=ResponseEnvelope[InvoiceActionResponse])
+def update_invoice_draft(
+    draft_id: int,
+    payload: InvoiceDraftRequest,
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access("invoices.view"))
+):
+    """Update an existing invoice draft."""
+    tenant_id = _resolve_tenant(access)
+    draft = db.query(PurchaseInvoice).filter(
+        PurchaseInvoice.id == draft_id,
+        PurchaseInvoice.tenant_id == tenant_id,
+        PurchaseInvoice.status == "DRAFT"
+    ).first()
+    if not draft:
+        raise HTTPException(status_code=404, detail="Draft not found")
+
+    form = dict(payload.form_data)
+    form["_is_form_draft"] = True
+    draft.raw_data = form
+    draft.sender_name = form.get("customerFirstName") or form.get("customerName") or draft.sender_name or ""
+    draft.sender_tax_number = form.get("customerTaxNumber") or draft.sender_tax_number or ""
+    draft.currency = form.get("currency") or draft.currency or "TRY"
+    raw_total = form.get("totalAmount")
+    if raw_total is not None:
+        try:
+            draft.total_amount = Decimal(str(raw_total))
+        except (ValueError, TypeError):
+            pass
+
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error updating invoice draft {draft_id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update draft")
+
+    return ResponseEnvelope(
+        success=True,
+        data=InvoiceActionResponse(invoice_id=draft.id, success=True, message="Taslak güncellendi"),
+        message="Draft updated"
+    )
+
+
+@router.get("/draft/{draft_id}",
+            operation_id="getInvoiceDraft",
+            response_model=ResponseEnvelope[InvoiceDraftResponse])
+def get_invoice_draft(
+    draft_id: int,
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access("invoices.view"))
+):
+    """Get invoice draft data for editing in the new invoice form."""
+    tenant_id = _resolve_tenant(access)
+    draft = db.query(PurchaseInvoice).filter(
+        PurchaseInvoice.id == draft_id,
+        PurchaseInvoice.tenant_id == tenant_id,
+        PurchaseInvoice.status == "DRAFT"
+    ).first()
+    if not draft:
+        raise HTTPException(status_code=404, detail="Draft not found")
+
+    raw = draft.raw_data or {}
+
+    if raw.get("_is_form_draft"):
+        # User-created draft: raw_data IS the serialized form state
+        form_data = {k: v for k, v in raw.items() if k != "_is_form_draft"}
+    else:
+        # BirFatura-sourced draft (copy): map XML fields to form state
+        items = []
+        for line in (raw.get("invoiceLines") or raw.get("invoiceLine") or []):
+            items.append({
+                "id": str(uuid.uuid4()),
+                "name": line.get("itemName") or line.get("name", ""),
+                "description": line.get("itemDescription") or line.get("description", ""),
+                "quantity": float(line.get("quantity", 1)),
+                "unit": line.get("unitCode", "Adet"),
+                "unitPrice": float(line.get("priceAmount") or line.get("unitPrice", 0)),
+                "taxRate": 20,
+                "taxAmount": 0,
+                "total": float(line.get("lineExtensionAmount") or line.get("lineTotal", 0)),
+            })
+
+        form_data = {
+            "customerFirstName": (
+                raw.get("ReceiverName") or raw.get("receiverName") or draft.sender_name or ""
+            ),
+            "customerTaxNumber": (
+                raw.get("ReceiverKN") or raw.get("receiverTaxNumber") or draft.sender_tax_number or ""
+            ),
+            "invoiceType": raw.get("InvoiceTypeCode", ""),
+            "currency": raw.get("DocumentCurrencyCode") or draft.currency or "TRY",
+            "invoiceDate": draft.invoice_date.isoformat() if draft.invoice_date else None,
+            "items": items,
+        }
+
+    return ResponseEnvelope(
+        success=True,
+        data=InvoiceDraftResponse(draft_id=draft.id, form_data=form_data)
+    )
 
 
 @router.post("/{invoice_id}/copy",

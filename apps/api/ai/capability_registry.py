@@ -9,7 +9,7 @@ Requirements:
 - 5.8: Map capabilities to Tool API operations
 """
 
-from typing import List, Dict, Optional, Literal, Any, Literal, Any, Optional
+from typing import List, Dict, Literal, Any, Optional
 from pydantic import BaseModel, Field, ConfigDict
 from schemas.base import to_camel
 

@@ -1,72 +1,122 @@
-from functools import wraps
-from flask import request, current_app, jsonify
-import logging
+import time
+import asyncio
+import functools
+from typing import Callable, Optional
+try:
+    from fastapi import Request, HTTPException
+except Exception:
+    # Provide minimal fallbacks so utilities import in test environments
+    class Request:  # type: ignore
+        pass
 
-logger = logging.getLogger(__name__)
+    class HTTPException(Exception):  # type: ignore
+        def __init__(self, status_code=500, detail=""):
+            super().__init__(detail)
+            self.status_code = status_code
+            self.detail = detail
+
+# Simple process-local in-memory rate store: { key: {'count': int, 'expires_at': float} }
+_RATE_STORE = {}
 
 
-def rate_limit(identifier_getter=None, window_seconds: int = 3600, max_calls: int = 5, key_prefix: str = 'rl'):
-    """A decorator factory for rate limiting endpoints.
+def _now() -> float:
+    return time.time()
 
-    - identifier_getter: a callable that accepts (request) and returns a string identifier (e.g., email or phone).
-      If None, decorator will try to use 'identifier' or 'phone' fields from JSON body, then remote_addr as fallback.
-    - window_seconds: time window for counting requests.
-    - max_calls: maximum allowed calls within the window.
-    - key_prefix: prefix for keys in the store.
 
-    The decorator uses current_app.extensions['otp_store'].increment_rate to increment and read counts.
-    Falls back to a transient in-memory increment if the store is not available.
+def rate_limit(identifier_getter: Optional[Callable] = None, window_seconds: int = 3600, max_calls: int = 5, key_prefix: str = 'rl'):
+    """FastAPI-compatible rate limit decorator.
+
+    Works with both sync and async endpoint callables. Attempts to extract a
+    `fastapi.Request` from positional or keyword args. If `identifier_getter`
+    is provided it will be called with the request (or None) to produce an
+    identifier string. Otherwise falls back to JSON body fields `identifier` or
+    `phone` (async) or to the client IP address.
     """
 
     def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
+        is_coro = asyncio.iscoroutinefunction(func)
+
+        async def _handle_request_async(req: Optional[Request]):
+            id_val = None
             try:
-                # Resolve identifier
-                id_val = None
-                try:
-                    if identifier_getter:
-                        id_val = identifier_getter(request)
-                    else:
-                        data = request.get_json(silent=True) or {}
-                        id_val = data.get('identifier') or data.get('phone')
-                except Exception:
-                    id_val = None
-
-                if not id_val:
-                    # Use client IP as a fallback rate-limit key; may be shared across NAT.
-                    id_val = request.remote_addr or 'unknown'
-
-                # Combine with prefix to avoid collisions
-                key_identifier = f"{key_prefix}:{id_val}"
-
-                otp_store = current_app.extensions.get('otp_store')
-
-                if otp_store:
-                    count = otp_store.increment_rate(key_identifier, window_seconds)
+                if identifier_getter:
+                    id_val = identifier_getter(req)
                 else:
-                    # Transient fallback counter stored on app for dev/testing
-                    logger.warning(f"Rate limiter falling back to transient in-memory counter for {key_identifier}")
-                    app_counts = getattr(current_app, '_transient_rate_counts', None)
-                    if app_counts is None:
-                        current_app._transient_rate_counts = {}
-                        app_counts = current_app._transient_rate_counts
-                    window = int(__import__('time').time()) // window_seconds
-                    window_key = f"{key_identifier}:{window}"
-                    app_counts.setdefault(window_key, 0)
-                    app_counts[window_key] += 1
-                    count = app_counts[window_key]
+                    if req:
+                        try:
+                            data = await req.json()
+                            id_val = data.get('identifier') or data.get('phone')
+                        except Exception:
+                            id_val = None
+            except Exception:
+                id_val = None
 
-                if count > max_calls:
-                    logger.info(f"Rate limit exceeded for {key_identifier}: {count}/{max_calls}")
-                    return jsonify({"success": False, "error": "Rate limit exceeded"}), 429
+            if not id_val:
+                if req and getattr(req, 'client', None) and getattr(req.client, 'host', None):
+                    id_val = req.client.host
+                else:
+                    id_val = 'unknown'
+            return id_val
 
-                return func(*args, **kwargs)
-            except Exception as e:
-                logger.exception(f"Rate limit decorator failure: {e}")
-                # Fail open: if rate limiter fails, allow the request to proceed rather than blocking.
-                return func(*args, **kwargs)
+        def _handle_request_sync(req: Optional[Request]):
+            id_val = None
+            try:
+                if identifier_getter:
+                    id_val = identifier_getter(req)
+            except Exception:
+                id_val = None
+            if not id_val:
+                if req and getattr(req, 'client', None) and getattr(req.client, 'host', None):
+                    id_val = req.client.host
+                else:
+                    id_val = 'unknown'
+            return id_val
 
-        return wrapper
+        async def async_wrapper(*args, **kwargs):
+            # extract Request if present
+            req = None
+            for a in args:
+                if isinstance(a, Request):
+                    req = a
+                    break
+            if not req:
+                req = kwargs.get('request')
+
+            id_val = await _handle_request_async(req)
+            key = f"{key_prefix}:{id_val}"
+            now = _now()
+            entry = _RATE_STORE.get(key)
+            if entry and entry['expires_at'] > now:
+                if entry['count'] >= max_calls:
+                    raise HTTPException(status_code=429, detail='Rate limit exceeded')
+                entry['count'] += 1
+            else:
+                _RATE_STORE[key] = {'count': 1, 'expires_at': now + window_seconds}
+
+            return await func(*args, **kwargs)
+
+        def sync_wrapper(*args, **kwargs):
+            req = None
+            for a in args:
+                if isinstance(a, Request):
+                    req = a
+                    break
+            if not req:
+                req = kwargs.get('request')
+
+            id_val = _handle_request_sync(req)
+            key = f"{key_prefix}:{id_val}"
+            now = _now()
+            entry = _RATE_STORE.get(key)
+            if entry and entry['expires_at'] > now:
+                if entry['count'] >= max_calls:
+                    raise HTTPException(status_code=429, detail='Rate limit exceeded')
+                entry['count'] += 1
+            else:
+                _RATE_STORE[key] = {'count': 1, 'expires_at': now + window_seconds}
+
+            return func(*args, **kwargs)
+
+        return async_wrapper if is_coro else sync_wrapper
 
     return decorator

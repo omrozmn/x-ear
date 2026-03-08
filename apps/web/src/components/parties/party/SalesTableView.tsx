@@ -9,14 +9,14 @@ import {
 import { Button } from '@/components/ui/Button';
 
 interface SalesTableViewProps {
-  sales: PartySale[] | any[];
+  sales: PartySale[];
   partyId?: string;
-  onSaleClick?: (sale: PartySale | any) => void;
-  onEditSale?: (sale: PartySale | any) => void;
-  onCreateInvoice?: (sale: PartySale | any) => void;
-  onViewInvoice?: (sale: PartySale | any) => void;
-  onManagePromissoryNotes?: (sale: PartySale | any) => void;
-  onCancelSale?: (sale: PartySale | any) => void;
+  onSaleClick?: (sale: PartySale) => void;
+  onEditSale?: (sale: PartySale) => void;
+  onCreateInvoice?: (sale: PartySale) => void;
+  onViewInvoice?: (sale: PartySale) => void;
+  onManagePromissoryNotes?: (sale: PartySale) => void;
+  onCancelSale?: (sale: PartySale) => void;
 }
 
 export const SalesTableView: React.FC<SalesTableViewProps> = ({
@@ -155,10 +155,10 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                   {deviceData.serialNumberLeft}
                 </div>
               )}
-              {sale.devices[1] && (sale.devices[1] as any).serialNumberRight && (
+              {sale.devices[1] && (sale.devices[1] as typeof firstDevice & { serialNumberRight?: string }).serialNumberRight && (
                 <div className="text-xs text-gray-600 font-medium">
                   <span className="text-[10px] text-gray-400 mr-1 italic">Sağ:</span>
-                  {(sale.devices[1] as any).serialNumberRight}
+                  {(sale.devices[1] as typeof firstDevice & { serialNumberRight?: string }).serialNumberRight}
                 </div>
               )}
             </div>
@@ -291,7 +291,6 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
               const remainingAmount = displayTotal - paidAmount;
               const discountAmount = sale.discountAmount || 0;
               const sgkAmount = sale.sgkCoverage || 0;
-              const listPrice = sale.totalAmount || 0;
               const hasInvoice = !!sale.invoice;
               const cancelledClass = sale.status === 'cancelled' ? 'opacity-50 line-through pointer-events-none' : '';
               const partialPaymentClass = paidAmount > 0 && remainingAmount > 0 ? 'bg-yellow-50' : '';

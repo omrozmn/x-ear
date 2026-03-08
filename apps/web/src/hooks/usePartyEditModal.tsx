@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Party } from '../types/party';
-import { useUpdateParty } from '@/api/generated/parties/parties';
+import { useUpdateParty } from '@/api/client/parties.client';
 
-export function usePartyEditModal(refetch: () => Promise<any>) {
+export function usePartyEditModal(refetch: () => Promise<unknown>) {
   const [isOpen, setIsOpen] = useState(false);
   const [editingParty, setEditingParty] = useState<Party | null>(null);
 
@@ -25,7 +25,7 @@ export function usePartyEditModal(refetch: () => Promise<any>) {
     setEditingParty(null);
   };
 
-  const handleSubmit = async (updates: any) => {
+  const handleSubmit = async (updates: Record<string, unknown>) => {
     try {
       if (!editingParty?.id) return null;
       

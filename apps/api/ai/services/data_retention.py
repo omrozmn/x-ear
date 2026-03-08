@@ -81,13 +81,13 @@ class DataRetentionService:
             # Count legal holds that will be skipped
             legal_hold_count = self.db.query(AIRequest).filter(
                 AIRequest.created_at < cutoff_date,
-                AIRequest.legal_hold == True
+                AIRequest.legal_hold.is_(True)
             ).count()
             
             # Query expired requests (excluding legal holds)
             expired_requests = self.db.query(AIRequest).filter(
                 AIRequest.created_at < cutoff_date,
-                AIRequest.legal_hold == False
+                AIRequest.legal_hold.is_(False)
             ).all()
             
             # Extract IDs for batch deletion

@@ -8,7 +8,10 @@ Drives every CRM capability through the complete pipeline:
 Runs 16 end-to-end scenarios covering every tool and every parameter.
 """
 
-import sys, os, json, re
+import sys
+import os
+import json
+import re
 sys.path.append(os.path.join(os.getcwd(), "apps/api"))
 
 from ai.agents.intent_refiner import IntentRefiner, IntentType
@@ -135,7 +138,7 @@ def fill_slots(slots, answers):
             print(f"    👤 CEVAP > {answer}")
             collected[name] = answer
         else:
-            print(f"    👤 CEVAP > (eksik — bekliyor...)")
+            print("    👤 CEVAP > (eksik — bekliyor...)")
     return collected
 
 
@@ -343,7 +346,7 @@ def main():
     # ── SONUÇ ──
     total = OK + FAIL
     print(f"\n\n{'🎯'*25}")
-    print(f"  TEST SONUÇ ÖZETİ")
+    print("  TEST SONUÇ ÖZETİ")
     print(f"{'🎯'*25}")
     print(f"""
   Toplam Senaryo  : 16

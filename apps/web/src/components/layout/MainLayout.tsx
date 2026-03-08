@@ -25,6 +25,7 @@ import { twMerge } from 'tailwind-merge';
 import { GlobalOfflineAlert } from '../common/GlobalOfflineAlert';
 import { AIChatWidget, AIFeatureWrapper, AIStatusIndicator, PhaseABanner } from '../../ai/components';
 import { ComposerOverlay } from '../../components/ai/ComposerOverlay';
+import { AIInboxDrawer } from '../../components/ai/AIInboxDrawer';
 import { useComposerStore } from '../../stores/composerStore';
 import { useAIStatus, useAIContextSync } from '../../ai/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
@@ -88,7 +89,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const { t } = useTranslation('layout');
   const { user: rawUser, subscription } = useAuthStore();
   const user = rawUser as AuthStateUser | null;
-  
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -96,7 +97,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const { isMobile, isTablet, isDesktop } = useBreakpoints();
 
   // Sidebar state from Zustand store
-  const { sidebarOpen, setSidebarOpen } = useLayoutStore();
+  const { sidebarOpen, setSidebarOpen, toggleAiInbox } = useLayoutStore();
 
   // AI Status for header indicator
   const { data: aiStatus } = useAIStatus({ enabled: !!user });
@@ -144,12 +145,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         isCollapsed={!sidebarOpen && isDesktop}
         onToggle={() => setSidebarOpen(!sidebarOpen)}
         onClose={() => setSidebarOpen(false)}
-        currentPath={location.pathname}
+        currentPath={location.pathname + location.search}
         isMobile={isMobile}
         isTablet={isTablet}
         isDesktop={isDesktop}
         onNavigate={(href) => {
-          navigate({ to: href as any });
+          navigate({ to: href as string });
         }}
       />
 
@@ -219,6 +220,16 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 variant='ghost'>
                 <Bell size={18} className="sm:w-5 sm:h-5" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              </Button>
+
+              {/* AI Inbox Toggle */}
+              <Button
+                onClick={toggleAiInbox}
+                className="relative p-2 h-auto min-h-[44px] min-w-[44px] text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 font-bold"
+                title="AI Inbox"
+                variant='ghost'>
+                <Bot size={18} className="sm:w-5 sm:h-5" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
               </Button>
 
               {/* AI Status Indicator - Hidden on mobile */}
@@ -312,8 +323,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           location.pathname === '/settings'
             ? 'h-[calc(100vh-64px)] overflow-hidden'
             : location.pathname === '/reports'
-            ? 'relative h-[calc(100vh-64px)]'
-            : 'p-3 sm:p-4 md:p-8 min-h-[calc(100vh-64px)]',
+              ? 'relative h-[calc(100vh-64px)]'
+              : 'p-3 sm:p-4 md:p-8 min-h-[calc(100vh-64px)]',
           isMobile && "pb-24"
         )}>
           {(user?.isImpersonatingTenant || user?.isImpersonating) && (
@@ -362,6 +373,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       {isMobile && <BottomNav />}
 
       <ComposerOverlay />
+      <AIInboxDrawer />
     </div>
   );
 };

@@ -28,7 +28,7 @@ import { useGlobalError } from '../hooks/useGlobalError';
 import { PARTY_DETAILS_TAB_LEGACY } from '../constants/storage-keys';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { Button } from '@x-ear/ui-web';
-import { useDeleteParty, useUpdateParty } from '@/api/generated/parties/parties';
+import { useDeleteParty, useUpdateParty } from '@/api/client/parties.client';
 import { partyApiService } from '../services/party/party-api.service';
 // import type { Party } from '../types/party'; // Type inferred from useParty hook
 
@@ -343,7 +343,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
         <PartyFormModal
           isOpen={editModal.isOpen}
           onClose={editModal.closeModal}
-          onSubmit={editModal.handleSubmit as any}
+          onSubmit={editModal.handleSubmit as (updates: Record<string, unknown>) => Promise<unknown>}
           initialData={party}
           title="Hasta Düzenle"
           isLoading={editModal.isLoading}

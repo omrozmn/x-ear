@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Button, Input, Select, Textarea } from '@x-ear/ui-web';
 import { Invoice, CreateInvoiceData, InvoiceStatus, InvoiceTypeLegacy, PaymentMethod, InvoiceAddress, InvoiceItem } from '../../types/invoice';
 import { InvoiceScenarioSection } from './InvoiceScenarioSection';
@@ -32,7 +32,7 @@ import {
 } from '../../types/invoice';
 import { getAutoCurrency } from '../../utils/currencyManager';
 import { ProductLinesSection } from './ProductLinesSection';
-import { useGetTenantCompany } from '@/api/generated/tenant-users/tenant-users';
+import { useGetTenantCompany } from '@/api/client/tenant-users.client';
 
 // Local form state interface to replace 'any'
 interface InvoiceFormState {
@@ -159,6 +159,32 @@ export function InvoiceFormExtended({
     totalAmount: invoice?.totalAmount ?? invoice?.grandTotal ?? 0,
     items: (invoice?.items || (initialData as InvoiceFormState | undefined)?.items || []) as InvoiceItem[]
   });
+
+  // Sync initialData → extendedData when draft loads asynchronously.
+  // useState initializer only runs at mount; if initialData arrives later (API call),
+  // we need to push the new values into extendedData once.
+  const initialDataSynced = useRef(false);
+  useEffect(() => {
+    if (initialDataSynced.current || !initialData) return;
+    const hasItems = Array.isArray(initialData.items) && (initialData.items as unknown[]).length > 0;
+    const hasInvoiceType = !!initialData.invoiceType && initialData.invoiceType !== '';
+    if (!hasItems && !hasInvoiceType) return;
+
+    initialDataSynced.current = true;
+    setExtendedData(prev => ({
+      ...prev,
+      ...initialData,
+      invoiceType: initialData.invoiceType || prev.invoiceType,
+      scenario: initialData.scenario || prev.scenario,
+      scenarioData: (initialData.scenarioData as InvoiceScenarioData | undefined) || prev.scenarioData,
+      currency: initialData.currency || prev.currency,
+      totalDiscount: initialData.totalDiscount ?? prev.totalDiscount,
+      items: (hasItems ? initialData.items : prev.items) as InvoiceItem[],
+      sgkData: (initialData.sgkData as SGKInvoiceData | undefined) || prev.sgkData,
+      customerName: (initialData.customerName as string) || prev.customerName,
+      customerId: (initialData.customerId as string) || prev.customerId,
+    }));
+  }, [initialData]);
 
   // Modal states
   const [withholdingModalOpen, setWithholdingModalOpen] = useState(false);

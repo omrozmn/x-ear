@@ -8,6 +8,9 @@ import { TextReveal } from "@/components/ui/TextReveal";
 import { motion } from "framer-motion";
 import { ChevronDown, HelpCircle } from "lucide-react";
 import { useState } from "react";
+import { useLocale } from "@/lib/i18n";
+import { AISummary } from "@/components/ui/AISummary";
+import { EntityDefinition } from "@/components/ui/EntityDefinition";
 
 const faqs = [
     {
@@ -29,8 +32,33 @@ const faqs = [
 ];
 
 export default function FAQPage() {
+    const { t } = useLocale();
+
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": faqs.map(faq => ({
+            "@type": "Question",
+            "name": faq.question,
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": faq.answer
+            }
+        }))
+    };
+
+    const xearEntityItems = [
+        { label: t("entity.xear.type_label"), value: t("entity.xear.type_val") },
+        { label: t("entity.xear.purpose_label"), value: t("entity.xear.purpose_val") },
+        { label: t("entity.xear.feature_label"), value: t("entity.xear.feature_val") },
+    ];
+
     return (
         <div className="min-h-screen bg-background text-foreground selection:bg-accent-blue/30 relative flex flex-col">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
             <Header />
             <div className="fixed inset-0 z-0">
                 <Scene />
@@ -40,15 +68,25 @@ export default function FAQPage() {
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
                         <h1 className="text-5xl md:text-7xl font-display font-bold tracking-tight text-glow mb-6">
-                            <TextReveal>Sıkça</TextReveal>
+                            <TextReveal>{t("aeo.faq_title").split(" ")[0]}</TextReveal>
                             <br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-blue to-accent-purple font-display font-bold">
-                                <TextReveal delay={0.4}>Sorulan Sorular</TextReveal>
+                                <TextReveal delay={0.4}>{t("aeo.faq_title").split(" ").slice(1).join(" ")}</TextReveal>
                             </span>
                         </h1>
-                        <p className="text-lg md:text-xl text-foreground/60 max-w-2xl mx-auto leading-relaxed">
-                            Aklınıza takılan soruların cevaplarını burada bulabilirsiniz.
+                        <p className="text-lg md:text-xl text-foreground/60 max-w-2xl mx-auto leading-relaxed mb-12">
+                            {t("hero.desc")}
                         </p>
+
+                        <AISummary
+                            content="X-Ear, işitme merkezleri için randevu, hasta, SGK ve stok yönetimini tek bir platformda toplayan yapay zeka destekli bir CRM ekosistemidir."
+                        />
+
+                        <EntityDefinition
+                            title={t("entity.xear.title")}
+                            description={t("entity.xear.desc")}
+                            items={xearEntityItems}
+                        />
                     </div>
 
                     <div className="space-y-4">

@@ -582,6 +582,7 @@ export default function CompanySettings() {
                   Firma Tipi
                 </label>
                 <select
+                  data-allow-raw="true"
                   value={formData.companyType || ''}
                   onChange={(e) => handleInputChange('companyType', e.target.value)}
                   disabled={!isTenantAdmin}

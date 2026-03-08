@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Party } from '../../types/party/party-base.types';
-import { User, Phone, Mail, MapPin, Tag, AlertCircle, CheckCircle } from 'lucide-react';
+import { User, Phone, Mail, MapPin, Tag, AlertCircle } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Modal, Input, Textarea } from '@x-ear/ui-web';
 
@@ -36,55 +36,6 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
 
   const formatDate = (date: string | Date) => {
     return new Date(date).toLocaleDateString('tr-TR');
-  };
-
-  const getStatusBadge = (status?: string) => {
-    switch (status) {
-      case 'active':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'inactive':
-        return <AlertCircle className="w-4 h-4 text-red-500" />;
-      default:
-        return <AlertCircle className="w-4 h-4 text-gray-500" />;
-    }
-  };
-
-  const getStatusText = (status?: string) => {
-    const statusMap: Record<string, string> = {
-      ACTIVE: 'Aktif',
-      active: 'Aktif',
-      INACTIVE: 'Pasif',
-      inactive: 'Pasif',
-      TRIAL: 'Deneme',
-      trial: 'Deneme',
-      archived: 'Arşivlenmiş'
-    };
-    return statusMap[status || ''] || 'Bilinmiyor';
-  };
-
-  const getSegmentText = (segment?: string) => {
-    const segmentMap: Record<string, string> = {
-      NEW: 'Yeni',
-      TRIAL: 'Deneme',
-      PURCHASED: 'Satın Almış',
-      CONTROL: 'Kontrol',
-      RENEWAL: 'Yenileme',
-      EXISTING: 'Mevcut',
-      VIP: 'VIP'
-    };
-    return segmentMap[segment || ''] || 'Belirtilmemiş';
-  };
-
-  const getAcquisitionTypeText = (type?: string) => {
-    const typeMap: Record<string, string> = {
-      referral: 'Referans',
-      online: 'Online',
-      'walk-in': 'Ziyaret',
-      'social-media': 'Sosyal Medya',
-      advertisement: 'Reklam',
-      tabela: 'Tabela'
-    };
-    return typeMap[type || ''] || 'Belirtilmemiş';
   };
 
 

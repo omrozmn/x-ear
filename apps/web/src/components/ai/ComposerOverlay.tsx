@@ -19,8 +19,7 @@ export function ComposerOverlay() {
     const {
         isOpen, setOpen,
         mode, query, context, selectedAction, currentSlot, slots, executionResult,
-        setQuery, selectAction, updateSlot, nextSlot, reset, setExecutionResult,
-        startWithCommand
+        setQuery, selectAction, updateSlot, nextSlot, reset, setExecutionResult
     } = useComposerStore();
 
     const {
@@ -39,7 +38,6 @@ export function ComposerOverlay() {
     const [previewEntity, setPreviewEntity] = useState<EntityItem | null>(null);
 
     // Autocomplete query hook
-    const contextLabel = context && context.length > 0 ? context[0].label : '';
     const contextType = context && context.length > 0 ? context[0].type : '';
     const contextId = context && context.length > 0 ? context[0].id : '';
     const { data: autocompleteData, isLoading } = useAutocompleteApiAiComposerAutocompleteGet(

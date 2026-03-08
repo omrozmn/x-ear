@@ -67,7 +67,7 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
     return (backendTimeline || []).map(event => ({
       ...event,
       id: event.id,
-      type: event.eventType as any,
+      type: event.eventType,
       title: event.title,
       description: event.description || '',
       date: event.timestamp || event.createdAt,

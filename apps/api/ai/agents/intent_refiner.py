@@ -69,10 +69,10 @@ class IntentRefinerResult:
         if self.intent is not None:
             intent_data = self.intent.model_dump()
             
+        pii_detected = False
+        phi_detected = False
         if self.redaction_result is not None:
             pii_detected = bool(self.redaction_result.has_pii)
-            
-        if self.redaction_result is not None:
             phi_detected = bool(self.redaction_result.has_phi)
 
         res: dict = {
@@ -229,7 +229,7 @@ class IntentRefiner:
         # Step 0: Early detection for cancellation (Requirement 4.1)
         if any(keyword in normalized_message for keyword in self.CANCELLATION_KEYWORDS):
             logger.info(
-                f"Cancellation keyword detected",
+                "Cancellation keyword detected",
                 extra={
                     "tenant_id": tenant_id,
                     "user_id": user_id,
@@ -251,7 +251,7 @@ class IntentRefiner:
         # Step 0b: Early detection for capability inquiry (Requirement 5.2)
         if any(keyword in normalized_message for keyword in self.CAPABILITY_KEYWORDS):
             logger.info(
-                f"Capability inquiry detected",
+                "Capability inquiry detected",
                 extra={
                     "tenant_id": tenant_id,
                     "user_id": user_id,
@@ -277,7 +277,7 @@ class IntentRefiner:
             extracted_value = self._extract_slot_value(user_message, slot_name)
             
             logger.info(
-                f"Slot-filling response detected",
+                "Slot-filling response detected",
                 extra={
                     "tenant_id": tenant_id,
                     "user_id": user_id,
@@ -304,7 +304,7 @@ class IntentRefiner:
         
         if redaction_result.has_pii or redaction_result.has_phi:
             logger.info(
-                f"PII/PHI redacted from user message",
+                "PII/PHI redacted from user message",
                 extra={
                     "tenant_id": tenant_id,
                     "user_id": user_id,
@@ -318,7 +318,7 @@ class IntentRefiner:
         
         if not sanitization_result.is_safe:
             logger.warning(
-                f"Prompt blocked by sanitizer",
+                "Prompt blocked by sanitizer",
                 extra={
                     "tenant_id": tenant_id,
                     "user_id": user_id,
@@ -373,7 +373,7 @@ class IntentRefiner:
             except (json.JSONDecodeError, ValueError) as e:
                 # JSON validation failed - discard and use fallback
                 logger.warning(
-                    f"Invalid JSON from model, using fallback classification",
+                    "Invalid JSON from model, using fallback classification",
                     extra={
                         "tenant_id": tenant_id,
                         "user_id": user_id,
@@ -573,7 +573,8 @@ class IntentRefiner:
         
         def _has_stem(stems: List[str]) -> bool:
             for stem in stems:
-                if stem in message_clean: return True
+                if stem in message_clean:
+                    return True
             return False
 
         # 0a. CAPABILITY INQUIRY (Requirement 5.2)
@@ -721,7 +722,8 @@ class IntentRefiner:
         def _is_cancellation():
             for kw in (self.CANCELLATION_KEYWORDS or []):
                 if len(kw) <= 3:
-                     if re.search(rf"\b{kw}\b", message_lower): return True
+                     if re.search(rf"\b{kw}\b", message_lower):
+                         return True
                 elif kw in message_lower:
                     return True
             return False
@@ -734,7 +736,8 @@ class IntentRefiner:
         # 6. ENTITY EXTRACTION FALBACK (Phone/Name)
         phone_pattern = r'0?5\d{9}|0?\d{3}\s?\d{3}\s?\d{2}\s?\d{2}'
         phone_match = re.search(phone_pattern, user_message)
-        if phone_match: entities["phone"] = phone_match.group().replace(" ", "")
+        if phone_match:
+            entities["phone"] = phone_match.group().replace(" ", "")
         
         # Generic Fallback
         conversational_response = "Size nasıl yardımcı olabilirim?" if language == "tr" else "How can I help you?"

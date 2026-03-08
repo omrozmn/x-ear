@@ -12,6 +12,6 @@ export {
   useCreatePartyTimeline,
   useCreatePartyActivities,
   useDeletePartyTimeline,
-} from '@/api/generated/timeline/timeline';
+} from '../generated/timeline/timeline';
 
-export type { TimelineEventCreate, TimelineEventRead } from '@/api/generated/schemas';
+export type { TimelineEventCreate, TimelineEventRead } from '../generated/schemas';

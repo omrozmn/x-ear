@@ -369,7 +369,7 @@ class GracefulDegradationService:
             else:
                 message = "AI service is temporarily unavailable. Please try again later."
         elif state.status == AIAvailabilityStatus.DEGRADED:
-            message = f"AI service is operating in degraded mode. Some features may be unavailable."
+            message = "AI service is operating in degraded mode. Some features may be unavailable."
         else:
             message = f"AI operation '{operation}' could not be completed."
         

@@ -53,7 +53,6 @@ const menuItems: MenuItem[] = [
     label: 'Hastalar',
     icon: <Users className="w-5 h-5" />,
     href: '/parties',
-    badge: '12',
   },
   {
     id: 'appointments',
@@ -107,14 +106,12 @@ const menuItems: MenuItem[] = [
         label: 'Giden Faturalar',
         icon: <FileText className="w-4 h-4" />,
         href: '/invoices',
-        badge: '3',
       },
       {
         id: 'incoming-invoices',
         label: 'Gelen Faturalar',
         icon: <FileText className="w-4 h-4" />,
         href: '/invoices/incoming',
-        badge: '5',
       },
       {
         id: 'invoice-summary',
@@ -244,7 +241,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const isActive = (href?: string) => {
     if (!href) return false;
     if (href === '/') return currentPath === '/';
-    return currentPath === href || currentPath.startsWith(href + '/');
+    return currentPath === href;
   };
 
   const handleNavigation = (href?: string) => {

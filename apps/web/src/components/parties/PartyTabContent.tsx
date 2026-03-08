@@ -10,7 +10,7 @@ import PartySalesTab from './PartySalesTab';
 import { PartyTimelineTab } from './PartyTimelineTab';
 import { PartyDocumentsTab } from './PartyDocumentsTab';
 import { PartyAppointmentsTab } from './PartyAppointmentsTab';
-import { PartyHearingTestsTab } from './PartyHearingTestsTab';
+
 import { PartyNotesTab } from './PartyNotesTab';
 import { PartySGKTab } from './PartySGKTab';
 import { Clock } from 'lucide-react';

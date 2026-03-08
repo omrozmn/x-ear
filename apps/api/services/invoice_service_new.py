@@ -205,7 +205,7 @@ class InvoiceServiceNew:
                 party_id="",
                 party_first_name=invoice.sender_name or "Bilinmeyen Alıcı",
                 party_last_name="",
-                invoice_number=invoice.invoice_number or raw.get('DocumentNo') or f"INV-{invoice.id}",
+                invoice_number="Taslak" if status_val == "DRAFT" else (invoice.invoice_number or raw.get('DocumentNo') or f"INV-{invoice.id}"),
                 invoice_date=invoice.invoice_date or invoice.created_at,
                 due_date=None,
                 total_amount=invoice_total,
@@ -363,23 +363,26 @@ class InvoiceServiceNew:
             PurchaseInvoice.tenant_id == tenant_id
         ).scalar() or Decimal("0")
         
-        # Get outgoing totals
-        outgoing_total = self.db.query(func.sum(Invoice.total_amount)).filter(
-            Invoice.tenant_id == tenant_id
+        # Get outgoing totals — Invoice model uses device_price, not total_amount
+        outgoing_total = self.db.query(func.sum(Invoice.device_price)).filter(
+            Invoice.tenant_id == tenant_id,
+            Invoice.status != 'deleted'
         ).scalar() or Decimal("0")
         
         # Get pending counts
+        # PurchaseInvoice default status is 'RECEIVED' (unprocessed)
         pending_incoming = self.db.query(PurchaseInvoice).filter(
             and_(
                 PurchaseInvoice.tenant_id == tenant_id,
-                PurchaseInvoice.status == "pending"
+                PurchaseInvoice.status == "RECEIVED"
             )
         ).count()
         
+        # Invoice statuses: active, cancelled, refunded, deleted — 'active' means pending/unsettled
         pending_outgoing = self.db.query(Invoice).filter(
             and_(
                 Invoice.tenant_id == tenant_id,
-                Invoice.status.in_(["draft", "sent"])
+                Invoice.status == "active"
             )
         ).count()
         
@@ -393,9 +396,10 @@ class InvoiceServiceNew:
             )
         ).scalar() or Decimal("0")
         
-        monthly_outgoing = self.db.query(func.sum(Invoice.total_amount)).filter(
+        monthly_outgoing = self.db.query(func.sum(Invoice.device_price)).filter(
             and_(
                 Invoice.tenant_id == tenant_id,
+                Invoice.status != 'deleted',
                 Invoice.created_at >= current_month
             )
         ).scalar() or Decimal("0")

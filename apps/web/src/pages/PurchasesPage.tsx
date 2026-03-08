@@ -3,7 +3,7 @@ import { Card, Button } from '@x-ear/ui-web';
 import { ShoppingCart, Download, Filter, Search, FileText, ArrowRight, ChevronLeft, ChevronRight, X, ChevronUp, ChevronDown as ChevronDownIcon } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { useNavigate } from '@tanstack/react-router';
-import { useListIncomingInvoices } from '@/api/generated/invoices/invoices';
+import { useListIncomingInvoices } from '@/api/client/invoices.client';
 import type { IncomingInvoiceResponse } from '@/api/generated/schemas';
 import { ONBOARDING_PURCHASES_DISMISSED } from '@/constants/storage-keys';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -38,13 +38,13 @@ export function PurchasesPage() {
   const { data, isLoading, refetch } = useListIncomingInvoices({
     page: currentPage,
     per_page: perPage,
-    status: statusFilter !== 'all' ? statusFilter as any : undefined,
+    status: statusFilter !== 'all' ? statusFilter as 'RECEIVED' | 'PROCESSED' | 'PAID' : undefined,
     supplier_name: debouncedSearch || undefined,
     date_from: dateFrom || undefined,
     date_to: dateTo || undefined,
   });
 
-  const invoiceList = data?.data?.invoices ?? [];
+  const invoiceList = useMemo(() => data?.data?.invoices ?? [], [data?.data?.invoices]);
   const pagination = data?.data?.pagination;
   const totalCount = pagination?.total ?? invoiceList.length;
   const totalPages = pagination?.totalPages ?? 1;
@@ -58,7 +58,7 @@ export function PurchasesPage() {
     const list = [...invoiceList];
     if (!sortField) return list;
     list.sort((a: IncomingInvoiceResponse, b: IncomingInvoiceResponse) => {
-      let av: any, bv: any;
+      let av: string | number, bv: string | number;
       if (sortField === 'supplierName') { av = a.supplierName || ''; bv = b.supplierName || ''; }
       else if (sortField === 'invoiceNumber') { av = a.invoiceNumber || ''; bv = b.invoiceNumber || ''; }
       else if (sortField === 'invoiceDate') { av = a.invoiceDate || ''; bv = b.invoiceDate || ''; }
@@ -205,6 +205,7 @@ export function PurchasesPage() {
               </p>
             </div>
             <button
+              data-allow-raw="true"
               onClick={() => {
                 setShowBanner(false);
                 localStorage.setItem(ONBOARDING_PURCHASES_DISMISSED, '1');
@@ -223,6 +224,7 @@ export function PurchasesPage() {
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
             <input
+              data-allow-raw="true"
               type="text"
               placeholder="Tedarikçi ara..."
               value={searchTerm}
@@ -232,18 +234,21 @@ export function PurchasesPage() {
           </div>
           <div className="flex gap-2">
             <input
+              data-allow-raw="true"
               type="date"
               value={dateFrom}
               onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1); }}
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
             />
             <input
+              data-allow-raw="true"
               type="date"
               value={dateTo}
               onChange={(e) => { setDateTo(e.target.value); setCurrentPage(1); }}
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
             />
             <select
+              data-allow-raw="true"
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
@@ -268,7 +273,7 @@ export function PurchasesPage() {
             <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
               <tr>
                 <th className="px-3 py-3 w-10">
-                  <input type="checkbox" checked={sortedInvoices.length > 0 && selectedIds.size === sortedInvoices.length} onChange={toggleSelectAll} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                  <input data-allow-raw="true" type="checkbox" checked={sortedInvoices.length > 0 && selectedIds.size === sortedInvoices.length} onChange={toggleSelectAll} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('invoiceNumber')}>Fatura No<SortIcon field="invoiceNumber" /></th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('supplierName')}>Tedarikçi<SortIcon field="supplierName" /></th>
@@ -282,7 +287,7 @@ export function PurchasesPage() {
               {sortedInvoices.map((invoice: IncomingInvoiceResponse) => (
                 <tr key={invoice.invoiceId} className={`hover:bg-gray-50 dark:hover:bg-gray-800 ${selectedIds.has(String(invoice.invoiceId)) ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`}>
                   <td className="px-3 py-4">
-                    <input type="checkbox" checked={selectedIds.has(String(invoice.invoiceId))} onChange={() => toggleSelect(String(invoice.invoiceId))} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                    <input data-allow-raw="true" type="checkbox" checked={selectedIds.has(String(invoice.invoiceId))} onChange={() => toggleSelect(String(invoice.invoiceId))} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                     {invoice.invoiceNumber}
@@ -374,11 +379,11 @@ export function PurchasesPage() {
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl px-6 py-3 flex items-center gap-4">
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{selectedIds.size} kayıt seçildi</span>
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
-          <button onClick={handleBulkExportCsv} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors">
+          <button data-allow-raw="true" onClick={handleBulkExportCsv} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors">
             <Download className="w-4 h-4" /> CSV Dışa Aktar
           </button>
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
-          <button onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+          <button data-allow-raw="true" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
             <X className="w-4 h-4" /> Seçimi Kaldır
           </button>
         </div>
@@ -399,7 +404,7 @@ export function PurchasesPage() {
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Alış Detayı</h2>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{selectedInvoice.invoiceNumber}</p>
               </div>
-              <button onClick={() => setSelectedInvoice(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+              <button data-allow-raw="true" onClick={() => setSelectedInvoice(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                 <X size={24} />
               </button>
             </div>

@@ -11,16 +11,16 @@
 export {
   useCreateAdminDebugSwitchTenant,
   useCreateAdminDebugExitImpersonation,
-} from '@/api/generated/admin/admin';
+} from '../generated/admin/admin';
 
 // Stub exports for backward compatibility - these endpoints don't exist in backend
-export const useListAdminDebugAvailableRoles = (_options?: any) => ({ data: null, isLoading: false });
-export const useCreateAdminDebugSwitchRole = (_options?: any) => ({ 
-  mutate: (_params?: any) => {
+export const useListAdminDebugAvailableRoles = () => ({ data: null, isLoading: false });
+export const useCreateAdminDebugSwitchRole = () => ({
+  mutate: () => {
     console.warn('useCreateAdminDebugSwitchRole: Role switching not available, only tenant switching');
-  }, 
-  isPending: false 
+  },
+  isPending: false
 });
 export const getListAdminDebugAvailableRolesQueryKey = () => ['admin-debug-available-roles'];
 
-export type { } from '@/api/generated/schemas';
+export type { } from '../generated/schemas';

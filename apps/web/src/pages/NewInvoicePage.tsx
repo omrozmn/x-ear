@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useSearch } from '@tanstack/react-router';
 import { Button, Input, DatePicker, Textarea } from '@x-ear/ui-web';
 import { ArrowLeft, CheckCircle, ChevronDown, Pill } from 'lucide-react';
 import { InvoiceFormExtended } from '../components/invoices/InvoiceFormExtended';
@@ -14,6 +14,8 @@ import { useIsMobile } from '../hooks/useBreakpoint';
 import { ProductLinesSection } from '../components/invoices/ProductLinesSection';
 import { MobileLayout } from '../components/mobile/MobileLayout';
 import { MobileHeader } from '../components/mobile/MobileHeader';
+import { apiClient } from '@/api/orval-mutator';
+import toast from 'react-hot-toast';
 
 interface InvoiceFormData {
   invoiceType: string;
@@ -70,7 +72,9 @@ interface ActiveLineEditor {
 
 export function NewInvoicePage() {
   const navigate = useNavigate();
+  const { draftId: searchDraftId } = useSearch({ from: '/invoices/new' });
   const [isSaving, setIsSaving] = useState(false);
+  const [currentDraftId, setCurrentDraftId] = useState<number | undefined>(searchDraftId);
   const [formData, setFormData] = useState<InvoiceFormData>({
     invoiceType: '',
     scenario: 'other',
@@ -78,8 +82,27 @@ export function NewInvoicePage() {
   });
   const isMobile = useIsMobile();
 
-  // Pre-fill form data from a copied invoice stored in sessionStorage
+  // Load draft from API when draftId is provided in URL
   useEffect(() => {
+    if (!searchDraftId) return;
+    
+    const loadDraft = async () => {
+      setCurrentDraftId(searchDraftId);
+      try {
+        const res: { data?: { data?: { formData?: Record<string, unknown>; form_data?: Record<string, unknown> } } } = await apiClient.get(`/api/invoices/draft/${searchDraftId}`);
+        const fd = res.data?.data?.formData ?? res.data?.data?.form_data;
+        if (fd) setFormData(prev => ({ ...prev, ...fd }));
+      } catch {
+        toast.error('Taslak yüklenemedi');
+      }
+    };
+    
+    loadDraft();
+  }, [searchDraftId]);
+
+  // Fallback: Pre-fill form data from a copied invoice stored in sessionStorage
+  useEffect(() => {
+    if (searchDraftId) return; // API-based draft takes precedence
     try {
       const raw = sessionStorage.getItem('invoice_copy_draft');
       if (raw) {
@@ -90,18 +113,37 @@ export function NewInvoicePage() {
     } catch {
       // Ignore JSON parse errors
     }
-  }, []);
+  }, [searchDraftId]);
 
   const handleSubmit = async (invoiceData: InvoiceFormData) => {
     setIsSaving(true);
     try {
-      // TODO: Save invoice via API
-      console.log('Saving invoice:', invoiceData);
+      // Step 1: Save or update draft
+      const draftPayload = { form_data: { ...formData, ...invoiceData } };
+      let draftId = currentDraftId;
+      if (draftId) {
+        await apiClient.put(`/api/invoices/draft/${draftId}`, draftPayload);
+      } else {
+        const res: { data?: { data?: { invoiceId?: number; invoice_id?: number } } } = await apiClient.post('/api/invoices/draft', draftPayload);
+        draftId = res.data?.data?.invoiceId ?? res.data?.data?.invoice_id;
+        if (draftId) setCurrentDraftId(Number(draftId));
+      }
 
-      // Navigate back to invoices list
+      if (!draftId) {
+        toast.error('Taslak kaydedilemedi');
+        return;
+      }
+
+      // Step 2: Issue the draft (send to GİB)
+      const issueRes: { data?: { data?: { message?: string } } } = await apiClient.post(`/api/invoices/draft/${draftId}/issue`);
+      const msg = issueRes.data?.data?.message || 'Fatura gönderildi';
+      toast.success(msg);
       navigate({ to: '/invoices' });
-    } catch (error) {
-      console.error('Error saving invoice:', error);
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { detail?: string } }; message?: string };
+      const detail = err.response?.data?.detail || err.message || 'Fatura gönderilemedi';
+      toast.error(detail);
+      console.error('Error issuing invoice:', error);
     } finally {
       setIsSaving(false);
     }
@@ -110,11 +152,18 @@ export function NewInvoicePage() {
   const handleSaveDraft = async () => {
     setIsSaving(true);
     try {
-      // Minimal draft save behavior for now
-      console.log('Saving draft invoice:', formData);
-      // TODO: call draft API endpoint when available
+      const payload = { form_data: formData };
+      if (currentDraftId) {
+        await apiClient.put(`/api/invoices/draft/${currentDraftId}`, payload);
+      } else {
+        const res: { data?: { data?: { invoice_id?: number; invoiceId?: number } } } = await apiClient.post('/api/invoices/draft', payload);
+        const newId = res.data?.data?.invoice_id ?? res.data?.data?.invoiceId;
+        if (newId) setCurrentDraftId(Number(newId));
+      }
+      toast.success('Taslak kaydedildi');
       navigate({ to: '/invoices' });
     } catch (error) {
+      toast.error('Taslak kaydedilemedi');
       console.error('Error saving draft:', error);
     } finally {
       setIsSaving(false);
@@ -574,6 +623,7 @@ function NewInvoicePageContent({
           {/* 1. Collapsible: Customer Selection */}
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
             <button
+              data-allow-raw="true"
               type="button"
               onClick={() => setOpenCustomer(v => !v)}
               className="w-full flex items-center justify-between p-4 text-left"
@@ -607,6 +657,7 @@ function NewInvoicePageContent({
           {/* 2. Collapsible: Fatura Detayları */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
             <button
+              data-allow-raw="true"
               type="button"
               onClick={() => setOpenDetails(v => !v)}
               className="w-full flex items-center justify-between p-4 text-left"
@@ -644,6 +695,7 @@ function NewInvoicePageContent({
             {showSGKSection && (
               <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-blue-100 dark:border-blue-900/30 overflow-hidden">
                 <button
+                  data-allow-raw="true"
                   type="button"
                   onClick={() => setOpenSGK(v => !v)}
                   className="w-full flex items-center justify-between p-4 text-left bg-blue-50 dark:bg-blue-900/20"
@@ -665,6 +717,7 @@ function NewInvoicePageContent({
             {showGovernmentSection && (
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
                 <button
+                  data-allow-raw="true"
                   type="button"
                   onClick={() => setOpenGov(v => !v)}
                   className="w-full flex items-center justify-between p-4 text-left"
@@ -696,6 +749,7 @@ function NewInvoicePageContent({
           {/* 4. Collapsible: Ürün ve Hizmetler */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
             <button
+              data-allow-raw="true"
               type="button"
               onClick={() => setOpenItems(v => !v)}
               className="w-full flex items-center justify-between p-4 text-left"
