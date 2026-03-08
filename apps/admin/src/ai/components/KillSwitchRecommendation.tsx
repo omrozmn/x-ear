@@ -181,28 +181,12 @@ export function KillSwitchRecommendation({
   const [isExpanded, setIsExpanded] = useState(false);
   const [isActivating, setIsActivating] = useState(false);
   
-  // Hooks
+  // Hooks - MUST be called before any early returns
   const { alerts, acknowledge, isAcknowledging } = useAIAlerts();
   const { activateGlobal, status, isLoading: isKillSwitchLoading } = useKillSwitch();
   
   // Filter to high-severity unacknowledged alerts
   const criticalAlerts = getHighSeverityAlerts(alerts);
-  
-  // Don't render if:
-  // - No critical alerts
-  // - Banner is dismissed
-  // - Global kill switch is already active
-  if (
-    criticalAlerts.length === 0 ||
-    isDismissed ||
-    status?.global_switch.active
-  ) {
-    return null;
-  }
-  
-  // Count by severity
-  const criticalCount = criticalAlerts.filter((a) => a.severity === 'critical').length;
-  const errorCount = criticalAlerts.filter((a) => a.severity === 'error').length;
   
   /**
    * Handles kill switch activation with auto-acknowledgment
@@ -255,6 +239,22 @@ export function KillSwitchRecommendation({
   const handleToggleExpand = useCallback(() => {
     setIsExpanded((prev) => !prev);
   }, []);
+  
+  // Don't render if:
+  // - No critical alerts
+  // - Banner is dismissed
+  // - Global kill switch is already active
+  if (
+    criticalAlerts.length === 0 ||
+    isDismissed ||
+    status?.global_switch.active
+  ) {
+    return null;
+  }
+  
+  // Count by severity
+  const criticalCount = criticalAlerts.filter((a) => a.severity === 'critical').length;
+  const errorCount = criticalAlerts.filter((a) => a.severity === 'error').length;
   
   const isLoading = isActivating || isKillSwitchLoading || isAcknowledging;
   

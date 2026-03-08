@@ -151,7 +151,8 @@ async function fetchMetrics(windowMinutes: number): Promise<AIMetricsResponse> {
     params: { window_minutes: windowMinutes },
   });
 
-  const actualData = (response as any).data || response;
+  type ResponseWrapper = { data?: typeof response } & typeof response;
+  const actualData = (response as ResponseWrapper).data || response;
 
   // Transform backend response to frontend types
   return {
@@ -239,11 +240,12 @@ async function fetchAlerts(options: {
     params,
   });
 
-  const actualData = (response as any).data || response;
+  type AlertResponseWrapper = { data?: typeof response } & typeof response;
+  const actualData = (response as AlertResponseWrapper).data || response;
   const rawAlerts = actualData.alerts || (Array.isArray(actualData) ? actualData : []);
 
   // Transform backend response to frontend types
-  const alerts: AIAlert[] = rawAlerts.map((alert: any) => ({
+  const alerts: AIAlert[] = rawAlerts.map((alert: typeof response.alerts[0]) => ({
     alert_id: alert.alert_id,
     type: alert.alert_type as AIAlert['type'],
     severity: alert.severity as AIAlert['severity'],
@@ -262,7 +264,7 @@ async function fetchAlerts(options: {
 
   return {
     alerts,
-    active_count: actualData.active_count ?? alerts.filter((a: any) => !a.acknowledged).length,
+    active_count: actualData.active_count ?? alerts.filter((a) => !a.acknowledged).length,
     total_count: actualData.total_count ?? alerts.length,
   };
 }

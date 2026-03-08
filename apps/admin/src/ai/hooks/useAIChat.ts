@@ -20,7 +20,7 @@
 import { useCallback, useMemo } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { chatApiAiChatPost } from '@/api/generated';
-import type { ChatRequest as ApiChatRequest, ChatResponse as ApiChatResponse } from '@/api/generated/schemas';
+import type { ChatRequest as ApiChatRequest } from '@/api/generated/schemas';
 import { useAIContext, withAIContext } from './useAIContext';
 import { useAISessionStore } from '../stores/aiSessionStore';
 import { useAIRuntimeStore } from '../stores/aiRuntimeStore';

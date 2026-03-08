@@ -70,11 +70,12 @@ async function fetchApprovalQueue(tenantId?: string): Promise<ApprovalQueueRespo
     params,
   });
 
-  const actualData = (response as any).data || response;
+  type ResponseWrapper = { data?: typeof response } & typeof response;
+  const actualData = (response as ResponseWrapper).data || response;
   const rawItems = actualData.items || (Array.isArray(actualData) ? actualData : []);
 
   // Transform backend response to frontend types
-  const items: PendingApprovalItem[] = rawItems.map((item: any) => ({
+  const items: PendingApprovalItem[] = rawItems.map((item) => ({
     action_id: item.action_id,
     plan_id: item.id, // Using queue item id as plan_id
     tenant_id: item.tenant_id,

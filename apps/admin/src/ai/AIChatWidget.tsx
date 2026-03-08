@@ -15,7 +15,7 @@
  * Requirements: 2 (AI Chat Widget), 8 (Graceful Degradation), 17 (Phase A Banner)
  */
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { useAIChat } from './hooks/useAIChat';
 import { useComposerStore } from '../stores/composerStore';
 import { useAuth } from '../contexts/AuthContext';

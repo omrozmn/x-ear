@@ -8,7 +8,7 @@
  * @requirements Requirement 7: Admin Audit Log Viewer
  */
 
-import { useQuery, useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '@/api/orval-mutator';
 import type {
   AuditLogEntry,
@@ -112,11 +112,11 @@ async function fetchAuditLogs(
     params,
   });
 
-  const actualData = (response as any).data || response;
+  const actualData = (response as { data?: BackendAuditLogResponse } & BackendAuditLogResponse).data || response;
   const rawEntries = actualData.entries || (Array.isArray(actualData) ? actualData : []);
 
   // Transform backend response to frontend types
-  const entries: AuditLogEntry[] = rawEntries.map((entry: any) => ({
+  const entries: AuditLogEntry[] = rawEntries.map((entry: BackendAuditLogEntry) => ({
     log_id: entry.id,
     timestamp: entry.timestamp,
     event_type: entry.event_type as AuditEventType,

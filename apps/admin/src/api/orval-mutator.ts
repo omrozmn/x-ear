@@ -41,7 +41,7 @@ axiosInstance.interceptors.request.use(
                 config.headers.set('Authorization', `Bearer ${token}`);
             } else {
                 config.headers = config.headers || {};
-                // @ts-ignore
+                // @ts-expect-error - Axios headers type compatibility
                 config.headers['Authorization'] = `Bearer ${token}`;
             }
         } else {
@@ -64,7 +64,7 @@ axiosInstance.interceptors.request.use(
                 if (config.headers.set && typeof config.headers.set === 'function') {
                     config.headers.set('Idempotency-Key', idempotencyKey);
                 } else {
-                    // @ts-ignore
+                    // @ts-expect-error - Axios headers type compatibility
                     config.headers['Idempotency-Key'] = idempotencyKey;
                 }
                 console.log(`[Orval Request] Added Idempotency-Key: ${idempotencyKey}`);
@@ -121,7 +121,7 @@ function calculateBackoffDelay(attempt: number): number {
 /**
  * Check if error is retryable
  */
-function isRetryableError(error: any): boolean {
+function isRetryableError(error: { code?: string; response?: { status?: number } }): boolean {
     // Check error codes
     if (error.code && RETRY_CONFIG.retryableErrors.includes(error.code)) {
         return true;
@@ -147,24 +147,25 @@ function sleep(ms: number): Promise<void> {
  */
 async function retryRequest<T>(
     requestFn: () => Promise<T>,
-    config: any,
+    config: AxiosRequestConfig,
     attempt: number = 1
 ): Promise<T> {
     try {
         return await requestFn();
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const err = error as { code?: string; message?: string; response?: { status?: number } };
         // Don't retry if we've exceeded max attempts
         if (attempt >= RETRY_CONFIG.maxRetries) {
             console.error(`Request failed after ${attempt} attempts:`, {
                 url: config.url,
                 method: config.method,
-                error: error.code || error.message
+                error: err.code || err.message
             });
             throw error;
         }
 
         // Don't retry if error is not retryable
-        if (!isRetryableError(error)) {
+        if (!isRetryableError(err)) {
             throw error;
         }
 
@@ -173,7 +174,7 @@ async function retryRequest<T>(
         console.warn(`Request failed (attempt ${attempt}/${RETRY_CONFIG.maxRetries}), retrying in ${delay}ms:`, {
             url: config.url,
             method: config.method,
-            error: error.code || error.message
+            error: err.code || err.message
         });
 
         await sleep(delay);

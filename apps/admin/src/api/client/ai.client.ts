@@ -25,7 +25,7 @@ export {
 
 export interface ChatRequest {
   prompt: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   sessionId?: string;
 }
 
@@ -35,7 +35,7 @@ export interface ChatResponse {
   intent?: {
     intentType: string;
     confidence: number;
-    entities: Record<string, any>;
+    entities: Record<string, unknown>;
     clarificationNeeded: boolean;
     clarificationQuestion?: string;
   };

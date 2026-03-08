@@ -92,7 +92,7 @@ function mapUserRole(userRole: string | undefined): AIRole {
  * @param user - AdminUser object from auth store
  * @returns Tenant ID or null
  */
-function extractTenantId(user: any): string | null {
+function extractTenantId(user: { tenant_id?: string } | null | undefined): string | null {
   // 1. Check tenant_id from user
   if (user?.tenant_id) {
     return user.tenant_id;
