@@ -36,6 +36,14 @@ export function InvoiceTypeSection({
     { value: '14', label: 'SGK' },
     { value: '15', label: 'Tevkifat İade' },
     { value: '35', label: 'Teknoloji Destek' },
+    { value: 'earsiv', label: 'E-Arşiv Fatura' },
+    { value: 'hks', label: 'Konaklama Vergisi (HKS)' },
+    { value: 'sarj', label: 'Enerji Şarj' },
+    { value: 'sarjanlik', label: 'Şarj Anlık' },
+    { value: 'yolcu', label: 'Yolcu Beraberi' },
+    { value: 'otv', label: 'ÖTV' },
+    { value: 'hastane', label: 'Hastane Faturası' },
+    { value: 'sevk', label: 'E-İrsaliye / Sevk' },
     // custom option
     { value: 'other', label: 'Diğer (Custom)' }
   ];
@@ -80,21 +88,21 @@ export function InvoiceTypeSection({
     const s = String(scenario);
     // İhracat
     if (s === 'export' || s === '5') {
-      return ['13'];
+      return ['13', '27'];
     }
 
     // Kamu
     if (s === 'government' || s === '7') {
-      return ['', '0', '13', '11', '12', '27'];
+      return ['', '0', '13', '11', '12', '27', 'hks', 'otv', 'earsiv'];
     }
 
     // İlaç / Tıbbi Cihaz
     if (s === 'medical' || s === '45') {
-      return ['', '0', '13', '11', '15', '50', '27'];
+      return ['', '0', '13', '11', '15', '50', '27', 'hastane'];
     }
 
     // Diğer (varsayılan) - includes scenario 'other' or code '36'
-    return ['', '0', '50', '13', '11', '12', '27', '14', '15', '35'];
+    return ['', '0', '50', '13', '11', '12', '27', '14', '15', '35', 'earsiv', 'hks', 'sarj', 'sarjanlik', 'yolcu', 'otv', 'sevk'];
   };
   const allowedTypes = allowedTypesForScenario();
 

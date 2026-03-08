@@ -105,7 +105,7 @@ def issue_invoice_draft(
         response = client.send_document({
             "fileName": xml_filename,
             "documentBytes": base64.b64encode(xml_content).decode("utf-8"),
-            "systemTypeCodes": "EFATURA",
+            "systemTypeCodes": invoice_dict.get("systemType") or "EFATURA",
             "isDocumentNoAuto": True,
         })
 

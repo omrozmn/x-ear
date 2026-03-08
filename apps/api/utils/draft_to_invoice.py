@@ -2,9 +2,10 @@ import uuid
 from datetime import datetime
 from datetime import timedelta
 from decimal import Decimal
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
-from core.models.tenant import Tenant
+if TYPE_CHECKING:
+    from core.models.tenant import Tenant
 
 
 def _str(value: Any, default: str = "") -> str:
@@ -72,7 +73,7 @@ def _invoice_number(form_data: dict[str, Any], draft_id: int | None = None) -> s
     return f"XEAR{year}{numeric_suffix}"
 
 
-def supplier_from_tenant(tenant: Tenant) -> dict[str, Any]:
+def supplier_from_tenant(tenant: "Tenant") -> dict[str, Any]:
     settings = tenant.settings or {}
     invoice_settings = settings.get("invoice_integration") or {}
     company_info = tenant.company_info or {}
@@ -137,11 +138,22 @@ def _customer_dict(form_data: dict[str, Any]) -> dict[str, Any]:
 
 
 def _buyer_customer(form_data: dict[str, Any], customer: dict[str, Any], scenario: str) -> dict[str, Any] | None:
-    if scenario not in {"export", "medical"}:
+    profile_details = form_data.get("profileDetails") if isinstance(form_data.get("profileDetails"), dict) else {}
+    invoice_type = _str(form_data.get("invoiceType"))
+
+    if scenario not in {"export", "medical"} and invoice_type not in {"yolcu", "hastane"}:
         return None
 
-    tc_or_tax = _str(form_data.get("customerTcNumber") or customer.get("tax_id"))
-    name = customer.get("name") or _customer_name(form_data)
+    tc_or_tax = _str(
+        profile_details.get("patientTaxId")
+        or form_data.get("customerTcNumber")
+        or customer.get("tax_id")
+    )
+    name = (
+        _str(profile_details.get("patientName") or profile_details.get("passengerName"))
+        or customer.get("name")
+        or _customer_name(form_data)
+    )
     if not name and not tc_or_tax:
         return None
 
@@ -149,7 +161,45 @@ def _buyer_customer(form_data: dict[str, Any], customer: dict[str, Any], scenari
         "name": name,
         "tax_id": tc_or_tax,
         "address": customer.get("address") or {},
+        "passport_no": _str(profile_details.get("passengerPassportNo")),
+        "nationality": _str(profile_details.get("passengerNationality")),
     }
+
+
+def _resolve_profile_and_system_type(
+    invoice_type: str,
+    scenario: str,
+    form_data: dict[str, Any],
+) -> tuple[str, str]:
+    profile_details = form_data.get("profileDetails") if isinstance(form_data.get("profileDetails"), dict) else {}
+
+    explicit_profile = _str(form_data.get("profileId") or profile_details.get("profileId"))
+    explicit_system_type = _str(profile_details.get("systemType"))
+    if explicit_profile and explicit_system_type:
+        return explicit_profile, explicit_system_type
+
+    if invoice_type == "earsiv":
+        return explicit_profile or "EARSIVFATURA", explicit_system_type or "EARSIV"
+    if invoice_type == "sevk":
+        return explicit_profile or "TEMELIRSALIYE", explicit_system_type or "EIRSALIYE"
+    if invoice_type == "hks":
+        return explicit_profile or "HKS", explicit_system_type or "EFATURA"
+    if invoice_type in {"sarj", "sarjanlik"}:
+        return explicit_profile or "ENERJI", explicit_system_type or "EFATURA"
+    if invoice_type == "yolcu":
+        return explicit_profile or "YOLCUBERABERFATURA", explicit_system_type or "EFATURA"
+
+    if scenario == "export":
+        return explicit_profile or "IHRACAT", explicit_system_type or "EFATURA"
+
+    scenario_data = form_data.get("scenarioData") if isinstance(form_data.get("scenarioData"), dict) else {}
+    current_scenario_type = _str(scenario_data.get("currentScenarioType") or form_data.get("currentScenarioType"))
+    basic_profile = current_scenario_type == "2"
+
+    if invoice_type in {"14", "15", "49", "50", "35"}:
+        basic_profile = True
+
+    return explicit_profile or ("TEMELFATURA" if basic_profile else "TICARIFATURA"), explicit_system_type or "EFATURA"
 
 
 def _map_line(
@@ -157,6 +207,7 @@ def _map_line(
     default_tax_rate: float,
     invoice_type: str,
     document_withholding: dict[str, Any] | None = None,
+    default_exemption_code: str = "",
 ) -> dict[str, Any]:
     quantity = _float(line.get("quantity"), 1.0)
     unit_price = _float(line.get("unitPrice") or line.get("price"), 0.0)
@@ -193,6 +244,10 @@ def _map_line(
         "medical_device_data": medical or None,
     }
 
+    if tax_rate == 0 and not mapped["tax_exemption_code"] and default_exemption_code:
+        mapped["tax_exemption_code"] = default_exemption_code
+        mapped["tax_exemption_reason"] = mapped["tax_exemption_reason"] or default_exemption_code
+
     if withholding:
         mapped["withholding_rate"] = _float(
             withholding.get("rate") or withholding.get("withholdingRate")
@@ -214,12 +269,16 @@ def _map_line(
     if invoice_type in {"13", "27"} and not mapped["tax_exemption_code"]:
         mapped["tax_exemption_code"] = "301"
 
+    if invoice_type == "otv":
+        mapped["tax_type_code"] = "9021"
+        mapped["tax_name"] = "OTV"
+
     return mapped
 
 
 def build_invoice_dict_from_form(
     form_data: dict[str, Any],
-    tenant: Tenant,
+    tenant: "Tenant",
     draft_id: int | None = None,
 ) -> dict[str, Any]:
     scenario = _str(form_data.get("scenario"))
@@ -240,23 +299,26 @@ def build_invoice_dict_from_form(
     default_tax_rate = 0.0 if invoice_type in {"13", "15", "49", "50", "27"} else 20.0
     withholding_data = form_data.get("withholdingData") if isinstance(form_data.get("withholdingData"), dict) else {}
     lines = [
-        _map_line(line, default_tax_rate, invoice_type, withholding_data)
+        _map_line(line, default_tax_rate, invoice_type, withholding_data, _str(form_data.get("governmentExemptionReason") or (tenant.company_info or {}).get("defaultExemptionCode")))
         for line in items
         if isinstance(line, dict)
     ]
     if not lines:
-        lines = [_map_line({}, default_tax_rate, invoice_type, withholding_data)]
+        lines = [_map_line({}, default_tax_rate, invoice_type, withholding_data, _str(form_data.get("governmentExemptionReason") or (tenant.company_info or {}).get("defaultExemptionCode")))]
 
     export_details = form_data.get("exportDetails") if isinstance(form_data.get("exportDetails"), dict) else {}
     special_tax_base = form_data.get("specialTaxBase") if isinstance(form_data.get("specialTaxBase"), dict) else {}
     return_details = form_data.get("returnInvoiceDetails") if isinstance(form_data.get("returnInvoiceDetails"), dict) else {}
     sgk_data = form_data.get("sgkData") if isinstance(form_data.get("sgkData"), dict) else {}
     medical_device_data = form_data.get("medicalDeviceData") if isinstance(form_data.get("medicalDeviceData"), dict) else {}
+    profile_details = form_data.get("profileDetails") if isinstance(form_data.get("profileDetails"), dict) else {}
     order_info = form_data.get("orderInfo") if isinstance(form_data.get("orderInfo"), dict) else {}
     delivery_info = form_data.get("deliveryInfo") if isinstance(form_data.get("deliveryInfo"), dict) else {}
     shipment_info = form_data.get("shipmentInfo") if isinstance(form_data.get("shipmentInfo"), dict) else {}
     bank_info = form_data.get("bankInfo") if isinstance(form_data.get("bankInfo"), dict) else {}
     payment_terms = form_data.get("paymentTerms") if isinstance(form_data.get("paymentTerms"), dict) else {}
+
+    profile_id, system_type = _resolve_profile_and_system_type(invoice_type, scenario, form_data)
 
     subtotal = sum(_decimal(line.get("line_extension_amount")) for line in lines)
     tax_amount = sum(_decimal(line.get("tax_amount")) for line in lines)
@@ -279,13 +341,15 @@ def build_invoice_dict_from_form(
         "subtotal": float(subtotal),
         "taxAmount": float(tax_amount),
         "totalAmount": float(total_amount),
-        "profileId": _str(form_data.get("profileId")),
+        "profileId": profile_id,
+        "systemType": system_type,
         "notes": [notes] if notes else [],
         "sgk_data": sgk_data,
         "return_invoice_details": return_details,
         "export_details": export_details,
         "special_tax_base": special_tax_base,
         "medical_device_data": medical_device_data,
+        "profile_details": profile_details,
         "withholding_data": withholding_data,
         "order_info": order_info,
         "delivery_info": delivery_info,
@@ -317,12 +381,38 @@ def build_invoice_dict_from_form(
     if scenario == "government" and invoice_dict["tax_exemption_code"]:
         invoice_dict["tax_exemption_reason"] = invoice_dict["tax_exemption_code"]
 
+    if not invoice_dict["tax_exemption_code"]:
+        zero_tax_line = next((line for line in lines if _float(line.get("tax_rate")) == 0.0 and _str(line.get("tax_exemption_code"))), None)
+        if zero_tax_line:
+            invoice_dict["tax_exemption_code"] = _str(zero_tax_line.get("tax_exemption_code"))
+            invoice_dict["tax_exemption_reason"] = _str(zero_tax_line.get("tax_exemption_reason") or zero_tax_line.get("tax_exemption_code"))
+
     if scenario == "export":
         invoice_dict["paymentMeans"] = {"code": "1"}
 
     if invoice_type in {"12", "19", "25", "33"}:
         invoice_dict["tax_exemption_code"] = "806"
         invoice_dict["tax_exemption_reason"] = _str(special_tax_base.get("description") or "Özel Matrah")
+
+    if invoice_type == "yolcu":
+        invoice_dict["tax_exemption_code"] = invoice_dict.get("tax_exemption_code") or "501"
+        invoice_dict["tax_exemption_reason"] = invoice_dict.get("tax_exemption_reason") or "Yolcu beraberi esya ihraci"
+
+    if invoice_type == "otv":
+        invoice_dict["tax_type_code"] = _str(profile_details.get("otvCode") or "9021")
+        invoice_dict["tax_name"] = "OTV"
+
+    if invoice_type == "hks":
+        invoice_dict["invoicePeriod"] = {
+            "start": _str(profile_details.get("accommodationStartDate")),
+            "end": _str(profile_details.get("accommodationEndDate")),
+        }
+
+    if invoice_type in {"sarj", "sarjanlik"}:
+        invoice_dict["invoicePeriod"] = {
+            "start": _str(profile_details.get("chargeStartDate")),
+            "end": _str(profile_details.get("chargeEndDate")),
+        }
 
     if invoice_type == "14":
         invoice_dict["currency"] = "TRY"

@@ -15,6 +15,7 @@ import toast from 'react-hot-toast';
 import { companyService, CompanyInfo } from '../../services/company.service';
 import { useAuthStore } from '../../stores/authStore';
 import { LanguageSwitcher } from '../../components/common/LanguageSwitcher';
+import { GOVERNMENT_EXEMPTION_REASONS } from '../../constants/governmentInvoiceConstants';
 
 interface AssetUploadProps {
   type: 'logo' | 'stamp' | 'signature';
@@ -628,6 +629,40 @@ export default function CompanySettings() {
                   />
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-amber-200 dark:border-amber-800">
+          <div className="p-6 border-b border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20">
+            <h3 className="text-base font-semibold text-amber-900 dark:text-amber-100">
+              E-Fatura Varsayılanları
+            </h3>
+            <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+              0 KDV ile kesilen faturalarda otomatik kullanılacak istisna sebebi
+            </p>
+          </div>
+          <div className="p-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Varsayılan İstisna Sebebi
+              </label>
+              <select
+                data-allow-raw="true"
+                value={formData.defaultExemptionCode || '0'}
+                onChange={(e) => handleInputChange('defaultExemptionCode', e.target.value)}
+                disabled={!isTenantAdmin}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-amber-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
+              >
+                {GOVERNMENT_EXEMPTION_REASONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                Ürün satırında `KDV %0` seçildiğinde ve özel istisna kodu girilmediyse bu değer XML&apos;e map edilir.
+              </p>
             </div>
           </div>
         </div>

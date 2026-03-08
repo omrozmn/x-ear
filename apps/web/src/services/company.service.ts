@@ -24,6 +24,7 @@ export interface CompanyInfo {
   sgkMukellefKodu?: string;
   sgkMukellefAdi?: string;
   companyType?: 'hearing_center' | 'pharmacy' | 'hospital' | 'optical' | 'medical' | 'other';
+  defaultExemptionCode?: string;
   tradeRegistryNo?: string;
   mersisNo?: string;
 }

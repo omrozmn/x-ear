@@ -207,6 +207,7 @@ export interface Invoice {
   shipmentInfo?: ShipmentInfoData;
   bankInfo?: BankInfoData;
   paymentTerms?: PaymentTermsData;
+  profileDetails?: SpecialProfileDetailsData;
   issueTime?: string; // HH:mm format
   isTechnologySupport?: boolean;
   isMedicalDevice?: boolean;
@@ -419,6 +420,7 @@ export interface CreateInvoiceData {
   exportDetails?: ExportDetailsData;
   medicalDeviceData?: MedicalDeviceData;
   withholdingData?: WithholdingData;
+  profileDetails?: SpecialProfileDetailsData;
 }
 
 export interface UpdateInvoiceData extends Partial<CreateInvoiceData> {
@@ -736,6 +738,31 @@ export interface ShipmentInfoData {
   shipmentAddress?: InvoiceAddress;
   carrier?: string;
   trackingNumber?: string;
+}
+
+export interface SpecialProfileDetailsData {
+  systemType?: 'EFATURA' | 'EARSIV' | 'EIRSALIYE';
+  profileId?: string;
+  accommodationStartDate?: string;
+  accommodationEndDate?: string;
+  hotelRegistrationNo?: string;
+  guestCount?: number;
+  chargeStartDate?: string;
+  chargeEndDate?: string;
+  stationCode?: string;
+  plateNumber?: string;
+  energyAmount?: number;
+  passengerName?: string;
+  passengerPassportNo?: string;
+  passengerNationality?: string;
+  taxRepresentativeName?: string;
+  taxRepresentativeTaxId?: string;
+  refundBankIban?: string;
+  otvCode?: string;
+  otvRate?: number;
+  otvAmount?: number;
+  patientName?: string;
+  patientTaxId?: string;
 }
 
 // Bank Info (Banka Bilgileri)

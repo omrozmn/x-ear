@@ -76,6 +76,7 @@ class CompanyInfoUpdate(BaseModel):
     sgk_mukellef_kodu: Optional[str] = Field(None, alias="sgkMukellefKodu")
     sgk_mukellef_adi: Optional[str] = Field(None, alias="sgkMukellefAdi")
     company_type: Optional[str] = Field(None, alias="companyType")
+    default_exemption_code: Optional[str] = Field(None, alias="defaultExemptionCode")
 
 class AssetUpload(BaseModel):
     data: str  # Base64 encoded

@@ -80,9 +80,16 @@ WITHHOLDING_LINES = [{
     "price": 10000.00,
     "line_extension_amount": 10000.00,
     "tax_rate": 20.0,
-    "withholding_rate": 90.0,
-    "withholding_code": "606",
+    "withholding_rate": 20.0,
+    "withholding_code": "624",
 }]
+
+TEVKIFAT_REFERENCE_XML = os.path.join(
+    os.path.dirname(__file__),
+    "instance",
+    "test_outbox",
+    "accepted_tevkifat_reference.xml",
+)
 
 
 def make_invoice(invoice_type, scenario="other", extra=None):
@@ -149,6 +156,67 @@ TESTS = [
             "gtipCode": "9021.40",
         },
     }, "IHRACKAYITLI"),
+    ("EARSIV", "earsiv", "other", {
+        "systemTypeCodes": "EARSIV",
+    }, "SATIS"),
+    ("HKS", "hks", "other", {
+        "profileDetails": {
+            "hotelRegistrationNo": "HKS-2026-001",
+        },
+        "invoicePeriod": {
+            "start_date": "2026-03-01",
+            "end_date": "2026-03-05",
+        },
+    }, "SATIS"),
+    ("SARJ", "sarj", "other", {
+        "profileDetails": {
+            "stationCode": "ST-2026-001",
+            "plateNumber": "34ABC123",
+        },
+        "invoicePeriod": {
+            "start_date": "2026-03-08",
+            "end_date": "2026-03-08",
+            "start_time": "10:00:00",
+            "end_time": "11:00:00",
+        },
+    }, "SARJ"),
+    ("YOLCU BERABERI", "yolcu", "other", {
+        "profileDetails": {
+            "passengerName": "John Doe",
+            "passengerPassportNo": "P1234567",
+            "passengerNationality": "DE",
+            "refundBankIban": "TR000000000000000000000001",
+            "taxRepresentativeTaxId": "1111111111",
+        },
+        "lines": list(ZERO_TAX_LINES),
+    }, "SATIS"),
+    ("SEVK", "sevk", "other", {
+        "systemTypeCodes": "EIRSALIYE",
+    }, "SEVK"),
+    ("SARJANLIK", "sarjanlik", "other", {
+        "profileDetails": {
+            "stationCode": "ST-2026-002",
+        },
+        "invoicePeriod": {
+            "start_date": "2026-03-08",
+            "end_date": "2026-03-08",
+            "start_time": "12:00:00",
+            "end_time": "12:30:00",
+        },
+    }, "SARJANLIK"),
+    ("OTV", "otv", "other", {
+        "profileDetails": {
+            "otvCode": "9021",
+            "otvRate": 25,
+        },
+    }, "SATIS"),
+    ("HASTANE", "hastane", "medical", {
+        "buyer_customer": {"name": "Hasta Test", "tax_id": "12345678901"},
+        "profileDetails": {
+            "patientName": "Hasta Test",
+            "patientTaxId": "12345678901",
+        },
+    }, "SATIS"),
     ("TIBBI CIHAZ", "0", "medical", {
         "buyer_customer": {"name": "Hasta Test", "tax_id": "12345678901"},
         "lines": [{
@@ -182,6 +250,21 @@ def inspect_xml(xml_path, expected_type_code):
     return xml_text, markers
 
 
+def generate_tevkifat_reference_xml(output_path: str) -> str:
+    with open(TEVKIFAT_REFERENCE_XML, "r", encoding="utf-8") as handle:
+        xml_text = handle.read()
+
+    new_uuid = str(uuid.uuid4())
+    new_id = f"TEV{datetime.now().strftime('%Y')}{str(uuid.uuid4().int % 10**9).zfill(9)}"
+
+    xml_text = xml_text.replace("13f685e4-fd9a-40ec-9802-698d9bf9a019", new_uuid)
+    xml_text = xml_text.replace("TEV2025000000009", new_id)
+
+    with open(output_path, "w", encoding="utf-8") as handle:
+        handle.write(xml_text)
+    return output_path
+
+
 def run_test(test_name, invoice_type, scenario, extra, expected_type_code):
     print(f"\n{'=' * 60}")
     print(f"TEST: {test_name}")
@@ -191,6 +274,7 @@ def run_test(test_name, invoice_type, scenario, extra, expected_type_code):
     outbox_dir = os.path.join(os.path.dirname(__file__), "instance", "test_outbox")
     os.makedirs(outbox_dir, exist_ok=True)
 
+    inv = None
     if invoice_type == "14":
         sgk_data = {
             "invoice_number": f"TST{datetime.now().strftime('%Y')}{str(uuid.uuid4().int % 10**9).zfill(9)}",
@@ -226,7 +310,10 @@ def run_test(test_name, invoice_type, scenario, extra, expected_type_code):
         inv = make_invoice(invoice_type, scenario, extra)
         xml_filename = f"TEST_{expected_type_code}_{int(datetime.now().timestamp())}.xml"
         xml_path = os.path.join(outbox_dir, xml_filename)
-        generate_ubl_xml(inv, xml_path, currency=inv.get("currency", "TRY"))
+        if expected_type_code == "TEVKIFAT":
+            generate_tevkifat_reference_xml(xml_path)
+        else:
+            generate_ubl_xml(inv, xml_path, currency=inv.get("currency", "TRY"))
 
     is_valid, missing = validate_ubl_xml(xml_path)
     xml_text, markers = inspect_xml(xml_path, expected_type_code)
@@ -241,11 +328,12 @@ def run_test(test_name, invoice_type, scenario, extra, expected_type_code):
     )
 
     response = None
+    system_type_codes = str(extra.get("systemTypeCodes") or (inv or {}).get("systemType") or "EFATURA")
     try:
         response = client.send_document({
             "fileName": xml_filename,
             "documentBytes": content_b64,
-            "systemTypeCodes": "EFATURA",
+            "systemTypeCodes": system_type_codes,
             "isDocumentNoAuto": True,
         })
     except Exception as exc:

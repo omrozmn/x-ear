@@ -28,6 +28,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@x-ear/ui-web': path.resolve(__dirname, '../../packages/ui-web/index.ts'),
     },
   },
 });

@@ -20,6 +20,7 @@ import {
   MedicalDeviceData,
   InvoiceScenarioData,
   SpecialTaxBaseData,
+  SpecialProfileDetailsData,
   ReturnInvoiceDetailsData,
   GovernmentInvoiceData,
   WithholdingData,
@@ -32,6 +33,7 @@ import {
 } from '../../types/invoice';
 import { getAutoCurrency } from '../../utils/currencyManager';
 import { ProductLinesSection } from './ProductLinesSection';
+import { InvoiceProfileDetailsCard } from './InvoiceProfileDetailsCard';
 import { useGetTenantCompany } from '@/api/client/tenant-users.client';
 
 // Local form state interface to replace 'any'
@@ -48,6 +50,7 @@ interface InvoiceFormState {
   // Nested structure objects
   scenarioData?: InvoiceScenarioData;
   specialTaxBase?: SpecialTaxBaseData;
+  profileDetails?: SpecialProfileDetailsData;
   returnInvoiceDetails?: ReturnInvoiceDetailsData;
   governmentData?: GovernmentInvoiceData;
   withholdingData?: WithholdingData;
@@ -96,6 +99,16 @@ interface InvoiceFormState {
   [key: string]: unknown;
 }
 
+const invoiceTypeNeedsZeroVatExemption = (invoiceType?: string) => !['14', '15', '49', '50'].includes(String(invoiceType || ''));
+
+const hasZeroVatLineWithoutExemption = (items: unknown[]) => items.some((item) => {
+  if (!item || typeof item !== 'object') return false;
+  const line = item as Record<string, unknown>;
+  const taxRate = Number(line.taxRate ?? 0);
+  const exemptionCode = String(line.taxExemptionCode ?? line.tax_exemption_code ?? '').trim();
+  return taxRate === 0 && !exemptionCode;
+});
+
 interface InvoiceFormExtendedProps {
   invoice?: Invoice;
   onSubmit: (data: CreateInvoiceData) => void;
@@ -140,6 +153,7 @@ export function InvoiceFormExtended({
     shipmentInfo: invoice?.shipmentInfo,
     bankInfo: invoice?.bankInfo,
     paymentTerms: invoice?.paymentTerms,
+    profileDetails: invoice?.profileDetails,
     issueTime: invoice?.issueTime || new Date().toTimeString().slice(0, 5),
 
     orderInfo: invoice?.orderInfo,
@@ -195,6 +209,9 @@ export function InvoiceFormExtended({
 
   // Firma bilgilerini çek (SGK otomatik doldurma için)
   const { data: companyData } = useGetTenantCompany();
+  const defaultExemptionCode = String(
+    ((companyData?.data?.companyInfo as Record<string, unknown> | undefined)?.defaultExemptionCode as string | undefined) || ''
+  ).trim();
 
   // handleExtendedFieldChange'i önce tanımla (useEffect'lerden önce olmalı)
   const handleExtendedFieldChange = useCallback((field: string, value: unknown) => {
@@ -252,9 +269,10 @@ export function InvoiceFormExtended({
 
   // Allowed invoice types mapping (should match InvoiceTypeSection)
   const allowedTypesForScenario = (scenario?: string) => {
-    if (scenario === 'export') return ['13'];
-    if (scenario === 'government') return ['', '0', '13', '11', '18', '24', '32', '12', '19', '25', '33'];
-    return ['', '0', '50', '13', '11', '18', '24', '32', '12', '19', '25', '33', '14', '15', '49', '35'];
+    if (scenario === 'export') return ['13', '27'];
+    if (scenario === 'government') return ['', '0', '13', '11', '18', '24', '32', '12', '19', '25', '33', 'hks', 'otv', 'earsiv'];
+    if (scenario === 'medical') return ['', '0', '13', '11', '15', '50', '27', 'hastane'];
+    return ['', '0', '50', '13', '11', '18', '24', '32', '12', '19', '25', '33', '14', '15', '49', '35', 'hks', 'sarj', 'sarjanlik', 'earsiv', 'yolcu', 'otv', 'sevk'];
   };
 
   // If scenario changes and current invoiceType is not allowed, reset it to empty
@@ -284,6 +302,14 @@ export function InvoiceFormExtended({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [extendedData.scenario, extendedData.invoiceType]);
+
+  useEffect(() => {
+    if (!invoiceTypeNeedsZeroVatExemption(extendedData.invoiceType)) return;
+    if (extendedData.governmentExemptionReason) return;
+    if (!defaultExemptionCode || defaultExemptionCode === '0') return;
+    if (!Array.isArray(extendedData.items) || !hasZeroVatLineWithoutExemption(extendedData.items)) return;
+    handleExtendedFieldChange('governmentExemptionReason', defaultExemptionCode);
+  }, [defaultExemptionCode, extendedData.governmentExemptionReason, extendedData.invoiceType, extendedData.items, handleExtendedFieldChange]);
 
   // Tip 14, 15, 35 için otomatik Temel'e geçiş
   useEffect(() => {
@@ -628,6 +654,14 @@ export function InvoiceFormExtended({
                               </div>
                             </div>
                           )}
+
+                          {['earsiv', 'hks', 'sarj', 'sarjanlik', 'yolcu', 'otv', 'hastane', 'sevk'].includes(String(extendedData.invoiceType)) && (
+                            <InvoiceProfileDetailsCard
+                              invoiceType={String(extendedData.invoiceType)}
+                              value={extendedData.profileDetails}
+                              onChange={(data) => handleExtendedFieldChange('profileDetails', data)}
+                            />
+                          )}
                         </>
                       )}
                     </div>
@@ -749,6 +783,7 @@ export function InvoiceFormExtended({
             exportDetails: extendedData.exportDetails,
             medicalDeviceData: extendedData.medicalDeviceData,
             withholdingData: extendedData.withholdingData,
+            profileDetails: extendedData.profileDetails,
             metadata: {
               governmentData: extendedData.governmentData,
               scenario: extendedData.scenario,
@@ -758,6 +793,7 @@ export function InvoiceFormExtended({
               exportDetails: extendedData.exportDetails,
               returnInvoiceDetails: extendedData.returnInvoiceDetails,
               withholdingData: extendedData.withholdingData,
+              profileDetails: extendedData.profileDetails,
             }
           };
           onSubmit(submissionData);

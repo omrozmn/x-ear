@@ -10,12 +10,15 @@ import { GOVERNMENT_EXEMPTION_REASONS } from '../constants/governmentInvoiceCons
 import { Select } from '@x-ear/ui-web';
 import { CustomerSectionCompact } from '../components/invoices/CustomerSectionCompact';
 import WithholdingCard from '../components/invoices/WithholdingCard';
+import { InvoiceProfileDetailsCard } from '../components/invoices/InvoiceProfileDetailsCard';
 import { useIsMobile } from '../hooks/useBreakpoint';
 import { ProductLinesSection } from '../components/invoices/ProductLinesSection';
 import { MobileLayout } from '../components/mobile/MobileLayout';
 import { MobileHeader } from '../components/mobile/MobileHeader';
 import { apiClient } from '@/api/orval-mutator';
 import toast from 'react-hot-toast';
+import { ErrorMessage } from '../components/ErrorMessage';
+import { useGetTenantCompany } from '@/api/client/tenant-users.client';
 
 interface InvoiceFormData {
   invoiceType: string;
@@ -70,6 +73,24 @@ interface ActiveLineEditor {
   index: number;
 }
 
+interface BlockingAlert {
+  title: string;
+  message: string;
+}
+
+const invoiceTypeNeedsZeroVatExemption = (invoiceType?: string) => !['14', '15', '49', '50'].includes(String(invoiceType || ''));
+
+const hasZeroVatLineWithoutExemption = (payload: Record<string, unknown>) => {
+  const items = Array.isArray(payload.items) ? payload.items : [];
+  return items.some((item) => {
+    if (!item || typeof item !== 'object') return false;
+    const line = item as Record<string, unknown>;
+    const taxRate = Number(line.taxRate ?? 0);
+    const exemptionCode = String(line.taxExemptionCode ?? line.tax_exemption_code ?? '').trim();
+    return taxRate === 0 && !exemptionCode;
+  });
+};
+
 export function NewInvoicePage() {
   const navigate = useNavigate();
   const { draftId: searchDraftId } = useSearch({ from: '/invoices/new' });
@@ -80,7 +101,9 @@ export function NewInvoicePage() {
     scenario: 'other',
     currency: 'TRY'
   });
+  const [blockingAlert, setBlockingAlert] = useState<BlockingAlert | null>(null);
   const isMobile = useIsMobile();
+  const { data: companyData } = useGetTenantCompany();
 
   // Load draft from API when draftId is provided in URL
   useEffect(() => {
@@ -118,8 +141,31 @@ export function NewInvoicePage() {
   const handleSubmit = async (invoiceData: InvoiceFormData) => {
     setIsSaving(true);
     try {
+      const mergedInvoiceData = { ...formData, ...invoiceData } as Record<string, unknown>;
+      const defaultExemptionCode = String(
+        ((companyData?.data?.companyInfo as Record<string, unknown> | undefined)?.defaultExemptionCode as string | undefined) || ''
+      ).trim();
+
+      if (
+        invoiceTypeNeedsZeroVatExemption(String(mergedInvoiceData.invoiceType || '')) &&
+        hasZeroVatLineWithoutExemption(mergedInvoiceData) &&
+        !String(mergedInvoiceData.governmentExemptionReason || '').trim()
+      ) {
+        if (defaultExemptionCode && defaultExemptionCode !== '0') {
+          mergedInvoiceData.governmentExemptionReason = defaultExemptionCode;
+        } else {
+          setBlockingAlert({
+            title: 'İstisna Sebebi Gerekli',
+            message: 'KDV %0 olan satırlar için varsayılan istisna sebebi tanımlı değil. Firma Ayarları > Şirket bölümünden varsayılan istisna sebebini ayarlayıp tekrar deneyin.',
+          });
+          setIsSaving(false);
+          return;
+        }
+      }
+
+      setBlockingAlert(null);
       // Step 1: Save or update draft
-      const draftPayload = { form_data: { ...formData, ...invoiceData } };
+      const draftPayload = { form_data: mergedInvoiceData };
       let draftId = currentDraftId;
       if (draftId) {
         await apiClient.put(`/api/invoices/draft/${draftId}`, draftPayload);
@@ -232,6 +278,7 @@ export function NewInvoicePage() {
       activeLineEditor={activeLineEditor}
       onCloseLineEditor={handleCloseLineEditor}
       isMobile={isMobile}
+      blockingAlert={blockingAlert}
     />
   );
 }
@@ -501,6 +548,15 @@ function InvoiceSidebar({
           </div>
         </div>
       )}
+
+      {['earsiv', 'hks', 'sarj', 'sarjanlik', 'yolcu', 'otv', 'hastane', 'sevk'].includes(String(extendedData?.invoiceType || '')) && (
+        <InvoiceProfileDetailsCard
+          invoiceType={String(extendedData?.invoiceType || '')}
+          value={extendedData?.profileDetails as never}
+          onChange={(data) => handlers?.handleExtendedFieldChange?.('profileDetails', data)}
+        />
+      )}
+
       {/* Açıklama / Notlar — Modern Card */}
       <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
         <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
@@ -573,7 +629,8 @@ function NewInvoicePageContent({
   onRequestLineEditor,
   activeLineEditor,
   onCloseLineEditor,
-  isMobile
+  isMobile,
+  blockingAlert
 }: {
   isSaving: boolean;
   handleSubmit: (data: InvoiceFormData) => Promise<void>;
@@ -593,7 +650,9 @@ function NewInvoicePageContent({
   activeLineEditor?: ActiveLineEditor | null;
   onCloseLineEditor?: () => void;
   isMobile?: boolean;
+  blockingAlert?: BlockingAlert | null;
 }) {
+  const navigate = useNavigate();
   const [openCustomer, setOpenCustomer] = useState(true);
   const [openDetails, setOpenDetails] = useState(true);
   const [openItems, setOpenItems] = useState(true);
@@ -620,6 +679,16 @@ function NewInvoicePageContent({
         />
 
         <div className="p-4 space-y-3 pb-32">
+          {blockingAlert && (
+            <ErrorMessage
+              type="warning"
+              title={blockingAlert.title}
+              message={blockingAlert.message}
+              onRetry={() => navigate({ to: '/settings/company' })}
+              retryText="Firma Ayarlarına Git"
+            />
+          )}
+
           {/* 1. Collapsible: Customer Selection */}
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
             <button
@@ -886,6 +955,17 @@ function NewInvoicePageContent({
 
           {/* Sidebar - 1/3 proportional */}
           <div className="min-w-0">
+            {blockingAlert && (
+              <div className="mb-4">
+                <ErrorMessage
+                  type="warning"
+                  title={blockingAlert.title}
+                  message={blockingAlert.message}
+                  onRetry={() => navigate({ to: '/settings/company' })}
+                  retryText="Firma Ayarlarına Git"
+                />
+              </div>
+            )}
             <InvoiceSidebar
               showSGKSection={showSGKSection}
               showExportSection={showExportSection}
