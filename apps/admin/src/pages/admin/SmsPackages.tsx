@@ -21,6 +21,7 @@ import toast from 'react-hot-toast';
 import * as Dialog from '@radix-ui/react-dialog';
 import Pagination from '../../components/ui/Pagination';
 import { useAdminResponsive } from '../../hooks/useAdminResponsive';
+import { unwrapArray, unwrapData } from '@/lib/orval-response';
 
 interface PackagePagination {
     total?: number;
@@ -37,14 +38,16 @@ interface PackageFormData {
 }
 
 function getPackages(data: ResponseEnvelopeListDetailedSmsPackageRead | undefined): DetailedSmsPackageRead[] {
-    return Array.isArray(data?.data) ? data.data : [];
+    return unwrapArray<DetailedSmsPackageRead>(data);
 }
 
 function getPagination(data: ResponseEnvelopeListDetailedSmsPackageRead | undefined): PackagePagination {
-    const meta = data?.meta;
+    const payload = unwrapData<Record<string, unknown>>(data);
+    const metaSource = payload && typeof payload === 'object' && 'meta' in payload ? payload.meta : undefined;
+    const meta = typeof metaSource === 'object' && metaSource !== null ? metaSource as Record<string, unknown> : undefined;
     return {
-        total: meta?.total ?? 0,
-        totalPages: meta?.totalPages ?? 1,
+        total: typeof meta?.total === 'number' ? meta.total : 0,
+        totalPages: typeof meta?.totalPages === 'number' ? meta.totalPages : 1,
     };
 }
 
@@ -63,6 +66,7 @@ export default function SMSPackagesPage() {
     const { isMobile } = useAdminResponsive();
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editingPkg, setEditingPkg] = useState<DetailedSmsPackageRead | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
     const packageParams: ListAdminSmPackagesParams = { page, limit };
@@ -73,7 +77,15 @@ export default function SMSPackagesPage() {
     const updateMutation = useUpdateAdminSmPackage();
 
     const [formData, setFormData] = useState<PackageFormData>(toFormData());
-    const packages = getPackages(packagesData);
+    const packages = getPackages(packagesData).filter((pkg) => {
+        const query = searchTerm.trim().toLowerCase();
+        if (!query) {
+            return true;
+        }
+
+        return [pkg.name, pkg.description || '', String(pkg.smsCount || ''), String(pkg.price || '')]
+            .some((value) => value.toLowerCase().includes(query));
+    });
     const pagination = getPagination(packagesData);
 
     const handleSave = async () => {
@@ -133,6 +145,13 @@ export default function SMSPackagesPage() {
                     <Plus className="w-4 h-4 mr-2" />
                     {!isMobile && 'Yeni Paket'}
                 </Button>
+            </div>
+            <div className="mb-6 max-w-md">
+                <Input
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Paket adı, açıklama, adet veya fiyat ara..."
+                />
             </div>
 
             <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-2 lg:grid-cols-3'}`}>

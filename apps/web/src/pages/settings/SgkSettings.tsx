@@ -158,7 +158,7 @@ export default function SgkSettingsPage() {
           data-allow-raw="true"
           value={settings.default_scheme}
           onChange={(e) => setSettings({ ...settings, default_scheme: e.target.value })}
-          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         >
           {DEFAULT_SCHEMES.map(scheme => (
             <option key={scheme.name} value={scheme.name}>
@@ -180,7 +180,7 @@ export default function SgkSettingsPage() {
         </h2>
         <div className="space-y-4">
           {DEFAULT_SCHEMES.map((scheme) => (
-            <div key={scheme.name} className="grid grid-cols-3 gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+            <div key={scheme.name} className="grid grid-cols-3 gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Şema Adı
@@ -190,7 +190,7 @@ export default function SgkSettingsPage() {
                   type="text"
                   value={scheme.name}
                   disabled
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400"
                 />
               </div>
               <div>
@@ -203,7 +203,7 @@ export default function SgkSettingsPage() {
                   step="0.01"
                   value={scheme.coverage_amount}
                   onChange={(e) => updateDefaultScheme('coverage_amount', scheme.name, parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
               <div>
@@ -216,7 +216,7 @@ export default function SgkSettingsPage() {
                   step="0.01"
                   value={scheme.max_amount}
                   onChange={(e) => updateDefaultScheme('max_amount', scheme.name, parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
             </div>
@@ -233,7 +233,7 @@ export default function SgkSettingsPage() {
           <button
             data-allow-raw="true"
             onClick={addCustomScheme}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
             Yeni Şema Ekle
@@ -249,7 +249,7 @@ export default function SgkSettingsPage() {
         ) : (
           <div className="space-y-4">
             {customSchemes.map((scheme, index) => (
-              <div key={index} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <div key={index} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Şema Adı
@@ -260,7 +260,7 @@ export default function SgkSettingsPage() {
                     value={scheme.name}
                     onChange={(e) => updateCustomScheme(index, 'name', e.target.value)}
                     placeholder="ornek_sema"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
                 <div>
@@ -273,7 +273,7 @@ export default function SgkSettingsPage() {
                     step="0.01"
                     value={scheme.coverage_amount}
                     onChange={(e) => updateCustomScheme(index, 'coverage_amount', parseFloat(e.target.value) || 0)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
                 <div>
@@ -286,14 +286,14 @@ export default function SgkSettingsPage() {
                     step="0.01"
                     value={scheme.max_amount}
                     onChange={(e) => updateCustomScheme(index, 'max_amount', parseFloat(e.target.value) || 0)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
                 <div className="flex items-end">
                   <button
                     data-allow-raw="true"
                     onClick={() => removeCustomScheme(index)}
-                    className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                    className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl transition-colors"
                   >
                     <Trash2 className="w-5 h-5" />
                   </button>
@@ -310,7 +310,7 @@ export default function SgkSettingsPage() {
           data-allow-raw="true"
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {saving ? (
             <>

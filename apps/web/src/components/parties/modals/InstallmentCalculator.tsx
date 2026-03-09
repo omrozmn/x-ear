@@ -99,7 +99,7 @@ export function InstallmentCalculator({
   const installmentPlan = calculateInstallments(grandTotal, installmentCount);
 
   return (
-    <div className="bg-blue-50 p-4 rounded-lg">
+    <div className="bg-blue-50 p-4 rounded-2xl">
       <div className="flex justify-between items-center mb-4">
         <h4 className="font-medium text-blue-900">Taksit Detayları</h4>
         <Button
@@ -116,7 +116,7 @@ export function InstallmentCalculator({
       {/* Taksit Listesi - Legacy'deki installmentList */}
       <div className="space-y-3 max-h-64 overflow-y-auto">
         {installmentDetails.map((detail) => (
-          <div key={detail.id} className="grid grid-cols-12 gap-3 bg-white p-3 rounded-lg items-center border">
+          <div key={detail.id} className="grid grid-cols-12 gap-3 bg-white p-3 rounded-2xl items-center border">
             <span className="col-span-2 font-medium text-gray-700">
               Taksit {detail.id}:
             </span>

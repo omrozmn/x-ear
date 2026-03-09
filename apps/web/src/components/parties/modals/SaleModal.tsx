@@ -260,7 +260,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" data-testid="sale-modal">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
           <h2 className="text-xl font-bold text-gray-900">
             Yeni Satış - {party.firstName} {party.lastName}
@@ -326,7 +326,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
 
               {/* Arama Sonuçları Dropdown */}
               {showProductDropdown && (
-                <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
+                <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-2xl shadow-lg mt-1 max-h-60 overflow-y-auto">
                   {filteredProducts.length > 0 ? (
                     <div className="py-1">
                       {filteredProducts.map((product) => (
@@ -371,7 +371,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
 
             {/* Ürün Detayları - Legacy'deki gibi */}
             {selectedDevice && (
-              <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="bg-gray-50 p-4 rounded-2xl">
                 <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
                   <Package className="w-4 h-4 mr-2" />
                   Ürün Detayları
@@ -482,7 +482,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
                   data-testid="sale-payment-cash-button"
                   type="button"
                   onClick={() => setPaymentMethod('cash')}
-                  className={`p-3 border rounded-lg text-center transition-colors ${paymentMethod === 'cash'
+                  className={`p-3 border rounded-2xl text-center transition-colors ${paymentMethod === 'cash'
                     ? 'border-blue-500 bg-blue-50 text-blue-700'
                     : 'border-gray-300 bg-white text-gray-700 hover:border-blue-300'
                     }`}
@@ -495,7 +495,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
                   data-testid="sale-payment-card-button"
                   type="button"
                   onClick={() => setPaymentMethod('card')}
-                  className={`p-3 border rounded-lg text-center transition-colors ${paymentMethod === 'card'
+                  className={`p-3 border rounded-2xl text-center transition-colors ${paymentMethod === 'card'
                     ? 'border-blue-500 bg-blue-50 text-blue-700'
                     : 'border-gray-300 bg-white text-gray-700 hover:border-blue-300'
                     }`}
@@ -508,7 +508,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
                   data-testid="sale-payment-transfer-button"
                   type="button"
                   onClick={() => setPaymentMethod('transfer')}
-                  className={`p-3 border rounded-lg text-center transition-colors ${paymentMethod === 'transfer'
+                  className={`p-3 border rounded-2xl text-center transition-colors ${paymentMethod === 'transfer'
                     ? 'border-blue-500 bg-blue-50 text-blue-700'
                     : 'border-gray-300 bg-white text-gray-700 hover:border-blue-300'
                     }`}
@@ -520,7 +520,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
                   data-testid="sale-payment-installment-button"
                   type="button"
                   onClick={() => setPaymentMethod('installment')}
-                  className={`p-3 border rounded-lg text-center transition-colors ${paymentMethod === 'installment'
+                  className={`p-3 border rounded-2xl text-center transition-colors ${paymentMethod === 'installment'
                     ? 'border-blue-500 bg-blue-50 text-blue-700'
                     : 'border-gray-300 bg-white text-gray-700 hover:border-blue-300'
                     }`}
@@ -554,7 +554,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
 
             {/* Taksit Seçenekleri - Sadece taksit seçildiğinde göster */}
             {paymentMethod === 'installment' && (
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <div className="bg-blue-50 p-4 rounded-2xl border border-blue-200">
                 <h4 className="text-sm font-medium text-blue-900 mb-3">Taksit Bilgileri</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -589,7 +589,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
 
             {/* Fiyat Özeti - Legacy'deki gibi detaylı breakdown */}
             {selectedDevice && (
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <div className="bg-blue-50 p-4 rounded-2xl border border-blue-200">
                 <h3 className="text-sm font-medium text-blue-900 mb-3 flex items-center">
                   <DollarSign className="w-4 h-4 mr-2" />
                   Fiyat Özeti
@@ -597,7 +597,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
 
                 {/* İndirim varsa göster */}
                 {totals.discountAmount > 0 && (
-                  <div className="bg-red-50 p-3 rounded-lg border border-red-200 mb-3">
+                  <div className="bg-red-50 p-3 rounded-2xl border border-red-200 mb-3">
                     <div className="flex justify-between items-center">
                       <span className="text-red-700 font-medium">İndirim Uygulandı</span>
                       <span className="text-red-700 font-bold">
@@ -608,7 +608,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
                 )}
 
                 {/* Toplam Tutar */}
-                <div className="bg-white p-4 rounded-lg border border-blue-200">
+                <div className="bg-white p-4 rounded-2xl border border-blue-200">
                   <div className="flex justify-between items-center mb-3">
                     <span className="font-bold text-blue-900 text-lg">Toplam Tutar</span>
                     <span className="font-bold text-blue-600 text-xl">

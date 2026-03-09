@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/enums.py
+# hypothesis_version: 6.151.9
+
+['AppErrorCode', 'AppointmentStatus', 'AppointmentType', 'B2B', 'CONSUMER', 'DeviceCategory', 'DeviceSide', 'DeviceStatus', 'Gender', 'PRODUCT_NOT_ALLOWED', 'PartyStatus', 'PatientStatus', 'ProductCode', 'TENANT_SUSPENDED', 'TenantType', 'xcalp', 'xear_', 'xear_general', 'xear_hearing', 'xear_hospital', 'xear_hotel', 'xear_pharmacy']

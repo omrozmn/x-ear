@@ -30,7 +30,7 @@ export const PricingCalculatorCard: React.FC<PricingCalculatorCardProps> = ({
             <div>
               <p className="text-2xl font-bold text-white tracking-tight">Fiyat Hesapla</p>
               <div className="flex items-center space-x-2 mt-1">
-                <span className="text-sm font-medium text-blue-100 bg-blue-700/30 px-2 py-0.5 rounded-md border border-blue-500/30">SGK Desteği</span>
+                <span className="text-sm font-medium text-blue-100 bg-blue-700/30 px-2 py-0.5 rounded-xl border border-blue-500/30">SGK Desteği</span>
               </div>
               <p className="text-sm text-blue-50/80 mt-2 font-medium">
                 Cihaz fiyatlarını SGK destekleriyle hesaplayın

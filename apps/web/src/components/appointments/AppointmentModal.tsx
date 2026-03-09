@@ -119,7 +119,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
       />
 
       {/* Modal content */}
-      <div className="relative bg-white dark:bg-slate-800 rounded-lg text-left shadow-xl transform transition-all sm:max-w-2xl sm:w-full max-h-[90vh] flex flex-col mx-4">
+      <div className="relative bg-white dark:bg-slate-800 rounded-2xl text-left shadow-xl transform transition-all sm:max-w-2xl sm:w-full max-h-[90vh] flex flex-col mx-4">
         {/* Header */}
         <div className="bg-white dark:bg-slate-800 px-4 py-3 border-b border-gray-200 dark:border-slate-700 flex-shrink-0">
           <div className="flex items-center justify-between">
@@ -144,7 +144,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
           {currentMode === 'view' && appointment ? (
             <div className="space-y-6">
               {/* Party Info */}
-              <div className="bg-gray-50 dark:bg-slate-700 rounded-lg p-4">
+              <div className="bg-gray-50 dark:bg-slate-700 rounded-2xl p-4">
                 <h4 className="text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">{t('modal.patient_info')}</h4>
                 <p className="text-lg font-semibold text-gray-900 dark:text-white">{appointment.partyName}</p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">ID: {appointment.partyId}</p>
@@ -212,7 +212,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
               {/* Quick Status Actions */}
               {!['completed', 'cancelled'].includes(appointment.status) && (
-                <div className="bg-gray-50 dark:bg-slate-700 rounded-lg p-4">
+                <div className="bg-gray-50 dark:bg-slate-700 rounded-2xl p-4">
                   <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">{t('modal.quick_actions')}</h4>
                   <div className="flex flex-wrap gap-2">
                     {appointment.status !== 'confirmed' && (
@@ -290,7 +290,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
             <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
               <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
                   <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
@@ -307,7 +307,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                         {t('modal.delete_confirm')}
                       </p>
                       {appointment && (
-                        <div className="mt-3 p-3 bg-gray-50 rounded-md">
+                        <div className="mt-3 p-3 bg-gray-50 rounded-xl">
                           <p className="text-sm font-medium text-gray-900">{appointment.partyName}</p>
                           <p className="text-sm text-gray-600">{formatDate(appointment.date)} - {formatTime(appointment.time)}</p>
                           <p className="text-sm text-gray-600">{appointment.title}</p>
@@ -321,14 +321,14 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 <Button
                   onClick={handleDelete}
                   disabled={deleting}
-                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+                  className="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
                   variant='default'>
                   {deleting ? t('modal.actions.deleting') : t('modal.actions.delete')}
                 </Button>
                 <Button
                   onClick={() => setShowDeleteConfirm(false)}
                   disabled={deleting}
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm disabled:opacity-50"
+                  className="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm disabled:opacity-50"
                   variant='default'>
                   {t('cancel', { ns: 'common' })}
                 </Button>

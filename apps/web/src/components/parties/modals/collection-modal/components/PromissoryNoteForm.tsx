@@ -44,7 +44,7 @@ export const PromissoryNoteForm: React.FC<PromissoryNoteFormProps> = ({
           </h4>
           <div className="space-y-3">
             {promissoryNotes.map((note) => (
-              <div key={note.id} className="border rounded-lg p-4">
+              <div key={note.id} className="border rounded-2xl p-4">
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <div className="font-medium">Senet #{note.noteNumber}</div>

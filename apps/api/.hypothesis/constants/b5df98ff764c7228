@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/sgk.py
+# hypothesis_version: 6.151.9
+
+['approval', 'approvalDate', 'approvalNumber', 'coveragePercentage', 'createdAt', 'currentStep', 'documentId', 'documentType', 'expiryDate', 'hasInsurance', 'insuranceNumber', 'insuranceType', 'ocrData', 'partyId', 'patientRights', 'queryDate', 'receiptNumber', 'stepId', 'tcNumber', 'tenantId', 'updatedAt', 'validUntil', 'workflowType']

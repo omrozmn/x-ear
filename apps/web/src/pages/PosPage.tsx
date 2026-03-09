@@ -156,7 +156,7 @@ export default function PosPage() {
                     <h2 className="text-xl font-bold">{t('pos.secure_payment_title')}</h2>
                     <Button variant="ghost" onClick={() => setIframeUrl(null)}>{t('pos.cancel_return')}</Button>
                 </div>
-                <div className="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden relative">
+                <div className="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden relative">
                     <iframe
                         src={iframeUrl}
                         className="absolute inset-0 w-full h-full"
@@ -184,7 +184,7 @@ export default function PosPage() {
             </div>
 
             {result === 'success' && (
-                <div className="mb-6 bg-green-50 border border-green-200 dark:bg-green-900/30 dark:border-green-800 p-4 rounded-lg flex items-center gap-3 text-green-800 dark:text-green-300">
+                <div className="mb-6 bg-green-50 border border-green-200 dark:bg-green-900/30 dark:border-green-800 p-4 rounded-2xl flex items-center gap-3 text-green-800 dark:text-green-300">
                     <ShieldCheck className="w-6 h-6" />
                     <div>
                         <p className="font-bold">{t('pos.payment_success_title')}</p>
@@ -205,7 +205,7 @@ export default function PosPage() {
             )}
 
             {errorMessage && (
-                <div className="mb-6 bg-red-50 border border-red-200 dark:bg-red-900/30 dark:border-red-800 p-4 rounded-lg flex items-center gap-3 text-red-800 dark:text-red-300">
+                <div className="mb-6 bg-red-50 border border-red-200 dark:bg-red-900/30 dark:border-red-800 p-4 rounded-2xl flex items-center gap-3 text-red-800 dark:text-red-300">
                     <AlertTriangle className="w-6 h-6" />
                     <div>
                         <p className="font-bold">{t('pos.error_title')}</p>
@@ -259,7 +259,7 @@ export default function PosPage() {
                                             required: t('pos.amount_required'),
                                             min: { value: 1, message: t('pos.amount_min') }
                                         })}
-                                        className="w-full bg-white dark:bg-gray-800 border-2 border-blue-200 dark:border-blue-700 rounded-lg py-3 pl-10 pr-4 text-2xl font-bold text-blue-900 dark:text-blue-100 focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-800 focus:border-blue-400 dark:focus:border-blue-500 outline-none text-center transition-all"
+                                        className="w-full bg-white dark:bg-gray-800 border-2 border-blue-200 dark:border-blue-700 rounded-2xl py-3 pl-10 pr-4 text-2xl font-bold text-blue-900 dark:text-blue-100 focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-800 focus:border-blue-400 dark:focus:border-blue-500 outline-none text-center transition-all"
                                         placeholder="0.00"
                                     />
                                 </div>
@@ -280,7 +280,7 @@ export default function PosPage() {
                                                 key={option.installment_count}
                                                 type="button"
                                                 onClick={() => setSelectedInstallment(option.installment_count)}
-                                                className={`relative p-4 rounded-lg border-2 transition-all text-left ${selectedInstallment === option.installment_count
+                                                className={`relative p-4 rounded-2xl border-2 transition-all text-left ${selectedInstallment === option.installment_count
                                                     ? 'border-blue-600 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/30 shadow-md'
                                                     : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-gray-50 dark:hover:bg-gray-700/50 bg-white dark:bg-gray-800'
                                                     }`}

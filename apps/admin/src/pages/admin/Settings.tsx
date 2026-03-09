@@ -17,6 +17,7 @@ import {
   type SystemSettingRead,
 } from '@/lib/api-client';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
+import { unwrapArray } from '@/lib/orval-response';
 
 // Define SystemSettings type locally - flexible for form usage
 type SystemSettings = Record<string, unknown>;
@@ -24,7 +25,7 @@ type SystemSettings = Record<string, unknown>;
 type SettingsTab = 'general' | 'email' | 'security' | 'backup' | 'integrations';
 
 function getSettingsMap(data: ResponseEnvelopeListSystemSettingRead | undefined): SystemSettings {
-  const settings = Array.isArray(data?.data) ? data.data : [];
+  const settings = unwrapArray<SystemSettingRead>(data);
 
   return settings.reduce<SystemSettings>((acc, setting) => {
     acc[setting.key] = normalizeSettingValue(setting);

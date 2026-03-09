@@ -68,7 +68,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
         </Alert>
 
         {isSingleItem ? (
-          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
             <h3 className="font-medium text-gray-900 dark:text-white">{items[0].name}</h3>
             <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1 mt-2">
               <p>Model: {items[0].model}</p>
@@ -78,7 +78,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
             </div>
           </div>
         ) : (
-          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
             <h3 className="font-medium text-gray-900 dark:text-white mb-3">Silinecek Ürünler:</h3>
             <div className="space-y-2 max-h-40 overflow-y-auto">
               {items.map((item, index) => (

@@ -152,7 +152,7 @@ export function BranchesTab() {
             </div>
 
             {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center">
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl flex items-center">
                     <AlertCircle className="w-5 h-5 mr-2" />
                     {error}
                 </div>
@@ -182,7 +182,7 @@ export function BranchesTab() {
                                 <tr key={branch.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center">
-                                            <div className="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mr-3">
+                                            <div className="w-10 h-10 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mr-3">
                                                 <Building2 className="w-5 h-5" />
                                             </div>
                                             <div className="font-medium text-gray-900 dark:text-white">
@@ -297,7 +297,7 @@ export function BranchesTab() {
                             </div>
 
                             {formError && (
-                                <div className="text-sm text-red-600 flex items-center p-2 bg-red-50 rounded-lg border border-red-200">
+                                <div className="text-sm text-red-600 flex items-center p-2 bg-red-50 rounded-2xl border border-red-200">
                                     <AlertTriangle className="w-4 h-4 mr-2 flex-shrink-0" />
                                     {formError}
                                 </div>

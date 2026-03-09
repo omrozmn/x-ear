@@ -38,8 +38,11 @@ def get_activity_logs(
         
         query = db.query(ActivityLog)
         
+        # Super admins should see cross-tenant activity by default.
+        if access.is_super_admin:
+            pass
         # Tenant filtering
-        if access.tenant_id:
+        elif access.tenant_id:
             query = query.filter(ActivityLog.tenant_id == access.tenant_id)
         elif tenant_id:
             query = query.filter(ActivityLog.tenant_id == tenant_id)
@@ -111,7 +114,7 @@ def get_activity_stats(
         from models.user import ActivityLog
         
         base_query = db.query(ActivityLog)
-        if access.tenant_id:
+        if not access.is_super_admin and access.tenant_id:
             base_query = base_query.filter(ActivityLog.tenant_id == access.tenant_id)
         
         # Total logs
@@ -157,7 +160,7 @@ def get_activity_log_filter_options(
         from models.user import ActivityLog
         
         base_query = db.query(ActivityLog)
-        if access.tenant_id:
+        if not access.is_super_admin and access.tenant_id:
             base_query = base_query.filter(ActivityLog.tenant_id == access.tenant_id)
         
         # Get unique actions

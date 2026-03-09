@@ -17,7 +17,7 @@ interface LoanerInfoCardProps {
 
 export const LoanerInfoCard: React.FC<LoanerInfoCardProps> = ({ device, onReturn, isUpdating }) => {
     return (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3">
             <div className="flex items-start justify-between">
                 <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-2">

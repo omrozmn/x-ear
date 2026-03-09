@@ -445,14 +445,14 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
       <div className="space-y-6">
         {/* Status Messages */}
         {error && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700">
+          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-2xl text-red-700">
             <AlertCircle className="w-5 h-5 flex-shrink-0" />
             <span>{error}</span>
           </div>
         )}
         
         {successMessage && (
-          <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700">
+          <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-2xl text-green-700">
             <CheckCircle className="w-5 h-5 flex-shrink-0" />
             <span>{successMessage}</span>
           </div>
@@ -488,7 +488,7 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
         </div>
 
         {/* Search and Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-2xl">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input

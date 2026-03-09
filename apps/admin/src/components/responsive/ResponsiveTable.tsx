@@ -6,6 +6,7 @@ interface Column<T> {
   key: string;
   header: string;
   render?: (item: T) => React.ReactNode;
+  sortValue?: (item: T) => unknown;
   mobileHidden?: boolean; // Hide on mobile
   tabletHidden?: boolean; // Hide on tablet
   sortable?: boolean; // Enable sorting for this column
@@ -29,6 +30,21 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function getCellValue<T>(item: T, key: string): unknown {
   return isRecord(item) ? item[key] : undefined;
+}
+
+function normalizeSortValue(value: unknown): unknown {
+  if (typeof value === 'string') {
+    const parsedDate = Date.parse(value);
+    if (!Number.isNaN(parsedDate) && (value.includes('T') || /^\d{4}-\d{2}-\d{2}/.test(value))) {
+      return parsedDate;
+    }
+  }
+
+  if (value instanceof Date) {
+    return value.getTime();
+  }
+
+  return value;
 }
 
 export function ResponsiveTable<T>({
@@ -66,10 +82,11 @@ export function ResponsiveTable<T>({
   // Sort data
   const sortedData = React.useMemo(() => {
     if (!sortColumn || !sortDirection) return data;
+    const activeColumn = columns.find((column) => (column.sortKey || column.key) === sortColumn);
 
     return [...data].sort((a, b) => {
-      const aValue = getCellValue(a, sortColumn);
-      const bValue = getCellValue(b, sortColumn);
+      const aValue = normalizeSortValue(activeColumn?.sortValue ? activeColumn.sortValue(a) : getCellValue(a, sortColumn));
+      const bValue = normalizeSortValue(activeColumn?.sortValue ? activeColumn.sortValue(b) : getCellValue(b, sortColumn));
 
       // Handle null/undefined
       if (aValue == null && bValue == null) return 0;
@@ -100,7 +117,7 @@ export function ResponsiveTable<T>({
       const comparison = aStr.localeCompare(bStr, 'tr');
       return sortDirection === 'asc' ? comparison : -comparison;
     });
-  }, [data, sortColumn, sortDirection]);
+  }, [columns, data, sortColumn, sortDirection]);
 
   // Filter columns based on device
   const visibleColumns = columns.filter(col => {
@@ -165,7 +182,7 @@ export function ResponsiveTable<T>({
   // Desktop/Tablet: Table view
   return (
     <div className={`mobile-table-wrapper ${className}`}>
-      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 mobile-table">
+      <table className="mobile-table min-w-full divide-y divide-gray-200 dark:divide-gray-700">
         <thead className="bg-gray-50 dark:bg-gray-800">
           <tr>
             {visibleColumns.map((col) => (

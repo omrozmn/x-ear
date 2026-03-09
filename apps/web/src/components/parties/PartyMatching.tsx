@@ -317,7 +317,7 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card className="p-4 dark:bg-gray-800 dark:border-gray-700">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-2xl">
                   <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
@@ -329,7 +329,7 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
 
             <Card className="p-4 dark:bg-gray-800 dark:border-gray-700">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-2xl">
                   <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
                 </div>
                 <div>
@@ -343,7 +343,7 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
 
             <Card className="p-4 dark:bg-gray-800 dark:border-gray-700">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-2xl">
                   <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
@@ -357,7 +357,7 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
 
             <Card className="p-4 dark:bg-gray-800 dark:border-gray-700">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
+                <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-2xl">
                   <X className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
                 </div>
                 <div>
@@ -391,7 +391,7 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
                       {match.parties.map((party) => (
-                        <div key={party.id} className="border dark:border-gray-700 rounded-lg p-3 dark:bg-gray-700/30">
+                        <div key={party.id} className="border dark:border-gray-700 rounded-2xl p-3 dark:bg-gray-700/30">
                           <div className="flex items-center space-x-2 mb-2">
                             <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                             <span className="font-medium dark:text-white">{party.firstName} {party.lastName}</span>
@@ -520,7 +520,7 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
               <h4 className="font-medium mb-2 dark:text-gray-200">Hasta Bilgileri:</h4>
               <div className="space-y-3">
                 {selectedMatch.parties.map((party, index) => (
-                  <div key={party.id} className="border dark:border-gray-700 rounded-lg p-3 dark:bg-gray-800">
+                  <div key={party.id} className="border dark:border-gray-700 rounded-2xl p-3 dark:bg-gray-800">
                     <h5 className="font-medium mb-2 dark:text-white">Hasta {index + 1}: {party.firstName} {party.lastName}</h5>
                     <div className="grid grid-cols-2 gap-2 text-sm dark:text-gray-400">
                       <div><strong>Telefon:</strong> {party.phone || 'Yok'}</div>
@@ -555,7 +555,7 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
       >
         {mergePreview && (
           <div className="space-y-4">
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-2xl p-4">
               <div className="flex items-center space-x-2">
                 <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-500" />
                 <span className="font-medium text-yellow-800 dark:text-yellow-400">Dikkat</span>
@@ -567,7 +567,7 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
 
             <div>
               <h4 className="font-medium mb-2 dark:text-white">Ana Hasta (Korunacak):</h4>
-              <div className="border border-green-200 dark:border-green-800 rounded-lg p-3 bg-green-50 dark:bg-green-900/20">
+              <div className="border border-green-200 dark:border-green-800 rounded-2xl p-3 bg-green-50 dark:bg-green-900/20">
                 <div className="font-medium dark:text-green-300">{`${mergePreview.primary.firstName || ''} ${mergePreview.primary.lastName || ''}`.trim() || 'Unknown'}</div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                   {mergePreview.primary.phone} • {mergePreview.primary.email}
@@ -579,7 +579,7 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
               <h4 className="font-medium mb-2 dark:text-white">Silinecek Hastalar:</h4>
               <div className="space-y-2">
                 {mergePreview.duplicates.map(party => (
-                  <div key={party.id} className="border border-red-200 dark:border-red-800 rounded-lg p-3 bg-red-50 dark:bg-red-900/20">
+                  <div key={party.id} className="border border-red-200 dark:border-red-800 rounded-2xl p-3 bg-red-50 dark:bg-red-900/20">
                     <div className="font-medium dark:text-red-300">{party.firstName} {party.lastName}</div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
                       {party.phone} • {party.email}
@@ -594,7 +594,7 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
                 <h4 className="font-medium mb-2 text-orange-600 dark:text-orange-400">Çakışan Alanlar:</h4>
                 <div className="space-y-2">
                   {mergePreview.conflicts.map((conflict, index) => (
-                    <div key={index} className="border border-orange-200 dark:border-orange-800 rounded-lg p-3 bg-orange-50 dark:bg-orange-900/20">
+                    <div key={index} className="border border-orange-200 dark:border-orange-800 rounded-2xl p-3 bg-orange-50 dark:bg-orange-900/20">
                       <div className="font-medium capitalize dark:text-orange-300">{conflict.field}</div>
                       <div className="space-y-1 mt-1">
                         {conflict.values.map((value, valueIndex) => (

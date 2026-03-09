@@ -183,7 +183,7 @@ export function SalesPage() {
                 {formatCurrency(totalAmount, 'TRY')}
               </p>
             </div>
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+            <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-2xl">
               <ShoppingCart className="text-blue-600 dark:text-blue-400" size={24} />
             </div>
           </div>
@@ -195,7 +195,7 @@ export function SalesPage() {
               <p className="text-sm text-gray-600 dark:text-gray-400">Toplam Kayıt</p>
               <p className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">{totalCount}</p>
             </div>
-            <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+            <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-2xl">
               <FileText className="text-purple-600 dark:text-purple-400" size={24} />
             </div>
           </div>
@@ -209,7 +209,7 @@ export function SalesPage() {
                 {salesList.length > 0 ? formatCurrency(totalAmount / salesList.length, 'TRY') : '₺0'}
               </p>
             </div>
-            <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
+            <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-2xl">
               <DollarSign className="text-green-600 dark:text-green-400" size={24} />
             </div>
           </div>
@@ -227,7 +227,7 @@ export function SalesPage() {
               placeholder="Hasta adı, ürün veya seri no ara..."
               value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -237,7 +237,7 @@ export function SalesPage() {
               type="date"
               value={dateFrom}
               onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1); }}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -247,7 +247,7 @@ export function SalesPage() {
               type="date"
               value={dateTo}
               onChange={(e) => { setDateTo(e.target.value); setCurrentPage(1); }}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
             />
           </div>
           {(dateFrom || dateTo || searchTerm) && (
@@ -333,11 +333,11 @@ export function SalesPage() {
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl px-6 py-3 flex items-center gap-4">
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{selectedIds.size} kayıt seçildi</span>
             <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
-            <button data-allow-raw="true" onClick={exportToCsv} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors">
+            <button data-allow-raw="true" onClick={exportToCsv} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-2xl transition-colors">
               <Download className="w-4 h-4" /> CSV Dışa Aktar
             </button>
             <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
-            <button data-allow-raw="true" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <button data-allow-raw="true" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors">
               <X className="w-4 h-4" /> Seçimi Kaldır
             </button>
           </div>

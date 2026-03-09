@@ -174,7 +174,7 @@ export const PosSettings = () => {
 
                 {/* X-Ear POS Info Banner */}
                 {selectedProvider === 'xear' && (
-                    <div className="flex items-start gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                    <div className="flex items-start gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-2xl border border-green-200 dark:border-green-800">
                         <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
                         <div className="text-sm text-green-800 dark:text-green-200">
                             <p className="font-medium mb-1">{t('pos.xear_active.title')}</p>
@@ -185,7 +185,7 @@ export const PosSettings = () => {
 
                 {/* Third-Party Provider Configuration */}
                 {selectedProvider !== 'none' && selectedProvider !== 'xear' && (
-                    <div className="space-y-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div className="space-y-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-200 dark:border-gray-700">
                         <div className="flex items-start gap-2 mb-2">
                             <AlertCircle className="w-4 h-4 text-gray-500 flex-shrink-0 mt-0.5" />
                             <p className="text-xs text-gray-600 dark:text-gray-400">

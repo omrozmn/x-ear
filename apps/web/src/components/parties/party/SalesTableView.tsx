@@ -373,7 +373,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
 
                       {/* Overflow Menu */}
                       {openMenuId === sale.id && (
-                        <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                        <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
                           <div className="py-1">
                             <button
                               data-allow-raw="true"

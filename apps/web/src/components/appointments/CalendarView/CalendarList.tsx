@@ -175,7 +175,7 @@ export const CalendarList: React.FC<CalendarListProps> = ({
             <div className="flex items-center space-x-3">
               <div className="flex items-center space-x-2">
                 <label className="text-sm text-gray-600 dark:text-gray-400">Görüntüle:</label>
-                <select data-allow-raw="true" value={showAll ? 'all' : 'week'} onChange={(e) => setShowAll(e.target.value === 'all')} className="px-2 py-1 border rounded-md dark:bg-slate-800 dark:text-white dark:border-slate-700">
+                <select data-allow-raw="true" value={showAll ? 'all' : 'week'} onChange={(e) => setShowAll(e.target.value === 'all')} className="px-2 py-1 border rounded-xl dark:bg-slate-800 dark:text-white dark:border-slate-700">
                   <option value="all" className="dark:bg-slate-800">Tümü</option>
                   <option value="week" className="dark:bg-slate-800">Bu Hafta</option>
                 </select>
@@ -202,7 +202,7 @@ export const CalendarList: React.FC<CalendarListProps> = ({
             <select data-allow-raw="true"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white dark:border-slate-700"
+              className="px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white dark:border-slate-700"
             >
               <option value="all" className="dark:bg-slate-800">Tüm Durumlar</option>
               <option value="confirmed" className="dark:bg-slate-800">Onaylandı</option>
@@ -214,7 +214,7 @@ export const CalendarList: React.FC<CalendarListProps> = ({
             <select data-allow-raw="true"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as 'date' | 'party' | 'status')}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white dark:border-slate-700"
+              className="px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white dark:border-slate-700"
             >
               <option value="date" className="dark:bg-slate-800">Tarihe Göre</option>
               <option value="party" className="dark:bg-slate-800">Hastaya Göre</option>
@@ -301,7 +301,7 @@ export const CalendarList: React.FC<CalendarListProps> = ({
                                 {appointment.duration || 30} dk
                               </span>
 
-                              <span className="px-2 py-1 bg-gray-100 dark:bg-slate-700 rounded-md">
+                              <span className="px-2 py-1 bg-gray-100 dark:bg-slate-700 rounded-xl">
                                 {appointment.type}
                               </span>
                             </div>

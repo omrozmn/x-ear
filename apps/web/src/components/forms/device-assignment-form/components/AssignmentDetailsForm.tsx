@@ -252,7 +252,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                   onChange={(e) => updateFormData('ear', e.target.value)}
                   className="sr-only"
                 />
-                <div className={`flex flex-col items-center justify-center py-2 px-3 rounded-lg transition-all duration-200 ${gradientClass}`}>
+                <div className={`flex flex-col items-center justify-center py-2 px-3 rounded-2xl transition-all duration-200 ${gradientClass}`}>
                   <div className={`text-base font-bold mb-0.5`}>{ear.icon}</div>
                   <span className={`text-xs ${isSelected ? 'font-semibold' : 'font-medium'}`}>{ear.label}</span>
                 </div>
@@ -382,7 +382,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
         </label>
 
         {formData.isLoaner && (
-          <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg space-y-3 border border-purple-200 dark:border-purple-800">
+          <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-2xl space-y-3 border border-purple-200 dark:border-purple-800">
             <h5 className="text-sm font-medium text-purple-900 dark:text-purple-100 mb-2">Emanet Cihaz Seçimi</h5>
 
             {/* Search Input - Full width */}
@@ -397,7 +397,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
 
               {/* Results Dropdown */}
               {showLoanerResults && loanerResults.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 rounded-md shadow-lg border border-gray-200 dark:border-slate-700 max-h-60 overflow-y-auto">
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 max-h-60 overflow-y-auto">
                   {loanerResults.map(device => {
                     const serials = device.availableSerials || [];
                     const stock = device.availableInventory ?? 0;
@@ -460,7 +460,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                       className="w-full text-sm border-2 border-red-400 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-red-200 pr-8"
                     />
                     {activeSerialInput === 'right' && selectedLoanerInventoryItem && selectedLoanerInventoryItem.availableSerials && selectedLoanerInventoryItem.availableSerials.length > 0 && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-40 overflow-y-auto">
                         {selectedLoanerInventoryItem.availableSerials.map((sn: string) => (
                           <div
                             key={sn}
@@ -487,7 +487,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                       className="w-full text-sm border-2 border-blue-400 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-blue-200 pr-8"
                     />
                     {activeSerialInput === 'left' && selectedLoanerInventoryItem && selectedLoanerInventoryItem.availableSerials && selectedLoanerInventoryItem.availableSerials.length > 0 && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-40 overflow-y-auto">
                         {selectedLoanerInventoryItem.availableSerials.map((sn: string) => (
                           <div
                             key={sn}
@@ -517,7 +517,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                       }`}
                   />
                   {activeSerialInput === 'single' && selectedLoanerInventoryItem && selectedLoanerInventoryItem.availableSerials && selectedLoanerInventoryItem.availableSerials.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-40 overflow-y-auto">
                       {selectedLoanerInventoryItem.availableSerials.map((sn: string) => (
                         <div
                           key={sn}

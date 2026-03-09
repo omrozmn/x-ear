@@ -40,7 +40,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Payment Summary */}
-      <div className="bg-gray-50 p-4 rounded-lg">
+      <div className="bg-gray-50 p-4 rounded-2xl">
         <h4 className="font-medium text-gray-900 mb-3">Ödeme Özeti</h4>
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
@@ -105,7 +105,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
 
       {/* Payment Method Specific Fields */}
       {state.paymentMethod === 'credit' && (
-        <div className="space-y-4 p-4 bg-blue-50 rounded-lg">
+        <div className="space-y-4 p-4 bg-blue-50 rounded-2xl">
           <div className="flex items-center gap-2 text-blue-700">
             <CreditCard className="h-4 w-4" />
             <span className="font-medium">Kredi Kartı Bilgileri</span>
@@ -150,7 +150,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
       )}
 
       {state.paymentMethod === 'bank_transfer' && (
-        <div className="space-y-4 p-4 bg-green-50 rounded-lg">
+        <div className="space-y-4 p-4 bg-green-50 rounded-2xl">
           <div className="flex items-center gap-2 text-green-700">
             <Banknote className="h-4 w-4" />
             <span className="font-medium">Banka Havalesi Bilgileri</span>
@@ -190,7 +190,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
       )}
 
       {state.paymentMethod === 'check' && (
-        <div className="space-y-4 p-4 bg-yellow-50 rounded-lg">
+        <div className="space-y-4 p-4 bg-yellow-50 rounded-2xl">
           <div className="flex items-center gap-2 text-yellow-700">
             <Receipt className="h-4 w-4" />
             <span className="font-medium">Çek Bilgileri</span>
@@ -238,7 +238,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
           </label>
           <div className="space-y-2 max-h-40 overflow-y-auto">
             {installments.map((installment) => (
-              <div key={installment.id} className="flex items-center justify-between p-3 border rounded-lg">
+              <div key={installment.id} className="flex items-center justify-between p-3 border rounded-2xl">
                 <div className="flex items-center space-x-3">
                   <Checkbox
                     id={`installment-${installment.id}`}

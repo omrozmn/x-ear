@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/purchase.py
+# hypothesis_version: 6.151.9
+
+[100, 'Supplier', 'TRY', 'approved', 'approvedAt', 'approvedBy', 'createdAt', 'createdBy', 'createdFromInvoice', 'currency', 'extend_existing', 'id', 'invoiceId', 'notes', 'purch', 'purchaseDate', 'purchases', 'referenceNumber', 'status', 'supplierId', 'supplierName', 'suppliers.id', 'tenantId', 'totalAmount', 'updatedAt']

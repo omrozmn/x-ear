@@ -35,7 +35,7 @@ class NotificationSettingsUpdate(BaseModel):
 @router.post("/notifications", operation_id="createNotifications", status_code=201, response_model=ResponseEnvelope[NotificationRead])
 def create_notification(
     notif_in: NotificationCreateSchema,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(tenant_required=False)),
     db_session: Session = Depends(get_db)
 ):
     """Create a new notification"""
@@ -66,7 +66,7 @@ def list_notifications(
     user_id: Optional[str] = Query(None, alias="user_id"),
     page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(20, ge=1, le=100),
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(tenant_required=False)),
     db_session: Session = Depends(get_db)
 ):
     """List notifications for a user"""
@@ -103,7 +103,7 @@ def list_notifications(
 @router.put("/notifications/{notification_id}/read", operation_id="updateNotificationRead", response_model=ResponseEnvelope[NotificationRead])
 def mark_notification_read(
     notification_id: str,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(tenant_required=False)),
     db_session: Session = Depends(get_db)
 ):
     """Mark notification as read"""
@@ -131,7 +131,7 @@ def mark_notification_read(
 def update_notification(
     notification_id: str,
     notif_in: NotificationUpdate,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(tenant_required=False)),
     db_session: Session = Depends(get_db)
 ):
     """Update a notification"""
@@ -159,7 +159,7 @@ def update_notification(
 @router.get("/notifications/stats", operation_id="listNotificationStats", response_model=ResponseEnvelope[NotificationStats])
 def notification_stats(
     user_id: Optional[str] = Query(None, alias="user_id"),
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(tenant_required=False)),
     db_session: Session = Depends(get_db)
 ):
     """Get notification stats for a user"""
@@ -186,7 +186,7 @@ def notification_stats(
 @router.delete("/notifications/{notification_id}", operation_id="deleteNotification", response_model=ResponseEnvelope[None])
 def delete_notification(
     notification_id: str,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(tenant_required=False)),
     db_session: Session = Depends(get_db)
 ):
     """Delete a notification"""
@@ -212,7 +212,7 @@ def delete_notification(
 @router.get("/notifications/settings", operation_id="listNotificationSettings", response_model=ResponseEnvelope[NotificationSettings])
 def get_user_notification_settings(
     user_id: Optional[str] = Query(None, alias="user_id"),
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(tenant_required=False)),
     db_session: Session = Depends(get_db)
 ):
     """Get user notification settings"""

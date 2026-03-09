@@ -128,6 +128,7 @@ export interface Invoice {
   // Legacy customer fields (some services use customer* names)
   customerId?: string;
   customerName?: string;
+  customerTaxId?: string;
   customerTaxNumber?: string;
   /**
    * Legacy customer address field.
@@ -364,6 +365,7 @@ export interface CreateInvoiceData {
   // Legacy customer fields
   customerId?: string;
   customerName?: string;
+  customerTaxId?: string;
   customerTaxNumber?: string;
   /**
    * Legacy customer address field.
@@ -439,6 +441,7 @@ export interface InvoiceFormData {
   customerId?: string;
   customerName?: string;
   governmentPayingCustomer?: boolean;
+  customerTaxId?: string;
   customerTaxNumber?: string;
   partyPhone?: string;
   partyTcNumber?: string;
@@ -660,6 +663,10 @@ export interface DeliveryInfo {
   deliveryReference?: string;
   carrierName?: string;
   trackingNumber?: string;
+  receiverName?: string;
+  createLinkedDocument?: boolean;
+  linkedInvoiceType?: string;
+  linkedScenario?: string;
 }
 
 export interface InternetSalesInfo {
@@ -768,7 +775,9 @@ export interface SpecialProfileDetailsData {
 
 // Bank Info (Banka Bilgileri)
 export interface BankInfoData {
+  useCompanyDefaults?: boolean;
   bankName?: string;
+  accountHolder?: string;
   accountNumber?: string;
   iban?: string;
   swiftCode?: string;
@@ -780,6 +789,7 @@ export interface PaymentTermsData {
   paymentDays?: number;
   earlyPaymentDiscount?: number;
   latePaymentPenalty?: number;
+  dueDate?: string;
 }
 
 // Line Withholding (Satır Bazında Tevkifat)

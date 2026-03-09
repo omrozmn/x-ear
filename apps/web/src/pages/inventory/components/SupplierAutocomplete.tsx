@@ -275,14 +275,14 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
                   toast.dismiss(t.id);
                   onSupplierCreated?.(newSupplier, createdId);
                 }}
-                className="px-3 py-1 text-xs font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 whitespace-nowrap"
+                className="px-3 py-1 text-xs font-medium bg-blue-600 text-white rounded-xl hover:bg-blue-700 whitespace-nowrap"
               >
                 Tedarikçiye Git
               </button>
               <button
                 data-allow-raw="true"
                 onClick={() => toast.dismiss(t.id)}
-                className="px-3 py-1 text-xs font-medium bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 whitespace-nowrap"
+                className="px-3 py-1 text-xs font-medium bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 whitespace-nowrap"
               >
                 Daha Sonra
               </button>
@@ -356,7 +356,7 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
         <div
           ref={dropdownRef}
           style={dropdownStyle}
-          className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+          className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-2xl shadow-lg max-h-60 overflow-y-auto"
         >
           {isLoading && (
             <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 italic">

@@ -58,7 +58,7 @@ export const SGKIntegration: React.FC<SGKIntegrationProps> = ({
             {sgkSchemes.map((scheme) => (
               <div
                 key={scheme.id}
-                className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                className={`p-3 border rounded-2xl cursor-pointer transition-colors ${
                   selectedScheme?.id === scheme.id
                     ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-200 hover:border-gray-300'
@@ -89,7 +89,7 @@ export const SGKIntegration: React.FC<SGKIntegrationProps> = ({
 
         {/* SGK Coverage Display */}
         {selectedScheme && (
-          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+          <div className="p-4 bg-green-50 border border-green-200 rounded-2xl">
             <div className="flex items-center gap-2 mb-2">
               <CheckCircle className="w-5 h-5 text-green-600" />
               <span className="font-medium text-green-800">SGK Karşılığı Hesaplandı</span>

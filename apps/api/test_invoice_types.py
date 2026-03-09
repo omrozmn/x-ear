@@ -93,6 +93,11 @@ TEVKIFAT_REFERENCE_XML = os.path.join(
 
 
 def make_invoice(invoice_type, scenario="other", extra=None):
+    """Generate invoice dict with proper invoice number.
+    
+    For testing, we use manual numbering (isDocumentNoAuto=False) so that
+    invoice numbers are immediately available in the XML and response.
+    """
     invoice_number = f"TST{datetime.now().strftime('%Y')}{str(uuid.uuid4().int % 10**9).zfill(9)}"
     invoice = {
         "invoiceNumber": invoice_number,
@@ -337,7 +342,7 @@ def run_test(test_name, invoice_type, scenario, extra, expected_type_code):
             "fileName": xml_filename,
             "documentBytes": content_b64,
             "systemTypeCodes": system_type_codes,
-            "isDocumentNoAuto": True,
+            "isDocumentNoAuto": False,  # Use manual numbering for tests (invoice number in XML)
         })
     except Exception as exc:
         traceback.print_exc()

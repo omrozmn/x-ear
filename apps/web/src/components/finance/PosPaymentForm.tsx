@@ -76,7 +76,7 @@ export const PosPaymentForm: React.FC<PosPaymentFormProps> = ({
                     <h3 className="text-lg font-medium">{t('pos.secure_payment_screen')}</h3>
                     <Button variant="ghost" size="sm" onClick={() => setIframeUrl(null)}>{t('pos.return')}</Button>
                 </div>
-                <div className="flex-1 min-h-[500px] border rounded-lg overflow-hidden bg-gray-50 relative">
+                <div className="flex-1 min-h-[500px] border rounded-2xl overflow-hidden bg-gray-50 relative">
                     <iframe
                         src={iframeUrl}
                         className="absolute inset-0 w-full h-full"

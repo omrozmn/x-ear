@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Loader2, CheckCircle, AlertCircle, X, FileText, Upload, Trash2, Eye, CreditCard, ExternalLink, MessageSquare, Download } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle, X, FileText, Upload, Trash2, Eye, CreditCard, ExternalLink, MessageSquare, Download, Receipt } from 'lucide-react';
 import {
     useListSmConfig,
     useListSmHeaders,
@@ -19,6 +19,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { useAuthStore } from '@/stores/authStore';
 import { customInstance } from '@/api/orval-mutator';
 import { PosSettings } from './PosSettings';
+import { InvoiceSettings } from './InvoiceSettings';
 import { extractErrorMessage } from '@/utils/error-utils';
 
 interface SmsDocument {
@@ -231,6 +232,9 @@ export default function IntegrationSettings() {
                     <Tabs.Trigger value="sms" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'sms' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
                         <div className="flex items-center gap-2"><MessageSquare className="w-4 h-4" />SMS Entegrasyonu</div>
                     </Tabs.Trigger>
+                    <Tabs.Trigger value="invoice" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'invoice' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                        <div className="flex items-center gap-2"><Receipt className="w-4 h-4" />E-Fatura Ayarları</div>
+                    </Tabs.Trigger>
                     <Tabs.Trigger value="pos" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'pos' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
                         <div className="flex items-center gap-2"><CreditCard className="w-4 h-4" />Online Ödeme (POS)</div>
                     </Tabs.Trigger>
@@ -245,7 +249,7 @@ export default function IntegrationSettings() {
                                 <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{credit?.balance?.toLocaleString() || '0'}</div>
                             </div>
                             {documentsSubmitted && !allDocumentsApproved && (
-                                <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                                <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-2xl border border-green-200 dark:border-green-800">
                                     <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
                                         <CheckCircle className="w-5 h-5" />
                                         <p className="font-medium">Belgeleriniz gönderildi. SMS kullanımınız açıldığında bilgilendirileceksiniz.</p>
@@ -253,7 +257,7 @@ export default function IntegrationSettings() {
                                 </div>
                             )}
                             {hasRevisionRequested && (
-                                <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
+                                <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-2xl border border-orange-200 dark:border-orange-800">
                                     <div className="flex items-center gap-2 text-orange-800 dark:text-orange-200">
                                         <AlertCircle className="w-5 h-5" />
                                         <p className="font-medium">Bazı belgeler için revizyon istendi. Lütfen ilgili belgeleri tekrar yükleyin.</p>
@@ -282,12 +286,12 @@ export default function IntegrationSettings() {
 
                             {smsSubTab === 'docs' && (
                                 <div className="space-y-4">
-                                    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
                                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">SMS Başvuru Belgeleri</h3>
                                         <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">SMS hizmeti kullanabilmek için aşağıdaki belgeleri yüklemeniz gerekmektedir.</p>
                                         
                                         {/* Example Contract Section */}
-                                        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-200 dark:border-blue-800">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex-1">
                                                     <h4 className="font-medium text-gray-900 dark:text-white mb-1 flex items-center gap-2">
@@ -325,7 +329,7 @@ export default function IntegrationSettings() {
                                                 const canUploadThis = canUpload(doc.id);
                                                 const isDisabled = documentsSubmitted && !canUploadThis;
                                                 return (
-                                                    <div key={doc.id} className={`flex items-center justify-between p-4 rounded-lg border ${uploaded ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800' : 'bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700'} ${isDisabled ? 'opacity-60' : ''}`}>
+                                                    <div key={doc.id} className={`flex items-center justify-between p-4 rounded-2xl border ${uploaded ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800' : 'bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700'} ${isDisabled ? 'opacity-60' : ''}`}>
                                                         <div className="flex items-center gap-3">
                                                             <FileText className={`w-5 h-5 ${uploaded ? 'text-green-600' : 'text-gray-400'}`} />
                                                             <div>
@@ -424,7 +428,7 @@ export default function IntegrationSettings() {
                                         </div>
                                         {allDocsUploaded && !documentsSubmitted && (
                                             <div className="mt-6 pt-6 border-t-2 border-gray-300 dark:border-gray-600">
-                                                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
+                                                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl mb-4">
                                                     <div className="flex items-start gap-2">
                                                         <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                                                         <p className="text-sm text-blue-800 dark:text-blue-200">
@@ -472,9 +476,9 @@ export default function IntegrationSettings() {
 
                             {smsSubTab === 'headers' && allDocumentsApproved && (
                                 <div className="space-y-4">
-                                    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                                    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
                                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">SMS Başlıkları</h3>
-                                        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                                        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-2xl">
                                             <h4 className="font-medium text-gray-900 dark:text-white mb-3">Yeni Başlık Talebi</h4>
                                             <div className="flex gap-3">
                                                 <Input
@@ -505,7 +509,7 @@ export default function IntegrationSettings() {
                                                 <p className="text-gray-500 dark:text-gray-400 text-center py-8">Henüz SMS başlığı bulunmuyor.</p>
                                             ) : (
                                                 headers.map((h) => (
-                                                    <div key={h.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                                                    <div key={h.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/50 rounded-2xl">
                                                         <div>
                                                             <div className="font-medium text-gray-900 dark:text-white">{h.headerText}</div>
                                                             <div className="text-xs text-gray-500">{HEADER_TYPES.find(t => t.value === h.headerType)?.label}</div>
@@ -526,6 +530,7 @@ export default function IntegrationSettings() {
                         </>
                     )}
                 </Tabs.Content>
+                <Tabs.Content value="invoice"><InvoiceSettings /></Tabs.Content>
                 <Tabs.Content value="pos"><PosSettings /></Tabs.Content>
             </Tabs.Root>
 
@@ -542,7 +547,7 @@ export default function IntegrationSettings() {
                             </Dialog.Close>
                         </div>
                         <div className="flex-1 p-4 overflow-auto">
-                            {previewDoc?.url && <iframe src={previewDoc.url} className="w-full h-full border-0 rounded-lg" title="Document Preview" />}
+                            {previewDoc?.url && <iframe src={previewDoc.url} className="w-full h-full border-0 rounded-2xl" title="Document Preview" />}
                         </div>
                     </Dialog.Content>
                 </Dialog.Portal>
@@ -560,7 +565,7 @@ export default function IntegrationSettings() {
                             </Dialog.Close>
                         </div>
                         <div className="flex-1 p-4 overflow-auto">
-                            <iframe src="/documents/sms/contract-example.pdf" className="w-full h-full border-0 rounded-lg" title="Contract Example" />
+                            <iframe src="/documents/sms/contract-example.pdf" className="w-full h-full border-0 rounded-2xl" title="Contract Example" />
                         </div>
                     </Dialog.Content>
                 </Dialog.Portal>

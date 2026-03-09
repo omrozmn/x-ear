@@ -114,14 +114,14 @@ export const DeviceReplacementModal: React.FC<DeviceReplacementModalProps> = ({
         </div>
 
         {state.error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md flex items-center gap-2">
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-red-500" />
             <span className="text-red-700">{state.error}</span>
           </div>
         )}
 
         {state.success && (
-          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-md flex items-center gap-2">
+          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5 text-green-500" />
             <span className="text-green-700">Cihaz değişimi başarıyla tamamlandı!</span>
           </div>
@@ -135,7 +135,7 @@ export const DeviceReplacementModal: React.FC<DeviceReplacementModalProps> = ({
             <select data-allow-raw="true"
               value={formData.replacementReason}
               onChange={(e) => updateFormData({ replacementReason: e.target.value })}
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             >
               <option value="">Seçiniz</option>
               <option value="malfunction">Arıza</option>

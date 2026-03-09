@@ -167,7 +167,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
 
   return (
     <>
-      <div className="bg-white rounded-lg border p-6">
+      <div className="bg-white rounded-2xl border p-6">
         <h3 className="text-lg font-semibold mb-4">Kayıtlı E-Reçeteler</h3>
 
         {savedEReceiptsLoading ? (
@@ -179,7 +179,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
             {savedEReceipts.map((receipt) => {
               const hasUndeliveredMaterials = receipt.materials.some(m => m.deliveryStatus === 'saved');
               return (
-                <div key={receipt.id} className="border rounded-lg p-4">
+                <div key={receipt.id} className="border rounded-2xl p-4">
                   <div className="flex justify-between items-center mb-3">
                     <div>
                       <h5 className="font-medium">E-Reçete #{receipt.number}</h5>
@@ -270,7 +270,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
       {/* Preview Modal */}
       {previewEReceipt && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">E-Reçete Detayları</h3>
@@ -339,7 +339,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
       {/* Edit Modal */}
       {editingEReceipt && editFormData && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-semibold">E-Reçete Düzenle</h3>
@@ -362,7 +362,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
                       type="text"
                       value={editFormData.number}
                       disabled
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-xl bg-gray-50 text-gray-500"
                     />
                   </div>
                   <div>
@@ -373,7 +373,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
                       type="text"
                       value={editFormData.doctorName}
                       onChange={(e) => updateEditFormData('doctorName', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
@@ -384,7 +384,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
                       type="date"
                       value={editFormData.validUntil}
                       onChange={(e) => updateEditFormData('validUntil', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                 </div>
@@ -396,7 +396,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
                   </label>
                   <div className="space-y-3">
                     {editFormData.materials.map((material: SavedEReceiptMaterial, index: number) => (
-                      <div key={`${material.code}-${index}`} className="border rounded-lg p-4 bg-gray-50">
+                      <div key={`${material.code}-${index}`} className="border rounded-2xl p-4 bg-gray-50">
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -406,7 +406,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
                               type="text"
                               value={material.code}
                               disabled
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-xl bg-gray-50 text-gray-500"
                             />
                           </div>
                           <div>
@@ -417,7 +417,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
                               type="text"
                               value={material.name}
                               disabled
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-xl bg-gray-50 text-gray-500"
                             />
                           </div>
                           <div>
@@ -429,7 +429,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
                               value={material.applicationDate}
                               max={new Date().toISOString().split('T')[0]}
                               onChange={(e) => updateMaterialDate(index, e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             />
                           </div>
                           <div>
@@ -439,7 +439,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
                             <select data-allow-raw="true"
                               value={material.deliveryStatus}
                               onChange={(e) => updateMaterialStatus(index, e.target.value as 'saved' | 'delivered')}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             >
                               <option value="saved">Beklemede</option>
                               <option value="delivered">Teslim Edildi</option>

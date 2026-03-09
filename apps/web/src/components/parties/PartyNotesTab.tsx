@@ -239,7 +239,7 @@ export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party }) => {
 
       {/* Add Note Form */}
       {showAddForm && (
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-lg shadow-sm border dark:border-slate-800">
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border dark:border-slate-800">
           <div className="flex justify-between items-center mb-3">
             <h4 className="font-medium text-gray-900 dark:text-gray-100">Yeni Not</h4>
             <Button
@@ -273,7 +273,7 @@ export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party }) => {
       <div className="space-y-4">
         {notes.length > 0 ? (
           notes.map((note) => (
-            <div key={note.id} className="bg-white dark:bg-slate-900 p-4 rounded-lg shadow-sm border dark:border-slate-800">
+            <div key={note.id} className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border dark:border-slate-800">
               {editingNote && editingNote.id === note.id ? (
                 // Edit Mode
                 <div>

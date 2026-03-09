@@ -523,11 +523,12 @@ def list_jobs(
     try:
         from models.ocr_job import OCRJob, OCRJobStatus
         
-        access.tenant_id = access.tenant_id
-        if not access.tenant_id:
-            raise HTTPException(status_code=400, detail="Tenant context required")
-        
-        query = db.query(OCRJob).filter_by(tenant_id=access.tenant_id)
+        query = db.query(OCRJob)
+        if not access.is_super_admin:
+            if not access.tenant_id:
+                raise HTTPException(status_code=400, detail="Tenant context required")
+            query = query.filter_by(tenant_id=access.tenant_id)
+
         if status:
             try:
                 query = query.filter_by(status=OCRJobStatus(status))

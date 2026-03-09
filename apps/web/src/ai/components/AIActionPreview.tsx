@@ -196,7 +196,7 @@ function ActionStepItem({
   return (
     <div
       className={`
-        relative flex items-start gap-3 p-3 rounded-lg border transition-colors
+        relative flex items-start gap-3 p-3 rounded-2xl border transition-colors
         ${isActive ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-200'}
         ${status === 'failed' ? 'bg-red-50 border-red-200' : ''}
       `.trim()}
@@ -292,7 +292,7 @@ function ModeSelector({
           onClick={() => onChange(option.value)}
           disabled={disabled}
           className={`
-            flex-1 px-4 py-2 rounded-lg border text-sm font-medium transition-colors
+            flex-1 px-4 py-2 rounded-2xl border text-sm font-medium transition-colors
             ${value === option.value
               ? 'bg-blue-50 border-blue-500 text-blue-700'
               : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
@@ -319,7 +319,7 @@ function ExecutionProgressDisplay({ progress }: ExecutionProgressDisplayProps): 
   const percentage = Math.round((progress.currentStep / progress.totalSteps) * 100);
 
   return (
-    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+    <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl">
       <div className="flex items-center justify-between mb-2">
         <span className="text-sm font-medium text-blue-700">
           Çalışıyor: Adım {progress.currentStep} / {progress.totalSteps}
@@ -447,7 +447,7 @@ export function AIActionPreview({
   return (
     <div
       className={`
-        bg-white rounded-lg border shadow-sm overflow-hidden
+        bg-white rounded-2xl border shadow-sm overflow-hidden
         ${overallRiskColors.border}
         ${className}
       `.trim()}
@@ -541,7 +541,7 @@ export function AIActionPreview({
                 onClick={handleApprove}
                 disabled={isLoading || isCurrentPlanExecuting}
                 className={`
-                  flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors
+                  flex-1 px-4 py-2 rounded-2xl text-sm font-medium transition-colors
                   bg-purple-500 text-white hover:bg-purple-600
                   ${(isLoading || isCurrentPlanExecuting) ? 'opacity-50 cursor-not-allowed' : ''}
                 `.trim()}
@@ -557,7 +557,7 @@ export function AIActionPreview({
                 onClick={handleActionClick}
                 disabled={isLoading || isCurrentPlanExecuting || (selectedMode === 'execute' && !canExecute)}
                 className={`
-                  flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors
+                  flex-1 px-4 py-2 rounded-2xl text-sm font-medium transition-colors
                   ${selectedMode === 'simulate'
                     ? 'bg-blue-500 text-white hover:bg-blue-600'
                     : 'bg-green-500 text-white hover:bg-green-600'

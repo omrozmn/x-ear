@@ -8,6 +8,7 @@ from sqlalchemy.types import TypeDecorator
 from database import (
     engine, SessionLocal, ScopedSession,
     get_current_tenant_id, should_skip_tenant_filter, now_utc, format_datetime_utc,
+    gen_id,
     json_dump, json_load
 )
 

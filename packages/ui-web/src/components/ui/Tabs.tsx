@@ -143,7 +143,7 @@ export const TabsTrigger: React.FC<TabsTriggerProps> = ({
             disabled && 'opacity-50 cursor-not-allowed'
           )
           : cn(
-            'px-3 py-2 text-sm font-medium rounded-md text-left',
+            'px-3 py-2 text-sm font-medium rounded-xl text-left',
             isActive
               ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
               : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-800',
@@ -205,21 +205,21 @@ export const TabsExample: React.FC = () => {
       </TabsList>
 
       <TabsContent value="tab1" className="mt-4">
-        <div className="p-4 border rounded-lg">
+        <div className="p-4 border rounded-2xl">
           <h3 className="text-lg font-medium mb-2">Genel Bilgiler</h3>
           <p className="text-gray-600">Hasta genel bilgileri burada görüntülenir.</p>
         </div>
       </TabsContent>
 
       <TabsContent value="tab2" className="mt-4">
-        <div className="p-4 border rounded-lg">
+        <div className="p-4 border rounded-2xl">
           <h3 className="text-lg font-medium mb-2">Cihazlar</h3>
           <p className="text-gray-600">Hasta cihaz bilgileri burada görüntülenir.</p>
         </div>
       </TabsContent>
 
       <TabsContent value="tab3" className="mt-4">
-        <div className="p-4 border rounded-lg">
+        <div className="p-4 border rounded-2xl">
           <h3 className="text-lg font-medium mb-2">Belgeler</h3>
           <p className="text-gray-600">Hasta belgeleri burada görüntülenir.</p>
         </div>

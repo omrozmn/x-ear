@@ -19,6 +19,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import Pagination from '../../components/ui/Pagination';
 import { useAdminResponsive } from '../../hooks/useAdminResponsive';
 import { ResponsiveTable } from '../../components/responsive/ResponsiveTable';
+import { extractPagination, unwrapArray } from '@/lib/orval-response';
 
 interface SmsHeaderDocument {
     url: string;
@@ -30,7 +31,7 @@ interface SmsHeaderRequestView extends SmsHeaderRequestRead {
 }
 
 function getHeaders(data: ResponseEnvelopeListSmsHeaderRequestRead | undefined): SmsHeaderRequestView[] {
-    const headers = Array.isArray(data?.data) ? data.data : [];
+    const headers = unwrapArray<SmsHeaderRequestRead>(data);
 
     return headers.map((header) => ({
         ...header,
@@ -45,7 +46,8 @@ function getHeaders(data: ResponseEnvelopeListSmsHeaderRequestRead | undefined):
 
 export default function SMSHeadersPage() {
     const { isMobile } = useAdminResponsive();
-    const [statusFilter, setStatusFilter] = useState('pending');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
     const [selectedHeader, setSelectedHeader] = useState<SmsHeaderRequestView | null>(null);
     const [rejectionReason, setRejectionReason] = useState('');
     const [page, setPage] = useState(1);
@@ -57,7 +59,14 @@ export default function SMSHeadersPage() {
     });
 
     const updateStatusMutation = useUpdateSmAdminHeaderStatus();
-    const headers = getHeaders(headersData).filter((header) => (header.status ?? 'pending') === statusFilter);
+    const pagination = extractPagination(headersData);
+    const headers = getHeaders(headersData).filter((header) => {
+        const matchesStatus = statusFilter === 'all' || (header.status ?? 'pending') === statusFilter;
+        const query = searchTerm.trim().toLowerCase();
+        const matchesSearch = !query || [header.headerText, header.tenantId, header.headerType]
+            .some((value) => (value || '').toLowerCase().includes(query));
+        return matchesStatus && matchesSearch;
+    });
 
     const handleStatusUpdate = async (status: 'approved' | 'rejected') => {
         if (!selectedHeader) return;
@@ -91,6 +100,9 @@ export default function SMSHeadersPage() {
             key: 'tenantId',
             header: 'Tenant ID',
             mobileHidden: true,
+            sortable: true,
+            sortKey: 'tenantId',
+            sortValue: (header: SmsHeaderRequestView) => header.tenantId || '',
             render: (header: SmsHeaderRequestView) => (
                 <span className="font-mono text-xs text-gray-500 dark:text-gray-400">{header.tenantId}</span>
             )
@@ -98,6 +110,9 @@ export default function SMSHeadersPage() {
         {
             key: 'headerText',
             header: 'Başlık',
+            sortable: true,
+            sortKey: 'headerText',
+            sortValue: (header: SmsHeaderRequestView) => header.headerText || '',
             render: (header: SmsHeaderRequestView) => (
                 <span className="font-bold text-gray-900 dark:text-white">{header.headerText}</span>
             )
@@ -105,6 +120,9 @@ export default function SMSHeadersPage() {
         {
             key: 'headerType',
             header: 'Tip',
+            sortable: true,
+            sortKey: 'headerType',
+            sortValue: (header: SmsHeaderRequestView) => header.headerType || '',
             render: (header: SmsHeaderRequestView) => (
                 <span className="text-gray-600 dark:text-gray-400">
                     {header.headerType === 'company_title' ? 'Firma Unvanı' :
@@ -139,6 +157,9 @@ export default function SMSHeadersPage() {
         {
             key: 'status',
             header: 'Durum',
+            sortable: true,
+            sortKey: 'status',
+            sortValue: (header: SmsHeaderRequestView) => header.status || '',
             render: (header: SmsHeaderRequestView) => (
                 <span className={`px-2 py-1 rounded text-xs font-medium ${header.status === 'approved' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' :
                     header.status === 'rejected' ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200' :
@@ -167,7 +188,7 @@ export default function SMSHeadersPage() {
                     <p className="text-gray-500 dark:text-gray-400 text-sm">Müşterilerin gönderici başlıklarını yönetin</p>
                 </div>
                 <div className={`flex gap-2 ${isMobile ? 'flex-col' : ''}`}>
-                    {['pending', 'approved', 'rejected'].map(s => (
+                    {['all', 'pending', 'approved', 'rejected'].map(s => (
                         <button
                             key={s}
                             onClick={() => setStatusFilter(s)}
@@ -176,9 +197,25 @@ export default function SMSHeadersPage() {
                                 : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                                 }`}
                         >
-                            {s === 'pending' ? 'Bekleyenler' : s === 'approved' ? 'Onaylananlar' : 'Reddedilenler'}
+                            {s === 'all' ? 'Tümü' : s === 'pending' ? 'Bekleyenler' : s === 'approved' ? 'Onaylananlar' : 'Reddedilenler'}
                         </button>
                     ))}
+                </div>
+            </div>
+            <div className="mb-4">
+                <div className="relative max-w-md">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <FileText className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <Input
+                        value={searchTerm}
+                        onChange={(e) => {
+                            setSearchTerm(e.target.value);
+                            setPage(1);
+                        }}
+                        placeholder="Başlık, tenant veya tip ara..."
+                        className="pl-10"
+                    />
                 </div>
             </div>
 
@@ -196,11 +233,14 @@ export default function SMSHeadersPage() {
                         />
                         <Pagination
                             currentPage={page}
-                            totalPages={headersData?.meta?.totalPages ?? 1}
-                            totalItems={headersData?.meta?.total ?? headers.length}
+                            totalPages={pagination?.totalPages ?? 1}
+                            totalItems={searchTerm ? headers.length : (pagination?.total ?? headers.length)}
                             itemsPerPage={limit}
                             onPageChange={setPage}
-                            onItemsPerPageChange={setLimit}
+                            onItemsPerPageChange={(nextLimit) => {
+                                setLimit(nextLimit);
+                                setPage(1);
+                            }}
                         />
                     </>
                 )}

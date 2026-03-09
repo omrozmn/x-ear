@@ -153,7 +153,7 @@ export const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
             Dosya Seçimi *
           </label>
           <div
-            className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${dragActive
+            className={`relative border-2 border-dashed rounded-2xl p-6 text-center transition-colors ${dragActive
               ? 'border-blue-400 bg-blue-50'
               : selectedFile
                 ? 'border-green-400 bg-green-50'
@@ -251,7 +251,7 @@ export const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Doküman hakkında açıklama..."
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
 
@@ -265,7 +265,7 @@ export const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
             value={tags}
             onChange={(e) => setTags(e.target.value)}
             placeholder="Virgülle ayrılmış etiketler (örn: önemli, acil, kontrol)"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
           <p className="mt-1 text-xs text-gray-500">
             Etiketler dokümanın aranmasını kolaylaştırır

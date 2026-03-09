@@ -171,7 +171,7 @@ async def list_audit_logs(
     user_context: Dict[str, Any] = Depends(get_current_user_context),
 ) -> AuditListResponse:
     """List audit logs with filtering and pagination."""
-    tenant_id = user_context.get("tenant_id", "unknown")
+    tenant_id = None if user_context.get("is_super_admin") else user_context.get("tenant_id", "unknown")
     
     # Get filtered entries
     entries, total = _get_audit_entries(
@@ -237,10 +237,10 @@ async def get_audit_stats(
     user_context: Dict[str, Any] = Depends(get_current_user_context),
 ) -> AuditStatsResponse:
     """Get audit statistics for the tenant."""
-    tenant_id = user_context.get("tenant_id", "unknown")
+    tenant_id = None if user_context.get("is_super_admin") else user_context.get("tenant_id", "unknown")
     
     # Filter entries
-    entries = [e for e in _audit_store if e.get("tenant_id") == tenant_id]
+    entries = _audit_store if tenant_id is None else [e for e in _audit_store if e.get("tenant_id") == tenant_id]
     
     if from_date:
         entries = [e for e in entries if e.get("event_timestamp", "") >= from_date.isoformat()]

@@ -495,7 +495,7 @@ export function AIChatWidget({
   // Mobile-specific classes override default positioning
   const containerClasses = isMobile
     ? 'fixed inset-0 z-[2000] flex flex-col bg-white'
-    : `fixed ${positionClasses.window} w-96 h-[500px] max-h-[80vh] bg-white rounded-lg shadow-2xl flex flex-col border border-gray-200`;
+    : `fixed ${positionClasses.window} w-96 h-[500px] max-h-[80vh] bg-white rounded-3xl shadow-2xl flex flex-col border border-gray-200`;
 
   const getDynamicTypingMessage = () => {
     const lang = i18n.language || 'tr';
@@ -610,7 +610,7 @@ export function AIChatWidget({
           aria-modal="true"
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+          <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50 rounded-t-3xl">
             <div className="flex items-center gap-2">
               <RobotIcon />
               <div className="flex flex-col">
@@ -627,7 +627,7 @@ export function AIChatWidget({
                   <Button
                     onClick={() => { confirmReset(); setShowResetConfirm(false); }}
                     onBlur={() => setShowResetConfirm(false)}
-                    className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-2xl transition-all focus:outline-none focus:ring-2 focus:ring-red-500"
                     title="Silmeyi Onayla"
                     autoFocus
                   >
@@ -636,7 +636,7 @@ export function AIChatWidget({
                 ) : (
                   <Button
                     onClick={() => setShowResetConfirm(true)}
-                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all focus:outline-none focus:ring-1 focus:ring-red-200"
+                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all focus:outline-none focus:ring-1 focus:ring-red-200"
                     title="Sohbeti Temizle"
                   >
                     <Trash2 size={16} />
@@ -645,7 +645,7 @@ export function AIChatWidget({
               )}
               <Button
                 onClick={handleClose}
-                className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-2xl transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
                 aria-label="Chat'i kapat"
               >
                 <CloseIcon />
@@ -711,7 +711,7 @@ export function AIChatWidget({
                       <div className="relative group">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
                         <Input
-                          className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                          className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
                           placeholder="Aramak için yazın..."
                           value={slotSearchQuery}
                           onChange={(e) => setSlotSearchQuery(e.target.value)}
@@ -726,7 +726,7 @@ export function AIChatWidget({
                       )}
 
                       {slotEntityData?.entities && slotEntityData.entities.length > 0 && (
-                        <div className="bg-white border rounded-lg shadow-sm max-h-40 overflow-y-auto divide-y divide-gray-50 border-blue-50">
+                        <div className="bg-white border rounded-2xl shadow-sm max-h-40 overflow-y-auto divide-y divide-gray-50 border-blue-50">
                           {slotEntityData.entities.map((e: EntityItem) => (
                             <Button
                               key={e.id}
@@ -756,7 +756,7 @@ export function AIChatWidget({
                             updateSlot(currentSlot.name, opt);
                             nextSlot();
                           }}
-                          className="flex items-center justify-center px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 transition-all shadow-sm"
+                          className="flex items-center justify-center px-3 py-2 bg-white border border-gray-200 rounded-2xl text-xs font-semibold text-gray-700 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 transition-all shadow-sm"
                         >
                           {opt}
                         </Button>
@@ -769,7 +769,7 @@ export function AIChatWidget({
                       <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
                       <Input
                         type="date"
-                        className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                        className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
                         onChange={(e) => {
                           updateSlot(currentSlot.name, e.target.value);
                           nextSlot();
@@ -782,7 +782,7 @@ export function AIChatWidget({
                     <div className="relative group">
                       <Edit3 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
                       <Input
-                        className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                        className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
                         placeholder="Yazmaya başlayın..."
                         autoFocus
                         onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -800,7 +800,7 @@ export function AIChatWidget({
                       <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
                       <input data-allow-raw="true"
                         type="number"
-                        className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                        className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
                         placeholder="Sayı girin..."
                         autoFocus
                         onKeyDown={(e) => {
@@ -821,7 +821,7 @@ export function AIChatWidget({
                           updateSlot(currentSlot.name, true);
                           nextSlot();
                         }}
-                        className="flex-1 px-3 py-2 bg-white border border-green-200 text-green-700 text-xs font-bold rounded-lg hover:bg-green-50 transition-all shadow-sm"
+                        className="flex-1 px-3 py-2 bg-white border border-green-200 text-green-700 text-xs font-bold rounded-2xl hover:bg-green-50 transition-all shadow-sm"
                       >
                         {t('common.yes', 'Evet')}
                       </button>
@@ -831,7 +831,7 @@ export function AIChatWidget({
                           updateSlot(currentSlot.name, false);
                           nextSlot();
                         }}
-                        className="flex-1 px-3 py-2 bg-white border border-red-200 text-red-700 text-xs font-bold rounded-lg hover:bg-red-50 transition-all shadow-sm"
+                        className="flex-1 px-3 py-2 bg-white border border-red-200 text-red-700 text-xs font-bold rounded-2xl hover:bg-red-50 transition-all shadow-sm"
                       >
                         {t('common.no', 'Hayır')}
                       </button>
@@ -843,7 +843,7 @@ export function AIChatWidget({
                       <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
                       <input data-allow-raw="true"
                         type="time"
-                        className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-sm"
+                        className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-sm"
                         onChange={(e) => {
                           updateSlot(currentSlot.name, e.target.value);
                           nextSlot();
@@ -864,7 +864,7 @@ export function AIChatWidget({
               <div className="bg-white border-2 border-purple-100 rounded-xl p-4 shadow-md animate-in fade-in slide-in-from-bottom-2 mx-2 my-2 overflow-hidden">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <div className="p-1.5 bg-purple-100 text-purple-600 rounded-lg">
+                    <div className="p-1.5 bg-purple-100 text-purple-600 rounded-2xl">
                       <Zap size={16} />
                     </div>
                     <div>
@@ -875,12 +875,12 @@ export function AIChatWidget({
                 </div>
 
                 <div className="space-y-3 mb-4">
-                  <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <div className="p-3 bg-gray-50 rounded-2xl border border-gray-100">
                     <div className="text-[10px] text-gray-400 uppercase font-bold mb-1">İşlem Modeli</div>
                     <div className="text-sm font-semibold text-gray-900">{currentAction.displayName || currentAction.name}</div>
                   </div>
 
-                  <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <div className="p-3 bg-gray-50 rounded-2xl border border-gray-100">
                     <div className="text-[10px] text-gray-400 uppercase font-bold mb-1">Hedef Kayıtlar</div>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {context?.map(c => (
@@ -896,7 +896,7 @@ export function AIChatWidget({
                   </div>
 
                   {Object.entries(slots).filter(([k]) => !k.startsWith('_')).length > 0 && (
-                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                    <div className="p-3 bg-gray-50 rounded-2xl border border-gray-100">
                       <div className="text-[10px] text-gray-400 uppercase font-bold mb-1">Parametreler</div>
                       <div className="space-y-1.5 mt-1">
                         {Object.entries(slots)
@@ -952,7 +952,7 @@ export function AIChatWidget({
                         }).catch(console.error);
                       }
                     }}
-                    className="flex-1 bg-purple-600 text-white px-4 py-2.5 rounded-lg text-xs font-bold hover:bg-purple-700 transition-colors shadow-sm"
+                    className="flex-1 bg-purple-600 text-white px-4 py-2.5 rounded-2xl text-xs font-bold hover:bg-purple-700 transition-colors shadow-sm"
                     disabled={isExecutingRealAction}
                   >
                     {isExecutingRealAction ? 'Uygulanıyor...' : 'Şimdi Uygula'}
@@ -960,7 +960,7 @@ export function AIChatWidget({
                   <button
                     data-allow-raw="true"
                     onClick={reset}
-                    className="px-4 py-2.5 bg-gray-100 text-gray-600 rounded-lg text-xs font-bold hover:bg-gray-200 transition-colors"
+                    className="px-4 py-2.5 bg-gray-100 text-gray-600 rounded-2xl text-xs font-bold hover:bg-gray-200 transition-colors"
                   >
                     İptal
                   </button>
@@ -981,7 +981,7 @@ export function AIChatWidget({
                 {executionResult.status === 'success' ? (
                   <ActionResultCard onClose={reset} />
                 ) : (
-                  <div className={`mt-2 p-3 rounded-lg border animate-in slide-in-from-bottom-2 ${executionResult.status === 'dry_run' ? 'bg-blue-50 border-blue-100 text-blue-900' :
+                  <div className={`mt-2 p-3 rounded-2xl border animate-in slide-in-from-bottom-2 ${executionResult.status === 'dry_run' ? 'bg-blue-50 border-blue-100 text-blue-900' :
                     'bg-red-50 border-red-100 text-red-900'
                     }`}>
                     <div className="flex items-center gap-2 mb-2">

@@ -71,7 +71,7 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
           <select data-allow-raw="true"
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-10 dark:bg-slate-800 dark:text-white"
+            className="px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 h-10 dark:bg-slate-800 dark:text-white"
           >
             <option value="all">Tüm Tarihler</option>
             <option value="today">Bugün</option>
@@ -83,7 +83,7 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
           <select data-allow-raw="true"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-10 dark:bg-slate-800 dark:text-white"
+            className="px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 h-10 dark:bg-slate-800 dark:text-white"
           >
             <option value="all">Tüm Durumlar</option>
             <option value="completed">Tamamlandı</option>
@@ -94,7 +94,7 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
           <select data-allow-raw="true"
             value={paymentMethodFilter}
             onChange={(e) => setPaymentMethodFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-10 dark:bg-slate-800 dark:text-white"
+            className="px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 h-10 dark:bg-slate-800 dark:text-white"
           >
             <option value="all">Tüm Ödemeler</option>
             <option value="cash">Nakit</option>
@@ -126,7 +126,7 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
 
       {/* Advanced Filters */}
       {showAdvancedFilters && (
-        <div className="p-4 bg-gray-50 dark:bg-slate-900 rounded-lg space-y-4">
+        <div className="p-4 bg-gray-50 dark:bg-slate-900 rounded-2xl space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -158,7 +158,7 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
                 <select data-allow-raw="true"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as 'date' | 'amount' | 'status')}
-                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white"
+                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white"
                 >
                   <option value="date">Tarih</option>
                   <option value="amount">Tutar</option>
@@ -167,7 +167,7 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
                 <select data-allow-raw="true"
                   value={sortOrder}
                   onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
-                  className="px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white"
+                  className="px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white"
                 >
                   <option value="desc">Azalan</option>
                   <option value="asc">Artan</option>
@@ -180,7 +180,7 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
 
       {/* Bulk Actions */}
       {selectedSales.length > 0 && (
-        <div className="flex items-center gap-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+        <div className="flex items-center gap-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-200 dark:border-blue-800">
           <span className="text-sm font-medium text-blue-800 dark:text-blue-300">
             {selectedSales.length} satış seçildi
           </span>

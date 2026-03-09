@@ -107,7 +107,7 @@ export function CashflowModal({
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
         <div className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onClick={handleClose} />
 
-        <div className="inline-block w-full max-w-2xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-gray-800 shadow-xl rounded-lg">
+        <div className="inline-block w-full max-w-2xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-gray-800 shadow-xl rounded-2xl">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Yeni Kasa Kaydı</h3>
             <button data-allow-raw="true" onClick={handleClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
@@ -128,7 +128,7 @@ export function CashflowModal({
                     setTransactionType('income');
                     setRecordType('');
                   }}
-                  className={`flex-1 py-3 px-4 border-2 rounded-lg font-medium transition-all ${transactionType === 'income'
+                  className={`flex-1 py-3 px-4 border-2 rounded-2xl font-medium transition-all ${transactionType === 'income'
                     ? 'border-green-500 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400'
                     : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-green-300 dark:hover:border-green-500'
                     }`}
@@ -142,7 +142,7 @@ export function CashflowModal({
                     setTransactionType('expense');
                     setRecordType('');
                   }}
-                  className={`flex-1 py-3 px-4 border-2 rounded-lg font-medium transition-all ${transactionType === 'expense'
+                  className={`flex-1 py-3 px-4 border-2 rounded-2xl font-medium transition-all ${transactionType === 'expense'
                     ? 'border-red-500 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                     : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-red-300 dark:hover:border-red-500'
                     }`}
@@ -205,7 +205,7 @@ export function CashflowModal({
                   const parts = value.split('.');
                   setAmount(parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : value);
                 }}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               />
               {errors.amount && (
                 <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.amount}</p>
@@ -222,7 +222,7 @@ export function CashflowModal({
                 placeholder="İşlem açıklaması..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               />
             </div>
 

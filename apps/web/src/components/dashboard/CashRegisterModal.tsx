@@ -63,7 +63,7 @@ export const CashRegisterModal: React.FC<CashRegisterModalProps> = ({
             <Button
               type="button"
               onClick={() => setFormData({ ...formData, type: 'income' })}
-              className={`flex-1 py-2 px-4 rounded-lg border ${formData.type === 'income'
+              className={`flex-1 py-2 px-4 rounded-2xl border ${formData.type === 'income'
                 ? 'bg-green-50 border-green-200 text-green-700'
                 : 'bg-gray-50 border-gray-200 text-gray-700'
                 }`}
@@ -73,7 +73,7 @@ export const CashRegisterModal: React.FC<CashRegisterModalProps> = ({
             <Button
               type="button"
               onClick={() => setFormData({ ...formData, type: 'expense' })}
-              className={`flex-1 py-2 px-4 rounded-lg border ${formData.type === 'expense'
+              className={`flex-1 py-2 px-4 rounded-2xl border ${formData.type === 'expense'
                 ? 'bg-red-50 border-red-200 text-red-700'
                 : 'bg-gray-50 border-gray-200 text-gray-700'
                 }`}
@@ -98,7 +98,7 @@ export const CashRegisterModal: React.FC<CashRegisterModalProps> = ({
                 key={value}
                 type="button"
                 onClick={() => setFormData({ ...formData, recordType: value as 'cash' | 'card' | 'transfer' })}
-                className={`flex flex-col items-center py-3 px-2 rounded-lg border ${formData.recordType === value
+                className={`flex flex-col items-center py-3 px-2 rounded-2xl border ${formData.recordType === value
                   ? 'bg-blue-50 border-blue-200 text-blue-700'
                   : 'bg-gray-50 border-gray-200 text-gray-700'
                   }`}
@@ -139,7 +139,7 @@ export const CashRegisterModal: React.FC<CashRegisterModalProps> = ({
             type="number"
             value={formData.amount || ''}
             onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) || 0 })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="0.00"
             min="0"
             step="0.01"
@@ -154,7 +154,7 @@ export const CashRegisterModal: React.FC<CashRegisterModalProps> = ({
           <Textarea
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="İşlem açıklaması..."
             rows={3}
           />

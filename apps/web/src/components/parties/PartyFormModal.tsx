@@ -625,7 +625,7 @@ export function PartyFormModal({
 
         {/* Submit Error */}
         {errors.submit && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div className="p-3 bg-red-50 border border-red-200 rounded-2xl">
             <p className="text-sm text-red-600">{errors.submit}</p>
           </div>
         )}

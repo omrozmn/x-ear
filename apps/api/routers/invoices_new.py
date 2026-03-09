@@ -207,6 +207,15 @@ def _get_birfatura_client(tenant_id: str, db: Session) -> BirfaturaClient:
             integration_type="birfatura", config_key="integration_key"
         ).first()
     global_key = integration_cfg.config_value if integration_cfg else None
+    use_test_creds = bool(
+        os.getenv("BIRFATURA_TEST_API_KEY")
+        and os.getenv("BIRFATURA_TEST_SECRET_KEY")
+        and os.getenv("BIRFATURA_TEST_INTEGRATION_KEY")
+    )
+    if use_test_creds:
+        tenant_api_key = os.getenv("BIRFATURA_TEST_API_KEY") or tenant_api_key
+        tenant_secret_key = os.getenv("BIRFATURA_TEST_SECRET_KEY") or tenant_secret_key
+        global_key = os.getenv("BIRFATURA_TEST_INTEGRATION_KEY") or global_key
     mock_env = os.getenv("BIRFATURA_MOCK")
     using_mock = mock_env == "1" or (mock_env != "0" and os.getenv("ENVIRONMENT", "production") != "production")
     if not using_mock and (not tenant_api_key or not tenant_secret_key or not global_key):
@@ -312,8 +321,21 @@ def _render_invoice_html(invoice: "PurchaseInvoice") -> bytes:
     sender_addr = invoice.sender_address or ""
     sender_city = invoice.sender_city or ""
 
-    receiver = raw.get("ReceiverName") or ""
-    receiver_vkn = raw.get("ReceiverKN") or ""
+    source_form = raw.get("_source_form_data") if isinstance(raw.get("_source_form_data"), dict) else {}
+    receiver = (
+        raw.get("ReceiverName")
+        or (raw.get("customer") or {}).get("name")
+        or source_form.get("customerName")
+        or " ".join(filter(None, [source_form.get("customerFirstName"), source_form.get("customerLastName")])).strip()
+    )
+    receiver_vkn = (
+        raw.get("ReceiverKN")
+        or (raw.get("customer") or {}).get("tax_id")
+        or source_form.get("customerTaxId")
+        or source_form.get("customerTaxNumber")
+        or source_form.get("customerTcNumber")
+        or ""
+    )
 
     subtotal = raw.get("LineExtensionAmount") or invoice.subtotal or 0
     tax_amount = (raw.get("TaxInclusiveAmount", 0) or 0) - (raw.get("TaxExclusiveAmount", 0) or 0)
@@ -326,6 +348,18 @@ def _render_invoice_html(invoice: "PurchaseInvoice") -> bytes:
             return f"{float(v):,.2f}"
         except (TypeError, ValueError):
             return str(v)
+
+    lines = raw.get("lines") if isinstance(raw.get("lines"), list) else []
+    if not lines and isinstance(source_form.get("items"), list):
+        lines = source_form.get("items") or []
+    line_rows = "".join(
+        f"<tr><td>{line.get('name') or line.get('description') or ''}</td>"
+        f"<td>{fmt(line.get('quantity') or 0)}</td>"
+        f"<td>{fmt(line.get('unitPrice') or line.get('price') or 0)} {currency}</td>"
+        f"<td>{fmt(line.get('line_extension_amount') or line.get('total') or 0)} {currency}</td></tr>"
+        for line in lines
+        if isinstance(line, dict)
+    )
 
     html = f"""<!DOCTYPE html>
 <html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -344,6 +378,10 @@ def _render_invoice_html(invoice: "PurchaseInvoice") -> bytes:
   .party h3{{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#64748b;margin-bottom:8px}}
   .party .name{{font-size:14px;font-weight:600;color:#0f172a;margin-bottom:4px}}
   .party .detail{{font-size:12px;color:#475569;line-height:1.5}}
+  .lines{{margin:24px 0}}
+  .lines table{{width:100%;border-collapse:collapse;font-size:13px}}
+  .lines th,.lines td{{padding:10px 8px;border-bottom:1px solid #e2e8f0;text-align:left}}
+  .lines th:last-child,.lines td:last-child{{text-align:right}}
   .totals{{margin-top:24px;border-top:1px solid #e2e8f0;padding-top:16px}}
   .totals table{{width:300px;margin-left:auto;font-size:14px}}
   .totals td{{padding:4px 0}}
@@ -382,6 +420,7 @@ def _render_invoice_html(invoice: "PurchaseInvoice") -> bytes:
       <div class="detail">VKN/TCKN: {receiver_vkn}</div>
     </div>
   </div>
+  {"<div class='lines'><table><thead><tr><th>Kalem</th><th>Miktar</th><th>Birim Fiyat</th><th>Tutar</th></tr></thead><tbody>" + line_rows + "</tbody></table></div>" if line_rows else ""}
   <div class="totals">
     <table>
       <tr><td>Ara Toplam</td><td>{fmt(subtotal)} {currency}</td></tr>
@@ -676,6 +715,8 @@ def create_invoice_draft(
     except (ValueError, TypeError):
         total = Decimal("0")
 
+    customer_tax_id = form.get("customerTaxId") or form.get("customerTaxNumber") or form.get("customerTcNumber") or ""
+
     draft = PurchaseInvoice(
         tenant_id=tenant_id,
         birfatura_uuid=f"draft-{uuid.uuid4()}",
@@ -683,7 +724,7 @@ def create_invoice_draft(
         invoice_date=datetime.utcnow(),
         invoice_type="OUTGOING",
         sender_name=form.get("customerFirstName") or form.get("customerName") or "",
-        sender_tax_number=form.get("customerTaxNumber") or "",
+        sender_tax_number=customer_tax_id,
         currency=form.get("currency") or "TRY",
         subtotal=Decimal("0"),
         tax_amount=Decimal("0"),
@@ -732,7 +773,7 @@ def update_invoice_draft(
     form["_is_form_draft"] = True
     draft.raw_data = form
     draft.sender_name = form.get("customerFirstName") or form.get("customerName") or draft.sender_name or ""
-    draft.sender_tax_number = form.get("customerTaxNumber") or draft.sender_tax_number or ""
+    draft.sender_tax_number = form.get("customerTaxId") or form.get("customerTaxNumber") or form.get("customerTcNumber") or draft.sender_tax_number or ""
     draft.currency = form.get("currency") or draft.currency or "TRY"
     raw_total = form.get("totalAmount")
     if raw_total is not None:
@@ -801,6 +842,9 @@ def get_invoice_draft(
                 raw.get("ReceiverName") or raw.get("receiverName") or draft.sender_name or ""
             ),
             "customerTaxNumber": (
+                raw.get("ReceiverKN") or raw.get("receiverTaxNumber") or draft.sender_tax_number or ""
+            ),
+            "customerTaxId": (
                 raw.get("ReceiverKN") or raw.get("receiverTaxNumber") or draft.sender_tax_number or ""
             ),
             "invoiceType": raw.get("InvoiceTypeCode", ""),

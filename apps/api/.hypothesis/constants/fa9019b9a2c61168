@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/post.py
+# hypothesis_version: 6.151.9
+
+[100, 255, 500, '-', 'User', 'X-Ear Team', '[^a-z0-9]+', 'authorId', 'authorName', 'category', 'content', 'created_at', 'excerpt', 'id', 'imageUrl', 'isPublished', 'is_published', 'ix_posts_created_at', 'metaDescription', 'metaKeywords', 'metaTitle', 'posts', 'pst', 'publishedAt', 'slug', 'title', 'users.id']

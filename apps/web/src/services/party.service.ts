@@ -354,6 +354,7 @@ export class PartyService {
           (p.lastName && p.lastName.toLowerCase().includes(searchLower)) ||
           (p.phone && String(p.phone).toLowerCase().includes(searchLower)) ||
           (p.tcNumber && String(p.tcNumber).toLowerCase().includes(searchLower)) ||
+          (p.taxNumber && String(p.taxNumber).toLowerCase().includes(searchLower)) ||
           (p.email && p.email.toLowerCase().includes(searchLower))
         );
       }
@@ -820,4 +821,3 @@ export class PartyService {
 
 // Singleton instance
 export const partyService = new PartyService();
-

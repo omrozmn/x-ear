@@ -81,7 +81,7 @@ export const PartyHeader: React.FC<PartyHeaderProps> = ({
 
   if (isLoading || !party) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
         <div className="animate-pulse">
           <div className="flex items-start space-x-4">
             <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
@@ -153,7 +153,7 @@ export const PartyHeader: React.FC<PartyHeaderProps> = ({
   // const statusInfo = formatStatus(party.status || undefined); // Not used in render
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
       <div className="flex items-start justify-between">
         <div className="flex items-start space-x-4">
           {/* Avatar */}
@@ -338,7 +338,7 @@ export const PartyHeader: React.FC<PartyHeaderProps> = ({
         size="sm"
       >
         <div className="space-y-4">
-          <div className="flex items-start space-x-3 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+          <div className="flex items-start space-x-3 p-4 bg-red-50 dark:bg-red-900/20 rounded-2xl border border-red-200 dark:border-red-800">
             <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="text-sm font-medium text-red-900 dark:text-red-100">

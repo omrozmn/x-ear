@@ -6,6 +6,7 @@ import {
     type OrderStatusUpdate,
     type SchemasBaseResponseEnvelope,
 } from '@/lib/api-client';
+import { unwrapArray } from '@/lib/orval-response';
 import {
     Truck,
     CheckCircle,
@@ -31,12 +32,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function getOrders(data: SchemasBaseResponseEnvelope | undefined): ProductionOrderView[] {
-    const source = data?.data;
-    if (!Array.isArray(source)) {
-        return [];
-    }
-
-    return source
+    return unwrapArray<Record<string, unknown>>(data)
         .filter(isRecord)
         .map((order) => ({
             id: typeof order.id === 'string' ? order.id : '',
@@ -52,13 +48,22 @@ function getOrders(data: SchemasBaseResponseEnvelope | undefined): ProductionOrd
 
 const AdminProductionPage: React.FC = () => {
     const { isMobile } = useAdminResponsive();
+    const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const params: ListAdminProductionOrdersParams | undefined = statusFilter ? { status: statusFilter } : undefined;
 
     const { data: ordersData, isLoading, refetch } = useListAdminProductionOrders(params);
     const updateStatusMutation = useUpdateAdminProductionOrderStatus();
 
-    const orders = getOrders(ordersData);
+    const orders = getOrders(ordersData).filter((order) => {
+        const query = searchTerm.trim().toLowerCase();
+        if (!query) {
+            return true;
+        }
+
+        return [order.orderNumber, order.tenantId, order.productType, order.manufacturer || '', order.status]
+            .some((value) => (value || '').toLowerCase().includes(query));
+    });
 
     const handleStatusUpdate = async (id: string, newStatus: string) => {
         try {
@@ -90,6 +95,9 @@ const AdminProductionPage: React.FC = () => {
         {
             key: 'orderNumber',
             header: 'Sipariş No',
+            sortable: true,
+            sortKey: 'orderNumber',
+            sortValue: (order: ProductionOrderView) => `${order.orderNumber} ${order.tenantId}`,
             render: (order: ProductionOrderView) => (
                 <div>
                     <div className="text-sm font-medium text-gray-900 dark:text-white">{order.orderNumber}</div>
@@ -101,6 +109,9 @@ const AdminProductionPage: React.FC = () => {
             key: 'productType',
             header: 'Ürün Tipi',
             mobileHidden: true,
+            sortable: true,
+            sortKey: 'productType',
+            sortValue: (order: ProductionOrderView) => order.productType,
             render: (order: ProductionOrderView) => (
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
                     {order.productType === 'mold' ? 'Kulak Kalıbı' :
@@ -111,12 +122,18 @@ const AdminProductionPage: React.FC = () => {
         {
             key: 'status',
             header: 'Durum',
+            sortable: true,
+            sortKey: 'status',
+            sortValue: (order: ProductionOrderView) => order.status,
             render: (order: ProductionOrderView) => getStatusBadge(order.status)
         },
         {
             key: 'manufacturer',
             header: 'Üretici',
             mobileHidden: true,
+            sortable: true,
+            sortKey: 'manufacturer',
+            sortValue: (order: ProductionOrderView) => order.manufacturer || '',
             render: (order: ProductionOrderView) => (
                 <span className="text-sm text-gray-500 dark:text-gray-400">{order.manufacturer || '-'}</span>
             )
@@ -125,6 +142,9 @@ const AdminProductionPage: React.FC = () => {
             key: 'estimatedDeliveryDate',
             header: 'Tahmini Teslim',
             mobileHidden: true,
+            sortable: true,
+            sortKey: 'estimatedDeliveryDate',
+            sortValue: (order: ProductionOrderView) => order.estimatedDeliveryDate || '',
             render: (order: ProductionOrderView) => (
                 <span className="text-sm text-gray-500 dark:text-gray-400">
                     {order.estimatedDeliveryDate ? new Date(order.estimatedDeliveryDate).toLocaleDateString('tr-TR') : '-'}
@@ -168,6 +188,8 @@ const AdminProductionPage: React.FC = () => {
                             </div>
                             <input
                                 type="text"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
                                 className="focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 sm:text-sm border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                 placeholder="Sipariş No Ara"
                             />
@@ -190,6 +212,18 @@ const AdminProductionPage: React.FC = () => {
 
             {isMobile && (
                 <div className="mb-4">
+                    <div className="relative rounded-md shadow-sm mb-3">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Search className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                        </div>
+                        <input
+                            type="text"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 text-sm border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            placeholder="Sipariş No Ara"
+                        />
+                    </div>
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}

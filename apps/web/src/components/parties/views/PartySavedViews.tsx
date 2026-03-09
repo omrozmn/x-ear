@@ -88,7 +88,7 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
   )
 
   return (
-    <div className={`bg-white border border-gray-200 rounded-lg ${className}`}>
+    <div className={`bg-white border border-gray-200 rounded-2xl ${className}`}>
       <div className="px-4 py-3 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">

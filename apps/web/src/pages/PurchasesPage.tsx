@@ -157,7 +157,7 @@ export function PurchasesPage() {
                 {formatCurrency(totalPurchases, 'TRY')}
               </p>
             </div>
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+            <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-2xl">
               <ShoppingCart className="text-blue-600 dark:text-blue-400" size={24} />
             </div>
           </div>
@@ -169,7 +169,7 @@ export function PurchasesPage() {
               <p className="text-sm text-gray-600 dark:text-gray-400">Toplam Fatura</p>
               <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{totalCount}</p>
             </div>
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+            <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-2xl">
               <FileText className="text-blue-600 dark:text-blue-400" size={24} />
             </div>
           </div>
@@ -183,7 +183,7 @@ export function PurchasesPage() {
                 {new Set(invoiceList.map((inv: IncomingInvoiceResponse) => inv.supplierTaxNumber).filter(Boolean)).size}
               </p>
             </div>
-            <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+            <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-2xl">
               <FileText className="text-purple-600 dark:text-purple-400" size={24} />
             </div>
           </div>
@@ -229,7 +229,7 @@ export function PurchasesPage() {
               placeholder="Tedarikçi ara..."
               value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); }}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           <div className="flex gap-2">
@@ -238,20 +238,20 @@ export function PurchasesPage() {
               type="date"
               value={dateFrom}
               onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1); }}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
             />
             <input
               data-allow-raw="true"
               type="date"
               value={dateTo}
               onChange={(e) => { setDateTo(e.target.value); setCurrentPage(1); }}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
             />
             <select
               data-allow-raw="true"
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">Tüm Durumlar</option>
               <option value="RECEIVED">Alındı</option>
@@ -379,11 +379,11 @@ export function PurchasesPage() {
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl px-6 py-3 flex items-center gap-4">
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{selectedIds.size} kayıt seçildi</span>
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
-          <button data-allow-raw="true" onClick={handleBulkExportCsv} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors">
+          <button data-allow-raw="true" onClick={handleBulkExportCsv} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-2xl transition-colors">
             <Download className="w-4 h-4" /> CSV Dışa Aktar
           </button>
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
-          <button data-allow-raw="true" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+          <button data-allow-raw="true" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors">
             <X className="w-4 h-4" /> Seçimi Kaldır
           </button>
         </div>
@@ -396,7 +396,7 @@ export function PurchasesPage() {
           onClick={() => setSelectedInvoice(null)}
         >
           <div
-            className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+            className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">

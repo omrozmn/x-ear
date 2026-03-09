@@ -8,6 +8,7 @@ const cn = (...classes: (string | undefined | null | boolean)[]) => {
 };
 
 interface DatePickerProps {
+  'data-testid'?: string;
   /** Called when user changes month or year via header selects (year, monthIndex 0-11) */
   onMonthYearChange?: (year: number, monthIndex: number) => void;
   value?: Date | null;
@@ -41,6 +42,7 @@ const DAYS_TR = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
 const DAYS_EN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 export const DatePicker: React.FC<DatePickerProps> = ({
+  'data-testid': testId,
   value,
   onChange,
   onMonthYearChange,
@@ -222,6 +224,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
       <div className="relative">
         <input
+          data-testid={testId}
           type="text"
           value={formatDate(value)}
           placeholder={displayPlaceholder}
@@ -256,7 +259,11 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
       {isOpen && (() => {
         const popup = (
-          <div style={popupStyle as any} className="bg-white border border-gray-200 rounded-md shadow-lg p-4 min-w-[280px]">
+          <div
+            data-testid={testId ? `${testId}-popup` : undefined}
+            style={popupStyle as any}
+            className="bg-white border border-gray-200 rounded-md shadow-lg p-4 min-w-[280px]"
+          >
             {/* attach ref so outside clicks inside popup won't immediately close it */}
             <div ref={popupRef}>
               {/* Month Navigation */}
@@ -333,6 +340,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
                   return (
                     <button
+                      data-testid={testId ? `${testId}-day-${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : undefined}
                       key={index}
                       type="button"
                       onClick={() => handleDateSelect(date)}

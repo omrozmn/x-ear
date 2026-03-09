@@ -21,7 +21,7 @@ export const test = base.extend<TestFixtures & TestOptions>({
     // Fixture for a standard tenant user
     tenantPage: async ({ browser, request }, use) => {
         // Create new context with baseURL
-        const webUrl = process.env.WEB_BASE_URL || process.env.BASE_URL || 'http://localhost:8080';
+        const webUrl = process.env.WEB_BASE_URL || process.env.BASE_URL || 'http://127.0.0.1:8080';
         const context = await browser.newContext({
             baseURL: webUrl
         });
@@ -30,9 +30,9 @@ export const test = base.extend<TestFixtures & TestOptions>({
         // 0. Enable Console Logging for Debugging
         page.on('console', msg => console.log(`[BROWSER] ${msg.text()}`));
 
-        // 1. Login via API - Use tenant admin directly (admin@xear.com has tenant_001)
-        console.log('[Fixture] Logging in as tenant admin (admin@xear.com)...');
-        const tokens = await loginApi(request, 'admin@xear.com', 'Admin123!');
+        // 1. Login via API - Use the dedicated tenant test user
+        console.log('[Fixture] Logging in as tenant test user (e2etest)...');
+        const tokens = await loginApi(request, 'e2etest', 'Test123!');
         
         console.log('[Fixture] Login successful:', {
             userId: tokens.userId,
@@ -63,7 +63,7 @@ export const test = base.extend<TestFixtures & TestOptions>({
                         role: data.role || 'TENANT_ADMIN',
                         firstName: 'Admin',
                         lastName: 'User',
-                        email: 'admin@xear.com',
+                        email: 'e2etest@xear.com',
                         is_active: true,
                         isPhoneVerified: true,
                         is_phone_verified: true
@@ -98,7 +98,7 @@ export const test = base.extend<TestFixtures & TestOptions>({
 
     // Fixture for an admin user
     adminPage: async ({ browser, request }, use) => {
-        const adminUrl = process.env.ADMIN_BASE_URL || 'http://localhost:8082';
+        const adminUrl = process.env.ADMIN_BASE_URL || 'http://127.0.0.1:8082';
         const context = await browser.newContext({
             baseURL: adminUrl
         });
@@ -124,7 +124,7 @@ export const test = base.extend<TestFixtures & TestOptions>({
         }
 
         // Login as admin
-        const tokens = await loginApi(request, process.env.ADMIN_USER_EMAIL || 'admin@xear.com', process.env.ADMIN_USER_PASSWORD || 'Admin123!');
+        const tokens = await loginApi(request, process.env.ADMIN_USER_EMAIL || 'admin@x-ear.com', process.env.ADMIN_USER_PASSWORD || 'Admin123!');
         // NOTE: Admin uses email/password. Login helper handles "identifier" which accepts email.
 
         // If admin is on a different port (8082), we should probably respect that in setupAuthenticatedPage or manually do it.
@@ -171,7 +171,7 @@ export const test = base.extend<TestFixtures & TestOptions>({
 
     // Shared auth tokens if needed directly
     authTokens: async ({ request }, use) => {
-        const tokens = await loginApi(request, 'admin@xear.com', 'Admin123!');
+        const tokens = await loginApi(request, 'e2etest', 'Test123!');
         await use(tokens);
     },
 
@@ -179,19 +179,19 @@ export const test = base.extend<TestFixtures & TestOptions>({
     apiContext: async ({ playwright }, use) => {
         // First create a temporary context for login
         const tempContext = await playwright.request.newContext({
-            baseURL: process.env.API_BASE_URL || 'http://localhost:5003',
+            baseURL: process.env.API_BASE_URL || 'http://127.0.0.1:5003',
         });
         
         // Login as tenant admin
         console.log('[API Context] Logging in as tenant admin...');
-        const tokens = await loginApi(tempContext, 'admin@xear.com', 'Admin123!');
+        const tokens = await loginApi(tempContext, 'e2etest', 'Test123!');
         await tempContext.dispose();
         
         console.log('[API Context] Creating authenticated context with tenant:', tokens.tenantId);
         
         // Now create the authenticated context
         const context = await playwright.request.newContext({
-            baseURL: process.env.API_BASE_URL || 'http://localhost:5003',
+            baseURL: process.env.API_BASE_URL || 'http://127.0.0.1:5003',
             extraHTTPHeaders: {
                 'Authorization': `Bearer ${tokens.accessToken}`,
                 'Content-Type': 'application/json',

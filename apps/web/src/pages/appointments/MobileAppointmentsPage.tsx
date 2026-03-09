@@ -67,7 +67,7 @@ export const MobileAppointmentsPage: React.FC = () => {
             {/* Date Navigation */}
             <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 p-4 sticky top-14 z-20 shadow-sm">
                 <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 rounded-xl p-1">
-                    <button data-allow-raw="true" onClick={handlePrevDay} className="p-2 rounded-lg hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm transition-all text-gray-600 dark:text-gray-400">
+                    <button data-allow-raw="true" onClick={handlePrevDay} className="p-2 rounded-2xl hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm transition-all text-gray-600 dark:text-gray-400">
                         <ChevronLeft className="h-5 w-5" />
                     </button>
 
@@ -80,7 +80,7 @@ export const MobileAppointmentsPage: React.FC = () => {
                         </span>
                     </div>
 
-                    <button data-allow-raw="true" onClick={handleNextDay} className="p-2 rounded-lg hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm transition-all text-gray-600 dark:text-gray-400">
+                    <button data-allow-raw="true" onClick={handleNextDay} className="p-2 rounded-2xl hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm transition-all text-gray-600 dark:text-gray-400">
                         <ChevronRight className="h-5 w-5" />
                     </button>
                 </div>
@@ -138,7 +138,7 @@ export const MobileAppointmentsPage: React.FC = () => {
                                                 <span>{apt.duration || 30} dakika</span>
                                             </div>
                                             {apt.notes && (
-                                                <div className="flex items-start gap-2 text-xs text-gray-500 dark:text-gray-400 mt-2 bg-gray-50 dark:bg-gray-800 p-2 rounded-lg">
+                                                <div className="flex items-start gap-2 text-xs text-gray-500 dark:text-gray-400 mt-2 bg-gray-50 dark:bg-gray-800 p-2 rounded-2xl">
                                                     <span className="italic line-clamp-2">{apt.notes}</span>
                                                 </div>
                                             )}

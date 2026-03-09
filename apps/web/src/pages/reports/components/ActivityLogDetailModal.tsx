@@ -62,7 +62,7 @@ export function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalP
                         {log.details && (
                             <div>
                                 <label className="text-xs text-gray-500 dark:text-gray-400">Detaylar</label>
-                                <pre className="bg-gray-100 dark:bg-gray-900/50 p-3 rounded-lg text-xs overflow-x-auto text-gray-900 dark:text-gray-300">
+                                <pre className="bg-gray-100 dark:bg-gray-900/50 p-3 rounded-2xl text-xs overflow-x-auto text-gray-900 dark:text-gray-300">
                                     {JSON.stringify(log.details, null, 2)}
                                 </pre>
                             </div>

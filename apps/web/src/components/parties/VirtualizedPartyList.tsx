@@ -281,7 +281,7 @@ export const VirtualizedPartyList: React.FC<VirtualizedPartyListProps> = ({
   }
 
   return (
-    <div className={`bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md ${className}`}>
+    <div className={`bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-xl ${className}`}>
       {/* Header with Search and Filters */}
       <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between mb-3">
@@ -327,7 +327,7 @@ export const VirtualizedPartyList: React.FC<VirtualizedPartyListProps> = ({
             <select data-allow-raw="true"
               value={filters?.status || 'all'}
               onChange={(e) => handleFilterChange('status', e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value="all">Tüm Durumlar</option>
               <option value="active">Aktif</option>
@@ -338,7 +338,7 @@ export const VirtualizedPartyList: React.FC<VirtualizedPartyListProps> = ({
             <select data-allow-raw="true"
               value={filters?.segment || 'all'}
               onChange={(e) => handleFilterChange('segment', e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value="all">Tüm Segmentler</option>
               <option value="new">Yeni</option>
@@ -351,7 +351,7 @@ export const VirtualizedPartyList: React.FC<VirtualizedPartyListProps> = ({
             <select data-allow-raw="true"
               value={filters?.label || 'all'}
               onChange={(e) => handleFilterChange('label', e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value="all">Tüm Etiketler</option>
               <option value="yeni">Yeni</option>
@@ -365,7 +365,7 @@ export const VirtualizedPartyList: React.FC<VirtualizedPartyListProps> = ({
             <select data-allow-raw="true"
               value={filters?.hasDevices ? 'true' : filters?.hasDevices === false ? 'false' : 'all'}
               onChange={(e) => handleFilterChange('hasDevices', e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value="all">Tüm Hastalar</option>
               <option value="true">Cihazı Var</option>
@@ -375,7 +375,7 @@ export const VirtualizedPartyList: React.FC<VirtualizedPartyListProps> = ({
             <select data-allow-raw="true"
               value={filters?.sgkStatus || 'all'}
               onChange={(e) => handleFilterChange('sgkStatus', e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value="all">Tüm SGK Durumları</option>
               <option value="pending">Beklemede</option>
@@ -436,7 +436,7 @@ export const VirtualizedPartyList: React.FC<VirtualizedPartyListProps> = ({
               <div className="absolute inset-0 bg-gray-500 opacity-75" onClick={() => setCommunicationParty(null)}></div>
             </div>
 
-            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
               <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white">

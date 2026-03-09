@@ -7,13 +7,10 @@ import {
     ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
+import { unwrapArray } from '@/lib/orval-response';
 
 function getTemplates(data: ResponseEnvelopeListEmailTemplateRead | undefined): EmailTemplateRead[] {
-    if (!Array.isArray(data?.data)) {
-        return [];
-    }
-
-    return data.data.filter((template): template is EmailTemplateRead => typeof template?.id === 'string');
+    return unwrapArray<EmailTemplateRead>(data).filter((template): template is EmailTemplateRead => typeof template?.id === 'string');
 }
 
 const AdminNotificationsPage: React.FC = () => {

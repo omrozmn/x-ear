@@ -301,7 +301,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
     <div className={className}>
       <form onSubmit={handleSubmit} className="space-y-6">
         {errors.submit && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
             <div className="flex">
               <AlertCircle className="h-5 w-5 text-red-400" />
               <div className="ml-3">
@@ -325,7 +325,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
               type="text"
               value={formData.name}
               onChange={(e) => handleInputChange('name', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.name ? 'border-red-300' : 'border-gray-300'
+              className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.name ? 'border-red-300' : 'border-gray-300'
                 }`}
               placeholder="Ürün adını girin"
             />
@@ -351,7 +351,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
               type="text"
               value={formData.model}
               onChange={(e) => handleInputChange('model', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Model adını girin"
             />
           </div>
@@ -364,7 +364,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
               type="text"
               value={formData.barcode}
               onChange={(e) => handleInputChange('barcode', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Barkod numarasını girin"
             />
           </div>
@@ -377,7 +377,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
               type="text"
               value={formData.stockCode}
               onChange={(e) => handleInputChange('stockCode', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Stok kodunu girin"
             />
           </div>
@@ -420,7 +420,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
                 const val = e.target.value;
                 handleInputChange('availableInventory', val === '' ? 0 : parseInt(val) || 0);
               }}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.availableInventory ? 'border-red-300' : 'border-gray-300'
+              className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.availableInventory ? 'border-red-300' : 'border-gray-300'
                 }`}
             />
             {errors.availableInventory && <p className="mt-1 text-sm text-red-600">{errors.availableInventory}</p>}
@@ -435,7 +435,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
               min="0"
               value={formData.reorderLevel}
               onChange={(e) => handleInputChange('reorderLevel', e.target.value === '' ? 0 : parseInt(e.target.value))}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.reorderLevel ? 'border-red-300' : 'border-gray-300'
+              className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.reorderLevel ? 'border-red-300' : 'border-gray-300'
                 }`}
             />
             {errors.reorderLevel && <p className="mt-1 text-sm text-red-600">{errors.reorderLevel}</p>}
@@ -470,7 +470,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
                 const val = e.target.value;
                 handleInputChange('price', val === '' ? 0 : parseFloat(val) || 0);
               }}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.price ? 'border-red-300' : 'border-gray-300'
+              className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.price ? 'border-red-300' : 'border-gray-300'
                 }`}
             />
             {errors.price && <p className="mt-1 text-sm text-red-600">{errors.price}</p>}
@@ -512,7 +512,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
                 const val = e.target.value;
                 handleInputChange('cost', val === '' ? 0 : parseFloat(val) || 0);
               }}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.cost ? 'border-red-300' : 'border-gray-300'
+              className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.cost ? 'border-red-300' : 'border-gray-300'
                 }`}
             />
             {errors.cost && <p className="mt-1 text-sm text-red-600">{errors.cost}</p>}
@@ -544,7 +544,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
                 { value: '10', label: '%10' },
                 { value: '20', label: '%20' }
               ]}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -552,7 +552,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Toplam Stok Değeri
             </label>
-            <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-2xl border border-blue-200">
               <span className="text-xl font-bold text-blue-900">
                 ₺{totalInventoryValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
@@ -614,7 +614,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
                 { value: 'yıl', label: 'Yıl' },
                 { value: 'çift', label: 'Çift' },
               ]}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -627,7 +627,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
               min="0"
               value={formData.warranty}
               onChange={(e) => handleInputChange('warranty', e.target.value === '' ? 0 : parseInt(e.target.value))}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.warranty ? 'border-red-300' : 'border-gray-300'
+              className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.warranty ? 'border-red-300' : 'border-gray-300'
                 }`}
             />
             {errors.warranty && <p className="mt-1 text-sm text-red-600">{errors.warranty}</p>}
@@ -650,7 +650,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
                   { value: 'right', label: 'Sağ' },
                   { value: 'both', label: 'Her İkisi' }
                 ]}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -672,13 +672,13 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
               value={featureInput}
               onChange={(e) => setFeatureInput(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addFeature())}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Özellik ekleyin ve Enter'a basın"
             />
             <Button
               type="button"
               onClick={addFeature}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
             >
               Ekle
             </Button>
@@ -713,7 +713,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
             <Button
               type="button"
               onClick={() => setIsSerialModalOpen(true)}
-              className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
             >
               <Package className="w-4 h-4" />
               Seri No Yönet ({serials.filter(s => s.trim() !== '').length})
@@ -737,7 +737,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
             value={formData.description}
             onChange={(e) => handleInputChange('description', e.target.value)}
             rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Ürün açıklamasını girin"
           />
         </div>
@@ -748,14 +748,14 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
             type="button"
             onClick={onCancel}
             variant="outline"
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+            className="px-4 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
           >
             İptal
           </Button>
           <Button
             type="submit"
             disabled={loading}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <Save className="h-4 w-4 mr-2" />
             {loading ? 'Kaydediliyor...' : 'Kaydet'}

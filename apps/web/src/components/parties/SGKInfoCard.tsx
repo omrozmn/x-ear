@@ -108,7 +108,7 @@ export const SGKInfoCard: React.FC<SGKInfoCardProps> = ({
         </div>
         
         {sgkCoverageCalculation && (
-          <div className="mt-4 p-3 bg-white rounded-lg border border-blue-200">
+          <div className="mt-4 p-3 bg-white rounded-2xl border border-blue-200">
             <h4 className="text-sm font-medium text-blue-800 mb-2">SGK Kapsam Hesaplaması</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               {sgkCoverageCalculation.deviceCoverage && (

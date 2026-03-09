@@ -132,7 +132,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Basic Information */}
-      <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+      <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Temel Bilgiler</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -143,7 +143,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               type="text"
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${errors.name ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+              className={`w-full px-3 py-2 border rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${errors.name ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                 }`}
               placeholder="Ürün adını girin"
             />
@@ -158,7 +158,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               value={formData.brand}
               onChange={(e) => handleChange('brand', e.target.value)}
               options={brandOptions}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${errors.brand ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+              className={`w-full px-3 py-2 border rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${errors.brand ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                 }`}
             />
             {errors.brand && <p className="text-red-500 text-sm mt-1">{errors.brand}</p>}
@@ -172,7 +172,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               type="text"
               value={formData.model}
               onChange={(e) => handleChange('model', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               placeholder="Model adını girin"
             />
           </div>
@@ -185,7 +185,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               value={formData.category}
               onChange={(e) => handleChange('category', e.target.value)}
               options={categoryOptions}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${errors.category ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+              className={`w-full px-3 py-2 border rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${errors.category ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                 }`}
             />
             {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
@@ -199,7 +199,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               value={formData.type}
               onChange={(e) => handleChange('type', e.target.value)}
               options={typeOptions}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             />
           </div>
 
@@ -211,14 +211,14 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               value={formData.ear}
               onChange={(e) => handleChange('ear', e.target.value)}
               options={earOptions}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             />
           </div>
         </div>
       </div>
 
       {/* Inventory Information */}
-      <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+      <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Stok Bilgileri</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
@@ -231,7 +231,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               value={formData.availableInventory === 0 ? '' : formData.availableInventory}
               onChange={(e) => handleChange('availableInventory', parseInt(e.target.value) || 0)}
               placeholder="0"
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${errors.availableInventory ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+              className={`w-full px-3 py-2 border rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${errors.availableInventory ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                 }`}
             />
             {errors.availableInventory && <p className="text-red-500 text-sm mt-1">{errors.availableInventory}</p>}
@@ -247,7 +247,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               value={formData.totalInventory === 0 ? '' : formData.totalInventory}
               onChange={(e) => handleChange('totalInventory', parseInt(e.target.value) || 0)}
               placeholder="0"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             />
           </div>
 
@@ -261,7 +261,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               value={formData.reorderLevel === 0 ? '' : formData.reorderLevel}
               onChange={(e) => handleChange('reorderLevel', parseInt(e.target.value) || 0)}
               placeholder="0"
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${errors.reorderLevel ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+              className={`w-full px-3 py-2 border rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${errors.reorderLevel ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                 }`}
             />
             {errors.reorderLevel && <p className="text-red-500 text-sm mt-1">{errors.reorderLevel}</p>}
@@ -270,7 +270,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
       </div>
 
       {/* Pricing Information */}
-      <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+      <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Fiyat Bilgileri</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
@@ -284,7 +284,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               value={formData.price === 0 ? '' : formData.price}
               onChange={(e) => handleChange('price', parseFloat(e.target.value) || 0)}
               placeholder="0.00"
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${errors.price ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+              className={`w-full px-3 py-2 border rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${errors.price ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                 }`}
             />
             {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
@@ -301,7 +301,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               value={formData.cost === 0 ? '' : formData.cost}
               onChange={(e) => handleChange('cost', parseFloat(e.target.value) || 0)}
               placeholder="0.00"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             />
           </div>
 
@@ -316,7 +316,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               value={formData.wholesalePrice === 0 ? '' : formData.wholesalePrice}
               onChange={(e) => handleChange('wholesalePrice', parseFloat(e.target.value) || 0)}
               placeholder="0.00"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             />
           </div>
 
@@ -331,14 +331,14 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               value={formData.retailPrice === 0 ? '' : formData.retailPrice}
               onChange={(e) => handleChange('retailPrice', parseFloat(e.target.value) || 0)}
               placeholder="0.00"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             />
           </div>
         </div>
       </div>
 
       {/* Additional Information */}
-      <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+      <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Ek Bilgiler</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -349,7 +349,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               type="text"
               value={formData.barcode}
               onChange={(e) => handleChange('barcode', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               placeholder="Barkod numarası"
             />
           </div>
@@ -362,7 +362,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               type="text"
               value={formData.supplier}
               onChange={(e) => handleChange('supplier', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               placeholder="Tedarikçi adı"
             />
           </div>
@@ -375,7 +375,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               type="text"
               value={formData.sgkCode}
               onChange={(e) => handleChange('sgkCode', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               placeholder="SGK kodu"
             />
           </div>
@@ -390,7 +390,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               value={formData.warranty === 0 ? '' : formData.warranty}
               onChange={(e) => handleChange('warranty', parseInt(e.target.value) || 0)}
               placeholder="0"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             />
           </div>
 
@@ -402,7 +402,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
               type="text"
               value={formData.location}
               onChange={(e) => handleChange('location', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               placeholder="Depo konumu"
             />
           </div>
@@ -426,7 +426,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             type="text"
             value={formData.features}
             onChange={(e) => handleChange('features', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             placeholder="Özellikleri virgülle ayırın (örn: Bluetooth, Su geçirmez, Şarj edilebilir)"
           />
         </div>
@@ -439,7 +439,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             value={formData.description}
             onChange={(e) => handleChange('description', e.target.value)}
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             placeholder="Ürün açıklaması"
           />
         </div>
@@ -452,7 +452,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
             value={formData.notes}
             onChange={(e) => handleChange('notes', e.target.value)}
             rows={2}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             placeholder="Ek notlar"
           />
         </div>

@@ -193,7 +193,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
                 value={formData.appointmentDate || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, appointmentDate: e.target.value }))}
                 min={new Date().toISOString().split('T')[0]}
-                className={`w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.appointmentDate ? 'border-red-300' : ''}`}
+                className={`w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.appointmentDate ? 'border-red-300' : ''}`}
               />
               {errors.appointmentDate && (
                 <p className="mt-1 text-sm text-red-600">{errors.appointmentDate}</p>
@@ -213,7 +213,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
                 data-allow-raw="true"
                 value={formData.appointmentTime || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, appointmentTime: e.target.value }))}
-                className={`w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.appointmentTime ? 'border-red-300' : ''}`}
+                className={`w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.appointmentTime ? 'border-red-300' : ''}`}
               >
                 <option value="">Saat seçin...</option>
                 {generateTimeSlots().map((time) => (
@@ -249,7 +249,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
                   doctorName: selectedDoctor ? selectedDoctor.name : ''
                 }));
               }}
-              className={`w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.doctorId ? 'border-red-300' : ''}`}
+              className={`w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.doctorId ? 'border-red-300' : ''}`}
             >
               <option value="">Doktor seçin...</option>
               {availableDoctors.map((doctor) => (
@@ -274,7 +274,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
               data-allow-raw="true"
               value={formData.appointmentType || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, appointmentType: e.target.value as Appointment['appointmentType'] }))}
-              className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.appointmentType ? 'border-red-300' : ''}`}
+              className={`w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.appointmentType ? 'border-red-300' : ''}`}
             >
               <option value="">Tür seçin...</option>
               <option value="consultation">Konsultasyon</option>
@@ -300,7 +300,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
               step="15"
               value={formData.duration || 30}
               onChange={(e) => setFormData(prev => ({ ...prev, duration: parseInt(e.target.value) }))}
-              className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.duration ? 'border-red-300' : ''}`}
+              className={`w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.duration ? 'border-red-300' : ''}`}
             />
             {errors.duration && (
               <p className="mt-1 text-sm text-red-600">{errors.duration}</p>
@@ -323,7 +323,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
               value={formData.location || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
               placeholder="Randevu yeri (örn: Klinik, Hastane)"
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
         </div>
@@ -343,7 +343,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
               onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
               placeholder="Randevu ile ilgili notlar..."
               rows={3}
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
         </div>
@@ -358,7 +358,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
               data-allow-raw="true"
               value={formData.status || 'scheduled'}
               onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as Appointment['status'] }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="scheduled">Planlandı</option>
               <option value="confirmed">Onaylandı</option>

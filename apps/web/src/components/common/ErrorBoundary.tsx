@@ -71,7 +71,7 @@ class ErrorBoundaryBase extends Component<Props, State> {
             </div>
 
             {isDev() && this.state.error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-left">
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl text-left">
                 <h3 className="font-medium text-red-800 mb-2">{t('error.details', { ns: 'common' })}:</h3>
                 <pre className="text-xs text-red-700 overflow-auto max-h-32">
                   {this.state.error.toString()}

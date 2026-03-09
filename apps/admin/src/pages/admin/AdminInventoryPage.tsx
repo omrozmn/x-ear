@@ -9,6 +9,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { useAdminResponsive } from '@/hooks';
 import { ResponsiveTable } from '@/components/responsive';
+import Pagination from '@/components/ui/Pagination';
+import { extractPagination, isRecord, unwrapArray } from '@/lib/orval-response';
 
 interface PaginationInfo {
     total: number;
@@ -21,26 +23,19 @@ interface AdminInventoryItem extends DeviceRead {
     serialNumberRight?: string;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-    return typeof value === 'object' && value !== null;
-}
-
 function getInventoryItems(data: ResponseEnvelopeListDeviceRead | undefined): AdminInventoryItem[] {
-    if (!Array.isArray(data?.data)) {
-        return [];
-    }
-
-    return data.data.filter((item): item is AdminInventoryItem => isRecord(item) && typeof item.id === 'string');
+    return unwrapArray<AdminInventoryItem>(data).filter((item): item is AdminInventoryItem => isRecord(item) && typeof item.id === 'string');
 }
 
 function getPagination(data: ResponseEnvelopeListDeviceRead | undefined): PaginationInfo | null {
-    if (!isRecord(data?.meta)) {
+    const pagination = extractPagination(data);
+    if (!pagination) {
         return null;
     }
 
     return {
-        total: typeof data.meta.total === 'number' ? data.meta.total : 0,
-        totalPages: typeof data.meta.totalPages === 'number' ? data.meta.totalPages : 0,
+        total: pagination.total ?? 0,
+        totalPages: pagination.totalPages ?? 1,
     };
 }
 
@@ -48,12 +43,13 @@ const AdminInventoryPage: React.FC = () => {
     const { isMobile } = useAdminResponsive();
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10);
     const [statusFilter, setStatusFilter] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('');
 
     const { data: inventoryData, isLoading, refetch } = useListAdminInventory({
         page,
-        limit: 10,
+        limit,
         search,
         status: statusFilter || undefined,
         category: categoryFilter || undefined
@@ -85,6 +81,7 @@ const AdminInventoryPage: React.FC = () => {
             header: 'Cihaz / Ürün',
             sortable: true,
             sortKey: 'brand',
+            sortValue: (item: AdminInventoryItem) => `${item.brand || ''} ${item.model || ''} ${item.name || ''}`.trim(),
             render: (item: AdminInventoryItem) => (
                 <div>
                     <div className="text-sm font-medium text-gray-900 dark:text-white">{item.brand} {item.model || ''}</div>
@@ -96,6 +93,7 @@ const AdminInventoryPage: React.FC = () => {
             key: 'serialNumber',
             header: 'Seri No',
             sortable: true,
+            sortValue: (item: AdminInventoryItem) => item.serialNumber || item.serialNumberLeft || item.serialNumberRight || '',
             render: (item: AdminInventoryItem) => (
                 <span className="text-sm text-gray-500 dark:text-gray-400">
                     {item.serialNumber || item.serialNumberLeft || item.serialNumberRight || '-'}
@@ -107,6 +105,7 @@ const AdminInventoryPage: React.FC = () => {
             header: 'Kategori',
             mobileHidden: true,
             sortable: true,
+            sortValue: (item: AdminInventoryItem) => item.category || '',
             render: (item: AdminInventoryItem) => (
                 <span className="text-sm text-gray-500 dark:text-gray-400">{item.category || '-'}</span>
             )
@@ -117,6 +116,7 @@ const AdminInventoryPage: React.FC = () => {
             mobileHidden: true,
             sortable: true,
             sortKey: 'tenantName',
+            sortValue: (item: AdminInventoryItem) => item.tenantName || item.tenantId || '',
             render: (item: AdminInventoryItem) => (
                 <span className="text-sm text-gray-500 dark:text-gray-400">{item.tenantName || item.tenantId || '-'}</span>
             )
@@ -125,6 +125,7 @@ const AdminInventoryPage: React.FC = () => {
             key: 'status',
             header: 'Durum',
             sortable: true,
+            sortValue: (item: AdminInventoryItem) => item.status || '',
             render: (item: AdminInventoryItem) => getStatusBadge(item.status || '-')
         }
     ];
@@ -159,7 +160,10 @@ const AdminInventoryPage: React.FC = () => {
                         className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white pl-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                         placeholder="Marka, Model veya Seri No ile ara..."
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+                        onChange={(e) => {
+                            setSearch(e.target.value);
+                            setPage(1);
+                        }}
                     />
                 </div>
 
@@ -167,7 +171,10 @@ const AdminInventoryPage: React.FC = () => {
                     <FunnelIcon className="h-5 w-5 text-gray-400" />
                     <select
                         value={categoryFilter}
-                        onChange={(e) => setCategoryFilter(e.target.value)}
+                        onChange={(e) => {
+                            setCategoryFilter(e.target.value);
+                            setPage(1);
+                        }}
                         className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white py-2 pl-3 pr-10 text-base focus:border-primary-500 focus:outline-none focus:ring-primary-500 sm:text-sm"
                     >
                         <option value="">Tüm Kategoriler</option>
@@ -179,7 +186,10 @@ const AdminInventoryPage: React.FC = () => {
 
                     <select
                         value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
+                        onChange={(e) => {
+                            setStatusFilter(e.target.value);
+                            setPage(1);
+                        }}
                         className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white py-2 pl-3 pr-10 text-base focus:border-primary-500 focus:outline-none focus:ring-primary-500 sm:text-sm"
                     >
                         <option value="">Tüm Durumlar</option>
@@ -215,48 +225,18 @@ const AdminInventoryPage: React.FC = () => {
 
                 {/* Pagination */}
                 {pagination && pagination.totalPages > 1 && (
-                    <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6">
-                        <div className="flex-1 flex justify-between sm:hidden">
-                            <button
-                                onClick={() => setPage(Math.max(1, page - 1))}
-                                disabled={page === 1}
-                                className="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 touch-feedback"
-                            >
-                                Önceki
-                            </button>
-                            <button
-                                onClick={() => setPage(Math.min(pagination.totalPages, page + 1))}
-                                disabled={page === pagination.totalPages}
-                                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 touch-feedback"
-                            >
-                                Sonraki
-                            </button>
-                        </div>
-                        <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                            <div>
-                                <p className="text-sm text-gray-700 dark:text-gray-300">
-                                    Toplam <span className="font-medium">{pagination.total}</span> kayıttan <span className="font-medium">{(page - 1) * 10 + 1}</span> - <span className="font-medium">{Math.min(page * 10, pagination.total)}</span> arası gösteriliyor
-                                </p>
-                            </div>
-                            <div>
-                                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                                    <button
-                                        onClick={() => setPage(Math.max(1, page - 1))}
-                                        disabled={page === 1}
-                                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
-                                    >
-                                        Önceki
-                                    </button>
-                                    <button
-                                        onClick={() => setPage(Math.min(pagination.totalPages, page + 1))}
-                                        disabled={page === pagination.totalPages}
-                                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
-                                    >
-                                        Sonraki
-                                    </button>
-                                </nav>
-                            </div>
-                        </div>
+                    <div className="bg-white dark:bg-gray-800 px-4 py-3 border-t border-gray-200 dark:border-gray-700 sm:px-6">
+                        <Pagination
+                            currentPage={page}
+                            totalPages={pagination.totalPages}
+                            totalItems={pagination.total}
+                            itemsPerPage={limit}
+                            onPageChange={setPage}
+                            onItemsPerPageChange={(nextLimit) => {
+                                setLimit(nextLimit);
+                                setPage(1);
+                            }}
+                        />
                     </div>
                 )}
             </div>

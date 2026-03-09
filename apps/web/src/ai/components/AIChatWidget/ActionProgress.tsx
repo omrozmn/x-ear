@@ -34,7 +34,7 @@ export const ActionProgress = () => {
     // 1. SUCCESS STATE
     if (executionStatus === 'success') {
         return (
-            <div className="bg-white border border-green-100 rounded-lg p-4 shadow-sm animate-in fade-in duration-500">
+            <div className="bg-white border border-green-100 rounded-2xl p-4 shadow-sm animate-in fade-in duration-500">
                 <div className="flex items-start gap-3">
                     <div className="mt-0.5 text-green-500">
                         <CheckCircle2 size={20} />
@@ -78,7 +78,7 @@ export const ActionProgress = () => {
     // 2. ERROR STATE
     if (executionStatus === 'error') {
         return (
-            <div className="bg-white border border-red-100 rounded-lg p-4 shadow-sm animate-in fade-in duration-300">
+            <div className="bg-white border border-red-100 rounded-2xl p-4 shadow-sm animate-in fade-in duration-300">
                 <div className="flex items-start gap-3">
                     <div className="mt-0.5 text-red-500">
                         <AlertCircle size={20} />
@@ -116,7 +116,7 @@ export const ActionProgress = () => {
     // 4. WAITING (INTERRUPTION) STATE
     if (executionStatus === 'waiting' && currentSlot) {
         return (
-            <div className="bg-white border border-blue-100 rounded-lg p-4 shadow-sm animate-in fade-in duration-300">
+            <div className="bg-white border border-blue-100 rounded-2xl p-4 shadow-sm animate-in fade-in duration-300">
                 <div className="flex flex-col gap-3">
                     <div className="flex items-center gap-2 text-blue-900">
                         <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
@@ -162,7 +162,7 @@ export const ActionProgress = () => {
                             <div className="relative group">
                                 <input data-allow-raw="true"
                                     type="date"
-                                    className="w-full pl-3 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-sm"
+                                    className="w-full pl-3 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-sm"
                                     onChange={(e) => {
                                         updateSlot(currentSlot.name, e.target.value);
                                         nextSlot();
@@ -174,7 +174,7 @@ export const ActionProgress = () => {
                             <div className="relative group">
                                 <input data-allow-raw="true"
                                     type="number"
-                                    className="w-full pl-3 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-sm"
+                                    className="w-full pl-3 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-sm"
                                     placeholder={t('ai.enterNumber', 'Sayı girin...')}
                                     autoFocus
                                     onKeyDown={(e) => {
@@ -189,7 +189,7 @@ export const ActionProgress = () => {
                         {currentSlot.uiType === 'text' && (
                             <div className="relative group">
                                 <input data-allow-raw="true"
-                                    className="w-full pl-3 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-sm"
+                                    className="w-full pl-3 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-sm"
                                     placeholder={t('ai.startTyping', 'Yazmaya başlayın...')}
                                     autoFocus
                                     onKeyDown={(e) => {
@@ -209,7 +209,7 @@ export const ActionProgress = () => {
                                         updateSlot(currentSlot.name, true);
                                         nextSlot();
                                     }}
-                                    className="flex-1 px-3 py-2 bg-white border border-green-200 text-green-700 text-xs font-bold rounded-lg hover:bg-green-50 transition-all shadow-sm"
+                                    className="flex-1 px-3 py-2 bg-white border border-green-200 text-green-700 text-xs font-bold rounded-2xl hover:bg-green-50 transition-all shadow-sm"
                                 >
                                     {t('common.yes', 'Evet')}
                                 </button>
@@ -219,7 +219,7 @@ export const ActionProgress = () => {
                                         updateSlot(currentSlot.name, false);
                                         nextSlot();
                                     }}
-                                    className="flex-1 px-3 py-2 bg-white border border-red-200 text-red-700 text-xs font-bold rounded-lg hover:bg-red-50 transition-all shadow-sm"
+                                    className="flex-1 px-3 py-2 bg-white border border-red-200 text-red-700 text-xs font-bold rounded-2xl hover:bg-red-50 transition-all shadow-sm"
                                 >
                                     {t('common.no', 'Hayır')}
                                 </button>
@@ -229,7 +229,7 @@ export const ActionProgress = () => {
                             <div className="relative group">
                                 <input data-allow-raw="true"
                                     type="time"
-                                    className="w-full pl-3 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-sm"
+                                    className="w-full pl-3 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-sm"
                                     onChange={(e) => {
                                         updateSlot(currentSlot.name, e.target.value);
                                         nextSlot();
@@ -250,7 +250,7 @@ export const ActionProgress = () => {
 
     // 5. INIT / RUNNING STATE
     return (
-        <div className="bg-gray-50/50 border border-gray-100 rounded-lg p-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+        <div className="bg-gray-50/50 border border-gray-100 rounded-2xl p-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
 
             {/* Status Text Area */}
             <div className="min-h-[24px] flex items-center mb-4">

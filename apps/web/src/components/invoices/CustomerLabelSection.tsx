@@ -50,7 +50,7 @@ export function CustomerLabelSection({ customerLabel, onChange }: CustomerLabelS
         <Button
           type="button"
           onClick={handleCustomLabel}
-          className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
+          className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-xl hover:bg-gray-200"
           variant="default">
           + Özel
         </Button>
@@ -58,7 +58,7 @@ export function CustomerLabelSection({ customerLabel, onChange }: CustomerLabelS
 
       {/* Seçili Etiket Önizleme */}
       {customerLabel?.labelName && (
-        <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-md">
+        <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-xl">
           <div
             className="w-4 h-4 rounded-full"
             style={{ backgroundColor: customerLabel.color }}
@@ -71,7 +71,7 @@ export function CustomerLabelSection({ customerLabel, onChange }: CustomerLabelS
 
       {/* Özel Etiket Formu */}
       {showCustomLabel && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
+        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 space-y-3">
           <h4 className="text-sm font-medium text-blue-900">Özel Etiket Oluştur</h4>
           <div className="grid grid-cols-2 gap-3">
             <div>

@@ -131,6 +131,50 @@ def fmt_amount(v, precision=2):
             return f"{0:.{precision}f}"
 
 
+def _normalize_address(raw):
+    if isinstance(raw, str):
+        return {'street': raw}
+    if isinstance(raw, dict):
+        return raw
+    return {}
+
+
+def _append_postal_address(parent, cbc, addr, element_name='PostalAddress'):
+    address = _normalize_address(addr)
+    if not address:
+        return None
+
+    postal = ET.SubElement(parent, f"{{{NS['cac']}}}{element_name}")
+    street = address.get('street')
+    if street:
+        cbc('StreetName', street, parent=postal)
+
+    building_name = address.get('buildingName')
+    if building_name:
+        cbc('BuildingName', building_name, parent=postal)
+
+    building_number = address.get('buildingNumber')
+    if building_number:
+        cbc('BuildingNumber', building_number, parent=postal)
+
+    district = address.get('district') or address.get('citySubdivisionName') or ('MERKEZ' if address.get('city') else '')
+    if district:
+        cbc('CitySubdivisionName', district, parent=postal)
+
+    city = address.get('city')
+    if city:
+        cbc('CityName', city, parent=postal)
+
+    postal_zone = address.get('postalZone')
+    if postal_zone:
+        cbc('PostalZone', postal_zone, parent=postal)
+
+    country = ET.SubElement(postal, f"{{{NS['cac']}}}Country")
+    cbc('IdentificationCode', 'TR', parent=country)
+    cbc('Name', address.get('country') or 'TÜRKİYE', parent=country)
+    return postal
+
+
 def resolve_withholding(code, rate):
     code_str = str(code or '').strip() or '624'
     meta = WITHHOLDING_CODE_MAP.get(code_str, {})
@@ -338,9 +382,18 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
             cbc('PaymentChannelCode', payment_means['channelCode'], parent=pm)
         if payment_means.get('dueDate'):
             cbc('PaymentDueDate', payment_means['dueDate'], parent=pm)
-        if payment_means.get('accountId'):
+        if payment_means.get('accountId') or payment_means.get('accountHolder'):
             pfa = ET.SubElement(pm, f"{{{NS['cac']}}}PayeeFinancialAccount")
-            cbc('ID', payment_means['accountId'], parent=pfa)
+            if payment_means.get('ID'):
+                cbc('ID', payment_means['ID'], parent=pfa)
+            elif payment_means.get('accountId'):
+                cbc('ID', payment_means['accountId'], parent=pfa)
+            if payment_means.get('accountHolder'):
+                cbc('Name', payment_means['accountHolder'], parent=pfa)
+            if payment_means.get('bankName'):
+                branch = ET.SubElement(pfa, f"{{{NS['cac']}}}FinancialInstitutionBranch")
+                fin = ET.SubElement(branch, f"{{{NS['cac']}}}FinancialInstitution")
+                cbc('Name', payment_means['bankName'], parent=fin)
 
     payment_terms = invoice.get('payment_terms') or invoice.get('paymentTerms')
     if payment_terms:
@@ -469,25 +522,8 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
         cbc('Name', sdata.get('tax_office') or sdata.get('taxOffice'), parent=tscheme)
     # PostalAddress
     addr = sdata.get('address') or {}
-    # support address as string or dict
-    if isinstance(addr, str):
-        addr = {'street': addr}
     if addr:
-        paddr = ET.SubElement(party, f"{{{NS['cac']}}}PostalAddress")
-        if addr.get('street'):
-            cbc('StreetName', addr.get('street'), parent=paddr)
-        if addr.get('buildingNumber'):
-            cbc('BuildingNumber', addr.get('buildingNumber'), parent=paddr)
-        if addr.get('district') or addr.get('citySubdivisionName'):
-            cbc('CitySubdivisionName', addr.get('district') or addr.get('citySubdivisionName'), parent=paddr)
-        if addr.get('city'):
-            cbc('CityName', addr.get('city'), parent=paddr)
-        if addr.get('postalZone'):
-            cbc('PostalZone', addr.get('postalZone'), parent=paddr)
-        if addr.get('country'):
-            cc = ET.SubElement(paddr, f"{{{NS['cac']}}}Country")
-            cbc('IdentificationCode', 'TR', parent=cc)
-            cbc('Name', addr.get('country') or 'TÜRKİYE', parent=cc)
+        _append_postal_address(party, cbc, addr)
 
     # Customer
     customer = ET.SubElement(invoice_root, f"{{{NS['cac']}}}AccountingCustomerParty")
@@ -508,24 +544,8 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
         cbc('Name', cdata.get('tax_office') or cdata.get('taxOffice'), parent=tscheme_c)
     # Customer postal address
     caddr = cdata.get('address') or {}
-    if isinstance(caddr, str):
-        caddr = {'street': caddr}
     if caddr:
-        paddrc = ET.SubElement(party_c, f"{{{NS['cac']}}}PostalAddress")
-        if caddr.get('street'):
-            cbc('StreetName', caddr.get('street'), parent=paddrc)
-        if caddr.get('buildingNumber'):
-            cbc('BuildingNumber', caddr.get('buildingNumber'), parent=paddrc)
-        if caddr.get('district') or caddr.get('citySubdivisionName'):
-            cbc('CitySubdivisionName', caddr.get('district') or caddr.get('citySubdivisionName'), parent=paddrc)
-        if caddr.get('city'):
-            cbc('CityName', caddr.get('city'), parent=paddrc)
-        if caddr.get('postalZone'):
-            cbc('PostalZone', caddr.get('postalZone'), parent=paddrc)
-        if caddr.get('country'):
-            cc = ET.SubElement(paddrc, f"{{{NS['cac']}}}Country")
-            cbc('IdentificationCode', 'TR', parent=cc)
-            cbc('Name', caddr.get('country') or 'TÜRKİYE', parent=cc)
+        _append_postal_address(party_c, cbc, caddr)
     # BuyerCustomerParty (required for IHRACAT, HASTANE)
     buyer = invoice.get('buyer_customer') or invoice.get('buyerCustomer')
     profile_details = invoice.get('profile_details') or invoice.get('profileDetails') or {}
@@ -568,24 +588,8 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
             bple = ET.SubElement(bp, f"{{{NS['cac']}}}PartyLegalEntity")
             cbc('RegistrationName', buyer.get('name', ''), parent=bple)
         baddr = buyer.get('address') or cdata.get('address') or {}
-        if isinstance(baddr, str):
-            baddr = {'street': baddr}
         if baddr:
-            bpaddr = ET.SubElement(bp, f"{{{NS['cac']}}}PostalAddress")
-            if baddr.get('street'):
-                cbc('StreetName', baddr.get('street'), parent=bpaddr)
-            if baddr.get('buildingNumber'):
-                cbc('BuildingNumber', baddr.get('buildingNumber'), parent=bpaddr)
-            if baddr.get('district') or baddr.get('citySubdivisionName'):
-                cbc('CitySubdivisionName', baddr.get('district') or baddr.get('citySubdivisionName'), parent=bpaddr)
-            if baddr.get('city'):
-                cbc('CityName', baddr.get('city'), parent=bpaddr)
-            if baddr.get('postalZone'):
-                cbc('PostalZone', baddr.get('postalZone'), parent=bpaddr)
-            if baddr.get('country'):
-                cc = ET.SubElement(bpaddr, f"{{{NS['cac']}}}Country")
-                cbc('IdentificationCode', 'TR', parent=cc)
-                cbc('Name', baddr.get('country') or 'TÜRKİYE', parent=cc)
+            _append_postal_address(bp, cbc, baddr)
         if itype_key == 'yolcu':
             first_name, family_name = '', ''
             full_name = buyer.get('name', '')
@@ -618,19 +622,8 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
             tax_rep_party_name = ET.SubElement(tax_rep, f"{{{NS['cac']}}}PartyName")
             cbc('Name', tax_rep_name, parent=tax_rep_party_name)
         tax_rep_address = invoice.get('supplier', {}).get('address') or {}
-        if isinstance(tax_rep_address, dict) and tax_rep_address:
-            tax_rep_postal = ET.SubElement(tax_rep, f"{{{NS['cac']}}}PostalAddress")
-            if tax_rep_address.get('street'):
-                cbc('StreetName', tax_rep_address.get('street'), parent=tax_rep_postal)
-            if tax_rep_address.get('district') or tax_rep_address.get('citySubdivisionName'):
-                cbc('CitySubdivisionName', tax_rep_address.get('district') or tax_rep_address.get('citySubdivisionName'), parent=tax_rep_postal)
-            if tax_rep_address.get('city'):
-                cbc('CityName', tax_rep_address.get('city'), parent=tax_rep_postal)
-            if tax_rep_address.get('postalZone'):
-                cbc('PostalZone', tax_rep_address.get('postalZone'), parent=tax_rep_postal)
-            country = ET.SubElement(tax_rep_postal, f"{{{NS['cac']}}}Country")
-            cbc('IdentificationCode', 'TR', parent=country)
-            cbc('Name', tax_rep_address.get('country') or 'TÜRKİYE', parent=country)
+        if tax_rep_address:
+            _append_postal_address(tax_rep, cbc, tax_rep_address)
         if profile_details.get('refundBankIban'):
             financial_account = ET.SubElement(tax_rep, f"{{{NS['cac']}}}FinancialAccount")
             cbc('ID', profile_details.get('refundBankIban'), parent=financial_account)
@@ -645,18 +638,7 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
         if not isinstance(delivery_addr, dict):
             delivery_addr = cdata.get('address') if isinstance(cdata, dict) else None
         if delivery_addr:
-            daddr = ET.SubElement(delivery, f"{{{NS['cac']}}}DeliveryAddress")
-            if delivery_addr.get('street'):
-                cbc('StreetName', delivery_addr.get('street'), parent=daddr)
-            if delivery_addr.get('district') or delivery_addr.get('citySubdivisionName'):
-                cbc('CitySubdivisionName', delivery_addr.get('district') or delivery_addr.get('citySubdivisionName'), parent=daddr)
-            if delivery_addr.get('city'):
-                cbc('CityName', delivery_addr.get('city'), parent=daddr)
-            if delivery_addr.get('postalZone'):
-                cbc('PostalZone', delivery_addr.get('postalZone'), parent=daddr)
-            cc = ET.SubElement(daddr, f"{{{NS['cac']}}}Country")
-            cbc('IdentificationCode', 'TR', parent=cc)
-            cbc('Name', delivery_addr.get('country') or 'TÜRKİYE', parent=cc)
+            _append_postal_address(delivery, cbc, delivery_addr, element_name='DeliveryAddress')
         # DeliveryTerms (INCOTERMS)
         terms_code = export_details.get('deliveryTerms') or export_details.get('incoterm')
         if terms_code:
@@ -780,18 +762,7 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
             if not isinstance(line_delivery_addr, dict):
                 line_delivery_addr = cdata.get('address') if isinstance(cdata, dict) else None
             if line_delivery_addr:
-                ld_addr = ET.SubElement(line_delivery, f"{{{NS['cac']}}}DeliveryAddress")
-                if line_delivery_addr.get('street'):
-                    cbc('StreetName', line_delivery_addr.get('street'), parent=ld_addr)
-                if line_delivery_addr.get('district') or line_delivery_addr.get('citySubdivisionName'):
-                    cbc('CitySubdivisionName', line_delivery_addr.get('district') or line_delivery_addr.get('citySubdivisionName'), parent=ld_addr)
-                if line_delivery_addr.get('city'):
-                    cbc('CityName', line_delivery_addr.get('city'), parent=ld_addr)
-                if line_delivery_addr.get('postalZone'):
-                    cbc('PostalZone', line_delivery_addr.get('postalZone'), parent=ld_addr)
-                ld_country = ET.SubElement(ld_addr, f"{{{NS['cac']}}}Country")
-                cbc('IdentificationCode', 'TR', parent=ld_country)
-                cbc('Name', line_delivery_addr.get('country') or 'TÜRKİYE', parent=ld_country)
+                _append_postal_address(line_delivery, cbc, line_delivery_addr, element_name='DeliveryAddress')
             line_shipment = ET.SubElement(line_delivery, f"{{{NS['cac']}}}Shipment")
             cbc('ID', str(i), parent=line_shipment)
             line_gtip = None

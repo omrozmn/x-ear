@@ -37,6 +37,8 @@ type RequestConfigSummary = Pick<AxiosRequestConfig, 'url' | 'method'>;
 
 interface ResponseEnvelope<T> {
     data: T;
+    meta?: unknown;
+    pagination?: unknown;
 }
 
 function ensureHeaders(config: InternalAxiosRequestConfig): AxiosHeaders {
@@ -47,6 +49,35 @@ function ensureHeaders(config: InternalAxiosRequestConfig): AxiosHeaders {
 
 function hasResponseEnvelope<T>(value: unknown): value is ResponseEnvelope<T> {
     return typeof value === 'object' && value !== null && 'data' in value;
+}
+
+function attachResponseMetadata<T>(payload: T, envelope: ResponseEnvelope<T>): T {
+    if ((typeof payload !== 'object' || payload === null) && !Array.isArray(payload)) {
+        return payload;
+    }
+
+    const target = payload as Record<string, unknown>;
+    const metadata = envelope.pagination ?? envelope.meta;
+
+    if (envelope.meta !== undefined && target.meta === undefined) {
+        Object.defineProperty(target, 'meta', {
+            value: envelope.meta,
+            enumerable: false,
+            configurable: true,
+            writable: true,
+        });
+    }
+
+    if (metadata !== undefined && target.pagination === undefined) {
+        Object.defineProperty(target, 'pagination', {
+            value: metadata,
+            enumerable: false,
+            configurable: true,
+            writable: true,
+        });
+    }
+
+    return payload;
 }
 
 // Request interceptor for auth token and idempotency
@@ -90,7 +121,8 @@ axiosInstance.interceptors.response.use(
 
 
             // Don't logout on login endpoint 401 (invalid credentials)
-            const isLoginRequest = error.config?.url?.includes('/auth/login');
+            const isLoginRequest = typeof error.config?.url === 'string'
+                && error.config.url.includes('/auth/login');
 
             if (!isLoginRequest) {
                 // Clear auth data
@@ -227,7 +259,7 @@ export const adminApi = <T>(requestConfig: AxiosRequestConfig): Promise<T> => {
         () => axiosInstance(requestConfig).then(response => {
             // Unwrap ResponseEnvelope: {success: true, data: {...}} -> {...}
             if (hasResponseEnvelope<T>(response.data)) {
-                return response.data.data;
+                return attachResponseMetadata(response.data.data, response.data);
             }
             return response.data;
         }),

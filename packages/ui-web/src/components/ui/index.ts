@@ -1,5 +1,5 @@
 // UI Components
-export { Modal, useModal } from './Modal';
+export { Modal, useModal, AlertModal, ConfirmModal } from './Modal';
 export { StatsCard, createPatientStats, createInventoryStats } from './StatsCard';
 export { DataTable } from './DataTable';
 export { DataCard } from './DataCard';

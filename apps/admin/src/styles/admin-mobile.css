@@ -29,6 +29,17 @@
   display: none;
 }
 
+.mobile-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-table {
+  min-width: max(100%, 720px);
+}
+
 /* Mobile-Specific Styles */
 @media (max-width: 768px) {
   /* Ensure minimum hit area for interactive elements (Apple HIG) */
@@ -77,8 +88,6 @@
 
   /* Mobile table - horizontal scroll */
   .mobile-table-wrapper {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
     border-radius: 8px;
   }
 

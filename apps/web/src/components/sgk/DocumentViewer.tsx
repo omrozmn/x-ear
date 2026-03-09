@@ -205,7 +205,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
         <div className="flex items-center justify-between p-4 border-b bg-gray-50 flex-shrink-0 w-full">
           <div className="flex items-center space-x-3 min-w-0 flex-1">
             <div className="flex-shrink-0 h-8 w-8">
-              <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
+              <div className="h-8 w-8 bg-blue-100 rounded-2xl flex items-center justify-center">
                 {isPDF ? (
                   <FileText className="h-4 w-4 text-blue-600" />
                 ) : (

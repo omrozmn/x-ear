@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/ai/tools/bulk_import_tools.py
+# hypothesis_version: 6.151.9
+
+[' *', '1.0.0', 'Appointment', 'Device', 'Inventory', 'Party', 'Rollback Bulk Import', 'Sale', 'TOPLU_YUKLEME', 'Tenant ID', 'appointments', 'batch_id', 'bulk_import', 'column_mapping', 'completed', 'db', 'default', 'deleted', 'devices', 'download_path', 'errors', 'failed', 'file_name', 'file_path', 'headers', 'id', 'instance', 'instructions', 'inventory_items', 'message', 'object', 'parties', 'party_id', 'record_count', 'rollback-operation', 'rollback_bulk_import', 'rolled_back', 'rolled_back_at', 'sales', 'string', 'successful', 'target_tool', 'target_tool_id', 'temp', 'tenant_id', 'tid', 'total', 'total_rows', 'user_id']

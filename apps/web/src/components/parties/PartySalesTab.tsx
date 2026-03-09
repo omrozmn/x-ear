@@ -405,7 +405,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
             <CardTitle>Satış Geçmişi</CardTitle>
             <div className="flex items-center space-x-2">
               {/* View Toggle Buttons - Commented out for now, forcing table view */}
-              {/* <div className="flex border border-gray-300 rounded-md">
+              {/* <div className="flex border border-gray-300 rounded-xl">
                 <Button
                   variant={viewMode === 'table' ? 'default' : 'ghost'}
                   size="sm"
@@ -495,7 +495,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
       {/* Modals */}
       {showNewSaleModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-4">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Yeni Satış</h2>
@@ -638,7 +638,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
       {/* Device Replacement Modal */}
       {showDeviceReplacementModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Cihaz Değişimi</h2>

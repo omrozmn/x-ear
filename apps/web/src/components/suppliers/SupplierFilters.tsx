@@ -28,7 +28,7 @@ export function SupplierFilters({
             <button
               data-allow-raw="true"
               onClick={() => onFiltersChange({ ...(filters || {}), status: undefined })}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
                 !filters?.status
                   ? 'bg-blue-100 text-blue-700 border-blue-300'
                   : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
@@ -39,7 +39,7 @@ export function SupplierFilters({
             <button
               data-allow-raw="true"
               onClick={() => onFiltersChange({ ...(filters || {}), status: 'ACTIVE' })}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
                 filters?.status === 'ACTIVE'
                   ? 'bg-green-100 text-green-700 border-green-300'
                   : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
@@ -50,7 +50,7 @@ export function SupplierFilters({
             <button
               data-allow-raw="true"
               onClick={() => onFiltersChange({ ...(filters || {}), status: 'INACTIVE' })}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
                 filters?.status === 'INACTIVE'
                   ? 'bg-gray-100 text-gray-700 border-gray-400'
                   : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
@@ -73,7 +73,7 @@ export function SupplierFilters({
             placeholder="Şehir filtrele..."
             value={filters?.city || ''}
             onChange={(e) => onFiltersChange({ ...(filters || {}), city: e.target.value || undefined })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 

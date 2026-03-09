@@ -264,7 +264,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
         <div className="flex-1 overflow-y-auto px-1">
           <div className="space-y-6 pb-6">
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-md p-4">
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
                 <div className="flex">
                   <div className="flex-shrink-0">
                     <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -346,7 +346,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                   step="15"
                   value={formData.duration}
                   onChange={(e) => handleInputChange('duration', parseInt(e.target.value) || 0)}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.duration ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.duration ? 'border-red-300' : 'border-gray-300'
                     }`}
                 />
                 {errors.duration && (
@@ -411,7 +411,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                   value={formData.title}
                   onChange={(e) => handleInputChange('title', e.target.value)}
                   placeholder="Randevu başlığı"
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.title ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.title ? 'border-red-300' : 'border-gray-300'
                     }`}
                 />
                 {errors.title && (
@@ -429,7 +429,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                   value={formData.clinician}
                   onChange={(e) => handleInputChange('clinician', e.target.value)}
                   placeholder="Doktor adı"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div> */}
 
@@ -443,7 +443,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                   value={formData.location}
                   onChange={(e) => handleInputChange('location', e.target.value)}
                   placeholder="Muayene odası, şube vb."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div> */}
 
@@ -458,7 +458,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                   onChange={(e) => handleInputChange('notes', e.target.value)}
                   placeholder={t('form.notes_placeholder')}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -473,7 +473,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
               type="button"
               onClick={onCancel}
               disabled={isLoading}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
               variant='default'>
               {t('form.cancel_btn')}
             </Button>

@@ -93,7 +93,7 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
       <div className={`animate-pulse ${className}`}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-white overflow-hidden shadow rounded-lg">
+            <div key={i} className="bg-white overflow-hidden shadow rounded-2xl">
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
@@ -114,7 +114,7 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
 
   if (error) {
     return (
-      <div className={`bg-red-50 border border-red-200 rounded-md p-4 ${className}`}>
+      <div className={`bg-red-50 border border-red-200 rounded-xl p-4 ${className}`}>
         <div className="flex">
           <div className="flex-shrink-0">
             <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -205,10 +205,10 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
       {/* Use a single-row flex layout so KPIs stay on one line and shrink on small screens */}
       <div className="flex gap-4 items-stretch w-full flex-nowrap">
         {statCards.map((stat) => (
-          <div key={stat.name} className="bg-white dark:bg-slate-800 overflow-hidden shadow rounded-lg flex-1 min-w-0">
+          <div key={stat.name} className="bg-white dark:bg-slate-800 overflow-hidden shadow rounded-2xl flex-1 min-w-0">
             <div className="p-4 sm:p-5">
               <div className="flex items-center">
-                <div className={`flex-shrink-0 ${stat.bgColor} p-2 rounded-md`}>{stat.icon}</div>
+                <div className={`flex-shrink-0 ${stat.bgColor} p-2 rounded-xl`}>{stat.icon}</div>
                 <div className="ml-4 w-0 flex-1">
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{stat.name}</dt>

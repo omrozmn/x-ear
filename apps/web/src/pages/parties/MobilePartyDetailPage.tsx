@@ -70,7 +70,7 @@ export const MobilePartyDetailPage: React.FC = () => {
                     <Button
                         onClick={handleCall}
                         variant="ghost"
-                        className="flex items-center justify-center gap-2 py-2.5 bg-green-50 text-green-700 rounded-lg font-medium active:bg-green-100 transition-colors"
+                        className="flex items-center justify-center gap-2 py-2.5 bg-green-50 text-green-700 rounded-2xl font-medium active:bg-green-100 transition-colors"
                     >
                         <Phone className="h-4 w-4" />
                         Ara
@@ -78,7 +78,7 @@ export const MobilePartyDetailPage: React.FC = () => {
                     <Button
                         onClick={handleMessage}
                         variant="ghost"
-                        className="flex items-center justify-center gap-2 py-2.5 bg-blue-50 text-blue-700 rounded-lg font-medium active:bg-blue-100 transition-colors"
+                        className="flex items-center justify-center gap-2 py-2.5 bg-blue-50 text-blue-700 rounded-2xl font-medium active:bg-blue-100 transition-colors"
                     >
                         <MessageCircle className="h-4 w-4" />
                         Mesaj

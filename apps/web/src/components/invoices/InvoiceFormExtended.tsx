@@ -35,6 +35,8 @@ import { getAutoCurrency } from '../../utils/currencyManager';
 import { ProductLinesSection } from './ProductLinesSection';
 import { InvoiceProfileDetailsCard } from './InvoiceProfileDetailsCard';
 import { useGetTenantCompany } from '@/api/client/tenant-users.client';
+import { normalizeCustomerTaxIdFields } from '../../utils/customerTaxId';
+import { customInstance } from '@/api/orval-mutator';
 
 // Local form state interface to replace 'any'
 interface InvoiceFormState {
@@ -70,6 +72,7 @@ interface InvoiceFormState {
   customerName?: string;
   customerTcNumber?: string;
   customerTaxNumber?: string;
+  customerTaxId?: string;
   customerAddress?: string; // or object
   customerCity?: string;
   customerDistrict?: string;
@@ -171,6 +174,7 @@ export function InvoiceFormExtended({
     totalDiscount: initialData?.totalDiscount ?? invoice?.totalDiscount ?? 0,
     customerId: invoice?.customerId || '',
     customerName: invoice?.customerName || '',
+    customerTaxId: (initialData?.customerTaxId as string | undefined) || invoice?.customerTaxNumber || '',
     subtotal: invoice?.subtotal ?? 0,
     totalAmount: invoice?.totalAmount ?? invoice?.grandTotal ?? 0,
     items: (invoice?.items || (initialData as InvoiceFormState | undefined)?.items || []) as InvoiceItem[]
@@ -199,6 +203,7 @@ export function InvoiceFormExtended({
       sgkData: (initialData.sgkData as SGKInvoiceData | undefined) || prev.sgkData,
       customerName: (initialData.customerName as string) || prev.customerName,
       customerId: (initialData.customerId as string) || prev.customerId,
+      customerTaxId: (initialData.customerTaxId as string) || prev.customerTaxId,
     }));
   }, [initialData]);
 
@@ -215,6 +220,39 @@ export function InvoiceFormExtended({
     ((companyData?.data?.companyInfo as Record<string, unknown> | undefined)?.defaultExemptionCode as string | undefined) || ''
   ).trim();
 
+  // Invoice prefix settings
+  const [invoicePrefixes, setInvoicePrefixes] = useState<string[]>([]);
+  const [defaultPrefix, setDefaultPrefix] = useState('XER');
+
+  // Load invoice prefix settings
+  useEffect(() => {
+    const loadPrefixSettings = async () => {
+      try {
+        const response = await customInstance<{ data: { settings: any } }>({
+          url: '/api/tenants/current',
+          method: 'GET',
+        });
+        const settings = response?.data?.settings || {};
+        console.log('🔍 Raw settings from API:', settings);
+        
+        // Backend returns camelCase (invoiceIntegration), not snake_case
+        const invoiceSettings = settings.invoiceIntegration || settings.invoice_integration || {};
+        console.log('🔍 Invoice settings:', invoiceSettings);
+        
+        const prefix = invoiceSettings.invoicePrefix || invoiceSettings.invoice_prefix || 'XER';
+        const prefixes = invoiceSettings.invoicePrefixes || invoiceSettings.invoice_prefixes || [];
+        
+        console.log('📋 Loaded invoice prefix settings:', { prefix, prefixes, prefixCount: prefixes.length });
+        
+        setDefaultPrefix(prefix);
+        setInvoicePrefixes(prefixes);
+      } catch (error) {
+        console.error('❌ Failed to load invoice prefix settings:', error);
+      }
+    };
+    loadPrefixSettings();
+  }, []);
+
   // handleExtendedFieldChange'i önce tanımla (useEffect'lerden önce olmalı)
   const handleExtendedFieldChange = useCallback((field: string, value: unknown) => {
     setExtendedData(prev => {
@@ -222,6 +260,16 @@ export function InvoiceFormExtended({
         const val = value as InvoiceScenarioData;
         const newScenario = val?.scenario || prev.scenario || 'other';
         return { ...prev, scenarioData: val, scenario: newScenario };
+      }
+      if (field === 'customerTaxId' || field === 'customerTaxNumber' || field === 'customerTcNumber') {
+        return {
+          ...prev,
+          ...normalizeCustomerTaxIdFields({
+            customerTaxId: field === 'customerTaxId' ? value as string : prev.customerTaxId,
+            customerTaxNumber: field === 'customerTaxNumber' ? value as string : prev.customerTaxNumber,
+            customerTcNumber: field === 'customerTcNumber' ? value as string : prev.customerTcNumber,
+          }),
+        };
       }
       return { ...prev, [field]: value };
     });
@@ -231,11 +279,20 @@ export function InvoiceFormExtended({
         const val = value as InvoiceScenarioData;
         onDataChange('scenarioData', value);
         onDataChange('scenario', val?.scenario || 'other');
+      } else if (field === 'customerTaxId' || field === 'customerTaxNumber' || field === 'customerTcNumber') {
+        const normalized = normalizeCustomerTaxIdFields({
+          customerTaxId: field === 'customerTaxId' ? value as string : extendedData.customerTaxId,
+          customerTaxNumber: field === 'customerTaxNumber' ? value as string : extendedData.customerTaxNumber,
+          customerTcNumber: field === 'customerTcNumber' ? value as string : extendedData.customerTcNumber,
+        });
+        onDataChange('customerTaxId', normalized.customerTaxId);
+        onDataChange('customerTaxNumber', normalized.customerTaxNumber);
+        onDataChange('customerTcNumber', normalized.customerTcNumber);
       } else {
         onDataChange(field, value);
       }
     }
-  }, [onDataChange]);
+  }, [extendedData.customerTaxId, extendedData.customerTaxNumber, extendedData.customerTcNumber, onDataChange]);
 
   // SGK fatura türü seçildiğinde otomatik ürün ekle (sadece items boşsa ve firma tipi işitme merkezi ise)
   useEffect(() => {
@@ -313,6 +370,29 @@ export function InvoiceFormExtended({
     handleExtendedFieldChange('governmentExemptionReason', defaultExemptionCode);
   }, [defaultExemptionCode, extendedData.governmentExemptionReason, extendedData.invoiceType, extendedData.items, handleExtendedFieldChange]);
 
+  useEffect(() => {
+    const bankInfo = (extendedData.bankInfo || {}) as BankInfoData;
+    if (!bankInfo.useCompanyDefaults) return;
+
+    const companyInfo = (companyData?.data?.companyInfo || {}) as Record<string, unknown>;
+    const nextBankInfo = {
+      ...bankInfo,
+      bankName: String(companyInfo.bankName || ''),
+      iban: String(companyInfo.iban || ''),
+      accountHolder: String(companyInfo.accountHolder || companyInfo.name || ''),
+    } satisfies BankInfoData;
+
+    if (
+      bankInfo.bankName === nextBankInfo.bankName &&
+      bankInfo.iban === nextBankInfo.iban &&
+      bankInfo.accountHolder === nextBankInfo.accountHolder
+    ) {
+      return;
+    }
+
+    handleExtendedFieldChange('bankInfo', nextBankInfo);
+  }, [companyData?.data?.companyInfo, extendedData.bankInfo, handleExtendedFieldChange]);
+
   // Tip 14, 15, 35 için otomatik Temel'e geçiş
   useEffect(() => {
     if (shouldForceBasic && extendedData.scenarioData?.currentScenarioType !== '2') {
@@ -372,7 +452,7 @@ export function InvoiceFormExtended({
           <div className={isModal ? "flex-1" : "w-full"}>
             <div className="space-y-6 p-6">
               {/* Senaryo ve Fatura Tipi - Tek Kart */}
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="bg-white rounded-2xl shadow p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Senaryo ve Fatura Tipi</h3>
                 <div className={isModal ? "flex flex-col md:flex-row md:items-start md:gap-6" : "space-y-4"}>
                   <div className={isModal ? "flex-1 space-y-4" : "w-full"}>
@@ -391,11 +471,32 @@ export function InvoiceFormExtended({
                       returnInvoiceDetails={extendedData.returnInvoiceDetails}
                       onChange={handleExtendedFieldChange}
                     />
+
+                    {/* Invoice Prefix Selection - show if multiple prefixes exist */}
+                    {invoicePrefixes.length > 1 && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Fatura Ön Eki
+                        </label>
+                        <Select
+                          value={extendedData.invoicePrefix as string || defaultPrefix}
+                          onChange={(e) => handleExtendedFieldChange('invoicePrefix', e.target.value)}
+                          options={invoicePrefixes.map(prefix => ({
+                            value: prefix,
+                            label: `${prefix} (Örn: ${prefix}${new Date().getFullYear()}000000001)`
+                          }))}
+                          fullWidth
+                        />
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          Fatura numarası bu ön ek ile oluşturulacak
+                        </p>
+                      </div>
+                    )}
                     </div>
                     {/* Informational cards (conditional) - reuse scenarioData state */}
                     <div className="mt-4 space-y-3">
                       {extendedData.scenarioData?.scenario && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
                           <div className="flex items-start">
                             <svg className="text-blue-400 mr-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zM11 10h2v6h-2v-6zm0-4h2v2h-2V6z" fill="currentColor" /></svg>
                             <div>
@@ -412,7 +513,7 @@ export function InvoiceFormExtended({
                       )}
 
                       {extendedData.scenarioData?.scenario === 'other' && (
-                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
                           <div className="flex items-start">
                             <svg className="text-amber-400 mr-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                             <div>
@@ -438,6 +539,7 @@ export function InvoiceFormExtended({
                           customerLastName={(extendedData.customerName || '').split(' ').slice(1).join(' ') || ''}
                           customerTcNumber={extendedData.customerTcNumber || ''}
                           customerTaxNumber={extendedData.customerTaxNumber || ''}
+                          customerTaxId={extendedData.customerTaxId || ''}
                           customerAddress={extendedData.customerAddress || ''}
                           customerCity={extendedData.customerCity || ''}
                           customerDistrict={extendedData.customerDistrict || ''}
@@ -452,7 +554,7 @@ export function InvoiceFormExtended({
                         <>
                           {/* SGK */}
                           {extendedData.invoiceType === '14' && (
-                            <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
                               <div className="p-4 border-b border-gray-200 bg-blue-50">
                                 <h3 className="text-sm font-bold text-gray-900">SGK Fatura Bilgileri</h3>
                                 <p className="text-xs text-gray-600 mt-1">SGK faturası için gerekli bilgileri girin</p>
@@ -468,7 +570,7 @@ export function InvoiceFormExtended({
 
                           {/* Government */}
                           {extendedData.scenario === 'government' && (
-                            <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
                               <div className="p-4 border-b border-gray-200 bg-purple-50">
                                 <h3 className="text-sm font-bold text-gray-900">Kamu Fatura Bilgileri</h3>
                                 <p className="text-xs text-gray-600 mt-1">Kamu kurumu faturası bilgileri</p>
@@ -487,7 +589,7 @@ export function InvoiceFormExtended({
 
                           {/* Istisna Sebebi */}
                           {extendedData.invoiceType === '13' && extendedData.scenario !== 'export' && extendedData.scenario !== 'government' && (
-                            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                            <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
                               <div className="mb-3">
                                 <h3 className="text-sm font-bold text-gray-900">İstisna Sebebi</h3>
                                 <p className="text-xs text-gray-500">Seçilen istisna için neden kodunu belirtiniz</p>
@@ -506,7 +608,7 @@ export function InvoiceFormExtended({
 
                           {/* Export */}
                           {extendedData.scenario === 'export' && (
-                            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                            <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
                               <div className="mb-3">
                                 <h3 className="text-sm font-bold text-gray-900">İhracat Bilgileri</h3>
                               </div>
@@ -521,7 +623,7 @@ export function InvoiceFormExtended({
 
                           {/* Special Base */}
                           {['12', '19', '25', '33'].includes(String(extendedData.invoiceType)) && (
-                            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                            <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
                               <h3 className="text-sm font-bold text-gray-900 mb-3">Özel Matrah Bilgileri</h3>
                               <div className="grid grid-cols-1 gap-3">
                                 <div>
@@ -568,7 +670,7 @@ export function InvoiceFormExtended({
 
                           {/* Return Invoice */}
                           {['15', '49', '50'].includes(String(extendedData.invoiceType)) && (
-                            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                            <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
                               <div className="mb-3">
                                 <h3 className="text-sm font-bold text-gray-900">İade Fatura Bilgileri</h3>
                               </div>
@@ -586,13 +688,12 @@ export function InvoiceFormExtended({
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">İade Fatura Tarihi</label>
-                                  <Input
-                                    type="date"
-                                    value={extendedData.returnInvoiceDetails?.returnInvoiceDate || ''}
-                                    onChange={(e) => handleExtendedFieldChange('returnInvoiceDetails', {
+                                  <DatePicker
+                                    label="İade Fatura Tarihi"
+                                    value={extendedData.returnInvoiceDetails?.returnInvoiceDate ? new Date(extendedData.returnInvoiceDetails.returnInvoiceDate) : null}
+                                    onChange={(date) => handleExtendedFieldChange('returnInvoiceDetails', {
                                       ...extendedData.returnInvoiceDetails,
-                                      returnInvoiceDate: e.target.value
+                                      returnInvoiceDate: date ? date.toISOString().split('T')[0] : ''
                                     })}
                                   />
                                 </div>
@@ -614,7 +715,7 @@ export function InvoiceFormExtended({
 
                           {/* Medical Section */}
                           {extendedData.scenario === 'medical' && (
-                            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                            <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
                               <div className="flex items-center justify-between mb-3">
                                 <h3 className="text-sm font-bold text-gray-900">İlaç/Tıbbi Cihaz</h3>
                                 <Button
@@ -627,7 +728,7 @@ export function InvoiceFormExtended({
                                 </Button>
                               </div>
                               {extendedData.medicalDeviceData ? (
-                                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                                <div className="bg-green-50 border border-green-200 rounded-2xl p-3">
                                   <div className="flex items-center gap-2">
                                     <svg className="text-green-600" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                                     <p className="text-xs text-green-800">Tıbbi cihaz bilgileri kaydedildi</p>
@@ -641,10 +742,10 @@ export function InvoiceFormExtended({
 
                           {/* Special Operations / Withholding */}
                           {(['11', '18', '24', '32'].includes(String(extendedData.invoiceType))) && (
-                            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                            <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
                               <h3 className="text-sm font-bold text-gray-900 mb-3">Özel İşlemler</h3>
                               <div className="space-y-3">
-                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+                                <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 mb-3">
                                   <p className="text-xs text-blue-800 leading-relaxed">
                                     <strong>Tevkifatlı Fatura</strong>
                                     <br />Bu fatura tipi için tevkifat bilgileri zorunludur. Ürün satırlarında tevkifat kodu ve oranı belirtiniz.
@@ -683,21 +784,50 @@ export function InvoiceFormExtended({
               />
 
               {/* Ek Bilgiler - moved to main column as its own card */}
-              <div className="bg-white rounded-lg shadow p-6">
+              <div className="bg-white rounded-2xl shadow p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Ek Bilgiler</h3>
                 <AdditionalInfoSection
+                  documentKind={documentKind}
                   orderInfo={extendedData.orderInfo}
-                  deliveryInfo={extendedData.deliveryInfo}
+                  deliveryInfo={{
+                    ...(extendedData.deliveryInfo || {}),
+                    createLinkedDocument: Boolean((extendedData.linkedDocumentOptions as Record<string, unknown> | undefined)?.createLinkedDocument),
+                    linkedInvoiceType: String((extendedData.linkedDocumentOptions as Record<string, unknown> | undefined)?.linkedInvoiceType || '0'),
+                    linkedScenario: String((extendedData.linkedDocumentOptions as Record<string, unknown> | undefined)?.linkedScenario || 'other'),
+                  }}
                   shipmentInfo={extendedData.shipmentInfo}
                   bankInfo={extendedData.bankInfo}
                   paymentTerms={extendedData.paymentTerms}
-                  onChange={handleExtendedFieldChange}
+                  companyBankDefaults={{
+                    bankName: String((companyData?.data?.companyInfo as Record<string, unknown> | undefined)?.bankName || ''),
+                    iban: String((companyData?.data?.companyInfo as Record<string, unknown> | undefined)?.iban || ''),
+                    accountHolder: String((companyData?.data?.companyInfo as Record<string, unknown> | undefined)?.accountHolder || (companyData?.data?.companyInfo as Record<string, unknown> | undefined)?.name || ''),
+                  }}
+                  onChange={(field, value) => {
+                    if (field === 'deliveryInfo' && value && typeof value === 'object') {
+                      const deliveryValue = value as DeliveryInfo;
+                      handleExtendedFieldChange('deliveryInfo', {
+                        ...deliveryValue,
+                        createLinkedDocument: undefined,
+                        linkedInvoiceType: undefined,
+                        linkedScenario: undefined,
+                      });
+                      handleExtendedFieldChange('linkedDocumentOptions', {
+                        createLinkedDocument: Boolean(deliveryValue.createLinkedDocument),
+                        linkedInvoiceType: deliveryValue.linkedInvoiceType || '0',
+                        linkedScenario: deliveryValue.linkedScenario || 'other',
+                      });
+                      return;
+                    }
+
+                    handleExtendedFieldChange(field, value);
+                  }}
                 />
               </div>
 
               {/* Notes / Açıklama (editable) */}
               {!mobileHiddenSections.includes('notes') && (
-              <div className="bg-white rounded-lg shadow p-4">
+              <div className="bg-white rounded-2xl shadow p-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Açıklama</label>
                 <Textarea
                   value={extendedData.notes || ''}
@@ -736,11 +866,15 @@ export function InvoiceFormExtended({
         </Button>
         <Button type="button" onClick={() => {
           const submissionData: CreateInvoiceData = {
+            ...normalizeCustomerTaxIdFields({
+              customerTaxId: typeof extendedData.customerTaxId === 'string' ? extendedData.customerTaxId : undefined,
+              customerTaxNumber: typeof extendedData.customerTaxNumber === 'string' ? extendedData.customerTaxNumber : undefined,
+              customerTcNumber: typeof extendedData.customerTcNumber === 'string' ? extendedData.customerTcNumber : undefined,
+            }),
             invoiceNumber: typeof extendedData.invoiceNumber === 'string' ? extendedData.invoiceNumber : undefined,
             type: (typeof extendedData.type === 'string' ? extendedData.type : 'sales') as InvoiceTypeLegacy,
             customerId: extendedData.customerId?.toString(),
             customerName: typeof extendedData.customerName === 'string' ? extendedData.customerName : undefined,
-            customerTaxNumber: typeof extendedData.customerTaxNumber === 'string' ? extendedData.customerTaxNumber : undefined,
             customerAddress: resolveAddress(extendedData.customerAddress),
             billingAddress: resolveAddress(extendedData.billingAddress) || resolveAddress(extendedData.customerAddress),
             shippingAddress: resolveAddress(extendedData.shippingAddress),

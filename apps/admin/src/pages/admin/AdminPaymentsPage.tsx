@@ -4,6 +4,7 @@ import { useListAdminPaymentPoTransactions } from '@/lib/api-client'
 import type { ListAdminPaymentPoTransactionsParams, PaymentRecordRead, ResponseEnvelopeListPaymentRecordRead } from '@/api/generated/schemas'
 import { useAdminResponsive } from '@/hooks'
 import { ResponsiveTable } from '@/components/responsive'
+import { isRecord as isPayloadRecord, unwrapData } from '@/lib/orval-response'
 
 interface PaymentTransaction extends PaymentRecordRead {
     payment_date?: string
@@ -18,11 +19,16 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function getTransactions(data: ResponseEnvelopeListPaymentRecordRead | undefined): PaymentTransaction[] {
-    if (!Array.isArray(data?.data)) {
-        return []
-    }
+    const payload = unwrapData<unknown>(data)
+    const candidate = Array.isArray(payload)
+        ? payload
+        : isPayloadRecord(payload) && Array.isArray(payload.transactions)
+            ? payload.transactions
+            : isPayloadRecord(payload) && Array.isArray(payload.items)
+                ? payload.items
+                : []
 
-    return data.data.filter((item): item is PaymentTransaction => isRecord(item) && typeof item.id === 'string')
+    return candidate.filter((item): item is PaymentTransaction => isRecord(item) && typeof item.id === 'string')
 }
 
 export default function AdminPaymentsPage() {

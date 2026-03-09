@@ -67,7 +67,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
               {card.icon}
             </div>
             {card.trend && (
-              <span className="text-xs font-medium text-white/90 bg-white/20 px-2 py-1 rounded-lg backdrop-blur-md border border-white/10">
+              <span className="text-xs font-medium text-white/90 bg-white/20 px-2 py-1 rounded-2xl backdrop-blur-md border border-white/10">
                 {card.trend}
               </span>
             )}
@@ -75,7 +75,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
 
           <div className="relative z-10">
             <h3 className="text-3xl font-bold text-white mb-1 tracking-tight">{card.value}</h3>
-            <p className="text-white/80 font-medium text-sm tracking-wide bg-white/5 inline-block px-2 py-0.5 rounded-md">{card.title}</p>
+            <p className="text-white/80 font-medium text-sm tracking-wide bg-white/5 inline-block px-2 py-0.5 rounded-xl">{card.title}</p>
           </div>
         </div>
       ))}

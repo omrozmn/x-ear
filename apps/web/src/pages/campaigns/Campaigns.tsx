@@ -479,7 +479,7 @@ const CampaignsPage: React.FC = () => {
                     onChange={handleFileChange}
                 />
             </div>
-            <div className="rounded-lg border border-dashed border-gray-300 dark:border-gray-600 p-4 space-y-2 text-sm bg-white dark:bg-gray-800">
+            <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 p-4 space-y-2 text-sm bg-white dark:bg-gray-800">
                 <ul className="list-disc pl-5 text-gray-500 dark:text-gray-400 text-xs space-y-1">
                     <li>"Telefon" başlıklı sütun zorunludur.</li>
                     <li>Önizleme ilk 8 satırı gösterir.</li>
@@ -509,7 +509,7 @@ const CampaignsPage: React.FC = () => {
                 )}
             </div>
             {excelPreview && (
-                <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700">
                     <table className="min-w-full text-xs">
                         <thead className="bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
                             <tr>
@@ -654,7 +654,7 @@ const CampaignsPage: React.FC = () => {
                                     key={field.key}
                                     type="button"
                                     onClick={() => insertDynamicField(field.key)}
-                                    className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 rounded-md hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
+                                    className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
                                     title={field.description}
                                 >
                                     <Plus className="w-3 h-3" />
@@ -694,7 +694,7 @@ const CampaignsPage: React.FC = () => {
                     </div>
 
                     {/* Credit Summary */}
-                    <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 space-y-2 bg-gray-50 dark:bg-gray-800">
+                    <div className="rounded-2xl border border-gray-200 dark:border-gray-700 p-4 space-y-2 bg-gray-50 dark:bg-gray-800">
                         <div className="flex justify-between text-sm">
                             <span>Toplam alıcı</span>
                             <span className="font-semibold">{recipients ? formatNumber(recipients) : '-'}</span>
@@ -734,13 +734,13 @@ const CampaignsPage: React.FC = () => {
                             <button
                                 data-allow-raw="true"
                                 onClick={() => setShowPreview(false)}
-                                className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                className="p-1 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             >
                                 <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                             </button>
                         </div>
                         <div className="p-4 space-y-4">
-                            <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
+                            <div className="bg-gray-100 dark:bg-gray-700 rounded-2xl p-4">
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
                                     {mode === 'filters' && firstParty
                                         ? `İlk hasta: ${firstParty.firstName} ${firstParty.lastName}`
@@ -748,7 +748,7 @@ const CampaignsPage: React.FC = () => {
                                             ? 'Excel listesinden ilk kayıt'
                                             : 'Örnek verilerle'}
                                 </p>
-                                <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-200 dark:border-gray-600">
+                                <div className="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-sm border border-gray-200 dark:border-gray-600">
                                     <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{getPreviewMessage}</p>
                                 </div>
                             </div>

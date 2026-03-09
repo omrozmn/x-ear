@@ -203,7 +203,7 @@ export const DataTable = <T extends Record<string, any>>({
             onClick={(e) => { e.stopPropagation(); action.onClick(record) }}
             disabled={action.disabled?.(record)}
             className={`
-              inline-flex items-center px-2 py-1 text-sm font-medium rounded-md
+              inline-flex items-center px-2 py-1 text-sm font-medium rounded-xl
               ${action.variant === 'danger'
                 ? 'text-red-700 bg-red-100 hover:bg-red-200 dark:text-red-400 dark:bg-red-900/20 dark:hover:bg-red-900/30'
                 : action.variant === 'primary'
@@ -272,7 +272,7 @@ export const DataTable = <T extends Record<string, any>>({
             <select
               value={pageSize}
               onChange={(e) => pagination.onChange(1, Number(e.target.value))}
-              className="ml-4 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="ml-4 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               {pageSizeOptions.map(size => (
                 <option key={size} value={size}>{size} / sayfa</option>
@@ -318,7 +318,7 @@ export const DataTable = <T extends Record<string, any>>({
                   key={page}
                   onClick={() => pagination.onChange(page, pageSize)}
                   className={`
-                    px-3 py-1 text-sm rounded-md transition-colors
+                    px-3 py-1 text-sm rounded-xl transition-colors
                     ${page === current
                       ? 'bg-blue-600 text-white'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -356,7 +356,7 @@ export const DataTable = <T extends Record<string, any>>({
   };
 
   return (
-    <div className={`bg-white dark:bg-gray-800 shadow-sm rounded-lg ${className}`}>
+    <div className={`bg-white dark:bg-gray-800 shadow-sm rounded-2xl ${className}`}>
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
@@ -369,7 +369,7 @@ export const DataTable = <T extends Record<string, any>>({
                   placeholder="Ara..."
                   value={searchValue}
                   onChange={(e) => handleSearch(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             )}
@@ -385,7 +385,7 @@ export const DataTable = <T extends Record<string, any>>({
                       key={action.key}
                       onClick={() => action.onClick(selectedRecords)}
                       className={`
-                        inline-flex items-center px-3 py-1 text-sm font-medium rounded-md
+                        inline-flex items-center px-3 py-1 text-sm font-medium rounded-xl
                         ${action.variant === 'danger'
                           ? 'text-red-700 bg-red-100 hover:bg-red-200 dark:text-red-400 dark:bg-red-900/20 dark:hover:bg-red-900/30'
                           : action.variant === 'primary'

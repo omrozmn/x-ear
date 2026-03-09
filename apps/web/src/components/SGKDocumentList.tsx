@@ -324,7 +324,7 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
   return (
     <div className="p-4">
       {/* Filters */}
-      <div className={`bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-4 mb-4 ${compact ? 'text-sm' : ''}`}>
+      <div className={`bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-2xl p-4 mb-4 ${compact ? 'text-sm' : ''}`}>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Arama</label>
@@ -383,7 +383,7 @@ export const SGKDocumentList: React.FC<SGKDocumentListProps> = ({
       </div>
 
       {/* Documents List */}
-      <div className={`bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg ${compact ? 'text-sm' : ''}`}>
+      <div className={`bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-2xl ${compact ? 'text-sm' : ''}`}>
         <div className="p-4 border-b dark:border-gray-700 flex items-center justify-between">
           <h4 className="text-sm font-medium text-gray-900 dark:text-white">Belgeler</h4>
           {showActions && (

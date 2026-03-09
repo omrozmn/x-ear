@@ -103,7 +103,7 @@ export function PromissoryNotesTab() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-900/40 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
                     <div className="flex items-center gap-3">
-                        <div className="bg-blue-500 p-2 rounded-lg">
+                        <div className="bg-blue-500 p-2 rounded-2xl">
                             <Receipt className="w-5 h-5 text-white" />
                         </div>
                         <div>
@@ -115,7 +115,7 @@ export function PromissoryNotesTab() {
 
                 <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-900/40 rounded-xl p-4 border border-green-200 dark:border-green-800">
                     <div className="flex items-center gap-3">
-                        <div className="bg-green-500 p-2 rounded-lg">
+                        <div className="bg-green-500 p-2 rounded-2xl">
                             <DollarSign className="w-5 h-5 text-white" />
                         </div>
                         <div>
@@ -127,7 +127,7 @@ export function PromissoryNotesTab() {
 
                 <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-900/40 rounded-xl p-4 border border-yellow-200 dark:border-yellow-800">
                     <div className="flex items-center gap-3">
-                        <div className="bg-yellow-500 p-2 rounded-lg">
+                        <div className="bg-yellow-500 p-2 rounded-2xl">
                             <Calendar className="w-5 h-5 text-white" />
                         </div>
                         <div>
@@ -139,7 +139,7 @@ export function PromissoryNotesTab() {
 
                 <div className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-900/40 rounded-xl p-4 border border-red-200 dark:border-red-800">
                     <div className="flex items-center gap-3">
-                        <div className="bg-red-500 p-2 rounded-lg">
+                        <div className="bg-red-500 p-2 rounded-2xl">
                             <AlertTriangle className="w-5 h-5 text-white" />
                         </div>
                         <div>

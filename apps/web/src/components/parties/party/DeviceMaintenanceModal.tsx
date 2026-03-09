@@ -209,7 +209,7 @@ export const DeviceMaintenanceModal: React.FC<DeviceMaintenanceModalProps> = ({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Device Information */}
         {device && (
-          <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="bg-gray-50 p-4 rounded-2xl">
             <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
               <Wrench className="w-4 h-4 mr-2" />
               Cihaz Bilgileri
@@ -279,7 +279,7 @@ export const DeviceMaintenanceModal: React.FC<DeviceMaintenanceModalProps> = ({
         </div>
 
         {/* Scheduling */}
-        <div className="bg-blue-50 p-4 rounded-lg">
+        <div className="bg-blue-50 p-4 rounded-2xl">
           <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
             <Calendar className="w-4 h-4 mr-2" />
             Planlama
@@ -381,7 +381,7 @@ export const DeviceMaintenanceModal: React.FC<DeviceMaintenanceModalProps> = ({
 
         {/* Error Display */}
         {errors.submit && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+          <div className="p-3 bg-red-50 border border-red-200 rounded-xl">
             <div className="flex items-center">
               <AlertTriangle className="w-4 h-4 text-red-500 mr-2" />
               <span className="text-sm text-red-700">{errors.submit}</span>

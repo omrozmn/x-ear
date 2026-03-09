@@ -133,7 +133,7 @@ export const PaymentOptionsComponent: React.FC<PaymentOptionsComponentProps> = (
 
           {/* Installment Preview */}
           {paymentMethod === 'installment' && installmentCount && (
-            <div className="space-y-3 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+            <div className="space-y-3 p-4 bg-purple-50 border border-purple-200 rounded-2xl">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <span className="text-sm font-medium text-purple-700">Taksit Sayısı:</span>
@@ -147,7 +147,7 @@ export const PaymentOptionsComponent: React.FC<PaymentOptionsComponentProps> = (
                 </div>
               </div>
 
-              <div className="p-3 bg-white border border-purple-200 rounded-md">
+              <div className="p-3 bg-white border border-purple-200 rounded-xl">
                 <div className="text-sm text-purple-700 space-y-1">
                   <div className="flex justify-between">
                     <span>Toplam Tutar:</span>

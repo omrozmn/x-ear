@@ -45,7 +45,7 @@ export const ReplacementSummary: React.FC<ReplacementSummaryProps> = ({
         <div className="grid grid-cols-2 gap-4">
           <div>
             <h4 className="font-medium text-gray-900 mb-2">Mevcut Cihaz</h4>
-            <div className="bg-red-50 p-3 rounded-lg">
+            <div className="bg-red-50 p-3 rounded-2xl">
               <p className="font-medium">{device.brand} {device.model}</p>
               <p className="text-sm text-gray-600">SN: {device.serialNumber}</p>
               <Badge variant="secondary" className="mt-1">
@@ -55,7 +55,7 @@ export const ReplacementSummary: React.FC<ReplacementSummaryProps> = ({
           </div>
           <div>
             <h4 className="font-medium text-gray-900 mb-2">Yeni Cihaz</h4>
-            <div className="bg-green-50 p-3 rounded-lg">
+            <div className="bg-green-50 p-3 rounded-2xl">
               <p className="font-medium">{selectedInventoryItem.name}</p>
               <p className="text-sm text-gray-600">{selectedInventoryItem.brand} {selectedInventoryItem.model}</p>
               <Badge variant="secondary" className="mt-1">
@@ -105,7 +105,7 @@ export const ReplacementSummary: React.FC<ReplacementSummaryProps> = ({
               <select data-allow-raw="true"
                 value={invoiceType}
                 onChange={(e) => onInvoiceTypeChange(e.target.value as 'individual' | 'corporate' | 'e_archive')}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               >
                 <option value="individual">Bireysel</option>
                 <option value="corporate">Kurumsal</option>

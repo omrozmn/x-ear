@@ -29,7 +29,7 @@ export function CashflowStats({ stats }: CashflowStatsProps) {
               {formatCurrency(stats.totalIncome)}
             </p>
           </div>
-          <div className="bg-green-500 p-3 rounded-lg">
+          <div className="bg-green-500 p-3 rounded-2xl">
             <TrendingUp className="h-8 w-8 text-white" />
           </div>
         </div>
@@ -44,7 +44,7 @@ export function CashflowStats({ stats }: CashflowStatsProps) {
               {formatCurrency(stats.totalExpense)}
             </p>
           </div>
-          <div className="bg-red-500 p-3 rounded-lg">
+          <div className="bg-red-500 p-3 rounded-2xl">
             <TrendingDown className="h-8 w-8 text-white" />
           </div>
         </div>
@@ -60,7 +60,7 @@ export function CashflowStats({ stats }: CashflowStatsProps) {
               {formatCurrency(stats.netCashFlow)}
             </p>
           </div>
-          <div className="bg-blue-500 p-3 rounded-lg">
+          <div className="bg-blue-500 p-3 rounded-2xl">
             <DollarSign className="h-8 w-8 text-white" />
           </div>
         </div>

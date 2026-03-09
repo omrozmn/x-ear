@@ -128,9 +128,9 @@ export const MobileInventoryPage: React.FC = () => {
                                 className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm active:scale-[0.99] transition-transform"
                             >
                                 <div className="flex gap-4">
-                                    <div className="h-16 w-16 bg-gray-50 dark:bg-gray-700 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <div className="h-16 w-16 bg-gray-50 dark:bg-gray-700 rounded-2xl flex items-center justify-center flex-shrink-0">
                                         {item.imageUrl ? (
-                                            <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover rounded-lg" />
+                                            <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover rounded-2xl" />
                                         ) : (
                                             <Package className="h-8 w-8 text-gray-300 dark:text-gray-500" />
                                         )}
@@ -152,7 +152,7 @@ export const MobileInventoryPage: React.FC = () => {
 
                                         <div className="flex items-center gap-3">
                                             <div className={cn(
-                                                "text-xs px-2 py-0.5 rounded-md font-medium flex items-center gap-1",
+                                                "text-xs px-2 py-0.5 rounded-xl font-medium flex items-center gap-1",
                                                 (item.availableInventory || item.available_inventory || 0) > 0 ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300" : "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300"
                                             )}>
                                                 <Tag className="h-3 w-3" />
@@ -160,7 +160,7 @@ export const MobileInventoryPage: React.FC = () => {
                                             </div>
 
                                             {item.category && (
-                                                <span className="text-xs text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md">
+                                                <span className="text-xs text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-xl">
                                                     {typeof item.category === 'string' ? item.category : item.category.name}
                                                 </span>
                                             )}

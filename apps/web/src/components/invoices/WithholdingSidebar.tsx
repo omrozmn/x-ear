@@ -149,7 +149,7 @@ export function WithholdingSidebar({
 
               {/* Hesaplama Özeti */}
               {formData.withholdingRate > 0 && formData.taxFreeAmount > 0 && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
                   <div className="flex items-start">
                     <Info className="text-blue-400 mr-2 flex-shrink-0" size={18} />
                     <div className="text-sm text-blue-700">
@@ -164,7 +164,7 @@ export function WithholdingSidebar({
               )}
 
               {/* Uyarı */}
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4">
                 <div className="flex">
                   <AlertTriangle className="text-yellow-400 mr-2 flex-shrink-0" size={18} />
                   <div className="text-sm text-yellow-700">
@@ -185,14 +185,14 @@ export function WithholdingSidebar({
               type="button"
               onClick={onClose}
               variant="default"
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100"
+              className="px-4 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100"
             >
               İptal
             </Button>
             <Button
               type="submit"
               variant="default"
-              className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700"
+              className="px-4 py-2 bg-orange-600 text-white rounded-xl hover:bg-orange-700"
             >
               Kaydet
             </Button>

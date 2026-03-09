@@ -40,7 +40,7 @@ export const GlobalOfflineAlert: React.FC = () => {
 
     if (isOffline) {
         return (
-            <div className="fixed bottom-4 left-4 z-[9999] bg-red-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
+            <div className="fixed bottom-4 left-4 z-[9999] bg-red-600 text-white px-4 py-3 rounded-2xl shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
                 <WifiOff className="h-5 w-5" />
                 <div>
                     <h4 className="font-semibold text-sm">{t('status.offline_title')}</h4>
@@ -52,7 +52,7 @@ export const GlobalOfflineAlert: React.FC = () => {
 
     if (showBackOnline) {
         return (
-            <div className="fixed bottom-4 left-4 z-[9999] bg-emerald-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
+            <div className="fixed bottom-4 left-4 z-[9999] bg-emerald-600 text-white px-4 py-3 rounded-2xl shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
                 <Wifi className="h-5 w-5" />
                 <div>
                     <h4 className="font-semibold text-sm">{t('status.online_title')}</h4>

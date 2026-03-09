@@ -106,7 +106,7 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
 
     if (!movements || movements.length === 0) {
         return (
-            <div className="text-center py-12 bg-gray-50 rounded-lg">
+            <div className="text-center py-12 bg-gray-50 rounded-2xl">
                 <p className="text-gray-500">Henüz stok hareketi bulunmuyor.</p>
             </div>
         );
@@ -115,7 +115,7 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
     return (
         <div className="space-y-4">
             {/* Filters */}
-            <div className="flex flex-wrap gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 items-end">
+            <div className="flex flex-wrap gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-200 items-end">
                 <div className="w-full sm:w-auto">
                     <DatePicker
                         label="Başlangıç Tarihi"
@@ -159,14 +159,14 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
                             setEndDate('');
                             setPage(1);
                         }}
-                        className="px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-300 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 h-[38px] mb-[2px]"
+                        className="px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-300 rounded-xl hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 h-[38px] mb-[2px]"
                     >
                         Filtreyi Temizle
                     </button>
                 )}
             </div>
 
-            <div className="overflow-x-auto rounded-lg border border-gray-200">
+            <div className="overflow-x-auto rounded-2xl border border-gray-200">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
@@ -221,12 +221,12 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
 
             {/* Pagination Controls */}
             {movementsResponse?.meta && (
-                <div className="flex items-center justify-between px-4 py-3 bg-white border border-gray-200 rounded-lg sm:px-6">
+                <div className="flex items-center justify-between px-4 py-3 bg-white border border-gray-200 rounded-2xl sm:px-6">
                     <div className="flex items-center justify-between w-full sm:hidden">
                         <button data-allow-raw="true"
                             onClick={() => setPage((p) => Math.max(1, p - 1))}
                             disabled={page === 1}
-                            className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md ${page === 1
+                            className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl ${page === 1
                                 ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
                                 : 'text-gray-700 bg-white hover:bg-gray-50 border border-gray-300'
                                 }`}
@@ -236,7 +236,7 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
                         <button data-allow-raw="true"
                             onClick={() => setPage((p) => p + 1)}
                             disabled={page * 20 >= (movementsResponse?.meta?.total || 0)}
-                            className={`relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium rounded-md ${page * 20 >= (movementsResponse?.meta?.total || 0)
+                            className={`relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium rounded-xl ${page * 20 >= (movementsResponse?.meta?.total || 0)
                                 ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
                                 : 'text-gray-700 bg-white hover:bg-gray-50 border border-gray-300'
                                 }`}
@@ -256,7 +256,7 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
                             </p>
                         </div>
                         <div>
-                            <nav className="inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                            <nav className="inline-flex -space-x-px rounded-xl shadow-sm" aria-label="Pagination">
                                 <button data-allow-raw="true"
                                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                                     disabled={page === 1}

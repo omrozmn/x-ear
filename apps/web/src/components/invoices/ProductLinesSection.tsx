@@ -1,7 +1,7 @@
 import { Input, Select, Button } from '@x-ear/ui-web';
 import { useAuthStore } from '../../stores/authStore';
 import { useState, useEffect, useCallback } from 'react';
-import { Info, AlertTriangle, Copy, Trash2, BarChart3, DollarSign, RefreshCw, Pill, CheckCircle } from 'lucide-react';
+import { Info, AlertTriangle, Copy, Trash2, BarChart3, DollarSign, RefreshCw, Pill, CheckCircle, X } from 'lucide-react';
 import { UnitSelector } from './UnitSelector';
 import ProductSearchModal from './ProductSearchModal';
 import { GTIPCodeInput } from './GTIPCodeInput';
@@ -423,6 +423,21 @@ export function ProductLinesSection({
     onChange(newLines);
   };
 
+  const clearLine = (index: number) => {
+    const newLines = [...lines];
+    newLines[index] = {
+      id: newLines[index].id, // Keep the same ID
+      name: '',
+      quantity: 1,
+      unit: 'Adet',
+      unitPrice: 0,
+      taxRate: 18,
+      taxAmount: 0,
+      total: 0
+    };
+    onChange(newLines);
+  };
+
   // Envanter'e ekle (eşleşme yoksa)
   const handleCreateInventoryFromLine = async (index: number) => {
     const line = lines[index];
@@ -572,11 +587,12 @@ export function ProductLinesSection({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-6 overflow-visible">
+    <div className="bg-white rounded-2xl shadow p-4 sm:p-6 mb-6 overflow-visible">
       <div className="flex flex-col gap-3 mb-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900">Ürün/Hizmet</h3>
           <Button
+            data-testid="invoice-add-line-button"
             type="button"
             onClick={addLine}
             variant="default"
@@ -586,7 +602,7 @@ export function ProductLinesSection({
             + Yeni Kalem
           </Button>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 px-3 py-3 bg-gray-100 rounded-lg text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 px-3 py-3 bg-gray-100 rounded-2xl text-sm">
           <div className="flex items-center gap-2">
             <label className="font-medium text-gray-700 whitespace-nowrap text-xs">Para Birimi:</label>
             <Select
@@ -628,7 +644,7 @@ export function ProductLinesSection({
 
       {/* Uyarılar */}
       {isReturnType && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 mb-4">
           <div className="flex items-start gap-2">
             <AlertTriangle className="text-amber-600 flex-shrink-0" size={18} />
             <p className="text-sm text-amber-700">
@@ -638,7 +654,7 @@ export function ProductLinesSection({
         </div>
       )}
       {isMedicalScenario && (
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-4">
+        <div className="bg-purple-50 border border-purple-200 rounded-2xl p-3 mb-4">
           <div className="flex items-start gap-2">
             <Info className="text-purple-600 flex-shrink-0" size={18} />
             <p className="text-sm text-purple-700">
@@ -649,7 +665,7 @@ export function ProductLinesSection({
       )}
 
       {isExportScenario && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+        <div className="bg-green-50 border border-green-200 rounded-2xl p-3 mb-4">
           <div className="flex items-start gap-2">
             <Info className="text-green-600 flex-shrink-0" size={18} />
             <p className="text-sm text-green-700">
@@ -662,13 +678,29 @@ export function ProductLinesSection({
       {/* Ürün Satırları */}
       <div className="space-y-4">
         {lines.map((line, index) => (
-          <div key={line.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50 overflow-visible">
+          <div
+            key={line.id}
+            data-testid={`invoice-line-${index}`}
+            className="border border-gray-200 rounded-2xl p-4 bg-gray-50 overflow-visible"
+          >
             {/* Satır Başlığı */}
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium text-gray-700">
                 Kalem {index + 1}
               </span>
               <div className="flex items-center space-x-2">
+                {/* Temizle butonu - sadece ürün seçilmişse göster */}
+                {line.name && (
+                  <Button
+                    type="button"
+                    onClick={() => clearLine(index)}
+                    variant="default"
+                    className="text-xs px-2 py-1 bg-yellow-100 hover:bg-yellow-200 text-yellow-700"
+                    title="Temizle"
+                  >
+                    <X size={18} />
+                  </Button>
+                )}
                 <Button
                   type="button"
                   onClick={() => duplicateLine(index)}
@@ -698,6 +730,7 @@ export function ProductLinesSection({
               {/* Ürün/Hizmet Adı - Tek alan + öneri listesi ve Envanter'e ekle */}
               <div>
                 <Input
+                  data-testid={`invoice-line-name-${index}`}
                   type="text"
                   label="Ürün/Hizmet Adı"
                   value={line.name}
@@ -716,7 +749,7 @@ export function ProductLinesSection({
                   const shouldShow = focusedLineIndex === index && !exactMatch && (suggestions.length > 0 || query.length >= 2);
                   if (!shouldShow) return null;
                   return (
-                    <div className="mt-2 border border-gray-200 rounded-md bg-white shadow-sm overflow-hidden">
+                    <div className="mt-2 border border-gray-200 rounded-xl bg-white shadow-sm overflow-hidden">
                       {suggestions.map(p => (
                         <Button
                           key={p.id}
@@ -775,6 +808,7 @@ export function ProductLinesSection({
                 {/* Miktar */}
                 <div className="min-w-0">
                   <Input
+                    data-testid={`invoice-line-quantity-${index}`}
                     type="number"
                     label="Miktar"
                     value={line.quantity === 0 && line.name === '' ? '' : String(line.quantity)}
@@ -801,6 +835,7 @@ export function ProductLinesSection({
                   </label>
                   <div className="relative">
                     <Input
+                      data-testid={`invoice-line-unit-price-${index}`}
                       type="number"
                       value={line.unitPrice === undefined || line.unitPrice === null ? '' : String(line.unitPrice)}
                       onChange={(e) => handleLineChange(index, 'unitPrice', e.target.value === '' ? '' : parseFloat(e.target.value))}
@@ -826,6 +861,7 @@ export function ProductLinesSection({
                   </label>
                   <div className="flex gap-1">
                     <Input
+                      data-testid={`invoice-line-discount-${index}`}
                       type="number"
                       value={line.discount === undefined || line.discount === null ? '' : String(line.discount)}
                       onChange={(e) => handleLineChange(index, 'discount', e.target.value === '' ? '' : parseFloat(e.target.value))}
@@ -835,6 +871,7 @@ export function ProductLinesSection({
                       className="min-w-0 flex-1"
                     />
                     <Select
+                      data-testid={`invoice-line-discount-type-${index}`}
                       value={line.discountType || 'percentage'}
                       onChange={(e) => handleLineChange(index, 'discountType', e.target.value as 'amount' | 'percentage')}
                       options={[
@@ -850,6 +887,7 @@ export function ProductLinesSection({
                 {/* KDV */}
                 <div className="min-w-0">
                   <Select
+                    data-testid={`invoice-line-tax-rate-${index}`}
                     label="KDV"
                     value={line.taxRate.toString()}
                     onChange={(e) => handleLineChange(index, 'taxRate', parseFloat(e.target.value))}
@@ -864,7 +902,7 @@ export function ProductLinesSection({
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Toplam
                   </label>
-                  <div className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-right font-medium text-sm">
+                  <div className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-xl text-right font-medium text-sm">
                     {(safeForCompute(line.total)).toFixed(2)} {currency}
                   </div>
                 </div>
@@ -1002,7 +1040,7 @@ export function ProductLinesSection({
       </div>
 
       {/* Toplam Hesaplamalar */}
-      <div className="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
+      <div className="mt-6 bg-gray-50 border border-gray-200 rounded-2xl p-4">
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Ara Toplam:</span>

@@ -231,7 +231,7 @@ paths:
       tags:
       - Campaigns
       summary: Admin Get Campaigns
-      description: List all campaigns (Admin)
+      description: List all campaigns (Admin) - includes tenant information
       operationId: listAdminCampaigns
       security:
       - OAuth2PasswordBearer: []
@@ -270,8 +270,7 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ResponseEnvelope_List_CampaignRead__'
+              schema: {}
         '422':
           description: Validation Error
           content:
@@ -4600,6 +4599,51 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/tenants/current:
+    get:
+      tags:
+      - Tenant Users
+      summary: Get Current Tenant
+      description: Get current tenant information including settings and company info
+      operationId: getCurrentTenant
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_TenantCompanyResponse_'
+      security:
+      - OAuth2PasswordBearer: []
+    patch:
+      tags:
+      - Tenant Users
+      summary: Update Tenant Settings
+      description: Update tenant settings and company info
+      operationId: updateTenantSettings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              additionalProperties: true
+              type: object
+              title: Settings Update
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_TenantCompanyResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
   /api/tenant/company:
     get:
       tags:
@@ -5235,6 +5279,70 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/users/all:
+    get:
+      tags:
+      - Admin
+      summary: List All Tenant Users
+      description: List ALL tenant users from ALL tenants (admin operation)
+      operationId: listAdminUserAll
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000000
+          minimum: 1
+          default: 1
+          title: Page
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Per Page
+      - name: search
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Search
+      - name: role
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Role
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/admin/users/{user_id}:
     get:
       tags:
@@ -5258,6 +5366,40 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ResponseEnvelope_UserRead_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/users/all/{user_id}:
+    put:
+      tags:
+      - Admin
+      summary: Update Any Tenant User
+      description: Update any tenant user (admin operation)
+      operationId: updateAdminUserAll
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: User Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/schemas__users__UserCreate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
         '422':
           description: Validation Error
           content:
@@ -6631,6 +6773,577 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/invoices/incoming:
+    get:
+      tags:
+      - invoices
+      summary: List Incoming Invoices
+      description: 'List incoming invoices (gelen faturalar) with filtering and pagination.
+
+        Tenant isolation enforced.'
+      operationId: listIncomingInvoices
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - $ref: '#/components/schemas/schemas__invoices_new__InvoiceStatus'
+          - type: 'null'
+          description: Filter by status
+          title: Status
+        description: Filter by status
+      - name: supplier_name
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Filter by supplier name
+          title: Supplier Name
+        description: Filter by supplier name
+      - name: date_from
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          description: Filter from date
+          title: Date From
+        description: Filter from date
+      - name: date_to
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          description: Filter to date
+          title: Date To
+        description: Filter to date
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          description: Page number
+          default: 1
+          title: Page
+        description: Page number
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: Items per page
+          default: 50
+          title: Per Page
+        description: Items per page
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_IncomingInvoiceListResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/invoices/outgoing:
+    get:
+      tags:
+      - invoices
+      summary: List Outgoing Invoices
+      description: 'List outgoing invoices (giden faturalar) with filtering and pagination.
+
+        Tenant isolation enforced.'
+      operationId: listOutgoingInvoices
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - $ref: '#/components/schemas/schemas__invoices_new__InvoiceStatus'
+          - type: 'null'
+          description: Filter by status
+          title: Status
+        description: Filter by status
+      - name: party_name
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Filter by party name
+          title: Party Name
+        description: Filter by party name
+      - name: date_from
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          description: Filter from date
+          title: Date From
+        description: Filter from date
+      - name: date_to
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          description: Filter to date
+          title: Date To
+        description: Filter to date
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          description: Page number
+          default: 1
+          title: Page
+        description: Page number
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: Items per page
+          default: 50
+          title: Per Page
+        description: Items per page
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_OutgoingInvoiceListResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/invoices/convert-to-purchases:
+    post:
+      tags:
+      - invoices
+      summary: Convert Invoices To Purchases
+      description: 'Convert incoming invoices to purchase records.
+
+        Bulk operation with supplier mapping.'
+      operationId: convertInvoicesToPurchases
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConvertToPurchaseRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_ConvertToPurchaseResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/invoices/summary:
+    get:
+      tags:
+      - invoices
+      summary: Get Invoice Summary
+      description: Get invoice summary statistics for dashboard.
+      operationId: getInvoiceSummary
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_InvoiceSummaryStats_'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/invoices/{invoice_id}/document:
+    get:
+      tags:
+      - invoices
+      summary: Get Invoice Document
+      description: 'Download invoice document (PDF, HTML or XML) via BirFatura.
+
+        Returns raw bytes with appropriate content-type header.'
+      operationId: getInvoiceDocument
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Invoice Id
+      - name: format
+        in: query
+        required: false
+        schema:
+          enum:
+          - pdf
+          - html
+          - xml
+          type: string
+          description: Document format
+          default: pdf
+          title: Format
+        description: Document format
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/invoices/{invoice_id}/accept:
+    post:
+      tags:
+      - invoices
+      summary: Accept Invoice
+      description: Accept an incoming invoice via BirFatura.
+      operationId: acceptInvoice
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Invoice Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_InvoiceActionResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/invoices/{invoice_id}/reject:
+    post:
+      tags:
+      - invoices
+      summary: Reject Invoice
+      description: Reject an incoming invoice via BirFatura.
+      operationId: rejectInvoice
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Invoice Id
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceRejectRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_InvoiceActionResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/invoices/{invoice_id}/cancel:
+    post:
+      tags:
+      - invoices
+      summary: Cancel Invoice
+      description: Cancel an outgoing invoice via BirFatura.
+      operationId: cancelInvoice
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Invoice Id
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceCancelRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_InvoiceActionResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/invoices/{invoice_id}/logs:
+    get:
+      tags:
+      - invoices
+      summary: Get Invoice Logs
+      description: Get BirFatura document lifecycle logs for an invoice.
+      operationId: getInvoiceLogs
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Invoice Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/invoices/draft:
+    post:
+      tags:
+      - invoices
+      summary: Create Invoice Draft
+      description: Save a new invoice draft created from the new invoice form.
+      operationId: createInvoiceDraft
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceDraftRequest'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_InvoiceActionResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/invoices/draft/{draft_id}:
+    put:
+      tags:
+      - invoices
+      summary: Update Invoice Draft
+      description: Update an existing invoice draft.
+      operationId: updateInvoiceDraft
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: draft_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Draft Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceDraftRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_InvoiceActionResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      tags:
+      - invoices
+      summary: Get Invoice Draft
+      description: Get invoice draft data for editing in the new invoice form.
+      operationId: getInvoiceDraft
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: draft_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Draft Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_InvoiceDraftResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/invoices/{invoice_id}/copy:
+    post:
+      tags:
+      - Invoice Actions
+      summary: Copy Invoice
+      description: Create a copy of an invoice
+      operationId: createInvoiceCopy
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: invoice_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Invoice Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_InvoiceRead_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/invoices/purchases/{purchase_id}:
+    delete:
+      tags:
+      - invoices
+      summary: Delete Purchase
+      description: 'Delete a purchase record created from an invoice.
+
+        The linked invoice is reverted to RECEIVED / unprocessed state
+
+        so it can be re-converted later.'
+      operationId: deletePurchase
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: purchase_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Purchase Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_InvoiceActionResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/invoices/draft/{draft_id}/issue:
+    post:
+      tags:
+      - invoices
+      summary: Issue Invoice Draft
+      operationId: issueInvoiceDraft
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: draft_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Draft Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_InvoiceActionResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/invoices:
     get:
       tags:
@@ -6998,258 +7711,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-      security:
-      - OAuth2PasswordBearer: []
-  /api/invoices/incoming:
-    get:
-      tags:
-      - invoices
-      summary: List Incoming Invoices
-      description: 'List incoming invoices (gelen faturalar) with filtering and pagination.
-
-        Tenant isolation enforced.'
-      operationId: listIncomingInvoices
-      security:
-      - OAuth2PasswordBearer: []
-      parameters:
-      - name: status
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - $ref: '#/components/schemas/schemas__invoices_new__InvoiceStatus'
-          - type: 'null'
-          description: Filter by status
-          title: Status
-        description: Filter by status
-      - name: supplier_name
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: string
-          - type: 'null'
-          description: Filter by supplier name
-          title: Supplier Name
-        description: Filter by supplier name
-      - name: date_from
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: string
-            format: date
-          - type: 'null'
-          description: Filter from date
-          title: Date From
-        description: Filter from date
-      - name: date_to
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: string
-            format: date
-          - type: 'null'
-          description: Filter to date
-          title: Date To
-        description: Filter to date
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 1
-          description: Page number
-          default: 1
-          title: Page
-        description: Page number
-      - name: per_page
-        in: query
-        required: false
-        schema:
-          type: integer
-          maximum: 100
-          minimum: 1
-          description: Items per page
-          default: 50
-          title: Per Page
-        description: Items per page
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResponseEnvelope_IncomingInvoiceListResponse_'
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/invoices/outgoing:
-    get:
-      tags:
-      - invoices
-      summary: List Outgoing Invoices
-      description: 'List outgoing invoices (giden faturalar) with filtering and pagination.
-
-        Tenant isolation enforced.'
-      operationId: listOutgoingInvoices
-      security:
-      - OAuth2PasswordBearer: []
-      parameters:
-      - name: status
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - $ref: '#/components/schemas/schemas__invoices_new__InvoiceStatus'
-          - type: 'null'
-          description: Filter by status
-          title: Status
-        description: Filter by status
-      - name: party_name
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: string
-          - type: 'null'
-          description: Filter by party name
-          title: Party Name
-        description: Filter by party name
-      - name: date_from
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: string
-            format: date
-          - type: 'null'
-          description: Filter from date
-          title: Date From
-        description: Filter from date
-      - name: date_to
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: string
-            format: date
-          - type: 'null'
-          description: Filter to date
-          title: Date To
-        description: Filter to date
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 1
-          description: Page number
-          default: 1
-          title: Page
-        description: Page number
-      - name: per_page
-        in: query
-        required: false
-        schema:
-          type: integer
-          maximum: 100
-          minimum: 1
-          description: Items per page
-          default: 50
-          title: Per Page
-        description: Items per page
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResponseEnvelope_OutgoingInvoiceListResponse_'
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/invoices/convert-to-purchases:
-    post:
-      tags:
-      - invoices
-      summary: Convert Invoices To Purchases
-      description: 'Convert incoming invoices to purchase records.
-
-        Bulk operation with supplier mapping.'
-      operationId: convertInvoicesToPurchases
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ConvertToPurchaseRequest'
-        required: true
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResponseEnvelope_ConvertToPurchaseResponse_'
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-      security:
-      - OAuth2PasswordBearer: []
-  /api/invoices/create-proforma:
-    post:
-      tags:
-      - invoices
-      summary: Create Proforma From Invoice
-      description: 'Create proforma from outgoing invoice.
-
-        Validates invoice and party ownership.'
-      operationId: createProformaFromInvoice
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProformaFromInvoiceRequest'
-        required: true
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResponseEnvelope_ProformaFromInvoiceResponse_'
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-      security:
-      - OAuth2PasswordBearer: []
-  /api/invoices/summary:
-    get:
-      tags:
-      - invoices
-      summary: Get Invoice Summary
-      description: Get invoice summary statistics for dashboard.
-      operationId: getInvoiceSummary
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResponseEnvelope_InvoiceSummaryStats_'
       security:
       - OAuth2PasswordBearer: []
   /api/sgk/documents:
@@ -10784,6 +11245,150 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/sms-packages:
+    get:
+      tags:
+      - SMS
+      summary: List Public Packages
+      description: List all active SMS packages (Public)
+      operationId: listSmsPackages
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_List_SmsPackageRead__'
+  /api/admin/sms/packages:
+    get:
+      tags:
+      - SMS
+      summary: List Admin Packages
+      description: List all SMS packages (Admin)
+      operationId: listAdminSmPackages
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000000
+          minimum: 1
+          default: 1
+          title: Page
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 10
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_List_DetailedSmsPackageRead__'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - SMS
+      summary: Create Package
+      description: Create a new SMS package (Admin)
+      operationId: createAdminSmPackages
+      security:
+      - OAuth2PasswordBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SmsPackageCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_DetailedSmsPackageRead_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/sms/packages/{package_id}:
+    put:
+      tags:
+      - SMS
+      summary: Update Package
+      description: Update an SMS package (Admin)
+      operationId: updateAdminSmPackage
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: package_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Package Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SmsPackageUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_DetailedSmsPackageRead_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - SMS
+      summary: Delete Package
+      description: Delete an SMS package (Admin)
+      operationId: deleteAdminSmPackage
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: package_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Package Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/admin/api-keys/init-db:
     post:
       tags:
@@ -12799,6 +13404,8 @@ paths:
       summary: Update Affiliate Payment
       description: Update affiliate payment info
       operationId: updateAffiliate
+      security:
+      - OAuth2PasswordBearer: []
       parameters:
       - name: affiliate_id
         in: path
@@ -12830,8 +13437,10 @@ paths:
       tags:
       - Affiliates
       summary: Get Affiliate Commissions
-      description: Get affiliate commissions
+      description: Get affiliate's commissions
       operationId: listAffiliateCommissions
+      security:
+      - OAuth2PasswordBearer: []
       parameters:
       - name: affiliate_id
         in: path
@@ -14015,150 +14624,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/sms-packages:
-    get:
-      tags:
-      - SMS
-      summary: List Public Packages
-      description: List all active SMS packages (Public)
-      operationId: listSmsPackages
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResponseEnvelope_List_SmsPackageRead__'
-  /api/admin/sms/packages:
-    get:
-      tags:
-      - SMS
-      summary: List Admin Packages
-      description: List all SMS packages (Admin)
-      operationId: listAdminSmPackages
-      security:
-      - OAuth2PasswordBearer: []
-      parameters:
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          maximum: 1000000
-          minimum: 1
-          default: 1
-          title: Page
-      - name: limit
-        in: query
-        required: false
-        schema:
-          type: integer
-          maximum: 100
-          minimum: 1
-          default: 10
-          title: Limit
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResponseEnvelope_List_DetailedSmsPackageRead__'
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-    post:
-      tags:
-      - SMS
-      summary: Create Package
-      description: Create a new SMS package (Admin)
-      operationId: createAdminSmPackages
-      security:
-      - OAuth2PasswordBearer: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SmsPackageCreate'
-      responses:
-        '201':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResponseEnvelope_DetailedSmsPackageRead_'
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/admin/sms/packages/{package_id}:
-    put:
-      tags:
-      - SMS
-      summary: Update Package
-      description: Update an SMS package (Admin)
-      operationId: updateAdminSmPackage
-      security:
-      - OAuth2PasswordBearer: []
-      parameters:
-      - name: package_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Package Id
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SmsPackageUpdate'
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResponseEnvelope_DetailedSmsPackageRead_'
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-    delete:
-      tags:
-      - SMS
-      summary: Delete Package
-      description: Delete an SMS package (Admin)
-      operationId: deleteAdminSmPackage
-      security:
-      - OAuth2PasswordBearer: []
-      parameters:
-      - name: package_id
-        in: path
-        required: true
-        schema:
-          type: string
-          title: Package Id
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
   /api/sms/config:
     get:
       tags:
@@ -14767,35 +15232,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ResponseEnvelope_InvoiceIssueResponse_'
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/invoices/{invoice_id}/copy:
-    post:
-      tags:
-      - Invoice Actions
-      summary: Copy Invoice
-      description: Create a copy of an invoice
-      operationId: createInvoiceCopy
-      security:
-      - OAuth2PasswordBearer: []
-      parameters:
-      - name: invoice_id
-        in: path
-        required: true
-        schema:
-          type: integer
-          title: Invoice Id
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResponseEnvelope_InvoiceRead_'
         '422':
           description: Validation Error
           content:
@@ -15693,7 +16129,188 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
       security:
       - OAuth2PasswordBearer: []
-  /api/commissions/create:
+  /api/blog/:
+    get:
+      tags:
+      - Blog
+      summary: Get Posts
+      description: Fetch published blog posts for the landing page.
+      operationId: get_posts_api_blog__get
+      parameters:
+      - name: skip
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 0
+          title: Skip
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 20
+          title: Limit
+      - name: category
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PostRead'
+                title: Response Get Posts Api Blog  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/blog/{slug}:
+    get:
+      tags:
+      - Blog
+      summary: Get Post By Slug
+      description: Fetch a single blog post by its slug.
+      operationId: get_post_by_slug_api_blog__slug__get
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Slug
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/blog/:
+    get:
+      tags:
+      - Admin Blog
+      summary: Admin Get Posts
+      description: Admin endpoint to see all posts (published or not).
+      operationId: admin_get_posts_api_admin_blog__get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/PostRead'
+                type: array
+                title: Response Admin Get Posts Api Admin Blog  Get
+      security:
+      - OAuth2PasswordBearer: []
+    post:
+      tags:
+      - Admin Blog
+      summary: Create Post
+      description: Create a new blog post.
+      operationId: create_post_api_admin_blog__post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/admin/blog/{post_id}:
+    put:
+      tags:
+      - Admin Blog
+      summary: Update Post
+      description: Update an existing blog post.
+      operationId: update_post_api_admin_blog__post_id__put
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: post_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Post Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Admin Blog
+      summary: Delete Post
+      description: Delete a blog post.
+      operationId: delete_post_api_admin_blog__post_id__delete
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: post_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Post Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/api/commissions/create:
     post:
       tags:
       - Commission Ledger
@@ -15720,7 +16337,7 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
       security:
       - OAuth2PasswordBearer: []
-  /api/commissions/update-status:
+  /api/api/commissions/update-status:
     post:
       tags:
       - Commission Ledger
@@ -15758,7 +16375,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/commissions/by-affiliate:
+  /api/api/commissions/by-affiliate:
     get:
       tags:
       - Commission Ledger
@@ -15788,7 +16405,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/commissions/audit:
+  /api/api/commissions/audit:
     get:
       tags:
       - Commission Ledger
@@ -16499,6 +17116,131 @@ paths:
                 $ref: '#/components/schemas/AiSettingsResponse'
         '403':
           description: Admin permissions required
+  /api/ai/opportunities/:
+    get:
+      tags:
+      - AI Opportunities
+      summary: List Opportunities
+      description: List proactive opportunities for the tenant.
+      operationId: list_ai_opportunities
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status
+      - name: category
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_List_OpportunitySummary__'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/ai/opportunities/{opportunity_id}:
+    get:
+      tags:
+      - AI Opportunities
+      summary: Get Opportunity
+      description: Get detailed view of an opportunity.
+      operationId: get_ai_opportunity
+      parameters:
+      - name: opportunity_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Opportunity Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_OpportunityFull_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - AI Opportunities
+      summary: Update Opportunity State
+      description: Transition opportunity status (e.g., ACKNOWLEDGED, DISMISSED).
+      operationId: update_ai_opportunity_state
+      parameters:
+      - name: opportunity_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Opportunity Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpportunityUpdateState'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_OpportunitySummary_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/ai/opportunities/{opportunity_id}/simulate:
+    post:
+      tags:
+      - AI Opportunities
+      summary: Simulate Opportunity Action
+      description: 'Bridge to Action Planner (Agent B).
+
+        Triggers the generation of a simulation plan for the recommended capability.'
+      operationId: simulate_ai_opportunity_action
+      parameters:
+      - name: opportunity_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Opportunity Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_OpportunityFull_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/ai/composer/autocomplete:
     get:
       tags:
@@ -20877,6 +21619,11 @@ components:
           - type: string
           - type: 'null'
           title: Companytype
+        defaultExemptionCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Defaultexemptioncode
       type: object
       title: CompanyInfoUpdate
     ComplaintListResponse:
@@ -23691,7 +24438,7 @@ components:
     IncomingInvoiceResponse:
       properties:
         invoiceId:
-          type: string
+          type: integer
           title: Invoiceid
           description: Invoice ID
         supplierName:
@@ -23728,6 +24475,34 @@ components:
         status:
           $ref: '#/components/schemas/schemas__invoices_new__InvoiceStatus'
           description: Invoice status
+        documentKind:
+          type: string
+          title: Documentkind
+          description: 'Document kind: invoice or despatch'
+          default: invoice
+        documentKindLabel:
+          type: string
+          title: Documentkindlabel
+          description: Localized document kind label
+          default: E-Fatura
+        invoiceTypeCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Invoicetypecode
+          description: Invoice/despatch type code
+        profileId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Profileid
+          description: UBL profile ID
+        systemTypeCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Systemtypecode
+          description: Provider system type code
         isConvertedToPurchase:
           type: boolean
           title: Isconvertedtopurchase
@@ -24429,6 +25204,27 @@ components:
           default: 0.0
       type: object
       title: InventoryStats
+    InvoiceActionResponse:
+      properties:
+        invoiceId:
+          type: integer
+          title: Invoiceid
+          description: Invoice ID
+        success:
+          type: boolean
+          title: Success
+          description: Whether the action succeeded
+        message:
+          type: string
+          title: Message
+          description: Result message
+      type: object
+      required:
+      - invoiceId
+      - success
+      - message
+      title: InvoiceActionResponse
+      description: Response schema for invoice accept/reject/cancel actions
     InvoiceAddToQueueRequest:
       properties:
         invoiceIds:
@@ -24452,6 +25248,17 @@ components:
       required:
       - invoiceIds
       title: InvoiceAddToQueueRequest
+    InvoiceCancelRequest:
+      properties:
+        reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reason
+          description: Cancellation reason
+      type: object
+      title: InvoiceCancelRequest
+      description: Request body for cancelling an invoice
     InvoiceCopyCancelResponse:
       properties:
         copyInvoice:
@@ -24612,6 +25419,33 @@ components:
           title: Timestamp
       type: object
       title: InvoiceDetailResponse
+    InvoiceDraftRequest:
+      properties:
+        formData:
+          additionalProperties: true
+          type: object
+          title: Formdata
+          description: Form state as JSON
+      type: object
+      title: InvoiceDraftRequest
+      description: Request body for creating or updating an invoice draft
+    InvoiceDraftResponse:
+      properties:
+        draftId:
+          type: integer
+          title: Draftid
+          description: Draft invoice ID
+        formData:
+          additionalProperties: true
+          type: object
+          title: Formdata
+          description: Form data to pre-fill the invoice form
+      type: object
+      required:
+      - draftId
+      - formData
+      title: InvoiceDraftResponse
+      description: Response schema for invoice draft form data
     InvoiceIssueResponse:
       properties:
         invoice:
@@ -24937,6 +25771,17 @@ components:
       type: object
       title: InvoiceRead
       description: Schema for reading invoice data - matches Invoice.to_dict() output
+    InvoiceRejectRequest:
+      properties:
+        reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reason
+          description: Rejection reason
+      type: object
+      title: InvoiceRejectRequest
+      description: Request body for rejecting an invoice
     InvoiceSettingsUpdate:
       properties:
         company_info:
@@ -25960,6 +26805,254 @@ components:
       - result
       - timestamp
       title: OcrSimilarityResponse
+    OpportunityFull:
+      properties:
+        id:
+          type: string
+          title: Id
+        tenantId:
+          type: string
+          title: Tenantid
+        scope:
+          type: string
+          title: Scope
+        category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+        type:
+          type: string
+          title: Type
+        priority:
+          $ref: '#/components/schemas/OpportunityPriority'
+        status:
+          $ref: '#/components/schemas/OpportunityStatus'
+        confidenceScore:
+          type: number
+          title: Confidencescore
+        impactScore:
+          type: number
+          title: Impactscore
+        title:
+          type: string
+          title: Title
+        recommendedActionLabel:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Recommendedactionlabel
+        isAcknowledged:
+          type: boolean
+          title: Isacknowledged
+        isStale:
+          type: boolean
+          title: Isstale
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+        locale:
+          type: string
+          title: Locale
+          default: tr
+        entityType:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Entitytype
+        entityId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Entityid
+        summary:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Summary
+        whyNow:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Whynow
+        explanation:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Explanation
+        evidence:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Evidence
+        recommendedCapability:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Recommendedcapability
+        alternativeActions:
+          anyOf:
+          - items:
+              additionalProperties: true
+              type: object
+            type: array
+          - type: 'null'
+          title: Alternativeactions
+        actionPlanId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Actionplanid
+        actionStatus:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Actionstatus
+        userDecisionOptions:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Userdecisionoptions
+        requiredSlots:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Requiredslots
+        uiConfig:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Uiconfig
+        approvalRequired:
+          type: boolean
+          title: Approvalrequired
+          default: true
+        expiresAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Expiresat
+      type: object
+      required:
+      - id
+      - tenantId
+      - scope
+      - type
+      - priority
+      - status
+      - confidenceScore
+      - impactScore
+      - title
+      - isAcknowledged
+      - isStale
+      title: OpportunityFull
+    OpportunityPriority:
+      type: string
+      enum:
+      - low
+      - medium
+      - high
+      - critical
+      title: OpportunityPriority
+    OpportunityStatus:
+      type: string
+      enum:
+      - new
+      - visible
+      - acknowledged
+      - dismissed
+      - planned
+      - simulated
+      - approved
+      - executed
+      - failed
+      - expired
+      title: OpportunityStatus
+    OpportunitySummary:
+      properties:
+        id:
+          type: string
+          title: Id
+        tenantId:
+          type: string
+          title: Tenantid
+        scope:
+          type: string
+          title: Scope
+        category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+        type:
+          type: string
+          title: Type
+        priority:
+          $ref: '#/components/schemas/OpportunityPriority'
+        status:
+          $ref: '#/components/schemas/OpportunityStatus'
+        confidenceScore:
+          type: number
+          title: Confidencescore
+        impactScore:
+          type: number
+          title: Impactscore
+        title:
+          type: string
+          title: Title
+        recommendedActionLabel:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Recommendedactionlabel
+        isAcknowledged:
+          type: boolean
+          title: Isacknowledged
+        isStale:
+          type: boolean
+          title: Isstale
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+      type: object
+      required:
+      - id
+      - tenantId
+      - scope
+      - type
+      - priority
+      - status
+      - confidenceScore
+      - impactScore
+      - title
+      - isAcknowledged
+      - isStale
+      title: OpportunitySummary
+    OpportunityUpdateState:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: New status for the opportunity (e.g., acknowledged, dismissed)
+      type: object
+      required:
+      - status
+      title: OpportunityUpdateState
     OrderStatusUpdate:
       properties:
         status:
@@ -26054,6 +27147,34 @@ components:
         status:
           $ref: '#/components/schemas/schemas__invoices_new__InvoiceStatus'
           description: Invoice status
+        documentKind:
+          type: string
+          title: Documentkind
+          description: 'Document kind: invoice or despatch'
+          default: invoice
+        documentKindLabel:
+          type: string
+          title: Documentkindlabel
+          description: Localized document kind label
+          default: E-Fatura
+        invoiceTypeCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Invoicetypecode
+          description: Invoice/despatch type code
+        profileId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Profileid
+          description: UBL profile ID
+        systemTypeCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Systemtypecode
+          description: Provider system type code
         canCreateProforma:
           type: boolean
           title: Cancreateproforma
@@ -26193,39 +27314,6 @@ components:
       - lastName
       - phone
       title: PartyCreate
-    PartyData:
-      properties:
-        partyId:
-          type: string
-          title: Partyid
-          description: Party ID
-        firstName:
-          type: string
-          title: Firstname
-          description: First name
-        lastName:
-          type: string
-          title: Lastname
-          description: Last name
-        phone:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Phone
-          description: Phone number
-        email:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Email
-          description: Email address
-      type: object
-      required:
-      - partyId
-      - firstName
-      - lastName
-      title: PartyData
-      description: Party data for proforma
     PartyDetailResponse:
       properties:
         success:
@@ -27676,6 +28764,221 @@ components:
       - amount
       - status
       title: PosMovementItem
+    PostCreate:
+      properties:
+        title:
+          type: string
+          maxLength: 255
+          minLength: 5
+          title: Title
+        slug:
+          type: string
+          maxLength: 255
+          minLength: 5
+          title: Slug
+        content:
+          type: string
+          title: Content
+        excerpt:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Excerpt
+        imageUrl:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Imageurl
+        category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+        metaTitle:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Metatitle
+        metaDescription:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Metadescription
+        metaKeywords:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Metakeywords
+        isPublished:
+          type: boolean
+          title: Ispublished
+          default: false
+        authorId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorid
+      type: object
+      required:
+      - title
+      - slug
+      - content
+      title: PostCreate
+    PostRead:
+      properties:
+        createdAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Createdat
+          description: Creation timestamp
+        updatedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Updatedat
+          description: Last update timestamp
+        id:
+          type: string
+          title: Id
+          description: Unique identifier for the resource
+        title:
+          type: string
+          maxLength: 255
+          minLength: 5
+          title: Title
+        slug:
+          type: string
+          maxLength: 255
+          minLength: 5
+          title: Slug
+        content:
+          type: string
+          title: Content
+        excerpt:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Excerpt
+        imageUrl:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Imageurl
+        category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+        metaTitle:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Metatitle
+        metaDescription:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Metadescription
+        metaKeywords:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Metakeywords
+        isPublished:
+          type: boolean
+          title: Ispublished
+          default: false
+        authorId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorid
+        authorName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Authorname
+          default: X-Ear Team
+        publishedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Publishedat
+      type: object
+      required:
+      - id
+      - title
+      - slug
+      - content
+      title: PostRead
+    PostUpdate:
+      properties:
+        title:
+          anyOf:
+          - type: string
+            maxLength: 255
+            minLength: 5
+          - type: 'null'
+          title: Title
+        slug:
+          anyOf:
+          - type: string
+            maxLength: 255
+            minLength: 5
+          - type: 'null'
+          title: Slug
+        content:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Content
+        excerpt:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Excerpt
+        imageUrl:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Imageurl
+        category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+        metaTitle:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Metatitle
+        metaDescription:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Metadescription
+        metaKeywords:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Metakeywords
+        isPublished:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Ispublished
+        publishedAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Publishedat
+      type: object
+      title: PostUpdate
     PresignedUploadRequest:
       properties:
         filename:
@@ -27798,87 +29101,6 @@ components:
       - sales
       - revenue
       title: ProductSalesData
-    ProformaFromInvoiceRequest:
-      properties:
-        invoiceId:
-          type: string
-          title: Invoiceid
-          description: Source invoice ID
-        partyId:
-          type: string
-          title: Partyid
-          description: Target party ID
-        adjustments:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Adjustments
-          description: Price/content adjustments
-      type: object
-      required:
-      - invoiceId
-      - partyId
-      title: ProformaFromInvoiceRequest
-      description: Request schema for creating proforma from invoice
-    ProformaFromInvoiceResponse:
-      properties:
-        proformaId:
-          type: string
-          title: Proformaid
-          description: Created proforma ID
-        invoiceData:
-          $ref: '#/components/schemas/OutgoingInvoiceResponse'
-          description: Source invoice data
-        partyData:
-          $ref: '#/components/schemas/PartyData'
-          description: Target party data
-        calculatedTotals:
-          $ref: '#/components/schemas/ProformaTotals'
-          description: Calculated totals
-      type: object
-      required:
-      - proformaId
-      - invoiceData
-      - partyData
-      - calculatedTotals
-      title: ProformaFromInvoiceResponse
-      description: Response schema for proforma creation from invoice
-    ProformaTotals:
-      properties:
-        subtotal:
-          anyOf:
-          - type: number
-          - type: string
-            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
-          title: Subtotal
-          description: Subtotal amount
-        taxAmount:
-          anyOf:
-          - type: number
-          - type: string
-            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
-          title: Taxamount
-          description: Tax amount
-        totalAmount:
-          anyOf:
-          - type: number
-          - type: string
-            pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
-          title: Totalamount
-          description: Total amount
-        currency:
-          type: string
-          title: Currency
-          description: Currency code
-          default: TRY
-      type: object
-      required:
-      - subtotal
-      - taxAmount
-      - totalAmount
-      title: ProformaTotals
-      description: Proforma calculation totals
     PromissoryNoteCollectionResponse:
       properties:
         note:
@@ -30922,6 +32144,39 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[InventoryStats]
+    ResponseEnvelope_InvoiceActionResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/InvoiceActionResponse'
+          - type: 'null'
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Meta
+        request_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Request Id
+      type: object
+      title: ResponseEnvelope[InvoiceActionResponse]
     ResponseEnvelope_InvoiceCopyCancelResponse_:
       properties:
         success:
@@ -30957,6 +32212,39 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[InvoiceCopyCancelResponse]
+    ResponseEnvelope_InvoiceDraftResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/InvoiceDraftResponse'
+          - type: 'null'
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Meta
+        request_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Request Id
+      type: object
+      title: ResponseEnvelope[InvoiceDraftResponse]
     ResponseEnvelope_InvoiceIssueResponse_:
       properties:
         success:
@@ -32041,6 +33329,44 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[List[OcrJobRead]]
+    ResponseEnvelope_List_OpportunitySummary__:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/OpportunitySummary'
+            type: array
+          - type: 'null'
+          title: Data
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[List[OpportunitySummary]]
     ResponseEnvelope_List_PartyNoteRead__:
       properties:
         success:
@@ -33326,6 +34652,76 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[OcrSimilarityResponse]
+    ResponseEnvelope_OpportunityFull_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/OpportunityFull'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[OpportunityFull]
+    ResponseEnvelope_OpportunitySummary_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/OpportunitySummary'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[OpportunitySummary]
     ResponseEnvelope_OutgoingInvoiceListResponse_:
       properties:
         success:
@@ -33744,39 +35140,6 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[PricingSettingsResponse]
-    ResponseEnvelope_ProformaFromInvoiceResponse_:
-      properties:
-        success:
-          type: boolean
-          title: Success
-          default: true
-        message:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Message
-        data:
-          anyOf:
-          - $ref: '#/components/schemas/ProformaFromInvoiceResponse'
-          - type: 'null'
-        error:
-          anyOf:
-          - {}
-          - type: 'null'
-          title: Error
-        meta:
-          anyOf:
-          - additionalProperties: true
-            type: object
-          - type: 'null'
-          title: Meta
-        request_id:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Request Id
-      type: object
-      title: ResponseEnvelope[ProformaFromInvoiceResponse]
     ResponseEnvelope_PromissoryNoteCollectionResponse_:
       properties:
         success:
@@ -39101,6 +40464,39 @@ components:
           - $ref: '#/components/schemas/ProductCode'
           - type: 'null'
           description: Product Code
+        currentPlan:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Currentplan
+          description: Current plan slug
+        currentPlanId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Currentplanid
+          description: Current plan ID
+        subscriptionStartDate:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Subscriptionstartdate
+          description: Subscription start date
+        subscriptionEndDate:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Subscriptionenddate
+          description: Subscription end date
+        featureUsage:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Featureusage
+          description: Feature usage tracking
         planId:
           anyOf:
           - type: string
@@ -41124,13 +42520,14 @@ components:
     schemas__invoices_new__InvoiceStatus:
       type: string
       enum:
-      - pending
-      - processed
-      - rejected
-      - draft
-      - sent
-      - paid
-      - overdue
+      - PENDING
+      - RECEIVED
+      - PROCESSED
+      - REJECTED
+      - DRAFT
+      - SENT
+      - PAID
+      - OVERDUE
       title: InvoiceStatus
       description: Invoice status enumeration
     schemas__parties__BulkUploadResponse:

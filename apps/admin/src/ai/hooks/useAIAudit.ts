@@ -59,7 +59,8 @@ export interface UseAIAuditOptions {
  */
 interface BackendAuditLogEntry {
   id: string;
-  timestamp: string;
+  timestamp?: string;
+  event_timestamp?: string;
   event_type: string;
   tenant_id: string;
   user_id: string;
@@ -78,7 +79,8 @@ interface BackendAuditLogEntry {
  * Backend audit log response format
  */
 interface BackendAuditLogResponse {
-  entries: BackendAuditLogEntry[];
+  entries?: BackendAuditLogEntry[];
+  items?: BackendAuditLogEntry[];
   total: number;
   page: number;
   page_size: number;
@@ -105,7 +107,7 @@ function parseAuditEntries(value: unknown): BackendAuditLogEntry[] {
 
     return [{
       id: getString(entry.id) ?? '',
-      timestamp: getString(entry.timestamp) ?? '',
+      timestamp: getString(entry.timestamp) ?? getString(entry.event_timestamp) ?? '',
       event_type: getString(entry.event_type) ?? '',
       tenant_id: getString(entry.tenant_id) ?? '',
       user_id: getString(entry.user_id) ?? '',
@@ -150,12 +152,15 @@ async function fetchAuditLogs(
   });
 
   const actualData = isObject(response) && 'data' in response && isObject(response.data) ? response.data : response;
-  const rawEntries = parseAuditEntries(isObject(actualData) ? actualData.entries : actualData);
+  const entrySource = isObject(actualData)
+    ? (Array.isArray(actualData.entries) ? actualData.entries : actualData.items)
+    : actualData;
+  const rawEntries = parseAuditEntries(entrySource);
 
   // Transform backend response to frontend types
   const entries: AuditLogEntry[] = rawEntries.map((entry) => ({
     log_id: entry.id,
-    timestamp: entry.timestamp,
+    timestamp: entry.timestamp ?? '',
     event_type: entry.event_type as AuditEventType,
     tenant_id: entry.tenant_id,
     user_id: entry.user_id,
@@ -173,9 +178,11 @@ async function fetchAuditLogs(
   return {
     entries,
     total: isObject(actualData) && typeof actualData.total === 'number' ? actualData.total : entries.length,
-    page: Math.floor(offset / pageSize) + 1,
+    page: isObject(actualData) && typeof actualData.page === 'number' ? actualData.page : Math.floor(offset / pageSize) + 1,
     page_size: isObject(actualData) && typeof actualData.page_size === 'number' ? actualData.page_size : pageSize,
-    has_more: isObject(actualData) && typeof actualData.has_more === 'boolean' ? actualData.has_more : false,
+    has_more: isObject(actualData) && typeof actualData.has_more === 'boolean'
+      ? actualData.has_more
+      : (offset + entries.length) < (isObject(actualData) && typeof actualData.total === 'number' ? actualData.total : entries.length),
   };
 }
 

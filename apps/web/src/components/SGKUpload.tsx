@@ -235,7 +235,7 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
               type="text"
               value={formData.partyId}
               onChange={(e) => setFormData(prev => ({ ...prev, partyId: e.target.value }))}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 validation?.errors.partyId ? 'border-red-300' : 'border-gray-300'
               }`}
               placeholder="Hasta ID'si girin"
@@ -258,7 +258,7 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
               value: type,
               label: getDocumentTypeLabel(type)
             }))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -269,7 +269,7 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
           </label>
           
           <div
-            className={`relative border-2 border-dashed rounded-lg p-6 transition-colors ${
+            className={`relative border-2 border-dashed rounded-2xl p-6 transition-colors ${
               dragActive 
                 ? 'border-blue-400 bg-blue-50' 
                 : validation?.errors.file
@@ -343,7 +343,7 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Önizleme
             </label>
-            <div className="border border-gray-200 rounded-lg p-4">
+            <div className="border border-gray-200 rounded-2xl p-4">
               <img
                 src={previewUrl}
                 alt="Preview"
@@ -359,7 +359,7 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               OCR Sonuçları
             </label>
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4">
               <div className="text-sm">
                 <div className="mb-2">
                   <span className="font-medium">Güven Skoru:</span>
@@ -411,7 +411,7 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
             value={formData.notes || ''}
             onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Belge ile ilgili notlar..."
           />
         </div>
@@ -437,7 +437,7 @@ export const SGKUpload: React.FC<SGKUploadProps> = ({
           <Button
             type="submit"
             disabled={uploading || processing}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             variant='default'>
             {uploading ? (
               <>

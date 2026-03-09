@@ -43,7 +43,7 @@ export function InvoiceSummaryPage() {
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{pendingIncoming} bekleyen</p>
             </div>
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+            <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-2xl">
               <TrendingDown className="text-blue-600 dark:text-blue-400" size={24} />
             </div>
           </div>
@@ -58,7 +58,7 @@ export function InvoiceSummaryPage() {
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{pendingOutgoing} bekleyen</p>
             </div>
-            <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
+            <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-2xl">
               <TrendingUp className="text-green-600 dark:text-green-400" size={24} />
             </div>
           </div>
@@ -75,7 +75,7 @@ export function InvoiceSummaryPage() {
                 {netBalance >= 0 ? 'Gelir fazlası' : 'Gider fazlası'}
               </p>
             </div>
-            <div className={`p-3 rounded-lg ${netBalance >= 0 ? 'bg-green-100 dark:bg-green-900/20' : 'bg-red-100 dark:bg-red-900/20'}`}>
+            <div className={`p-3 rounded-2xl ${netBalance >= 0 ? 'bg-green-100 dark:bg-green-900/20' : 'bg-red-100 dark:bg-red-900/20'}`}>
               <BarChart3 className={netBalance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'} size={24} />
             </div>
           </div>
@@ -92,7 +92,7 @@ export function InvoiceSummaryPage() {
                 Gelen {formatCurrency(monthlyIncoming, 'TRY')} · Giden {formatCurrency(monthlyOutgoing, 'TRY')}
               </p>
             </div>
-            <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+            <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-2xl">
               <FileText className="text-purple-600 dark:text-purple-400" size={24} />
             </div>
           </div>

@@ -5,6 +5,7 @@ import { useCreateAdminAuthLogin } from '@/lib/api-client';
 import { tokenManager, adminApiInstance } from '@/lib/api';
 import { AdminRole, LoginCredentials, AdminUser as TypeAdminUser } from '@/types';
 import type {
+    AdminLoginResponse,
     ResponseEnvelopeAdminLoginResponse,
     ResponseEnvelopeRefreshTokenResponse,
 } from '@/api/generated/schemas';
@@ -29,6 +30,24 @@ export interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+function unwrapLoginResponse(
+    response: AdminLoginResponse | ResponseEnvelopeAdminLoginResponse | null | undefined
+): AdminLoginResponse | null {
+    if (!response) {
+        return null;
+    }
+
+    if ('token' in response && typeof response.token === 'string') {
+        return response;
+    }
+
+    if ('data' in response && response.data && typeof response.data === 'object' && 'token' in response.data) {
+        return response.data;
+    }
+
+    return null;
+}
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { user, token, setAuth, clearAuth, isAuthenticated, _hasHydrated } = useAuthStore();
@@ -129,7 +148,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const login = async (credentials: LoginCredentials & { mfa_token?: string }): Promise<LoginResult> => {
         try {
             const response = await adminLogin({ data: credentials });
-            const payload = response.data;
+            const payload = unwrapLoginResponse(response);
 
             console.log('Login response (unwrapped):', response);
 

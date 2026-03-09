@@ -65,7 +65,7 @@ export const PartyStats: React.FC<PartyStatsProps> = ({
         return (
           <div
             key={item.id}
-            className={`${item.bgColor} rounded-lg p-6 border border-gray-200`}
+            className={`${item.bgColor} rounded-2xl p-6 border border-gray-200`}
           >
             <div className="flex items-center justify-between">
               <div>

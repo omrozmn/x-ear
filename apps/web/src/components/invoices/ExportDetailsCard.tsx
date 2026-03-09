@@ -166,7 +166,7 @@ export default function ExportDetailsCard({ value, onChange }: ExportDetailsCard
         </div>
       </div>
 
-      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+      <div className="bg-green-50 border border-green-200 rounded-2xl p-3">
         <div className="flex items-start">
           <Info className="text-green-400 mr-2 flex-shrink-0" size={18} />
           <div>

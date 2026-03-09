@@ -299,7 +299,7 @@ export function SupplierFormModal({
                 data-allow-raw="true"
                 value={formData.isActive ? 'active' : 'inactive'}
                 onChange={(e) => handleChange('isActive', e.target.value === 'active')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="active">Aktif</option>
                 <option value="inactive">Pasif</option>
@@ -458,7 +458,7 @@ export function SupplierFormModal({
                 onChange={(e) => handleChange('address', e.target.value)}
                 placeholder="Tam adres giriniz"
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -475,7 +475,7 @@ export function SupplierFormModal({
             onChange={(e) => handleChange('notes', e.target.value)}
             placeholder="İlave notlar..."
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 

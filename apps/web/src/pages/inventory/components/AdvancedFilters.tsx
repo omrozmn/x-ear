@@ -49,7 +49,7 @@ const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({ categories,
         placeholder="Kategori ara"
       />
       {isOpen && suggestions.length > 0 && (
-        <div className="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow max-h-56 overflow-auto">
+        <div className="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-xl shadow max-h-56 overflow-auto">
           {suggestions.map(s => (
             <div
               key={s.key}

@@ -193,7 +193,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-medium text-gray-900 flex items-center">
             <Plus className="w-5 h-5 mr-2" />
@@ -226,7 +226,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
         <form onSubmit={handleSubmit}>
           <div className="space-y-6">
             {/* Party Info */}
-            <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="bg-gray-50 p-4 rounded-2xl">
               <h4 className="font-medium text-gray-900 mb-2 flex items-center">
                 <User className="w-4 h-4 mr-2" />
                 Hasta Bilgileri
@@ -260,7 +260,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                     key={type.value}
                     type="button"
                     onClick={() => handleInputChange('type', type.value)}
-                    className={`p-4 border rounded-lg text-left transition-colors ${formData.type === type.value
+                    className={`p-4 border rounded-2xl text-left transition-colors ${formData.type === type.value
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-300 hover:border-gray-400'
                       }`}
@@ -319,7 +319,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
               </div>
 
               {/* Suggested Title */}
-              <div className="bg-blue-50 p-3 rounded-lg">
+              <div className="bg-blue-50 p-3 rounded-2xl">
                 <div className="text-sm font-medium text-blue-900 mb-2">Önerilen Başlık:</div>
                 <button data-allow-raw="true"
                   type="button"
@@ -332,7 +332,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
             </div>
 
             {/* Report Type Info */}
-            <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="bg-gray-50 p-4 rounded-2xl">
               <h5 className="font-medium text-gray-900 mb-2">
                 {getTypeInfo(formData.type).label} Hakkında
               </h5>
@@ -369,7 +369,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
             </div>
 
             {/* Creation Info */}
-            <div className="bg-green-50 p-4 rounded-lg">
+            <div className="bg-green-50 p-4 rounded-2xl">
               <h5 className="font-medium text-gray-900 mb-2">Oluşturulacak Rapor</h5>
               <div className="text-sm text-gray-600 space-y-1">
                 <div>
@@ -389,14 +389,14 @@ export const ReportModal: React.FC<ReportModalProps> = ({
             <Button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+              className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl"
               disabled={isLoading}
             >
               İptal
             </Button>
             <Button
               type="submit"
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center"
+              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center"
               disabled={isLoading || !formData.type || !formData.title.trim()}
             >
               {isLoading ? (

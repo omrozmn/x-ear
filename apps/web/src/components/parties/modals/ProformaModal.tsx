@@ -509,7 +509,7 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
+              <div className="p-2 bg-blue-100 rounded-2xl">
                 <FileText className="w-6 h-6 text-blue-600" />
               </div>
               <div>
@@ -522,7 +522,7 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
             <Button
               variant="ghost"
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors !h-auto"
+              className="p-2 hover:bg-gray-100 rounded-2xl transition-colors !h-auto"
               aria-label="Kapat"
             >
               <X className="w-6 h-6 text-gray-700" />
@@ -707,7 +707,7 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
                     ) : (
                       <div className="space-y-3">
                         {items.map((item, index) => (
-                          <div key={index} className="p-3 border rounded-lg">
+                          <div key={index} className="p-3 border rounded-2xl">
                             <div className="flex justify-between items-start">
                               <div className="flex-1">
                                 <div className="font-medium text-gray-900">
@@ -797,7 +797,7 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
               <Button
                 type="submit"
                 disabled={isLoading || items.length === 0}
-                className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 flex items-center space-x-2"
+                className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl transition-colors disabled:opacity-50 flex items-center space-x-2"
               >
                 {isLoading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
                 <span>Proforma Oluştur</span>

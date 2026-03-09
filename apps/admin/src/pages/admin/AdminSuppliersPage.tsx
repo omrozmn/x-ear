@@ -21,6 +21,8 @@ import { toast } from 'react-hot-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAdminResponsive } from '@/hooks';
 import { ResponsiveTable } from '@/components/responsive';
+import Pagination from '@/components/ui/Pagination';
+import { extractPagination, unwrapData } from '@/lib/orval-response';
 
 type SupplierFilterStatus = 'active' | 'inactive' | 'all';
 type SupplierStatus = Exclude<SupplierFilterStatus, 'all'>;
@@ -149,11 +151,14 @@ const normalizeSupplier = (value: unknown): SupplierRead | null => {
 };
 
 const getSuppliers = (response: SupplierListResponse | undefined): SupplierRead[] => {
-  const candidate = Array.isArray(response?.data)
-    ? response.data
-    : isRecord(response?.data) && Array.isArray(response.data.suppliers)
-      ? response.data.suppliers
-      : [];
+  const payload = unwrapData<unknown>(response);
+  const candidate = Array.isArray(payload)
+    ? payload
+    : isRecord(payload) && Array.isArray(payload.suppliers)
+      ? payload.suppliers
+      : isRecord(payload) && Array.isArray(payload.items)
+        ? payload.items
+        : [];
 
   return candidate
     .map(normalizeSupplier)
@@ -161,17 +166,13 @@ const getSuppliers = (response: SupplierListResponse | undefined): SupplierRead[
 };
 
 const getPagination = (response: SupplierListResponse | undefined): SupplierPagination | null => {
-  const responseMeta = response?.meta;
-  const nestedPagination =
-    isRecord(response?.data) && isRecord(response.data.pagination) ? response.data.pagination : undefined;
-  const source = nestedPagination ?? responseMeta;
-
-  if (!source || !isRecord(source)) {
+  const pagination = extractPagination(response);
+  if (!pagination) {
     return null;
   }
 
-  const total = typeof source.total === 'number' ? source.total : 0;
-  const totalPages = typeof source.totalPages === 'number' ? source.totalPages : 1;
+  const total = pagination.total ?? 0;
+  const totalPages = pagination.totalPages ?? 1;
 
   return { total, totalPages };
 };
@@ -221,7 +222,7 @@ const AdminSuppliersPage: React.FC = () => {
   const { isMobile } = useAdminResponsive();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<SupplierFilterStatus>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -301,6 +302,9 @@ const AdminSuppliersPage: React.FC = () => {
     {
       key: 'company',
       header: 'Firma Adı',
+      sortable: true,
+      sortKey: 'companyName',
+      sortValue: (supplier: SupplierRead) => supplier.companyName || '',
       render: (supplier: SupplierRead) => (
         <div>
           <div className="text-sm font-medium text-gray-900 dark:text-white">{supplier.companyName}</div>
@@ -314,6 +318,9 @@ const AdminSuppliersPage: React.FC = () => {
       key: 'contact',
       header: 'İletişim',
       mobileHidden: true,
+      sortable: true,
+      sortKey: 'contactPerson',
+      sortValue: (supplier: SupplierRead) => supplier.contactPerson || '',
       render: (supplier: SupplierRead) => (
         <span className="text-sm text-gray-500 dark:text-gray-400">{supplier.contactPerson || '-'}</span>
       ),
@@ -321,6 +328,9 @@ const AdminSuppliersPage: React.FC = () => {
     {
       key: 'email_phone',
       header: 'E-posta / Telefon',
+      sortable: true,
+      sortKey: 'email',
+      sortValue: (supplier: SupplierRead) => `${supplier.email || ''} ${supplier.phone || ''}`.trim(),
       render: (supplier: SupplierRead) => (
         <div className="text-sm text-gray-500 dark:text-gray-400">
           <div>{supplier.email || '-'}</div>
@@ -331,6 +341,9 @@ const AdminSuppliersPage: React.FC = () => {
     {
       key: 'status',
       header: 'Durum',
+      sortable: true,
+      sortKey: 'isActive',
+      sortValue: (supplier: SupplierRead) => supplier.isActive !== false ? 1 : 0,
       render: (supplier: SupplierRead) => (
         <span
           className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -391,7 +404,10 @@ const AdminSuppliersPage: React.FC = () => {
               className="focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md py-2"
               placeholder="Tedarikçi ara..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
             />
           </div>
         </div>
@@ -401,6 +417,7 @@ const AdminSuppliersPage: React.FC = () => {
             onChange={(e) => {
               if (isSupplierFilterStatus(e.target.value)) {
                 setStatusFilter(e.target.value);
+                setPage(1);
               }
             }}
             className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md"
@@ -425,50 +442,18 @@ const AdminSuppliersPage: React.FC = () => {
         )}
 
         {pagination && pagination.totalPages > 1 && (
-          <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-            <div className="flex-1 flex justify-between sm:hidden">
-              <button
-                onClick={() => setPage((currentPage) => Math.max(1, currentPage - 1))}
-                disabled={page === 1}
-                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                Önceki
-              </button>
-              <button
-                onClick={() => setPage((currentPage) => Math.min(pagination.totalPages, currentPage + 1))}
-                disabled={page === pagination.totalPages}
-                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                Sonraki
-              </button>
-            </div>
-            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm text-gray-700">
-                  Toplam <span className="font-medium">{pagination.total}</span> kayıttan{' '}
-                  <span className="font-medium">{(page - 1) * limit + 1}</span> -{' '}
-                  <span className="font-medium">{Math.min(page * limit, pagination.total)}</span> arası
-                  gösteriliyor
-                </p>
-              </div>
-              <div>
-                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                  {Array.from({ length: pagination.totalPages }).map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setPage(index + 1)}
-                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                        page === index + 1
-                          ? 'z-10 bg-primary-50 border-primary-500 text-primary-600'
-                          : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                      }`}
-                    >
-                      {index + 1}
-                    </button>
-                  ))}
-                </nav>
-              </div>
-            </div>
+          <div className="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+            <Pagination
+              currentPage={page}
+              totalPages={pagination.totalPages}
+              totalItems={pagination.total}
+              itemsPerPage={limit}
+              onPageChange={setPage}
+              onItemsPerPageChange={(nextLimit) => {
+                setLimit(nextLimit);
+                setPage(1);
+              }}
+            />
           </div>
         )}
       </div>

@@ -1,3 +1,4 @@
+import os
 import uuid
 from datetime import datetime
 from datetime import timedelta
@@ -86,7 +87,7 @@ def supplier_from_tenant(tenant: "Tenant") -> dict[str, Any]:
         or ""
     )
 
-    return {
+    supplier = {
         "name": (
             _str(company_info.get("companyName"))
             or _str(company_info.get("legalName"))
@@ -114,7 +115,28 @@ def supplier_from_tenant(tenant: "Tenant") -> dict[str, Any]:
         "email": _str(company_info.get("email") or tenant.billing_email or tenant.owner_email),
     }
 
+    use_test_fallback = bool(
+        os.getenv("BIRFATURA_TEST_API_KEY")
+        and os.getenv("BIRFATURA_TEST_SECRET_KEY")
+        and os.getenv("BIRFATURA_TEST_INTEGRATION_KEY")
+    )
+    if use_test_fallback and not supplier["tax_id"]:
+        supplier.update({
+            "name": supplier["name"] or "X-Ear Test Isitme Merkezi",
+            "tax_id": "1234567801",
+            "tax_office": supplier["tax_office"] or "ANKARA",
+            "address": {
+                "street": supplier["address"].get("street") or "Test Sokak No:1",
+                "district": supplier["address"].get("district") or "Cankaya",
+                "city": supplier["address"].get("city") or "ANKARA",
+                "postalZone": supplier["address"].get("postalZone") or "06100",
+                "country": supplier["address"].get("country") or "Turkiye",
+            },
+            "phone": supplier["phone"] or "03120000000",
+            "email": supplier["email"] or "test@example.com",
+        })
 
+    return supplier
 def _customer_name(form_data: dict[str, Any]) -> str:
     explicit = _str(form_data.get("customerName"))
     if explicit:
@@ -125,9 +147,14 @@ def _customer_name(form_data: dict[str, Any]) -> str:
 
 
 def _customer_dict(form_data: dict[str, Any]) -> dict[str, Any]:
+    customer_tax_id = _str(
+        form_data.get("customerTaxId")
+        or form_data.get("customerTaxNumber")
+        or form_data.get("customerTcNumber")
+    )
     return {
         "name": _customer_name(form_data),
-        "tax_id": _str(form_data.get("customerTaxNumber") or form_data.get("customerTcNumber")),
+        "tax_id": customer_tax_id,
         "tax_office": _str(form_data.get("taxOffice")),
         "address": _address_dict(
             form_data.get("customerAddress"),
@@ -146,6 +173,7 @@ def _buyer_customer(form_data: dict[str, Any], customer: dict[str, Any], scenari
 
     tc_or_tax = _str(
         profile_details.get("patientTaxId")
+        or form_data.get("customerTaxId")
         or form_data.get("customerTcNumber")
         or customer.get("tax_id")
     )
@@ -367,6 +395,10 @@ def build_invoice_dict_from_form(
         payment_means: dict[str, Any] = {"code": "1"}
         if account_id:
             payment_means["accountId"] = account_id
+        if _str(bank_info.get("bankName")):
+            payment_means["bankName"] = _str(bank_info.get("bankName"))
+        if _str(bank_info.get("accountHolder")):
+            payment_means["accountHolder"] = _str(bank_info.get("accountHolder"))
         if payment_days is not None:
             try:
                 payment_means["dueDate"] = (

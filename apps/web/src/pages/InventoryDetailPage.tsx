@@ -309,7 +309,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
   if (error || !item) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
           <h3 className="text-sm font-medium text-red-800 dark:text-red-300">
             {error || 'Ürün bulunamadı'}
           </h3>
@@ -420,7 +420,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
       </div>
 
       {/* Inventory Movements Table */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white rounded-2xl shadow p-6">
         <h2 className="text-lg font-medium text-gray-900 mb-4">Ürün Hareketleri</h2>
         <InventoryMovementsTable inventoryId={id} />
       </div>

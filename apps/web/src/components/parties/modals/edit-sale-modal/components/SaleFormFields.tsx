@@ -111,7 +111,7 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
               
               {/* Autocomplete Dropdown - Shows filtered results */}
               {state.showDeviceSelector && formData.productName && (
-                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg max-h-60 overflow-y-auto">
                   {availableDevices
                     .filter(device => 
                       device.name.toLowerCase().includes(formData.productName.toLowerCase()) ||
@@ -207,7 +207,7 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
                   id="ear"
                   value={formData.ear || 'both'}
                   onChange={(e) => onFormDataChange({ ear: e.target.value as 'left' | 'right' | 'both' })}
-                  className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full h-10 px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 >
                   <option value="left">Sol Kulak</option>
@@ -316,7 +316,7 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
                   id="deliveryStatus"
                   value={formData.deliveryStatus || 'pending'}
                   onChange={(e) => handleInputChange('deliveryStatus', e.target.value)}
-                  className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full h-10 px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="pending">Teslim Edilmedi</option>
                   <option value="delivered">Teslim Edildi</option>
@@ -329,7 +329,7 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
                   id="reportStatus"
                   value={formData.reportStatus || ''}
                   onChange={(e) => handleInputChange('reportStatus', e.target.value)}
-                  className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full h-10 px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Seçiniz...</option>
                   <option value="received">Rapor Teslim Alındı</option>
@@ -371,7 +371,7 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
                 id="paymentMethod"
                 value={state.paymentMethod}
                 onChange={(e) => onStateChange({ paymentMethod: e.target.value })}
-                className="w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full h-10 px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="cash">Nakit</option>
                 <option value="credit_card">Kredi Kartı</option>

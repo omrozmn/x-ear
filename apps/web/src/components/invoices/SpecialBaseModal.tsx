@@ -72,7 +72,7 @@ export function SpecialBaseModal({
         ></div>
 
         {/* Modal */}
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
           {/* Header */}
           <div className="bg-blue-600 px-6 py-4">
             <h3 className="text-lg font-medium text-white">
@@ -138,7 +138,7 @@ export function SpecialBaseModal({
               </div>
 
               {/* Hesaplama Formülü */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3">
                 <p className="text-sm text-blue-800">
                   <strong>Hesaplama:</strong> KDV = (Özel Matrah Tutarı × Özel Matrah Oranı) / 100
                 </p>

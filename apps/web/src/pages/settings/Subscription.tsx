@@ -106,7 +106,7 @@ const Subscription: React.FC = () => {
                                 <Clock className="w-4 h-4" />
                                 <span>Bitiş Tarihi: {subscriptionEndsAt}</span>
                             </div>
-                            <div className={`mt-4 p-3 rounded-lg flex items-center ${isExpired ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
+                            <div className={`mt-4 p-3 rounded-2xl flex items-center ${isExpired ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
                                 {isExpired ? (
                                     <>
                                         <AlertTriangle className="w-5 h-5 mr-2" />
@@ -130,7 +130,7 @@ const Subscription: React.FC = () => {
                     <h2 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Kullanım Hakları</h2>
 
                     {/* SMS Credit Display */}
-                    <div className="mb-6 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-100 dark:border-indigo-800">
+                    <div className="mb-6 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-800">
                         <div className="flex justify-between items-center mb-1">
                             <span className="font-medium text-indigo-900 dark:text-indigo-300">SMS Kredisi</span>
                             <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
@@ -208,7 +208,7 @@ function SmsPackagesList() {
                 const price = pkg.price ?? 0;
 
                 return (
-                    <div key={pkg.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col relative overflow-hidden">
+                    <div key={pkg.id} className="border border-gray-200 dark:border-gray-700 rounded-2xl p-4 flex flex-col relative overflow-hidden">
                         <div className="flex justify-between items-start mb-2">
                             <h3 className="font-semibold text-gray-800 dark:text-white">{pkg.name}</h3>
                             <span className="text-xs font-medium px-2 py-1 bg-indigo-100 text-indigo-800 rounded-full">
@@ -253,7 +253,7 @@ function AddOnsList() {
                 const price = addon.price ?? 0;
 
                 return (
-                    <div key={addon.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col">
+                    <div key={addon.id} className="border border-gray-200 dark:border-gray-700 rounded-2xl p-4 flex flex-col">
                         <div className="flex justify-between items-start mb-2">
                             <h3 className="font-semibold text-gray-800 dark:text-white">{addon.name}</h3>
                             <span className="text-xs font-medium px-2 py-1 bg-blue-100 text-blue-800 rounded-full">

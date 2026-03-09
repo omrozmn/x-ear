@@ -126,7 +126,7 @@ function DesktopDashboard() {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+      <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
         <p className="text-red-600">Hata: {error}</p>
       </div>
     );
@@ -135,13 +135,13 @@ function DesktopDashboard() {
   return (
     <div className="space-y-6">
       {/* Dashboard Controls */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 rounded-lg shadow-sm">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 rounded-2xl shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value)}
-              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="border border-gray-300 dark:border-gray-600 rounded-2xl px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               options={[
                 { value: "today", label: "Bugün" },
                 { value: "week", label: "Son 1 Hafta" },
@@ -151,7 +151,7 @@ function DesktopDashboard() {
             />
             <Button
               onClick={handleRefresh}
-              className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border border-gray-300 dark:border-gray-600 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               variant='secondary'>
               <RefreshCw className="w-5 h-5" />
             </Button>
@@ -200,14 +200,14 @@ function DesktopDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Party Distribution - Only show if user has analytics permission */}
         {canViewAnalytics ? (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Hasta Dağılımı</h3>
-            <div className="h-64 bg-gray-50 dark:bg-gray-900/50 rounded-lg flex items-center justify-center">
+            <div className="h-64 bg-gray-50 dark:bg-gray-900/50 rounded-2xl flex items-center justify-center">
               <PartyDistribution />
             </div>
           </div>
         ) : (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Hasta Dağılımı</h3>
             <NoPermissionPlaceholder />
           </div>
@@ -215,9 +215,9 @@ function DesktopDashboard() {
 
         {/* Recent Activity - Only show if user has activity logs permission */}
         {canViewActivityLogs ? (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Son Aktiviteler</h3>
-            <div className="h-64 bg-gray-50 dark:bg-gray-900/50 rounded-lg overflow-auto">
+            <div className="h-64 bg-gray-50 dark:bg-gray-900/50 rounded-2xl overflow-auto">
               {(!recentActivity || recentActivity.length === 0) ? (
                 <div className="h-full flex items-center justify-center text-gray-500 dark:text-gray-400">No recent activity</div>
               ) : (
@@ -232,7 +232,7 @@ function DesktopDashboard() {
             </div>
           </div>
         ) : (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Son Aktiviteler</h3>
             <NoPermissionPlaceholder />
           </div>

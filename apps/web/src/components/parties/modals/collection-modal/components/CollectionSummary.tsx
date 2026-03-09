@@ -78,7 +78,7 @@ export const CollectionSummary: React.FC<CollectionSummaryProps> = ({
         <CardContent>
           <div className="space-y-3">
             {calculations.pendingInstallments.length > 0 && (
-              <div className="p-3 bg-yellow-50 rounded-lg">
+              <div className="p-3 bg-yellow-50 rounded-2xl">
                 <div className="flex items-center gap-2 text-yellow-700 mb-2">
                   <AlertTriangle className="h-4 w-4" />
                   <span className="font-medium">Bekleyen Taksitler</span>
@@ -93,7 +93,7 @@ export const CollectionSummary: React.FC<CollectionSummaryProps> = ({
             )}
 
             {calculations.overdueInstallments.length > 0 && (
-              <div className="p-3 bg-red-50 rounded-lg">
+              <div className="p-3 bg-red-50 rounded-2xl">
                 <div className="flex items-center gap-2 text-red-700 mb-2">
                   <AlertTriangle className="h-4 w-4" />
                   <span className="font-medium">Vadesi Geçen Taksitler</span>
@@ -108,7 +108,7 @@ export const CollectionSummary: React.FC<CollectionSummaryProps> = ({
             )}
 
             {calculations.pendingInstallments.length === 0 && calculations.overdueInstallments.length === 0 && (
-              <div className="p-3 bg-green-50 rounded-lg">
+              <div className="p-3 bg-green-50 rounded-2xl">
                 <div className="flex items-center gap-2 text-green-700">
                   <span className="font-medium">Tüm taksitler güncel</span>
                 </div>
@@ -152,7 +152,7 @@ export const CollectionSummary: React.FC<CollectionSummaryProps> = ({
               </div>
 
               {overduePromissoryNotes.length > 0 && (
-                <div className="p-3 bg-red-50 rounded-lg">
+                <div className="p-3 bg-red-50 rounded-2xl">
                   <div className="flex items-center gap-2 text-red-700">
                     <AlertTriangle className="h-4 w-4" />
                     <span className="font-medium">

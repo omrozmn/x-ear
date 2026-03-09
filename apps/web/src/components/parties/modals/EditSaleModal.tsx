@@ -183,7 +183,7 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
             {/* Right Column - Payment Summary with Price Info */}
             <div className="space-y-6">
               {/* Combined Payment & Price Summary Card */}
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200 shadow-sm">
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl border border-blue-200 shadow-sm">
                 <h4 className="font-semibold text-gray-900 mb-4 flex items-center text-lg">
                   <CreditCard className="w-5 h-5 mr-2 text-blue-600" />
                   Fiyat ve Ödeme Özeti
@@ -372,7 +372,7 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
               </div>
 
               {/* Notes Field - Below Price Summary */}
-              <div className="bg-white p-4 rounded-lg border border-gray-200">
+              <div className="bg-white p-4 rounded-2xl border border-gray-200">
                 <label className="text-sm font-medium text-gray-700 block mb-2">Notlar</label>
                 <Textarea
                   value={formData.notes}

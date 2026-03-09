@@ -116,7 +116,7 @@ export function SupplierDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Info */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">İletişim Bilgileri</h3>
             <div className="space-y-4">
               {supplierData.contactPerson && (
@@ -168,7 +168,7 @@ export function SupplierDetailPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Finansal Bilgiler</h3>
             <div className="space-y-3">
               <div className="flex justify-between py-2 border-b border-gray-100">
@@ -193,7 +193,7 @@ export function SupplierDetailPage() {
 
         {/* Right Column - Tabs */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 min-h-[500px]">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 min-h-[500px]">
             <Tabs defaultValue="products" className="w-full">
               <div className="border-b border-gray-200 px-6">
                 <TabsList className="bg-transparent border-b-0">
@@ -271,7 +271,7 @@ export function SupplierDetailPage() {
                 <TabsContent value="notes">
                   <div className="space-y-4">
                     {supplierData.notes ? (
-                      <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100 text-sm text-gray-700">
+                      <div className="bg-yellow-50 p-4 rounded-2xl border border-yellow-100 text-sm text-gray-700">
                         {supplierData.notes}
                       </div>
                     ) : (

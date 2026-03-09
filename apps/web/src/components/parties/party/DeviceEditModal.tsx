@@ -322,7 +322,7 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
           </div>
 
           {deviceSearch && (
-            <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-lg">
+            <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-2xl">
               {filteredDevices.map((device) => (
                 <div
                   key={device.id}
@@ -351,7 +351,7 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
           )}
 
           {selectedDevice && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
               <div className="flex items-center space-x-2 mb-2">
                 <CheckCircle className="w-5 h-5 text-blue-600" />
                 <span className="font-medium text-blue-900">Seçili Cihaz</span>
@@ -402,7 +402,7 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                 key={option.value}
                 type="button"
                 onClick={() => handleInputChange('ear', option.value)}
-                className={`p-3 rounded-lg border-2 text-sm font-medium transition-colors ${formData.ear === option.value
+                className={`p-3 rounded-2xl border-2 text-sm font-medium transition-colors ${formData.ear === option.value
                   ? `border-${option.color}-500 bg-${option.color}-50 text-${option.color}-700`
                   : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
                   }`}
@@ -471,7 +471,7 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                 key={status.value}
                 type="button"
                 onClick={() => handleInputChange('status', status.value)}
-                className={`p-2 rounded-lg border text-sm font-medium transition-colors ${formData.status === status.value
+                className={`p-2 rounded-2xl border text-sm font-medium transition-colors ${formData.status === status.value
                   ? `border-${status.color}-500 bg-${status.color}-50 text-${status.color}-700`
                   : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
                   }`}
@@ -599,7 +599,7 @@ export const DeviceEditModal: React.FC<DeviceEditModalProps> = ({
                   key={method.value}
                   type="button"
                   onClick={() => handleInputChange('paymentMethod', method.value)}
-                  className={`p-3 rounded-lg border text-sm font-medium transition-colors flex items-center justify-center space-x-2 ${formData.paymentMethod === method.value
+                  className={`p-3 rounded-2xl border text-sm font-medium transition-colors flex items-center justify-center space-x-2 ${formData.paymentMethod === method.value
                     ? 'border-blue-500 bg-blue-50 text-blue-700'
                     : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
                     }`}

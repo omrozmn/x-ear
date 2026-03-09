@@ -58,7 +58,7 @@ const PartySearch: React.FC<PartySearchProps> = ({
       <div className="space-y-4">
         {/* OCR Suggestion */}
         {ocrResult?.matched_party && (
-          <div className="p-3 bg-blue-50 rounded-lg">
+          <div className="p-3 bg-blue-50 rounded-2xl">
             <div className="text-sm font-medium text-blue-800 mb-1">
               OCR Önerisi
             </div>
@@ -90,7 +90,7 @@ const PartySearch: React.FC<PartySearchProps> = ({
         </div>
 
         {/* Party List */}
-        <div className="max-h-64 overflow-y-auto border rounded-lg">
+        <div className="max-h-64 overflow-y-auto border rounded-2xl">
           {isLoading ? (
             <div className="p-4 text-center text-gray-500">Yükleniyor...</div>
           ) : filteredParties.length === 0 ? (

@@ -137,7 +137,7 @@ export function ProductSearch({
       {isOpen && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg mt-1 max-h-80 overflow-y-auto"
+          className="absolute z-50 w-full bg-white border border-gray-300 rounded-2xl shadow-lg mt-1 max-h-80 overflow-y-auto"
         >
           {hasResults ? (
             <div className="py-1">

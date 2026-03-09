@@ -246,7 +246,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6 px-6">
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center space-x-2">
               <Calendar className="h-5 w-5 text-blue-500" />
               <div>
@@ -256,7 +256,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center space-x-2">
               <Activity className="h-5 w-5 text-green-500" />
               <div>
@@ -266,7 +266,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center space-x-2">
               <CreditCard className="h-5 w-5 text-red-500" />
               <div>
@@ -276,7 +276,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center space-x-2">
               <Tag className="h-5 w-5 text-purple-500" />
               <div>
@@ -286,7 +286,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center space-x-2">
               <Users className="h-5 w-5 text-orange-500" />
               <div>

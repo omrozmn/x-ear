@@ -86,7 +86,7 @@ export function RecordTypeSelector({
       </div>
 
       {/* Type Pills */}
-      <div className="flex flex-wrap gap-2 p-3 border border-gray-200 rounded-lg bg-gray-50 min-h-[60px]">
+      <div className="flex flex-wrap gap-2 p-3 border border-gray-200 rounded-2xl bg-gray-50 min-h-[60px]">
         {allTypes.map((type) => {
           const isCustom = customTypes[transactionType as 'income' | 'expense'].includes(type);
           const isSelected = selectedType === type;

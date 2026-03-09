@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2">
+	<ext:UBLExtensions>
+		<ext:UBLExtension>
+			<ext:ExtensionContent/>
+		</ext:UBLExtension>
+	</ext:UBLExtensions>
+	<cbc:UBLVersionID>2.1</cbc:UBLVersionID>
+	<cbc:CustomizationID>TR1.2</cbc:CustomizationID>
+	<cbc:ProfileID>TICARIFATURA</cbc:ProfileID>
+	<cbc:ID>TST2026401518607</cbc:ID>
+	<cbc:IssueDate>2026-03-09</cbc:IssueDate>
+	<cbc:UUID>596b8a78-4cda-43ef-a782-2bfa9f023680</cbc:UUID>
+	<cbc:IssueTime>14:17:16.129141</cbc:IssueTime>
+	<cbc:CopyIndicator>false</cbc:CopyIndicator>
+	<cbc:InvoiceTypeCode>ISTISNA</cbc:InvoiceTypeCode>
+	<cbc:DocumentCurrencyCode>TRY</cbc:DocumentCurrencyCode>
+	<cac:PaymentTerms>
+		<cbc:Note>30 gün vade | Odeme vadesi: 30 gun</cbc:Note>
+	</cac:PaymentTerms>
+	<cac:PaymentMeans>
+		<cbc:PaymentMeansCode>1</cbc:PaymentMeansCode>
+		<cbc:PaymentDueDate>2026-04-08</cbc:PaymentDueDate>
+	</cac:PaymentMeans>
+	<cac:AdditionalDocumentReference>
+		<cbc:ID>596b8a78-4cda-43ef-a782-2bfa9f023680</cbc:ID>
+		<cbc:IssueDate>2026-03-09</cbc:IssueDate>
+		<cbc:DocumentTypeCode>CUST_INV_ID</cbc:DocumentTypeCode>
+	</cac:AdditionalDocumentReference>
+	<cac:AdditionalDocumentReference>
+		<cbc:ID>0100</cbc:ID>
+		<cbc:IssueDate>2026-03-09</cbc:IssueDate>
+		<cbc:DocumentTypeCode>OUTPUT_TYPE</cbc:DocumentTypeCode>
+	</cac:AdditionalDocumentReference>
+	<cac:AdditionalDocumentReference>
+		<cbc:ID>99</cbc:ID>
+		<cbc:IssueDate>2026-03-09</cbc:IssueDate>
+		<cbc:DocumentTypeCode>TRANSPORT_TYPE</cbc:DocumentTypeCode>
+	</cac:AdditionalDocumentReference>
+	<cac:AdditionalDocumentReference>
+		<cbc:ID>ELEKTRONIK</cbc:ID>
+		<cbc:IssueDate>2026-03-09</cbc:IssueDate>
+		<cbc:DocumentTypeCode>EREPSENDT</cbc:DocumentTypeCode>
+	</cac:AdditionalDocumentReference>
+	<cac:AdditionalDocumentReference>
+		<cbc:ID>default</cbc:ID>
+		<cbc:IssueDate>2026-03-09</cbc:IssueDate>
+		<cbc:DocumentTypeCode>XSLT</cbc:DocumentTypeCode>
+	</cac:AdditionalDocumentReference>
+	<cac:AccountingSupplierParty>
+		<cac:Party>
+			<cac:PartyName>
+				<cbc:Name>X-Ear Test İşitme Merkezi</cbc:Name>
+			</cac:PartyName>
+			<cac:PartyIdentification>
+				<cbc:ID schemeID="VKN">1234567801</cbc:ID>
+			</cac:PartyIdentification>
+			<cac:PartyTaxScheme>
+				<cbc:RegistrationName>X-Ear Test İşitme Merkezi</cbc:RegistrationName>
+				<cac:TaxScheme>
+					<cbc:Name>ANKARA</cbc:Name>
+				</cac:TaxScheme>
+			</cac:PartyTaxScheme>
+			<cac:PostalAddress>
+				<cbc:StreetName>Test sokak</cbc:StreetName>
+				<cbc:CitySubdivisionName>Cankaya</cbc:CitySubdivisionName>
+				<cbc:CityName>ANKARA</cbc:CityName>
+				<cbc:PostalZone>06100</cbc:PostalZone>
+				<cac:Country>
+					<cbc:IdentificationCode>TR</cbc:IdentificationCode>
+					<cbc:Name>TÜRKİYE</cbc:Name>
+				</cac:Country>
+			</cac:PostalAddress>
+		</cac:Party>
+	</cac:AccountingSupplierParty>
+	<cac:AccountingCustomerParty>
+		<cac:Party>
+			<cac:PartyName>
+				<cbc:Name>GIB TEST RECEIVER</cbc:Name>
+			</cac:PartyName>
+			<cac:PartyIdentification>
+				<cbc:ID schemeID="VKN">1234567801</cbc:ID>
+			</cac:PartyIdentification>
+			<cac:PartyTaxScheme>
+				<cac:TaxScheme>
+					<cbc:Name>ANKARA</cbc:Name>
+				</cac:TaxScheme>
+			</cac:PartyTaxScheme>
+			<cac:PostalAddress>
+				<cbc:StreetName>Alici sokak</cbc:StreetName>
+				<cbc:CitySubdivisionName>Cankaya</cbc:CitySubdivisionName>
+				<cbc:CityName>ANKARA</cbc:CityName>
+				<cbc:PostalZone>06100</cbc:PostalZone>
+				<cac:Country>
+					<cbc:IdentificationCode>TR</cbc:IdentificationCode>
+					<cbc:Name>TÜRKİYE</cbc:Name>
+				</cac:Country>
+			</cac:PostalAddress>
+		</cac:Party>
+	</cac:AccountingCustomerParty>
+	<cbc:LineCountNumeric>1</cbc:LineCountNumeric>
+	<cac:InvoiceLine>
+		<cbc:ID>1</cbc:ID>
+		<cbc:InvoicedQuantity unitCode="NIU">2</cbc:InvoicedQuantity>
+		<cbc:LineExtensionAmount currencyID="TRY">6000.00</cbc:LineExtensionAmount>
+		<cac:Item>
+			<cbc:Name>İhracat Ürünü</cbc:Name>
+		</cac:Item>
+		<cac:Price>
+			<cbc:PriceAmount currencyID="TRY">3000.00</cbc:PriceAmount>
+		</cac:Price>
+		<cac:TaxTotal>
+			<cbc:TaxAmount currencyID="TRY">0.00</cbc:TaxAmount>
+			<cac:TaxSubtotal>
+				<cbc:TaxableAmount currencyID="TRY">6000.00</cbc:TaxableAmount>
+				<cbc:TaxAmount currencyID="TRY">0.00</cbc:TaxAmount>
+				<cbc:Percent>0.0</cbc:Percent>
+				<cbc:CalculationSequenceNumeric>1</cbc:CalculationSequenceNumeric>
+				<cac:TaxCategory>
+					<cbc:TaxExemptionReasonCode>301</cbc:TaxExemptionReasonCode>
+					<cac:TaxScheme>
+						<cbc:Name>KDV</cbc:Name>
+					</cac:TaxScheme>
+				</cac:TaxCategory>
+			</cac:TaxSubtotal>
+		</cac:TaxTotal>
+	</cac:InvoiceLine>
+	<cac:TaxTotal>
+		<cbc:TaxAmount currencyID="TRY">0.00</cbc:TaxAmount>
+		<cac:TaxSubtotal>
+			<cbc:TaxableAmount currencyID="TRY">6000.00</cbc:TaxableAmount>
+			<cbc:TaxAmount currencyID="TRY">0.00</cbc:TaxAmount>
+			<cbc:Percent>0.0</cbc:Percent>
+			<cac:TaxCategory>
+				<cbc:TaxExemptionReasonCode>301</cbc:TaxExemptionReasonCode>
+				<cac:TaxScheme>
+					<cbc:Name>KDV</cbc:Name>
+				</cac:TaxScheme>
+			</cac:TaxCategory>
+		</cac:TaxSubtotal>
+	</cac:TaxTotal>
+	<cac:LegalMonetaryTotal>
+		<cbc:LineExtensionAmount currencyID="TRY">6000.00</cbc:LineExtensionAmount>
+		<cbc:TaxExclusiveAmount currencyID="TRY">6000.00</cbc:TaxExclusiveAmount>
+		<cbc:TaxInclusiveAmount currencyID="TRY">6000.00</cbc:TaxInclusiveAmount>
+		<cbc:PayableAmount currencyID="TRY">6000.00</cbc:PayableAmount>
+	</cac:LegalMonetaryTotal>
+</Invoice>

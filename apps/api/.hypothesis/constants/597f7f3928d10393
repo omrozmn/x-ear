@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/party_subresources.py
+# hypothesis_version: 6.151.9
+
+[201, 403, 404, 500, 'Access denied', 'Party not found', 'PartySubresources', 'User-Agent', 'createPartyNotes', 'deletePartyNote', 'deviceCount', 'error', 'genel', 'general', 'id', 'listPartyDevices', 'listPartyNotes', 'listPartySales', 'partyId', 'partyName', 'pending', 'salesCount', 'status', 'system', 'total', 'totalAmount', 'updatePartyNote']

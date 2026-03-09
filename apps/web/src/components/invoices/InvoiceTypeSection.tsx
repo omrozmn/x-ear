@@ -119,6 +119,7 @@ export function InvoiceTypeSection({
           {documentKind === 'despatch' ? 'Belge Tipi' : 'Fatura Tipi'} <span className="text-red-500">*</span>
         </label>
         <Select
+          data-testid="invoice-type-select"
           value={invoiceType}
           onChange={(e) => onChange('invoiceType', e.target.value)}
           options={invoiceTypes
@@ -134,7 +135,7 @@ export function InvoiceTypeSection({
 
       {/* SGK Bilgilendirme */}
       {showSGKInfo && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
           <div className="flex items-start">
             <Info className="text-blue-400 mr-2 flex-shrink-0" size={18} />
             <div>

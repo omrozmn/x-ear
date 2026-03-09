@@ -17,7 +17,7 @@ export const PrintQueueList = () => {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+      <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
         <div className="flex items-start gap-3">
           <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
@@ -40,7 +40,7 @@ export const PrintQueueList = () => {
 
   if (items.length === 0) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center">
+      <div className="rounded-2xl border border-gray-200 bg-gray-50 p-8 text-center">
         <Printer className="mx-auto h-12 w-12 text-gray-400" />
         <h3 className="mt-2 text-sm font-medium text-gray-900">Yazdırma kuyruğu boş</h3>
         <p className="mt-1 text-sm text-gray-500">Henüz yazdırılacak belge yok</p>
@@ -100,7 +100,7 @@ export const PrintQueueList = () => {
             data-allow-raw="true"
             onClick={() => processQueue()}
             disabled={isProcessing}
-            className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isProcessing ? (
               <>
@@ -121,7 +121,7 @@ export const PrintQueueList = () => {
         {items.map((item) => (
           <div
             key={item.id}
-            className="rounded-lg border border-gray-200 bg-white p-4 hover:shadow-sm transition-shadow"
+            className="rounded-2xl border border-gray-200 bg-white p-4 hover:shadow-sm transition-shadow"
           >
             <div className="flex items-start justify-between">
               <div className="flex-1">

@@ -99,8 +99,15 @@ function extractActivityLogList(value: unknown): { logs: ActivityLogItem[]; meta
   }
 
   if (isRecord(nestedData)) {
+    const nestedDataRecord = nestedData as Record<string, unknown>;
+    const nestedLogs = Array.isArray(nestedData.logs)
+      ? nestedData.logs
+      : Array.isArray(nestedDataRecord.items)
+        ? nestedDataRecord.items
+        : [];
+
     return {
-      logs: nestedData.logs ?? response.logs ?? [],
+      logs: nestedLogs.length > 0 ? nestedLogs : response.logs ?? [],
       meta:
         (isPaginationMeta(nestedData.meta) ? nestedData.meta : undefined) ??
         (isPaginationMeta(nestedData.pagination) ? nestedData.pagination : undefined) ??
@@ -110,7 +117,7 @@ function extractActivityLogList(value: unknown): { logs: ActivityLogItem[]; meta
   }
 
   return {
-    logs: response.logs ?? [],
+    logs: response.logs ?? (Array.isArray((value as Record<string, unknown>).items) ? (value as Record<string, unknown>).items as ActivityLogItem[] : []),
     meta: response.meta ?? response.pagination,
   };
 }
@@ -133,7 +140,7 @@ function extractFilterOptions(value: unknown): ActivityLogFilterOptions {
   }
 
   const response = value as ActivityLogFilterOptionsResponse;
-  return response.options ?? response.data ?? {};
+  return (response.options ?? response.data ?? response) as ActivityLogFilterOptions;
 }
 
 function getTopActionLabel(stats: ActivityLogStats): string {

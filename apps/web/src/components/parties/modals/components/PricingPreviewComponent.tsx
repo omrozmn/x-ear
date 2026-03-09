@@ -61,7 +61,7 @@ export const PricingPreviewComponent: React.FC<PricingPreviewComponentProps> = (
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+        <div className="space-y-4 p-4 bg-gray-50 border border-gray-200 rounded-2xl">
           {/* Custom Price Input */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -124,7 +124,7 @@ export const PricingPreviewComponent: React.FC<PricingPreviewComponentProps> = (
         {/* Pricing Breakdown */}
         <div className="space-y-6">
           <div className="space-y-3">
-            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-2xl">
               <span className="text-sm font-medium text-gray-600">Temel Fiyat:</span>
               <span className="font-semibold text-gray-900">
                 {formatCurrency(pricingDetails.basePrice)}
@@ -132,7 +132,7 @@ export const PricingPreviewComponent: React.FC<PricingPreviewComponentProps> = (
             </div>
 
             {pricingDetails.discountAmount > 0 && (
-              <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+              <div className="flex justify-between items-center p-3 bg-red-50 rounded-2xl">
                 <span className="text-sm font-medium text-red-600">
                   İndirim ({pricingDetails.discountPercent.toFixed(1)}%):
                 </span>
@@ -143,7 +143,7 @@ export const PricingPreviewComponent: React.FC<PricingPreviewComponentProps> = (
             )}
 
             {pricingDetails.sgkDiscount > 0 && (
-              <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+              <div className="flex justify-between items-center p-3 bg-green-50 rounded-2xl">
                 <span className="text-sm font-medium text-green-600">SGK İndirimi:</span>
                 <span className="font-semibold text-green-700">
                   -{formatCurrency(pricingDetails.sgkDiscount)}
@@ -151,7 +151,7 @@ export const PricingPreviewComponent: React.FC<PricingPreviewComponentProps> = (
               </div>
             )}
 
-            <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+            <div className="flex justify-between items-center p-3 bg-blue-50 rounded-2xl">
               <span className="text-sm font-medium text-blue-600">KDV:</span>
               <span className="font-semibold text-blue-700">
                 {formatCurrency(pricingDetails.vatAmount)}
@@ -159,7 +159,7 @@ export const PricingPreviewComponent: React.FC<PricingPreviewComponentProps> = (
             </div>
 
             <div className="border-t pt-3">
-              <div className="flex justify-between items-center p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+              <div className="flex justify-between items-center p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-200">
                 <span className="text-lg font-bold text-green-800">TOPLAM TUTAR:</span>
                 <span className="text-xl font-bold text-green-800">
                   {formatCurrency(pricingDetails.totalAmount)}

@@ -118,6 +118,7 @@ def get_suppliers(
                 or_(
                     Supplier.company_name.ilike(search_term),
                     Supplier.company_code.ilike(search_term),
+                    Supplier.tax_number.ilike(search_term),
                     Supplier.contact_person.ilike(search_term),
                     Supplier.email.ilike(search_term),
                     Supplier.phone.ilike(search_term)
@@ -167,6 +168,7 @@ def search_suppliers(
             or_(
                 Supplier.company_name.ilike(search_term),
                 Supplier.company_code.ilike(search_term),
+                Supplier.tax_number.ilike(search_term),
                 Supplier.contact_person.ilike(search_term)
             )
         ).order_by(Supplier.company_name.asc()).limit(limit)

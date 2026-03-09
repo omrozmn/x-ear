@@ -326,7 +326,7 @@ const CommunicationTemplates: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border">
+      <div className="bg-white p-4 rounded-2xl shadow-sm border">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Search */}
           <div className="relative">
@@ -380,7 +380,7 @@ const CommunicationTemplates: React.FC = () => {
       {/* Templates Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredTemplates.map((template) => (
-          <div key={template.id} className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
+          <div key={template.id} className="bg-white rounded-2xl shadow-sm border hover:shadow-md transition-shadow">
             <div className="p-4">
               {/* Header */}
               <div className="flex items-start justify-between mb-3">
@@ -520,7 +520,7 @@ const CommunicationTemplates: React.FC = () => {
       {/* Create/Edit Modal */}
       {(showCreateModal || showEditModal) && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold">
@@ -540,7 +540,7 @@ const CommunicationTemplates: React.FC = () => {
               </div>
 
               {formErrors.general && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-red-600" />
                   <span className="text-red-700 text-sm">{formErrors.general}</span>
                 </div>
@@ -717,7 +717,7 @@ const CommunicationTemplates: React.FC = () => {
       {/* Preview Modal */}
       {showPreviewModal && selectedTemplate && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold">Şablon Önizleme</h3>
@@ -735,7 +735,7 @@ const CommunicationTemplates: React.FC = () => {
 
               <div className="space-y-4">
                 {/* Template Info */}
-                <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="bg-gray-50 p-4 rounded-2xl">
                   <div className="flex items-center gap-2 mb-2">
                     <span className={getTypeColor(selectedTemplate.templateType || 'sms')}>
                       {getTypeIcon(selectedTemplate.templateType || 'sms')}

@@ -142,7 +142,7 @@ export function SGKInvoiceSection({
     const showDosyaNo = ['E', 'H', 'O', 'M', 'A', 'MH'].includes(additionalInfo);
 
     return (
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <div className="bg-white rounded-2xl shadow p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">SGK Faturası Özel Bilgileri</h3>
                 <div className="flex items-center space-x-2">
@@ -154,7 +154,7 @@ export function SGKInvoiceSection({
 
             <div className="space-y-6">
                 {/* İlave Fatura Bilgileri - KRİTİK YENİ BÖLÜM */}
-                <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
+                <div className="border border-blue-200 rounded-2xl p-4 bg-blue-50">
                     <h4 className="text-md font-medium text-gray-900 mb-4">İlave Fatura Bilgileri *</h4>
 
                     <div className="space-y-4">
@@ -239,7 +239,7 @@ export function SGKInvoiceSection({
                 </div>
 
                 {/* Dönem Bilgileri */}
-                <div className="border border-gray-200 rounded-lg p-4">
+                <div className="border border-gray-200 rounded-2xl p-4">
                     <div className="flex items-center justify-between mb-4">
                         <h4 className="text-md font-medium text-gray-900">Dönem Bilgileri *</h4>
                     </div>
@@ -328,7 +328,7 @@ export function SGKInvoiceSection({
                 </div>
 
                 {/* Tesis Bilgileri - GİZLENDİ */}
-                <div className="hidden border border-gray-200 rounded-lg p-4">
+                <div className="hidden border border-gray-200 rounded-2xl p-4">
                     <h4 className="text-md font-medium text-gray-900 mb-4">Tesis Bilgileri</h4>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -387,7 +387,7 @@ export function SGKInvoiceSection({
                 </div>
 
                 {/* Referans Bilgileri - GİZLENDİ */}
-                <div className="hidden border border-gray-200 rounded-lg p-4">
+                <div className="hidden border border-gray-200 rounded-2xl p-4">
                     <h4 className="text-md font-medium text-gray-900 mb-4">Referans Bilgileri</h4>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

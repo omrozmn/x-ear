@@ -57,7 +57,7 @@ export class ErrorBoundary extends Component<Props, State> {
       // Default error UI
       return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
+          <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-6 text-center">
             <div className="flex justify-center mb-4">
               <AlertTriangle className="h-12 w-12 text-red-500" />
             </div>
@@ -71,7 +71,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </p>
 
             {isDev() && this.state.error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md text-left">
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-left">
                 <h3 className="text-sm font-medium text-red-800 mb-2">Hata Detayları:</h3>
                 <pre className="text-xs text-red-700 whitespace-pre-wrap overflow-auto max-h-32">
                   {this.state.error instanceof Error ? this.state.error.message : String(this.state.error)}

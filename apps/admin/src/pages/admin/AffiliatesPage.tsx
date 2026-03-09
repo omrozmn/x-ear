@@ -4,20 +4,17 @@ import {
   type AffiliateRead,
   type ResponseEnvelopeListAffiliateRead,
 } from '@/lib/api-client';
+import { unwrapArray } from '@/lib/orval-response';
 import AffiliateDetailModal from '../../components/admin/AffiliateDetailModal';
 import CreateAffiliateModal from '../../components/admin/CreateAffiliateModal';
-import { PlusIcon } from 'lucide-react';
+import { PlusIcon, Search } from 'lucide-react';
 import { useAdminResponsive } from '@/hooks';
 import { ResponsiveTable } from '@/components/responsive';
 
 function getAffiliates(
   data: ResponseEnvelopeListAffiliateRead | AffiliateRead[] | undefined
 ): AffiliateRead[] {
-  if (Array.isArray(data)) {
-    return data;
-  }
-
-  return Array.isArray(data?.data) ? data.data : [];
+  return unwrapArray<AffiliateRead>(data);
 }
 
 const AffiliatesPage: React.FC = () => {
@@ -25,8 +22,17 @@ const AffiliatesPage: React.FC = () => {
   const { data: affiliatesData, isLoading, error, refetch } = useListAffiliateList();
   const [selectedAffiliateId, setSelectedAffiliateId] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const affiliates = getAffiliates(affiliatesData);
+  const affiliates = getAffiliates(affiliatesData).filter((affiliate) => {
+    const query = searchTerm.trim().toLowerCase();
+    if (!query) {
+      return true;
+    }
+
+    return [affiliate.name, affiliate.email, affiliate.phone ? String(affiliate.phone) : '', affiliate.iban || '', String(affiliate.id)]
+      .some((value) => String(value || '').toLowerCase().includes(query));
+  });
 
   if (isLoading) return <div className="p-4">Yükleniyor...</div>;
   if (error) return <div className="p-4 text-red-600">Hata oluştu: {(error as Error).message}</div>;
@@ -43,6 +49,9 @@ const AffiliatesPage: React.FC = () => {
     {
       key: 'name',
       header: 'Ad Soyad',
+      sortable: true,
+      sortKey: 'name',
+      sortValue: (a: AffiliateRead) => a.name,
       render: (a: AffiliateRead) => (
         <span className="text-sm text-gray-900 dark:text-white">{a.name}</span>
       )
@@ -50,6 +59,9 @@ const AffiliatesPage: React.FC = () => {
     {
       key: 'email',
       header: 'Email',
+      sortable: true,
+      sortKey: 'email',
+      sortValue: (a: AffiliateRead) => a.email,
       render: (a: AffiliateRead) => (
         <span className="text-sm text-gray-900 dark:text-white">{a.email}</span>
       )
@@ -58,6 +70,9 @@ const AffiliatesPage: React.FC = () => {
       key: 'phone',
       header: 'Telefon',
       mobileHidden: true,
+      sortable: true,
+      sortKey: 'phone',
+      sortValue: (a: AffiliateRead) => a.phone ? String(a.phone) : '',
       render: (a: AffiliateRead) => (
         <span className="text-sm text-gray-500 dark:text-gray-400">{a.phone ? String(a.phone) : '-'}</span>
       )
@@ -66,6 +81,9 @@ const AffiliatesPage: React.FC = () => {
       key: 'iban',
       header: 'IBAN',
       mobileHidden: true,
+      sortable: true,
+      sortKey: 'iban',
+      sortValue: (a: AffiliateRead) => a.iban || '',
       render: (a: AffiliateRead) => (
         <span className="text-sm text-gray-500 dark:text-gray-400">{a.iban || '-'}</span>
       )
@@ -73,6 +91,9 @@ const AffiliatesPage: React.FC = () => {
     {
       key: 'active',
       header: 'Aktif',
+      sortable: true,
+      sortKey: 'isActive',
+      sortValue: (a: AffiliateRead) => a.isActive ? 1 : 0,
       render: (a: AffiliateRead) => (
         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${a.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}`}>
           {a.isActive ? 'Evet' : 'Hayır'}
@@ -83,6 +104,9 @@ const AffiliatesPage: React.FC = () => {
       key: 'created',
       header: 'Oluşturulma',
       mobileHidden: true,
+      sortable: true,
+      sortKey: 'createdAt',
+      sortValue: (a: AffiliateRead) => a.createdAt || '',
       render: (a: AffiliateRead) => (
         <span className="text-sm text-gray-500 dark:text-gray-400">
           {a.createdAt ? new Date(a.createdAt).toLocaleDateString('tr-TR') : '-'}
@@ -120,6 +144,20 @@ const AffiliatesPage: React.FC = () => {
             <PlusIcon className="w-5 h-5 mr-2" />
             {!isMobile && 'Yeni Affiliate Ekle'}
           </button>
+        </div>
+        <div className="mb-4">
+          <div className="relative max-w-md">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <Search className="h-4 w-4 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="İsim, email, telefon veya IBAN ara..."
+              className="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white pl-10 pr-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+            />
+          </div>
         </div>
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
           <ResponsiveTable

@@ -139,13 +139,13 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
             <p className="text-red-800">{error}</p>
           </div>
         )}
 
         {/* Sale Summary */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
           <h3 className="font-medium text-blue-900 mb-3 flex items-center">
             <Receipt className="w-4 h-4 mr-2" />
             Satış Bilgileri

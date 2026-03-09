@@ -158,7 +158,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
     <div className="space-y-6">
       {/* Trial Pricing Section */}
       {showTrialPricing && (
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-4">
           <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-3 flex items-center">
             <Calculator className="w-4 h-4 mr-2" />
             Deneme Fiyatlandırması
@@ -231,7 +231,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
 
         {/* SGK Reduction Display */}
         {formData.sgkReduction && formData.sgkReduction > 0 && (
-          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-3">
             <div className="flex items-center justify-between text-sm">
               <span className="text-green-700 dark:text-green-300">SGK Desteği:</span>
               <span className="font-medium text-green-900 dark:text-green-100">
@@ -277,7 +277,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
 
         {/* Price Summary */}
         {formData.listPrice && formData.listPrice > 0 && (
-          <div className="bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+          <div className="bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl p-4">
             <h5 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">Fiyat Özeti</h5>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
@@ -374,7 +374,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
 
         {/* Remaining Amount Display */}
         {formData.remainingAmount !== undefined && (
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-3">
             <div className="flex items-center justify-between text-sm">
               <span className="text-blue-700 dark:text-blue-300">Kalan Tutar:</span>
               <span className="font-medium text-blue-900 dark:text-blue-100">
@@ -386,7 +386,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
 
         {/* Installment Options */}
         {formData.paymentMethod === 'installment' && (
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-2xl p-4">
             <h5 className="text-sm font-medium text-yellow-900 dark:text-yellow-100 mb-3">Taksit Bilgileri</h5>
             <div className="grid grid-cols-2 gap-4">
               <div>

@@ -96,7 +96,7 @@ function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalProps) {
                         {log.data && Object.keys(log.data).length > 0 && (
                             <div>
                                 <label className="text-xs text-gray-500 dark:text-gray-400">Veri</label>
-                                <pre className="bg-gray-100 dark:bg-gray-900 p-3 rounded-lg text-xs overflow-x-auto dark:text-gray-300">
+                                <pre className="bg-gray-100 dark:bg-gray-900 p-3 rounded-2xl text-xs overflow-x-auto dark:text-gray-300">
                                     {JSON.stringify(log.data, null, 2)}
                                 </pre>
                             </div>
@@ -105,7 +105,7 @@ function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalProps) {
                         {log.details && Object.keys(log.details).length > 0 && (
                             <div>
                                 <label className="text-xs text-gray-500 dark:text-gray-400">Detaylar</label>
-                                <pre className="bg-gray-100 dark:bg-gray-900 p-3 rounded-lg text-xs overflow-x-auto dark:text-gray-300">
+                                <pre className="bg-gray-100 dark:bg-gray-900 p-3 rounded-2xl text-xs overflow-x-auto dark:text-gray-300">
                                     {JSON.stringify(log.details, null, 2)}
                                 </pre>
                             </div>

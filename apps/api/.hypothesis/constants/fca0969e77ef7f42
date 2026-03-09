@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/admin_marketplaces.py
+# hypothesis_version: 6.151.9
+
+[400, 404, 500, '/init-db', '/integrations', 'Admin Marketplaces', 'admin-cross-tenant', 'connected', 'data', 'marketplaces.manage', 'marketplaces.read', 'message', 'success', 'system.manage']

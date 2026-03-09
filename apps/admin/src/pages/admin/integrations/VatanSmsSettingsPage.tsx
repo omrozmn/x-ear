@@ -8,6 +8,7 @@ import {
 import { EnvelopeIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
+import { unwrapData } from '@/lib/orval-response';
 
 const DEFAULT_SUBJECT = '[X-Ear CRM] {{tenant_name}} - Yeni Belge Onayı';
 const DEFAULT_BODY = '<h3>Merhaba,</h3><p>{{tenant_name}} adlı müşterimiz yeni belge yükledi.</p><p><strong>Belge Türleri:</strong> {{document_types}}</p><p><strong>Yükleyen:</strong> {{uploaded_by}}</p><p><strong>Tarih:</strong> {{uploaded_at}}</p><p>İyi çalışmalar,<br>X-Ear CRM Sistemi</p>';
@@ -31,7 +32,7 @@ function getString(value: unknown, fallback = ''): string {
 }
 
 function getConfigView(data: IntegrationDetailResponse | undefined): VatanSmsConfigView {
-    const source = isRecord(data?.data) ? data.data : null;
+    const source = unwrapData<Record<string, unknown>>(data);
     const emailTemplateSource = isRecord(source?.emailTemplate) ? source.emailTemplate : null;
 
     return {

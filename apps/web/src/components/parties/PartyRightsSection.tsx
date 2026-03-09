@@ -133,7 +133,7 @@ export const PartyRightsSection: React.FC<PartyRightsSectionProps> = ({ party, p
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl border dark:border-gray-700 p-6">
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
         <Shield className="w-5 h-5 mr-2 text-purple-600 dark:text-purple-400" />
         Hasta Hakları Sorgulama
@@ -161,7 +161,7 @@ export const PartyRightsSection: React.FC<PartyRightsSectionProps> = ({ party, p
       {partyRightsData && (
         <div className="space-y-6">
           {/* Party Info */}
-          <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+          <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-2xl">
             <h4 className="font-medium text-purple-900 dark:text-purple-100 mb-3">Hasta Bilgileri</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
@@ -188,7 +188,7 @@ export const PartyRightsSection: React.FC<PartyRightsSectionProps> = ({ party, p
             <h4 className="font-medium text-gray-900 dark:text-white mb-3">Hak Detayları</h4>
             <div className="space-y-3">
               {Object.entries(partyRightsData.coverage).map(([key, coverage]) => (
-                <div key={key} className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+                <div key={key} className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-2xl">
                   <div className="flex justify-between items-start mb-2">
                     <h5 className="font-medium text-gray-900 dark:text-white capitalize">
                       {key === 'hearingAid' ? 'İşitme Cihazı' :
@@ -250,7 +250,7 @@ export const PartyRightsSection: React.FC<PartyRightsSectionProps> = ({ party, p
           </div>
 
           {/* Summary */}
-          <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+          <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-2xl">
             <h4 className="font-medium text-green-900 dark:text-green-100 mb-2">Toplam Hak Özeti</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>

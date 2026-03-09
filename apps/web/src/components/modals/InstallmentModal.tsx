@@ -173,14 +173,14 @@ export const InstallmentModal: React.FC<InstallmentModalProps> = ({
     >
       <div className="space-y-6">
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
             <p className="text-red-800">{error}</p>
           </div>
         )}
 
         {/* Summary Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-blue-50 p-3 rounded-lg">
+          <div className="bg-blue-50 p-3 rounded-2xl">
             <div className="flex items-center">
               <RefreshCw className="w-4 h-4 text-blue-500 mr-2" />
               <div>
@@ -189,7 +189,7 @@ export const InstallmentModal: React.FC<InstallmentModalProps> = ({
               </div>
             </div>
           </div>
-          <div className="bg-green-50 p-3 rounded-lg">
+          <div className="bg-green-50 p-3 rounded-2xl">
             <div className="flex items-center">
               <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
               <div>
@@ -198,7 +198,7 @@ export const InstallmentModal: React.FC<InstallmentModalProps> = ({
               </div>
             </div>
           </div>
-          <div className="bg-red-50 p-3 rounded-lg">
+          <div className="bg-red-50 p-3 rounded-2xl">
             <div className="flex items-center">
               <AlertCircle className="w-4 h-4 text-red-500 mr-2" />
               <div>
@@ -207,7 +207,7 @@ export const InstallmentModal: React.FC<InstallmentModalProps> = ({
               </div>
             </div>
           </div>
-          <div className="bg-purple-50 p-3 rounded-lg">
+          <div className="bg-purple-50 p-3 rounded-2xl">
             <div className="flex items-center">
               <DollarSign className="w-4 h-4 text-purple-500 mr-2" />
               <div>
@@ -234,7 +234,7 @@ export const InstallmentModal: React.FC<InstallmentModalProps> = ({
               {installments.map((installment) => (
                 <div 
                   key={installment.id} 
-                  className={`border rounded-lg p-4 ${
+                  className={`border rounded-2xl p-4 ${
                     isOverdue(installment.dueDate, installment.status) 
                       ? 'border-red-200 bg-red-50' 
                       : 'border-gray-200'

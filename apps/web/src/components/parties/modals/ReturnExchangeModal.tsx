@@ -424,7 +424,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
               <Button
                 type="button"
                 onClick={onClose}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-2xl transition-colors"
               >
                 <X className="w-6 h-6 text-gray-600" />
               </Button>
@@ -490,7 +490,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-4">
-                  <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                  <label className="flex items-center space-x-3 p-4 border rounded-2xl cursor-pointer hover:bg-gray-50">
                     <input data-allow-raw="true"
                       type="radio"
                       name="type"
@@ -504,7 +504,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                       <div className="text-sm text-gray-600">Ürünü iade et ve para iadesi yap</div>
                     </div>
                   </label>
-                  <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                  <label className="flex items-center space-x-3 p-4 border rounded-2xl cursor-pointer hover:bg-gray-50">
                     <input data-allow-raw="true"
                       type="radio"
                       name="type"
@@ -576,7 +576,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                       Yeni Ürün Seçimi
                     </label>
                     {selectedNewProduct ? (
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                      <div className="bg-green-50 border border-green-200 rounded-2xl p-3">
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="font-medium text-green-900">{selectedNewProduct.name}</p>
@@ -630,7 +630,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                       <p className="text-sm text-gray-600 mt-2">
                         Pozitif değer ek ödeme, negatif değer iade anlamına gelir
                       </p>
-                      <div className="mt-2 p-3 bg-blue-50 rounded-lg">
+                      <div className="mt-2 p-3 bg-blue-50 rounded-2xl">
                         <div className="flex justify-between text-sm">
                           <span>Eski ürün fiyatı:</span>
                           <span>{formatCurrency(sale.totalAmount || 0)}</span>
@@ -744,7 +744,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                       </div>
 
                       {returnInvoice && (
-                        <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                        <div className="bg-blue-50 p-3 rounded-2xl border border-blue-200">
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-sm font-medium text-blue-900">
                               İade Faturası: {returnInvoice.invoiceNumber}
@@ -837,14 +837,14 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
               <Button
                 type="button"
                 onClick={onClose}
-                className="px-6 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-lg transition-colors"
+                className="px-6 py-2 border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 rounded-2xl transition-colors"
               >
                 İptal
               </Button>
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="px-6 py-2 bg-orange-600 text-white hover:bg-orange-700 rounded-lg transition-colors disabled:opacity-50 flex items-center space-x-2"
+                className="px-6 py-2 bg-orange-600 text-white hover:bg-orange-700 rounded-2xl transition-colors disabled:opacity-50 flex items-center space-x-2"
               >
                 {isLoading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
                 <span>{type === 'return' ? 'İade İşlemini Tamamla' : 'Değişim İşlemini Tamamla'}</span>

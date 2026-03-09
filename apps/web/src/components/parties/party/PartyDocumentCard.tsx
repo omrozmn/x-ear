@@ -114,7 +114,7 @@ export const PartyDocumentCard: React.FC<PartyDocumentCardProps> = ({
 
   return (
     <div
-      className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+      className="bg-white border border-gray-200 rounded-2xl p-4 hover:shadow-md transition-shadow"
       role="article"
       aria-label={`Belge: ${document.title}`}
     >

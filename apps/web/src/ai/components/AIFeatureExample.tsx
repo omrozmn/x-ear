@@ -32,7 +32,7 @@ export function AIChatFeatureExample(): React.ReactElement {
     <AIFeatureWrapper
       capability="chat"
       fallback={
-        <div className="p-4 bg-gray-100 rounded-lg text-gray-600">
+        <div className="p-4 bg-gray-100 rounded-2xl text-gray-600">
           AI Chat şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.
         </div>
       }
@@ -80,7 +80,7 @@ export function AIConditionalFeatureExample(): React.ReactElement {
 
   if (!available) {
     return (
-      <div className="p-4 border border-yellow-300 bg-yellow-50 rounded-lg">
+      <div className="p-4 border border-yellow-300 bg-yellow-50 rounded-2xl">
         <p className="text-yellow-800">
           AI özelliği kullanılamıyor: {message}
         </p>
@@ -92,7 +92,7 @@ export function AIConditionalFeatureExample(): React.ReactElement {
   }
 
   return (
-    <div className="p-4 border border-green-300 bg-green-50 rounded-lg">
+    <div className="p-4 border border-green-300 bg-green-50 rounded-2xl">
       <p className="text-green-800">AI özelliği kullanılabilir!</p>
       {/* Your AI-dependent content here */}
     </div>
@@ -136,7 +136,7 @@ export function AIDynamicFallbackExample(): React.ReactElement {
     <AIFeatureWrapper
       capability="ocr"
       fallback={(reason, message) => (
-        <div className={`p-4 rounded-lg ${reason === 'quota_exceeded'
+        <div className={`p-4 rounded-2xl ${reason === 'quota_exceeded'
           ? 'bg-yellow-50 border-yellow-300'
           : 'bg-red-50 border-red-300'
           } border`}>
@@ -149,7 +149,7 @@ export function AIDynamicFallbackExample(): React.ReactElement {
         </div>
       )}
     >
-      <div className="p-4 bg-white rounded-lg shadow">
+      <div className="p-4 bg-white rounded-2xl shadow">
         <h3 className="font-semibold">Belge Tarama (OCR)</h3>
         <p className="text-gray-600">Belgenizi yükleyin, AI otomatik olarak tanıyacak.</p>
       </div>
@@ -173,12 +173,12 @@ export function AIPartyContextExample(): React.ReactElement {
       capability="actions"
       requirePartyContext
       fallback={
-        <div className="p-4 bg-gray-100 rounded-lg text-gray-600">
+        <div className="p-4 bg-gray-100 rounded-2xl text-gray-600">
           Bu özelliği kullanmak için önce bir hasta seçin.
         </div>
       }
     >
-      <div className="p-4 bg-white rounded-lg shadow">
+      <div className="p-4 bg-white rounded-2xl shadow">
         <h3 className="font-semibold">Hasta AI Asistanı</h3>
         <p className="text-gray-600">Seçili hasta için AI önerileri</p>
       </div>

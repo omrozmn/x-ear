@@ -22,7 +22,7 @@ export const DeviceAssignmentSection: React.FC<DeviceAssignmentSectionProps> = (
   deviceAssignmentsLoading
 }) => {
   return (
-    <div className="bg-white rounded-lg border p-6">
+    <div className="bg-white rounded-2xl border p-6">
       <h3 className="text-lg font-semibold mb-4">Cihaz Atama</h3>
 
       {deviceAssignmentsLoading ? (
@@ -32,7 +32,7 @@ export const DeviceAssignmentSection: React.FC<DeviceAssignmentSectionProps> = (
       ) : deviceAssignments.length > 0 ? (
         <div className="space-y-3">
           {deviceAssignments.map((assignment) => (
-            <div key={assignment.id} className="border rounded-lg p-4">
+            <div key={assignment.id} className="border rounded-2xl p-4">
               <div className="flex justify-between items-center">
                 <div>
                   <h5 className="font-medium">{assignment.deviceName}</h5>

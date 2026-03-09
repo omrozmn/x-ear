@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useSearch } from '@tanstack/react-router';
-import { Button, Input, DatePicker, Textarea } from '@x-ear/ui-web';
+import { Button, Input, DatePicker, Textarea, ConfirmModal } from '@x-ear/ui-web';
 import { ArrowLeft, CheckCircle, ChevronDown, Pill } from 'lucide-react';
 import { InvoiceFormExtended } from '../components/invoices/InvoiceFormExtended';
 import ExportDetailsCard from '../components/invoices/ExportDetailsCard';
@@ -19,6 +19,7 @@ import { apiClient } from '@/api/orval-mutator';
 import toast from 'react-hot-toast';
 import { ErrorMessage } from '../components/ErrorMessage';
 import { useGetTenantCompany } from '@/api/client/tenant-users.client';
+import { normalizeCustomerTaxIdFields } from '../utils/customerTaxId';
 
 interface InvoiceFormData {
   invoiceType: string;
@@ -44,6 +45,7 @@ interface ExtendedData {
   customerId?: string;
   customerFirstName?: string;
   customerLastName?: string;
+  customerTaxId?: string;
   customerTcNumber?: string;
   customerTaxNumber?: string;
   customerAddress?: string;
@@ -105,22 +107,6 @@ const DEFAULT_LINKED_OPTIONS: LinkedDocumentOptions = {
   linkedScenario: 'other',
 };
 
-const LINKED_INVOICE_TYPE_OPTIONS = [
-  { value: '0', label: 'Satış Faturası' },
-  { value: '13', label: 'İstisna' },
-  { value: '11', label: 'Tevkifat' },
-  { value: '12', label: 'Özel Matrah' },
-  { value: '27', label: 'İhraç Kayıtlı Fatura' },
-  { value: '14', label: 'SGK' },
-  { value: 'earsiv', label: 'E-Arşiv Fatura' },
-  { value: 'hks', label: 'Konaklama Vergisi (HKS)' },
-  { value: 'sarj', label: 'Enerji Şarj' },
-  { value: 'sarjanlik', label: 'Şarj Anlık' },
-  { value: 'yolcu', label: 'Yolcu Beraberi' },
-  { value: 'otv', label: 'ÖTV' },
-  { value: 'hastane', label: 'Hastane Faturası' },
-];
-
 const getDocumentKindText = (documentKind: DocumentKind) => documentKind === 'despatch' ? 'E-İrsaliye' : 'Fatura';
 
 const sanitizeLinkedDocumentOptions = (value: unknown): LinkedDocumentOptions => {
@@ -133,8 +119,28 @@ const sanitizeLinkedDocumentOptions = (value: unknown): LinkedDocumentOptions =>
   };
 };
 
+const linkedOptionsFromPayload = (source: Record<string, unknown>): LinkedDocumentOptions => {
+  const deliveryInfo = source.deliveryInfo;
+  if (deliveryInfo && typeof deliveryInfo === 'object') {
+    const delivery = deliveryInfo as Record<string, unknown>;
+    if (
+      delivery.createLinkedDocument !== undefined ||
+      delivery.linkedInvoiceType !== undefined ||
+      delivery.linkedScenario !== undefined
+    ) {
+      return sanitizeLinkedDocumentOptions({
+        createLinkedDocument: delivery.createLinkedDocument,
+        linkedInvoiceType: delivery.linkedInvoiceType,
+        linkedScenario: delivery.linkedScenario,
+      });
+    }
+  }
+
+  return sanitizeLinkedDocumentOptions(source.linkedDocumentOptions);
+};
+
 const buildLinkedDocumentPayload = (source: Record<string, unknown>, documentKind: DocumentKind): Record<string, unknown> => {
-  const linkedOptions = sanitizeLinkedDocumentOptions(source.linkedDocumentOptions);
+  const linkedOptions = linkedOptionsFromPayload(source);
   const clonedItems = Array.isArray(source.items) ? source.items.map((item) => {
     if (!item || typeof item !== 'object') return item;
     const line = { ...(item as Record<string, unknown>) };
@@ -183,6 +189,8 @@ export function NewInvoicePage() {
     currency: 'TRY'
   });
   const [blockingAlert, setBlockingAlert] = useState<BlockingAlert | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showSaveDraftModal, setShowSaveDraftModal] = useState(false);
   const isMobile = useIsMobile();
   const { data: companyData } = useGetTenantCompany();
 
@@ -201,6 +209,33 @@ export function NewInvoicePage() {
     }));
   }, [documentKind]);
 
+  // Track unsaved changes
+  useEffect(() => {
+    // Check if form has meaningful data
+    const hasData = 
+      formData.customerId ||
+      formData.customerFirstName ||
+      formData.customerLastName ||
+      formData.invoiceType ||
+      (Array.isArray(formData.items) && formData.items.length > 0);
+    
+    setHasUnsavedChanges(Boolean(hasData));
+  }, [formData]);
+
+  // Warn before leaving page with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges && !isSaving) {
+        e.preventDefault();
+        e.returnValue = 'Kaydedilmemiş değişiklikleriniz var. Sayfadan çıkmak istediğinize emin misiniz?';
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges, isSaving]);
+
   // Load draft from API when draftId is provided in URL
   useEffect(() => {
     if (!searchDraftId) return;
@@ -210,7 +245,7 @@ export function NewInvoicePage() {
       try {
         const res: { data?: { data?: { formData?: Record<string, unknown>; form_data?: Record<string, unknown> } } } = await apiClient.get(`/api/invoices/draft/${searchDraftId}`);
         const fd = res.data?.data?.formData ?? res.data?.data?.form_data;
-        if (fd) setFormData(prev => ({ ...prev, ...fd }));
+        if (fd) setFormData(prev => ({ ...prev, ...fd, ...normalizeCustomerTaxIdFields(fd) }));
       } catch {
         toast.error('Taslak yüklenemedi');
       }
@@ -227,7 +262,7 @@ export function NewInvoicePage() {
       if (raw) {
         const draft = JSON.parse(raw);
         sessionStorage.removeItem('invoice_copy_draft');
-        setFormData(prev => ({ ...prev, ...draft }));
+        setFormData(prev => ({ ...prev, ...draft, ...normalizeCustomerTaxIdFields(draft) }));
       }
     } catch {
       // Ignore JSON parse errors
@@ -237,8 +272,12 @@ export function NewInvoicePage() {
   const handleSubmit = async (invoiceData: InvoiceFormData) => {
     setIsSaving(true);
     try {
-      const mergedInvoiceData = { ...formData, ...invoiceData } as Record<string, unknown>;
-      const linkedOptions = sanitizeLinkedDocumentOptions(mergedInvoiceData.linkedDocumentOptions);
+      const mergedInvoiceData: Record<string, unknown> = {
+        ...formData,
+        ...invoiceData,
+        ...normalizeCustomerTaxIdFields({ ...formData, ...invoiceData }),
+      };
+      const linkedOptions = linkedOptionsFromPayload(mergedInvoiceData);
       const defaultExemptionCode = String(
         ((companyData?.data?.companyInfo as Record<string, unknown> | undefined)?.defaultExemptionCode as string | undefined) || ''
       ).trim();
@@ -251,9 +290,25 @@ export function NewInvoicePage() {
         if (defaultExemptionCode && defaultExemptionCode !== '0') {
           mergedInvoiceData.governmentExemptionReason = defaultExemptionCode;
         } else {
+          // Save draft before showing error
+          try {
+            const draftPayload = { form_data: mergedInvoiceData };
+            let draftId = currentDraftId;
+            if (draftId) {
+              await apiClient.put(`/api/invoices/draft/${draftId}`, draftPayload);
+            } else {
+              const res: { data?: { data?: { invoiceId?: number; invoice_id?: number } } } = await apiClient.post('/api/invoices/draft', draftPayload);
+              draftId = res.data?.data?.invoiceId ?? res.data?.data?.invoice_id;
+              if (draftId) setCurrentDraftId(Number(draftId));
+            }
+            console.log('✅ Taslak kaydedildi (istisna sebebi eksik)');
+          } catch (draftError) {
+            console.error('⚠️ Taslak kaydedilemedi:', draftError);
+          }
+          
           setBlockingAlert({
             title: 'İstisna Sebebi Gerekli',
-            message: 'KDV %0 olan satırlar için varsayılan istisna sebebi tanımlı değil. Firma Ayarları > Şirket bölümünden varsayılan istisna sebebini ayarlayıp tekrar deneyin.',
+            message: 'KDV %0 olan satırlar için varsayılan istisna sebebi tanımlı değil. Faturanız taslak olarak kaydedildi. Firma Ayarları > Fatura Numaralandırma bölümünden varsayılan istisna sebebini ayarlayıp tekrar deneyin.',
           });
           setIsSaving(false);
           return;
@@ -293,6 +348,7 @@ export function NewInvoicePage() {
       }
 
       toast.success(messages.join(' | '));
+      setHasUnsavedChanges(false); // Mark as saved
       navigate({ to: '/invoices' });
     } catch (error: unknown) {
       const err = error as { response?: { data?: { detail?: string } }; message?: string };
@@ -307,15 +363,24 @@ export function NewInvoicePage() {
   const handleSaveDraft = async () => {
     setIsSaving(true);
     try {
-      const payload = { form_data: formData };
+      const payload = {
+        form_data: {
+          ...formData,
+          ...normalizeCustomerTaxIdFields(formData),
+        },
+      };
       if (currentDraftId) {
         await apiClient.put(`/api/invoices/draft/${currentDraftId}`, payload);
+        toast.success('Taslak güncellendi');
       } else {
         const res: { data?: { data?: { invoice_id?: number; invoiceId?: number } } } = await apiClient.post('/api/invoices/draft', payload);
         const newId = res.data?.data?.invoice_id ?? res.data?.data?.invoiceId;
-        if (newId) setCurrentDraftId(Number(newId));
+        if (newId) {
+          setCurrentDraftId(Number(newId));
+          setHasUnsavedChanges(false); // Mark as saved
+        }
+        toast.success('Taslak kaydedildi');
       }
-      toast.success('Taslak kaydedildi');
       navigate({ to: '/invoices' });
     } catch (error) {
       toast.error('Taslak kaydedilemedi');
@@ -326,6 +391,22 @@ export function NewInvoicePage() {
   };
 
   const handleCancel = () => {
+    // If there are unsaved changes, show modal
+    if (hasUnsavedChanges && !currentDraftId) {
+      setShowSaveDraftModal(true);
+    } else {
+      navigate({ to: '/invoices' });
+    }
+  };
+
+  const handleConfirmSaveDraft = async () => {
+    setShowSaveDraftModal(false);
+    await handleSaveDraft();
+  };
+
+  const handleCancelWithoutSaving = () => {
+    setShowSaveDraftModal(false);
+    setHasUnsavedChanges(false); // Clear flag before navigation
     navigate({ to: '/invoices' });
   };
 
@@ -336,6 +417,15 @@ export function NewInvoicePage() {
       if (field === 'scenarioData') {
         next.scenarioData = value;
         next.scenario = (value as { scenario?: string })?.scenario || 'other';
+      } else if (field === 'customerTaxId' || field === 'customerTaxNumber' || field === 'customerTcNumber') {
+        return {
+          ...next,
+          ...normalizeCustomerTaxIdFields({
+            customerTaxId: field === 'customerTaxId' ? value as string : String(next.customerTaxId || ''),
+            customerTaxNumber: field === 'customerTaxNumber' ? value as string : String(next.customerTaxNumber || ''),
+            customerTcNumber: field === 'customerTcNumber' ? value as string : String(next.customerTcNumber || ''),
+          }),
+        };
       } else if (field === 'invoiceType') {
         next.invoiceType = value as string;
       } else {
@@ -368,35 +458,46 @@ export function NewInvoicePage() {
   const showSpecialOperations = isWithholdingType;
 
   return (
-    <NewInvoicePageContent
-      isSaving={isSaving}
-      handleSubmit={handleSubmit}
-      handleSaveDraft={handleSaveDraft}
-      handleCancel={handleCancel}
-      formData={formData}
-      documentKind={documentKind}
-      onFormDataChange={handleFormDataChange}
-      showSGKSection={showSGKSection}
-      showGovernmentSection={showGovernmentSection}
-      showExportSection={showExportSection}
-      showMedicalSection={showMedicalSection}
-      showReturnSection={showReturnSection}
-      showSpecialOperations={showSpecialOperations}
-      showSpecialBaseSection={showSpecialBaseSection}
-      isWithholdingType={isWithholdingType}
-      documentKind={documentKind}
-      onRequestLineEditor={handleRequestLineEditor}
-      activeLineEditor={activeLineEditor}
-      onCloseLineEditor={handleCloseLineEditor}
-      isMobile={isMobile}
-      blockingAlert={blockingAlert}
-    />
+    <>
+      <NewInvoicePageContent
+        isSaving={isSaving}
+        handleSubmit={handleSubmit}
+        handleSaveDraft={handleSaveDraft}
+        handleCancel={handleCancel}
+        formData={formData}
+        documentKind={documentKind}
+        onFormDataChange={handleFormDataChange}
+        showSGKSection={showSGKSection}
+        showGovernmentSection={showGovernmentSection}
+        showExportSection={showExportSection}
+        showMedicalSection={showMedicalSection}
+        showReturnSection={showReturnSection}
+        showSpecialOperations={showSpecialOperations}
+        showSpecialBaseSection={showSpecialBaseSection}
+        isWithholdingType={isWithholdingType}
+        onRequestLineEditor={handleRequestLineEditor}
+        activeLineEditor={activeLineEditor}
+        onCloseLineEditor={handleCloseLineEditor}
+        isMobile={isMobile}
+        blockingAlert={blockingAlert}
+      />
+      
+      <ConfirmModal
+        isOpen={showSaveDraftModal}
+        onClose={handleCancelWithoutSaving}
+        onConfirm={handleConfirmSaveDraft}
+        title="Taslak Kaydet"
+        message="Kaydedilmemiş değişiklikleriniz var. Taslak olarak kaydetmek ister misiniz?"
+        confirmText="Taslak Kaydet"
+        cancelText="Kaydetmeden Çık"
+        variant="default"
+      />
+    </>
   );
 }
 
 // Sidebar Component
 function InvoiceSidebar({
-  documentKind,
   showSGKSection,
   showExportSection,
   showMedicalSection,
@@ -431,61 +532,6 @@ function InvoiceSidebar({
   const _showSpecialBaseSection = !!showSpecialBaseSection;
   return (
     <div className="sticky top-[148px] space-y-4 z-10">
-      <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-        <div className="mb-3">
-          <h3 className="text-sm font-bold text-gray-900">Bağlı Belge</h3>
-          <p className="text-xs text-gray-500">
-            {documentKind === 'despatch'
-              ? 'Bu e-irsaliye gönderildikten sonra bağlı fatura da oluşturulsun'
-              : 'Bu fatura gönderildikten sonra bağlı e-irsaliye de oluşturulsun'}
-          </p>
-        </div>
-        <label className="flex items-start gap-3">
-          <input
-            data-allow-raw="true"
-            type="checkbox"
-            checked={Boolean(sanitizeLinkedDocumentOptions(extendedData?.linkedDocumentOptions).createLinkedDocument)}
-            onChange={(e) => handlers?.handleExtendedFieldChange?.('linkedDocumentOptions', {
-              ...sanitizeLinkedDocumentOptions(extendedData?.linkedDocumentOptions),
-              createLinkedDocument: e.target.checked,
-            })}
-            className="mt-0.5 h-4 w-4 rounded border-gray-300"
-          />
-          <span className="text-sm text-gray-700">
-            {documentKind === 'despatch' ? 'Bağlı fatura oluştur' : 'Bağlı e-irsaliye oluştur'}
-          </span>
-        </label>
-        {documentKind === 'despatch' && sanitizeLinkedDocumentOptions(extendedData?.linkedDocumentOptions).createLinkedDocument && (
-          <div className="mt-3 space-y-3">
-            <Select
-              label="Bağlı Fatura Tipi"
-              value={sanitizeLinkedDocumentOptions(extendedData?.linkedDocumentOptions).linkedInvoiceType || '0'}
-              onChange={(e) => handlers?.handleExtendedFieldChange?.('linkedDocumentOptions', {
-                ...sanitizeLinkedDocumentOptions(extendedData?.linkedDocumentOptions),
-                linkedInvoiceType: e.target.value,
-              })}
-              options={LINKED_INVOICE_TYPE_OPTIONS}
-              fullWidth
-            />
-            <Select
-              label="Bağlı Fatura Senaryosu"
-              value={sanitizeLinkedDocumentOptions(extendedData?.linkedDocumentOptions).linkedScenario || 'other'}
-              onChange={(e) => handlers?.handleExtendedFieldChange?.('linkedDocumentOptions', {
-                ...sanitizeLinkedDocumentOptions(extendedData?.linkedDocumentOptions),
-                linkedScenario: e.target.value,
-              })}
-              options={[
-                { value: 'other', label: 'Diğer' },
-                { value: 'export', label: 'İhracat' },
-                { value: 'government', label: 'Kamu' },
-                { value: 'medical', label: 'Tıbbi' },
-              ]}
-              fullWidth
-            />
-          </div>
-        )}
-      </div>
-
       {/* Fatura Alıcı - En Üstte */}
       <CustomerSectionCompact
         isSGK={showSGKSection}
@@ -502,7 +548,7 @@ function InvoiceSidebar({
 
       {/* SGK Section */}
       {_showSGKSection && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/40">
             <h3 className="text-sm font-bold text-gray-900 dark:text-white">SGK Fatura Bilgileri</h3>
             <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">SGK faturası için gerekli bilgileri girin</p>
@@ -518,7 +564,7 @@ function InvoiceSidebar({
 
       {/* Government Section */}
       {_showGovernmentSection && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-purple-50 dark:bg-purple-900/40">
             <h3 className="text-sm font-bold text-gray-900 dark:text-white">Kamu Fatura Bilgileri</h3>
             <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">Kamu kurumu faturası bilgileri</p>
@@ -534,7 +580,7 @@ function InvoiceSidebar({
 
       {/* Istisna Sebebi card: show when invoiceType=13 selected outside export and government scenarios */}
       {showIstisnaReason && (
-        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+        <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
           <div className="mb-3">
             <h3 className="text-sm font-bold text-gray-900">İstisna Sebebi</h3>
             <p className="text-xs text-gray-500">Seçilen istisna için neden kodunu belirtiniz</p>
@@ -553,7 +599,7 @@ function InvoiceSidebar({
 
       {/* Export Section */}
       {_showExportSection && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
           <div className="mb-3">
             <h3 className="text-sm font-bold text-gray-900 dark:text-white">İhracat Bilgileri</h3>
           </div>
@@ -568,7 +614,7 @@ function InvoiceSidebar({
 
       {/* Özel Matrah (sidebar) */}
       {_showSpecialBaseSection && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
           <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3">Özel Matrah Bilgileri</h3>
           <div className="grid grid-cols-1 gap-3">
             <div>
@@ -617,7 +663,7 @@ function InvoiceSidebar({
       )}
       {/* İade Fatura Bilgileri (moved to sidebar) */}
       {_showReturnSection && (
-        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+        <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
           <div className="mb-3">
             <h3 className="text-sm font-bold text-gray-900">İade Fatura Bilgileri</h3>
           </div>
@@ -665,7 +711,7 @@ function InvoiceSidebar({
 
       {/* Medical Section */}
       {_showMedicalSection && (
-        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+        <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-bold text-gray-900">İlaç/Tıbbi Cihaz</h3>
             <Button
@@ -680,7 +726,7 @@ function InvoiceSidebar({
             </Button>
           </div>
           {extendedData?.medicalDeviceData ? (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+            <div className="bg-green-50 border border-green-200 rounded-2xl p-3">
               <div className="flex items-center gap-2">
                 <CheckCircle className="text-green-600" size={16} />
                 <p className="text-xs text-green-800">Tıbbi cihaz bilgileri kaydedildi</p>
@@ -694,13 +740,13 @@ function InvoiceSidebar({
 
       {/* Özel İşlemler */}
       {handlers?.specialOperationsVisible && (
-        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+        <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
           <h3 className="text-sm font-bold text-gray-900 mb-3">Özel İşlemler</h3>
           <div className="space-y-3">
             {/* Tevkifatlı Fatura Uyarısı */}
             {handlers?.isWithholdingType && (
               <div>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+                <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 mb-3">
                   <p className="text-xs text-blue-800 leading-relaxed">
                     <span className="font-semibold">Tevkifatlı Fatura</span>
                     <br />
@@ -749,7 +795,7 @@ function InvoiceSidebar({
 
       {/* Per-line editor in sidebar (opened from product lines) */}
       {activeLineEditor && (
-        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+        <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-bold text-gray-900">{activeLineEditor?.type === 'withholding' ? 'Tevkifat (Kalem)' : activeLineEditor?.type === 'special' ? 'Özel Matrah (Kalem)' : 'Tıbbi Cihaz (Kalem)'} #{(activeLineEditor?.index ?? 0) + 1}</h3>
             <button data-allow-raw="true" onClick={onCloseLineEditor} className="text-sm text-gray-500">Kapat</button>
@@ -854,65 +900,10 @@ function NewInvoicePageContent({
               type="warning"
               title={blockingAlert.title}
               message={blockingAlert.message}
-              onRetry={() => navigate({ to: '/settings/company' })}
-              retryText="Firma Ayarlarına Git"
+              onRetry={() => navigate({ to: '/settings', search: { tab: 'integration' } })}
+              retryText="Fatura Ayarlarına Git"
             />
           )}
-
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-4 space-y-3">
-            <div>
-              <h3 className="font-bold text-gray-900 dark:text-white">Bağlı Belge</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                {documentKind === 'despatch'
-                  ? 'E-irsaliye ile birlikte bağlı fatura da oluşturulabilir.'
-                  : 'Fatura ile birlikte bağlı e-irsaliye de oluşturulabilir.'}
-              </p>
-            </div>
-            <label className="flex items-start gap-3">
-              <input
-                data-allow-raw="true"
-                type="checkbox"
-                checked={Boolean(sanitizeLinkedDocumentOptions(formData.linkedDocumentOptions).createLinkedDocument)}
-                onChange={(e) => onFormDataChange('linkedDocumentOptions', {
-                  ...sanitizeLinkedDocumentOptions(formData.linkedDocumentOptions),
-                  createLinkedDocument: e.target.checked,
-                })}
-                className="mt-0.5 h-4 w-4 rounded border-gray-300"
-              />
-              <span className="text-sm text-gray-700 dark:text-gray-300">
-                {documentKind === 'despatch' ? 'Bağlı fatura oluştur' : 'Bağlı e-irsaliye oluştur'}
-              </span>
-            </label>
-            {documentKind === 'despatch' && sanitizeLinkedDocumentOptions(formData.linkedDocumentOptions).createLinkedDocument && (
-              <div className="space-y-3">
-                <Select
-                  label="Bağlı Fatura Tipi"
-                  value={sanitizeLinkedDocumentOptions(formData.linkedDocumentOptions).linkedInvoiceType || '0'}
-                  onChange={(e) => onFormDataChange('linkedDocumentOptions', {
-                    ...sanitizeLinkedDocumentOptions(formData.linkedDocumentOptions),
-                    linkedInvoiceType: e.target.value,
-                  })}
-                  options={LINKED_INVOICE_TYPE_OPTIONS}
-                  fullWidth
-                />
-                <Select
-                  label="Bağlı Fatura Senaryosu"
-                  value={sanitizeLinkedDocumentOptions(formData.linkedDocumentOptions).linkedScenario || 'other'}
-                  onChange={(e) => onFormDataChange('linkedDocumentOptions', {
-                    ...sanitizeLinkedDocumentOptions(formData.linkedDocumentOptions),
-                    linkedScenario: e.target.value,
-                  })}
-                  options={[
-                    { value: 'other', label: 'Diğer' },
-                    { value: 'export', label: 'İhracat' },
-                    { value: 'government', label: 'Kamu' },
-                    { value: 'medical', label: 'Tıbbi' },
-                  ]}
-                  fullWidth
-                />
-              </div>
-            )}
-          </div>
 
           {/* 1. Collapsible: Customer Selection */}
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
@@ -1140,6 +1131,7 @@ function NewInvoicePageContent({
                 İptal
               </Button>
               <Button
+                data-testid="invoice-save-draft-button"
                 onClick={handleSaveDraft}
                 variant="outline"
                 disabled={isSaving}
@@ -1148,6 +1140,7 @@ function NewInvoicePageContent({
                 Taslak Kaydet
               </Button>
               <Button
+                data-testid="invoice-submit-button"
                 type="button"
                 onClick={() => handleSubmit(formData)}
                 disabled={isSaving}
@@ -1166,7 +1159,7 @@ function NewInvoicePageContent({
         <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
           {/* Form - 2/3 width */}
           <div className="min-w-0">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
                 <InvoiceFormExtended
                   onSubmit={handleSubmit as never}
                   onCancel={handleCancel}
@@ -1188,7 +1181,7 @@ function NewInvoicePageContent({
                   type="warning"
                   title={blockingAlert.title}
                   message={blockingAlert.message}
-                  onRetry={() => navigate({ to: '/settings/company' })}
+                  onRetry={() => navigate({ to: '/settings', search: { tab: 'integration' } })}
                   retryText="Firma Ayarlarına Git"
                 />
               </div>

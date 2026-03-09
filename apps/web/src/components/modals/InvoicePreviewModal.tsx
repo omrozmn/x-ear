@@ -123,7 +123,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
       onClick={handleBackdropClick}
     >
       <div
-        className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+        className="relative bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
@@ -138,7 +138,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
           </div>
           <Button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-1"
+            className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-xl p-1"
             variant='default'>
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -180,7 +180,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
             <div className="flex-1 p-4">
               <iframe
                 src={pdfUrl}
-                className="w-full h-full border border-gray-300 rounded-lg"
+                className="w-full h-full border border-gray-300 rounded-2xl"
                 title="Fatura Önizleme"
               />
             </div>
@@ -196,7 +196,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
                 )}
                 <Button
                   onClick={() => { setErrorMessage(null); generatePdf(); }}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700"
                   variant='default'>
                   Tekrar Dene
                 </Button>
@@ -227,7 +227,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
             <Button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
               variant='default'>
               Kapat
             </Button>
@@ -237,7 +237,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
                 <Button
                   type="button"
                   onClick={handlePreview}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   variant='default'>
                   Yeni Sekmede Aç
                 </Button>
@@ -245,7 +245,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
                 <Button
                   type="button"
                   onClick={handleDownload}
-                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-xl hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
                   variant='default'>
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -256,7 +256,7 @@ export const InvoicePreviewModal: React.FC<InvoicePreviewModalProps> = ({
                 <Button
                   type="button"
                   onClick={handlePrint}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   variant='default'>
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />

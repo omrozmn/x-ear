@@ -14,11 +14,13 @@ Requirements:
 """
 
 import logging
+import os
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from pydantic import BaseModel, Field
+from jose import jwt, JWTError
 
 from schemas.ai import AiStatusResponse as AiStatusResponseSchema
 from ai.config import get_ai_config
@@ -37,6 +39,8 @@ from ai.services.alerting import (
 )
 
 logger = logging.getLogger(__name__)
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "default-dev-secret-key-change-in-prod")
+ALGORITHM = "HS256"
 
 router = APIRouter(prefix="/ai", tags=["AI Status"])
 
@@ -76,12 +80,33 @@ async def get_current_user_context(request: Request) -> Dict[str, Any]:
     user_id = getattr(request.state, "user_id", None)
     
     if not tenant_id or not user_id:
-        # This should not happen if JWT middleware is working correctly
-        logger.error("Missing tenant_id or user_id in request.state")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication required"
-        )
+        access_context = getattr(request.state, "access_context", None)
+        if access_context:
+            tenant_id = tenant_id or getattr(access_context, "tenant_id", None)
+            user_id = user_id or getattr(access_context, "user_id", None)
+
+        if not tenant_id or not user_id:
+            auth_header = request.headers.get("Authorization", "")
+            token = auth_header.split(" ", 1)[1] if auth_header.startswith("Bearer ") else None
+
+            if token:
+                try:
+                    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+                    tenant_id = tenant_id or payload.get("tenant_id")
+                    user_id = user_id or payload.get("sub")
+
+                    # Admin tokens use the synthetic system tenant when not impersonating.
+                    if not tenant_id and (payload.get("is_admin") is True or str(user_id).startswith(("admin_", "adm_"))):
+                        tenant_id = "system"
+                except JWTError:
+                    logger.warning("AI status fallback JWT decode failed")
+
+        if not tenant_id or not user_id:
+            logger.error("Missing tenant_id or user_id in request.state")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication required"
+            )
     
     return {
         "user_id": user_id,

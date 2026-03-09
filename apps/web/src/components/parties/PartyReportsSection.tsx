@@ -24,7 +24,7 @@ export const PartyReportsSection: React.FC<PartyReportsSectionProps> = ({
   onQueryPartyReport
 }) => {
   return (
-    <div className="bg-white rounded-lg border p-6">
+    <div className="bg-white rounded-2xl border p-6">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-semibold">Hasta Raporları</h3>
         <Button
@@ -39,7 +39,7 @@ export const PartyReportsSection: React.FC<PartyReportsSectionProps> = ({
       {partyReports.length > 0 ? (
         <div className="space-y-3">
           {partyReports.map((report, index) => (
-            <div key={index} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+            <div key={index} className="border border-gray-200 rounded-2xl p-4 hover:bg-gray-50 transition-colors">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <h5 className="font-medium text-gray-900 mb-2">{report.type}</h5>

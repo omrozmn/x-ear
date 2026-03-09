@@ -60,7 +60,7 @@ export const PaymentSummary: React.FC<PaymentSummaryProps> = ({ sale: rawSale, o
     <>
       {/* Payment Summary Card */}
       {hasPayments ? (
-        <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+        <div className="bg-green-50 p-4 rounded-2xl border border-green-200">
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-medium text-gray-900 flex items-center">
               <CreditCard className="w-4 h-4 mr-2" />

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Search, X } from 'lucide-react';
 
 interface SearchableSelectProps {
+  ['data-testid']?: string;
   label?: string;
   value: string;
   onChange: (value: string) => void;
@@ -14,6 +15,7 @@ interface SearchableSelectProps {
 }
 
 export function SearchableSelect({
+  'data-testid': dataTestId,
   label,
   value,
   onChange,
@@ -72,6 +74,15 @@ export function SearchableSelect({
     setSearchTerm('');
   };
 
+  const handleClearKeyDown = (event: React.KeyboardEvent<HTMLSpanElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      event.stopPropagation();
+      onChange('');
+      setSearchTerm('');
+    }
+  };
+
   return (
     <div className={fullWidth ? 'w-full' : ''} ref={containerRef}>
       {label && (
@@ -82,13 +93,15 @@ export function SearchableSelect({
 
       <div className="relative">
         {/* Trigger Button */}
+        {/* eslint-disable-next-line no-restricted-syntax */}
         <button
+          data-testid={dataTestId}
           data-allow-raw="true"
           type="button"
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}
           className={`
-            w-full px-3 py-2 pr-10 text-left border rounded-lg bg-white relative
+            w-full px-3 py-2 pr-10 text-left border rounded-2xl bg-white relative
             ${error ? 'border-red-300' : 'border-gray-300'}
             ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-gray-400 cursor-pointer'}
             focus:outline-none focus:ring-2 focus:ring-blue-500
@@ -104,23 +117,25 @@ export function SearchableSelect({
             />
           </div>
           {value && !disabled && (
-            <button
+            <span
               data-allow-raw="true"
-              type="button"
+              role="button"
+              tabIndex={0}
               onClick={handleClear}
+              onKeyDown={handleClearKeyDown}
               className="absolute inset-y-0 right-8 flex items-center pointer-events-auto"
             >
               <X
                 size={16}
                 className="text-gray-400 hover:text-gray-600"
               />
-            </button>
+            </span>
           )}
         </button>
 
         {/* Dropdown */}
         {isOpen && (
-          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 overflow-hidden">
+          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-2xl shadow-lg max-h-64 overflow-hidden">
             {/* Search Input */}
             <div className="p-2 border-b border-gray-200">
               <div className="relative">
@@ -132,7 +147,7 @@ export function SearchableSelect({
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Ara..."
-                  className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>

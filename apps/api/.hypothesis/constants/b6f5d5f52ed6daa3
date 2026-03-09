@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/ai/api/opportunities.py
+# hypothesis_version: 6.151.9
+
+[400, 404, '/', '/ai/opportunities', '/{opportunity_id}', 'ACKNOWLEDGED', 'AI Opportunities', 'Invalid status', 'READY_FOR_APPROVAL', 'SIMULATE', 'approval_required', 'get_ai_opportunity', 'mode', 'plan_id', 'status', 'tenant_id', 'user_id']

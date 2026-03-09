@@ -120,7 +120,7 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
           {/* Menu Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-blue-600 rounded-2xl flex items-center justify-center">
                 <span className="text-white font-bold text-sm">X</span>
               </div>
               <div>
@@ -153,7 +153,7 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
                   key={item.name}
                   to={item.href}
                   onClick={closeMenu}
-                  className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-colors ${isActive
+                  className={`flex items-center space-x-3 px-3 py-3 rounded-2xl transition-colors ${isActive
                       ? 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
@@ -186,7 +186,7 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
               <Link
                 key={item.name}
                 to={item.href}
-                className={`flex flex-col items-center space-y-1 px-3 py-2 rounded-lg transition-colors ${isActive
+                className={`flex flex-col items-center space-y-1 px-3 py-2 rounded-2xl transition-colors ${isActive
                     ? 'text-blue-600 dark:text-blue-400'
                     : 'text-gray-500 dark:text-gray-400'
                   }`}

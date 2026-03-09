@@ -62,7 +62,7 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
   };
 
   return (
-    <div className={`bg-white rounded-lg border border-gray-200 p-4 ${className}`}>
+    <div className={`bg-white rounded-2xl border border-gray-200 p-4 ${className}`}>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-medium text-gray-900 flex items-center gap-2">
           <Bookmark className="h-4 w-4" />
@@ -80,13 +80,13 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
       <div className="space-y-2">
         {/* Create New View */}
         {isCreating && (
-          <div className="p-3 border border-blue-200 rounded-lg bg-blue-50">
+          <div className="p-3 border border-blue-200 rounded-2xl bg-blue-50">
             <input data-allow-raw="true"
               type="text"
               value={viewName}
               onChange={(e) => setViewName(e.target.value)}
               placeholder="Görünüm adı..."
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 mb-2"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 mb-2"
               autoFocus
             />
             <div className="flex gap-2">
@@ -111,7 +111,7 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
         {savedViews.map((view) => (
           <div
             key={view.id}
-            className={`p-3 rounded-lg border transition-colors ${
+            className={`p-3 rounded-2xl border transition-colors ${
               currentView === view.id
                 ? 'border-blue-200 bg-blue-50'
                 : 'border-gray-200 hover:border-gray-300'
@@ -123,7 +123,7 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
                   type="text"
                   value={viewName}
                   onChange={(e) => setViewName(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 mb-2"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 mb-2"
                   autoFocus
                 />
                 <div className="flex gap-2">

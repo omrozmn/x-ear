@@ -78,7 +78,7 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
   return (
     <div className="space-y-6">
       {/* Personal Information */}
-      <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-sm">
+      <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-2xl shadow-sm">
         <div className="p-6 border-b dark:border-gray-700">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">Kişisel Bilgiler</h3>
         </div>
@@ -150,7 +150,7 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
       </div>
 
       {/* Address Information */}
-      <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-sm">
+      <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-2xl shadow-sm">
         <div className="p-6 border-b dark:border-gray-700">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">Adres Bilgileri</h3>
         </div>
@@ -190,7 +190,7 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
       </div>
 
       {/* Additional Details */}
-      <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-sm">
+      <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-2xl shadow-sm">
         <div className="p-6 border-b dark:border-gray-700">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">Ek Bilgiler</h3>
         </div>

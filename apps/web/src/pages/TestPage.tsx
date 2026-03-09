@@ -54,7 +54,7 @@ export const TestPage: React.FC = () => {
         Core Paket Test Sayfası
       </h1>
       {/* Fuzzy Search Test */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+      <div className="bg-white rounded-2xl shadow-md p-6 mb-8">
         <h2 className="text-2xl font-semibold text-gray-800 mb-4">
           Fuzzy Search Testi
         </h2>
@@ -69,7 +69,7 @@ export const TestPage: React.FC = () => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="iPhone, Samsung, MacBook..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
 
@@ -80,7 +80,7 @@ export const TestPage: React.FC = () => {
         <div className="space-y-3">
           {results.length > 0 ? (
             results.map((result) => (
-              <div key={result.item.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+              <div key={result.item.id} className="border border-gray-200 rounded-2xl p-4 hover:bg-gray-50">
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-semibold text-gray-900">{result.item.name}</h3>
@@ -107,7 +107,7 @@ export const TestPage: React.FC = () => {
         </div>
       </div>
       {/* File Upload Test */}
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-white rounded-2xl shadow-md p-6">
         <h2 className="text-2xl font-semibold text-gray-800 mb-4">
           File Upload Testi
         </h2>
@@ -180,7 +180,7 @@ export const TestPage: React.FC = () => {
 
         {/* Error Display */}
         {fileState.error && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
             <h4 className="text-red-800 font-medium mb-2">Hata</h4>
             <p className="text-red-700 text-sm">{fileState.error}</p>
           </div>
@@ -193,7 +193,7 @@ export const TestPage: React.FC = () => {
               Veri Önizlemesi (İlk 5 satır)
             </h3>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg">
+              <table className="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-2xl">
                 <thead className="bg-gray-50">
                   <tr>
                     {fileState.parsedData?.headers.map((header, index) => (
@@ -231,13 +231,13 @@ export const TestPage: React.FC = () => {
             <Button
               onClick={() => fileActions.processFile()}
               disabled={fileState.isProcessing}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               variant='default'>
               {fileState.isProcessing ? 'İşleniyor...' : 'Yeniden İşle'}
             </Button>
             <Button
               onClick={() => fileActions.reset()}
-              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+              className="px-4 py-2 bg-gray-600 text-white rounded-xl hover:bg-gray-700"
               variant='default'>
               Temizle
             </Button>

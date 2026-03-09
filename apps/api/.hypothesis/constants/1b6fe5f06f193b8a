@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/ai/models/opportunity.py
+# hypothesis_version: 6.151.9
+
+[0.0, 1.0, 100, 255, 'acknowledged', 'action_plan_id', 'action_status', 'ai_opportunities', 'alternative_actions', 'approval_required', 'approved', 'category', 'confidence_score', 'createdAt', 'critical', 'dismissed', 'entity_id', 'entity_type', 'evidence', 'executed', 'expired', 'expiresAt', 'explanation', 'failed', 'high', 'id', 'impact_score', 'is_acknowledged', 'is_stale', 'locale', 'low', 'medium', 'new', 'opp', 'planned', 'priority', 'required_slots', 'scope', 'simulated', 'single', 'status', 'summary', 'tenant_id', 'title', 'tr', 'type', 'ui_config', 'visible', 'why_now']

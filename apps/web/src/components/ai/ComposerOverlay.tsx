@@ -286,7 +286,7 @@ export function ComposerOverlay() {
                     {/* Staged Entity Chips */}
                     <div className="flex gap-1 flex-wrap">
                         {stagedEntities.map(e => (
-                            <span key={e.id} className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-md text-sm font-medium">
+                            <span key={e.id} className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-xl text-sm font-medium">
                                 {e.type === 'patient' && <User size={14} />}
                                 {e.type === 'device' && <Box size={14} />}
                                 {e.type === 'invoice' && <FileText size={14} />}
@@ -355,7 +355,7 @@ export function ComposerOverlay() {
                                         <div
                                             key={e.id}
                                             onClick={() => handleSelectEntity(e)}
-                                            className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors group"
+                                            className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-2xl cursor-pointer transition-colors group"
                                         >
                                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center text-blue-600 relative">
                                                 {e.type === 'patient' ? <User size={18} /> : <Box size={18} />}
@@ -403,7 +403,7 @@ export function ComposerOverlay() {
                                         <div
                                             key={a.name}
                                             onClick={() => handleSelectAction(a)}
-                                            className="flex items-center gap-3 p-2 hover:bg-purple-50 rounded-lg cursor-pointer group transition-colors"
+                                            className="flex items-center gap-3 p-2 hover:bg-purple-50 rounded-2xl cursor-pointer group transition-colors"
                                         >
                                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-50 to-purple-100 text-purple-600 flex items-center justify-center group-hover:from-purple-100 group-hover:to-purple-200 transition-colors relative">
                                                 <Zap size={18} />
@@ -435,11 +435,11 @@ export function ComposerOverlay() {
 
                     {/* Slot Filling Mode */}
                     {mode === 'slot_filling' && currentSlot && (
-                        <div className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200">
+                        <div className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border border-gray-200">
 
                             {/* Vision Suggestions Area */}
                             {(isAnalyzing || suggestions.length > 0) && (
-                                <div className="mb-4 p-3 bg-blue-50/50 border border-blue-100 rounded-lg">
+                                <div className="mb-4 p-3 bg-blue-50/50 border border-blue-100 rounded-2xl">
                                     <div className="flex items-center gap-2 mb-2">
                                         <Zap className="w-3 h-3 text-blue-600" />
                                         <span className="text-xs font-semibold text-blue-700 uppercase tracking-wide">
@@ -457,7 +457,7 @@ export function ComposerOverlay() {
                                                     onClick={() => applySuggestion(s)}
                                                     variant="outline"
                                                     size="sm"
-                                                    className="flex items-center gap-2 px-3 py-1.5 bg-white border border-blue-200 shadow-sm rounded-md hover:border-blue-400 hover:shadow-md transition-all text-sm text-left group"
+                                                    className="flex items-center gap-2 px-3 py-1.5 bg-white border border-blue-200 shadow-sm rounded-xl hover:border-blue-400 hover:shadow-md transition-all text-sm text-left group"
                                                 >
                                                     <div className="flex flex-col">
                                                         <span className="font-medium text-gray-900 group-hover:text-blue-700">
@@ -484,7 +484,7 @@ export function ComposerOverlay() {
                                 <div className="relative">
                                     <div className="relative">
                                         <Input
-                                            className="w-full border p-2 pl-10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="w-full border p-2 pl-10 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             placeholder="Ara..."
                                             value={slotSearchQuery}
                                             onChange={(e) => setSlotSearchQuery(e.target.value)}
@@ -498,7 +498,7 @@ export function ComposerOverlay() {
                                         </div>
                                     )}
                                     {slotEntityData?.entities && slotEntityData.entities.length > 0 && (
-                                        <div className="mt-2 bg-white border rounded-lg shadow-sm max-h-48 overflow-y-auto">
+                                        <div className="mt-2 bg-white border rounded-2xl shadow-sm max-h-48 overflow-y-auto">
                                             {slotEntityData.entities.map((e: EntityItem) => (
                                                 <div
                                                     key={e.id}
@@ -522,7 +522,7 @@ export function ComposerOverlay() {
                             {/* Text Slot */}
                             {currentSlot.uiType === 'text' && (
                                 <Input
-                                    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full border p-2 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     autoFocus
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
@@ -537,7 +537,7 @@ export function ComposerOverlay() {
                             {currentSlot.uiType === 'number' && (
                                 <Input
                                     type="number"
-                                    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full border p-2 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     autoFocus
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
@@ -552,7 +552,7 @@ export function ComposerOverlay() {
                             {currentSlot.uiType === 'date' && (
                                 <Input
                                     type="date"
-                                    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full border p-2 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     autoFocus
                                     onChange={(e) => {
                                         updateSlot(currentSlot.name, e.target.value);
@@ -572,7 +572,7 @@ export function ComposerOverlay() {
                                                 nextSlot();
                                             }}
                                             variant="outline"
-                                            className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors font-medium"
+                                            className="px-4 py-2 bg-white border border-gray-300 rounded-2xl hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors font-medium"
                                         >
                                             {opt}
                                         </Button>
@@ -582,7 +582,7 @@ export function ComposerOverlay() {
 
                             {/* File Upload Slot Specialty */}
                             {(currentSlot.uiType as string) === 'file' && (
-                                <div className="mt-4 flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors">
+                                <div className="mt-4 flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-2xl bg-white hover:bg-gray-50 transition-colors">
                                     <label className="cursor-pointer w-full flex flex-col items-center">
                                         <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-3">
                                             <Box size={24} />
@@ -635,7 +635,7 @@ export function ComposerOverlay() {
                         <div className="p-4">
                             <h3 className="text-lg font-semibold text-gray-900 mb-4">İşlemi Onaylayın</h3>
 
-                            <div className="bg-gradient-to-br from-white to-gray-50 border rounded-lg p-4 mb-4 shadow-sm">
+                            <div className="bg-gradient-to-br from-white to-gray-50 border rounded-2xl p-4 mb-4 shadow-sm">
                                 <div className="flex justify-between items-center mb-3 pb-3 border-b">
                                     <span className="text-gray-500 text-sm">İşlem</span>
                                     <span className="font-semibold text-purple-700">{selectedAction.name}</span>
@@ -670,14 +670,14 @@ export function ComposerOverlay() {
                                     onClick={handleSimulate}
                                     disabled={isExecuting}
                                     variant="outline"
-                                    className="px-4 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg font-medium transition-colors disabled:opacity-50"
+                                    className="px-4 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-2xl font-medium transition-colors disabled:opacity-50"
                                 >
                                     Simüle Et
                                 </Button>
                                 <Button
                                     onClick={reset}
                                     variant="ghost"
-                                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-2xl transition-colors"
                                 >
                                     İptal
                                 </Button>
@@ -685,7 +685,7 @@ export function ComposerOverlay() {
                                     onClick={handleConfirm}
                                     disabled={isExecuting}
                                     variant="success"
-                                    className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 disabled:opacity-50 font-medium transition-colors"
+                                    className="px-6 py-2 bg-green-600 text-white rounded-2xl hover:bg-green-700 flex items-center gap-2 disabled:opacity-50 font-medium transition-colors"
                                 >
                                     {isExecuting ? (
                                         <>
@@ -738,7 +738,7 @@ export function ComposerOverlay() {
                                     onClick={() => { onClose(); reset(); }}
                                     variant="secondary"
                                     fullWidth
-                                    className="w-full py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 font-medium transition-colors"
+                                    className="w-full py-3 bg-gray-900 text-white rounded-2xl hover:bg-gray-800 font-medium transition-colors"
                                 >
                                     Kapat
                                 </Button>

@@ -159,7 +159,7 @@ export const EReceiptQuerySection: React.FC<EReceiptQuerySectionProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg border p-6" data-section="e-receipt-query">
+    <div className="bg-white rounded-2xl border p-6" data-section="e-receipt-query">
       <h3 className="text-lg font-semibold mb-4">E-Reçete Sorgulama</h3>
       <div className="space-y-4">
         <div className="flex space-x-3">
@@ -181,7 +181,7 @@ export const EReceiptQuerySection: React.FC<EReceiptQuerySectionProps> = ({
 
         {/* E-Receipt Result */}
         {eReceiptResult && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="bg-green-50 border border-green-200 rounded-2xl p-4">
             <div className="flex items-start">
               <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 mr-3 flex-shrink-0" />
               <div className="flex-1">
@@ -194,7 +194,7 @@ export const EReceiptQuerySection: React.FC<EReceiptQuerySectionProps> = ({
                 </div>
 
                 {/* Global Date Setting */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 mb-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <label htmlFor="globalDate" className="text-sm font-medium text-blue-800">
@@ -225,7 +225,7 @@ export const EReceiptQuerySection: React.FC<EReceiptQuerySectionProps> = ({
                   {eReceiptResult.materials.map((material, index) => {
                     const selection = materialSelections[material.code] || { selected: false, date: globalDate };
                     return (
-                      <div key={material.code} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                      <div key={material.code} className="flex items-center justify-between p-3 border border-gray-200 rounded-2xl">
                         <div className="flex items-center">
                           <input
                             data-allow-raw="true"

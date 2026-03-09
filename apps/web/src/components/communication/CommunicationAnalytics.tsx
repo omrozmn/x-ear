@@ -216,7 +216,7 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
               </div>
             )}
           </div>
-          <div className={`p-3 rounded-lg ${colorClasses[color]}`}>
+          <div className={`p-3 rounded-2xl ${colorClasses[color]}`}>
             <Icon className="h-6 w-6" />
           </div>
         </div>
@@ -319,7 +319,7 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
           </div>
 
           {/* Simple Chart Placeholders */}
-          <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
+          <div className="h-64 bg-gray-50 rounded-2xl flex items-center justify-center border-2 border-dashed border-gray-300">
             <div className="text-center">
               <div className="text-gray-400 mb-2">📊</div>
               <p className="text-gray-500 text-sm">
@@ -339,7 +339,7 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Kanal Dağılımı</h3>
 
           {/* Simple Pie Chart Placeholder */}
-          <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300 mb-4">
+          <div className="h-64 bg-gray-50 rounded-2xl flex items-center justify-center border-2 border-dashed border-gray-300 mb-4">
             <div className="text-center">
               <div className="text-gray-400 mb-2">🥧</div>
               <p className="text-gray-500 text-sm">Kanal Dağılımı Grafiği</p>
@@ -433,7 +433,7 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Kampanya Performansı</h3>
 
         {/* Simple Bar Chart Placeholder */}
-        <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300 mb-4">
+        <div className="h-64 bg-gray-50 rounded-2xl flex items-center justify-center border-2 border-dashed border-gray-300 mb-4">
           <div className="text-center">
             <div className="text-gray-400 mb-2">📊</div>
             <p className="text-gray-500 text-sm">Kampanya Performans Grafiği</p>

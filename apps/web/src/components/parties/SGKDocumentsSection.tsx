@@ -89,7 +89,7 @@ export const SGKDocumentsSection: React.FC<SGKDocumentsSectionProps> = ({
 
   return (
     <>
-      <div className="bg-white rounded-lg border p-6">
+      <div className="bg-white rounded-2xl border p-6">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-semibold">Belge İndirme</h3>
 
@@ -207,7 +207,7 @@ export const SGKDocumentsSection: React.FC<SGKDocumentsSectionProps> = ({
       {/* Detay Modal */}
       {selectedEReceipt && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">E-Reçete Detayları - {selectedEReceipt.number}</h3>
@@ -257,7 +257,7 @@ export const SGKDocumentsSection: React.FC<SGKDocumentsSectionProps> = ({
                   <label className="block text-sm font-medium text-gray-700 mb-4">Teslim Edilen Malzemeler</label>
                   <div className="space-y-3">
                     {selectedEReceipt.materials.map((material, index) => (
-                      <div key={`${material.code}-${index}`} className="border rounded-lg p-4 bg-green-50 border-green-200">
+                      <div key={`${material.code}-${index}`} className="border rounded-2xl p-4 bg-green-50 border-green-200">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <p className="font-medium text-green-800">{material.name}</p>

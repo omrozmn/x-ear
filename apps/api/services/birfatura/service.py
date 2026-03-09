@@ -11,8 +11,11 @@ import os
 import datetime
 import requests
 import base64
+import logging
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+
+logger = logging.getLogger(__name__)
 
 
 class BirfaturaClient:
@@ -73,7 +76,12 @@ class BirfaturaClient:
                 return {'text': resp.text}
         except Exception as e:
             if hasattr(e, 'response') and e.response is not None:
-                 print(f"Exception Response: {e.response.text}")
+                logger.error(
+                    "BirFatura request failed: path=%s status=%s body=%s",
+                    path,
+                    getattr(e.response, "status_code", None),
+                    e.response.text,
+                )
             raise e
 
     def send_document(self, payload: dict) -> dict:
@@ -158,6 +166,7 @@ class BirfaturaClient:
             final_bytes_b64 = raw_data
 
         final_payload = {
+            "fileName": payload.get("fileName") or "document.xml",
             "documentBytes": final_bytes_b64,
             "isDocumentNoAuto": payload.get("isDocumentNoAuto", True),
             "systemTypeCodes": payload.get("systemTypeCodes") or payload.get("systemType", "EFATURA"),

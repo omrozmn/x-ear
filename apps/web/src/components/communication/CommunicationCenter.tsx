@@ -393,7 +393,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
       <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
         <Card className="p-4">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
+            <div className="p-2 bg-blue-100 rounded-2xl">
               <MessageSquare className="w-5 h-5 text-blue-600" />
             </div>
             <div>
@@ -405,7 +405,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
 
         <Card className="p-4">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-yellow-100 rounded-lg">
+            <div className="p-2 bg-yellow-100 rounded-2xl">
               <Send className="w-5 h-5 text-yellow-600" />
             </div>
             <div>
@@ -417,7 +417,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
 
         <Card className="p-4">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-green-100 rounded-lg">
+            <div className="p-2 bg-green-100 rounded-2xl">
               <CheckCircle className="w-5 h-5 text-green-600" />
             </div>
             <div>
@@ -429,7 +429,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
 
         <Card className="p-4">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-red-100 rounded-lg">
+            <div className="p-2 bg-red-100 rounded-2xl">
               <XCircle className="w-5 h-5 text-red-600" />
             </div>
             <div>
@@ -441,7 +441,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
 
         <Card className="p-4">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
+            <div className="p-2 bg-purple-100 rounded-2xl">
               <Clock className="w-5 h-5 text-purple-600" />
             </div>
             <div>
@@ -453,7 +453,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
 
         <Card className="p-4">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-indigo-100 rounded-lg">
+            <div className="p-2 bg-indigo-100 rounded-2xl">
               <BarChart3 className="w-5 h-5 text-indigo-600" />
             </div>
             <div>

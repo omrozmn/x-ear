@@ -9,34 +9,37 @@ import {
 } from '@heroicons/react/24/outline';
 import { useAdminResponsive } from '@/hooks';
 import { ResponsiveTable } from '@/components/responsive';
+import Pagination from '@/components/ui/Pagination';
+import { extractPagination, isRecord, unwrapData } from '@/lib/orval-response';
+
+interface ExtendedAppointment extends AppointmentRead {
+    patientName?: string;
+    tenant_name?: string;
+}
 
 interface PaginationInfo {
     total: number;
     totalPages: number;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-    return typeof value === 'object' && value !== null;
-}
-
-function getAppointments(data: AppointmentListResponse | undefined): AppointmentRead[] {
-    const responseData = data?.data;
-    if (!isRecord(responseData) || !Array.isArray(responseData.appointments)) {
+function getAppointments(data: AppointmentListResponse | undefined): ExtendedAppointment[] {
+    const payload = unwrapData(data);
+    if (!isRecord(payload) || !Array.isArray(payload.appointments)) {
         return [];
     }
 
-    return responseData.appointments.filter((appointment): appointment is AppointmentRead => isRecord(appointment) && typeof appointment.id === 'string');
+    return payload.appointments.filter((appointment): appointment is ExtendedAppointment => isRecord(appointment) && typeof appointment.id === 'string');
 }
 
 function getPagination(data: AppointmentListResponse | undefined): PaginationInfo | null {
-    const responseData = data?.data;
-    if (!isRecord(responseData) || !isRecord(responseData.pagination)) {
+    const pagination = extractPagination(data);
+    if (!pagination) {
         return null;
     }
 
     return {
-        total: typeof responseData.pagination.total === 'number' ? responseData.pagination.total : 0,
-        totalPages: typeof responseData.pagination.totalPages === 'number' ? responseData.pagination.totalPages : 0,
+        total: pagination.total ?? 0,
+        totalPages: pagination.totalPages ?? 1,
     };
 }
 
@@ -44,11 +47,12 @@ const AdminAppointmentsPage: React.FC = () => {
     const { isMobile } = useAdminResponsive();
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10);
     const [statusFilter, setStatusFilter] = useState('');
 
     const { data: appointmentsData, isLoading, refetch } = useListAdminAppointments({
         page,
-        limit: 10,
+        limit,
         search,
         status: statusFilter || undefined
     });
@@ -76,7 +80,8 @@ const AdminAppointmentsPage: React.FC = () => {
             key: 'date',
             header: 'Tarih / Saat',
             sortable: true,
-            render: (appt: AppointmentRead) => (
+            sortValue: (appt: ExtendedAppointment) => `${appt.date || ''} ${appt.time || ''}`,
+            render: (appt: ExtendedAppointment) => (
                 <div>
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
                         {new Date(appt.date).toLocaleDateString('tr-TR')}
@@ -92,8 +97,9 @@ const AdminAppointmentsPage: React.FC = () => {
             header: 'Hasta',
             sortable: true,
             sortKey: 'patientName',
-            render: (appt: AppointmentRead) => (
-                <div className="text-sm font-medium text-gray-900 dark:text-white">{appt.partyName || '-'}</div>
+            sortValue: (appt: ExtendedAppointment) => appt.partyName || appt.patientName || '',
+            render: (appt: ExtendedAppointment) => (
+                <div className="text-sm font-medium text-gray-900 dark:text-white">{appt.partyName || appt.patientName || '-'}</div>
             )
         },
         {
@@ -101,7 +107,8 @@ const AdminAppointmentsPage: React.FC = () => {
             header: 'Tip',
             mobileHidden: true,
             sortable: true,
-            render: (appt: AppointmentRead) => (
+            sortValue: (appt: ExtendedAppointment) => appt.type || appt.appointmentType || '',
+            render: (appt: ExtendedAppointment) => (
                 <span className="text-sm text-gray-500 dark:text-gray-400">{appt.type || appt.appointmentType || '-'}</span>
             )
         },
@@ -111,15 +118,17 @@ const AdminAppointmentsPage: React.FC = () => {
             mobileHidden: true,
             sortable: true,
             sortKey: 'tenantName',
-            render: (appt: AppointmentRead) => (
-                <span className="text-sm text-gray-500 dark:text-gray-400">{appt.tenantName || appt.tenantId}</span>
+            sortValue: (appt: ExtendedAppointment) => appt.tenantName || appt.tenant_name || appt.tenantId || '',
+            render: (appt: ExtendedAppointment) => (
+                <span className="text-sm text-gray-500 dark:text-gray-400">{appt.tenantName || appt.tenant_name || appt.tenantId || '-'}</span>
             )
         },
         {
             key: 'status',
             header: 'Durum',
             sortable: true,
-            render: (appt: AppointmentRead) => getStatusBadge(appt.status || '-')
+            sortValue: (appt: ExtendedAppointment) => appt.status || '',
+            render: (appt: ExtendedAppointment) => getStatusBadge(appt.status || '-')
         }
     ];
 
@@ -153,7 +162,10 @@ const AdminAppointmentsPage: React.FC = () => {
                         className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white pl-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                         placeholder="Hasta adı veya telefon ile ara..."
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+                        onChange={(e) => {
+                            setSearch(e.target.value);
+                            setPage(1);
+                        }}
                     />
                 </div>
 
@@ -161,7 +173,10 @@ const AdminAppointmentsPage: React.FC = () => {
                     <FunnelIcon className="h-5 w-5 text-gray-400" />
                     <select
                         value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
+                        onChange={(e) => {
+                            setStatusFilter(e.target.value);
+                            setPage(1);
+                        }}
                         className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white py-2 pl-3 pr-10 text-base focus:border-primary-500 focus:outline-none focus:ring-primary-500 sm:text-sm"
                     >
                         <option value="">Tüm Durumlar</option>
@@ -186,58 +201,28 @@ const AdminAppointmentsPage: React.FC = () => {
                         <p className="mt-2">Randevu bulunamadı</p>
                     </div>
                 ) : (
-                    <ResponsiveTable
-                        data={appointments}
-                        columns={columns}
-                        keyExtractor={(appt: AppointmentRead) => appt.id}
-                        emptyMessage="Randevu bulunamadı"
-                    />
+                        <ResponsiveTable
+                            data={appointments}
+                            columns={columns}
+                            keyExtractor={(appt: ExtendedAppointment) => appt.id}
+                            emptyMessage="Randevu bulunamadı"
+                        />
                 )}
 
                 {/* Pagination */}
                 {pagination && pagination.totalPages > 1 && (
-                    <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6">
-                        <div className="flex-1 flex justify-between sm:hidden">
-                            <button
-                                onClick={() => setPage(Math.max(1, page - 1))}
-                                disabled={page === 1}
-                                className="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 touch-feedback"
-                            >
-                                Önceki
-                            </button>
-                            <button
-                                onClick={() => setPage(Math.min(pagination.totalPages, page + 1))}
-                                disabled={page === pagination.totalPages}
-                                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 touch-feedback"
-                            >
-                                Sonraki
-                            </button>
-                        </div>
-                        <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                            <div>
-                                <p className="text-sm text-gray-700 dark:text-gray-300">
-                                    Toplam <span className="font-medium">{pagination.total}</span> kayıttan <span className="font-medium">{(page - 1) * 10 + 1}</span> - <span className="font-medium">{Math.min(page * 10, pagination.total)}</span> arası gösteriliyor
-                                </p>
-                            </div>
-                            <div>
-                                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                                    <button
-                                        onClick={() => setPage(Math.max(1, page - 1))}
-                                        disabled={page === 1}
-                                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
-                                    >
-                                        Önceki
-                                    </button>
-                                    <button
-                                        onClick={() => setPage(Math.min(pagination.totalPages, page + 1))}
-                                        disabled={page === pagination.totalPages}
-                                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
-                                    >
-                                        Sonraki
-                                    </button>
-                                </nav>
-                            </div>
-                        </div>
+                    <div className="bg-white dark:bg-gray-800 px-4 py-3 border-t border-gray-200 dark:border-gray-700 sm:px-6">
+                        <Pagination
+                            currentPage={page}
+                            totalPages={pagination.totalPages}
+                            totalItems={pagination.total}
+                            itemsPerPage={limit}
+                            onPageChange={setPage}
+                            onItemsPerPageChange={(nextLimit) => {
+                                setLimit(nextLimit);
+                                setPage(1);
+                            }}
+                        />
                     </div>
                 )}
             </div>

@@ -176,7 +176,7 @@ export const PartyAppointmentsTab: React.FC<PartyAppointmentsTabProps> = ({ part
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border">
+      <div className="bg-white p-4 rounded-2xl shadow-sm border">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Durum</label>
@@ -217,7 +217,7 @@ export const PartyAppointmentsTab: React.FC<PartyAppointmentsTabProps> = ({ part
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
           <div className="flex">
             <XCircle className="h-5 w-5 text-red-400" />
             <div className="ml-3">
@@ -231,7 +231,7 @@ export const PartyAppointmentsTab: React.FC<PartyAppointmentsTabProps> = ({ part
       <div className="space-y-4">
         {filteredAppointments.length > 0 ? (
           filteredAppointments.map((appointment) => (
-            <div key={appointment.id} className="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow">
+            <div key={appointment.id} className="bg-white border rounded-2xl p-4 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-3 mb-2">
@@ -306,7 +306,7 @@ export const PartyAppointmentsTab: React.FC<PartyAppointmentsTabProps> = ({ part
       {/* New Appointment Form Modal */}
       {showBookingForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium">Yeni Randevu</h3>
               <Button
@@ -362,13 +362,13 @@ export const PartyAppointmentsTab: React.FC<PartyAppointmentsTabProps> = ({ part
                 <Button
                   type="button"
                   onClick={() => setShowBookingForm(false)}
-                  className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                  className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl"
                 >
                   İptal
                 </Button>
                 <Button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl"
                 >
                   Randevu Oluştur
                 </Button>

@@ -114,7 +114,7 @@ export const PartyTimelineCard: React.FC<PartyTimelineCardProps> = ({
 
   return (
     <div
-      className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+      className="bg-white border border-gray-200 rounded-2xl p-4 hover:shadow-md transition-shadow cursor-pointer"
       onClick={() => onEventClick?.(event)}
       role="button"
       tabIndex={0}

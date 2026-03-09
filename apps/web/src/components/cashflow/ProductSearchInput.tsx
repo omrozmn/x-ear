@@ -86,9 +86,9 @@ export function ProductSearchInput({
     return (
       <div className="space-y-3">
         {/* Selected Product Header */}
-        <div className="flex items-center justify-between p-3 bg-purple-50 border border-purple-200 rounded-lg">
+        <div className="flex items-center justify-between p-3 bg-purple-50 border border-purple-200 rounded-2xl">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
+            <div className="p-2 bg-purple-100 rounded-2xl">
               <Package className="h-5 w-5 text-purple-600" />
             </div>
             <div>
@@ -108,7 +108,7 @@ export function ProductSearchInput({
         </div>
 
         {/* Product Info Card */}
-        <div className="grid grid-cols-2 gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+        <div className="grid grid-cols-2 gap-3 p-3 bg-gray-50 border border-gray-200 rounded-2xl">
           {/* Price Info */}
           {selectedProduct.price && (
             <div className="flex items-start space-x-2">
@@ -181,7 +181,7 @@ export function ProductSearchInput({
         className="pl-10"
       />
       {showResults && search.length >= 2 && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-2xl shadow-lg max-h-60 overflow-auto">
           {items.length > 0 ? (
             items.map((item) => (
               <div

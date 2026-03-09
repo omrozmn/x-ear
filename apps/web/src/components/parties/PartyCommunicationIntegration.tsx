@@ -389,7 +389,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
                     data-allow-raw="true"
                     key={template.id}
                     onClick={() => handleTemplateSelect(template.id)}
-                    className={`p-3 text-left border rounded-lg hover:bg-gray-50 transition-colors ${selectedTemplate === template.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                    className={`p-3 text-left border rounded-2xl hover:bg-gray-50 transition-colors ${selectedTemplate === template.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
                       }`}
                   >
                     <div className="font-medium text-sm text-gray-900">{template.name}</div>

@@ -184,7 +184,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               <div
                 onClick={toggleOpen}
                 className={cn(
-                  "w-full flex items-center justify-between px-4 py-2 rounded-lg cursor-pointer transition-colors border",
+                  "w-full flex items-center justify-between px-4 py-2 rounded-2xl cursor-pointer transition-colors border",
                   "bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700",
                   "hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500"
                 )}
@@ -234,7 +234,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
               {/* AI Status Indicator - Hidden on mobile */}
               <AIFeatureWrapper hideWhenUnavailable showLoading={false}>
-                <div className="hidden sm:flex items-center gap-2 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-700/50" title="AI Durumu">
+                <div className="hidden sm:flex items-center gap-2 px-2 py-1 rounded-xl bg-gray-100 dark:bg-gray-700/50" title="AI Durumu">
                   <Bot size={16} className="text-gray-600 dark:text-gray-400" />
                   <AIStatusIndicator status={aiStatus} size="sm" showLabel />
                 </div>
@@ -251,7 +251,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 <Button
                   onClick={toggleUserDropdown}
                   data-testid="user-menu"
-                  className="flex items-center gap-2 p-2 h-auto min-h-[44px] rounded-md bg-gray-100 dark:bg-gray-700/50 text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                  className="flex items-center gap-2 p-2 h-auto min-h-[44px] rounded-xl bg-gray-100 dark:bg-gray-700/50 text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                   variant='ghost'>
                   <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm">
                     <User size={16} />
@@ -269,7 +269,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
                 {/* User Dropdown */}
                 {showUserDropdown && (
-                  <div className="absolute top-full right-0 mt-2 min-w-[200px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-[1000] py-2">
+                  <div className="absolute top-full right-0 mt-2 min-w-[200px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl z-[1000] py-2">
                     <Link
                       to="/profile"
                       onClick={() => setShowUserDropdown(false)}
@@ -328,7 +328,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           isMobile && "pb-24"
         )}>
           {(user?.isImpersonatingTenant || user?.isImpersonating) && (
-            <div className="mb-4 p-3 rounded-lg flex items-center justify-between border-2 bg-emerald-100 dark:bg-emerald-900/30 border-emerald-600 dark:border-emerald-500">
+            <div className="mb-4 p-3 rounded-2xl flex items-center justify-between border-2 bg-emerald-100 dark:bg-emerald-900/30 border-emerald-600 dark:border-emerald-500">
               <div className="flex items-center gap-2">
                 <Building2 size={16} className="text-emerald-800 dark:text-emerald-400" />
                 <span className="font-semibold text-xs sm:text-sm text-emerald-800 dark:text-emerald-400">

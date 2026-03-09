@@ -4,10 +4,11 @@ import toast from 'react-hot-toast';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useListAdminPlans, useDeleteAdminPlan, useCreateAdminPlan, useUpdateAdminPlan } from '@/lib/api-client';
 import type { DetailedPlanRead as PlanRead, ListAdminPlansParams, PlanCreate, PlanListResponse, PlanUpdate } from '@/api/generated/schemas';
-import { PlusIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon, ExclamationTriangleIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import Pagination from '@/components/ui/Pagination';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
+import { extractPagination, isRecord, unwrapData } from '@/lib/orval-response';
 
 const PLAN_TYPES = ['BASIC', 'PRO', 'ENTERPRISE', 'CUSTOM'] as const;
 const BILLING_INTERVALS = ['MONTHLY', 'YEARLY', 'QUARTERLY'] as const;
@@ -54,28 +55,28 @@ function getApiErrorMessage(error: unknown, fallback: string): string {
   return apiError.response?.data?.error?.message || fallback;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
 function getPlans(data: PlanListResponse | undefined): PlanRead[] {
-  const responseData = data?.data;
-  if (!responseData || typeof responseData !== 'object' || !('plans' in responseData) || !Array.isArray(responseData.plans)) {
-    return [];
-  }
+  const responseData = unwrapData<unknown>(data);
+  const candidate = Array.isArray(responseData)
+    ? responseData
+    : isRecord(responseData) && Array.isArray(responseData.plans)
+      ? responseData.plans
+      : isRecord(responseData) && Array.isArray(responseData.items)
+        ? responseData.items
+        : [];
 
-  return responseData.plans.filter((plan): plan is PlanRead => isRecord(plan) && typeof plan.id === 'string' && typeof plan.name === 'string');
+  return candidate.filter((plan): plan is PlanRead => isRecord(plan) && typeof plan.id === 'string' && typeof plan.name === 'string');
 }
 
 function getPagination(data: PlanListResponse | undefined): PaginationInfo {
-  const responseData = data?.data;
-  if (!responseData || typeof responseData !== 'object' || !('pagination' in responseData) || !isRecord(responseData.pagination)) {
+  const pagination = extractPagination(data);
+  if (!pagination) {
     return {};
   }
 
   return {
-    totalPages: typeof responseData.pagination.totalPages === 'number' ? responseData.pagination.totalPages : undefined,
-    total: typeof responseData.pagination.total === 'number' ? responseData.pagination.total : undefined,
+    totalPages: pagination.totalPages,
+    total: pagination.total,
   };
 }
 
@@ -113,11 +114,24 @@ const Plans: React.FC = () => {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const params: ListAdminPlansParams = { page, limit };
   const { data: plansData, isLoading, error } = useListAdminPlans(params);
 
-  const plans = getPlans(plansData);
+  const plans = getPlans(plansData).filter((plan) => {
+    const query = searchTerm.trim().toLowerCase();
+    if (!query) {
+      return true;
+    }
+
+    return [
+      plan.name,
+      plan.description || '',
+      plan.planType || '',
+      plan.billingInterval || '',
+    ].some((value) => value.toLowerCase().includes(query));
+  });
   const pagination = getPagination(plansData);
 
   const { mutateAsync: createPlan } = useCreateAdminPlan();
@@ -272,6 +286,9 @@ const Plans: React.FC = () => {
     {
       key: 'name',
       header: 'İsim',
+      sortable: true,
+      sortKey: 'name',
+      sortValue: (plan: PlanRead) => plan.name,
       render: (plan: PlanRead) => (
         <div>
           <div className="text-sm font-medium text-gray-900 dark:text-white">{plan.name}</div>
@@ -283,6 +300,9 @@ const Plans: React.FC = () => {
       key: 'planType',
       header: 'Tip',
       mobileHidden: true,
+      sortable: true,
+      sortKey: 'planType',
+      sortValue: (plan: PlanRead) => `${plan.planType || ''} ${plan.billingInterval || ''}`,
       render: (plan: PlanRead) => (
         <div>
           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
@@ -297,6 +317,9 @@ const Plans: React.FC = () => {
     {
       key: 'price',
       header: 'Fiyat',
+      sortable: true,
+      sortKey: 'price',
+      sortValue: (plan: PlanRead) => plan.price || 0,
       render: (plan: PlanRead) => (
         <span className="text-sm font-semibold text-gray-900 dark:text-white">
           {plan.price?.toLocaleString('tr-TR')} ₺
@@ -307,6 +330,9 @@ const Plans: React.FC = () => {
       key: 'maxUsers',
       header: 'Kullanıcılar',
       mobileHidden: true,
+      sortable: true,
+      sortKey: 'maxUsers',
+      sortValue: (plan: PlanRead) => plan.maxUsers || 0,
       render: (plan: PlanRead) => (
         <span className="text-sm text-gray-500 dark:text-gray-400">
           {plan.maxUsers || 0} Kullanıcı
@@ -316,6 +342,9 @@ const Plans: React.FC = () => {
     {
       key: 'isActive',
       header: 'Durum',
+      sortable: true,
+      sortKey: 'isActive',
+      sortValue: (plan: PlanRead) => plan.isActive ? 1 : 0,
       render: (plan: PlanRead) => (
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
           plan.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
@@ -377,6 +406,20 @@ const Plans: React.FC = () => {
             <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
             {!isMobile && 'Plan Ekle'}
           </button>
+        </div>
+        <div className="max-w-md">
+          <div className="relative rounded-md shadow-sm">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Plan adı, açıklama veya tip ara..."
+              className="block w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white pl-10 pr-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
+            />
+          </div>
         </div>
 
         {isLoading ? (

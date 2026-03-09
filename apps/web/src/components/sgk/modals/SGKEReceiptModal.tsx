@@ -144,7 +144,7 @@ export const SGKEReceiptModal: React.FC<SGKEReceiptModalProps> = ({
       <div className="space-y-6">
         {/* Hasta Bilgileri */}
         {party && (
-          <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="bg-gray-50 p-4 rounded-2xl">
             <h4 className="font-medium text-gray-900 mb-2">Hasta Bilgileri</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
@@ -240,7 +240,7 @@ export const SGKEReceiptModal: React.FC<SGKEReceiptModalProps> = ({
         </div>
 
         {/* Ödeme Bilgileri */}
-        <div className="bg-blue-50 p-4 rounded-lg">
+        <div className="bg-blue-50 p-4 rounded-2xl">
           <h4 className="font-medium text-blue-900 mb-3">Ödeme Bilgileri</h4>
           <div className="grid grid-cols-3 gap-4 text-sm">
             <div>

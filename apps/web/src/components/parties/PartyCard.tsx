@@ -98,7 +98,7 @@ export function PartyCard({
   if (compact) {
     return (
       <div
-        className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-all cursor-pointer ${selected ? 'ring-2 ring-blue-500 border-blue-300 dark:border-blue-700' : ''
+        className={`bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-all cursor-pointer ${selected ? 'ring-2 ring-blue-500 border-blue-300 dark:border-blue-700' : ''
           } ${className}`}
         onClick={handleCardClick}
       >
@@ -144,7 +144,7 @@ export function PartyCard({
                 </Button>
 
                 {showMenu && (
-                  <div className="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
+                  <div className="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg z-10">
                     <div className="py-1">
                       <button
                         data-allow-raw="true"
@@ -201,7 +201,7 @@ export function PartyCard({
 
   return (
     <div
-      className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all cursor-pointer ${selected ? 'ring-2 ring-blue-500 border-blue-300 dark:border-blue-700' : ''
+      className={`bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all cursor-pointer ${selected ? 'ring-2 ring-blue-500 border-blue-300 dark:border-blue-700' : ''
         } ${className}`}
       onClick={handleCardClick}
     >
@@ -261,7 +261,7 @@ export function PartyCard({
               </Button>
 
               {showMenu && (
-                <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
+                <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg z-10">
                   <div className="py-1">
                     <button
                       data-allow-raw="true"

@@ -135,7 +135,7 @@ const LazyPartyCard: React.FC<LazyPartyCardProps> = memo(({
     return (
       <div
         ref={cardRef}
-        className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 animate-pulse ${className}`}
+        className={`bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 animate-pulse ${className}`}
       >
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
@@ -152,7 +152,7 @@ const LazyPartyCard: React.FC<LazyPartyCardProps> = memo(({
     <div
       ref={cardRef}
       className={`
-        bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 transition-all duration-200
+        bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 transition-all duration-200
         hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 cursor-pointer
         ${isSelected ? 'ring-2 ring-blue-500 border-blue-500' : ''}
         ${className}

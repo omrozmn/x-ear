@@ -30,7 +30,7 @@ export function PaymentsList({ saleId }: PaymentsListProps) {
   // Error state
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+      <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
         <div className="flex items-start">
           <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
           <div className="ml-3 flex-1">
@@ -60,7 +60,7 @@ export function PaymentsList({ saleId }: PaymentsListProps) {
   // Empty state
   if (payments.length === 0) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center">
+      <div className="rounded-2xl border border-gray-200 bg-gray-50 p-8 text-center">
         <CreditCard className="h-12 w-12 text-gray-400 mx-auto mb-3" />
         <h3 className="text-sm font-medium text-gray-900 mb-1">
           Henüz ödeme kaydı yok
@@ -82,7 +82,7 @@ export function PaymentsList({ saleId }: PaymentsListProps) {
       {payments.map((payment: PaymentRecordRead) => (
         <div
           key={payment.id}
-          className="rounded-lg border border-gray-200 bg-white p-4 hover:shadow-sm transition-shadow"
+          className="rounded-2xl border border-gray-200 bg-white p-4 hover:shadow-sm transition-shadow"
         >
           <div className="flex items-start justify-between">
             <div className="flex-1">

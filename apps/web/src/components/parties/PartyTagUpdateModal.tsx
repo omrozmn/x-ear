@@ -142,7 +142,7 @@ export function PartyTagUpdateModal({
               value={status || ''}
               onChange={(e) => setStatus(e.target.value as PartyStatus)}
               disabled={isLoading}
-              className="w-full block px-3 py-2 pr-10 border rounded-lg text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-gray-300 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full block px-3 py-2 pr-10 border rounded-2xl text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-gray-300 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <option value="active" className="dark:bg-slate-800">Aktif</option>
               <option value="inactive" className="dark:bg-slate-800">Pasif</option>
@@ -158,7 +158,7 @@ export function PartyTagUpdateModal({
               value={branchId}
               onChange={(e) => setBranchId(e.target.value)}
               disabled={isLoading}
-              className="w-full block px-3 py-2 pr-10 border rounded-lg text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-gray-300 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full block px-3 py-2 pr-10 border rounded-2xl text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-gray-300 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <option value="" className="dark:bg-slate-800">Seçiniz</option>
               {branches.map((branch) => (
@@ -178,7 +178,7 @@ export function PartyTagUpdateModal({
               value={segment}
               onChange={(e) => setSegment(e.target.value as PartySegment)}
               disabled={isLoading}
-              className="w-full block px-3 py-2 pr-10 border rounded-lg text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-gray-300 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full block px-3 py-2 pr-10 border rounded-2xl text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-gray-300 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {segmentOptions.map((option) => (
                 <option key={option.value} value={option.value} className="dark:bg-slate-800">
@@ -197,7 +197,7 @@ export function PartyTagUpdateModal({
               value={acquisitionType}
               onChange={(e) => setAcquisitionType(e.target.value)}
               disabled={isLoading}
-              className="w-full block px-3 py-2 pr-10 border rounded-lg text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-gray-300 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full block px-3 py-2 pr-10 border rounded-2xl text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-gray-300 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <option value="" className="dark:bg-slate-800">Seçiniz</option>
               {acquisitionOptions.map((option) => (

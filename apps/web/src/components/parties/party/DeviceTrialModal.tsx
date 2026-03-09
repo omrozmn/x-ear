@@ -366,7 +366,7 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
     <Modal open={open} onClose={onClose} title={trial ? 'Deneme Düzenle' : 'Yeni Deneme Başlat'}>
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Device Information */}
-        <div className="bg-gray-50 p-4 rounded-lg">
+        <div className="bg-gray-50 p-4 rounded-2xl">
           <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
             <FileText className="w-4 h-4 mr-2" />
             Cihaz Bilgileri
@@ -411,7 +411,7 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
         </div>
 
         {/* Trial Period */}
-        <div className="bg-blue-50 p-4 rounded-lg">
+        <div className="bg-blue-50 p-4 rounded-2xl">
           <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
             <Calendar className="w-4 h-4 mr-2" />
             Deneme Süresi
@@ -465,7 +465,7 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
         </div>
 
         {/* Pricing */}
-        <div className="bg-green-50 p-4 rounded-lg">
+        <div className="bg-green-50 p-4 rounded-2xl">
           <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
             <DollarSign className="w-4 h-4 mr-2" />
             Fiyatlandırma
@@ -579,7 +579,7 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
 
         {/* Trial Extensions */}
         {formData.extensions && formData.extensions.length > 0 && (
-          <div className="bg-orange-50 p-4 rounded-lg">
+          <div className="bg-orange-50 p-4 rounded-2xl">
             <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
               <RotateCcw className="w-4 h-4 mr-2" />
               Deneme Uzatmaları
@@ -610,7 +610,7 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
 
         {/* Add Extension Form */}
         {formData.status === 'active' && (
-          <div className="bg-blue-50 p-4 rounded-lg">
+          <div className="bg-blue-50 p-4 rounded-2xl">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-medium text-gray-900 flex items-center">
                 <Plus className="w-4 h-4 mr-2" />
@@ -691,7 +691,7 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
         )}
 
         {/* Trial Summary */}
-        <div className="bg-gray-50 p-4 rounded-lg">
+        <div className="bg-gray-50 p-4 rounded-2xl">
           <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
             <TrendingUp className="w-4 h-4 mr-2" />
             Deneme Özeti
@@ -775,7 +775,7 @@ export const DeviceTrialModal: React.FC<DeviceTrialModalProps> = ({
 
         {/* Error Display */}
         {errors.submit && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+          <div className="p-3 bg-red-50 border border-red-200 rounded-xl">
             <div className="flex items-center">
               <AlertCircle className="w-4 h-4 text-red-500 mr-2" />
               <span className="text-sm text-red-700">{errors.submit}</span>

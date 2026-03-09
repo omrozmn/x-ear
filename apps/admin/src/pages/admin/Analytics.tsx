@@ -31,6 +31,7 @@ import {
   type ResponseEnvelopeAdminAnalyticsData,
 } from '@/lib/api-client';
 import { useAdminResponsive } from '@/hooks';
+import { unwrapData } from '@/lib/orval-response';
 
 interface DomainMetricPoint {
   month: string;
@@ -88,7 +89,7 @@ function getDomainMetrics(value: AdminAnalyticsDataDomainMetrics | undefined): D
 }
 
 function getAnalyticsData(data: ResponseEnvelopeAdminAnalyticsData | undefined): AdminAnalyticsData | null {
-  return data?.data ?? null;
+  return unwrapData<AdminAnalyticsData>(data) ?? null;
 }
 
 const Analytics: React.FC = () => {

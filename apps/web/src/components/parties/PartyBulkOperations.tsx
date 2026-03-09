@@ -257,7 +257,7 @@ export const PartyBulkOperations: React.FC<PartyBulkOperationsProps> = ({
   return (
     <>
       {/* Bulk Operations Bar */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+      <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
@@ -311,7 +311,7 @@ export const PartyBulkOperations: React.FC<PartyBulkOperationsProps> = ({
         size="md"
       >
         <div className="space-y-4">
-          <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="bg-gray-50 p-4 rounded-2xl">
             <h4 className="font-medium text-gray-900 mb-2">Dışa Aktarılacak Veriler</h4>
             <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
               {Object.values(CSV_FIELD_MAPPING).map(field => (
@@ -466,7 +466,7 @@ export const PartyBulkOperations: React.FC<PartyBulkOperationsProps> = ({
             </div>
           </div>
 
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-3">
             <div className="flex items-start space-x-2">
               <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
               <div className="text-sm text-yellow-800">
@@ -500,7 +500,7 @@ export const PartyBulkOperations: React.FC<PartyBulkOperationsProps> = ({
         size="md"
       >
         <div className="space-y-4">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
             <div className="flex items-start space-x-3">
               <AlertCircle className="w-6 h-6 text-red-600 mt-0.5" />
               <div>

@@ -314,7 +314,7 @@ export const SimpleVirtualizedPartyList: React.FC<VirtualizedPartyListProps> = (
   const visibleParties = parties.slice(visibleRange.startIndex, visibleRange.endIndex + 1);
 
   return (
-    <div className={`bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md ${className}`} ref={containerRef}>
+    <div className={`bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-xl ${className}`} ref={containerRef}>
       {/* Header with Search and Filters */}
       <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between mb-3">
@@ -366,7 +366,7 @@ export const SimpleVirtualizedPartyList: React.FC<VirtualizedPartyListProps> = (
                 { value: 'inactive', label: 'Pasif' },
                 { value: 'archived', label: 'Arşivlenmiş' }
               ]}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
 
             <Select
@@ -380,7 +380,7 @@ export const SimpleVirtualizedPartyList: React.FC<VirtualizedPartyListProps> = (
                 { value: 'control', label: 'Kontrol' },
                 { value: 'renewal', label: 'Yenileme' }
               ]}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
 
             <Select
@@ -395,7 +395,7 @@ export const SimpleVirtualizedPartyList: React.FC<VirtualizedPartyListProps> = (
                 { value: 'kontrol-hastasi', label: 'Kontrol Hastası' },
                 { value: 'satis-tamamlandi', label: 'Satış Tamamlandı' }
               ]}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
 
             <Select
@@ -406,7 +406,7 @@ export const SimpleVirtualizedPartyList: React.FC<VirtualizedPartyListProps> = (
                 { value: 'true', label: 'Cihazı Var' },
                 { value: 'false', label: 'Cihazı Yok' }
               ]}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
 
             <Select
@@ -419,7 +419,7 @@ export const SimpleVirtualizedPartyList: React.FC<VirtualizedPartyListProps> = (
                 { value: 'rejected', label: 'Reddedildi' },
                 { value: 'paid', label: 'Ödendi' }
               ]}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
         )}
@@ -467,7 +467,7 @@ export const SimpleVirtualizedPartyList: React.FC<VirtualizedPartyListProps> = (
               <div className="absolute inset-0 bg-gray-500 opacity-75" onClick={() => setCommunicationParty(null)}></div>
             </div>
 
-            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
               <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white">

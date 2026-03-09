@@ -52,6 +52,7 @@ export function InvoiceScenarioSection({ scenarioData, onChange, disableSubScena
         <div className="space-y-4">
                 <div>
                     <Select
+                        data-testid="invoice-scenario-select"
                         label="Fatura Senaryosu"
                         value={scenarioData?.scenario || ''}
                         onChange={(e) => handleScenarioChange(e.target.value)}
@@ -71,6 +72,7 @@ export function InvoiceScenarioSection({ scenarioData, onChange, disableSubScena
                 {showSubScenario && (
                     <div>
                         <Select
+                            data-testid="invoice-subscenario-select"
                             label="Mevcut Fatura Senaryonuz"
                             value={scenarioData?.currentScenarioType || '2'}
                             onChange={(e) => handleSubScenarioChange(e.target.value as '2' | '3')}

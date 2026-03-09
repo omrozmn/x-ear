@@ -119,7 +119,7 @@ export const SGKApprovalModal: React.FC<SGKApprovalModalProps> = ({
       <div className="space-y-6">
         {/* Hasta ve Talep Bilgileri */}
         {party && (
-          <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="bg-gray-50 p-4 rounded-2xl">
             <h4 className="font-medium text-gray-900 mb-3">Talep Bilgileri</h4>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
@@ -154,7 +154,7 @@ export const SGKApprovalModal: React.FC<SGKApprovalModalProps> = ({
         </div>
 
         {/* Seçilen Onay Türüne Göre Açıklama */}
-        <div className={`p-3 rounded-lg border-l-4 ${approvalType === 'approve' ? 'bg-green-50 border-green-400' :
+        <div className={`p-3 rounded-2xl border-l-4 ${approvalType === 'approve' ? 'bg-green-50 border-green-400' :
             approvalType === 'reject' ? 'bg-red-50 border-red-400' :
               'bg-yellow-50 border-yellow-400'
           }`}>

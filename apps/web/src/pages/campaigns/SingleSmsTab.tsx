@@ -261,7 +261,7 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance }) => 
                             <span className="text-gray-500 dark:text-gray-400">Mevcut Kredi</span>
                             <span className="font-semibold text-indigo-600 dark:text-indigo-400">{formatNumber(creditBalance)}</span>
                         </div>
-                        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${creditEnough ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
+                        <div className={`flex items-center gap-2 px-3 py-2 rounded-2xl ${creditEnough ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
                             {creditEnough ? (
                                 <CheckCircle className="w-4 h-4" />
                             ) : (
@@ -302,7 +302,7 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance }) => 
                                 key={field.key}
                                 type="button"
                                 onClick={() => insertDynamicField(field.key)}
-                                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 rounded-md hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
+                                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
                                 title={field.description}
                             >
                                 <Plus className="w-3 h-3" />
@@ -369,18 +369,18 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance }) => 
                             <button
                                 data-allow-raw="true"
                                 onClick={() => setShowPreview(false)}
-                                className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                className="p-1 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             >
                                 <X className="w-5 h-5 text-gray-500" />
                             </button>
                         </div>
                         <div className="p-4 space-y-4">
-                            <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
+                            <div className="bg-gray-100 dark:bg-gray-700 rounded-2xl p-4">
                                 <p className="text-xs text-gray-500 dark:text-gray-300 mb-2">
                                     Alıcı: {phoneNumber || '05XX XXX XX XX'}
                                     {recipientName && ` (${recipientName})`}
                                 </p>
-                                <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-200 dark:border-gray-600">
+                                <div className="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-sm border border-gray-200 dark:border-gray-600">
                                     <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{getPreviewMessage}</p>
                                 </div>
                             </div>

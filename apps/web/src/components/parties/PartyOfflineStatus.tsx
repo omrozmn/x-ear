@@ -71,7 +71,7 @@ export const PartyOfflineStatus: React.FC<PartyOfflineStatusProps> = ({
   };
 
   return (
-    <div className={`flex items-center gap-3 p-3 bg-white border rounded-lg shadow-sm ${className}`}>
+    <div className={`flex items-center gap-3 p-3 bg-white border rounded-2xl shadow-sm ${className}`}>
       {/* Status Badge */}
       <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${getStatusColor()}`}>
         {getStatusIcon()}

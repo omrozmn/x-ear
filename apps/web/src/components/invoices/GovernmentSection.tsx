@@ -18,7 +18,7 @@ export function GovernmentSection({
   errors = {}
 }: GovernmentSectionProps) {
   return (
-    <div className="bg-white rounded-lg shadow p-6 mb-6">
+    <div className="bg-white rounded-2xl shadow p-6 mb-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">Kamu Faturası Özel Bilgileri</h3>
       
       <div className="space-y-4">
@@ -63,7 +63,7 @@ export function GovernmentSection({
         </div>
 
         {/* Bilgilendirme */}
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
           <div className="flex items-start">
             <AlertTriangle className="text-amber-400 mr-2 flex-shrink-0" size={18} />
             <div>

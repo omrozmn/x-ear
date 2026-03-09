@@ -295,7 +295,7 @@ export function PartySearch({
 
       {/* Advanced Filters Panel */}
       {showFilters && showAdvancedFilters && (
-        <div className="absolute z-40 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-4">
+        <div className="absolute z-40 w-full mt-1 bg-white border border-gray-200 rounded-2xl shadow-lg p-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-medium text-gray-900">Gelişmiş Filtreler</h3>
             <Button
@@ -317,7 +317,7 @@ export function PartySearch({
               <select data-allow-raw="true"
                 value={filters.status || ''}
                 onChange={(e) => handleFilterChange('status', e.target.value || undefined)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Tümü</option>
                 <option value="active">Aktif</option>
@@ -334,7 +334,7 @@ export function PartySearch({
               <select data-allow-raw="true"
                 value={filters.segment || ''}
                 onChange={(e) => handleFilterChange('segment', e.target.value || undefined)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Tümü</option>
                 <option value="trial">Deneme</option>
@@ -352,7 +352,7 @@ export function PartySearch({
               <select data-allow-raw="true"
                 value={filters.acquisitionType || ''}
                 onChange={(e) => handleFilterChange('acquisitionType', e.target.value || undefined)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Tümü</option>
                 <option value="referral">Referans</option>
@@ -372,7 +372,7 @@ export function PartySearch({
                 type="date"
                 value={filters.dateFrom || ''}
                 onChange={(e) => handleFilterChange('dateFrom', e.target.value || undefined)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -385,7 +385,7 @@ export function PartySearch({
                 type="date"
                 value={filters.dateTo || ''}
                 onChange={(e) => handleFilterChange('dateTo', e.target.value || undefined)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -397,7 +397,7 @@ export function PartySearch({
               <select data-allow-raw="true"
                 value={filters.branchId || ''}
                 onChange={(e) => handleFilterChange('branchId', e.target.value || undefined)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Tüm Şubeler</option>
                 <option value="branch-1">Merkez Şube</option>
@@ -413,7 +413,7 @@ export function PartySearch({
       {showDropdown && !showAdvancedFilters && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-96 overflow-y-auto"
+          className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-2xl shadow-lg max-h-96 overflow-y-auto"
         >
           {/* Search Results */}
           {localValue.length > 0 && (

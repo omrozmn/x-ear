@@ -124,7 +124,7 @@ export const SGKIntegration: React.FC<SGKIntegrationProps> = ({
       
       <div className="space-y-4">
         {/* Party Criteria Display */}
-        <div className="p-3 bg-blue-50 rounded-md">
+        <div className="p-3 bg-blue-50 rounded-xl">
           <div className="flex gap-4">
             <Badge>Yaş: {partyAge}</Badge>
             <Badge>
@@ -157,7 +157,7 @@ export const SGKIntegration: React.FC<SGKIntegrationProps> = ({
 
         {/* Selected Scheme Details */}
         {selectedScheme && (
-          <div className="p-4 bg-green-50 rounded-md border border-green-200">
+          <div className="p-4 bg-green-50 rounded-xl border border-green-200">
             <div className="space-y-2">
               <span className="font-bold text-green-700">
                 {selectedScheme.name}
@@ -187,7 +187,7 @@ export const SGKIntegration: React.FC<SGKIntegrationProps> = ({
           <div className="flex gap-2">
             <label
               htmlFor="sgk-document"
-              className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
+              className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-2xl transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
             >
               {sgkDocumentUploaded ? <Check className="w-4 h-4 mr-2" /> : <Upload className="w-4 h-4 mr-2" />}
               {sgkDocumentUploaded ? "Belge Yüklendi" : "Belge Yükle"}

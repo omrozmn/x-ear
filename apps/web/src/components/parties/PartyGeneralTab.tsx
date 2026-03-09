@@ -11,7 +11,7 @@ export const PartyGeneralTab: React.FC<PartyGeneralTabProps> = ({ party }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Name */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border">
+      <div className="bg-white p-4 rounded-2xl shadow-sm border">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-600">Ad Soyad</p>
@@ -21,7 +21,7 @@ export const PartyGeneralTab: React.FC<PartyGeneralTabProps> = ({ party }) => {
       </div>
 
       {/* TC Number */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border">
+      <div className="bg-white p-4 rounded-2xl shadow-sm border">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-600">TC Kimlik No</p>
@@ -31,7 +31,7 @@ export const PartyGeneralTab: React.FC<PartyGeneralTabProps> = ({ party }) => {
       </div>
 
       {/* Phone */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border">
+      <div className="bg-white p-4 rounded-2xl shadow-sm border">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-600">Telefon</p>
@@ -41,7 +41,7 @@ export const PartyGeneralTab: React.FC<PartyGeneralTabProps> = ({ party }) => {
       </div>
 
       {/* Email */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border">
+      <div className="bg-white p-4 rounded-2xl shadow-sm border">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-600">E-posta</p>
@@ -51,7 +51,7 @@ export const PartyGeneralTab: React.FC<PartyGeneralTabProps> = ({ party }) => {
       </div>
 
       {/* Birth Date */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border">
+      <div className="bg-white p-4 rounded-2xl shadow-sm border">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-600">Doğum Tarihi</p>
@@ -63,7 +63,7 @@ export const PartyGeneralTab: React.FC<PartyGeneralTabProps> = ({ party }) => {
       </div>
 
       {/* Address */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border">
+      <div className="bg-white p-4 rounded-2xl shadow-sm border">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-600">Adres</p>

@@ -286,7 +286,7 @@ export const SGKDownloadsPage: React.FC = () => {
                       label: formatMonthName(month)
                     }))
                   ]}
-                  className="rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:text-white"
+                  className="rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary focus:ring-primary dark:bg-gray-700 dark:text-white"
                 />
               </div>
               <Button
@@ -304,7 +304,7 @@ export const SGKDownloadsPage: React.FC = () => {
 
       {/* Bulk Download Panel */}
       {showBulkDownload && (
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg mx-4 sm:mx-6 lg:mx-8 mt-6 p-4">
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl mx-4 sm:mx-6 lg:mx-8 mt-6 p-4">
           <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-3">Toplu İndirme</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div className="space-y-2">
@@ -372,7 +372,7 @@ export const SGKDownloadsPage: React.FC = () => {
       {/* Download Progress Modal */}
       {downloading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full mx-4">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white">Belgeler İndiriliyor</h3>
@@ -401,7 +401,7 @@ export const SGKDownloadsPage: React.FC = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow border border-gray-200 dark:border-gray-700">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -530,7 +530,7 @@ export const SGKDownloadsPage: React.FC = () => {
       {/* E-Receipt Detail Modal */}
       {selectedEReceipt && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold dark:text-white">E-Reçete Detayları - {selectedEReceipt.number}</h3>
@@ -581,7 +581,7 @@ export const SGKDownloadsPage: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Teslim Edilen Malzemeler</label>
                   <div className="space-y-3">
                     {selectedEReceipt.materials.map((material, index) => (
-                      <div key={`${material.code}-${index}`} className="border rounded-lg p-4 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+                      <div key={`${material.code}-${index}`} className="border rounded-2xl p-4 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <p className="font-medium text-green-800 dark:text-green-300">{material.name}</p>

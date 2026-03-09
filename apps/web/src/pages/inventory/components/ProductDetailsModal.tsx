@@ -224,7 +224,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
         {activeTab === 'details' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3 flex items-center">
                   <Package className="w-5 h-5 mr-2" />
                   Ürün Bilgileri
@@ -253,7 +253,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
                 </div>
               </div>
 
-              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3 flex items-center">
                   <Barcode className="w-5 h-5 mr-2" />
                   Tanımlama
@@ -276,7 +276,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
             </div>
 
             <div className="space-y-4">
-              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">Fiyat Bilgileri</h3>
                 <div className="space-y-3">
                   <div>
@@ -296,7 +296,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
                 </div>
               </div>
 
-              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3 flex items-center">
                   <Shield className="w-5 h-5 mr-2" />
                   Konum ve Diğer
@@ -328,7 +328,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
               {product.description && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Açıklama</label>
-                  <p className="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">{product.description}</p>
+                  <p className="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 p-3 rounded-2xl">{product.description}</p>
                 </div>
               )}
 
@@ -351,7 +351,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
               {product.notes && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Notlar</label>
-                  <p className="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">{product.notes}</p>
+                  <p className="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 p-3 rounded-2xl">{product.notes}</p>
                 </div>
               )}
             </div>
@@ -360,7 +360,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
 
         {activeTab === 'inventory' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">Stok Durumu</h3>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
@@ -401,7 +401,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
               </div>
             </div>
 
-            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3 flex items-center">
                 <History className="w-5 h-5 mr-2" />
                 Tarihler
@@ -431,7 +431,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
         )}
 
         {activeTab === 'history' && (
-          <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg text-center">
+          <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-2xl text-center">
             <Package className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Stok Geçmişi</h3>
             <p className="text-gray-600 dark:text-gray-400">

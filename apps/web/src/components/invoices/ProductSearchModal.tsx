@@ -129,7 +129,7 @@ export function ProductSearchModal({ isOpen, onClose, onSelect }: ProductSearchM
         />
 
         {/* Modal */}
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+        <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
           {/* Header */}
           <div className="bg-white px-6 py-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
@@ -186,7 +186,7 @@ export function ProductSearchModal({ isOpen, onClose, onSelect }: ProductSearchM
                       key={product.id}
                       variant="ghost"
                       onClick={() => handleSelect(product)}
-                      className="w-full p-4 text-left border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors">
+                      className="w-full p-4 text-left border border-gray-200 rounded-2xl hover:bg-blue-50 hover:border-blue-300 transition-colors">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="font-medium text-gray-900">
@@ -250,7 +250,7 @@ export function ProductSearchModal({ isOpen, onClose, onSelect }: ProductSearchM
                 type="button"
                 onClick={onClose}
                 variant="default"
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300">
                 İptal
               </Button>
             </div>

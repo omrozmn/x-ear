@@ -138,7 +138,7 @@ export function ActivityTab() {
                                                 <Button
                                                     onClick={() => setSelectedLog(log)}
                                                     variant="ghost"
-                                                    className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors !w-auto !h-auto"
+                                                    className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors !w-auto !h-auto"
                                                     title="Detay"
                                                 >
                                                     <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />

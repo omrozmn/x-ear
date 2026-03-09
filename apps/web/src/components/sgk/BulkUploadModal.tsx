@@ -143,7 +143,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
         {/* Drag and Drop Area */}
         <div
           className={`
-            border-2 border-dashed rounded-lg p-8 text-center transition-colors
+            border-2 border-dashed rounded-2xl p-8 text-center transition-colors
             ${isDragOver
               ? 'border-blue-400 bg-blue-50'
               : 'border-gray-300 hover:border-gray-400'
@@ -167,7 +167,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
 
         {/* Error Message */}
         {error && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-md">
+          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl">
             <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
             <p className="text-sm text-red-700">{error}</p>
           </div>
@@ -183,7 +183,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
               {files.map((file, index) => (
                 <div
                   key={`${file.name}-${index}`}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-md"
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-xl"
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <FileImage className="h-5 w-5 text-gray-400 flex-shrink-0" />

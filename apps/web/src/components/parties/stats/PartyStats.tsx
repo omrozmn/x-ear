@@ -214,7 +214,7 @@ export const PartyStats: React.FC<PartyStatsProps> = ({
     return (
       <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 ${className}`}>
         {[...Array(showExtendedStats ? 8 : 4)].map((_, index) => (
-          <div key={index} className="bg-white overflow-hidden shadow rounded-lg animate-pulse">
+          <div key={index} className="bg-white overflow-hidden shadow rounded-2xl animate-pulse">
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
@@ -258,7 +258,7 @@ export const PartyStats: React.FC<PartyStatsProps> = ({
           return (
             <div 
               key={stat.id} 
-              className="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-all duration-200 relative"
+              className="bg-white overflow-hidden shadow rounded-2xl hover:shadow-md transition-all duration-200 relative"
             >
               {getPriorityIndicator(stat.priority)}
               

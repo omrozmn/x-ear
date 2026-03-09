@@ -112,7 +112,7 @@ export const SGKPage: React.FC = () => {
 
         <TabsContent value="upload" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-8 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors dark:bg-gray-800">
+            <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-2xl p-8 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors dark:bg-gray-800">
               <Camera size={48} className="mx-auto mb-4 text-gray-400 dark:text-gray-500" />
               <h3 className="text-lg font-medium mb-2 dark:text-white">Kamera ile Çekim</h3>
               <p className="text-gray-500 dark:text-gray-400 mb-4">
@@ -126,7 +126,7 @@ export const SGKPage: React.FC = () => {
               </Button>
             </div>
 
-            <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-8 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors dark:bg-gray-800">
+            <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-2xl p-8 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors dark:bg-gray-800">
               <Upload size={48} className="mx-auto mb-4 text-gray-400 dark:text-gray-500" />
               <h3 className="text-lg font-medium mb-2 dark:text-white">Dosya Yükleme</h3>
               <p className="text-gray-500 dark:text-gray-400 mb-4">

@@ -154,7 +154,7 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
         {/* Enhanced Document Info Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Document Type */}
-          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="p-4 bg-blue-50 rounded-2xl border border-blue-200">
             <div className="flex items-center gap-2 mb-2">
               <FileType className="w-4 h-4 text-blue-600" />
               <label className="text-sm font-medium text-blue-900">Doküman Türü</label>
@@ -170,7 +170,7 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
           </div>
 
           {/* Party Info */}
-          <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+          <div className="p-4 bg-green-50 rounded-2xl border border-green-200">
             <div className="flex items-center gap-2 mb-2">
               <User className="w-4 h-4 text-green-600" />
               <label className="text-sm font-medium text-green-900">Hasta Bilgisi</label>
@@ -186,7 +186,7 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
           </div>
 
           {/* Processing Info */}
-          <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+          <div className="p-4 bg-purple-50 rounded-2xl border border-purple-200">
             <div className="flex items-center gap-2 mb-2">
               <Hash className="w-4 h-4 text-purple-600" />
               <label className="text-sm font-medium text-purple-900">İşlem Bilgisi</label>
@@ -251,7 +251,7 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
             
             <div 
               ref={containerRef}
-              className="border rounded-lg overflow-auto bg-gray-50 max-h-96 flex items-center justify-center"
+              className="border rounded-2xl overflow-auto bg-gray-50 max-h-96 flex items-center justify-center"
             >
               <img
                 ref={imageRef}
@@ -303,7 +303,7 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
               </div>
             </div>
             
-            <div className="bg-gray-50 border rounded-lg">
+            <div className="bg-gray-50 border rounded-2xl">
               <div className="p-4">
                 <div 
                   className={`text-sm text-gray-800 whitespace-pre-wrap leading-relaxed ${
@@ -337,7 +337,7 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
           <h3 className="text-lg font-semibold text-gray-900">PDF Durumu</h3>
           
           {data.pdf_generated ? (
-            <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-2xl">
               <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
               <div className="flex-1">
                 <div className="text-sm font-medium text-green-800">
@@ -353,7 +353,7 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
               </Button>
             </div>
           ) : (
-            <div className="flex items-center gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-center gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-2xl">
               <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
               <div className="flex-1">
                 <div className="text-sm font-medium text-yellow-800">
@@ -371,7 +371,7 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
         </div>
 
         {/* Document Metadata */}
-        <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+        <div className="bg-gray-50 rounded-2xl p-4 space-y-2">
           <h4 className="text-sm font-medium text-gray-900 mb-3">Belge Detayları</h4>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="flex items-center gap-2">

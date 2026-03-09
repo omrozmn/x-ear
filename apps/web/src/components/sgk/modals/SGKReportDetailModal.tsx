@@ -97,7 +97,7 @@ export const SGKReportDetailModal: React.FC<SGKReportDetailModalProps> = ({
       <div className="space-y-6">
         {/* Hasta Bilgileri */}
         {party && (
-          <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="bg-gray-50 p-4 rounded-2xl">
             <h4 className="font-medium text-gray-900 mb-2">Hasta Bilgileri</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
@@ -155,18 +155,18 @@ export const SGKReportDetailModal: React.FC<SGKReportDetailModalProps> = ({
 
           <div>
             <label className="block text-sm font-medium text-gray-500 mb-2">Tanı</label>
-            <p className="text-gray-900 bg-gray-50 p-3 rounded-lg">{mockReportDetail.diagnosis}</p>
+            <p className="text-gray-900 bg-gray-50 p-3 rounded-2xl">{mockReportDetail.diagnosis}</p>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-500 mb-2">Öneriler</label>
-            <p className="text-gray-900 bg-gray-50 p-3 rounded-lg">{mockReportDetail.recommendations}</p>
+            <p className="text-gray-900 bg-gray-50 p-3 rounded-2xl">{mockReportDetail.recommendations}</p>
           </div>
 
           {mockReportDetail.notes && (
             <div>
               <label className="block text-sm font-medium text-gray-500 mb-2">Notlar</label>
-              <p className="text-gray-900 bg-gray-50 p-3 rounded-lg">{mockReportDetail.notes}</p>
+              <p className="text-gray-900 bg-gray-50 p-3 rounded-2xl">{mockReportDetail.notes}</p>
             </div>
           )}
         </div>

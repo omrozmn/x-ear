@@ -66,6 +66,30 @@ const PHASE_CONFIG: Record<string, {
     borderColor: 'border-green-200',
     icon: <Zap className="h-5 w-5 text-green-500" />,
   },
+  read_only: {
+    name: 'Phase A - Read Only',
+    description: 'AI sadece öneri modunda çalışır. Hiçbir aksiyon uygulanmaz, sadece öneriler sunulur.',
+    color: 'text-blue-700',
+    bgColor: 'bg-blue-50',
+    borderColor: 'border-blue-200',
+    icon: <Info className="h-5 w-5 text-blue-500" />,
+  },
+  proposal: {
+    name: 'Phase B - Proposal',
+    description: 'AI aksiyon önerileri sunar ve admin onayı ile aksiyonlar uygulanabilir.',
+    color: 'text-yellow-700',
+    bgColor: 'bg-yellow-50',
+    borderColor: 'border-yellow-200',
+    icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
+  },
+  execution: {
+    name: 'Phase C - Execution',
+    description: 'AI aksiyonları onay sonrası otomatik olarak uygulanır. Tam otomasyon modu.',
+    color: 'text-green-700',
+    bgColor: 'bg-green-50',
+    borderColor: 'border-green-200',
+    icon: <Zap className="h-5 w-5 text-green-500" />,
+  },
 };
 
 // =============================================================================

@@ -7,6 +7,7 @@ import {
   type ResponseEnvelopeAffiliateRead,
   type ResponseEnvelopeListCommissionRead,
 } from '@/lib/api-client';
+import { unwrapArray, unwrapData } from '@/lib/orval-response';
 import { Link } from '@tanstack/react-router';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
@@ -28,7 +29,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function getAffiliate(data: ResponseEnvelopeAffiliateRead | undefined): AffiliateDetail | null {
-  const affiliate = data?.data;
+  const affiliate = unwrapData<AffiliateRead>(data);
   if (!affiliate) {
     return null;
   }
@@ -43,11 +44,7 @@ function getAffiliate(data: ResponseEnvelopeAffiliateRead | undefined): Affiliat
 }
 
 function getCommissions(data: ResponseEnvelopeListCommissionRead | undefined): AffiliateCommission[] {
-  if (!Array.isArray(data?.data)) {
-    return [];
-  }
-
-  return data.data.map((commission) => {
+  return unwrapArray<CommissionRead>(data).map((commission) => {
     const record = isRecord(commission) ? commission : null;
     const event = typeof record?.event === 'string' ? record.event : undefined;
 

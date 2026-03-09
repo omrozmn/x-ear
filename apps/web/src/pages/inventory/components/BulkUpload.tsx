@@ -394,7 +394,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center space-x-3">
@@ -444,7 +444,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               CSV/Excel Dosyası Seç
             </label>
-            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-gray-400 dark:hover:border-gray-500 transition-colors">
+            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-6 text-center hover:border-gray-400 dark:hover:border-gray-500 transition-colors">
               <input
                 data-allow-raw="true"
                 ref={fileInputRef}
@@ -467,7 +467,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
 
             {/* Selected File Info */}
             {selectedFile && (
-              <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-2xl">
                 <div className="flex items-center space-x-3">
                   <FileText className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   <div>
@@ -582,7 +582,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
                   </div>
                 )}
                 {uploadResult.errorDetails.length > 0 && (
-                  <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                  <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-2xl">
                     <h5 className="text-sm font-medium text-red-800 dark:text-red-200 mb-2">
                       Hata Detayları:
                     </h5>

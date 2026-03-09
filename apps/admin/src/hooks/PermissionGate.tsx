@@ -20,6 +20,7 @@ export function PermissionGate({
     fallback = null,
 }: PermissionGateProps) {
     const { data, isLoading } = useAdminPermissions();
+    const userPermissions = Array.isArray(data?.permissions) ? data.permissions : [];
 
     if (isLoading || !data) {
         return <>{fallback}</>;
@@ -34,13 +35,13 @@ export function PermissionGate({
     }
 
     if (permission) {
-        return data.permissions.includes(permission) ? <>{children}</> : <>{fallback}</>;
+        return userPermissions.includes(permission) ? <>{children}</> : <>{fallback}</>;
     }
 
     if (permissions) {
         const hasAccess = mode === 'any'
-            ? permissions.some((item) => data.permissions.includes(item))
-            : permissions.every((item) => data.permissions.includes(item));
+            ? permissions.some((item) => userPermissions.includes(item))
+            : permissions.every((item) => userPermissions.includes(item));
 
         return hasAccess ? <>{children}</> : <>{fallback}</>;
     }

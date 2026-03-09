@@ -239,7 +239,7 @@ export function DesktopSuppliersPage() {
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Toplam Tedarikçi</p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
               </div>
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-2xl">
                 <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
@@ -250,7 +250,7 @@ export function DesktopSuppliersPage() {
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Aktif Tedarikçiler</p>
                 <p className="text-3xl font-bold text-green-600 dark:text-green-400">{stats.active}</p>
               </div>
-              <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
+              <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-2xl">
                 <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
               </div>
             </div>
@@ -261,7 +261,7 @@ export function DesktopSuppliersPage() {
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Pasif Tedarikçiler</p>
                 <p className="text-3xl font-bold text-gray-600 dark:text-gray-400">{stats.inactive}</p>
               </div>
-              <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+              <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-2xl">
                 <Flame className="h-6 w-6 text-gray-600 dark:text-gray-400" />
               </div>
             </div>
@@ -416,7 +416,7 @@ export function DesktopSuppliersPage() {
           size="md"
         >
           <div className="space-y-4">
-            <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-2xl">
               <div className="flex-shrink-0">
                 <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
                   <Trash2 className="h-5 w-5 text-red-600" />

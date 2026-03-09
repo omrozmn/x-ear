@@ -38,6 +38,7 @@ export default function AdminDashboardPage() {
 
     const { data: dashboardData, isLoading: metricsLoading, error: metricsError, refetch } = useGetAdminDashboard({
         query: {
+            enabled: isAuthenticated && !authLoading,
             retry: 1,
             refetchOnWindowFocus: false,
         }

@@ -132,7 +132,7 @@ export function MedicalDeviceModal({
           onClick={handleCancel}
         ></div>
 
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+        <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
           <div className="bg-purple-600 px-6 py-4">
             <h3 className="text-lg font-medium text-white">
               İlaç ve Tıbbi Cihaz Bilgileri
@@ -145,7 +145,7 @@ export function MedicalDeviceModal({
 
           <div className="bg-white px-6 py-4">
             <div className="space-y-4">
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+              <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4">
                 <RadioGroup
                   label="Ürün Türü *"
                   name="productType"
@@ -233,7 +233,7 @@ export function MedicalDeviceModal({
               </div>
 
 
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+              <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4">
                 <div className="flex items-start">
                   <Info className="text-purple-400 mr-2 flex-shrink-0" size={18} />
                   <div>
@@ -259,7 +259,7 @@ export function MedicalDeviceModal({
               </div>
 
               {Object.keys(errors).length > 0 && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
                   <div className="flex items-start">
                     <AlertTriangle className="text-red-400 mr-2 flex-shrink-0" size={18} />
                     <div>

@@ -144,7 +144,7 @@ export function PaymentsPage() {
                 {formatCurrency(totalAmount, 'TRY')}
               </p>
             </div>
-            <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
+            <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-2xl">
               <DollarSign className="text-green-600 dark:text-green-400" size={24} />
             </div>
           </div>
@@ -158,7 +158,7 @@ export function PaymentsPage() {
                 {formatCurrency(pendingAmount, 'TRY')}
               </p>
             </div>
-            <div className="p-3 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg">
+            <div className="p-3 bg-yellow-100 dark:bg-yellow-900/20 rounded-2xl">
               <Calendar className="text-yellow-600 dark:text-yellow-400" size={24} />
             </div>
           </div>
@@ -172,7 +172,7 @@ export function PaymentsPage() {
                 {filteredPayments.length}
               </p>
             </div>
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+            <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-2xl">
               <CreditCard className="text-blue-600 dark:text-blue-400" size={24} />
             </div>
           </div>
@@ -190,7 +190,7 @@ export function PaymentsPage() {
               placeholder="Fatura no veya hasta ara..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           <div className="flex gap-2">
@@ -198,7 +198,7 @@ export function PaymentsPage() {
               data-allow-raw="true"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">Tüm Durumlar</option>
               <option value="completed">Tamamlandı</option>

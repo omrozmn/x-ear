@@ -90,7 +90,7 @@ export const ProductSearchComponent: React.FC<ProductSearchComponentProps> = ({
               placeholder="Ürün adı, marka, model veya barkod ile arayın..."
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
               <Search className="w-4 h-4 text-gray-400" />
@@ -104,7 +104,7 @@ export const ProductSearchComponent: React.FC<ProductSearchComponentProps> = ({
 
           {/* Search Results Dropdown */}
           {showResults && enhancedResults.length > 0 && (
-            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
               {enhancedResults.map((result) => {
                 const product = result.item;
                 return (
@@ -152,7 +152,7 @@ export const ProductSearchComponent: React.FC<ProductSearchComponentProps> = ({
 
         {/* Selected Product Display */}
         {selectedProduct && (
-          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+          <div className="p-4 bg-green-50 border border-green-200 rounded-2xl">
             <div className="flex justify-between items-start">
               <div className="flex-1">
                 <div className="font-medium text-green-800">{selectedProduct.name}</div>

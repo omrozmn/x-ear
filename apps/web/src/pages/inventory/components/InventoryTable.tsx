@@ -123,7 +123,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
   ];
 
   return (
-    <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden border dark:border-gray-700">
+    <div className="bg-white dark:bg-gray-800 shadow-sm rounded-2xl overflow-hidden border dark:border-gray-700">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-900">
@@ -430,13 +430,13 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
                   value={itemsPerPage.toString()}
                   onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
                   options={itemsPerPageOptions}
-                  className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-sm dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               )}
             </div>
 
             <div>
-              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+              <nav className="relative z-0 inline-flex rounded-xl shadow-sm -space-x-px">
                 {/* First page button */}
                 <Button
                   variant="ghost"

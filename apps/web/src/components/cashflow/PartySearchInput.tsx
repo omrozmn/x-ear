@@ -60,7 +60,7 @@ export function PartySearchInput({ selectedParty, onSelectParty }: PartySearchIn
 
   if (selectedParty) {
     return (
-      <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+      <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-2xl">
         <div>
           <p className="font-medium text-blue-900">
             {selectedParty.firstName} {selectedParty.lastName}
@@ -94,7 +94,7 @@ export function PartySearchInput({ selectedParty, onSelectParty }: PartySearchIn
         className="pl-10"
       />
       {showResults && search.length >= 2 && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-2xl shadow-lg max-h-60 overflow-auto">
           {parties.length > 0 ? (
             parties.map((party) => (
               <div

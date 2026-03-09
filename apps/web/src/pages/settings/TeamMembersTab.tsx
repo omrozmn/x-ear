@@ -272,7 +272,7 @@ export function TeamMembersTab() {
             </div>
 
             {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center">
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl flex items-center">
                     <AlertCircle className="w-5 h-5 mr-2" />
                     <div>
                         <div className="font-medium">Kullanicilar yuklenirken bir hata olustu.</div>
@@ -388,7 +388,7 @@ export function TeamMembersTab() {
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Yeni Kullanici Olustur</h2>
 
                         {inviteSuccess ? (
-                            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-2xl">
                                 <div className="flex items-center text-green-700 mb-2">
                                     <CheckCircle2 className="w-5 h-5 mr-2" />
                                     Davet Basarili!

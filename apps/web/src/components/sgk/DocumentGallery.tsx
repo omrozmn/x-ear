@@ -230,7 +230,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
           )}
 
           {/* View mode toggle */}
-          <div className="flex border rounded-lg">
+          <div className="flex border rounded-2xl">
             <Button
               variant={viewMode === 'grid' ? 'default' : 'ghost'}
               size="sm"
@@ -276,7 +276,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
 
       {/* Filters */}
       {showFilters && (
-        <div className="bg-gray-50 p-4 rounded-lg space-y-4">
+        <div className="bg-gray-50 p-4 rounded-2xl space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
             <Input
@@ -381,7 +381,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                         max={100}
                         value={fileSizeRange.min}
                         onChange={(e) => setFileSizeRange(prev => ({ ...prev, min: parseInt(e.target.value) }))}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                        className="w-full h-2 bg-gray-200 rounded-2xl appearance-none cursor-pointer"
                       />
                     </div>
                     <div>
@@ -393,7 +393,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                         max={100}
                         value={fileSizeRange.max}
                         onChange={(e) => setFileSizeRange(prev => ({ ...prev, max: parseInt(e.target.value) }))}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                        className="w-full h-2 bg-gray-200 rounded-2xl appearance-none cursor-pointer"
                       />
                     </div>
                   </div>
@@ -461,7 +461,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
             return (
               <div
                 key={document.id}
-                className={`relative bg-white border rounded-lg p-4 hover:shadow-md transition-shadow ${selectedDocuments.has(document.id) ? 'ring-2 ring-blue-500' : ''
+                className={`relative bg-white border rounded-2xl p-4 hover:shadow-md transition-shadow ${selectedDocuments.has(document.id) ? 'ring-2 ring-blue-500' : ''
                   }`}
               >
                 {/* Selection checkbox */}
@@ -472,7 +472,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                 />
 
                 {/* Document thumbnail/icon */}
-                <div className="flex items-center justify-center h-32 bg-gray-100 rounded-lg mb-3 mt-6">
+                <div className="flex items-center justify-center h-32 bg-gray-100 rounded-2xl mb-3 mt-6">
                   {document.fileUrl ? (
                     <img
                       src={document.fileUrl}
@@ -535,7 +535,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
         </div>
       ) : (
         /* List view */
-        <div className="bg-white border rounded-lg overflow-hidden">
+        <div className="bg-white border rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">

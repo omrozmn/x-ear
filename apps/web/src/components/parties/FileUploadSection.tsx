@@ -16,7 +16,7 @@ export const FileUploadSection: React.FC<FileUploadSectionProps> = ({
   onUploadClick
 }) => {
   return (
-    <div className="bg-white rounded-lg border p-6">
+    <div className="bg-white rounded-2xl border p-6">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-semibold">SGK Belgeleri</h3>
         <Button
@@ -40,7 +40,7 @@ export const FileUploadSection: React.FC<FileUploadSectionProps> = ({
       ) : (
         <div className="space-y-3">
           {sgkDocuments.map((doc) => (
-            <div key={doc.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+            <div key={doc.id} className="border rounded-2xl p-4 hover:bg-gray-50 transition-colors">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-2">

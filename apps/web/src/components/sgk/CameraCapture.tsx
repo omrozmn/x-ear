@@ -208,13 +208,13 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
     >
       <div className="space-y-4">
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div className="p-3 bg-red-50 border border-red-200 rounded-2xl">
             <p className="text-red-700 text-sm">{error}</p>
           </div>
         )}
 
         {/* Camera View */}
-        <div className="relative bg-black rounded-lg overflow-hidden" style={{ aspectRatio: '16/9' }}>
+        <div className="relative bg-black rounded-2xl overflow-hidden" style={{ aspectRatio: '16/9' }}>
           <video
             ref={videoRef}
             className="w-full h-full object-cover"
@@ -225,7 +225,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
           {/* Camera overlay */}
           <div className="absolute inset-0 pointer-events-none">
             {/* Document frame guide */}
-            <div className="absolute inset-4 border-2 border-white border-dashed opacity-50 rounded-lg" />
+            <div className="absolute inset-4 border-2 border-white border-dashed opacity-50 rounded-2xl" />
 
             {/* Corner guides */}
             <div className="absolute top-4 left-4 w-6 h-6 border-l-4 border-t-4 border-white" />
@@ -274,12 +274,12 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
                   <img
                     src={image.dataUrl}
                     alt="Captured"
-                    className="w-20 h-20 object-cover rounded-lg border"
+                    className="w-20 h-20 object-cover rounded-2xl border"
                   />
 
                   {/* Processing indicator */}
                   {!image.processed && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-2xl">
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     </div>
                   )}
@@ -307,7 +307,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
         )}
 
         {/* Instructions */}
-        <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+        <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-2xl">
           <p className="font-medium mb-1">Kullanım Talimatları:</p>
           <ul className="list-disc list-inside space-y-1 text-xs">
             <li>Belgeyi beyaz çerçeve içine yerleştirin</li>

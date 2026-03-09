@@ -324,7 +324,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
       }}
     >
       <div 
-        className="bg-white rounded-lg p-6 w-full max-w-6xl max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-2xl p-6 w-full max-w-6xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => {
           // Stop propagation to prevent parent modal from receiving events
           e.stopPropagation();
@@ -444,7 +444,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
                         data-testid="payment-method-select"
                         value={newPayment.paymentMethod}
                         onChange={(e) => setNewPayment(prev => ({ ...prev, paymentMethod: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="cash">Nakit</option>
                         <option value="card">Kredi Kartı</option>
@@ -504,7 +504,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
                 ) : (
                   <div className="space-y-3">
                     {paymentRecords.map((payment) => (
-                      <div key={payment.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                      <div key={payment.id} className="flex items-center justify-between p-4 border rounded-2xl hover:bg-gray-50">
                         <div className="flex items-center space-x-6">
                           <div className="text-xl font-semibold text-gray-900">
                             {formatCurrency(payment.amount)}

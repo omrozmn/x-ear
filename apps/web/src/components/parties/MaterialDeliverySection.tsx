@@ -314,7 +314,7 @@ export const MaterialDeliverySection: React.FC<MaterialDeliverySectionProps> = (
 
   return (
     <>
-      <div className="bg-white rounded-lg border p-6">
+      <div className="bg-white rounded-2xl border p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900 flex items-center">
             <Truck className="w-5 h-5 mr-2 text-blue-600" />
@@ -342,7 +342,7 @@ export const MaterialDeliverySection: React.FC<MaterialDeliverySectionProps> = (
         ) : (
           <div className="space-y-4">
             {deliveryBatches.map((batch) => (
-              <div key={batch.id} className="border border-gray-200 rounded-lg p-4">
+              <div key={batch.id} className="border border-gray-200 rounded-2xl p-4">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-3">
                     <div>
@@ -410,7 +410,7 @@ export const MaterialDeliverySection: React.FC<MaterialDeliverySectionProps> = (
       {/* Delivery Detail Modal */}
       {showDeliveryModal && selectedBatch && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-4 mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-md bg-white max-h-[90vh] overflow-y-auto">
+          <div className="relative top-4 mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-xl bg-white max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-gray-900">
                 Teslimat Detayları - {selectedBatch.batchNumber}
@@ -428,7 +428,7 @@ export const MaterialDeliverySection: React.FC<MaterialDeliverySectionProps> = (
             </div>
 
             {/* Delivery Info */}
-            <div className="bg-blue-50 p-4 rounded-lg mb-6">
+            <div className="bg-blue-50 p-4 rounded-2xl mb-6">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
                   <span className="font-medium text-blue-900">Durum:</span>
@@ -473,7 +473,7 @@ export const MaterialDeliverySection: React.FC<MaterialDeliverySectionProps> = (
             </div>
 
             {/* Delivery Address */}
-            <div className="bg-gray-50 p-4 rounded-lg mb-6">
+            <div className="bg-gray-50 p-4 rounded-2xl mb-6">
               <div className="flex items-start">
                 <MapPin className="w-5 h-5 text-gray-600 mr-3 mt-0.5" />
                 <div>
@@ -546,7 +546,7 @@ export const MaterialDeliverySection: React.FC<MaterialDeliverySectionProps> = (
             </div>
 
             {selectedBatch.notes && (
-              <div className="mt-6 p-4 bg-yellow-50 rounded-lg">
+              <div className="mt-6 p-4 bg-yellow-50 rounded-2xl">
                 <h4 className="font-medium text-yellow-900 mb-2">Notlar</h4>
                 <p className="text-yellow-800">{selectedBatch.notes}</p>
               </div>
@@ -558,7 +558,7 @@ export const MaterialDeliverySection: React.FC<MaterialDeliverySectionProps> = (
       {/* New Delivery Modal */}
       {showNewDeliveryModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-4 mx-auto p-5 border w-full max-w-5xl shadow-lg rounded-md bg-white max-h-[90vh] overflow-y-auto">
+          <div className="relative top-4 mx-auto p-5 border w-full max-w-5xl shadow-lg rounded-xl bg-white max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-gray-900">
                 Yeni Teslimat Oluştur
@@ -593,7 +593,7 @@ export const MaterialDeliverySection: React.FC<MaterialDeliverySectionProps> = (
               </div>
 
               {deliveryItems.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
+                <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-300 rounded-2xl">
                   <Package className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                   <p>Henüz öğe eklenmemiş.</p>
                   <p className="text-sm mt-2">Öğe eklemek için yukarıdaki butona tıklayın.</p>
@@ -601,7 +601,7 @@ export const MaterialDeliverySection: React.FC<MaterialDeliverySectionProps> = (
               ) : (
                 <div className="space-y-3">
                   {deliveryItems.map((item, index) => (
-                    <div key={item.id} className="border border-gray-200 rounded-lg p-4">
+                    <div key={item.id} className="border border-gray-200 rounded-2xl p-4">
                       <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
                         <div className="md:col-span-2">
                           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -708,7 +708,7 @@ export const MaterialDeliverySection: React.FC<MaterialDeliverySectionProps> = (
 
             {/* Summary */}
             {deliveryItems.length > 0 && (
-              <div className="bg-green-50 p-4 rounded-lg mb-6">
+              <div className="bg-green-50 p-4 rounded-2xl mb-6">
                 <h4 className="font-medium text-green-900 mb-2">Teslimat Özeti</h4>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>

@@ -39,10 +39,10 @@ export const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
   };
 
   return (
-    <div className={`fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-4 z-50 ${className}`}>
+    <div className={`fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg p-4 z-50 ${className}`}>
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center space-x-2">
-          <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+          <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-2xl">
             <Smartphone className="h-5 w-5 text-blue-600 dark:text-blue-400" />
           </div>
           <div>
@@ -140,10 +140,10 @@ export const PWAUpdatePrompt: React.FC<PWAUpdatePromptProps> = ({
   };
 
   return (
-    <div className={`fixed top-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg shadow-lg p-4 z-50 ${className}`}>
+    <div className={`fixed top-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-2xl shadow-lg p-4 z-50 ${className}`}>
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center space-x-2">
-          <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-lg">
+          <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-2xl">
             <Download className="h-5 w-5 text-blue-600 dark:text-blue-400" />
           </div>
           <div>

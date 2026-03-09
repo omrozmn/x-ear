@@ -38,7 +38,7 @@ export const DataCard = <T extends Record<string, any>>({
     return (
         <div
             className={cn(
-                "bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 mb-3 shadow-sm active:scale-[0.98] transition-all",
+                "bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 mb-3 shadow-sm active:scale-[0.98] transition-all",
                 onRowClick && "cursor-pointer"
             )}
             onClick={() => onRowClick?.(record)}

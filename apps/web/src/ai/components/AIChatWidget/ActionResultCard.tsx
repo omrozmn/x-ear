@@ -105,7 +105,7 @@ export function ActionResultCard({ onClose }: ActionResultCardProps): React.Reac
 
             {/* Summary Table */}
             {summary.length > 0 && (
-                <div className="mx-3 mb-3 rounded-lg bg-white/70 border border-green-100 divide-y divide-green-50">
+                <div className="mx-3 mb-3 rounded-2xl bg-white/70 border border-green-100 divide-y divide-green-50">
                     {summary.map((item, idx) => (
                         <div key={idx} className="flex items-center justify-between px-3 py-2">
                             <span className="text-[11px] text-gray-500 font-medium">{item.label}</span>
@@ -126,7 +126,7 @@ export function ActionResultCard({ onClose }: ActionResultCardProps): React.Reac
                             onClose();
                             navigate({ to: routeInfo.path });
                         }}
-                        className="flex-1 flex items-center justify-center gap-1.5 bg-green-600 text-white py-2.5 rounded-lg text-xs font-bold hover:bg-green-700 transition-all active:scale-[0.98] shadow-sm"
+                        className="flex-1 flex items-center justify-center gap-1.5 bg-green-600 text-white py-2.5 rounded-2xl text-xs font-bold hover:bg-green-700 transition-all active:scale-[0.98] shadow-sm"
                     >
                         <span>{routeInfo.icon}</span>
                         <span>İncelemek İçin Tıkla</span>
@@ -138,7 +138,7 @@ export function ActionResultCard({ onClose }: ActionResultCardProps): React.Reac
                 <button
                     data-allow-raw="true"
                     onClick={onClose}
-                    className={`${routeInfo ? 'w-12' : 'flex-1'} flex items-center justify-center bg-gray-100 text-gray-600 py-2.5 rounded-lg text-xs font-bold hover:bg-gray-200 transition-all active:scale-[0.98]`}
+                    className={`${routeInfo ? 'w-12' : 'flex-1'} flex items-center justify-center bg-gray-100 text-gray-600 py-2.5 rounded-2xl text-xs font-bold hover:bg-gray-200 transition-all active:scale-[0.98]`}
                 >
                     {routeInfo ? '✕' : 'Kapat'}
                 </button>

@@ -38,12 +38,100 @@ def _integration_key(db: Session) -> str | None:
     return config.config_value if config else None
 
 
+def _get_next_invoice_number(tenant: Tenant, db: Session, selected_prefix: str = None) -> tuple[str, bool]:
+    """Get next invoice number for tenant.
+    
+    Manual numbering is always enabled. This function generates the next sequential number.
+    
+    GİB E-Fatura Number Format Rules:
+    - Total length: 16 characters (fixed)
+    - Prefix: 3 characters (A-Z, 0-9 only)
+    - Year: 4 characters (YYYY)
+    - Sequence: 9 characters (zero-padded)
+    - Example: XER2026000000001
+    
+    Args:
+        tenant: Tenant object
+        db: Database session
+        selected_prefix: User-selected prefix (must be exactly 3 characters, A-Z and 0-9 only)
+    
+    Returns:
+        tuple: (invoice_number, is_auto_number)
+            - invoice_number: Generated invoice number (16 characters)
+            - is_auto_number: Always False (manual numbering always enabled)
+    """
+    settings = tenant.settings or {}
+    invoice_settings = settings.get("invoice_integration") or {}
+    
+    # Get prefix - user can define multiple prefixes and select one when creating invoice
+    available_prefixes = invoice_settings.get("invoice_prefixes", [])
+    default_prefix = invoice_settings.get("invoice_prefix", "XER")
+    
+    # Use selected prefix if provided, otherwise use default
+    prefix = selected_prefix if selected_prefix else default_prefix
+    
+    # Validate prefix according to GİB rules
+    if not prefix or len(prefix) != 3:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Fatura ön eki tam 3 karakter olmalıdır. Mevcut: '{prefix}' ({len(prefix) if prefix else 0} karakter)"
+        )
+    
+    if not prefix.isalnum() or not prefix.isupper():
+        raise HTTPException(
+            status_code=400,
+            detail=f"Fatura ön eki sadece büyük harf (A-Z) ve rakam (0-9) içerebilir: '{prefix}'"
+        )
+    
+    # Validate prefix exists in available prefixes (if list is not empty)
+    if available_prefixes and prefix not in available_prefixes:
+        prefix = available_prefixes[0] if available_prefixes else default_prefix
+    
+    current_year = datetime.now().year
+    
+    # Get current sequence number for this year and prefix
+    sequence_key = f"invoice_sequence_{prefix}_{current_year}"
+    current_sequence = invoice_settings.get(sequence_key, 0)
+    
+    # Increment sequence
+    next_sequence = current_sequence + 1
+    
+    # Generate invoice number: PREFIX (3) + YEAR (4) + SEQUENCE (9) = 16 characters
+    invoice_number = f"{prefix}{current_year}{str(next_sequence).zfill(9)}"
+    
+    # Validate total length (should always be 16)
+    if len(invoice_number) != 16:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Fatura numarası 16 karakter olmalı. Oluşturulan: '{invoice_number}' ({len(invoice_number)} karakter)"
+        )
+    
+    # Update sequence in tenant settings
+    if "invoice_integration" not in settings:
+        settings["invoice_integration"] = {}
+    settings["invoice_integration"][sequence_key] = next_sequence
+    tenant.settings = settings
+    db.flush()  # Flush to ensure sequence is saved
+    
+    return (invoice_number, False)  # Always False - manual numbering always enabled
+
+
 def _get_client(tenant: Tenant, db: Session) -> BirfaturaClient:
     settings = tenant.settings or {}
     invoice_settings = settings.get("invoice_integration") or {}
+    use_test_creds = bool(
+        os.getenv("BIRFATURA_TEST_API_KEY")
+        and os.getenv("BIRFATURA_TEST_SECRET_KEY")
+        and os.getenv("BIRFATURA_TEST_INTEGRATION_KEY")
+    )
     api_key = invoice_settings.get("api_key")
     secret_key = invoice_settings.get("secret_key")
     integration_key = _integration_key(db)
+
+    if use_test_creds:
+        api_key = os.getenv("BIRFATURA_TEST_API_KEY") or api_key
+        secret_key = os.getenv("BIRFATURA_TEST_SECRET_KEY") or secret_key
+        integration_key = os.getenv("BIRFATURA_TEST_INTEGRATION_KEY") or integration_key
 
     if not api_key or not secret_key or not integration_key:
         raise HTTPException(status_code=503, detail="BirFatura credentials not configured")
@@ -83,7 +171,17 @@ def issue_invoice_draft(
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
 
+    # Get next invoice number (manual or auto)
+    # User can select prefix from form_data if multiple prefixes are configured
+    selected_prefix = form_data.get("invoice_prefix") or form_data.get("invoicePrefix")
+    manual_invoice_number, is_auto_number = _get_next_invoice_number(tenant, db, selected_prefix)
+    
     invoice_dict = build_invoice_dict_from_form(form_data, tenant, draft_id=draft.id)
+    
+    # Override invoice number if manual numbering is enabled
+    if not is_auto_number and manual_invoice_number:
+        invoice_dict["invoiceNumber"] = manual_invoice_number
+    
     issue_uuid = invoice_dict["uuid"]
 
     outbox_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "instance", "efatura_outbox"))
@@ -108,7 +206,7 @@ def issue_invoice_draft(
             "fileName": xml_filename,
             "documentBytes": base64.b64encode(xml_content).decode("utf-8"),
             "systemTypeCodes": invoice_dict.get("systemType") or "EFATURA",
-            "isDocumentNoAuto": True,
+            "isDocumentNoAuto": is_auto_number,  # Use manual number if configured
         })
 
         if not response.get("Success"):
@@ -116,7 +214,14 @@ def issue_invoice_draft(
 
         result = response.get("Result") or {}
         draft.status = "SENT"
-        draft.invoice_number = result.get("invoiceNo") or invoice_dict.get("invoiceNumber")
+        
+        # Use manual invoice number if provided, otherwise use BirFatura's auto-generated number
+        draft.invoice_number = (
+            manual_invoice_number  # Manual number (if configured)
+            or result.get("invoiceNo")  # BirFatura auto-generated number
+            or invoice_dict.get("invoiceNumber")  # Fallback to XML number
+        )
+        
         draft.birfatura_uuid = (
             result.get("ettn")
             or result.get("documentUUID")

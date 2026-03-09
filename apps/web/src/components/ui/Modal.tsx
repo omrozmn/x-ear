@@ -66,7 +66,7 @@ export const Modal: React.FC<ModalProps> = ({
         onClick={handleOverlayClick}
       />
       <div className={`
-        bg-white rounded-lg shadow-xl z-10 w-full h-auto max-h-[90vh] 
+        bg-white rounded-2xl shadow-xl z-10 w-full h-auto max-h-[90vh] 
         flex flex-col overflow-hidden relative
         ${sizeClasses[size]}
         ${className}

@@ -6,7 +6,7 @@
  * Alias eklemek için: api-aliases.json dosyasını düzenleyin
  * Yeniden üretmek için: npm run gen:aliases
  * 
- * Generated: 2026-03-06T12:40:01.757Z
+ * Generated: 2026-03-09T11:25:42.252Z
  */
 
 // ACTIVITY_LOGS
@@ -62,6 +62,14 @@ export {
   useListAdminBirfaturaInvoices,
   useListAdminBirfaturaLogs,
 } from './admin-birfatura/admin-birfatura';
+
+// ADMIN_BLOG
+export {
+  useAdminGetPostsApiAdminBlogGet as useAdminGetPostsAdminBlogGet,
+  useCreatePostApiAdminBlogPost as useCreatePostAdminBlogPost,
+  useUpdatePostApiAdminBlogPostIdPut as useUpdatePostAdminBlogPostIdPut,
+  useDeletePostApiAdminBlogPostIdDelete as useDeletePostAdminBlogPostIdDelete,
+} from './admin-blog/admin-blog';
 
 // ADMIN_DASHBOARD
 export {
@@ -230,7 +238,9 @@ export {
   useCreateAdminAuthLogin,
   useCreateAdminUser,
   useListAdminUsers,
+  useListAdminUserAll,
   useGetAdminUser,
+  useUpdateAdminUserAll,
   useCreateAdminImpersonate,
   useCreateAdminDebugSwitchTenant,
   useCreateAdminDebugExitImpersonation,
@@ -304,6 +314,14 @@ export {
   useExecuteToolApiAiComposerExecutePost as useExecuteToolAiComposerExecutePost,
   useAnalyzeDocumentsApiAiComposerAnalyzePost as useAnalyzeDocumentsAiComposerAnalyzePost,
 } from './ai-composer/ai-composer';
+
+// AI_OPPORTUNITIES
+export {
+  useListAiOpportunities,
+  useGetAiOpportunity,
+  useUpdateAiOpportunityState,
+  useSimulateAiOpportunityAction,
+} from './ai-opportunities/ai-opportunities';
 
 // AI_STATUS
 export {
@@ -383,6 +401,12 @@ export {
   useCreateFirmaFirmapkbilgisigetir,
   useCreateFirmaFirmaadresbilgisigetir,
 } from './bir-fatura/bir-fatura';
+
+// BLOG
+export {
+  useGetPostsApiBlogGet as useGetPostsBlogGet,
+  useGetPostBySlugApiBlogSlugGet as useGetPostBySlugBlogSlugGet,
+} from './blog/blog';
 
 // BRANCHES
 export {
@@ -521,8 +545,8 @@ export {
 
 // INVOICE_ACTIONS
 export {
-  useCreateInvoiceIssue,
   useCreateInvoiceCopy,
+  useCreateInvoiceIssue,
   useCreateInvoiceCopyCancel,
   useListInvoicePdf,
   useListInvoiceShippingPdf,
@@ -548,7 +572,12 @@ export {
   useAcceptInvoice,
   useRejectInvoice,
   useCancelInvoice,
+  useGetInvoiceLogs,
+  useCreateInvoiceDraft,
+  useUpdateInvoiceDraft,
+  useGetInvoiceDraft,
   useDeletePurchase,
+  useIssueInvoiceDraft,
   useListInvoices,
   useCreateInvoices,
   useListInvoicePrintQueue,
@@ -827,6 +856,8 @@ export {
   useCreateTenantUser,
   useDeleteTenantUser,
   useUpdateTenantUser,
+  useGetCurrentTenant,
+  useUpdateTenantSettings,
   useGetTenantCompany,
   useUpdateTenantCompany,
   useUploadCompanyAsset,

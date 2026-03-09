@@ -41,7 +41,7 @@ const InventoryTable: React.FC<Props> = ({
   const someSelected = selectedItems.length > 0 && selectedItems.length < items.length;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow overflow-hidden">
       <table className="min-w-full table-auto">
         <thead className="bg-gray-50 dark:bg-gray-900 border-b dark:border-gray-700">
           <tr className="text-left border-b dark:border-gray-700">

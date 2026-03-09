@@ -64,7 +64,7 @@ export const MobileSuppliersPage: React.FC = () => {
                                 className="bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm active:scale-[0.99] transition-transform"
                             >
                                 <div className="flex gap-4">
-                                    <div className="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center flex-shrink-0 text-blue-600 dark:text-blue-400">
+                                    <div className="h-12 w-12 bg-blue-50 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center flex-shrink-0 text-blue-600 dark:text-blue-400">
                                         <Truck className="h-6 w-6" />
                                     </div>
 

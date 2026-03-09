@@ -386,7 +386,7 @@ export default function PartySegmentsSettings() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+          <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-2xl">
             <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
           </div>
           <div>
@@ -399,11 +399,11 @@ export default function PartySegmentsSettings() {
       </div>
 
       {/* Segments Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Hasta Segmentleri</h3>
         
         {/* Add New Segment */}
-        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-2xl">
           <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Yeni Segment Ekle</h4>
           <div className="flex gap-3">
             <input
@@ -413,7 +413,7 @@ export default function PartySegmentsSettings() {
               value={newSegmentLabel}
               onChange={(e) => setNewSegmentLabel(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddSegment()}
-              className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
             <Button
               onClick={handleAddSegment}
@@ -434,7 +434,7 @@ export default function PartySegmentsSettings() {
           {segments.map((segment) => (
             <div
               key={segment.value}
-              className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
+              className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
             >
               {editingSegment === segment.value ? (
                 <div className="flex items-center space-x-2 flex-1">
@@ -519,11 +519,11 @@ export default function PartySegmentsSettings() {
       </div>
 
       {/* Acquisition Types Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Kazanım Türleri</h3>
         
         {/* Add New Acquisition */}
-        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-2xl">
           <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Yeni Kazanım Türü Ekle</h4>
           <div className="flex gap-3">
             <input
@@ -533,7 +533,7 @@ export default function PartySegmentsSettings() {
               value={newAcquisitionLabel}
               onChange={(e) => setNewAcquisitionLabel(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddAcquisition()}
-              className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
             <Button
               onClick={handleAddAcquisition}
@@ -554,7 +554,7 @@ export default function PartySegmentsSettings() {
           {acquisitions.map((acquisition) => (
             <div
               key={acquisition.value}
-              className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
+              className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
             >
               {editingAcquisition === acquisition.value ? (
                 <div className="flex items-center space-x-2 flex-1">

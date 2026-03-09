@@ -91,7 +91,7 @@ const SerialAutocomplete: React.FC<{
       {isOpen && filteredSerials.length > 0 && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-md shadow-lg max-h-48 overflow-auto"
+          className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-xl shadow-lg max-h-48 overflow-auto"
         >
           {filteredSerials.map((serial, index) => (
             <div
@@ -123,7 +123,7 @@ export const SerialNumberForm: React.FC<SerialNumberFormProps> = ({
   // In manual mode, we don't need a selected device to show the form
   if (!selectedDevice && !isManualMode) {
     return (
-      <div className="bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg p-6 text-center">
+      <div className="bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-6 text-center">
         <Hash className="w-8 h-8 mx-auto mb-2 text-gray-400 dark:text-gray-500" />
         <p className="text-gray-600 dark:text-gray-400">
           Seri numarası atamak için önce bir cihaz seçin.
@@ -146,7 +146,7 @@ export const SerialNumberForm: React.FC<SerialNumberFormProps> = ({
   ].filter(Boolean);
 
   return (
-    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 space-y-4">
+    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 space-y-4">
       <div>
         <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1 flex items-center">
           <Hash className="w-4 h-4 mr-2" />
@@ -197,7 +197,7 @@ export const SerialNumberForm: React.FC<SerialNumberFormProps> = ({
       {/* Assigned Serials Summary - Audiological view: Right Left (as facing a person) */}
       {/* Assigned Serials Summary - Audiological view: Right Left (as facing a person) */}
       {assignedSerials.length > 0 && (
-        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-3">
           <h5 className="text-xs font-medium text-green-900 dark:text-green-100 mb-2 flex items-center">
             <CheckCircle className="w-3 h-3 mr-1" />
             Atanan Seri Numaraları

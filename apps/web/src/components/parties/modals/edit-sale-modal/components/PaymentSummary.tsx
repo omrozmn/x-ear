@@ -62,7 +62,7 @@ export const PaymentSummary: React.FC<PaymentSummaryProps> = ({
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Price Summary */}
-        <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+        <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-2xl">
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-sm text-gray-600">Liste Fiyatı:</span>

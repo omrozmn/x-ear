@@ -111,7 +111,7 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
 
 
   return (
-    <div className={`relative bg-white dark:bg-slate-800 rounded-lg border dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow ${earStyle.border} ${isCancelled ? 'opacity-50' : ''}`}>
+    <div className={`relative bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow ${earStyle.border} ${isCancelled ? 'opacity-50' : ''}`}>
       {/* Cancelled Overlay */}
       {isCancelled && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
@@ -369,7 +369,7 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
 
         <button data-allow-raw="true"
           onClick={() => onEdit?.(device)}
-          className="px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors flex items-center gap-1"
+          className="px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-colors flex items-center gap-1"
           title="Düzenle"
         >
           <Edit className="w-4 h-4" />
@@ -377,7 +377,7 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
         </button>
         <button data-allow-raw="true"
           onClick={() => onReplace?.(device)}
-          className="px-3 py-1.5 text-sm font-medium text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors flex items-center gap-1"
+          className="px-3 py-1.5 text-sm font-medium text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-2xl transition-colors flex items-center gap-1"
           title="Değiştir"
         >
           <RefreshCw className="w-4 h-4" />
@@ -385,7 +385,7 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
         </button>
         <button data-allow-raw="true"
           onClick={() => onCancel?.(device)}
-          className="px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex items-center gap-1"
+          className="px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl transition-colors flex items-center gap-1"
           title="İptal Et"
           disabled={isCancelled}
         >

@@ -346,7 +346,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
         showFooter={false}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="bg-gray-50 rounded-lg p-4">
+          <div className="bg-gray-50 rounded-2xl p-4">
             <h4 className="text-sm font-medium text-gray-900 mb-2">Mevcut Cihaz</h4>
             <p className="text-sm text-gray-700">
               <strong>{device.brand} {device.model}</strong>
@@ -363,7 +363,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
             <select data-allow-raw="true"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
               <option value="defective">Arızalı</option>
@@ -383,19 +383,19 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               placeholder="Değişim ile ilgili notlar..."
             />
           </div>
 
           {errorError && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start">
+            <div className="bg-red-50 border border-red-200 rounded-2xl p-3 flex items-start">
               <AlertCircle className="w-5 h-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-red-700">{errorError}</p>
             </div>
           )}
 
-          <div className="bg-gray-50 rounded-lg p-4">
+          <div className="bg-gray-50 rounded-2xl p-4">
             <h4 className="text-sm font-medium text-gray-900 mb-2">Talep Edilen Yeni Cihaz (Tedarikten alınacak)</h4>
             <p className="text-xs text-gray-600 mb-2">Tedarikten temin etmek istediğiniz modeli seçin. Seri takip edilen ürünler için seri seçimi yapın.</p>
             <div className="mt-3">
@@ -441,7 +441,7 @@ export const DeviceReplaceModal: React.FC<DeviceReplaceModalProps> = ({
             )}
           </div>
 
-          <div className="bg-white rounded-lg p-4 border">
+          <div className="bg-white rounded-2xl p-4 border">
             <h4 className="text-sm font-medium text-gray-900 mb-2">Önceki Değişim Kayıtları</h4>
             {actionMessage && (
               <div className="mb-2 text-sm text-blue-700">{actionMessage}</div>

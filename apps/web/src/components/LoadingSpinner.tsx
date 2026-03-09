@@ -53,9 +53,9 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
 // Skeleton loading components
 export const SkeletonCard: React.FC<{ className?: string }> = ({ className = '' }) => (
   <div className={`animate-pulse ${className}`}>
-    <div className="bg-gray-300 rounded-md h-4 w-3/4 mb-2"></div>
-    <div className="bg-gray-300 rounded-md h-4 w-1/2 mb-2"></div>
-    <div className="bg-gray-300 rounded-md h-4 w-2/3"></div>
+    <div className="bg-gray-300 rounded-xl h-4 w-3/4 mb-2"></div>
+    <div className="bg-gray-300 rounded-xl h-4 w-1/2 mb-2"></div>
+    <div className="bg-gray-300 rounded-xl h-4 w-2/3"></div>
   </div>
 );
 

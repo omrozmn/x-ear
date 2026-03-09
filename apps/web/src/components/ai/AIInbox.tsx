@@ -49,7 +49,7 @@ export const AIInbox: React.FC = () => {
             {/* Search/Header */}
             <div className="p-4 bg-white border-b border-gray-100 flex items-center justify-between sticky top-0 z-10 shadow-sm">
                 <div className="flex items-center gap-2.5">
-                    <div className="bg-indigo-600 p-1.5 rounded-lg text-white shadow-indigo-100 shadow-lg">
+                    <div className="bg-indigo-600 p-1.5 rounded-2xl text-white shadow-indigo-100 shadow-lg">
                         <Sparkles size={18} />
                     </div>
                     <div>
@@ -140,7 +140,7 @@ export const AIInbox: React.FC = () => {
 
             {/* Footer / Tip */}
             <div className="p-3 bg-white border-t border-gray-100">
-                <div className="bg-indigo-50/50 rounded-lg p-3 flex items-start gap-2.5 border border-indigo-100/50">
+                <div className="bg-indigo-50/50 rounded-2xl p-3 flex items-start gap-2.5 border border-indigo-100/50">
                     <Bell size={14} className="text-indigo-600 mt-0.5" />
                     <p className="text-[11px] text-indigo-900 leading-relaxed">
                         <span className="font-bold">Pro Tip:</span> Use "Explain in Chat" to deep-dive into the evidence behind any insight.

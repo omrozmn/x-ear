@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/automation.py
+# hypothesis_version: 6.151.9
+
+['jobId', 'lastBackupSize', 'lastRun', 'nextRun', 'processedToday', 'syncedRecords']

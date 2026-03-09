@@ -295,7 +295,7 @@ export function IncomingInvoicesPage() {
               <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Toplam Fatura</p>
               <p className="text-lg md:text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{totalCount}</p>
             </div>
-            <div className="p-2 md:p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+            <div className="p-2 md:p-3 bg-blue-100 dark:bg-blue-900/20 rounded-2xl">
               <FileText className="text-blue-600 dark:text-blue-400 w-4 h-4 md:w-6 md:h-6" />
             </div>
           </div>
@@ -307,7 +307,7 @@ export function IncomingInvoicesPage() {
               <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Bekleyen</p>
               <p className="text-lg md:text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{pendingCount}</p>
             </div>
-            <div className="p-2 md:p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
+            <div className="p-2 md:p-3 bg-green-100 dark:bg-green-900/20 rounded-2xl">
               <CheckCircle className="text-green-600 dark:text-green-400 w-4 h-4 md:w-6 md:h-6" />
             </div>
           </div>
@@ -319,7 +319,7 @@ export function IncomingInvoicesPage() {
               <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Alışa Dönüştürülen</p>
               <p className="text-lg md:text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">{processedCount}</p>
             </div>
-            <div className="p-2 md:p-3 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+            <div className="p-2 md:p-3 bg-purple-100 dark:bg-purple-900/20 rounded-2xl">
               <ShoppingCart className="text-purple-600 dark:text-purple-400 w-4 h-4 md:w-6 md:h-6" />
             </div>
           </div>
@@ -328,7 +328,7 @@ export function IncomingInvoicesPage() {
 
       {/* Auto-conversion info banner */}
       {showBanner && (
-        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-center gap-3">
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-4 flex items-center gap-3">
           <ShoppingCart className="text-green-600 dark:text-green-400 flex-shrink-0" size={20} />
           <p className="text-sm text-green-800 dark:text-green-300 flex-1">
             Gelen faturalar otomatik olarak alış kaydına dönüştürülmektedir. Manuel işlem gerekmez.
@@ -474,7 +474,7 @@ export function IncomingInvoicesPage() {
                         <MoreVertical className="w-4 h-4" />
                       </Button>
                       {activeMenu === String(invoice.invoiceId) && (
-                        <div className="absolute right-0 z-50 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+                        <div className="absolute right-0 z-50 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg">
                           <Button variant="ghost" fullWidth onClick={() => handleViewPdf(invoice)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 justify-start h-auto">
                             <Eye className="w-4 h-4" /> Fatura Görüntüle
                           </Button>
@@ -576,17 +576,17 @@ export function IncomingInvoicesPage() {
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl px-6 py-3 flex items-center gap-4">
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{selectedIds.size} fatura seçildi</span>
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
-          <Button variant="ghost" onClick={handleBulkAccept} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors h-auto">
+          <Button variant="ghost" onClick={handleBulkAccept} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-2xl transition-colors h-auto">
             <CheckCircle className="w-4 h-4" /> Toplu Kabul
           </Button>
-          <Button variant="ghost" onClick={handleBulkReject} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors h-auto">
+          <Button variant="ghost" onClick={handleBulkReject} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl transition-colors h-auto">
             <XCircle className="w-4 h-4" /> Toplu Reddet
           </Button>
-          <Button variant="ghost" onClick={handleBulkExportCsv} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors h-auto">
+          <Button variant="ghost" onClick={handleBulkExportCsv} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-colors h-auto">
             <Download className="w-4 h-4" /> CSV Dışa Aktar
           </Button>
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
-          <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors h-auto">
+          <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors h-auto">
             <X className="w-4 h-4" /> Seçimi Kaldır
           </Button>
         </div>
@@ -599,7 +599,7 @@ export function IncomingInvoicesPage() {
           onClick={() => { URL.revokeObjectURL(pdfModal.blobUrl.split('#')[0]); setPdfModal(null); }}
         >
           <div
-            className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl flex flex-col"
+            className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-4xl flex flex-col"
             style={{ height: '90vh' }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -609,7 +609,7 @@ export function IncomingInvoicesPage() {
                 <a
                   href={pdfModal.blobUrl.split('#')[0]}
                   download={pdfModal.fileName}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl"
                 >
                   <Download size={15} />
                   İndir
@@ -688,7 +688,7 @@ function IncomingInvoiceMobileCard({ invoice, onView, onAccept, onReject, onDown
                 <MoreVertical className="w-4 h-4" />
               </Button>
               {menuOpen && (
-                <div className="absolute right-0 top-8 z-50 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl">
+                <div className="absolute right-0 top-8 z-50 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl">
                   <Button variant="ghost" fullWidth onClick={() => { setMenuOpen(false); onView(); }} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 justify-start h-auto">
                     <Eye className="w-4 h-4" /> Görüntüle
                   </Button>

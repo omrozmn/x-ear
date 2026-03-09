@@ -241,7 +241,7 @@ export const SGKPage: React.FC = () => {
 
         {activeTab === 'upload' && (
           <div className="max-w-2xl mx-auto">
-            <div className="bg-white shadow rounded-lg p-6">
+            <div className="bg-white shadow rounded-2xl p-6">
               <h2 className="text-lg font-medium text-gray-900 mb-6">Yeni Belge Yükle</h2>
               <SGKUpload
                 onUploadComplete={handleUploadComplete}
@@ -262,7 +262,7 @@ export const SGKPage: React.FC = () => {
           <div className="space-y-6">
             {selectedDocument ? (
               <div>
-                <div className="bg-white shadow rounded-lg p-6 mb-6">
+                <div className="bg-white shadow rounded-2xl p-6 mb-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h2 className="text-lg font-medium text-gray-900">
@@ -293,7 +293,7 @@ export const SGKPage: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="bg-white shadow rounded-lg p-12">
+              <div className="bg-white shadow rounded-2xl p-12">
                 <div className="text-center">
                   <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
@@ -305,7 +305,7 @@ export const SGKPage: React.FC = () => {
                   <div className="mt-6">
                     <Button
                       onClick={() => setActiveTab('documents')}
-                      className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       variant='default'>
                       Belgelere Git
                     </Button>
@@ -320,7 +320,7 @@ export const SGKPage: React.FC = () => {
           <div className="space-y-6">
             {/* Overview Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white overflow-hidden shadow rounded-lg">
+              <div className="bg-white overflow-hidden shadow rounded-2xl">
                 <div className="p-5">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
@@ -338,7 +338,7 @@ export const SGKPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white overflow-hidden shadow rounded-lg">
+              <div className="bg-white overflow-hidden shadow rounded-2xl">
                 <div className="p-5">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
@@ -356,7 +356,7 @@ export const SGKPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white overflow-hidden shadow rounded-lg">
+              <div className="bg-white overflow-hidden shadow rounded-2xl">
                 <div className="p-5">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
@@ -374,7 +374,7 @@ export const SGKPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white overflow-hidden shadow rounded-lg">
+              <div className="bg-white overflow-hidden shadow rounded-2xl">
                 <div className="p-5">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
@@ -394,7 +394,7 @@ export const SGKPage: React.FC = () => {
             </div>
 
             {/* Document Types */}
-            <div className="bg-white shadow rounded-lg">
+            <div className="bg-white shadow rounded-2xl">
               <div className="px-4 py-5 sm:p-6">
                 <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
                   Belge Türleri
@@ -418,7 +418,7 @@ export const SGKPage: React.FC = () => {
             </div>
 
             {/* Status Distribution */}
-            <div className="bg-white shadow rounded-lg">
+            <div className="bg-white shadow rounded-2xl">
               <div className="px-4 py-5 sm:p-6">
                 <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
                   Durum Dağılımı

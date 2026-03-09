@@ -9,6 +9,7 @@ import { Search, Bot } from 'lucide-react'
 import { ComposerOverlay } from '../ai/ComposerOverlay'
 import { useComposerStore } from '../../stores/composerStore'
 import { useAdminResponsive } from '../../hooks/useAdminResponsive'
+import { useAuth } from '../../contexts/useAuth'
 
 interface AdminLayoutProps {
     children: ReactNode
@@ -21,6 +22,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const { toggleOpen } = useComposerStore()
     const { isMobile, isTablet } = useAdminResponsive()
+    const { isAuthenticated } = useAuth()
 
     // Keyboard shortcut (Cmd+K)
     useEffect(() => {
@@ -89,7 +91,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                         </div>
 
                         <div className="flex items-center space-x-4">
-                            <NotificationCenter />
+                            {isAuthenticated && <NotificationCenter />}
                             <div className="relative">
                                 <button
                                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}

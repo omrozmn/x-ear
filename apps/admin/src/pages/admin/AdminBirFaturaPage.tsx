@@ -4,6 +4,7 @@ import {
     useListAdminBirfaturaInvoices,
     useListAdminBirfaturaLogs
 } from '@/lib/api-client';
+import { isRecord, unwrapData } from '@/lib/orval-response';
 import {
     ArrowUpRight,
     ArrowDownLeft,
@@ -45,10 +46,6 @@ interface BirFaturaPagination {
     limit: number;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-    return typeof value === 'object' && value !== null;
-}
-
 function getNumber(value: unknown): number | undefined {
     if (typeof value === 'number') {
         return value;
@@ -63,11 +60,12 @@ function getNumber(value: unknown): number | undefined {
 }
 
 function getStats(data: ResponseEnvelopeBirFaturaStats | undefined): BirFaturaStats | null {
-    return data?.data ?? null;
+    return unwrapData(data) ?? null;
 }
 
 function getInvoices(data: ResponseEnvelopeBirFaturaInvoicesResponse | undefined): BirFaturaInvoiceView[] {
-    const invoices = data?.data?.invoices;
+    const payload = unwrapData(data);
+    const invoices = isRecord(payload) ? payload.invoices : undefined;
     if (!Array.isArray(invoices)) {
         return [];
     }
@@ -94,7 +92,7 @@ function getInvoices(data: ResponseEnvelopeBirFaturaInvoicesResponse | undefined
 }
 
 function getLogs(data: ResponseEnvelopeBirFaturaLogsResponse | undefined): BirFaturaLogEntry[] {
-    const response: BirFaturaLogsResponse | null | undefined = data?.data;
+    const response: BirFaturaLogsResponse | null | undefined = unwrapData(data);
     return Array.isArray(response?.logs) ? response.logs : [];
 }
 
@@ -103,7 +101,11 @@ function getPagination(
     logData: ResponseEnvelopeBirFaturaLogsResponse | undefined,
     activeTab: 'outgoing' | 'incoming' | 'logs',
 ): BirFaturaPagination | null {
-    const rawPagination = activeTab === 'logs' ? logData?.data?.pagination : invoiceData?.data?.pagination;
+    const invoicePayload = unwrapData(invoiceData);
+    const logPayload = unwrapData(logData);
+    const rawPagination = activeTab === 'logs'
+        ? (isRecord(logPayload) ? logPayload.pagination : undefined)
+        : (isRecord(invoicePayload) ? invoicePayload.pagination : undefined);
     if (!isRecord(rawPagination)) {
         return null;
     }

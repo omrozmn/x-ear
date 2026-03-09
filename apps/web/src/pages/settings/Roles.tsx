@@ -149,7 +149,7 @@ export default function RolesSettings() {
             </div>
 
             {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center">
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl flex items-center">
                     <AlertCircle className="w-5 h-5 mr-2" />
                     <div>
                         <div className="font-medium">Roller yüklenirken bir hata oluştu.</div>
@@ -178,7 +178,7 @@ export default function RolesSettings() {
                         >
                             <div className="flex items-start justify-between mb-4">
                                 <div className="flex items-center">
-                                    <div className="w-12 h-12 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center mr-3">
+                                    <div className="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center mr-3">
                                         <Shield className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                                     </div>
                                     <div>
@@ -251,7 +251,7 @@ export default function RolesSettings() {
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Yeni Rol Oluştur</h2>
 
                         {createSuccess ? (
-                            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-2xl">
                                 <div className="flex items-center text-green-700">
                                     <CheckCircle2 className="w-5 h-5 mr-2" />
                                     {createSuccess}
@@ -294,7 +294,7 @@ export default function RolesSettings() {
                                     </label>
                                     <div className="space-y-4 max-h-64 overflow-y-auto">
                                         {availablePermissions.map((category) => (
-                                            <div key={category.category} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                                            <div key={category.category} className="border border-gray-200 dark:border-gray-700 rounded-2xl p-4">
                                                 <h4 className="font-medium text-gray-900 dark:text-white mb-3">
                                                     {category.category}
                                                 </h4>

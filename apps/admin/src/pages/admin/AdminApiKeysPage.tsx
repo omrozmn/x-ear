@@ -6,7 +6,8 @@ import {
     PlusIcon,
     TrashIcon,
     ClipboardIcon,
-    CheckIcon
+    CheckIcon,
+    MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
@@ -77,8 +78,9 @@ function extractCreatedApiKey(value: ApiKeyDetailResponse): string | null {
 
 const AdminApiKeysPage: React.FC = () => {
     const { isMobile } = useAdminResponsive();
-    const page = 1;
+    const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
+    const [search, setSearch] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [newKey, setNewKey] = useState<string | null>(null);
 
@@ -91,6 +93,15 @@ const AdminApiKeysPage: React.FC = () => {
     const revokeApiKeyMutation = useDeleteAdminApiKey();
 
     const { keys, totalPages, totalItems } = extractApiKeys(keysData);
+    const filteredKeys = keys.filter((key) => {
+        const query = search.trim().toLowerCase();
+        if (!query) {
+            return true;
+        }
+
+        return [key.name, key.prefix, key.tenantId, key.scopes.join(', ')]
+            .some((value) => (value || '').toLowerCase().includes(query));
+    });
 
     const handleCreate = async () => {
         if (!keyName || !tenantId) {
@@ -223,7 +234,24 @@ const AdminApiKeysPage: React.FC = () => {
                 </button>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+	            <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+                <div className="border-b border-gray-200 dark:border-gray-700 p-4">
+                    <div className="relative max-w-md">
+                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                            type="text"
+                            value={search}
+                            onChange={(e) => {
+                                setSearch(e.target.value);
+                                setPage(1);
+                            }}
+                            placeholder="İsim, prefix, tenant veya scope ara..."
+                            className="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white pl-10 pr-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500"
+                        />
+                    </div>
+                </div>
                 {isLoading ? (
                     <div className="p-6 text-center text-gray-500 dark:text-gray-400">Yükleniyor...</div>
                 ) : keys.length === 0 ? (
@@ -234,7 +262,7 @@ const AdminApiKeysPage: React.FC = () => {
                 ) : (
                     <>
                         <ResponsiveTable
-                            data={keys}
+                            data={filteredKeys}
                             columns={columns}
                             keyExtractor={(key) => key.id}
                             emptyMessage="API anahtarı bulunamadı"
@@ -243,10 +271,13 @@ const AdminApiKeysPage: React.FC = () => {
                             <Pagination
                                 currentPage={page}
                                 totalPages={totalPages}
-                                totalItems={totalItems}
+                                totalItems={search ? filteredKeys.length : totalItems}
                                 itemsPerPage={limit}
-                                onPageChange={() => undefined}
-                                onItemsPerPageChange={setLimit}
+                                onPageChange={setPage}
+                                onItemsPerPageChange={(nextLimit) => {
+                                    setLimit(nextLimit);
+                                    setPage(1);
+                                }}
                             />
                         </div>
                     </>

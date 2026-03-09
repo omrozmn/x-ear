@@ -496,7 +496,7 @@ Tanı: Kronik otitis media
             {/* Image Preview */}
             <div className="space-y-4">
               <h4 className="font-medium">Belge Önizleme</h4>
-              <div className="border rounded-lg overflow-hidden">
+              <div className="border rounded-2xl overflow-hidden">
                 <img 
                   src={selectedDoc.croppedImage || selectedDoc.processedImage} 
                   alt="Processed document"
@@ -521,7 +521,7 @@ Tanı: Kronik otitis media
               {selectedDoc.ocrResult && (
                 <div className="space-y-4">
                   {selectedDoc.ocrResult.ocr_text && (
-                    <div className="p-3 bg-gray-50 rounded-lg">
+                    <div className="p-3 bg-gray-50 rounded-2xl">
                       <div className="text-sm font-medium mb-2">Tespit Edilen Metin:</div>
                       <div className="text-sm whitespace-pre-wrap">
                         {selectedDoc.ocrResult.ocr_text}
@@ -535,7 +535,7 @@ Tanı: Kronik otitis media
                   )}
 
                   {selectedDoc.ocrResult.matched_party && (
-                    <div className="p-3 bg-blue-50 rounded-lg">
+                    <div className="p-3 bg-blue-50 rounded-2xl">
                       <div className="text-sm font-medium mb-2">Hasta Bilgileri:</div>
                       <div className="text-sm space-y-1">
                         <div>İsim: {selectedDoc.ocrResult.matched_party.name}</div>
@@ -550,7 +550,7 @@ Tanı: Kronik otitis media
                   )}
 
                   {selectedDoc.ocrResult.document_type && (
-                    <div className="p-3 bg-green-50 rounded-lg">
+                    <div className="p-3 bg-green-50 rounded-2xl">
                       <div className="text-sm font-medium mb-2">Belge Türü:</div>
                       <div className="text-sm">
                         {selectedDoc.ocrResult.document_type}
@@ -597,7 +597,7 @@ Tanı: Kronik otitis media
 
               {/* File Name Preview */}
               {selectedDoc.finalFileName && (
-                <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="p-3 bg-gray-50 rounded-2xl">
                   <div className="text-sm font-medium mb-1">Dosya Adı:</div>
                   <div className="text-sm text-gray-600">{selectedDoc.finalFileName}</div>
                 </div>

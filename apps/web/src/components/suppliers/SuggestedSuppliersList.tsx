@@ -129,7 +129,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
                 />
             )}
 
-            <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+            <div className="overflow-x-auto rounded-2xl border border-gray-200 shadow-sm">
                 <table className="min-w-full divide-y divide-gray-200 text-sm">
                     <thead className="bg-gray-50">
                         <tr>
@@ -189,7 +189,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
                                                 type="button"
                                                 title="Fatura listesini göster"
                                                 onClick={() => setExpandedRow(expandedRow === supplier.id ? null : supplier.id)}
-                                                className="inline-flex items-center gap-1 px-2 py-1.5 rounded-md border border-gray-200 bg-white text-gray-600 text-xs font-medium hover:bg-gray-100 transition-colors"
+                                                className="inline-flex items-center gap-1 px-2 py-1.5 rounded-xl border border-gray-200 bg-white text-gray-600 text-xs font-medium hover:bg-gray-100 transition-colors"
                                             >
                                                 <Info className="w-3.5 h-3.5" />
                                                 {expandedRow === supplier.id
@@ -204,7 +204,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
                                                 title="Tedarikçi listeme ekle"
                                                 onClick={() => handleAccept(supplier)}
                                                 disabled={acceptMutation.isPending}
-                                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-green-600 text-white text-xs font-medium hover:bg-green-700 disabled:opacity-60 transition-colors whitespace-nowrap"
+                                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-green-600 text-white text-xs font-medium hover:bg-green-700 disabled:opacity-60 transition-colors whitespace-nowrap"
                                             >
                                                 <CheckCircle className="w-3.5 h-3.5" />
                                                 Listeme Ekle
@@ -217,7 +217,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
                                                 title="Reddet"
                                                 onClick={() => handleReject(supplier)}
                                                 disabled={rejectMutation.isPending}
-                                                className="inline-flex items-center px-2 py-1.5 rounded-md border border-red-200 text-red-500 text-xs hover:bg-red-50 disabled:opacity-60 transition-colors"
+                                                className="inline-flex items-center px-2 py-1.5 rounded-xl border border-red-200 text-red-500 text-xs hover:bg-red-50 disabled:opacity-60 transition-colors"
                                             >
                                                 <XCircle className="w-3.5 h-3.5" />
                                             </button>

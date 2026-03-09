@@ -4,7 +4,9 @@ import {
   useGetAdminAnalytics,
   AxiosError
 } from '@/lib/api-client';
+import { unwrapData } from '@/lib/orval-response';
 import type {
+  AdminAnalyticsData,
   RevenueTrendItem,
   TopTenantItem,
 } from '@/api/generated/schemas';
@@ -14,7 +16,7 @@ const Dashboard = () => {
 
   // Use new Analytics hook
   const { data: analyticsData, isLoading, error } = useGetAdminAnalytics();
-  const data = analyticsData?.data ?? null;
+  const data = unwrapData<AdminAnalyticsData>(analyticsData) ?? null;
   const overview = data?.overview;
 
   const formatNumber = (num: number | undefined) => {

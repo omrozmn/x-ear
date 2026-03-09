@@ -131,7 +131,7 @@ function StatusCard({ title, status, lastRun, icon }: StatusCardProps) {
   return (
     <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
       <div className="flex justify-between items-start mb-4">
-        <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded-2xl">
           {icon}
         </div>
         <span className={`px-2 py-1 text-xs font-medium rounded-full ${

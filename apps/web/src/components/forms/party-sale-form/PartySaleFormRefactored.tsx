@@ -167,7 +167,7 @@ const ProductDropdown: React.FC<ProductDropdownProps> = ({
       {/* Dropdown */}
       {
         isOpen && (
-          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
             {filteredProducts.length > 0 ? (
               filteredProducts.map((product) => (
                 <div
@@ -506,7 +506,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4 bg-white rounded-lg shadow-sm" data-testid="sale-form-container">
+    <div className="max-w-2xl mx-auto p-4 bg-white rounded-2xl shadow-sm" data-testid="sale-form-container">
 
       <form onSubmit={handleSubmit} className="space-y-4" data-testid="sale-form">
         {/* Product Selection */}
@@ -672,7 +672,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
 
         {/* SGK Section - Only for Hearing Aids */}
         {isHearingAid && (
-          <div className="bg-gray-50 p-3 rounded-lg">
+          <div className="bg-gray-50 p-3 rounded-2xl">
             <Label className="mb-1">
               SGK Destek Türü
             </Label>
@@ -693,7 +693,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
 
         {/* Product Details Display */}
         {selectedProduct && (
-          <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+          <div className="bg-blue-50 p-3 rounded-2xl border border-blue-200">
             <h3 className="text-sm font-semibold text-blue-900 mb-2">Ürün Detayları</h3>
             <div className="grid grid-cols-3 gap-2 text-xs">
               <div>
@@ -724,7 +724,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
         {selectedProduct && (
           <div className="space-y-3">
             {/* Total Amount Breakdown */}
-            <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+            <div className="bg-blue-50 p-3 rounded-2xl border border-blue-200">
               <div className="flex justify-between items-center mb-2">
                 <span className="font-bold text-blue-900 text-base">Toplam Tutar</span>
                 <span className="font-bold text-blue-600 text-lg">₺{pricingCalculation.finalAmount.toLocaleString('tr-TR')}</span>

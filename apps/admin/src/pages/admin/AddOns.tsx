@@ -31,6 +31,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import Pagination from '@/components/ui/Pagination';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
+import { unwrapData } from '@/lib/orval-response';
 
 interface PaginationInfo {
     totalPages?: number;
@@ -99,7 +100,7 @@ function normalizeAddon(value: AddonRead | Record<string, unknown>): AddOn | nul
 }
 
 function getAddons(data: AddonListResponse | undefined): AddOn[] {
-    const responseData = data?.data;
+    const responseData = unwrapData<Record<string, unknown>>(data);
     if (!responseData || typeof responseData !== 'object' || !('addons' in responseData) || !Array.isArray(responseData.addons)) {
         return [];
     }
@@ -110,7 +111,7 @@ function getAddons(data: AddonListResponse | undefined): AddOn[] {
 }
 
 function getPagination(data: AddonListResponse | undefined): PaginationInfo {
-    const responseData = data?.data;
+    const responseData = unwrapData<Record<string, unknown>>(data);
     if (!responseData || typeof responseData !== 'object' || !('pagination' in responseData) || !isAddonRecord(responseData.pagination)) {
         return {};
     }

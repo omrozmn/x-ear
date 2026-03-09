@@ -9,6 +9,7 @@ import Pagination from '@/components/ui/Pagination';
 import type { PartyListResponse, PartyRead } from '@/api/generated/schemas';
 import { useAdminResponsive } from '@/hooks';
 import { ResponsiveTable } from '@/components/responsive';
+import { isRecord, unwrapData } from '@/lib/orval-response';
 
 // Extended type to handle potentially missing properties in generated types vs runtime
 interface ExtendedParty extends PartyRead {
@@ -24,26 +25,24 @@ interface PaginationInfo {
     totalPages: number;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-    return typeof value === 'object' && value !== null;
-}
-
 function getPatients(data: PartyListResponse | undefined): ExtendedParty[] {
-    if (!isRecord(data?.data) || !Array.isArray(data.data.parties)) {
+    const payload = unwrapData(data);
+    if (!isRecord(payload) || !Array.isArray(payload.parties)) {
         return [];
     }
 
-    return data.data.parties.filter((patient): patient is ExtendedParty => isRecord(patient) && typeof patient.id === 'string');
+    return payload.parties.filter((patient): patient is ExtendedParty => isRecord(patient) && typeof patient.id === 'string');
 }
 
 function getPagination(data: PartyListResponse | undefined): PaginationInfo | null {
-    if (!isRecord(data?.data) || !isRecord(data.data.pagination)) {
+    const payload = unwrapData(data);
+    if (!isRecord(payload) || !isRecord(payload.pagination)) {
         return null;
     }
 
     return {
-        total: typeof data.data.pagination.total === 'number' ? data.data.pagination.total : 0,
-        totalPages: typeof data.data.pagination.totalPages === 'number' ? data.data.pagination.totalPages : 0,
+        total: typeof payload.pagination.total === 'number' ? payload.pagination.total : 0,
+        totalPages: typeof payload.pagination.totalPages === 'number' ? payload.pagination.totalPages : 0,
     };
 }
 

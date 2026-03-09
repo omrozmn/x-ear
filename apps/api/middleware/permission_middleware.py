@@ -52,7 +52,7 @@ class AccessContextFromToken:
         # MUST BE STRICT: exclude tenant-level admins from platform routes
         return (
             self.payload.get("is_admin") is True or 
-            str(self.user_id).startswith("admin_")
+            str(self.user_id).startswith(("admin_", "adm_"))
         )
     
     @property
@@ -233,4 +233,3 @@ def _json_error(status_code: int, payload: dict[str, Any]) -> Response:
         status_code=status_code,
         media_type="application/json",
     )
-

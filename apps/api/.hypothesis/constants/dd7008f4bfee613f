@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/enums.py
+# hypothesis_version: 6.151.9
+
+['B2B', 'CONSUMER', 'F', 'M', 'O', 'PRODUCT_NOT_ALLOWED', 'ProductCode', 'TENANT_SUSPENDED', 'accessory', 'active', 'aksesuar', 'archived', 'assigned', 'atanmış', 'available', 'bakım', 'battery', 'bilateral', 'both', 'bozuk', 'canceled', 'cancelled', 'cihaz', 'completed', 'confirmed', 'consultation', 'control', 'customer', 'deceased', 'defective', 'deneme', 'device_fitting', 'device_trial', 'hearing_aid', 'hearing_test', 'her iki', 'iade', 'ikisi', 'in_progress', 'in_stock', 'inactive', 'işitme_cihazı', 'kayıp', 'l', 'lead', 'left', 'lost', 'maintenance', 'mevcut', 'new', 'no_show', 'other', 'pil', 'r', 'repair', 'rescheduled', 'returned', 'right', 'sağ', 'scheduled', 'sol', 'stokta', 'trial', 'xcalp', 'xear_', 'xear_general', 'xear_hearing', 'xear_hospital', 'xear_hotel', 'xear_pharmacy']

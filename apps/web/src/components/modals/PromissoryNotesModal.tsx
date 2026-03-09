@@ -154,13 +154,13 @@ export const PromissoryNotesModal: React.FC<PromissoryNotesModalProps> = ({
     >
       <div className="space-y-6">
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
             <p className="text-red-800">{error}</p>
           </div>
         )}
 
         {/* Sale Summary */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
           <h3 className="font-medium text-blue-900 mb-2">Satış Bilgileri</h3>
           <div className="space-y-1 text-sm text-blue-800">
             <p><strong>Satış ID:</strong> {sale?.id}</p>
@@ -193,7 +193,7 @@ export const PromissoryNotesModal: React.FC<PromissoryNotesModalProps> = ({
           ) : (
             <div className="space-y-3">
               {notes.map((note) => (
-                <div key={note.id} className="border border-gray-200 rounded-lg p-4">
+                <div key={note.id} className="border border-gray-200 rounded-2xl p-4">
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center">
                       {getStatusIcon(note.status)}

@@ -50,7 +50,7 @@ export const LoanerDeviceModal: React.FC<LoanerDeviceModalProps> = ({
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <div className="bg-white rounded-2xl p-6 w-full max-w-md">
                 <h3 className="text-lg font-semibold mb-4">Emanet Cihaz Ekle</h3>
 
                 <div className="space-y-4">
@@ -61,7 +61,7 @@ export const LoanerDeviceModal: React.FC<LoanerDeviceModalProps> = ({
                         <select data-allow-raw="true"
                             value={selectedLoanerItem}
                             onChange={(e) => setSelectedLoanerItem(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500"
                         >
                             <option value="">Cihaz seçiniz...</option>
                             {inventoryItems
@@ -83,7 +83,7 @@ export const LoanerDeviceModal: React.FC<LoanerDeviceModalProps> = ({
                             value={loanerSerialNumber}
                             onChange={(e) => setLoanerSerialNumber(e.target.value)}
                             placeholder="Seri numarası giriniz"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500"
                         />
                     </div>
                 </div>
@@ -92,14 +92,14 @@ export const LoanerDeviceModal: React.FC<LoanerDeviceModalProps> = ({
                     <button data-allow-raw="true"
                         type="button"
                         onClick={handleClose}
-                        className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                        className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl"
                     >
                         İptal
                     </button>
                     <button data-allow-raw="true"
                         onClick={handleSubmit}
                         disabled={!selectedLoanerItem || isSubmitting}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isSubmitting ? 'Ekleniyor...' : 'Ekle'}
                     </button>

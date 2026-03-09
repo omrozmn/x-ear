@@ -36,8 +36,8 @@ if not SECRET_KEY:
             "Generate a secure key with: python -c \"import secrets; print(secrets.token_hex(32))\""
         )
     # Development-only fallback (will log warning)
-    SECRET_KEY = 'dev-only-insecure-key-do-not-use-in-prod'
-    logger.warning("⚠️  Using insecure development JWT key. Set JWT_SECRET_KEY in production!")
+    SECRET_KEY = 'default-dev-secret-key-change-in-prod'
+    logger.warning("⚠️  Using development JWT key fallback. Set JWT_SECRET_KEY in production!")
 
 ALGORITHM = "HS256"
 

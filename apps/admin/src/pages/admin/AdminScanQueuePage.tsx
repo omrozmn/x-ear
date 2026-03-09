@@ -15,17 +15,10 @@ import {
 import toast from 'react-hot-toast';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-    return typeof value === 'object' && value !== null;
-}
+import { isRecord, unwrapArray } from '@/lib/orval-response';
 
 function getQueueItems(data: ResponseEnvelopeListScanQueueRead | undefined): ScanQueueRead[] {
-    if (!Array.isArray(data?.data)) {
-        return [];
-    }
-
-    return data.data.filter((item): item is ScanQueueRead => isRecord(item) && typeof item.id === 'string');
+    return unwrapArray<ScanQueueRead>(data).filter((item): item is ScanQueueRead => isRecord(item) && typeof item.id === 'string');
 }
 
 const AdminScanQueuePage: React.FC = () => {

@@ -41,7 +41,7 @@ export const PartyHearingTestsTab: React.FC<PartyHearingTestsTabProps> = () => {
     <div className="space-y-6">
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
+        <div className="bg-white p-4 rounded-2xl shadow-sm border">
           <div className="flex items-center">
             <Activity className="w-8 h-8 text-blue-600 mr-3" />
             <div>
@@ -51,7 +51,7 @@ export const PartyHearingTestsTab: React.FC<PartyHearingTestsTabProps> = () => {
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
+        <div className="bg-white p-4 rounded-2xl shadow-sm border">
           <div className="flex items-center">
             <Calendar className="w-8 h-8 text-green-600 mr-3" />
             <div>
@@ -63,7 +63,7 @@ export const PartyHearingTestsTab: React.FC<PartyHearingTestsTabProps> = () => {
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-lg shadow-sm border">
+        <div className="bg-white p-4 rounded-2xl shadow-sm border">
           <div className="flex items-center">
             <User className="w-8 h-8 text-purple-600 mr-3" />
             <div>
@@ -77,7 +77,7 @@ export const PartyHearingTestsTab: React.FC<PartyHearingTestsTabProps> = () => {
       </div>
 
       {/* Recent Tests */}
-      <div className="bg-white border rounded-lg shadow-sm">
+      <div className="bg-white border rounded-2xl shadow-sm">
         <div className="p-6 border-b">
           <h3 className="text-lg font-medium text-gray-900">Son İşitme Testleri</h3>
         </div>
@@ -85,7 +85,7 @@ export const PartyHearingTestsTab: React.FC<PartyHearingTestsTabProps> = () => {
           {recentTests.length > 0 ? (
             <div className="space-y-4">
               {recentTests.map((test: Record<string, unknown>) => (
-                <div key={test.id as string} className="flex items-center justify-between p-4 border rounded-lg">
+                <div key={test.id as string} className="flex items-center justify-between p-4 border rounded-2xl">
                   <div className="flex items-center space-x-4">
                     <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                       <Activity className="w-5 h-5 text-blue-600" />

@@ -3,6 +3,7 @@ import { Bell, Check } from 'lucide-react';
 import * as Popover from '@radix-ui/react-popover';
 import { useListNotifications, useUpdateNotificationRead } from '../../lib/api-client';
 import type { ListNotificationsParams, NotificationRead } from '../../api/generated/schemas';
+import { useAuth } from '../../contexts/useAuth';
 
 interface NotificationsResponseShape {
     data?: {
@@ -29,18 +30,21 @@ function extractNotifications(value: unknown): NotificationItem[] {
 
 export function NotificationCenter() {
     const [isOpen, setIsOpen] = useState(false);
-    const userId = 'system'; // In a real app, this would come from auth context
+    const { user, isAuthenticated, isLoading } = useAuth();
+    const userId = user?.id;
 
-    // Gracefully handle missing notifications endpoint (404)
-    const params: ListNotificationsParams = {
-        user_id: userId,
-        page: 1
-    };
+    const params: ListNotificationsParams | undefined = userId
+        ? {
+            user_id: userId,
+            page: 1
+        }
+        : undefined;
 
     const { data: notificationsData, refetch, isError } = useListNotifications(params, {
         query: {
             retry: false,
             refetchOnWindowFocus: false,
+            enabled: Boolean(isAuthenticated && !isLoading && userId),
             // Suppress errors - notifications are optional (TanStack Query v5 uses meta for error handling)
             meta: {
                 suppressError: true

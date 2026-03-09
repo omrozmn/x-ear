@@ -118,7 +118,7 @@ export default function WithholdingCard({ value, onChange }: WithholdingCardProp
         </div>
 
         {Number(formData.withholdingRate) > 0 && Number(formData.taxFreeAmount) > 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3">
             <div className="flex items-start">
               <Info className="text-blue-400 mr-2 flex-shrink-0" size={18} />
               <div className="text-sm text-blue-700">
@@ -129,7 +129,7 @@ export default function WithholdingCard({ value, onChange }: WithholdingCardProp
           </div>
         )}
 
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-3">
           <div className="flex">
             <AlertTriangle className="text-yellow-400 mr-2 flex-shrink-0" size={18} />
             <div className="text-sm text-yellow-700">

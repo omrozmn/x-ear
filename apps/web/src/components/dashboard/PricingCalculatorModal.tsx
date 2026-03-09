@@ -89,7 +89,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900 flex items-center">
@@ -117,7 +117,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
                   key={device.name}
                   type="button"
                   onClick={() => setDevicePrice(device.price)}
-                  className="p-2 text-sm border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
+                  className="p-2 text-sm border border-gray-200 rounded-2xl hover:border-blue-300 hover:bg-blue-50 transition-colors"
                   variant='default'>
                   <div className="font-medium">{device.name}</div>
                   <div className="text-gray-600">{device.price.toLocaleString('tr-TR')} ₺</div>
@@ -138,7 +138,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
               min="0"
               value={devicePrice}
               onChange={(e) => setDevicePrice(parseFloat(e.target.value) || 0)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full border border-gray-300 rounded-2xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="0.00"
               required
             />
@@ -158,7 +158,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
                 max="100"
                 value={discountPercent}
                 onChange={(e) => handleDiscountPercentChange(parseFloat(e.target.value) || 0)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-300 rounded-2xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="0"
               />
             </div>
@@ -172,7 +172,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
                 min="0"
                 value={discountAmount}
                 onChange={(e) => handleDiscountAmountChange(parseFloat(e.target.value) || 0)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-300 rounded-2xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="0.00"
               />
             </div>
@@ -197,7 +197,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
           </div>
 
           {/* Calculation Results */}
-          <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+          <div className="bg-gray-50 rounded-2xl p-4 space-y-2">
             <h3 className="font-medium text-gray-900 mb-3">Hesaplama Sonucu</h3>
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Cihaz Fiyatı:</span>
@@ -228,20 +228,20 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
             <Button
               type="button"
               onClick={resetForm}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 border border-gray-300 rounded-2xl text-gray-700 hover:bg-gray-50 transition-colors"
               variant='default'>
               Temizle
             </Button>
             <Button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 border border-gray-300 rounded-2xl text-gray-700 hover:bg-gray-50 transition-colors"
               variant='default'>
               İptal
             </Button>
             <Button
               type="submit"
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 transition-colors"
               variant='default'>
               Hesaplamayı Kaydet
             </Button>

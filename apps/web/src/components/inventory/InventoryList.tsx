@@ -514,7 +514,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
   if (fetchError) {
     const errorMsg = (fetchError as AxiosError)?.message || 'Bir hata oluştu';
     return (
-      <div className={`bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4 ${className}`}>
+      <div className={`bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 ${className}`}>
         <div className="flex">
           <div className="flex-shrink-0">
             <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">

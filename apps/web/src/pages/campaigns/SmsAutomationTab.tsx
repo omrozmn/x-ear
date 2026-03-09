@@ -536,11 +536,11 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = () => {
                                             return (
                                                 <div
                                                     key={rule.id}
-                                                    className={`p-4 rounded-lg border ${rule.isActive ? 'border-indigo-200 bg-indigo-50/50 dark:bg-indigo-900/20 dark:border-indigo-800' : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50'}`}
+                                                    className={`p-4 rounded-2xl border ${rule.isActive ? 'border-indigo-200 bg-indigo-50/50 dark:bg-indigo-900/20 dark:border-indigo-800' : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50'}`}
                                                 >
                                                     <div className="flex items-start justify-between gap-4">
                                                         <div className="flex items-start gap-3 flex-1">
-                                                            <div className={`p-2 rounded-lg ${rule.isActive ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400' : 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400'}`}>
+                                                            <div className={`p-2 rounded-2xl ${rule.isActive ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400' : 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400'}`}>
                                                                 {triggerConfig?.icon}
                                                             </div>
                                                             <div className="flex-1 min-w-0">
@@ -632,7 +632,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = () => {
                                                             });
                                                             setShowCreateModal(true);
                                                         }}
-                                                        className="inline-flex items-center gap-1 px-2 py-1 text-xs text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md hover:border-indigo-300 dark:hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                                                        className="inline-flex items-center gap-1 px-2 py-1 text-xs text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:border-indigo-300 dark:hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                                                     >
                                                         <Plus className="w-3 h-3" />
                                                         {config.label}
@@ -662,7 +662,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = () => {
                                         setShowCreateModal(false);
                                         setEditingRule(null);
                                     }}
-                                    className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                    className="p-1 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                                 >
                                     <X className="w-5 h-5 text-gray-500" />
                                 </button>
@@ -784,7 +784,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = () => {
                                                 key={field}
                                                 type="button"
                                                 onClick={() => insertDynamicField(field)}
-                                                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 rounded-md hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
+                                                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
                                             >
                                                 <Plus className="w-3 h-3" />
                                                 {field.replace(/\{\{|\}\}/g, '')}
@@ -855,15 +855,15 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = () => {
                                 <button
                                     data-allow-raw="true"
                                     onClick={() => setShowPreview(false)}
-                                    className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                    className="p-1 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                                 >
                                     <X className="w-5 h-5 text-gray-500" />
                                 </button>
                             </div>
                             <div className="p-4 space-y-4">
-                                <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
+                                <div className="bg-gray-100 dark:bg-gray-700 rounded-2xl p-4">
                                     <p className="text-xs text-gray-500 dark:text-gray-300 mb-2">Örnek veri göserimi:</p>
-                                    <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-200 dark:border-gray-600">
+                                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-sm border border-gray-200 dark:border-gray-600">
                                         <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{previewContent}</p>
                                     </div>
                                 </div>

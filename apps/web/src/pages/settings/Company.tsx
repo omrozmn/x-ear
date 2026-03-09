@@ -115,9 +115,9 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center gap-3 mb-4">
-        <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400">
+        <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-2xl text-indigo-600 dark:text-indigo-400">
           {icon}
         </div>
         <div>
@@ -140,10 +140,10 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
           <img
             src={preview}
             alt={label}
-            className="w-full h-40 object-contain bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700"
+            className="w-full h-40 object-contain bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700"
           />
           {!disabled && (
-            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-4">
+            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center gap-4">
               <Button
                 onClick={handleClick}
                 variant="secondary"
@@ -174,7 +174,7 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           className={`
-            border-2 border-dashed rounded-lg p-8 text-center transition-colors
+            border-2 border-dashed rounded-2xl p-8 text-center transition-colors
             ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}
             ${isDragging
               ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
@@ -328,7 +328,7 @@ export default function CompanySettings() {
       )}
 
       {!isTenantAdmin && (
-        <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg flex items-start gap-2 sm:gap-3">
+        <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-2xl flex items-start gap-2 sm:gap-3">
           <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
           <p className="text-xs sm:text-sm text-yellow-700 dark:text-yellow-300">
             Firma bilgilerini sadece Tenant Admin düzenleyebilir. Sadece görüntüleme modundasınız.
@@ -378,7 +378,7 @@ export default function CompanySettings() {
       {/* Company Info Form */}
       <div className="space-y-6">
         {/* Temel Bilgiler */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <h3 className="text-base font-semibold text-gray-900 dark:text-white flex items-center">
               <Building2 className="w-5 h-5 mr-2 text-indigo-600" />
@@ -391,41 +391,38 @@ export default function CompanySettings() {
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Firma Unvanı
-                </label>
                 <Input
+                  label="Firma Unvanı"
                   type="text"
                   value={formData.name || ''}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   disabled={!isTenantAdmin}
                   placeholder="Örnek Firma Ltd. Şti."
+                  fullWidth
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  VKN / TCKN
-                </label>
                 <Input
+                  label="VKN / TCKN"
                   type="text"
                   value={formData.taxId || ''}
                   onChange={(e) => handleInputChange('taxId', e.target.value)}
                   disabled={!isTenantAdmin}
                   placeholder="1234567890"
+                  fullWidth
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Vergi Dairesi
-                </label>
                 <Input
+                  label="Vergi Dairesi"
                   type="text"
                   value={formData.taxOffice || ''}
                   onChange={(e) => handleInputChange('taxOffice', e.target.value)}
                   disabled={!isTenantAdmin}
                   placeholder="Kadıköy V.D."
+                  fullWidth
                 />
               </div>
             </div>
@@ -433,7 +430,7 @@ export default function CompanySettings() {
         </div>
 
         {/* Adres Bilgileri */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <h3 className="text-base font-semibold text-gray-900 dark:text-white">
               Adres Bilgileri
@@ -445,53 +442,49 @@ export default function CompanySettings() {
           <div className="p-6">
             <div className="grid grid-cols-1 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Adres
-                </label>
                 <Textarea
+                  label="Adres"
                   value={formData.address || ''}
                   onChange={(e) => handleInputChange('address', e.target.value)}
                   disabled={!isTenantAdmin}
                   rows={2}
                   placeholder="Cadde No: 123, Kat: 4"
+                  fullWidth
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    İlçe
-                  </label>
                   <Input
+                    label="İlçe"
                     type="text"
                     value={formData.district || ''}
                     onChange={(e) => handleInputChange('district', e.target.value)}
                     disabled={!isTenantAdmin}
                     placeholder="Kadıköy"
+                    fullWidth
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    İl
-                  </label>
                   <Input
+                    label="İl"
                     type="text"
                     value={formData.city || ''}
                     onChange={(e) => handleInputChange('city', e.target.value)}
                     disabled={!isTenantAdmin}
                     placeholder="İstanbul"
+                    fullWidth
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Posta Kodu
-                  </label>
                   <Input
+                    label="Posta Kodu"
                     type="text"
                     value={formData.postalCode || ''}
                     onChange={(e) => handleInputChange('postalCode', e.target.value)}
                     disabled={!isTenantAdmin}
                     placeholder="34000"
+                    fullWidth
                   />
                 </div>
               </div>
@@ -500,7 +493,7 @@ export default function CompanySettings() {
         </div>
 
         {/* İletişim Bilgileri */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <h3 className="text-base font-semibold text-gray-900 dark:text-white">
               İletişim Bilgileri
@@ -512,54 +505,50 @@ export default function CompanySettings() {
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Telefon
-                </label>
                 <Input
+                  label="Telefon"
                   type="tel"
                   value={formData.phone || ''}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
                   disabled={!isTenantAdmin}
                   placeholder="0216 123 45 67"
+                  fullWidth
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Faks
-                </label>
                 <Input
+                  label="Faks"
                   type="tel"
                   value={formData.fax || ''}
                   onChange={(e) => handleInputChange('fax', e.target.value)}
                   disabled={!isTenantAdmin}
                   placeholder="0216 123 45 68"
+                  fullWidth
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  E-posta
-                </label>
                 <Input
+                  label="E-posta"
                   type="email"
                   value={formData.email || ''}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   disabled={!isTenantAdmin}
                   placeholder="info@firma.com"
+                  fullWidth
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Web Sitesi
-                </label>
                 <Input
+                  label="Web Sitesi"
                   type="url"
                   value={formData.website || ''}
                   onChange={(e) => handleInputChange('website', e.target.value)}
                   disabled={!isTenantAdmin}
                   placeholder="https://www.firma.com"
+                  fullWidth
                 />
               </div>
             </div>
@@ -587,7 +576,7 @@ export default function CompanySettings() {
                   value={formData.companyType || ''}
                   onChange={(e) => handleInputChange('companyType', e.target.value)}
                   disabled={!isTenantAdmin}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
                 >
                   <option value="">Seçiniz</option>
                   <option value="hearing_center">İşitme Merkezi</option>
@@ -604,65 +593,29 @@ export default function CompanySettings() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    SGK Mükellef Kodu
-                  </label>
                   <Input
+                    label="SGK Mükellef Kodu"
                     type="text"
                     value={formData.sgkMukellefKodu || ''}
                     onChange={(e) => handleInputChange('sgkMukellefKodu', e.target.value)}
                     disabled={!isTenantAdmin}
                     placeholder="1234567"
+                    fullWidth
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    SGK Mükellef Adı
-                  </label>
                   <Input
+                    label="SGK Mükellef Adı"
                     type="text"
                     value={formData.sgkMukellefAdi || ''}
                     onChange={(e) => handleInputChange('sgkMukellefAdi', e.target.value)}
                     disabled={!isTenantAdmin}
                     placeholder="Firma SGK Adı"
+                    fullWidth
                   />
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-amber-200 dark:border-amber-800">
-          <div className="p-6 border-b border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20">
-            <h3 className="text-base font-semibold text-amber-900 dark:text-amber-100">
-              E-Fatura Varsayılanları
-            </h3>
-            <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-              0 KDV ile kesilen faturalarda otomatik kullanılacak istisna sebebi
-            </p>
-          </div>
-          <div className="p-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Varsayılan İstisna Sebebi
-              </label>
-              <select
-                data-allow-raw="true"
-                value={formData.defaultExemptionCode || '0'}
-                onChange={(e) => handleInputChange('defaultExemptionCode', e.target.value)}
-                disabled={!isTenantAdmin}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-amber-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
-              >
-                {GOVERNMENT_EXEMPTION_REASONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
-                Ürün satırında `KDV %0` seçildiğinde ve özel istisna kodu girilmediyse bu değer XML&apos;e map edilir.
-              </p>
             </div>
           </div>
         </div>
@@ -680,29 +633,27 @@ export default function CompanySettings() {
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Banka Adı
-                </label>
                 <Input
+                  label="Banka Adı"
                   type="text"
                   value={formData.bankName || ''}
                   onChange={(e) => handleInputChange('bankName', e.target.value)}
                   disabled={!isTenantAdmin}
                   placeholder="Banka Adı"
+                  fullWidth
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  IBAN
-                </label>
                 <Input
+                  label="IBAN"
                   type="text"
                   value={formData.iban || ''}
                   onChange={(e) => handleInputChange('iban', e.target.value)}
                   disabled={!isTenantAdmin}
                   className="font-mono"
                   placeholder="TR00 0000 0000 0000 0000 0000 00"
+                  fullWidth
                 />
               </div>
             </div>
@@ -711,7 +662,7 @@ export default function CompanySettings() {
 
         {/* Save Button */}
         {hasChanges && isTenantAdmin && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex justify-end">
               <Button
                 onClick={handleSave}
@@ -729,7 +680,7 @@ export default function CompanySettings() {
       </div>
 
       {/* Language Settings */}
-      <div className="mt-6 sm:mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+      <div className="mt-6 sm:mt-8 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
         <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4">
           Dil Ayarları
         </h2>

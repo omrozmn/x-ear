@@ -95,7 +95,7 @@ export const SerialNumberModal: React.FC<SerialNumberModalProps> = ({
         </div>
 
         {/* Serial Inputs */}
-        <div className="max-h-96 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+        <div className="max-h-96 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-2xl p-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {filteredSerials.map(({ index, serial, matches }) => (
               matches && (

@@ -227,7 +227,7 @@ export const DeviceReplacementHistory: React.FC<DeviceReplacementHistoryProps> =
                       )}
                     </div>
 
-                    <div className="bg-muted/50 rounded-lg p-3">
+                    <div className="bg-muted/50 rounded-2xl p-3">
                       <div className="flex items-center justify-between">
                         <div className="space-y-1">
                           <div className="text-sm font-medium">Eski Cihaz</div>

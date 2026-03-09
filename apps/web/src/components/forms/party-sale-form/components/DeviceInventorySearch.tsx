@@ -57,7 +57,7 @@ export const DeviceInventorySearch: React.FC<DeviceInventorySearchProps> = ({
       </div>
       
       {searchTerm && filteredDevices.length > 0 && (
-        <div className="mt-2 border border-gray-200 rounded-lg max-h-60 overflow-y-auto">
+        <div className="mt-2 border border-gray-200 rounded-2xl max-h-60 overflow-y-auto">
           {filteredDevices.map((device) => (
             <div key={device.id} className="p-3 border-b border-gray-100 last:border-b-0">
               <div className="flex items-center justify-between">

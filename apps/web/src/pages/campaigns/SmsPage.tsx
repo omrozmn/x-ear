@@ -47,7 +47,7 @@ export default function SmsPage() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`
-                                flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-lg transition-all
+                                flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-2xl transition-all
                                 ${activeTab === tab.id
                                     ? 'bg-indigo-600 text-white shadow-sm dark:bg-indigo-500'
                                     : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200'

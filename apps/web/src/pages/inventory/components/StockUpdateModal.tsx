@@ -91,7 +91,7 @@ export const StockUpdateModal: React.FC<StockUpdateModalProps> = ({
     >
       <div className="space-y-6 dark:text-white">
         {product && (
-          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
             <h3 className="font-medium text-gray-900 dark:text-white">{product.name}</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Mevcut Stok: <span className="font-medium">{product.availableInventory}</span>

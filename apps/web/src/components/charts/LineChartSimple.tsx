@@ -112,7 +112,7 @@ export const LineChartSimple: React.FC<Props> = ({ data = [], width = 560, heigh
       {/* Tooltip overlay */}
       {hover && hover.index < data.length && (
         <div style={{ position: 'absolute', left: hover.x + 10, top: hover.y - 30, pointerEvents: 'none', zIndex: 50 }}>
-          <div className="bg-white border rounded-md px-3 py-2 text-xs shadow-lg">
+          <div className="bg-white border rounded-xl px-3 py-2 text-xs shadow-lg">
             <div className="font-semibold text-gray-900 mb-1">{String(data[hover.index].x)}</div>
             <div className="text-blue-600 font-medium whitespace-nowrap">
               {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(Number(data[hover.index].y))}

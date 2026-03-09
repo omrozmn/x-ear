@@ -89,7 +89,7 @@ export const FeatureTagInput: React.FC<FeatureTagInputProps> = ({
       )}
       
       <div 
-        className={`min-h-[42px] p-2 border rounded-lg bg-white dark:bg-gray-800 cursor-text transition-colors ${
+        className={`min-h-[42px] p-2 border rounded-2xl bg-white dark:bg-gray-800 cursor-text transition-colors ${
           isInputFocused 
             ? 'border-blue-500 ring-1 ring-blue-500' 
             : 'border-gray-300 dark:border-gray-600 hover:border-gray-400'
@@ -139,7 +139,7 @@ export const FeatureTagInput: React.FC<FeatureTagInputProps> = ({
 
       {/* Suggestions */}
       {isInputFocused && inputValue && filteredSuggestions.length > 0 && (
-        <div className="absolute z-10 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+        <div className="absolute z-10 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-2xl shadow-lg max-h-40 overflow-y-auto">
           {filteredSuggestions.slice(0, 5).map((feature, index) => (
             <Button
               key={index}

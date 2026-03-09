@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
 # JWT Configuration
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "super-secret-jwt-key-for-development")
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "default-dev-secret-key-change-in-prod")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 480  # 8 hours
 REFRESH_TOKEN_EXPIRE_DAYS = 30
@@ -43,6 +43,25 @@ class AdminLoginResponse(BaseModel):
     refresh_token: str
     user: Dict[str, Any]
     requires_mfa: bool = False
+
+
+def normalize_admin_identity(admin_id: str) -> str:
+    """Use the canonical admin JWT subject format expected by unified access."""
+    return admin_id if str(admin_id).startswith(("admin_", "adm_")) else f"adm_{admin_id}"
+
+
+def build_admin_claims(admin: AdminUser) -> dict[str, Any]:
+    """Build a consistent admin JWT payload across all admin auth flows."""
+    role_permissions = ["*"]
+    permissions_version = getattr(admin, "permissions_version", 1) or 1
+    return {
+        "tenant_id": "system",
+        "role": admin.role,
+        "role_permissions": role_permissions,
+        "perm_ver": permissions_version,
+        "is_admin": True,
+        "user_type": "admin",
+    }
 
 def create_access_token(subject: str, additional_claims: dict = None) -> str:
     """Create JWT access token"""
@@ -84,9 +103,10 @@ def admin_login(request_data: AdminLoginRequest, db: Session = Depends(get_db)):
         admin.last_login = datetime.utcnow()
         db.commit()
         
-        admin_identity = admin.id if admin.id.startswith('adm_') else f'adm_{admin.id}'
-        access_token = create_access_token(admin_identity, {'role': admin.role, 'user_type': 'admin'})
-        refresh_token = create_refresh_token(admin_identity, {'role': admin.role, 'user_type': 'admin'})
+        admin_identity = normalize_admin_identity(admin.id)
+        admin_claims = build_admin_claims(admin)
+        access_token = create_access_token(admin_identity, admin_claims)
+        refresh_token = create_refresh_token(admin_identity, admin_claims)
         
         user_data = {
             'id': admin.id,
@@ -540,26 +560,18 @@ def debug_exit_impersonation(
         admin_id = access.user_id
         
         # Create normal admin token without impersonation
+        admin = access.user
+        if not admin:
+            raise HTTPException(status_code=401, detail={"message": "Admin user not found", "code": "AUTH_REQUIRED"})
+
         access_token = create_access_token(
-            f'admin_{admin_id}' if not str(admin_id).startswith('admin_') else admin_id,
-            {
-                'tenant_id': 'system',
-                'role': 'tenant_admin',
-                'role_permissions': ['*'],
-                'is_admin': True,
-                'perm_ver': 1
-            }
+            normalize_admin_identity(str(admin_id)),
+            build_admin_claims(admin)
         )
-        
+
         refresh_token = create_refresh_token(
-            f'admin_{admin_id}' if not str(admin_id).startswith('admin_') else admin_id,
-            {
-                'tenant_id': 'system',
-                'role': 'tenant_admin',
-                'role_permissions': ['*'],
-                'is_admin': True,
-                'perm_ver': 1
-            }
+            normalize_admin_identity(str(admin_id)),
+            build_admin_claims(admin)
         )
         
         return ResponseEnvelope(data={

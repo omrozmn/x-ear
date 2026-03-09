@@ -3,6 +3,7 @@ import { Megaphone, Search, X } from 'lucide-react';
 import { useAdminResponsive } from '@/hooks';
 import { ResponsiveTable } from '@/components/responsive';
 import { adminApi } from '@/lib/api-client';
+import { unwrapArray, unwrapData } from '@/lib/orval-response';
 import toast from 'react-hot-toast';
 
 interface Campaign {
@@ -23,11 +24,15 @@ interface Campaign {
 }
 
 interface CampaignListResponse {
-    data?: Campaign[];
-    meta?: {
+  data?: Campaign[];
+  meta?: {
         total?: number;
         totalPages?: number;
     };
+}
+
+function isCampaignListResponse(value: unknown): value is CampaignListResponse {
+    return typeof value === 'object' && value !== null;
 }
 
 export default function TenantCampaignsTab() {
@@ -56,10 +61,11 @@ export default function TenantCampaignsTab() {
                     status: statusFilter !== 'all' ? statusFilter : undefined
                 }
             });
-            
-            setCampaigns(response.data ?? []);
-            setTotal(response.meta?.total ?? 0);
-            setTotalPages(response.meta?.totalPages ?? 1);
+
+            const campaignsPayload = unwrapData<Campaign[] | CampaignListResponse>(response);
+            setCampaigns(Array.isArray(campaignsPayload) ? campaignsPayload : unwrapArray<Campaign>(campaignsPayload));
+            setTotal(isCampaignListResponse(campaignsPayload) && typeof campaignsPayload.meta?.total === 'number' ? campaignsPayload.meta.total : 0);
+            setTotalPages(isCampaignListResponse(campaignsPayload) && typeof campaignsPayload.meta?.totalPages === 'number' ? campaignsPayload.meta.totalPages : 1);
         } catch (error) {
             console.error('Failed to fetch campaigns:', error);
             toast.error('Kampanyalar yüklenirken hata oluştu');

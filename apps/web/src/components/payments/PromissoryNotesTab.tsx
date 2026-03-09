@@ -811,7 +811,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
         </CardHeader>
         {isCreateFormOpen && (
           <CardContent>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
               <p className="text-sm text-blue-800 flex items-center">
                 <FileText className="w-4 h-4 mr-2" />
                 Bu form ile resmi senet oluşturabilirsiniz. Bilgileri kontrol edip düzenleyebilirsiniz.
@@ -923,7 +923,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
                   </div>
                   <div className="space-y-2 max-h-64 overflow-y-auto">
                     {installments.map((inst, index) => (
-                      <div key={index} className="grid grid-cols-12 gap-3 bg-gray-50 p-3 rounded-lg items-center">
+                      <div key={index} className="grid grid-cols-12 gap-3 bg-gray-50 p-3 rounded-2xl items-center">
                         <span className="col-span-2 font-medium text-gray-700">Taksit {index + 1}:</span>
                         <div className="col-span-5 flex items-center gap-2">
                           <Input
@@ -957,7 +957,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
                       </span>
                     </div>
                     {installments.reduce((sum, inst) => sum + inst.amount, 0) > totalAmount && (
-                      <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-2">
+                      <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-2xl flex items-start gap-2">
                         <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                         <div className="text-sm text-yellow-800">
                           <strong>Uyarı:</strong> Taksitlerin toplamı ({formatCurrency(installments.reduce((sum, inst) => sum + inst.amount, 0))})
@@ -1235,7 +1235,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
       {/* Delete Confirmation Modal */}
       {deleteModal.isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
             <div className="flex items-center gap-3 mb-4">
               <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
                 <AlertTriangle className="w-6 h-6 text-red-600" />
@@ -1278,13 +1278,13 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
       {/* Tahsilat Modal */}
       {collectModal.isOpen && collectModal.note && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
             <h3 className="text-lg font-medium text-gray-900 mb-4">
               Senet Tahsilatı - #{collectModal.note.noteNumber}
             </h3>
 
             <div className="space-y-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3">
                 <div className="text-sm text-blue-800">
                   <div>Senet Tutarı: {formatCurrency(collectModal.note.amount)}</div>
                   {collectModal.note.paidAmount && collectModal.note.paidAmount > 0 && (

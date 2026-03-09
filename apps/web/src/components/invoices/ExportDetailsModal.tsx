@@ -240,7 +240,7 @@ export function ExportDetailsModal({
               </div>
 
               {/* Bilgilendirme */}
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="bg-green-50 border border-green-200 rounded-2xl p-4">
                 <div className="flex items-start">
                   <Info className="text-green-400 mr-2 flex-shrink-0" size={18} />
                   <div>

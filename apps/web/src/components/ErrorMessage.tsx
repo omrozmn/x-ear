@@ -66,7 +66,7 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({
   const Icon = config.icon;
 
   return (
-    <div className={`rounded-md border p-4 ${config.bgColor} ${config.borderColor} ${className}`}>
+    <div className={`rounded-xl border p-4 ${config.bgColor} ${config.borderColor} ${className}`}>
       <div className="flex">
         <div className="flex-shrink-0">
           <Icon className={`h-5 w-5 ${config.iconColor}`} />

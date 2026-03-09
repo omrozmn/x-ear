@@ -269,7 +269,7 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
           onFocus={handleInputFocus}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${error ? 'border-red-300' : 'border-gray-300 dark:border-gray-600'
+          className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${error ? 'border-red-300' : 'border-gray-300 dark:border-gray-600'
             }`}
           aria-autocomplete="list"
           aria-expanded={isOpen}
@@ -281,7 +281,7 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
             ref={dropdownRef}
             id="category-autocomplete-list"
             style={dropdownStyle}
-            className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-auto"
+            className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-lg max-h-60 overflow-auto"
             role="listbox"
           >
             {isLoading && (

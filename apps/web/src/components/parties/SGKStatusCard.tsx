@@ -31,7 +31,7 @@ export const SGKStatusCard: React.FC<SGKStatusCardProps> = ({
   const totalAmount = (contributionAmount as number) + (sgkCoverage as number);
 
   return (
-    <div className="bg-white rounded-lg border p-6">
+    <div className="bg-white rounded-2xl border p-6">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-semibold text-gray-900">SGK Durum Bilgileri</h3>
         <Button

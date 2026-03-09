@@ -1,4 +1,4 @@
-import { Button, Input, Select, Checkbox } from '@x-ear/ui-web';
+import { Button, Input, Select, Checkbox, DatePicker } from '@x-ear/ui-web';
 import { useState } from 'react';
 import { InvoiceFilters as IInvoiceFilters, InvoiceStatus, PaymentMethod } from '../../types/invoice';
 
@@ -24,7 +24,7 @@ export function InvoiceFilters({ filters, onFiltersChange, onApply, onReset }: I
   }).length;
 
   return (
-    <div className="bg-white rounded-lg shadow mb-6">
+    <div className="bg-white rounded-2xl shadow mb-6">
       <div className="px-6 py-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -117,25 +117,19 @@ export function InvoiceFilters({ filters, onFiltersChange, onApply, onReset }: I
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Başlangıç Tarihi
-                </label>
-                <Input
-                  type="date"
-                  value={filters.issueDateFrom || ''}
-                  onChange={(e) => handleFilterChange('issueDateFrom', e.target.value)}
+                <DatePicker
+                  label="Başlangıç Tarihi"
+                  value={filters.issueDateFrom ? new Date(filters.issueDateFrom) : null}
+                  onChange={(date) => handleFilterChange('issueDateFrom', date ? date.toISOString().split('T')[0] : '')}
                   className="w-full"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Bitiş Tarihi
-                </label>
-                <Input
-                  type="date"
-                  value={filters.issueDateTo || ''}
-                  onChange={(e) => handleFilterChange('issueDateTo', e.target.value)}
+                <DatePicker
+                  label="Bitiş Tarihi"
+                  value={filters.issueDateTo ? new Date(filters.issueDateTo) : null}
+                  onChange={(date) => handleFilterChange('issueDateTo', date ? date.toISOString().split('T')[0] : '')}
                   className="w-full"
                 />
               </div>
@@ -253,13 +247,13 @@ export function InvoiceFilters({ filters, onFiltersChange, onApply, onReset }: I
           <div className="flex justify-end space-x-3 mt-6 pt-6 border-t border-gray-200">
             <Button
               onClick={onReset}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-2xl hover:bg-gray-50"
               variant="default">
               Sıfırla
             </Button>
             <Button
               onClick={onApply}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm"
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-2xl hover:bg-blue-700 shadow-sm"
               style={{ backgroundColor: '#2563eb', color: 'white' }}
               variant="default">
               Filtrele

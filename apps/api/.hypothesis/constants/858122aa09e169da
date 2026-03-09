@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/invoice_draft_issue.py
+# hypothesis_version: 6.151.9
+
+[400, 401, 404, 500, 502, 503, '..', '/invoices', '14', 'DRAFT', 'Draft not found', 'EFATURA', 'EIRSALIYE', 'Message', 'OUTGOING', 'Result', 'SENT', 'Success', 'TRY', 'Tenant not found', '_issued_at', '_provider_response', '_source_form_data', 'address', 'api_key', 'birfatura', 'city', 'currency', 'customer', 'documentBytes', 'documentUUID', 'efatura_outbox', 'ettn', 'fileName', 'instance', 'integration_key', 'invoiceNo', 'invoiceNumber', 'invoiceType', 'invoice_integration', 'invoices', 'invoices.view', 'isDocumentNoAuto', 'issueInvoiceDraft', 'message', 'name', 'pdfLink', 'rb', 'secret_key', 'street', 'subtotal', 'systemType', 'systemTypeCodes', 'taxAmount', 'tax_id', 'totalAmount', 'utf-8', 'uuid']

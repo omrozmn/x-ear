@@ -253,7 +253,7 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
       </div>
 
       {hasSelectedParties && (
-        <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-lg">
+        <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-2xl">
           <span className="text-sm text-blue-700">
             {selectedParties.size} hasta seçildi
           </span>
@@ -367,7 +367,7 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
     if (!currentError) return null;
 
     return (
-      <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+      <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <span className="text-red-600 mr-2">⚠️</span>

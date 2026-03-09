@@ -63,7 +63,7 @@ export function SalesTab({ filters }: SalesTabProps) {
                     <div className="grid grid-cols-6 gap-4">
                         {Object.entries(financial.revenue_trend).map(([month, amount]) => (
                             <div key={month} className="text-center">
-                                <div className="h-24 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-end justify-center mb-2">
+                                <div className="h-24 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-end justify-center mb-2">
                                     <div
                                         className="bg-blue-500 rounded w-full"
                                         style={{ height: `${Math.min(100, (amount / Math.max(...Object.values(financial.revenue_trend as object).map(Number)) * 100))}%` }}

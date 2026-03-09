@@ -163,7 +163,7 @@ export function PartyList({
         {parties.map((party) => (
           <div
             key={party.id}
-            className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
+            className="bg-white rounded-2xl border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
             onClick={() => {
               console.log('=== PARTY CARD CLICK ===', party);
               (onView || onPartyClick)?.(party);
@@ -242,7 +242,7 @@ export function PartyList({
   // List view (default)
   return (
     <>
-      <div className={`bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden ${className}`}>
+      <div className={`bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden ${className}`}>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-700">
@@ -433,7 +433,7 @@ export function PartyList({
                             e.stopPropagation();
                             setCommunicationParty(party);
                           }}
-                          className="h-11 w-11 !p-0 inline-flex items-center justify-center rounded-md hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 text-gray-400 dark:text-gray-500 transition-colors"
+                          className="h-11 w-11 !p-0 inline-flex items-center justify-center rounded-xl hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 text-gray-400 dark:text-gray-500 transition-colors"
                           title={t('nav.communication', { ns: 'layout' })}
                         >
                           <MessageSquare className="h-6 w-6" />
@@ -444,7 +444,7 @@ export function PartyList({
                             e.stopPropagation();
                             onDelete?.(party);
                           }}
-                          className="h-11 w-11 !p-0 inline-flex items-center justify-center rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 text-gray-400 dark:text-gray-500 transition-colors"
+                          className="h-11 w-11 !p-0 inline-flex items-center justify-center rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 text-gray-400 dark:text-gray-500 transition-colors"
                           title={t('delete', { ns: 'common' })}
                         >
                           <Trash2 className="h-6 w-6" />

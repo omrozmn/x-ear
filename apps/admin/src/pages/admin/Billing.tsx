@@ -38,6 +38,7 @@ import type {
 } from '@/api/generated/schemas';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
+import { isRecord as isEnvelopeRecord, unwrapData } from '@/lib/orval-response';
 
 interface CreateInvoiceData {
   tenant_id: string;
@@ -95,7 +96,7 @@ function toNumber(value: unknown): number {
 }
 
 function getInvoices(data: InvoiceListResponse | undefined): AdminInvoice[] {
-  const responseData = data?.data;
+  const responseData = unwrapData<Record<string, unknown>>(data);
   if (!isRecord(responseData) || !Array.isArray(responseData.items)) {
     return [];
   }
@@ -104,7 +105,7 @@ function getInvoices(data: InvoiceListResponse | undefined): AdminInvoice[] {
 }
 
 function getInvoicePagination(data: InvoiceListResponse | undefined): InvoicePaginationInfo {
-  const responseData = data?.data;
+  const responseData = unwrapData<Record<string, unknown>>(data);
   if (!isRecord(responseData) || !isRecord(responseData.pagination)) {
     return {};
   }
@@ -116,7 +117,7 @@ function getInvoicePagination(data: InvoiceListResponse | undefined): InvoicePag
 }
 
 function getSelectedInvoice(data: InvoiceDetailResponse | undefined): AdminInvoice | null {
-  const responseData = data?.data;
+  const responseData = unwrapData<Record<string, unknown>>(data);
   if (!isRecord(responseData) || !isRecord(responseData.invoice)) {
     return null;
   }
@@ -125,7 +126,7 @@ function getSelectedInvoice(data: InvoiceDetailResponse | undefined): AdminInvoi
 }
 
 function getPlans(data: PlanListResponse | undefined): PlanRead[] {
-  const responseData = data?.data;
+  const responseData = unwrapData<Record<string, unknown>>(data);
   if (!responseData || typeof responseData !== 'object' || !('plans' in responseData) || !Array.isArray(responseData.plans)) {
     return [];
   }
@@ -140,7 +141,7 @@ function getTenants(data: unknown): TenantOption[] {
       return directTenants.filter((tenant): tenant is TenantOption => isRecord(tenant) && typeof tenant.id === 'string' && typeof tenant.name === 'string');
     }
 
-    const nestedData = data.data;
+    const nestedData = isEnvelopeRecord(data) ? unwrapData<Record<string, unknown>>(data) : undefined;
     if (isRecord(nestedData) && Array.isArray(nestedData.tenants)) {
       return nestedData.tenants.filter((tenant): tenant is TenantOption => isRecord(tenant) && typeof tenant.id === 'string' && typeof tenant.name === 'string');
     }
@@ -150,11 +151,12 @@ function getTenants(data: unknown): TenantOption[] {
 }
 
 function getPdfUrl(data: SchemasBaseResponseEnvelope): string | null {
-  if (!isRecord(data.data) || typeof data.data.url !== 'string') {
+  const payload = unwrapData<Record<string, unknown>>(data);
+  if (!isRecord(payload) || typeof payload.url !== 'string') {
     return null;
   }
 
-  return data.data.url;
+  return payload.url;
 }
 
 const Billing: React.FC = () => {

@@ -126,18 +126,18 @@ export const MobileProfilePage: React.FC = () => {
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 space-y-4">
                     <div>
                         <label className="text-xs text-gray-500 mb-1 block">Ad Soyad</label>
-                        <div className="p-3 bg-gray-50 rounded-lg text-sm">{user?.name}</div>
+                        <div className="p-3 bg-gray-50 rounded-2xl text-sm">{user?.name}</div>
                     </div>
                     <div>
                         <label className="text-xs text-gray-500 mb-1 block">E-posta</label>
-                        <div className="p-3 bg-gray-50 rounded-lg text-sm flex items-center gap-2">
+                        <div className="p-3 bg-gray-50 rounded-2xl text-sm flex items-center gap-2">
                             <Mail className="h-4 w-4 text-gray-400" />
                             {user?.email}
                         </div>
                     </div>
                     <div>
                         <label className="text-xs text-gray-500 mb-1 block">Telefon</label>
-                        <div className="p-3 bg-gray-50 rounded-lg text-sm flex items-center gap-2">
+                        <div className="p-3 bg-gray-50 rounded-2xl text-sm flex items-center gap-2">
                             <Phone className="h-4 w-4 text-gray-400" />
                             {user?.phone || 'Tanımlı değil'}
                         </div>
@@ -146,7 +146,7 @@ export const MobileProfilePage: React.FC = () => {
                     <div className="pt-2">
                         <button data-allow-raw="true"
                             onClick={() => toast.success('Bu özellik yakında eklenecek')}
-                            className="w-full py-2.5 bg-primary-600 text-white rounded-lg font-medium text-sm active:bg-primary-700"
+                            className="w-full py-2.5 bg-primary-600 text-white rounded-2xl font-medium text-sm active:bg-primary-700"
                         >
                             Bilgileri Güncelle
                         </button>
@@ -164,15 +164,15 @@ export const MobileProfilePage: React.FC = () => {
                     <h3 className="font-medium text-gray-900 border-b border-gray-100 pb-2">Şifre Değiştir</h3>
                     {/* Simple inputs just for visual placeholder */}
                     <div>
-                        <input data-allow-raw="true" type="password" placeholder="Mevcut Şifre" className="w-full p-3 bg-gray-50 rounded-lg text-sm border-none focus:ring-2 focus:ring-primary-500" />
+                        <input data-allow-raw="true" type="password" placeholder="Mevcut Şifre" className="w-full p-3 bg-gray-50 rounded-2xl text-sm border-none focus:ring-2 focus:ring-primary-500" />
                     </div>
                     <div>
-                        <input data-allow-raw="true" type="password" placeholder="Yeni Şifre" className="w-full p-3 bg-gray-50 rounded-lg text-sm border-none focus:ring-2 focus:ring-primary-500" />
+                        <input data-allow-raw="true" type="password" placeholder="Yeni Şifre" className="w-full p-3 bg-gray-50 rounded-2xl text-sm border-none focus:ring-2 focus:ring-primary-500" />
                     </div>
                     <div>
-                        <input data-allow-raw="true" type="password" placeholder="Yeni Şifre (Tekrar)" className="w-full p-3 bg-gray-50 rounded-lg text-sm border-none focus:ring-2 focus:ring-primary-500" />
+                        <input data-allow-raw="true" type="password" placeholder="Yeni Şifre (Tekrar)" className="w-full p-3 bg-gray-50 rounded-2xl text-sm border-none focus:ring-2 focus:ring-primary-500" />
                     </div>
-                    <button data-allow-raw="true" className="w-full py-2.5 bg-primary-600 text-white rounded-lg font-medium text-sm active:bg-primary-700 mt-2">
+                    <button data-allow-raw="true" className="w-full py-2.5 bg-primary-600 text-white rounded-2xl font-medium text-sm active:bg-primary-700 mt-2">
                         Şifreyi Güncelle
                     </button>
                 </div>

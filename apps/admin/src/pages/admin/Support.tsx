@@ -31,6 +31,7 @@ import {
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
 import Pagination from '@/components/ui/Pagination';
+import { unwrapData } from '@/lib/orval-response';
 
 type UnknownRecord = Record<string, unknown>;
 type TicketStatusFilter = TicketStatus | 'all';
@@ -144,7 +145,7 @@ const normalizeTicket = (value: unknown): SupportTicket | null => {
 };
 
 const getTickets = (response: SchemasBaseResponseEnvelopeDict | undefined): SupportTicket[] => {
-  const data = response?.data;
+  const data = unwrapData<unknown>(response);
 
   if (!data) {
     return [];
@@ -152,6 +153,8 @@ const getTickets = (response: SchemasBaseResponseEnvelopeDict | undefined): Supp
 
   const candidate = isRecord(data) && Array.isArray(data.tickets)
     ? data.tickets
+    : isRecord(data) && Array.isArray(data.items)
+      ? data.items
     : Array.isArray(data)
       ? data
       : [];
@@ -162,7 +165,7 @@ const getTickets = (response: SchemasBaseResponseEnvelopeDict | undefined): Supp
 };
 
 const getTicketPagination = (response: SchemasBaseResponseEnvelopeDict | undefined): TicketPagination | null => {
-  const nestedData = response?.data;
+  const nestedData = unwrapData<unknown>(response);
   const pagination =
     nestedData && isRecord(nestedData) && isRecord(nestedData.pagination)
       ? nestedData.pagination
@@ -183,10 +186,13 @@ const getTicketPagination = (response: SchemasBaseResponseEnvelopeDict | undefin
 };
 
 const getAdminUsers = (response: unknown): AdminUserOption[] => {
-  const candidate = isRecord(response) && Array.isArray(response.data)
-    ? response.data
-    : isRecord(response) && isRecord(response.data) && Array.isArray(response.data.users)
-      ? response.data.users
+  const payload = unwrapData<unknown>(response);
+  const candidate = Array.isArray(payload)
+    ? payload
+    : isRecord(payload) && Array.isArray(payload.users)
+      ? payload.users
+    : isRecord(payload) && Array.isArray(payload.items)
+      ? payload.items
       : [];
 
   return candidate.reduce<AdminUserOption[]>((users, user) => {
@@ -200,15 +206,15 @@ const getAdminUsers = (response: unknown): AdminUserOption[] => {
         return users;
       }
 
-      users.push({
-        id,
-        firstName: getString(user.firstName) ?? getString(user.first_name),
-        lastName: getString(user.lastName) ?? getString(user.last_name),
-        email: getString(user.email),
-      });
+    users.push({
+      id,
+      firstName: getString(user.firstName) ?? getString(user.first_name),
+      lastName: getString(user.lastName) ?? getString(user.last_name),
+      email: getString(user.email),
+    });
 
-      return users;
-    }, []);
+    return users;
+  }, []);
 };
 
 const getAdminUserLabel = (user: AdminUserOption) => {

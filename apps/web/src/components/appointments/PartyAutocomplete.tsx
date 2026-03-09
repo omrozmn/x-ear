@@ -149,7 +149,7 @@ export function PartyAutocomplete({
 
       {/* Search results dropdown */}
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
           {isLoading ? (
             <div className="p-3 text-sm text-gray-500">Hasta verisi yükleniyor...</div>
           ) : filteredParties.length === 0 ? (

@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/base.py
+# hypothesis_version: 6.151.9
+
+['*', 'Creation timestamp', 'ResponseEnvelope[T]', 'T', 'allow', 'createdAt', 'hasNext', 'json', 'nextCursor', 'perPage', 'requestId', 'timestamp', 'totalPages', 'updatedAt']

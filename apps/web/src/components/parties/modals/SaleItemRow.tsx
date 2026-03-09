@@ -99,7 +99,7 @@ export function SaleItemRow({ item, index, onUpdate, onRemove, canRemove, search
 
             {/* Ürün Arama Sonuçları */}
             {showProductSearch && filteredProducts.length > 0 && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg max-h-60 overflow-y-auto">
                 {filteredProducts.map((product) => (
                   <div
                     key={product.id}
@@ -121,7 +121,7 @@ export function SaleItemRow({ item, index, onUpdate, onRemove, canRemove, search
 
           {/* Seçili Ürün Bilgisi */}
           {item.product && (
-            <div className="bg-blue-50 p-3 rounded-lg">
+            <div className="bg-blue-50 p-3 rounded-2xl">
               <div className="font-medium text-blue-900">{item.product.name}</div>
               <div className="text-sm text-blue-700">
                 {item.product.brand} - {item.product.model}

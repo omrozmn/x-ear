@@ -130,12 +130,15 @@ def list_files(
                 detail="File storage service not configured. Please install boto3 or configure S3."
             )
         
-        # Determine access.tenant_id for file listing
-        if access.tenant_id:
+        # Determine effective tenant scope for file listing.
+        if access.is_super_admin:
+            # Legacy admin uploads commonly live under "admin"; keep that as the
+            # default fallback instead of the JWT tenant_id ("system").
+            effective_tenant_id = tenant_id or (
+                access.tenant_id if access.tenant_id not in {None, "", "system"} else 'admin'
+            )
+        elif access.tenant_id:
             effective_tenant_id = access.tenant_id
-        elif access.is_super_admin:
-            # Super Admin can list from a specific tenant if provided
-            effective_tenant_id = access.tenant_id or 'admin'
         else:
             effective_tenant_id = 'public'
         

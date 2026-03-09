@@ -163,7 +163,7 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-medium text-gray-900 flex items-center">
             <Edit className="w-5 h-5 mr-2" />
@@ -197,7 +197,7 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
           <div className="space-y-6">
             {/* Sale Info */}
             <div className="grid grid-cols-2 gap-6">
-              <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="bg-gray-50 p-4 rounded-2xl">
                 <h4 className="font-medium text-gray-900 mb-2">Müşteri Bilgileri</h4>
                 <div className="space-y-1 text-sm">
                   <div><span className="font-medium">Ad Soyad:</span> {party?.firstName || 'Belirtilmemiş'} {party?.lastName || 'Belirtilmemiş'}</div>
@@ -206,7 +206,7 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
                 </div>
               </div>
 
-              <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="bg-blue-50 p-4 rounded-2xl">
                 <h4 className="font-medium text-gray-900 mb-2">Satış Bilgileri</h4>
                 <div className="space-y-1 text-sm">
                   <div><span className="font-medium">Satış ID:</span> {sale.id}</div>
@@ -255,7 +255,7 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
               </div>
 
               {/* Quick Notes */}
-              <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="bg-gray-50 p-4 rounded-2xl">
                 <h5 className="font-medium text-gray-900 mb-3">Hızlı Notlar</h5>
                 <div className="grid grid-cols-2 gap-2">
                   {quickNotes.map((quickNote) => (
@@ -279,7 +279,7 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
 
               {/* Note History */}
               {sale.notes && sale.notes !== noteText && (
-                <div className="bg-yellow-50 p-4 rounded-lg">
+                <div className="bg-yellow-50 p-4 rounded-2xl">
                   <h5 className="font-medium text-gray-900 mb-2">Mevcut Not</h5>
                   <div className="text-sm text-gray-700 bg-white p-3 rounded border">
                     {sale.notes}
@@ -289,7 +289,7 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
 
               {/* Change Indicator */}
               {hasChanges && (
-                <div className="bg-orange-50 border border-orange-200 p-4 rounded-lg">
+                <div className="bg-orange-50 border border-orange-200 p-4 rounded-2xl">
                   <div className="flex items-center text-orange-800">
                     <Save className="w-4 h-4 mr-2" />
                     <span className="font-medium">Kaydedilmemiş değişiklikler var</span>
@@ -303,7 +303,7 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
 
             {/* Metadata */}
             {(sale.createdAt || sale.updatedAt) && (
-              <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="bg-gray-50 p-4 rounded-2xl">
                 <h5 className="font-medium text-gray-900 mb-2">Kayıt Bilgileri</h5>
                 <div className="text-sm text-gray-600 space-y-1">
                   {sale.createdAt && (
@@ -325,14 +325,14 @@ export const SaleNoteModal: React.FC<SaleNoteModalProps> = ({
             <Button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+              className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl"
               disabled={isLoading}
             >
               İptal
             </Button>
             <Button
               type="submit"
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center"
+              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center"
               disabled={isLoading || noteText.trim().length === 0 || noteText.trim() === (sale?.notes || '').trim()}
             >
               {isLoading ? (

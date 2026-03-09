@@ -353,7 +353,7 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
 
                             {/* Expanded metadata */}
                             {expandedEvents.has(event.id) && event.metadata && (
-                              <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-md">
+                              <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
                                 <h6 className="text-xs font-medium text-gray-700 dark:text-gray-200 mb-2">Detaylar</h6>
                                 <div className="space-y-1">
                                   {Object.entries(event.metadata).map(([key, value]) => {

@@ -212,7 +212,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const isMobile = propIsMobile ?? breakpoints.isMobile;
   const isTablet = propIsTablet ?? breakpoints.isTablet;
   const isDesktop = propIsDesktop ?? breakpoints.isDesktop;
-  
+
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
   // Load expanded items from localStorage
@@ -264,7 +264,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div
           data-testid={`sidebar-menu-${item.id}`}
           className={`
-            flex items-center px-3 py-2 text-sm font-medium rounded-lg cursor-pointer transition-colors
+            flex items-center px-3 py-2 text-sm font-medium rounded-xl cursor-pointer transition-colors
             ${level > 0 ? 'ml-6' : ''}
             ${active
               ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
@@ -341,7 +341,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700" data-testid="sidebar-header">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center">
                   <span className="text-white font-bold text-lg">X</span>
                 </div>
               </div>
@@ -349,7 +349,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 X-Ear
               </span>
             </div>
-            
+
             <button
               onClick={onClose}
               className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -384,7 +384,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       >
         {/* Header */}
         <div className="flex items-center justify-center h-16 border-b border-gray-200 dark:border-gray-700" data-testid="sidebar-header">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center">
             <span className="text-white font-bold text-lg">X</span>
           </div>
         </div>
@@ -412,7 +412,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {!isCollapsed && (
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center">
                 <span className="text-white font-bold text-lg">X</span>
               </div>
             </div>
@@ -421,10 +421,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </span>
           </div>
         )}
-        
+
         {isCollapsed && (
           <div className="w-full flex justify-center">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center">
               <span className="text-white font-bold text-lg">X</span>
             </div>
           </div>

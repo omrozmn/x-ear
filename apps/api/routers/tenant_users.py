@@ -336,6 +336,58 @@ def update_tenant_user(
 
 
 
+@router.get("/tenants/current", operation_id="getCurrentTenant", response_model=ResponseEnvelope[TenantCompanyResponse])
+def get_current_tenant(
+    access: UnifiedAccess = Depends(require_access()),
+    db_session: Session = Depends(get_db)
+):
+    """Get current tenant information including settings and company info"""
+    try:
+        from sqlalchemy.orm.attributes import flag_modified
+        
+        if not access.tenant_id:
+            raise HTTPException(
+                status_code=400,
+                detail=ApiError(message="No tenant context", code="NO_TENANT").model_dump(mode="json")
+            )
+        
+        tenant = db_session.get(Tenant, access.tenant_id)
+        if not tenant:
+            raise HTTPException(
+                status_code=404,
+                detail=ApiError(message="Tenant not found", code="TENANT_NOT_FOUND").model_dump(mode="json")
+            )
+        
+        # Auto-generate default invoice prefix if not set
+        settings = tenant.settings or {}
+        invoice_settings = settings.get("invoice_integration") or {}
+        
+        if not invoice_settings.get("invoice_prefix"):
+            # Generate from company name: first 3 letters, uppercase, A-Z only
+            company_name = tenant.name or "XER"
+            prefix = ''.join(c for c in company_name.upper() if c.isalpha())[:3].ljust(3, 'X')
+            
+            # Initialize invoice settings
+            if "invoice_integration" not in settings:
+                settings["invoice_integration"] = {}
+            
+            settings["invoice_integration"]["invoice_prefix"] = prefix
+            settings["invoice_integration"]["invoice_prefixes"] = [prefix]
+            settings["invoice_integration"]["use_manual_numbering"] = True
+            
+            tenant.settings = settings
+            flag_modified(tenant, "settings")
+            db_session.commit()
+            db_session.refresh(tenant)
+        
+        return ResponseEnvelope(data=TenantCompanyResponse.model_validate(tenant))
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get current tenant error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/tenant/company", operation_id="getTenantCompany", response_model=ResponseEnvelope[TenantCompanyResponse])
 def get_tenant_company(
     access: UnifiedAccess = Depends(require_access()),
@@ -362,6 +414,64 @@ def get_tenant_company(
     except Exception as e:
         logger.error(f"Get tenant company error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.patch("/tenants/current", operation_id="updateTenantSettings", response_model=ResponseEnvelope[TenantCompanyResponse])
+def update_tenant_settings(
+    settings_update: dict,
+    access: UnifiedAccess = Depends(require_access()),
+    db_session: Session = Depends(get_db)
+):
+    """Update tenant settings and company info"""
+    try:
+        from sqlalchemy.orm.attributes import flag_modified
+        
+        if not access.tenant_id:
+            raise HTTPException(
+                status_code=400,
+                detail=ApiError(message="No tenant context", code="NO_TENANT").model_dump(mode="json")
+            )
+        
+        tenant = db_session.get(Tenant, access.tenant_id)
+        if not tenant:
+            raise HTTPException(
+                status_code=404,
+                detail=ApiError(message="Tenant not found", code="TENANT_NOT_FOUND").model_dump(mode="json")
+            )
+        
+        # Update settings if provided
+        if "settings" in settings_update:
+            current_settings = tenant.settings or {}
+            new_settings = settings_update["settings"]
+            
+            # Deep merge settings
+            for key, value in new_settings.items():
+                if isinstance(value, dict) and key in current_settings and isinstance(current_settings[key], dict):
+                    current_settings[key].update(value)
+                else:
+                    current_settings[key] = value
+            
+            tenant.settings = current_settings
+            flag_modified(tenant, "settings")  # Mark JSON field as modified
+        
+        # Update company_info if provided
+        if "companyInfo" in settings_update or "company_info" in settings_update:
+            company_info = tenant.company_info or {}
+            new_company_info = settings_update.get("companyInfo") or settings_update.get("company_info") or {}
+            company_info.update(new_company_info)
+            tenant.company_info = company_info
+            flag_modified(tenant, "company_info")  # Mark JSON field as modified
+        
+        db_session.commit()
+        db_session.refresh(tenant)
+        
+        return ResponseEnvelope(data=TenantCompanyResponse.model_validate(tenant))
+    except HTTPException:
+        raise
+    except Exception as e:
+        db_session.rollback()
+        logger.error(f"Update tenant settings error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.put("/tenant/company", operation_id="updateTenantCompany", response_model=ResponseEnvelope[TenantCompanyResponse])
 def update_tenant_company(

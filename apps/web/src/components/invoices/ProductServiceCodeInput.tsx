@@ -64,7 +64,7 @@ export function ProductServiceCodeInput({
 
       {/* Sık Kullanılan Kodlar */}
       {showCommonCodes && (
-        <div className="bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+        <div className="bg-white border border-gray-300 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
           {commonServiceCodes.map((item) => (
             <Button
               key={item.code}

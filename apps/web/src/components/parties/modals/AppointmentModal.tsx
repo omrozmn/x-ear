@@ -184,7 +184,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-medium text-gray-900 flex items-center">
             <Calendar className="w-5 h-5 mr-2" />
@@ -201,7 +201,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
         <form onSubmit={handleSubmit}>
           <div className="space-y-6">
             {/* Party Info */}
-            <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="bg-gray-50 p-4 rounded-2xl">
               <h4 className="font-medium text-gray-900 mb-2 flex items-center">
                 <User className="w-4 h-4 mr-2" />
                 Hasta Bilgileri
@@ -261,7 +261,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 <select data-allow-raw="true"
                   value={formData.status}
                   onChange={(e) => handleInputChange('status', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="scheduled">Planlandı</option>
                   <option value="completed">Tamamlandı</option>
@@ -293,7 +293,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
             {/* Existing Appointment Info */}
             {isEditing && appointment && (
-              <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="bg-blue-50 p-4 rounded-2xl">
                 <h4 className="font-medium text-gray-900 mb-2">Mevcut Randevu Bilgileri</h4>
                 <div className="text-sm space-y-1">
                   <div>
@@ -311,7 +311,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             )}
 
             {/* Quick Actions for Common Appointment Types */}
-            <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="bg-gray-50 p-4 rounded-2xl">
               <h4 className="font-medium text-gray-900 mb-2">Hızlı Notlar</h4>
               <div className="grid grid-cols-2 gap-2">
                 {[
@@ -360,13 +360,13 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             <Button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+              className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl"
             >
               İptal
             </Button>
             <Button
               type="submit"
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center"
+              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center"
               disabled={loading || isLoading}
             >
               {(loading || isLoading) && <Spinner className="w-4 h-4 mr-2" />}

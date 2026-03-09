@@ -49,7 +49,7 @@ export const MobileDashboard: React.FC = () => {
                                     className={`${stat.color} p-4 rounded-2xl min-w-[160px] text-white shadow-lg snap-start flex flex-col justify-between h-32 active:scale-95 transition-transform duration-100`}
                                 >
                                     <div className="flex justify-between items-start">
-                                        <span className="p-2 bg-white/20 rounded-lg">{stat.icon}</span>
+                                        <span className="p-2 bg-white/20 rounded-2xl">{stat.icon}</span>
                                     </div>
                                     <div>
                                         <p className="text-2xl font-bold">{stat.value}</p>

@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/admin_settings.py
+# hypothesis_version: 6.151.9
+
+[400, 500, '/admin/settings', '/backup', '/cache/clear', '/init-db', '587', 'AdminSettings', 'Backup job started', 'Settings updated', 'X-Ear CRM', 'false', 'general', 'listAdminSettings', 'mail', 'maintenance', 'maintenance_mode', 'site_name', 'smtp.gmail.com', 'smtp_host', 'smtp_pass', 'smtp_port', 'smtp_user', 'updateAdminSettings']

@@ -359,14 +359,14 @@ export const DesktopInventoryPage: React.FC = () => {
                 placeholder="🔍 Barkod, seri no, marka, model veya isim ile ara..."
                 value={modalSearch}
                 onChange={(e) => setModalSearch(e.target.value)}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-4 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div className="w-56">
               <select data-allow-raw="true"
                 value={modalCategoryFilter}
                 onChange={(e) => setModalCategoryFilter(e.target.value)}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               >
                 <option value="">Tüm Kategoriler</option>
                 {categories.map((c) => (
@@ -389,7 +389,7 @@ export const DesktopInventoryPage: React.FC = () => {
             </div>
             <div className="ml-3">
               <button data-allow-raw="true"
-                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+                className="bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700"
                 onClick={() => setIsAddModalOpen(true)}
               >
                 Yeni Envanter Ekle
@@ -412,7 +412,7 @@ export const DesktopInventoryPage: React.FC = () => {
                 const serials = item.availableSerials || [];
                 const isSelected = modalSelectedItemId === item.id;
                 return (
-                  <div key={item.id} className={`border rounded-lg p-4 ${isSelected ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'}`}>
+                  <div key={item.id} className={`border rounded-2xl p-4 ${isSelected ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'}`}>
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <h4 className="font-semibold text-gray-900 dark:text-gray-100">{item.brand} {item.model}</h4>
@@ -433,7 +433,7 @@ export const DesktopInventoryPage: React.FC = () => {
                             setModalSelectedItemId(item.id);
                             setModalSelectedSerial(e.target.value || null);
                           }}
-                          className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                          className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                         >
                           <option value="">Seri seçin (opsiyonel)</option>
                           {serials.map((s: string) => (
@@ -491,7 +491,7 @@ export const DesktopInventoryPage: React.FC = () => {
                             // toggle selection highlight
                             setModalSelectedItemId(prev => prev === item.id ? null : item.id);
                           }}
-                          className="text-sm px-3 py-1 border rounded-md"
+                          className="text-sm px-3 py-1 border rounded-xl"
                         >
                           {isSelected ? 'Seçili' : 'Seç'}
                         </button>

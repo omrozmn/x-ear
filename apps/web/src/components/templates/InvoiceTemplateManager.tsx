@@ -302,7 +302,7 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
           <h2 className="text-2xl font-bold text-gray-900">Fatura Şablonları</h2>
           <Button
             onClick={handleCreateTemplate}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium shadow-sm"
+            className="px-4 py-2 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 font-medium shadow-sm"
             style={{ backgroundColor: '#2563eb', color: 'white' }}
             variant='default'>
             + Yeni Şablon
@@ -310,7 +310,7 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
         </div>
 
         {/* Filters and Search */}
-        <div className="filters-section bg-gray-50 rounded-lg p-4">
+        <div className="filters-section bg-gray-50 rounded-2xl p-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
             <div>
@@ -322,7 +322,7 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
                 value={state.searchQuery}
                 onChange={(e) => setState(prev => ({ ...prev, searchQuery: e.target.value }))}
                 placeholder="Şablon adı, açıklama..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -334,7 +334,7 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
               <Select
                 value={state.selectedCategory}
                 onChange={(e) => setState(prev => ({ ...prev, selectedCategory: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 options={[
                   { value: "all", label: "Tüm Kategoriler" },
                   ...categories.map(category => ({
@@ -353,7 +353,7 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
               <Select
                 value={state.sortBy}
                 onChange={(e) => setState(prev => ({ ...prev, sortBy: e.target.value as "name" | "createdAt" | "usageCount" }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 options={[
                   { value: "name", label: "İsim" },
                   { value: "createdAt", label: "Oluşturma Tarihi" },
@@ -370,7 +370,7 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
               <Select
                 value={state.sortOrder}
                 onChange={(e) => setState(prev => ({ ...prev, sortOrder: e.target.value as "asc" | "desc" }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 options={[
                   { value: "asc", label: "Artan" },
                   { value: "desc", label: "Azalan" }
@@ -382,7 +382,7 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
       </div>
       {/* Error Display */}
       {state.error && (
-        <div className="error-message bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+        <div className="error-message bg-red-50 border border-red-200 rounded-2xl p-4 mb-6">
           <div className="flex">
             <div className="flex-shrink-0">
               <span className="text-red-400">⚠️</span>
@@ -422,7 +422,7 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
             {(!state.searchQuery && state.selectedCategory === 'all') && (
               <Button
                 onClick={handleCreateTemplate}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium shadow-sm"
+                className="px-6 py-3 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 font-medium shadow-sm"
                 style={{ backgroundColor: '#2563eb', color: 'white' }}
                 variant='default'>
                 Yeni Şablon Oluştur
@@ -458,7 +458,7 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
       {/* Delete Confirmation Dialog */}
       {confirmDialog.isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
             <h3 className="font-medium text-lg mb-4">Şablonu Sil</h3>
             <p className="text-gray-700 mb-6">
               "<strong>{confirmDialog.templateName}</strong>" şablonunu silmek istediğinizden emin misiniz?
@@ -504,7 +504,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
   onDuplicate
 }) => {
   return (
-    <div className="template-card bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+    <div className="template-card bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-md transition-shadow">
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1">
           <h3 className="font-medium text-lg text-gray-900 mb-1">{template.name}</h3>
@@ -596,7 +596,7 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-auto mx-4">
+      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-auto mx-4">
         <div className="sticky top-0 bg-white border-b px-6 py-4">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-bold">
@@ -627,7 +627,7 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                   disabled={isReadOnly}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
                 />
               </div>
 
@@ -639,7 +639,7 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
                   value={formData.category}
                   onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
                   disabled={isReadOnly}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
                   options={[
                     { value: "general", label: "Genel" },
                     { value: "medical", label: "Tıbbi" },
@@ -661,7 +661,7 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 disabled={isReadOnly}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
                 placeholder="Şablon açıklaması..."
               />
             </div>

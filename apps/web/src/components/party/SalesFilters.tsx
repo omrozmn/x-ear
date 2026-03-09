@@ -64,7 +64,7 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
       </div>
 
       {showFilters && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-2xl">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Durum

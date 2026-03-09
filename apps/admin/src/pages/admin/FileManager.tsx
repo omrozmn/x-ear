@@ -20,6 +20,7 @@ import {
 } from '@/lib/api-client';
 import toast from 'react-hot-toast';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
+import { unwrapData } from '@/lib/orval-response';
 
 interface UploadedFile {
     key: string;
@@ -58,7 +59,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function getFiles(data: ResponseEnvelopeFileListResponse | undefined): UploadedFile[] {
-    const files = data?.data?.files;
+    const payload = unwrapData<unknown>(data);
+    const files = Array.isArray(payload)
+        ? payload
+        : isRecord(payload) && Array.isArray(payload.files)
+            ? payload.files
+            : isRecord(payload) && Array.isArray(payload.items)
+                ? payload.items
+                : [];
     if (!Array.isArray(files)) {
         return [];
     }
@@ -76,13 +84,14 @@ function getFiles(data: ResponseEnvelopeFileListResponse | undefined): UploadedF
 }
 
 function getPresignedUpload(data: ResponseEnvelopePresignedUploadResponse): { url: string; fields: Record<string, string> } | null {
-    if (!data.data) {
+    const payload = unwrapData<Record<string, unknown>>(data);
+    if (!payload) {
         return null;
     }
 
     return {
-        url: data.data.url,
-        fields: Object.entries(data.data.fields).reduce<Record<string, string>>((acc, [key, value]) => {
+        url: typeof payload.url === 'string' ? payload.url : '',
+        fields: Object.entries(isRecord(payload.fields) ? payload.fields : {}).reduce<Record<string, string>>((acc, [key, value]) => {
             acc[key] = String(value);
             return acc;
         }, {}),
@@ -90,7 +99,8 @@ function getPresignedUpload(data: ResponseEnvelopePresignedUploadResponse): { ur
 }
 
 function getOcrResult(data: ResponseEnvelopeOcrProcessResponse): OcrResultView | null {
-    const result = data.data?.result;
+    const payload = unwrapData<Record<string, unknown>>(data);
+    const result = isRecord(payload?.result) ? payload.result : payload;
     if (!isRecord(result)) {
         return null;
     }

@@ -31,7 +31,7 @@ export const AIInboxDrawer: React.FC = () => {
             <div className="absolute inset-y-0 right-0 max-w-full flex">
                 <div className={`w-screen max-w-md transform transition-transform duration-300 ease-in-out shadow-2xl ${aiInboxOpen ? 'translate-x-0' : 'translate-x-full'
                     }`}>
-                    <div className="h-full flex flex-col bg-white overflow-hidden relative">
+                    <div className="h-full flex flex-col bg-white overflow-hidden relative rounded-l-3xl">
                         {/* Close Button Inside Drawer (for mobile) */}
                         <Button
                             variant="ghost"

@@ -109,8 +109,8 @@ def lookup_phone(
     try:
         identifier = request_data.identifier
         
-        from utils.tenant_security import UnboundSession
-        with UnboundSession():
+        from database import unbound_session
+        with unbound_session(reason="auth-lookup-phone"):
             user = db_session.query(User).filter_by(username=identifier).first()
             if not user:
                 user = db_session.query(User).filter_by(email=identifier).first()
@@ -152,8 +152,8 @@ def forgot_password(
     try:
         identifier = request_data.identifier
         
-        from utils.tenant_security import UnboundSession
-        with UnboundSession():
+        from database import unbound_session
+        with unbound_session(reason="auth-forgot-password"):
             user = db_session.query(User).filter_by(phone=identifier).first()
             if not user:
                 raise HTTPException(
@@ -364,8 +364,8 @@ async def reset_password(
                 ).model_dump(mode="json")
             )
         
-        from utils.tenant_security import UnboundSession
-        with UnboundSession():
+        from database import unbound_session
+        with unbound_session(reason="auth-reset-password"):
             user = db_session.query(User).filter_by(phone=identifier).first()
             if not user:
                 raise HTTPException(
@@ -426,8 +426,8 @@ def login(
         user = None
         is_admin_user = False
         
-        from utils.tenant_security import UnboundSession
-        with UnboundSession():
+        from database import unbound_session
+        with unbound_session(reason="auth-login"):
             # First, try to find in admin_users table (by email only)
             admin_user = db_session.query(AdminUser).filter_by(email=identifier).first()
             
@@ -825,4 +825,3 @@ def toggle_verification(
         user.is_phone_verified = verified
         db_session.commit()
     return {"success": True}
-

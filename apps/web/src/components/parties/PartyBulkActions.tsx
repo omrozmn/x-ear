@@ -363,7 +363,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
 
   if (selectedCount === 0) {
     return (
-      <div className={`bg-gray-50 border border-gray-200 rounded-lg p-4 ${className}`}>
+      <div className={`bg-gray-50 border border-gray-200 rounded-2xl p-4 ${className}`}>
         <div className="flex items-center justify-center text-gray-500">
           <CheckSquare className="w-5 h-5 mr-2" />
           <span>Toplu işlem yapmak için hasta seçin</span>
@@ -373,7 +373,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
   }
 
   return (
-    <div className={`bg-white border border-gray-200 rounded-lg shadow-sm ${className}`}>
+    <div className={`bg-white border border-gray-200 rounded-2xl shadow-sm ${className}`}>
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-200 bg-blue-50">
         <div className="flex items-center justify-between">
@@ -464,7 +464,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
       {/* Action Modal */}
       {showActionModal && currentAction && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4">
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-medium text-gray-900">
@@ -487,7 +487,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
               </p>
 
               {currentAction.category === 'dangerous' && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                <div className="bg-red-50 border border-red-200 rounded-2xl p-3 mb-4">
                   <div className="flex items-center">
                     <AlertTriangle className="w-5 h-5 text-red-600 mr-2" />
                     <span className="text-sm font-medium text-red-800">
@@ -497,7 +497,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
                 </div>
               )}
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 mb-4">
                 <span className="text-sm text-blue-800">
                   <strong>{selectedCount}</strong> hasta etkilenecek
                 </span>
@@ -524,7 +524,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
                         disabled={isProcessing}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       >
                         <option value="">Seçin...</option>
                         {currentAction.inputOptions?.map((option) => (

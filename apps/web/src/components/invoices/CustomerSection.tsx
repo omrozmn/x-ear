@@ -177,7 +177,7 @@ export function CustomerSection({
   // SGK modu
   if (isSGK) {
     return (
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
+      <div className="bg-white rounded-2xl shadow p-6 mb-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Fatura Alıcı Bilgileri</h3>
 
         <div className="space-y-4">
@@ -185,7 +185,7 @@ export function CustomerSection({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Alıcı Adı
             </label>
-            <div className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-700">
+            <div className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-2xl text-gray-700">
               {SGK_CUSTOMER_TEXT}
             </div>
             <p className="mt-2 text-sm text-blue-600">
@@ -199,7 +199,7 @@ export function CustomerSection({
 
   // Normal mod
   return (
-    <div className="bg-white rounded-lg shadow p-6 mb-6">
+    <div className="bg-white rounded-2xl shadow p-6 mb-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">Fatura Alıcı Bilgileri</h3>
 
       <div className="space-y-4">
@@ -221,7 +221,7 @@ export function CustomerSection({
 
               {/* Arama Sonuçları */}
               {searchResults.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
                   {searchResults.map((customer) => (
                     <Button
                       key={customer.id}

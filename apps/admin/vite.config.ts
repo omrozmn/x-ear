@@ -75,13 +75,20 @@ export default defineConfig({
     })
   ],
   resolve: {
+    dedupe: ['react', 'react-dom'],
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@x-ear/core': path.resolve(__dirname, '../../packages/core/src'),
       '@x-ear/ui-web': path.resolve(__dirname, '../../packages/ui-web/src'),
       'react': path.resolve(__dirname, './node_modules/react'),
+      'react/jsx-runtime': path.resolve(__dirname, './node_modules/react/jsx-runtime.js'),
+      'react/jsx-dev-runtime': path.resolve(__dirname, './node_modules/react/jsx-dev-runtime.js'),
       'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
+      'react-dom/client': path.resolve(__dirname, './node_modules/react-dom/client.js'),
     },
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
   },
   server: {
     port: 8082,

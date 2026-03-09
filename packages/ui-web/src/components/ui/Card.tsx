@@ -7,10 +7,10 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const cardVariants = {
-  default: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm',
-  outlined: 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg',
-  elevated: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg',
-  filled: 'bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg'
+  default: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm',
+  outlined: 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-2xl',
+  elevated: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg',
+  filled: 'bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl'
 };
 
 const paddingVariants = {

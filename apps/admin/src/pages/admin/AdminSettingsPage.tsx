@@ -18,11 +18,12 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
+import { unwrapArray } from '@/lib/orval-response';
 
 type SettingsTab = 'general' | 'mail' | 'maintenance';
 
 function getSettings(data: ResponseEnvelopeListSystemSettingRead | undefined): SystemSettingRead[] {
-    return Array.isArray(data?.data) ? data.data : [];
+    return unwrapArray<SystemSettingRead>(data);
 }
 
 function toSettingItems(settings: SystemSettingRead[]): SettingItem[] {

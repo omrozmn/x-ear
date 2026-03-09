@@ -184,12 +184,12 @@ export const SGKEReceiptForm: React.FC<SGKEReceiptFormProps> = ({
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
+    <div className="max-w-4xl mx-auto p-6 bg-white rounded-2xl shadow-lg">
       <h2 className="text-2xl font-bold text-gray-900 mb-6">SGK E-Reçete Oluştur</h2>
       
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Hasta Bilgileri */}
-        <div className="bg-gray-50 p-4 rounded-lg">
+        <div className="bg-gray-50 p-4 rounded-2xl">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Hasta Bilgileri</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
@@ -208,7 +208,7 @@ export const SGKEReceiptForm: React.FC<SGKEReceiptFormProps> = ({
         </div>
 
         {/* Reçete Bilgileri */}
-        <div className="bg-gray-50 p-4 rounded-lg">
+        <div className="bg-gray-50 p-4 rounded-2xl">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Reçete Bilgileri</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
@@ -252,7 +252,7 @@ export const SGKEReceiptForm: React.FC<SGKEReceiptFormProps> = ({
         </div>
 
         {/* İlaçlar */}
-        <div className="bg-gray-50 p-4 rounded-lg">
+        <div className="bg-gray-50 p-4 rounded-2xl">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-gray-800">İlaçlar</h3>
             <Button
@@ -265,7 +265,7 @@ export const SGKEReceiptForm: React.FC<SGKEReceiptFormProps> = ({
           </div>
           
           {medications.map((medication, index) => (
-            <div key={index} className="border border-gray-200 rounded-lg p-4 mb-4">
+            <div key={index} className="border border-gray-200 rounded-2xl p-4 mb-4">
               <div className="flex justify-between items-center mb-3">
                 <h4 className="font-medium text-gray-700">İlaç {index + 1}</h4>
                 {medications.length > 1 && (
@@ -329,7 +329,7 @@ export const SGKEReceiptForm: React.FC<SGKEReceiptFormProps> = ({
         </div>
 
         {/* Notlar */}
-        <div className="bg-gray-50 p-4 rounded-lg">
+        <div className="bg-gray-50 p-4 rounded-2xl">
           <Textarea
             label="Notlar"
             name="notes"

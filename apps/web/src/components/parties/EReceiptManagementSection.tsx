@@ -22,7 +22,7 @@ export const EReceiptManagementSection: React.FC<EReceiptManagementSectionProps>
   onCreateEReceipt
 }) => {
   return (
-    <div className="bg-white rounded-lg border p-6">
+    <div className="bg-white rounded-2xl border p-6">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-semibold">E-Reçete Yönetimi</h3>
         <Button onClick={onCreateEReceipt}>
@@ -39,7 +39,7 @@ export const EReceiptManagementSection: React.FC<EReceiptManagementSectionProps>
       ) : (
         <div className="space-y-4">
           {savedEReceipts.map((receipt) => (
-            <div key={receipt.id} className="border rounded-lg p-4">
+            <div key={receipt.id} className="border rounded-2xl p-4">
               <div className="flex justify-between items-center">
                 <div>
                   <h5 className="font-medium">E-Reçete #{receipt.number}</h5>

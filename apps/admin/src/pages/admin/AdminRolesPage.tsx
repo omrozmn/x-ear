@@ -19,13 +19,46 @@ import {
     LockIcon
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
+import { extractPagination, unwrapData } from '@/lib/orval-response';
+import Pagination from '@/components/ui/Pagination';
 
 function getRoles(data: ResponseEnvelopeRoleListResponse | undefined): RoleRead[] {
-    return Array.isArray(data?.data?.roles) ? data.data.roles : [];
+    const payload = unwrapData<{ roles?: RoleRead[]; items?: RoleRead[]; data?: { roles?: RoleRead[] } } | RoleRead[]>(data);
+    if (Array.isArray(payload)) {
+        return payload;
+    }
+
+    if (!payload) {
+        return [];
+    }
+
+    if (Array.isArray(payload.roles)) {
+        return payload.roles;
+    }
+
+    if (Array.isArray(payload.items)) {
+        return payload.items;
+    }
+
+    return payload.data && Array.isArray(payload.data.roles) ? payload.data.roles : [];
 }
 
 function getPermissionGroups(data: ResponseEnvelopePermissionListResponse | undefined): PermissionGroup[] {
-    return Array.isArray(data?.data?.data) ? data.data.data : [];
+    const payload = unwrapData<{ data?: PermissionGroup[]; items?: PermissionGroup[] } | PermissionGroup[]>(data);
+    if (Array.isArray(payload)) {
+        return payload;
+    }
+
+    if (!payload) {
+        return [];
+    }
+
+    if (Array.isArray(payload.data)) {
+        return payload.data;
+    }
+
+    return Array.isArray(payload.items) ? payload.items : [];
 }
 
 function getPermissionKey(permission: PermissionRead): string {
@@ -33,6 +66,8 @@ function getPermissionKey(permission: PermissionRead): string {
 }
 
 const AdminRolesPage: React.FC = () => {
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false);
     const [selectedRole, setSelectedRole] = useState<RoleRead | null>(null);
@@ -51,6 +86,8 @@ const AdminRolesPage: React.FC = () => {
 
     const roles = getRoles(rolesData);
     const permissionGroups = getPermissionGroups(permissionsData);
+    const pagination = extractPagination(rolesData);
+    const paginatedRoles = roles.slice((page - 1) * limit, page * limit);
 
     const handleCreate = async () => {
         if (!roleName) {
@@ -135,57 +172,94 @@ const AdminRolesPage: React.FC = () => {
                 </button>
             </div>
 
-            {/* Roles Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 {isLoading ? (
-                    <div className="col-span-3 text-center py-12">Yükleniyor...</div>
-                ) : roles.map((role) => (
-                    <div key={role.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col h-full">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className="flex items-center space-x-3">
-                                <div className={`p-2 rounded-lg ${role.isSystem ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'}`}>
-                                    <Shield className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-gray-900">{role.name}</h3>
-                                    {role.isSystem && (
-                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                                            Sistem Rolü
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                            {!role.isSystem && (
-                                <button
-                                    onClick={() => handleDelete(role.id)}
-                                    className="text-gray-400 hover:text-red-600"
-                                >
-                                    <TrashIcon className="w-5 h-5" />
-                                </button>
-                            )}
+                    <div className="text-center py-12">Yükleniyor...</div>
+                ) : (
+                    <>
+                        <ResponsiveTable
+                            data={paginatedRoles}
+                            keyExtractor={(role) => role.id}
+                            emptyMessage="Rol bulunamadı"
+                            columns={[
+                                {
+                                    key: 'name',
+                                    header: 'Rol',
+                                    sortable: true,
+                                    sortKey: 'name',
+                                    sortValue: (role: RoleRead) => role.name,
+                                    render: (role: RoleRead) => (
+                                        <div className="flex items-center gap-3">
+                                            <div className={`p-2 rounded-lg ${role.isSystem ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'}`}>
+                                                <Shield className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <div className="font-semibold text-gray-900 dark:text-white">{role.name}</div>
+                                                {role.isSystem && <span className="text-xs text-gray-500">Sistem Rolü</span>}
+                                            </div>
+                                        </div>
+                                    )
+                                },
+                                {
+                                    key: 'description',
+                                    header: 'Açıklama',
+                                    sortable: true,
+                                    sortKey: 'description',
+                                    sortValue: (role: RoleRead) => role.description || '',
+                                    render: (role: RoleRead) => (
+                                        <span className="text-sm text-gray-500 dark:text-gray-400">{role.description || 'Açıklama yok'}</span>
+                                    )
+                                },
+                                {
+                                    key: 'permissions',
+                                    header: 'İzin Sayısı',
+                                    sortable: true,
+                                    sortKey: 'permissions',
+                                    sortValue: (role: RoleRead) => role.permissions?.length || 0,
+                                    render: (role: RoleRead) => (
+                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{role.permissions?.length || 0}</span>
+                                    )
+                                },
+                                {
+                                    key: 'actions',
+                                    header: 'İşlemler',
+                                    render: (role: RoleRead) => (
+                                        <div className="flex items-center justify-end gap-2">
+                                            <button
+                                                onClick={() => openPermissionModal(role)}
+                                                className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50"
+                                            >
+                                                <LockIcon className="w-4 h-4 mr-2" />
+                                                İzinler
+                                            </button>
+                                            {!role.isSystem && (
+                                                <button
+                                                    onClick={() => handleDelete(role.id)}
+                                                    className="text-gray-400 hover:text-red-600"
+                                                >
+                                                    <TrashIcon className="w-5 h-5" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    )
+                                }
+                            ]}
+                        />
+                        <div className="border-t border-gray-200 px-4 py-3">
+                            <Pagination
+                                currentPage={page}
+                                totalPages={pagination?.totalPages ?? Math.max(1, Math.ceil(roles.length / limit))}
+                                totalItems={pagination?.total ?? roles.length}
+                                itemsPerPage={limit}
+                                onPageChange={setPage}
+                                onItemsPerPageChange={(nextLimit) => {
+                                    setLimit(nextLimit);
+                                    setPage(1);
+                                }}
+                            />
                         </div>
-
-                        <p className="text-sm text-gray-500 mb-6 flex-grow">
-                            {role.description || 'Açıklama yok'}
-                        </p>
-
-                        <div className="border-t pt-4 mt-auto">
-                            <div className="flex justify-between items-center mb-4">
-                                <span className="text-sm font-medium text-gray-700">
-                                    {role.permissions?.length || 0} İzin Tanımlı
-                                </span>
-                            </div>
-
-                            <button
-                                onClick={() => openPermissionModal(role)}
-                                className="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                            >
-                                <LockIcon className="w-4 h-4 mr-2" />
-                                İzinleri Düzenle
-                            </button>
-                        </div>
-                    </div>
-                ))}
+                    </>
+                )}
             </div>
 
             {/* Create Modal */}

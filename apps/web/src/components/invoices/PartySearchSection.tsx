@@ -75,7 +75,7 @@ export function PartySearchSection({ onPartySelect }: PartySearchSectionProps) {
               <Button
                 type="button"
                 onClick={handleClearSelection}
-                className="px-3 py-2 bg-red-100 text-red-600 rounded-md hover:bg-red-200"
+                className="px-3 py-2 bg-red-100 text-red-600 rounded-xl hover:bg-red-200"
                 variant="default">
                 Temizle
               </Button>
@@ -84,7 +84,7 @@ export function PartySearchSection({ onPartySelect }: PartySearchSectionProps) {
 
           {/* Arama Sonuçları */}
           {showResults && parties.length > 0 && (
-            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg max-h-60 overflow-y-auto">
               {parties.map((party: Party) => (
                 <Button
                   key={party.id}
@@ -115,7 +115,7 @@ export function PartySearchSection({ onPartySelect }: PartySearchSectionProps) {
 
           {/* Sonuç Bulunamadı */}
           {showResults && parties.length === 0 && !isLoading && (
-            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg p-4">
+            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg p-4">
               <p className="text-sm text-gray-500 text-center">
                 Hasta bulunamadı. Yeni hasta bilgilerini manuel girebilirsiniz.
               </p>
@@ -129,7 +129,7 @@ export function PartySearchSection({ onPartySelect }: PartySearchSectionProps) {
 
       {/* Seçili Hasta Bilgileri */}
       {selectedPartyData && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="bg-green-50 border border-green-200 rounded-2xl p-4">
           <div className="flex items-start">
             <CheckCircle className="text-green-400 mr-3 flex-shrink-0" size={24} />
             <div className="flex-1">

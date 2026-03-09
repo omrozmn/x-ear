@@ -193,7 +193,7 @@ export const PricingInfoSection: React.FC<PricingInfoSectionProps> = ({
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               KDV Dahil Birim Fiyat
             </label>
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-2xl">
               <p className="text-lg font-semibold text-blue-900 dark:text-blue-100">
                 ₺{priceWithKdv.toFixed(2)}
               </p>
@@ -207,7 +207,7 @@ export const PricingInfoSection: React.FC<PricingInfoSectionProps> = ({
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Toplam Stok Değeri (KDV Hariç)
             </label>
-            <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-3 rounded-lg">
+            <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-3 rounded-2xl">
               <p className="text-lg font-bold text-green-900 dark:text-green-100">
                 ₺{totalInventoryValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>

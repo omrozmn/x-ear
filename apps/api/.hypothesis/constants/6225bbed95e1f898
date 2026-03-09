@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/birfatura.py
+# hypothesis_version: 6.151.9
+
+['ISO 8601 string', 'createdAt', 'edocumentStatus', 'endDate', 'incoming', 'invoiceNumber', 'startDate', 'totalAmount', 'totalIncoming', 'totalOutgoing', 'userId', 'userName']
