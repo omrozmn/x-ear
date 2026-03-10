@@ -578,7 +578,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             </Button>
             <Button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="premium-gradient tactile-press text-white"
             >
               {mode === 'create' ? 'Kaydet' : 'Güncelle'}
             </Button>

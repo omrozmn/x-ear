@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from '@tanstack/react-router';
 import {
   Home, Building2, Users, User, Calendar, Box, Truck, Megaphone,
@@ -69,7 +69,7 @@ const navigationGroups: NavGroup[] = [
     name: 'AI & Gelişmiş',
     items: [
       { name: 'AI Yönetimi', href: '/ai', icon: Bot },
-      { name: 'Aktivite Logları', href: '/activity', icon: Activity },
+      { name: 'Aktivite Logları', href: '/activity-logs', icon: Activity },
       { name: 'Dosyalar', href: '/files', icon: FileText },
     ],
   },
@@ -84,12 +84,14 @@ export function AdminMobileNav({ isOpen, onClose }: AdminMobileNavProps) {
   const location = useLocation();
   const { isMobile } = useAdminResponsive();
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(['Ana Menü']));
+  const previousPathnameRef = useRef(location.pathname);
 
   // Close drawer on route change
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && previousPathnameRef.current !== location.pathname) {
       onClose();
     }
+    previousPathnameRef.current = location.pathname;
   }, [isOpen, location.pathname, onClose]);
 
   // Prevent body scroll when drawer is open
@@ -143,7 +145,7 @@ export function AdminMobileNav({ isOpen, onClose }: AdminMobileNavProps) {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 pt-safe">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-blue-600 rounded-2xl flex items-center justify-center">
               <span className="text-white font-bold text-sm">XE</span>
             </div>
             <div>
@@ -153,7 +155,7 @@ export function AdminMobileNav({ isOpen, onClose }: AdminMobileNavProps) {
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-2 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             aria-label="Close menu"
           >
             <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
@@ -170,7 +172,7 @@ export function AdminMobileNav({ isOpen, onClose }: AdminMobileNavProps) {
                 {/* Group Header */}
                 <button
                   onClick={() => toggleGroup(group.name)}
-                  className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors no-select"
+                  className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:bg-gray-100 dark:hover:bg-gray-800 rounded-2xl transition-colors no-select"
                 >
                   <span>{group.name}</span>
                   {isExpanded ? (
@@ -192,7 +194,7 @@ export function AdminMobileNav({ isOpen, onClose }: AdminMobileNavProps) {
                           key={item.href}
                           to={item.href}
                           className={`
-                            flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors touch-feedback
+                            flex items-center justify-between px-3 py-2.5 rounded-2xl transition-colors touch-feedback
                             ${active
                               ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
                               : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
@@ -222,7 +224,7 @@ export function AdminMobileNav({ isOpen, onClose }: AdminMobileNavProps) {
         <div className="border-t border-gray-200 dark:border-gray-700 p-4 pb-safe">
           <Link
             to="/settings"
-            className="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors touch-feedback"
+            className="flex items-center space-x-3 px-3 py-2.5 rounded-2xl text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors touch-feedback"
           >
             <Settings className="h-5 w-5" />
             <span className="text-sm font-medium">Ayarlar</span>

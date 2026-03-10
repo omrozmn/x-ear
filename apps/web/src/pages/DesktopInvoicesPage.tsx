@@ -1,4 +1,4 @@
-import { Button, Card, Input, Select } from '@x-ear/ui-web';
+import { Button, Card, Input, Select, DatePicker } from '@x-ear/ui-web';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { FileText, Download, Filter, Search, CheckCircle, AlertCircle, Send, ChevronLeft, ChevronRight, Eye, X, Plus, MoreVertical, ChevronUp, ChevronDown as ChevronDownIcon, Copy, XCircle, Clock, Ban, CreditCard } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
@@ -16,6 +16,13 @@ interface InvoiceLog {
   createDate?: string;
   createTime?: string;
 }
+
+type InvoiceDocumentInfo = OutgoingInvoiceResponse & {
+  documentKind?: string;
+  documentKindLabel?: string;
+  profileId?: string;
+  invoiceTypeCode?: string;
+};
 
 interface InvoiceManagementPageProps {
   className?: string;
@@ -41,8 +48,8 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage] = useState(25);
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  const [dateFrom, setDateFrom] = useState<Date | null>(null);
+  const [dateTo, setDateTo] = useState<Date | null>(null);
   const [showBanner, setShowBanner] = useState(() => {
     try { return !localStorage.getItem(ONBOARDING_OUTGOING_INVOICES_DISMISSED ?? 'outgoing_invoices_dismissed'); } catch { return true; }
   });
@@ -98,8 +105,8 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     per_page: perPage,
     status: statusFilter !== 'all' ? statusFilter as SchemasInvoicesNewInvoiceStatus : undefined,
     party_name: debouncedSearch || undefined,
-    date_from: dateFrom || undefined,
-    date_to: dateTo || undefined,
+    date_from: dateFrom ? dateFrom.toISOString().split('T')[0] : undefined,
+    date_to: dateTo ? dateTo.toISOString().split('T')[0] : undefined,
   });
 
   const invoiceList = useMemo(() => data?.data?.invoices ?? [], [data?.data?.invoices]);
@@ -128,23 +135,26 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     return list;
   }, [invoiceList, sortField, sortDir]);
 
-  const renderDocumentBadges = (invoice: OutgoingInvoiceResponse) => (
-    <div className="mt-1 flex flex-wrap gap-1">
-      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${invoice.documentKind === 'despatch' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300' : 'bg-sky-100 text-sky-800 dark:bg-sky-900/20 dark:text-sky-300'}`}>
-        {invoice.documentKindLabel || (invoice.documentKind === 'despatch' ? 'E-İrsaliye' : 'E-Fatura')}
-      </span>
-      {invoice.profileId && (
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
-          {invoice.profileId}
+  const renderDocumentBadges = (inv: OutgoingInvoiceResponse) => {
+    const invoice = inv as InvoiceDocumentInfo;
+    return (
+      <div className="mt-1 flex flex-wrap gap-1">
+        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${invoice.documentKind === 'despatch' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300' : 'bg-sky-100 text-sky-800 dark:bg-sky-900/20 dark:text-sky-300'}`}>
+          {invoice.documentKindLabel || (invoice.documentKind === 'despatch' ? 'E-İrsaliye' : 'E-Fatura')}
         </span>
-      )}
-      {invoice.invoiceTypeCode && (
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300">
-          {invoice.invoiceTypeCode}
-        </span>
-      )}
-    </div>
-  );
+        {invoice.profileId && (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+            {invoice.profileId}
+          </span>
+        )}
+        {invoice.invoiceTypeCode && (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300">
+            {invoice.invoiceTypeCode}
+          </span>
+        )}
+      </div>
+    );
+  };
 
   const getStatusBadge = (status: string, invoice?: OutgoingInvoiceResponse) => {
     const s = (status || '').toUpperCase();
@@ -361,7 +371,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
             <Send size={16} />
             <span className="hidden sm:inline">Yeni E-İrsaliye</span>
           </Button>
-          <Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white" onClick={() => navigate({ to: '/invoices/new' })}>
+          <Button className="flex items-center gap-2 premium-gradient tactile-press text-white" onClick={() => navigate({ to: '/invoices/new' })}>
             <Plus size={16} />
             <span className="hidden sm:inline">Yeni Fatura</span>
           </Button>
@@ -446,20 +456,18 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
               fullWidth
             />
           </div>
-          <div className="flex gap-2">
-            <Input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1); }}
-              className="px-3 py-2"
+          <div className="flex gap-2 items-end">
+            <DatePicker
               placeholder="Başlangıç"
+              value={dateFrom}
+              onChange={(date) => { setDateFrom(date); setCurrentPage(1); }}
+              className="w-[140px]"
             />
-            <Input
-              type="date"
-              value={dateTo}
-              onChange={(e) => { setDateTo(e.target.value); setCurrentPage(1); }}
-              className="px-3 py-2"
+            <DatePicker
               placeholder="Bitiş"
+              value={dateTo}
+              onChange={(date) => { setDateTo(date); setCurrentPage(1); }}
+              className="w-[140px]"
             />
             <Select
               value={statusFilter}
@@ -719,7 +727,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
                 <a
                   href={pdfModal.blobUrl.split('#')[0]}
                   download={pdfModal.fileName}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white premium-gradient tactile-press rounded-xl"
                 >
                   <Download size={15} />
                   İndir

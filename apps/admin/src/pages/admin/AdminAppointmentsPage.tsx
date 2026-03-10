@@ -153,13 +153,13 @@ const AdminAppointmentsPage: React.FC = () => {
 
             {/* Filters */}
             <div className="mb-6 flex flex-col sm:flex-row gap-4">
-                <div className="relative rounded-md shadow-sm max-w-md flex-1">
+                <div className="relative rounded-xl shadow-sm max-w-md flex-1">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                         <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
                     </div>
                     <input
                         type="text"
-                        className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white pl-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                        className="block w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white pl-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                         placeholder="Hasta adı veya telefon ile ara..."
                         value={search}
                         onChange={(e) => {
@@ -177,7 +177,7 @@ const AdminAppointmentsPage: React.FC = () => {
                             setStatusFilter(e.target.value);
                             setPage(1);
                         }}
-                        className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white py-2 pl-3 pr-10 text-base focus:border-primary-500 focus:outline-none focus:ring-primary-500 sm:text-sm"
+                        className="block w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white py-2 pl-3 pr-10 text-base focus:border-primary-500 focus:outline-none focus:ring-primary-500 sm:text-sm"
                     >
                         <option value="">Tüm Durumlar</option>
                         <option value="SCHEDULED">Planlandı</option>
@@ -189,7 +189,7 @@ const AdminAppointmentsPage: React.FC = () => {
             </div>
 
             {/* List */}
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 shadow rounded-2xl overflow-hidden">
                 {isLoading ? (
                     <div className="p-6 text-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>

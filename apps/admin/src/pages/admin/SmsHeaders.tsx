@@ -192,7 +192,7 @@ export default function SMSHeadersPage() {
                         <button
                             key={s}
                             onClick={() => setStatusFilter(s)}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium capitalize touch-feedback ${statusFilter === s
+                            className={`px-4 py-2 rounded-2xl text-sm font-medium capitalize touch-feedback ${statusFilter === s
                                 ? 'bg-indigo-600 dark:bg-indigo-700 text-white'
                                 : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                                 }`}
@@ -219,7 +219,7 @@ export default function SMSHeadersPage() {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 shadow rounded-2xl overflow-hidden">
                 {isLoading ? (
                     <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-gray-400 dark:text-gray-500" /></div>
                 ) : (
@@ -255,7 +255,7 @@ export default function SMSHeadersPage() {
 
                         {selectedHeader && (
                             <div className="space-y-4">
-                                <div className="bg-gray-50 p-4 rounded-lg">
+                                <div className="bg-gray-50 p-4 rounded-2xl">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
                                             <span className="text-xs text-gray-500 block">Başlık</span>

@@ -245,7 +245,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
                             <Button
                               size="sm"
                               onClick={() => handleDeliverMaterial(receipt.id, material.code)}
-                              className="bg-blue-600 hover:bg-blue-700 text-white"
+                              className="premium-gradient tactile-press text-white"
                             >
                               <Truck className="w-3 h-3 mr-1" />
                               Teslim Et

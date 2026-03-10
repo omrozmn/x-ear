@@ -1,9 +1,10 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { Card, Button, Input, Select } from '@x-ear/ui-web';
-import { FileText, Download, Filter, Search, AlertCircle, CheckCircle, ShoppingCart, X, ChevronLeft, ChevronRight, Eye, MoreVertical, ChevronUp, ChevronDown as ChevronDownIcon, Copy, XCircle } from 'lucide-react';
+import { Card, Button, Input, Select, DatePicker } from '@x-ear/ui-web';
+import { FileText, Download, Filter, Search, AlertCircle, CheckCircle, ShoppingCart, X, ChevronLeft, ChevronRight, Eye, MoreVertical, ChevronUp, ChevronDown as ChevronDownIcon, Copy, XCircle, CheckSquare, Square } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
+import { cn } from '@/lib/utils';
 import { useListIncomingInvoices } from '@/api/client/invoices.client';
-import type { IncomingInvoiceResponse, SchemasInvoicesNewInvoiceStatus } from '@/api/client/invoices.client';
+import type { IncomingInvoiceResponse, SchemasInvoicesNewInvoiceStatus } from '@/api/generated/schemas';
 import toast from 'react-hot-toast';
 import { ONBOARDING_INCOMING_INVOICES_DISMISSED } from '@/constants/storage-keys';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -26,8 +27,8 @@ export function IncomingInvoicesPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage] = useState(25);
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  const [dateFrom, setDateFrom] = useState<Date | null>(null);
+  const [dateTo, setDateTo] = useState<Date | null>(null);
   const [showBanner, setShowBanner] = useState(() => !localStorage.getItem(ONBOARDING_INCOMING_INVOICES_DISMISSED));
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [sortField, setSortField] = useState<string>('');
@@ -37,6 +38,7 @@ export function IncomingInvoicesPage() {
   const [pdfModal, setPdfModal] = useState<{ open: boolean; blobUrl: string; title: string; fileName: string } | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isMobileSelectionMode, setIsMobileSelectionMode] = useState(false);
 
   const debouncedSearch = useDebounce(searchTerm, 300);
 
@@ -66,8 +68,8 @@ export function IncomingInvoicesPage() {
     per_page: perPage,
     status: statusFilter !== 'all' ? statusFilter as SchemasInvoicesNewInvoiceStatus : undefined,
     supplier_name: debouncedSearch || undefined,
-    date_from: dateFrom || undefined,
-    date_to: dateTo || undefined,
+    date_from: dateFrom ? dateFrom.toISOString().split('T')[0] : undefined,
+    date_to: dateTo ? dateTo.toISOString().split('T')[0] : undefined,
   });
 
   const invoiceList = useMemo(() => data?.data?.invoices ?? [], [data?.data?.invoices]);
@@ -77,23 +79,26 @@ export function IncomingInvoicesPage() {
   const pendingCount = data?.data?.pendingCount ?? 0;
   const processedCount = data?.data?.processedCount ?? 0;
 
-  const renderDocumentBadges = (invoice: IncomingInvoiceResponse) => (
-    <div className="mt-1 flex flex-wrap gap-1">
-      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${invoice.documentKind === 'despatch' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300' : 'bg-sky-100 text-sky-800 dark:bg-sky-900/20 dark:text-sky-300'}`}>
-        {invoice.documentKindLabel || (invoice.documentKind === 'despatch' ? 'E-İrsaliye' : 'E-Fatura')}
-      </span>
-      {invoice.profileId && (
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
-          {invoice.profileId}
+  const renderDocumentBadges = (invoice: IncomingInvoiceResponse) => {
+    const inv = invoice as any;
+    return (
+      <div className="mt-1 flex flex-wrap gap-1">
+        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${inv.documentKind === 'despatch' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300' : 'bg-sky-100 text-sky-800 dark:bg-sky-900/20 dark:text-sky-300'}`}>
+          {inv.documentKindLabel || (inv.documentKind === 'despatch' ? 'E-İrsaliye' : 'E-Fatura')}
         </span>
-      )}
-      {invoice.invoiceTypeCode && (
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300">
-          {invoice.invoiceTypeCode}
-        </span>
-      )}
-    </div>
-  );
+        {inv.profileId && (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+            {inv.profileId}
+          </span>
+        )}
+        {inv.invoiceTypeCode && (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300">
+            {inv.invoiceTypeCode}
+          </span>
+        )}
+      </div>
+    );
+  };
 
   const getStatusBadge = (status: string) => {
     const isProcessed = status === 'RECEIVED' || status === 'PROCESSED' || status === 'PAID';
@@ -361,18 +366,18 @@ export function IncomingInvoicesPage() {
               fullWidth
             />
           </div>
-          <div className="flex gap-2">
-            <Input
-              type="date"
+          <div className="flex gap-2 items-end">
+            <DatePicker
+              placeholder="Başlangıç"
               value={dateFrom}
-              onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1); }}
-              className="px-3 py-2"
+              onChange={(date) => { setDateFrom(date); setCurrentPage(1); }}
+              className="w-[140px]"
             />
-            <Input
-              type="date"
+            <DatePicker
+              placeholder="Bitiş"
               value={dateTo}
-              onChange={(e) => { setDateTo(e.target.value); setCurrentPage(1); }}
-              className="px-3 py-2"
+              onChange={(date) => { setDateTo(date); setCurrentPage(1); }}
+              className="w-[140px]"
             />
             <Select
               value={statusFilter}
@@ -392,8 +397,29 @@ export function IncomingInvoicesPage() {
         </div>
       </Card>
 
+      {/* Mobile Selection Action Bar (< md) */}
+      <div className="md:hidden flex items-center justify-between mt-4">
+        {isMobileSelectionMode ? (
+          <>
+            <Button variant="ghost" size="sm" onClick={() => setIsMobileSelectionMode(false)} className="text-gray-600">
+              <X className="w-4 h-4 mr-1" /> Kapat
+            </Button>
+            <Button variant="ghost" size="sm" onClick={toggleSelectAll} className="text-blue-600 font-medium">
+              {selectedIds.size === filteredInvoices.length && filteredInvoices.length > 0 ? 'Hiçbiri' : 'Tümünü Seç'}
+            </Button>
+          </>
+        ) : (
+          <div className="flex-1" />
+        )}
+        {!isMobileSelectionMode && (
+          <Button variant="ghost" size="sm" onClick={() => setIsMobileSelectionMode(true)} className="text-blue-600 font-medium ml-auto">
+            <CheckSquare className="w-4 h-4 mr-1" /> Seç
+          </Button>
+        )}
+      </div>
+
       {/* Mobile Card View (< md) */}
-      <div className="block md:hidden space-y-3">
+      <div className="block md:hidden space-y-3 mt-3">
         {filteredInvoices.length === 0 ? (
           <div className="text-center py-12">
             <FileText className="mx-auto h-12 w-12 text-gray-400" />
@@ -409,6 +435,9 @@ export function IncomingInvoicesPage() {
             onDownload={() => handleDownloadPdf(invoice)}
             getStatusBadge={getStatusBadge}
             actionLoading={actionLoading}
+            isSelectionMode={isMobileSelectionMode}
+            isSelected={selectedIds.has(String(invoice.invoiceId))}
+            onToggleSelect={() => toggleSelect(String(invoice.invoiceId))}
           />
         ))}
       </div>
@@ -573,7 +602,7 @@ export function IncomingInvoicesPage() {
 
       {/* Bulk Action Bar */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl px-6 py-3 flex items-center gap-4">
+        <div className="fixed bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl px-6 py-3 flex items-center gap-4 w-[90%] md:w-auto overflow-x-auto whitespace-nowrap">
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{selectedIds.size} fatura seçildi</span>
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
           <Button variant="ghost" onClick={handleBulkAccept} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-2xl transition-colors h-auto">
@@ -609,7 +638,7 @@ export function IncomingInvoicesPage() {
                 <a
                   href={pdfModal.blobUrl.split('#')[0]}
                   download={pdfModal.fileName}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white premium-gradient tactile-press rounded-xl"
                 >
                   <Download size={15} />
                   İndir
@@ -646,9 +675,12 @@ interface IncomingInvoiceMobileCardProps {
   onDownload: () => void;
   getStatusBadge: (status: string) => React.ReactNode;
   actionLoading: string | null;
+  isSelectionMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: () => void;
 }
 
-function IncomingInvoiceMobileCard({ invoice, onView, onAccept, onReject, onDownload, getStatusBadge, actionLoading }: IncomingInvoiceMobileCardProps) {
+function IncomingInvoiceMobileCard({ invoice, onView, onAccept, onReject, onDownload, getStatusBadge, actionLoading, isSelectionMode, isSelected, onToggleSelect }: IncomingInvoiceMobileCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -662,11 +694,23 @@ function IncomingInvoiceMobileCard({ invoice, onView, onAccept, onReject, onDown
   }, [menuOpen]);
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-visible">
+    <div className={cn("bg-white dark:bg-gray-900 rounded-xl border shadow-sm overflow-visible relative transition-all", isSelected ? "border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 dark:border-blue-500" : "border-gray-200 dark:border-gray-700")}>
+      {isSelectionMode && (
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+          {isSelected ? (
+            <CheckSquare className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+          ) : (
+            <Square className="w-6 h-6 text-gray-300 dark:text-gray-600" />
+          )}
+        </div>
+      )}
       {/* Tappable card body */}
       <div
-        className="p-4 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800 transition-colors"
-        onClick={onView}
+        className={cn("p-4 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800 transition-colors", isSelectionMode && "pr-12")}
+        onClick={() => {
+          if (isSelectionMode && onToggleSelect) onToggleSelect();
+          else onView();
+        }}
       >
         <div className="flex items-start justify-between mb-2">
           <div className="flex-1 min-w-0">

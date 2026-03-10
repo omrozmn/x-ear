@@ -23,7 +23,7 @@ function SuccessContent() {
                     </p>
 
                     {paymentId && (
-                        <div className="bg-white/5 rounded-lg p-4 mb-8 text-sm text-gray-400">
+                        <div className="bg-white/5 rounded-2xl p-4 mb-8 text-sm text-gray-400">
                             <span className="block text-xs uppercase tracking-wider text-gray-500 mb-1">Referans Kodu</span>
                             {paymentId}
                         </div>
@@ -31,7 +31,7 @@ function SuccessContent() {
 
                     <a
                         href={`${process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:8080'}/login`}
-                        className="w-full flex justify-center items-center py-4 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition-all shadow-lg shadow-indigo-600/20"
+                        className="w-full flex justify-center items-center py-4 px-6 premium-gradient tactile-press hover:bg-indigo-700 text-white font-bold rounded-2xl transition-all shadow-lg shadow-indigo-600/20"
                     >
                         Panele Giriş Yap
                         <ArrowRight className="w-5 h-5 ml-2" />

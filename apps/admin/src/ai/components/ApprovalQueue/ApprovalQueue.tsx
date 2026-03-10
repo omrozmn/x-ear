@@ -203,7 +203,7 @@ function TenantFilter({ value, onChange, tenants }: TenantFilterProps) {
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="block w-full pl-3 pr-10 py-2 text-sm border border-gray-300 rounded-md 
+        className="block w-full pl-3 pr-10 py-2 text-sm border border-gray-300 rounded-xl 
           focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500
           bg-white"
       >
@@ -234,7 +234,7 @@ function ApprovalItemCard({ item, onSelect, isSelected }: ApprovalItemCardProps)
     <div
       onClick={onSelect}
       className={`
-        p-4 border rounded-lg cursor-pointer transition-all
+        p-4 border rounded-2xl cursor-pointer transition-all
         ${isSelected 
           ? 'border-primary-500 bg-primary-50 ring-2 ring-primary-200' 
           : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
@@ -332,7 +332,7 @@ function ApprovalDetailPanel({
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
       {/* Header */}
       <div className={`px-4 py-3 border-b ${riskConfig.bg} ${riskConfig.border}`}>
         <div className="flex items-center justify-between">
@@ -398,7 +398,7 @@ function ApprovalDetailPanel({
             <label className="text-xs font-medium text-gray-500 uppercase mb-2 block">
               Aksiyon Planı ({item.steps_count} adım)
             </label>
-            <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+            <div className="bg-gray-50 rounded-2xl p-3 space-y-2">
               {item.steps_summary.map((step, index) => (
                 <div key={index} className="flex items-start text-sm">
                   <span className="flex-shrink-0 w-5 h-5 bg-gray-200 rounded-full flex items-center justify-center text-xs font-medium text-gray-600 mr-2">
@@ -432,7 +432,7 @@ function ApprovalDetailPanel({
               onClick={() => setShowRejectModal(true)}
               disabled={isApproving || isRejecting}
               className="inline-flex items-center px-4 py-2 text-sm font-medium text-red-700 
-                bg-red-100 border border-red-200 rounded-md hover:bg-red-200 
+                bg-red-100 border border-red-200 rounded-xl hover:bg-red-200 
                 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500
                 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -443,7 +443,7 @@ function ApprovalDetailPanel({
               onClick={onApprove}
               disabled={isApproving || isRejecting}
               className="inline-flex items-center px-4 py-2 text-sm font-medium text-white 
-                bg-green-600 border border-transparent rounded-md hover:bg-green-700 
+                bg-green-600 border border-transparent rounded-xl hover:bg-green-700 
                 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500
                 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -462,7 +462,7 @@ function ApprovalDetailPanel({
               className="fixed inset-0 bg-black bg-opacity-25 transition-opacity" 
               onClick={() => setShowRejectModal(false)}
             />
-            <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">Aksiyonu Reddet</h3>
                 <button
@@ -485,7 +485,7 @@ function ApprovalDetailPanel({
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
                   placeholder="Red sebebini yazın..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm 
                     focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500
                     text-sm resize-none"
                   rows={3}
@@ -498,7 +498,7 @@ function ApprovalDetailPanel({
                   onClick={() => setShowRejectModal(false)}
                   disabled={isRejecting}
                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border 
-                    border-gray-300 rounded-md hover:bg-gray-50"
+                    border-gray-300 rounded-xl hover:bg-gray-50"
                 >
                   İptal
                 </button>
@@ -506,7 +506,7 @@ function ApprovalDetailPanel({
                   onClick={handleReject}
                   disabled={isRejecting || !rejectReason.trim()}
                   className="px-4 py-2 text-sm font-medium text-white bg-red-600 border 
-                    border-transparent rounded-md hover:bg-red-700 disabled:opacity-50
+                    border-transparent rounded-xl hover:bg-red-700 disabled:opacity-50
                     disabled:cursor-not-allowed"
                 >
                   {isRejecting ? 'Reddediliyor...' : 'Reddet'}
@@ -542,7 +542,7 @@ function LoadingSkeleton() {
   return (
     <div className="space-y-4">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="p-4 border border-gray-200 rounded-lg animate-pulse">
+        <div key={i} className="p-4 border border-gray-200 rounded-2xl animate-pulse">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center space-x-2 mb-2">
@@ -660,12 +660,12 @@ export function ApprovalQueue({ tenantId: initialTenantId, className = '' }: App
   };
 
   return (
-    <div className={`bg-white shadow rounded-lg overflow-hidden ${className}`}>
+    <div className={`bg-white shadow rounded-2xl overflow-hidden ${className}`}>
       {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-yellow-100 rounded-lg">
+            <div className="p-2 bg-yellow-100 rounded-2xl">
               <Clock className="h-6 w-6 text-yellow-600" />
             </div>
             <div>
@@ -693,7 +693,7 @@ export function ApprovalQueue({ tenantId: initialTenantId, className = '' }: App
             <button
               onClick={handleRefresh}
               disabled={isLoading}
-              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md
+              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl
                 disabled:opacity-50 disabled:cursor-not-allowed"
               title="Yenile"
             >
@@ -740,7 +740,7 @@ export function ApprovalQueue({ tenantId: initialTenantId, className = '' }: App
                   isRejecting={isRejecting}
                 />
               ) : (
-                <div className="h-full flex items-center justify-center border-2 border-dashed border-gray-200 rounded-lg p-8">
+                <div className="h-full flex items-center justify-center border-2 border-dashed border-gray-200 rounded-2xl p-8">
                   <div className="text-center">
                     <FileText className="mx-auto h-10 w-10 text-gray-300" />
                     <p className="mt-2 text-sm text-gray-500">

@@ -671,6 +671,7 @@ function InvoiceSidebar({
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">İade Fatura No</label>
               <Input
+                data-testid="return-invoice-number"
                 type="text"
                 value={extendedData?.returnInvoiceDetails?.returnInvoiceNumber || ''}
                 onChange={(e) => handlers?.handleExtendedFieldChange('returnInvoiceDetails', {
@@ -684,6 +685,7 @@ function InvoiceSidebar({
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">İade Fatura Tarihi</label>
               <DatePicker
+                data-testid="return-invoice-date"
                 value={extendedData?.returnInvoiceDetails?.returnInvoiceDate ? new Date(extendedData.returnInvoiceDetails.returnInvoiceDate) : null}
                 onChange={(date) => handlers?.handleExtendedFieldChange('returnInvoiceDetails', {
                   ...extendedData?.returnInvoiceDetails,
@@ -695,6 +697,7 @@ function InvoiceSidebar({
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">İade Nedeni</label>
               <Input
+                data-testid="return-invoice-reason"
                 type="text"
                 value={extendedData?.returnInvoiceDetails?.returnReason || ''}
                 onChange={(e) => handlers?.handleExtendedFieldChange('returnInvoiceDetails', {
@@ -1145,7 +1148,7 @@ function NewInvoicePageContent({
                 onClick={() => handleSubmit(formData)}
                 disabled={isSaving}
                 style={{ backgroundColor: '#2563eb', color: 'white' }}
-                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+                className="px-6 py-2 premium-gradient tactile-press text-white shadow-sm"
               >
                 {isSaving ? 'Kaydediliyor...' : 'Fatura Oluştur'}
               </Button>

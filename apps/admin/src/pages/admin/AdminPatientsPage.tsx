@@ -174,13 +174,13 @@ const AdminPatientsPage: React.FC = () => {
 
             {/* Search */}
             <div className="mb-6">
-                <div className="relative rounded-md shadow-sm">
+                <div className="relative rounded-xl shadow-sm">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                         <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
                     </div>
                     <input
                         type="text"
-                        className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white pl-10 focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                        className="block w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white pl-10 focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                         placeholder="Ad, Soyad, TC, Telefon veya Abone Adı ile ara..."
                         value={search}
                         onChange={(e) => {
@@ -192,7 +192,7 @@ const AdminPatientsPage: React.FC = () => {
             </div>
 
             {/* List */}
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-800 shadow rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
                 {isLoading ? (
                     <div className={`${isMobile ? 'p-8' : 'p-12'} text-center`}>
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>

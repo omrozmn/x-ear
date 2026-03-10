@@ -29,6 +29,14 @@ interface CompanyInfo {
     [key: string]: unknown;
 }
 
+type CurrentTenantQueryData = {
+    data?: {
+        settings?: TenantSettings;
+        companyInfo?: CompanyInfo;
+        [key: string]: unknown;
+    };
+};
+
 export function InvoiceSettings() {
     const [defaultPrefix, setDefaultPrefix] = useState('XER');
     const [additionalPrefixes, setAdditionalPrefixes] = useState<string[]>([]);
@@ -160,14 +168,14 @@ export function InvoiceSettings() {
             console.log('💾 Saving payload:', JSON.stringify(payload, null, 2));
             
             // Optimistic update - update UI immediately
-            const currentData = queryClient.getQueryData(['getCurrentTenant']);
+            const currentData = queryClient.getQueryData<CurrentTenantQueryData>(['getCurrentTenant']);
             if (currentData) {
                 const optimisticData = {
                     ...currentData,
                     data: {
-                        ...(currentData as any).data,
+                        ...(currentData.data || {}),
                         settings: {
-                            ...(currentData as any).data?.settings,
+                            ...(currentData.data?.settings || {}),
                             invoiceIntegration: {
                                 useManualNumbering: true,
                                 invoicePrefix: defaultPrefix,
@@ -175,7 +183,7 @@ export function InvoiceSettings() {
                             },
                         },
                         companyInfo: {
-                            ...(currentData as any).data?.companyInfo,
+                            ...(currentData.data?.companyInfo || {}),
                             defaultExemptionCode: defaultExemptionCode,
                         },
                     },

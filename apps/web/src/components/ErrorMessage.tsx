@@ -39,7 +39,7 @@ const typeConfig = {
     iconColor: 'text-blue-500',
     titleColor: 'text-blue-800',
     messageColor: 'text-blue-700',
-    buttonColor: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
+    buttonColor: 'premium-gradient tactile-press focus:ring-blue-500'
   },
   success: {
     icon: CheckCircle,

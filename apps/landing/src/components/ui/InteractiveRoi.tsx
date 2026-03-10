@@ -41,7 +41,7 @@ export function InteractiveRoi() {
                                 min="1" max="10"
                                 value={clinics}
                                 onChange={(e) => setClinics(Number(e.target.value))}
-                                className="w-full accent-accent-blue h-3 bg-white/10 rounded-lg appearance-none cursor-pointer"
+                                className="w-full accent-accent-blue h-3 bg-white/10 rounded-2xl appearance-none cursor-pointer"
                             />
                         </div>
 
@@ -55,7 +55,7 @@ export function InteractiveRoi() {
                                 min="1" max="25"
                                 value={staff}
                                 onChange={(e) => setStaff(Number(e.target.value))}
-                                className="w-full accent-accent-purple h-3 bg-white/10 rounded-lg appearance-none cursor-pointer"
+                                className="w-full accent-accent-purple h-3 bg-white/10 rounded-2xl appearance-none cursor-pointer"
                             />
                             <p className="text-foreground/40 text-sm">
                                 {t("roi.staff_note")}

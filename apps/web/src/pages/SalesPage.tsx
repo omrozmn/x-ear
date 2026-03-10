@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Card, Button } from '@x-ear/ui-web';
+import { Card, Button, DatePicker } from '@x-ear/ui-web';
 import { ShoppingCart, Download, Filter, Search, FileText, DollarSign, ChevronLeft, ChevronRight, ChevronUp, ChevronDown as ChevronDownIcon, X } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { useListSales } from '@/api/client/sales.client';
@@ -7,14 +7,16 @@ import type { SaleRead } from '@/api/generated/schemas';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useNavigate } from '@tanstack/react-router';
 import toast from 'react-hot-toast';
+import { useIsMobile } from '@/hooks/useBreakpoint';
 
 export function SalesPage() {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage] = useState(25);
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  const [dateFrom, setDateFrom] = useState<Date | null>(null);
+  const [dateTo, setDateTo] = useState<Date | null>(null);
   const [sortField, setSortField] = useState<string>('');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -56,8 +58,14 @@ export function SalesPage() {
   const sortedSales = useMemo(() => {
     let list = [...salesList];
     // Client-side date filtering
-    if (dateFrom) list = list.filter(s => s.saleDate && String(s.saleDate) >= dateFrom);
-    if (dateTo) list = list.filter(s => s.saleDate && String(s.saleDate) <= dateTo);
+    if (dateFrom) {
+      const fromStr = dateFrom.toISOString().split('T')[0];
+      list = list.filter(s => s.saleDate && String(s.saleDate) >= fromStr);
+    }
+    if (dateTo) {
+      const toStr = dateTo.toISOString().split('T')[0];
+      list = list.filter(s => s.saleDate && String(s.saleDate) <= toStr);
+    }
     if (!sortField) return list;
     list.sort((a: SaleRead, b: SaleRead) => {
       let av: string | number, bv: string | number;
@@ -143,6 +151,74 @@ export function SalesPage() {
     if (selectedIds.size === sortedSales.length) setSelectedIds(new Set());
     else setSelectedIds(new Set(sortedSales.map((s: SaleRead) => String(s.id))));
   };
+
+  const renderSalesCards = () => (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between px-1">
+        <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+          <input
+            data-allow-raw="true"
+            type="checkbox"
+            checked={sortedSales.length > 0 && selectedIds.size === sortedSales.length}
+            onChange={toggleSelectAll}
+            className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 accent-blue-600"
+          />
+          Tümünü seç
+        </label>
+        <span className="text-xs text-gray-500 dark:text-gray-400">
+          {selectedIds.size > 0 ? `${selectedIds.size} seçili` : `${sortedSales.length} kayıt`}
+        </span>
+      </div>
+      {sortedSales.map((sale: SaleRead) => (
+        <Card
+          key={sale.id}
+          className={`p-4 border ${selectedIds.has(String(sale.id)) ? 'border-blue-200 bg-blue-50/60 dark:border-blue-900/40 dark:bg-blue-900/10' : 'border-gray-200 dark:border-gray-700'}`}
+        >
+          <div className="flex items-start gap-3">
+            <input
+              data-allow-raw="true"
+              type="checkbox"
+              checked={selectedIds.has(String(sale.id))}
+              onChange={() => toggleSelect(String(sale.id))}
+              className="mt-1 h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 accent-blue-600"
+            />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                    {getPatientName(sale) ?? '—'}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    {sale.productName || sale.brand || '-'}
+                  </p>
+                </div>
+                <div className="shrink-0">{getStatusBadge(sale.status as string)}</div>
+              </div>
+              <div className="flex items-center justify-between mt-2">
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                  {formatCurrency(Number(sale.finalAmount || sale.totalAmount || 0), 'TRY')}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {sale.saleDate ? formatDate(String(sale.saleDate)) : '-'}
+                </span>
+              </div>
+              {sale.partyId && (
+                <div className="mt-2 flex justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate({ to: '/parties/$partyId', params: { partyId: sale.partyId! } })}
+                  >
+                    Hasta Detayı
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
 
   if (isLoading) {
     return (
@@ -232,26 +308,22 @@ export function SalesPage() {
           </div>
           <div className="flex items-center gap-2">
             <label className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">Başlangıç</label>
-            <input
-              data-allow-raw="true"
-              type="date"
+            <DatePicker
               value={dateFrom}
-              onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1); }}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
+              onChange={(date) => { setDateFrom(date); setCurrentPage(1); }}
+              className="w-[140px]"
             />
           </div>
           <div className="flex items-center gap-2">
             <label className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">Bitiş</label>
-            <input
-              data-allow-raw="true"
-              type="date"
+            <DatePicker
               value={dateTo}
-              onChange={(e) => { setDateTo(e.target.value); setCurrentPage(1); }}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
+              onChange={(date) => { setDateTo(date); setCurrentPage(1); }}
+              className="w-[140px]"
             />
           </div>
           {(dateFrom || dateTo || searchTerm) && (
-            <Button variant="outline" onClick={() => { setDateFrom(''); setDateTo(''); setSearchTerm(''); setCurrentPage(1); }} className="whitespace-nowrap">
+            <Button variant="outline" onClick={() => { setDateFrom(null); setDateTo(null); setSearchTerm(''); setCurrentPage(1); }} className="whitespace-nowrap">
               Temizle
             </Button>
           )}
@@ -260,63 +332,67 @@ export function SalesPage() {
 
       {/* Sales Table */}
       <Card>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-              <tr>
-                <th className="px-3 py-3 w-10">
-                  <input data-allow-raw="true" type="checkbox" checked={sortedSales.length > 0 && selectedIds.size === sortedSales.length} onChange={toggleSelectAll} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('patient')}>Hasta<SortIcon field="patient" /></th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('productName')}>Ürün<SortIcon field="productName" /></th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('finalAmount')}>Tutar<SortIcon field="finalAmount" /></th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('saleDate')}>Tarih<SortIcon field="saleDate" /></th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('status')}>Durum<SortIcon field="status" /></th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">İşlemler</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-              {sortedSales.map((sale: SaleRead) => (
-                <tr key={sale.id} className={`hover:bg-gray-50 dark:hover:bg-gray-800 ${selectedIds.has(String(sale.id)) ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`}>
-                  <td className="px-3 py-4">
-                    <input data-allow-raw="true" type="checkbox" checked={selectedIds.has(String(sale.id))} onChange={() => toggleSelect(String(sale.id))} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">
-                      {getPatientName(sale) ?? <span className="text-gray-400">—</span>}
-                    </div>
-                    {sale.partyId && (
-                      <div className="text-xs text-gray-400 dark:text-gray-500 font-mono mt-0.5">
-                        {sale.partyId.slice(0, 8)}
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
-                    {sale.productName || sale.brand || '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-white">
-                    {formatCurrency(Number(sale.finalAmount || sale.totalAmount || 0), 'TRY')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
-                    {sale.saleDate ? formatDate(String(sale.saleDate)) : '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {getStatusBadge(sale.status as string)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => navigate({ to: '/parties/$partyId', params: { partyId: sale.partyId! } })}
-                    >
-                      Hasta Detayı
-                    </Button>
-                  </td>
+        {isMobile ? (
+          renderSalesCards()
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                <tr>
+                  <th className="px-3 py-3 w-10">
+                    <input data-allow-raw="true" type="checkbox" checked={sortedSales.length > 0 && selectedIds.size === sortedSales.length} onChange={toggleSelectAll} className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 accent-blue-600" />
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('patient')}>Hasta<SortIcon field="patient" /></th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('productName')}>Ürün<SortIcon field="productName" /></th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('finalAmount')}>Tutar<SortIcon field="finalAmount" /></th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('saleDate')}>Tarih<SortIcon field="saleDate" /></th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('status')}>Durum<SortIcon field="status" /></th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">İşlemler</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                {sortedSales.map((sale: SaleRead) => (
+                  <tr key={sale.id} className={`hover:bg-gray-50 dark:hover:bg-gray-800 ${selectedIds.has(String(sale.id)) ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`}>
+                    <td className="px-3 py-4">
+                      <input data-allow-raw="true" type="checkbox" checked={selectedIds.has(String(sale.id))} onChange={() => toggleSelect(String(sale.id))} className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 accent-blue-600" />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        {getPatientName(sale) ?? <span className="text-gray-400">—</span>}
+                      </div>
+                      {sale.partyId && (
+                        <div className="text-xs text-gray-400 dark:text-gray-500 font-mono mt-0.5">
+                          {sale.partyId.slice(0, 8)}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                      {sale.productName || sale.brand || '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-white">
+                      {formatCurrency(Number(sale.finalAmount || sale.totalAmount || 0), 'TRY')}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                      {sale.saleDate ? formatDate(String(sale.saleDate)) : '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {getStatusBadge(sale.status as string)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => navigate({ to: '/parties/$partyId', params: { partyId: sale.partyId! } })}
+                      >
+                        Hasta Detayı
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {salesList.length === 0 && (
           <div className="text-center py-12">

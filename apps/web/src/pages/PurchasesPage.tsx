@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Card, Button } from '@x-ear/ui-web';
+import { Card, Button, DatePicker } from '@x-ear/ui-web';
 import { ShoppingCart, Download, Filter, Search, FileText, ArrowRight, ChevronLeft, ChevronRight, X, ChevronUp, ChevronDown as ChevronDownIcon } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { useNavigate } from '@tanstack/react-router';
@@ -8,15 +8,17 @@ import type { IncomingInvoiceResponse, SchemasInvoicesNewInvoiceStatus } from '@
 import { ONBOARDING_PURCHASES_DISMISSED } from '@/constants/storage-keys';
 import { useDebounce } from '@/hooks/useDebounce';
 import toast from 'react-hot-toast';
+import { useIsMobile } from '@/hooks/useBreakpoint';
 
 export function PurchasesPage() {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage] = useState(25);
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  const [dateFrom, setDateFrom] = useState<Date | null>(null);
+  const [dateTo, setDateTo] = useState<Date | null>(null);
   const [showBanner, setShowBanner] = useState(() => !localStorage.getItem(ONBOARDING_PURCHASES_DISMISSED));
   const [selectedInvoice, setSelectedInvoice] = useState<IncomingInvoiceResponse | null>(null);
   const [sortField, setSortField] = useState<string>('');
@@ -40,8 +42,8 @@ export function PurchasesPage() {
     per_page: perPage,
     status: statusFilter !== 'all' ? statusFilter as SchemasInvoicesNewInvoiceStatus : undefined,
     supplier_name: debouncedSearch || undefined,
-    date_from: dateFrom || undefined,
-    date_to: dateTo || undefined,
+    date_from: dateFrom ? dateFrom.toISOString().split('T')[0] : undefined,
+    date_to: dateTo ? dateTo.toISOString().split('T')[0] : undefined,
   });
 
   const invoiceList = useMemo(() => data?.data?.invoices ?? [], [data?.data?.invoices]);
@@ -113,6 +115,68 @@ export function PurchasesPage() {
     toast.success('CSV dışa aktarıldı');
     setSelectedIds(new Set());
   };
+
+  const renderPurchaseCards = () => (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between px-1">
+        <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+          <input
+            data-allow-raw="true"
+            type="checkbox"
+            checked={sortedInvoices.length > 0 && selectedIds.size === sortedInvoices.length}
+            onChange={toggleSelectAll}
+            className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 accent-blue-600"
+          />
+          Tümünü seç
+        </label>
+        <span className="text-xs text-gray-500 dark:text-gray-400">
+          {selectedIds.size > 0 ? `${selectedIds.size} seçili` : `${sortedInvoices.length} kayıt`}
+        </span>
+      </div>
+      {sortedInvoices.map((invoice: IncomingInvoiceResponse) => (
+        <Card
+          key={invoice.invoiceId}
+          className={`p-4 border ${selectedIds.has(String(invoice.invoiceId)) ? 'border-blue-200 bg-blue-50/60 dark:border-blue-900/40 dark:bg-blue-900/10' : 'border-gray-200 dark:border-gray-700'}`}
+        >
+          <div className="flex items-start gap-3">
+            <input
+              data-allow-raw="true"
+              type="checkbox"
+              checked={selectedIds.has(String(invoice.invoiceId))}
+              onChange={() => toggleSelect(String(invoice.invoiceId))}
+              className="mt-1 h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 accent-blue-600"
+            />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                    {invoice.supplierName || '—'}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    {invoice.invoiceNumber || 'Fatura No Yok'}
+                  </p>
+                </div>
+                <div className="shrink-0">{getStatusBadge(invoice.status)}</div>
+              </div>
+              <div className="flex items-center justify-between mt-2">
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                  {formatCurrency(Number(invoice.totalAmount || 0), invoice.currency || 'TRY')}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {formatDate(invoice.invoiceDate)}
+                </span>
+              </div>
+              <div className="mt-2 flex justify-end">
+                <Button variant="outline" size="sm" onClick={() => setSelectedInvoice(invoice)}>
+                  Detay
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
 
   if (isLoading) {
     return (
@@ -232,20 +296,18 @@ export function PurchasesPage() {
               className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-          <div className="flex gap-2">
-            <input
-              data-allow-raw="true"
-              type="date"
+          <div className="flex flex-wrap gap-2 items-end">
+            <DatePicker
+              placeholder="Başlangıç"
               value={dateFrom}
-              onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1); }}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
+              onChange={(date) => { setDateFrom(date); setCurrentPage(1); }}
+              className="w-[140px]"
             />
-            <input
-              data-allow-raw="true"
-              type="date"
+            <DatePicker
+              placeholder="Bitiş"
               value={dateTo}
-              onChange={(e) => { setDateTo(e.target.value); setCurrentPage(1); }}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500"
+              onChange={(date) => { setDateTo(date); setCurrentPage(1); }}
+              className="w-[140px]"
             />
             <select
               data-allow-raw="true"
@@ -268,55 +330,59 @@ export function PurchasesPage() {
 
       {/* Purchases Table */}
       <Card>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-              <tr>
-                <th className="px-3 py-3 w-10">
-                  <input data-allow-raw="true" type="checkbox" checked={sortedInvoices.length > 0 && selectedIds.size === sortedInvoices.length} onChange={toggleSelectAll} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('invoiceNumber')}>Fatura No<SortIcon field="invoiceNumber" /></th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('supplierName')}>Tedarikçi<SortIcon field="supplierName" /></th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('totalAmount')}>Tutar<SortIcon field="totalAmount" /></th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('invoiceDate')}>Tarih<SortIcon field="invoiceDate" /></th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('status')}>Durum<SortIcon field="status" /></th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">İşlemler</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-              {sortedInvoices.map((invoice: IncomingInvoiceResponse) => (
-                <tr key={invoice.invoiceId} className={`hover:bg-gray-50 dark:hover:bg-gray-800 ${selectedIds.has(String(invoice.invoiceId)) ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`}>
-                  <td className="px-3 py-4">
-                    <input data-allow-raw="true" type="checkbox" checked={selectedIds.has(String(invoice.invoiceId))} onChange={() => toggleSelect(String(invoice.invoiceId))} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                    {invoice.invoiceNumber}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 dark:text-white">{invoice.supplierName}</div>
-                    {invoice.supplierTaxNumber && (
-                      <div className="text-xs text-gray-500 dark:text-gray-400">VKN: {invoice.supplierTaxNumber}</div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-white">
-                    {formatCurrency(Number(invoice.totalAmount), invoice.currency || 'TRY')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
-                    {formatDate(invoice.invoiceDate)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {getStatusBadge(invoice.status)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <Button variant="ghost" size="sm" onClick={() => setSelectedInvoice(invoice)}>
-                      Detay
-                    </Button>
-                  </td>
+        {isMobile ? (
+          renderPurchaseCards()
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                <tr>
+                  <th className="px-3 py-3 w-10">
+                    <input data-allow-raw="true" type="checkbox" checked={sortedInvoices.length > 0 && selectedIds.size === sortedInvoices.length} onChange={toggleSelectAll} className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 accent-blue-600" />
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('invoiceNumber')}>Fatura No<SortIcon field="invoiceNumber" /></th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('supplierName')}>Tedarikçi<SortIcon field="supplierName" /></th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('totalAmount')}>Tutar<SortIcon field="totalAmount" /></th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('invoiceDate')}>Tarih<SortIcon field="invoiceDate" /></th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('status')}>Durum<SortIcon field="status" /></th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">İşlemler</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                {sortedInvoices.map((invoice: IncomingInvoiceResponse) => (
+                  <tr key={invoice.invoiceId} className={`hover:bg-gray-50 dark:hover:bg-gray-800 ${selectedIds.has(String(invoice.invoiceId)) ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`}>
+                    <td className="px-3 py-4">
+                      <input data-allow-raw="true" type="checkbox" checked={selectedIds.has(String(invoice.invoiceId))} onChange={() => toggleSelect(String(invoice.invoiceId))} className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 accent-blue-600" />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                      {invoice.invoiceNumber}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 dark:text-white">{invoice.supplierName}</div>
+                      {invoice.supplierTaxNumber && (
+                        <div className="text-xs text-gray-500 dark:text-gray-400">VKN: {invoice.supplierTaxNumber}</div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-white">
+                      {formatCurrency(Number(invoice.totalAmount), invoice.currency || 'TRY')}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                      {formatDate(invoice.invoiceDate)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {getStatusBadge(invoice.status)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <Button variant="ghost" size="sm" onClick={() => setSelectedInvoice(invoice)}>
+                        Detay
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {invoiceList.length === 0 && (
           <div className="text-center py-12">

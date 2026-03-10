@@ -179,7 +179,7 @@ export default function ExampleDocuments() {
                 </p>
             </div>
 
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4 mb-6">
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-2xl p-4 mb-6">
                 <div className="flex items-start gap-3">
                     <FileText className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
                     <div className="text-sm text-yellow-800 dark:text-yellow-200">
@@ -196,7 +196,7 @@ export default function ExampleDocuments() {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
                 <ResponsiveTable
                     data={EXAMPLE_DOCUMENTS}
                     columns={columns}
@@ -210,19 +210,19 @@ export default function ExampleDocuments() {
                 <Dialog.Root open={!!previewDoc} onOpenChange={() => setPreviewDoc(null)}>
                     <Dialog.Portal>
                         <Dialog.Overlay className="fixed inset-0 bg-black/50 z-[90]" />
-                        <Dialog.Content className={`fixed ${isMobile ? 'inset-0' : 'left-[50%] top-[50%] max-h-[90vh] w-[90vw] max-w-4xl translate-x-[-50%] translate-y-[-50%]'} rounded-lg bg-white dark:bg-gray-800 shadow-2xl focus:outline-none z-[100] flex flex-col`}>
+                        <Dialog.Content className={`fixed ${isMobile ? 'inset-0' : 'left-[50%] top-[50%] max-h-[90vh] w-[90vw] max-w-4xl translate-x-[-50%] translate-y-[-50%]'} rounded-2xl bg-white dark:bg-gray-800 shadow-2xl focus:outline-none z-[100] flex flex-col`}>
                             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
                                 <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white">
                                     {previewDoc.label}
                                 </Dialog.Title>
-                                <Dialog.Close className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg touch-feedback">
+                                <Dialog.Close className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl touch-feedback">
                                     <XMarkIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                                 </Dialog.Close>
                             </div>
                             <div className="flex-1 p-4 overflow-auto">
                                 <iframe
                                     src={previewDoc.path}
-                                    className={`w-full h-full border-0 rounded-lg ${isMobile ? 'min-h-[calc(100vh-120px)]' : 'min-h-[600px]'}`}
+                                    className={`w-full h-full border-0 rounded-2xl ${isMobile ? 'min-h-[calc(100vh-120px)]' : 'min-h-[600px]'}`}
                                     title="Document Preview"
                                 />
                             </div>
@@ -285,21 +285,21 @@ function ExampleDocumentActions({ doc, uploadingDoc, onUpload, onPreview, onDown
                 <>
                     <button
                         onClick={(e) => { e.stopPropagation(); onPreview(doc); }}
-                        className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors touch-feedback"
+                        className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-2xl transition-colors touch-feedback"
                         title="Önizle"
                     >
                         <Eye className="w-4 h-4" />
                     </button>
                     <button
                         onClick={(e) => { e.stopPropagation(); onDownload(doc); }}
-                        className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors touch-feedback"
+                        className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors touch-feedback"
                         title="İndir"
                     >
                         <Download className="w-4 h-4" />
                     </button>
                 </>
             )}
-            <label className="cursor-pointer p-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors touch-feedback">
+            <label className="cursor-pointer p-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-2xl transition-colors touch-feedback">
                 <Upload className="w-4 h-4" />
                 <input
                     type="file"

@@ -258,7 +258,7 @@ export function CustomerSection({
               type="button"
               onClick={handleCustomerEdit}
               variant={selectedCustomer ? 'default' : 'default'}
-              className={selectedCustomer ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'}
+              className={selectedCustomer ? 'bg-green-600 hover:bg-green-700' : 'premium-gradient tactile-press'}
             >
               {selectedCustomer ? (
                 <>

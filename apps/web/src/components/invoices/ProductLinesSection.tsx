@@ -597,7 +597,7 @@ export function ProductLinesSection({
             onClick={addLine}
             variant="default"
             style={{ backgroundColor: '#2563eb', color: 'white' }}
-            className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm px-4 py-2 whitespace-nowrap"
+            className="premium-gradient tactile-press text-white shadow-sm px-4 py-2 whitespace-nowrap"
           >
             + Yeni Kalem
           </Button>

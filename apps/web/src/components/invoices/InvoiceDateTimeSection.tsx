@@ -3,7 +3,6 @@ import { Input, DatePicker } from '@x-ear/ui-web';
 interface InvoiceDateTimeSectionProps {
   issueDate: string;
   issueTime?: string;
-  dueDate?: string;
   discount?: number;
   discountType?: 'percentage' | 'amount';
   onChange: (field: string, value: string | number) => void;
@@ -12,7 +11,6 @@ interface InvoiceDateTimeSectionProps {
 export function InvoiceDateTimeSection({
   issueDate,
   issueTime,
-  dueDate,
   onChange
 }: InvoiceDateTimeSectionProps) {
   return (

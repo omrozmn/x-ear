@@ -485,7 +485,7 @@ export const InvoiceBulkOperations: React.FC<InvoiceBulkOperationsProps> = ({
                 ? 'bg-red-600 text-white hover:bg-red-700'
                 : action.type === 'send_to_gib'
                   ? 'bg-purple-600 text-white hover:bg-purple-700'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'premium-gradient tactile-press text-white'
                 }`}
               variant='default'
               title={action.label}

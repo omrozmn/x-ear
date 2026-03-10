@@ -114,7 +114,7 @@ export const SGKDocumentsSection: React.FC<SGKDocumentsSectionProps> = ({
             <Button
               onClick={handleDownloadAllPartyForms}
               disabled={filteredEReceipts.length === 0}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="premium-gradient tactile-press text-white"
             >
               <Download className="w-4 h-4 mr-2" />
               Tüm İşlem Formlarını İndir ({filteredEReceipts.length})

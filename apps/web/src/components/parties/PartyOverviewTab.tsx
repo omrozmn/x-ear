@@ -286,7 +286,7 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
             <Button
               onClick={handleNoteSave}
               disabled={!noteContent.trim() || isSubmitting}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="premium-gradient tactile-press text-white"
             >
               {isSubmitting ? 'Kaydediliyor...' : 'Kaydet'}
             </Button>

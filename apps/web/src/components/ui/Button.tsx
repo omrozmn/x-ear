@@ -15,7 +15,7 @@ export const Button: React.FC<Props> = ({ variant = 'primary', size = 'md', chil
         'px-4 py-2 text-sm';
 
   const variantCls =
-    variant === 'primary' ? 'bg-blue-600 text-white hover:bg-blue-700' :
+    variant === 'primary' ? 'premium-gradient tactile-press text-white' :
       variant === 'secondary' ? 'bg-gray-100 text-gray-900 hover:bg-gray-200' :
         variant === 'outline' ? 'border border-gray-200 bg-transparent hover:bg-gray-50 text-gray-700' :
           variant === 'success' ? 'bg-green-600 text-white hover:bg-green-700' :

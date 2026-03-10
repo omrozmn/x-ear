@@ -198,7 +198,7 @@ function FilterPanel({ filters, onFiltersChange, onReset, isExpanded, onToggle }
   const activeFilterCount = Object.values(filters).filter(Boolean).length;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
       <button
         onClick={onToggle}
         className="w-full px-4 py-3 flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition-colors"
@@ -229,7 +229,7 @@ function FilterPanel({ filters, onFiltersChange, onReset, isExpanded, onToggle }
                 value={filters.tenant_id || ''}
                 onChange={(e) => handleChange('tenant_id', e.target.value)}
                 placeholder="Tenant ID..."
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
 
@@ -244,7 +244,7 @@ function FilterPanel({ filters, onFiltersChange, onReset, isExpanded, onToggle }
                 value={filters.user_id || ''}
                 onChange={(e) => handleChange('user_id', e.target.value)}
                 placeholder="User ID..."
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
 
@@ -257,7 +257,7 @@ function FilterPanel({ filters, onFiltersChange, onReset, isExpanded, onToggle }
               <select
                 value={filters.event_type || ''}
                 onChange={(e) => handleChange('event_type', e.target.value as AuditEventType)}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="">Tümü</option>
                 {ALL_EVENT_TYPES.map((type) => (
@@ -277,7 +277,7 @@ function FilterPanel({ filters, onFiltersChange, onReset, isExpanded, onToggle }
               <select
                 value={filters.outcome || ''}
                 onChange={(e) => handleChange('outcome', e.target.value as 'success' | 'failure' | 'blocked')}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="">Tümü</option>
                 <option value="success">Başarılı</option>
@@ -295,7 +295,7 @@ function FilterPanel({ filters, onFiltersChange, onReset, isExpanded, onToggle }
               <select
                 value={filters.risk_level || ''}
                 onChange={(e) => handleChange('risk_level', e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="">Tümü</option>
                 <option value="low">Düşük</option>
@@ -315,7 +315,7 @@ function FilterPanel({ filters, onFiltersChange, onReset, isExpanded, onToggle }
                 type="date"
                 value={filters.from_date || ''}
                 onChange={(e) => handleChange('from_date', e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
 
@@ -329,7 +329,7 @@ function FilterPanel({ filters, onFiltersChange, onReset, isExpanded, onToggle }
                 type="date"
                 value={filters.to_date || ''}
                 onChange={(e) => handleChange('to_date', e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
           </div>
@@ -452,7 +452,7 @@ function DetailModal({ entry, onClose }: DetailModalProps) {
 
       {/* Modal */}
       <div className="relative min-h-screen flex items-center justify-center p-4">
-        <div className="relative bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
+        <div className="relative bg-white rounded-2xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
           {/* Header */}
           <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-50">
             <div className="flex items-center space-x-3">
@@ -558,7 +558,7 @@ function DetailModal({ entry, onClose }: DetailModalProps) {
             {entry.event_data && Object.keys(entry.event_data).length > 0 && (
               <div className="mb-6">
                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">Event Data</label>
-                <pre className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-xs text-gray-700 overflow-x-auto">
+                <pre className="bg-gray-50 border border-gray-200 rounded-2xl p-4 text-xs text-gray-700 overflow-x-auto">
                   {JSON.stringify(entry.event_data, null, 2)}
                 </pre>
               </div>
@@ -568,7 +568,7 @@ function DetailModal({ entry, onClose }: DetailModalProps) {
             {entry.diff_snapshot && Object.keys(entry.diff_snapshot).length > 0 && (
               <div>
                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">Diff Snapshot</label>
-                <pre className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-xs text-gray-700 overflow-x-auto">
+                <pre className="bg-gray-50 border border-gray-200 rounded-2xl p-4 text-xs text-gray-700 overflow-x-auto">
                   {JSON.stringify(entry.diff_snapshot, null, 2)}
                 </pre>
               </div>
@@ -579,7 +579,7 @@ function DetailModal({ entry, onClose }: DetailModalProps) {
           <div className="px-6 py-3 border-t border-gray-200 bg-gray-50 flex justify-end">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50"
             >
               Kapat
             </button>
@@ -630,7 +630,7 @@ function ExportMenu({ entries, total, isOpen, onToggle, onClose }: ExportMenuPro
     <div className="relative">
       <button
         onClick={onToggle}
-        className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+        className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50"
       >
         <Download size={16} className="mr-2" />
         Dışa Aktar
@@ -640,7 +640,7 @@ function ExportMenu({ entries, total, isOpen, onToggle, onClose }: ExportMenuPro
       {isOpen && (
         <>
           <div className="fixed inset-0 z-10" onClick={onClose} />
-          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-20">
+          <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 z-20">
             <div className="py-1">
               <button
                 onClick={handleExportCSV}
@@ -752,14 +752,14 @@ export function AIAuditViewer({ initialFilters = {}, className = '' }: AIAuditVi
   // Error state
   if (isError) {
     return (
-      <div className={`bg-white rounded-lg border border-red-200 p-6 ${className}`}>
+      <div className={`bg-white rounded-2xl border border-red-200 p-6 ${className}`}>
         <div className="text-center py-8">
           <AlertTriangle className="h-12 w-12 mx-auto mb-3 text-red-400" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">Audit Logları Yüklenemedi</h3>
           <p className="text-sm text-gray-500 mb-4">Audit loglarını yüklerken bir hata oluştu.</p>
           <button
             onClick={handleRefresh}
-            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700"
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-xl hover:bg-primary-700"
           >
             <RefreshCw size={16} className="mr-2" />
             Tekrar Dene
@@ -772,10 +772,10 @@ export function AIAuditViewer({ initialFilters = {}, className = '' }: AIAuditVi
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Header */}
-      <div className="bg-white rounded-lg border border-gray-200 px-6 py-4">
+      <div className="bg-white rounded-2xl border border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-primary-100 rounded-lg">
+            <div className="p-2 bg-primary-100 rounded-2xl">
               <FileText className="h-6 w-6 text-primary-600" />
             </div>
             <div>
@@ -797,7 +797,7 @@ export function AIAuditViewer({ initialFilters = {}, className = '' }: AIAuditVi
             <button
               onClick={handleRefresh}
               disabled={isLoading}
-              className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+              className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50"
             >
               <RefreshCw size={16} className={`mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               Yenile
@@ -816,7 +816,7 @@ export function AIAuditViewer({ initialFilters = {}, className = '' }: AIAuditVi
       />
 
       {/* Table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
         {isLoading && entries.length === 0 ? (
           <div className="p-8 text-center">
             <Loader2 className="h-8 w-8 mx-auto mb-3 text-primary-500 animate-spin" />

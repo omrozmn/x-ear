@@ -220,6 +220,9 @@ def _resolve_profile_and_system_type(
     if scenario == "export":
         return explicit_profile or "IHRACAT", explicit_system_type or "EFATURA"
 
+    if invoice_type in {"11", "12", "13", "18", "19", "24", "25", "27", "32", "33", "otv", "hastane"}:
+        return explicit_profile or "TICARIFATURA", explicit_system_type or "EFATURA"
+
     scenario_data = form_data.get("scenarioData") if isinstance(form_data.get("scenarioData"), dict) else {}
     current_scenario_type = _str(scenario_data.get("currentScenarioType") or form_data.get("currentScenarioType"))
     basic_profile = current_scenario_type == "2"
@@ -276,6 +279,10 @@ def _map_line(
         mapped["tax_exemption_code"] = default_exemption_code
         mapped["tax_exemption_reason"] = mapped["tax_exemption_reason"] or default_exemption_code
 
+    if invoice_type in {"15", "49", "50", "9", "return", "iade"}:
+        mapped["tax_rate"] = 0.0
+        mapped["tax_amount"] = 0.0
+
     if withholding:
         mapped["withholding_rate"] = _float(
             withholding.get("rate") or withholding.get("withholdingRate")
@@ -294,7 +301,7 @@ def _map_line(
         if special_base.get("amount") not in (None, ""):
             mapped["line_extension_amount"] = _float(special_base.get("amount"))
 
-    if invoice_type in {"13", "27"} and not mapped["tax_exemption_code"]:
+    if invoice_type == "13" and not mapped["tax_exemption_code"]:
         mapped["tax_exemption_code"] = "301"
 
     if invoice_type == "otv":
@@ -337,6 +344,24 @@ def build_invoice_dict_from_form(
     export_details = form_data.get("exportDetails") if isinstance(form_data.get("exportDetails"), dict) else {}
     special_tax_base = form_data.get("specialTaxBase") if isinstance(form_data.get("specialTaxBase"), dict) else {}
     return_details = form_data.get("returnInvoiceDetails") if isinstance(form_data.get("returnInvoiceDetails"), dict) else {}
+    return_details = {
+        **return_details,
+        "returnInvoiceNumber": _str(
+            return_details.get("returnInvoiceNumber")
+            or form_data.get("returnReferenceNumber")
+            or form_data.get("returnInvoiceNumber")
+        ),
+        "returnInvoiceDate": _str(
+            return_details.get("returnInvoiceDate")
+            or form_data.get("returnReferenceDate")
+            or form_data.get("returnInvoiceDate")
+            or issue_date
+        ),
+        "returnReason": _str(
+            return_details.get("returnReason")
+            or form_data.get("returnReason")
+        ),
+    }
     sgk_data = form_data.get("sgkData") if isinstance(form_data.get("sgkData"), dict) else {}
     medical_device_data = form_data.get("medicalDeviceData") if isinstance(form_data.get("medicalDeviceData"), dict) else {}
     profile_details = form_data.get("profileDetails") if isinstance(form_data.get("profileDetails"), dict) else {}
@@ -374,6 +399,8 @@ def build_invoice_dict_from_form(
         "notes": [notes] if notes else [],
         "sgk_data": sgk_data,
         "return_invoice_details": return_details,
+        "return_reference_number": return_details.get("returnInvoiceNumber"),
+        "return_reference_date": return_details.get("returnInvoiceDate"),
         "export_details": export_details,
         "special_tax_base": special_tax_base,
         "medical_device_data": medical_device_data,
@@ -387,6 +414,19 @@ def build_invoice_dict_from_form(
         "tax_exemption_code": _str(form_data.get("governmentExemptionReason")),
         "_source_form_data": form_data,
     }
+
+    if scenario == "export":
+        for line in invoice_dict["lines"]:
+            line["tax_exemption_code"] = ""
+            line["tax_exemption_reason"] = ""
+        invoice_dict["tax_exemption_code"] = ""
+        invoice_dict["tax_exemption_reason"] = ""
+
+    return_reason = _str(return_details.get("returnReason"))
+    if return_reason:
+        notes_list = invoice_dict.get("notes") or []
+        if all(return_reason not in str(note) for note in notes_list):
+            invoice_dict["notes"] = [*notes_list, return_reason]
 
     account_id = _str(bank_info.get("iban") or bank_info.get("accountNumber"))
     payment_days = payment_terms.get("paymentDays") if isinstance(payment_terms.get("paymentDays"), (int, float)) else None
@@ -448,6 +488,10 @@ def build_invoice_dict_from_form(
 
     if invoice_type == "14":
         invoice_dict["currency"] = "TRY"
+
+    if invoice_type in {"15", "49", "50", "9", "return", "iade"}:
+        invoice_dict["taxAmount"] = 0.0
+        invoice_dict["totalAmount"] = float(subtotal)
 
     return invoice_dict
 

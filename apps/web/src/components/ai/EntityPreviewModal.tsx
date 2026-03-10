@@ -76,7 +76,7 @@ export const EntityPreviewModal: React.FC<EntityPreviewModalProps> = ({ entity, 
 
             <div className="p-4 border-t bg-gray-50">
                 <Button
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-2xl font-bold"
+                    className="w-full premium-gradient tactile-press text-white py-3 rounded-2xl font-bold"
                     onClick={() => {
                         onAdd(entity);
                         onClose();

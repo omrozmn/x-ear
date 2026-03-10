@@ -449,7 +449,7 @@ export const SGKDownloadsPage: React.FC = () => {
                         size="sm"
                         variant="outline"
                         onClick={() => downloadPartyDocument(party.id, 'report')}
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                        className="premium-gradient tactile-press text-white"
                       >
                         📄 Rapor
                       </Button>

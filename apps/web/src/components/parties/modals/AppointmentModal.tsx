@@ -366,7 +366,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             </Button>
             <Button
               type="submit"
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center"
+              className="px-6 py-2 premium-gradient tactile-press text-white rounded-xl flex items-center"
               disabled={loading || isLoading}
             >
               {(loading || isLoading) && <Spinner className="w-4 h-4 mr-2" />}

@@ -99,7 +99,7 @@ export function TenantAutocomplete({
                     }}
                     onFocus={() => setIsOpen(true)}
                     placeholder={placeholder}
-                    className={`block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 pr-10 ${error ? 'border-red-500' : ''}`}
+                    className={`block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2 pr-10 ${error ? 'border-red-500' : ''}`}
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                     {isLoading ? (
@@ -113,7 +113,7 @@ export function TenantAutocomplete({
             {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
 
             {isOpen && (
-                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
                     {isLoading ? (
                         <div className="p-3 text-sm text-gray-500">Yükleniyor...</div>
                     ) : tenants.length === 0 ? (

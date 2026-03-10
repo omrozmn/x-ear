@@ -1,19 +1,24 @@
 import React, { useState } from 'react';
 import { useParams } from '@tanstack/react-router';
-import { Phone, MessageCircle, MoreVertical, Calendar, Package, FileText, User } from 'lucide-react';
+import { Phone, MessageCircle, Package, FileText, User, StickyNote, FolderOpen } from 'lucide-react';
 import { MobileLayout } from '@/components/mobile/MobileLayout';
 import { MobileHeader } from '@/components/mobile/MobileHeader';
 import { useParty } from '@/hooks/party/useParty';
 import { cn } from '@/lib/utils';
 import { useHaptic } from '@/hooks/useHaptic';
 import { Button } from '@x-ear/ui-web';
+import { PartyAppointmentsTab } from '@/components/parties/PartyAppointmentsTab';
+import { PartyDevicesTab } from '@/components/parties/PartyDevicesTab';
+import PartySalesTab from '@/components/parties/PartySalesTab';
+import { PartyNotesTab } from '@/components/parties/PartyNotesTab';
+import { PartyDocumentsTab } from '@/components/parties/PartyDocumentsTab';
 
-type Tab = 'general' | 'appointments' | 'devices' | 'sales';
+type Tab = 'notes' | 'documents' | 'devices' | 'sales';
 
 export const MobilePartyDetailPage: React.FC = () => {
     const { partyId } = useParams({ strict: false }) as { partyId?: string };
     const { party, isLoading } = useParty(partyId);
-    const [activeTab, setActiveTab] = useState<Tab>('general');
+    const [activeTab, setActiveTab] = useState<Tab>('sales');
     const { triggerSelection } = useHaptic();
 
     if (isLoading || !party) {
@@ -31,21 +36,16 @@ export const MobilePartyDetailPage: React.FC = () => {
     const handleMessage = () => window.location.href = `sms:${party.phone}`;
 
     const tabs = [
-        { id: 'general', label: 'Genel', icon: <User className="h-4 w-4" /> },
-        { id: 'appointments', label: 'Randevu', icon: <Calendar className="h-4 w-4" /> },
+        { id: 'sales', label: 'Satışlar', icon: <FileText className="h-4 w-4" /> },
         { id: 'devices', label: 'Cihaz', icon: <Package className="h-4 w-4" /> },
-        { id: 'sales', label: 'Finans', icon: <FileText className="h-4 w-4" /> },
+        { id: 'notes', label: 'Notlar', icon: <StickyNote className="h-4 w-4" /> },
+        { id: 'documents', label: 'Belgeler', icon: <FolderOpen className="h-4 w-4" /> },
     ];
 
     return (
         <MobileLayout>
             <MobileHeader
                 title={`${party.firstName} ${party.lastName}`}
-                actions={
-                    <Button variant="ghost" size="sm" className="p-2 text-gray-600">
-                        <MoreVertical className="h-5 w-5" />
-                    </Button>
-                }
             />
 
             {/* Profile Summary */}
@@ -87,7 +87,7 @@ export const MobilePartyDetailPage: React.FC = () => {
             </div>
 
             {/* Tabs */}
-            <div className="sticky top-14 bg-white border-b border-gray-100 z-20 flex overflow-x-auto hide-scrollbar">
+            <div className="sticky top-14 bg-white border-b border-gray-100 z-20 flex overflow-x-auto hide-scrollbar scroll-smooth px-2">
                 {tabs.map((tab) => (
                     <Button
                         key={tab.id}
@@ -97,10 +97,10 @@ export const MobilePartyDetailPage: React.FC = () => {
                         }}
                         variant="ghost"
                         className={cn(
-                            "flex items-center gap-2 px-6 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors",
+                            "flex items-center justify-center gap-1.5 px-4 py-2.5 my-1.5 mx-1 text-[13px] font-medium whitespace-nowrap rounded-lg transition-all border border-transparent shadow-none",
                             activeTab === tab.id
-                                ? "border-primary-600 text-primary-600"
-                                : "border-transparent text-gray-600"
+                                ? "bg-gray-900 border-gray-900 text-white dark:bg-white dark:text-gray-900 shadow-sm"
+                                : "bg-transparent text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 border-transparent"
                         )}
                     >
                         {tab.icon}
@@ -111,51 +111,27 @@ export const MobilePartyDetailPage: React.FC = () => {
 
             {/* Tab Content */}
             <div className="p-4 bg-gray-50 min-h-[50vh]">
-                {activeTab === 'general' && (
-                    <div className="space-y-4">
-                        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                            <h3 className="font-semibold text-gray-900 mb-3">İletişim Bilgileri</h3>
-                            <div className="space-y-3">
-                                <div>
-                                    <label className="text-xs text-gray-500">Telefon</label>
-                                    <p className="text-sm font-medium">{party.phone || '-'}</p>
-                                </div>
-                                <div>
-                                    <label className="text-xs text-gray-500">E-posta</label>
-                                    <p className="text-sm font-medium">{party.email || '-'}</p>
-                                </div>
-                                <div>
-                                    <label className="text-xs text-gray-500">TC Kimlik No</label>
-                                    <p className="text-sm font-medium">{party.tcNumber || '-'}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                            <h3 className="font-semibold text-gray-900 mb-3">Sistem Bilgileri</h3>
-                            <div className="space-y-3">
-                                <div>
-                                    <label className="text-xs text-gray-500">Kayıt Tarihi</label>
-                                    <p className="text-sm font-medium">
-                                        {party.createdAt ? new Date(party.createdAt).toLocaleDateString() : '-'}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+                {activeTab === 'notes' && (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-2 overflow-hidden">
+                        <PartyNotesTab party={party} />
                     </div>
                 )}
 
-                {activeTab === 'appointments' && (
-                    <div className="text-center py-10 text-gray-500 text-sm">
-                        <Calendar className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        Randevu geçmişi yakında eklenecek
+                {activeTab === 'documents' && (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-2 overflow-hidden">
+                        <PartyDocumentsTab partyId={party.id!} />
                     </div>
                 )}
 
-                {/* Other tabs placeholders */}
-                {(activeTab === 'devices' || activeTab === 'sales') && (
-                    <div className="text-center py-10 text-gray-500 text-sm">
-                        Bu bölüm yapım aşamasında
+                {activeTab === 'devices' && (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <PartyDevicesTab party={party} />
+                    </div>
+                )}
+
+                {activeTab === 'sales' && (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <PartySalesTab party={party} />
                     </div>
                 )}
             </div>

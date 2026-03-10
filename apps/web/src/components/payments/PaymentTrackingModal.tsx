@@ -11,7 +11,8 @@ import {
   CardTitle,
   Badge,
   Alert,
-  Spinner
+  Spinner,
+  DatePicker
 } from '@x-ear/ui-web';
 import {
   X,
@@ -152,7 +153,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
       const allPaymentRecords = unwrapArray<PaymentRecord>(paymentRecordsResponse) || [];
       // Filter to only show payments for THIS sale
       let realPaymentRecords = allPaymentRecords.filter(p => p.saleId === sale.id);
-      
+
       // WORKAROUND: If sale has paidAmount but no payment records, add initial down payment
       if (sale.paidAmount && sale.paidAmount > 0 && realPaymentRecords.length === 0) {
         realPaymentRecords = [{
@@ -165,7 +166,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
           notes: 'İlk Ön Ödeme'
         }];
       }
-      
+
       const realPromissoryNotes = unwrapArray<PromissoryNote>(promissoryNotesResponse) || [];
 
       // Mock Installments
@@ -173,7 +174,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
         { id: '1', installmentNumber: 1, amount: 1000, dueDate: '2024-01-15', status: 'paid', paidDate: '2024-01-15', notes: 'İlk taksit' },
         { id: '2', installmentNumber: 2, amount: 1000, dueDate: '2024-02-15', status: 'paid', paidDate: '2024-02-15', notes: 'İkinci taksit' }
       ];
-      
+
       setPaymentRecords(realPaymentRecords);
       setPromissoryNotes(realPromissoryNotes);
       setInstallments(mockInstallments);
@@ -227,7 +228,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
     }
 
     setIsLoading(true);
-    
+
     try {
       const paymentData: RoutersPaymentsPaymentRecordCreate = {
         partyId: sale.partyId,
@@ -238,11 +239,11 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
         notes: newPayment.notes,
         referenceNumber: newPayment.referenceNumber
       };
-      
+
       await createPaymentMutation.mutateAsync({ data: paymentData });
 
       toast.success('Ödeme başarıyla kaydedildi');
-      
+
       // Reset form with new reference number
       setNewPayment({
         amount: 0,
@@ -257,11 +258,11 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
 
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: { message?: string }; message?: string } }; message?: string };
-      const errorMessage = error?.response?.data?.error?.message || 
-                          error?.response?.data?.message ||
-                          error?.message || 
-                          'Ödeme kaydedilirken hata oluştu';
-      
+      const errorMessage = error?.response?.data?.error?.message ||
+        error?.response?.data?.message ||
+        error?.message ||
+        'Ödeme kaydedilirken hata oluştu';
+
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -313,8 +314,8 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
   };
 
   return (
-    <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]" 
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
       data-testid="payment-tracking-modal"
       onClick={(e) => {
         // Prevent clicks inside modal from closing it
@@ -323,7 +324,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
         }
       }}
     >
-      <div 
+      <div
         className="bg-white rounded-2xl p-6 w-full max-w-6xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => {
           // Stop propagation to prevent parent modal from receiving events
@@ -343,38 +344,38 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
 
 
         {/* Payment Summary */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
           <Card>
-            <CardContent className="p-4">
-              <div className="text-sm text-gray-600">Toplam Tutar</div>
-              <div className="text-2xl font-bold text-gray-900">
+            <CardContent className="p-3 md:p-4">
+              <div className="text-xs md:text-sm text-gray-600">Toplam Tutar</div>
+              <div className="text-lg md:text-2xl font-bold text-gray-900">
                 {formatCurrency(paymentSummary.totalAmount)}
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-4">
-              <div className="text-sm text-gray-600">Ödenen</div>
-              <div className="text-2xl font-bold text-green-600">
+            <CardContent className="p-3 md:p-4">
+              <div className="text-xs md:text-sm text-gray-600">Ödenen</div>
+              <div className="text-lg md:text-2xl font-bold text-green-600">
                 {formatCurrency(paymentSummary.totalPaid)}
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-4">
-              <div className="text-sm text-gray-600">Kalan</div>
-              <div className="text-2xl font-bold text-blue-600">
+            <CardContent className="p-3 md:p-4">
+              <div className="text-xs md:text-sm text-gray-600">Kalan</div>
+              <div className="text-lg md:text-2xl font-bold text-blue-600">
                 {formatCurrency(paymentSummary.remainingBalance)}
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-4">
-              <div className="text-sm text-gray-600">Gecikmiş</div>
-              <div className="text-2xl font-bold text-red-600">
+            <CardContent className="p-3 md:p-4">
+              <div className="text-xs md:text-sm text-gray-600">Gecikmiş</div>
+              <div className="text-lg md:text-2xl font-bold text-red-600">
                 {formatCurrency(paymentSummary.overdueAmount)}
               </div>
             </CardContent>
@@ -385,130 +386,139 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
         {paymentSummary.nextDueDate && (
           <Alert className="mb-4 bg-yellow-50 border-yellow-200 text-yellow-800">
             <Clock className="w-4 h-4" />
-            <span>
+            <span className="text-sm">
               Sonraki ödeme: {formatDate(paymentSummary.nextDueDate)} - {formatCurrency(paymentSummary.nextDueAmount || 0)}
             </span>
           </Alert>
         )}
 
         {/* Payment Content - NO TABS */}
-        <div className="space-y-6">
-            {/* New Payment Form */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Yeni Ödeme Kaydet
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form 
-                  onSubmit={(e) => {
+        <div className="space-y-4 md:space-y-6">
+          {/* New Payment Form */}
+          <Card>
+            <CardHeader className="pb-3 md:pb-6">
+              <CardTitle className="flex items-center text-base md:text-lg">
+                <Plus className="w-4 h-4 mr-2" />
+                Yeni Ödeme Kaydet
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.nativeEvent.stopImmediatePropagation();
+                  return false;
+                }}
+                className="space-y-4"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div>
+                    <Label className="text-xs md:text-sm">Tutar *</Label>
+                    <Input
+                      data-testid="payment-amount-input"
+                      type="number"
+                      step="0.01"
+                      value={newPayment.amount === 0 ? '' : newPayment.amount}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setNewPayment(prev => ({ ...prev, amount: val === '' ? 0 : parseFloat(val) || 0 }));
+                      }}
+                      placeholder="0.00"
+                      required
+                      className="text-sm md:text-base"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs md:text-sm">Ödeme Tarihi *</Label>
+                    <DatePicker
+                      data-testid="payment-date-input"
+                      value={newPayment.paymentDate ? new Date(newPayment.paymentDate) : null}
+                      onChange={(date) => setNewPayment(prev => ({ ...prev, paymentDate: date ? date.toISOString().split('T')[0] : '' }))}
+                      required
+                      fullWidth
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs md:text-sm">Ödeme Yöntemi *</Label>
+                    <select
+                      data-allow-raw="true"
+                      data-testid="payment-method-select"
+                      value={newPayment.paymentMethod}
+                      onChange={(e) => setNewPayment(prev => ({ ...prev, paymentMethod: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    >
+                      <option value="cash">Nakit</option>
+                      <option value="card">Kredi Kartı</option>
+                      <option value="bank_transfer">Havale</option>
+                      <option value="check">Çek</option>
+                    </select>
+                  </div>
+                  <div>
+                    <Label className="text-xs md:text-sm">Notlar</Label>
+                    <Input
+                      value={newPayment.notes}
+                      onChange={(e) => setNewPayment(prev => ({ ...prev, notes: e.target.value }))}
+                      placeholder="Ödeme notları"
+                      className="text-sm md:text-base"
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    e.nativeEvent.stopImmediatePropagation();
-                    return false;
-                  }} 
-                  className="space-y-4"
+                    void handleRecordPayment();
+                  }}
+                  disabled={isLoading}
+                  className="w-full mt-2"
+                  data-testid="payment-submit-button"
                 >
-                  <div className="grid grid-cols-4 gap-4">
-                    <div>
-                      <Label>Tutar *</Label>
-                      <Input
-                        data-testid="payment-amount-input"
-                        type="number"
-                        step="0.01"
-                        value={newPayment.amount === 0 ? '' : newPayment.amount}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setNewPayment(prev => ({ ...prev, amount: val === '' ? 0 : parseFloat(val) || 0 }));
-                        }}
-                        placeholder="0.00"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label>Ödeme Tarihi *</Label>
-                      <Input
-                        data-testid="payment-date-input"
-                        type="date"
-                        value={newPayment.paymentDate}
-                        onChange={(e) => setNewPayment(prev => ({ ...prev, paymentDate: e.target.value }))}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label>Ödeme Yöntemi *</Label>
-                      <select
-                        data-allow-raw="true"
-                        data-testid="payment-method-select"
-                        value={newPayment.paymentMethod}
-                        onChange={(e) => setNewPayment(prev => ({ ...prev, paymentMethod: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="cash">Nakit</option>
-                        <option value="card">Kredi Kartı</option>
-                        <option value="bank_transfer">Havale</option>
-                        <option value="check">Çek</option>
-                      </select>
-                    </div>
-                    <div>
-                      <Label>Notlar</Label>
-                      <Input
-                        value={newPayment.notes}
-                        onChange={(e) => setNewPayment(prev => ({ ...prev, notes: e.target.value }))}
-                        placeholder="Ödeme notları"
-                      />
-                    </div>
-                  </div>
+                  {isLoading && <Spinner className="w-4 h-4 mr-2" />}
+                  Ödeme Kaydet
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
 
-                  <Button 
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      void handleRecordPayment();
-                    }}
-                    disabled={isLoading} 
-                    className="w-full" 
-                    data-testid="payment-submit-button"
-                  >
-                    {isLoading && <Spinner className="w-4 h-4 mr-2" />}
-                    Ödeme Kaydet
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-
-            {/* Payment Records - COLLAPSIBLE */}
-            <Card>
-              <CardHeader 
-                className="cursor-pointer hover:bg-gray-50 transition-colors"
-                onClick={() => setIsPaymentHistoryOpen(!isPaymentHistoryOpen)}
-              >
-                <CardTitle className="flex items-center justify-between">
-                  <span>Ödeme Geçmişi</span>
-                  {isPaymentHistoryOpen ? (
-                    <ChevronUp className="w-5 h-5 text-gray-500" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5 text-gray-500" />
-                  )}
-                </CardTitle>
-              </CardHeader>
-              {isPaymentHistoryOpen && (
-              <CardContent>
+          {/* Payment Records - COLLAPSIBLE */}
+          <Card>
+            <CardHeader
+              className="cursor-pointer hover:bg-gray-50 transition-colors pb-3 md:pb-6"
+              onClick={() => setIsPaymentHistoryOpen(!isPaymentHistoryOpen)}
+            >
+              <CardTitle className="flex items-center justify-between text-base md:text-lg">
+                <span>Ödeme Geçmişi</span>
+                {isPaymentHistoryOpen ? (
+                  <ChevronUp className="w-5 h-5 text-gray-500" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-gray-500" />
+                )}
+              </CardTitle>
+            </CardHeader>
+            {isPaymentHistoryOpen && (
+              <CardContent className="pt-0 md:pt-4">
                 {paymentRecords.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-6 md:py-8 text-gray-500 text-sm md:text-base">
                     Henüz ödeme kaydı bulunmuyor
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {paymentRecords.map((payment) => (
-                      <div key={payment.id} className="flex items-center justify-between p-4 border rounded-2xl hover:bg-gray-50">
-                        <div className="flex items-center space-x-6">
-                          <div className="text-xl font-semibold text-gray-900">
-                            {formatCurrency(payment.amount)}
+                      <div key={payment.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 md:p-4 border rounded-xl hover:bg-gray-50 gap-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-6">
+                          <div className="flex justify-between items-center sm:block">
+                            <div className="text-lg md:text-xl font-semibold text-gray-900">
+                              {formatCurrency(payment.amount)}
+                            </div>
+                            {/* Status badge on mobile right side */}
+                            <div className="sm:hidden">
+                              {getStatusBadge(payment.status)}
+                            </div>
                           </div>
+
                           <div className="flex flex-col">
                             <div className="text-sm font-medium text-gray-700">
                               {formatDate(payment.paymentDate)}
@@ -522,13 +532,16 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
                               </div>
                             )}
                           </div>
+
                           {payment.notes && (
-                            <div className="text-sm text-gray-600 italic">
-                              {payment.notes}
+                            <div className="text-sm text-gray-600 italic bg-gray-50 p-2 rounded-md sm:bg-transparent sm:p-0">
+                              "{payment.notes}"
                             </div>
                           )}
                         </div>
-                        <div className="flex items-center space-x-2">
+
+                        {/* Status badge on desktop right side */}
+                        <div className="hidden sm:flex items-center space-x-2">
                           {getStatusBadge(payment.status)}
                         </div>
                       </div>
@@ -536,9 +549,9 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
                   </div>
                 )}
               </CardContent>
-              )}
-            </Card>
-          </div>
+            )}
+          </Card>
+        </div>
 
         {/* Footer */}
         <div className="flex justify-end space-x-3 mt-6 pt-6 border-t">

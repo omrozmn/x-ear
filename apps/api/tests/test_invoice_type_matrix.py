@@ -78,7 +78,7 @@ def test_invoice_type_matrix_generates_expected_profiles_and_elements(tmp_path: 
         ("tevkifat", {"invoiceType": "11", "withholdingData": {"withholdingCode": "624", "withholdingRate": 20}}, "TICARIFATURA", "TEVKIFAT"),
         ("istisna", {"invoiceType": "13", "governmentExemptionReason": "301"}, "TICARIFATURA", "ISTISNA"),
         ("ozelmatrah", {"invoiceType": "12", "specialTaxBase": {"description": "Ozel Matrah"}}, "TICARIFATURA", "OZELMATRAH"),
-        ("ihracat", {"invoiceType": "27", "scenario": "export", "scenarioData": {"scenario": "export"}, "exportDetails": {"deliveryTerms": "CIF", "transportMode": "1", "gtipCode": "847130"}}, "IHRACAT", "IHRACKAYITLI"),
+        ("ihracat", {"invoiceType": "27", "scenario": "export", "scenarioData": {"scenario": "export"}, "exportDetails": {"deliveryTerms": "CIF", "transportMode": "1", "gtipCode": "847130"}}, "IHRACAT", "IHRACAT"),
         ("sgk", {"invoiceType": "14", "sgkData": {"dosyaNo": "1", "mukellefKodu": "2", "mukellefAdi": "3"}}, "TEMELFATURA", None),
         ("hks", {"invoiceType": "hks", "profileDetails": {"hotelRegistrationNo": "HKS-1", "accommodationStartDate": "2026-03-01", "accommodationEndDate": "2026-03-05"}}, "HKS", "SATIS"),
         ("sarj", {"invoiceType": "sarj", "profileDetails": {"stationCode": "ST-1", "chargeStartDate": "2026-03-01", "chargeEndDate": "2026-03-01"}}, "ENERJI", "SARJ"),

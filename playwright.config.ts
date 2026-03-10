@@ -147,37 +147,37 @@ export default defineConfig({
     },
   ],
 
-  /* Run local dev servers before starting the tests */
-  webServer: [
-    // Backend API
-    {
-      command: 'cd apps/api && .venv/bin/python main.py',
-      url: 'http://localhost:5003/health',
-      reuseExistingServer: !process.env.CI,
-      timeout: 120 * 1000,
-    },
-    // Web App
-    {
-      command: 'cd apps/web && npm run dev',
-      url: 'http://localhost:8080',
-      reuseExistingServer: !process.env.CI,
-      timeout: 120 * 1000,
-    },
-    // Admin Panel
-    {
-      command: 'cd apps/admin && npm run dev',
-      url: 'http://localhost:8082',
-      reuseExistingServer: !process.env.CI,
-      timeout: 120 * 1000,
-    },
-    // Landing Page
-    {
-      command: 'cd apps/landing && npm run dev',
-      url: 'http://localhost:3000',
-      reuseExistingServer: !process.env.CI,
-      timeout: 120 * 1000,
-    },
-  ],
+  /* Run local dev servers before starting the tests - DISABLED for manual testing */
+  // webServer: [
+  //   // Backend API
+  //   {
+  //     command: 'cd apps/api && .venv/bin/python main.py',
+  //     url: 'http://localhost:5003/health',
+  //     reuseExistingServer: true, // Always reuse for manual testing
+  //     timeout: 120 * 1000,
+  //   },
+  //   // Web App
+  //   {
+  //     command: 'cd apps/web && npm run dev',
+  //     url: 'http://localhost:8080',
+  //     reuseExistingServer: true, // Always reuse for manual testing
+  //     timeout: 120 * 1000,
+  //   },
+  //   // Admin Panel
+  //   {
+  //     command: 'cd apps/admin && npm run dev',
+  //     url: 'http://localhost:8082',
+  //     reuseExistingServer: true, // Always reuse for manual testing
+  //     timeout: 120 * 1000,
+  //   },
+  //   // Landing Page
+  //   {
+  //     command: 'cd apps/landing && npm run dev',
+  //     url: 'http://localhost:3000',
+  //     reuseExistingServer: true, // Always reuse for manual testing
+  //     timeout: 120 * 1000,
+  //   },
+  // ],
   
   /* Output directory for test artifacts */
   outputDir: 'test-results',

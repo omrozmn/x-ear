@@ -305,7 +305,7 @@ export const SGKPage: React.FC = () => {
                   <div className="mt-6">
                     <Button
                       onClick={() => setActiveTab('documents')}
-                      className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-xl text-white premium-gradient tactile-press focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       variant='default'>
                       Belgelere Git
                     </Button>

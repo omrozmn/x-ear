@@ -37,6 +37,21 @@ PERMISSION_CATEGORIES = {
 class UserRolesUpdate(BaseModel):
     role_ids: List[str]
 
+
+def serialize_permission(permission) -> PermissionRead:
+    """Map admin permission rows to the frontend-compatible schema."""
+    code = getattr(permission, "code", None) or getattr(permission, "name", None) or ""
+    label = getattr(permission, "label", None)
+    description = getattr(permission, "description", None) or label
+
+    return PermissionRead(
+        id=getattr(permission, "id", code),
+        name=code,
+        description=description,
+        created_at=getattr(permission, "created_at", None),
+        updated_at=getattr(permission, "updated_at", None),
+    )
+
 # --- Routes ---
 
 @router.get("/roles", response_model=ResponseEnvelope[RoleListResponse], operation_id="listAdminRoles")
@@ -56,7 +71,7 @@ def get_admin_roles(
         for r in roles:
             perms = []
             if include_permissions:
-                perms = [PermissionRead.model_validate(p) for p in r.permissions.all()]
+                perms = [serialize_permission(p) for p in r.permissions.all()]
             
             roles_data.append(RoleRead(
                 id=r.id,
@@ -91,7 +106,7 @@ def get_admin_role(
         if not role:
             raise HTTPException(status_code=404, detail="Rol bulunamadı")
         
-        perms = [PermissionRead.model_validate(p) for p in role.permissions.all()]
+        perms = [serialize_permission(p) for p in role.permissions.all()]
         role_data = RoleRead(
             id=role.id,
             name=role.name,
@@ -149,7 +164,7 @@ def create_admin_role(
         
         logger.info(f"Admin role created: {role.name} by user {admin_user.id}")
         
-        perms = [PermissionRead.model_validate(p) for p in role.permissions.all()]
+        perms = [serialize_permission(p) for p in role.permissions.all()]
         role_data = RoleRead(
             id=role.id,
             name=role.name,
@@ -204,7 +219,7 @@ def update_admin_role(
         
         logger.info(f"Admin role updated: {role.name}")
         
-        perms = [PermissionRead.model_validate(p) for p in role.permissions.all()]
+        perms = [serialize_permission(p) for p in role.permissions.all()]
         role_data = RoleRead(
             id=role.id,
             name=role.name,
@@ -281,7 +296,7 @@ def get_admin_role_permissions(
         if not role:
             raise HTTPException(status_code=404, detail="Rol bulunamadı")
         
-        perms = [PermissionRead.model_validate(p) for p in role.permissions.all()]
+        perms = [serialize_permission(p) for p in role.permissions.all()]
         role_data = RoleRead(
             id=role.id,
             name=role.name,
@@ -382,7 +397,7 @@ def get_admin_permissions(
                 cat = perm.code.split('.')[0]
             cat = cat or 'other'
             
-            p_read = PermissionRead.model_validate(perm)
+            p_read = serialize_permission(perm)
             
             if cat in PERMISSION_CATEGORIES:
                 if cat not in grouped:
@@ -410,7 +425,7 @@ def get_admin_permissions(
 
         return ResponseEnvelope(data=PermissionListResponse(
             data=groups_data,
-            all=[PermissionRead.model_validate(p) for p in permissions],
+            all=[serialize_permission(p) for p in permissions],
             total=len(permissions)
         ))
         

@@ -75,7 +75,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                         <div className="hidden md:flex flex-1 max-w-xl mx-4">
                             <div
                                 onClick={toggleOpen}
-                                className="w-full flex items-center justify-between px-4 py-2 rounded-lg cursor-pointer transition-colors border bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-blue-400"
+                                className="w-full flex items-center justify-between px-4 py-2 rounded-2xl cursor-pointer transition-colors border bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-blue-400"
                             >
                                 <div className="flex items-center gap-3 text-gray-500">
                                     <Search size={18} />
@@ -103,7 +103,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                                     </svg>
                                 </button>
                                 {isDropdownOpen && (
-                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-1 z-50">
                                         <button
                                             onClick={() => {
                                                 localStorage.removeItem('admin_token');

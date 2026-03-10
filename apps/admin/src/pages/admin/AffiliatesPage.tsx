@@ -139,7 +139,7 @@ const AffiliatesPage: React.FC = () => {
           </h1>
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-800 transition-colors touch-feedback"
+            className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-800 transition-colors touch-feedback"
           >
             <PlusIcon className="w-5 h-5 mr-2" />
             {!isMobile && 'Yeni Affiliate Ekle'}
@@ -155,11 +155,11 @@ const AffiliatesPage: React.FC = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="İsim, email, telefon veya IBAN ara..."
-              className="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white pl-10 pr-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+              className="block w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white pl-10 pr-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
             />
           </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 shadow rounded-2xl overflow-hidden">
           <ResponsiveTable
             data={affiliates}
             columns={columns}

@@ -99,7 +99,7 @@ const AdminSettingsPage: React.FC = () => {
                     <button
                         onClick={handleClearCache}
                         disabled={clearCacheMutation.isPending}
-                        className={`inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 touch-feedback ${isMobile ? 'w-full' : ''}`}
+                        className={`inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-xl text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 touch-feedback ${isMobile ? 'w-full' : ''}`}
                     >
                         <Trash2 className="h-4 w-4 mr-2" />
                         Önbelleği Temizle
@@ -107,7 +107,7 @@ const AdminSettingsPage: React.FC = () => {
                     <button
                         onClick={handleBackup}
                         disabled={backupMutation.isPending}
-                        className={`inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 touch-feedback ${isMobile ? 'w-full' : ''}`}
+                        className={`inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-xl text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 touch-feedback ${isMobile ? 'w-full' : ''}`}
                     >
                         <Database className="h-4 w-4 mr-2" />
                         Yedekle
@@ -115,7 +115,7 @@ const AdminSettingsPage: React.FC = () => {
                     <button
                         onClick={handleSave}
                         disabled={updateMutation.isPending}
-                        className={`inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 touch-feedback ${isMobile ? 'w-full' : ''}`}
+                        className={`inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white bg-primary-600 hover:bg-primary-700 touch-feedback ${isMobile ? 'w-full' : ''}`}
                     >
                         <Save className="h-4 w-4 mr-2" />
                         Kaydet
@@ -123,13 +123,13 @@ const AdminSettingsPage: React.FC = () => {
                 </div>
             </div>
 
-            <div className={`bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden ${isMobile ? '' : 'flex'}`}>
+            <div className={`bg-white dark:bg-gray-800 shadow rounded-2xl overflow-hidden ${isMobile ? '' : 'flex'}`}>
                 {/* Sidebar */}
                 <div className={`bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 ${isMobile ? 'border-b overflow-x-auto' : 'w-64 border-r'}`}>
                     <nav className={`${isMobile ? 'flex p-2 space-x-2' : 'p-4 space-y-1'}`}>
                         <button
                             onClick={() => setActiveTab('general')}
-                            className={`flex items-center px-3 py-2 text-sm font-medium rounded-md touch-feedback ${isMobile ? 'whitespace-nowrap flex-shrink-0' : 'w-full'} ${activeTab === 'general' ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'
+                            className={`flex items-center px-3 py-2 text-sm font-medium rounded-xl touch-feedback ${isMobile ? 'whitespace-nowrap flex-shrink-0' : 'w-full'} ${activeTab === 'general' ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'
                                 }`}
                         >
                             <Globe className={`h-5 w-5 ${isMobile ? '' : 'mr-3'}`} />
@@ -137,7 +137,7 @@ const AdminSettingsPage: React.FC = () => {
                         </button>
                         <button
                             onClick={() => setActiveTab('mail')}
-                            className={`flex items-center px-3 py-2 text-sm font-medium rounded-md touch-feedback ${isMobile ? 'whitespace-nowrap flex-shrink-0' : 'w-full'} ${activeTab === 'mail' ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'
+                            className={`flex items-center px-3 py-2 text-sm font-medium rounded-xl touch-feedback ${isMobile ? 'whitespace-nowrap flex-shrink-0' : 'w-full'} ${activeTab === 'mail' ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'
                                 }`}
                         >
                             <Mail className={`h-5 w-5 ${isMobile ? '' : 'mr-3'}`} />
@@ -145,7 +145,7 @@ const AdminSettingsPage: React.FC = () => {
                         </button>
                         <button
                             onClick={() => setActiveTab('maintenance')}
-                            className={`flex items-center px-3 py-2 text-sm font-medium rounded-md touch-feedback ${isMobile ? 'whitespace-nowrap flex-shrink-0' : 'w-full'} ${activeTab === 'maintenance' ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'
+                            className={`flex items-center px-3 py-2 text-sm font-medium rounded-xl touch-feedback ${isMobile ? 'whitespace-nowrap flex-shrink-0' : 'w-full'} ${activeTab === 'maintenance' ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'
                                 }`}
                         >
                             <Server className={`h-5 w-5 ${isMobile ? '' : 'mr-3'}`} />
@@ -168,7 +168,7 @@ const AdminSettingsPage: React.FC = () => {
                                         type="text"
                                         value={setting.value ?? ''}
                                         onChange={(e) => updateSetting(setting.key, e.target.value)}
-                                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                        className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                                     />
                                     {setting.description && (
                                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{setting.description}</p>
@@ -190,7 +190,7 @@ const AdminSettingsPage: React.FC = () => {
                                         type={setting.key.includes('pass') ? 'password' : 'text'}
                                         value={setting.value ?? ''}
                                         onChange={(e) => updateSetting(setting.key, e.target.value)}
-                                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                        className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                                     />
                                 </div>
                             ))}

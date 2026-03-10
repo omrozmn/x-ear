@@ -146,18 +146,18 @@ const OCRQueuePage: React.FC = () => {
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         placeholder="Dosya, hasta, tip veya hata ara..."
-                        className="block w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white pl-10 pr-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500"
+                        className="block w-full rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white pl-10 pr-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500"
                     />
                 </div>
-                <button onClick={() => setStatusFilter('')} className={`px-3 py-1 rounded-md text-sm touch-feedback ${statusFilter === '' ? 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'}`}>Tümü</button>
-                <button onClick={() => setStatusFilter('pending')} className={`px-3 py-1 rounded-md text-sm touch-feedback ${statusFilter === 'pending' ? 'bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-gray-100' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'}`}>Bekleyen</button>
-                <button onClick={() => setStatusFilter('processing')} className={`px-3 py-1 rounded-md text-sm touch-feedback ${statusFilter === 'processing' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'}`}>İşlenen</button>
-                <button onClick={() => setStatusFilter('completed')} className={`px-3 py-1 rounded-md text-sm touch-feedback ${statusFilter === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'}`}>Tamamlanan</button>
-                <button onClick={() => setStatusFilter('failed')} className={`px-3 py-1 rounded-md text-sm touch-feedback ${statusFilter === 'failed' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'}`}>Hatalı</button>
+                <button onClick={() => setStatusFilter('')} className={`px-3 py-1 rounded-xl text-sm touch-feedback ${statusFilter === '' ? 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'}`}>Tümü</button>
+                <button onClick={() => setStatusFilter('pending')} className={`px-3 py-1 rounded-xl text-sm touch-feedback ${statusFilter === 'pending' ? 'bg-gray-200 text-gray-800 dark:bg-gray-600 dark:text-gray-100' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'}`}>Bekleyen</button>
+                <button onClick={() => setStatusFilter('processing')} className={`px-3 py-1 rounded-xl text-sm touch-feedback ${statusFilter === 'processing' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'}`}>İşlenen</button>
+                <button onClick={() => setStatusFilter('completed')} className={`px-3 py-1 rounded-xl text-sm touch-feedback ${statusFilter === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'}`}>Tamamlanan</button>
+                <button onClick={() => setStatusFilter('failed')} className={`px-3 py-1 rounded-xl text-sm touch-feedback ${statusFilter === 'failed' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'}`}>Hatalı</button>
             </div>
 
             {/* List */}
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 shadow rounded-2xl overflow-hidden">
                 {isLoading ? (
                     <div className="p-6 text-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>

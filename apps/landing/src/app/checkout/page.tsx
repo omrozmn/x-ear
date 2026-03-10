@@ -372,7 +372,7 @@ function CheckoutContent() {
                                                         <span className="text-foreground/50 font-medium">+ {addon.name}</span>
                                                         <div className="flex items-center gap-3">
                                                             <span className="text-accent-blue font-bold">₺{addon.price}</span>
-                                                            <button type="button" onClick={() => setSelectedAddons(selectedAddons.filter(aid => aid !== id))} className="p-1 hover:bg-red-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100">
+                                                            <button type="button" onClick={() => setSelectedAddons(selectedAddons.filter(aid => aid !== id))} className="p-1 hover:bg-red-500/10 rounded-2xl transition-colors opacity-0 group-hover:opacity-100">
                                                                 <X className="w-4 h-4 text-red-400" />
                                                             </button>
                                                         </div>
@@ -392,7 +392,7 @@ function CheckoutContent() {
                                                         <span className="text-emerald-400 font-medium">+ {pkg.name} ({pkg.sms_count} SMS)</span>
                                                         <div className="flex items-center gap-3">
                                                             <span className="text-emerald-400 font-bold">₺{pkg.price}</span>
-                                                            <button type="button" onClick={() => setSelectedSmsPackageId(null)} className="p-1 hover:bg-red-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100">
+                                                            <button type="button" onClick={() => setSelectedSmsPackageId(null)} className="p-1 hover:bg-red-500/10 rounded-2xl transition-colors opacity-0 group-hover:opacity-100">
                                                                 <X className="w-4 h-4 text-red-400" />
                                                             </button>
                                                         </div>

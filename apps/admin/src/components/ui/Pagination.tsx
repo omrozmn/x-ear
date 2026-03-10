@@ -29,14 +29,14 @@ const Pagination: React.FC<PaginationProps> = ({
                 <button
                     onClick={() => onPageChange(Math.max(1, safeCurrentPage - 1))}
                     disabled={safeCurrentPage === 1}
-                    className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                    className="relative inline-flex items-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                 >
                     Önceki
                 </button>
                 <button
                     onClick={() => onPageChange(Math.min(safeTotalPages, safeCurrentPage + 1))}
                     disabled={safeCurrentPage === safeTotalPages}
-                    className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                    className="relative ml-3 inline-flex items-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                 >
                     Sonraki
                 </button>
@@ -50,7 +50,7 @@ const Pagination: React.FC<PaginationProps> = ({
                         <select
                             value={itemsPerPage}
                             onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
-                            className="block w-full rounded-md border-gray-300 py-1.5 text-base leading-5 text-gray-900 focus:border-indigo-500 focus:placeholder-gray-400 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                            className="block w-full rounded-xl border-gray-300 py-1.5 text-base leading-5 text-gray-900 focus:border-indigo-500 focus:placeholder-gray-400 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                         >
                             <option value={10}>10 / sayfa</option>
                             <option value={20}>20 / sayfa</option>
@@ -60,7 +60,7 @@ const Pagination: React.FC<PaginationProps> = ({
                     )}
                 </div>
                 <div>
-                    <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                    <nav className="isolate inline-flex -space-x-px rounded-xl shadow-sm" aria-label="Pagination">
                         <button
                             onClick={() => onPageChange(Math.max(1, safeCurrentPage - 1))}
                             disabled={safeCurrentPage === 1}

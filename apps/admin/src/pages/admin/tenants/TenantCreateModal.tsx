@@ -75,7 +75,7 @@ export const TenantCreateModal = ({ isOpen, onClose }: TenantCreateModalProps) =
         <Dialog.Root open={isOpen} onOpenChange={onClose}>
             <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 data-[state=open]:animate-overlayShow z-40" />
-                <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[90vh] w-[90vw] max-w-[600px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white shadow-2xl focus:outline-none data-[state=open]:animate-contentShow z-50 flex flex-col">
+                <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[90vh] w-[90vw] max-w-[600px] translate-x-[-50%] translate-y-[-50%] rounded-2xl bg-white shadow-2xl focus:outline-none data-[state=open]:animate-contentShow z-50 flex flex-col">
                     <div className="flex justify-between items-center p-6 border-b">
                         <Dialog.Title className="text-xl font-bold text-gray-900">
                             Yeni Abone Ekle
@@ -100,7 +100,7 @@ export const TenantCreateModal = ({ isOpen, onClose }: TenantCreateModalProps) =
                                     type="text"
                                     value={formData.name}
                                     onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                     required
                                 />
                             </div>
@@ -111,7 +111,7 @@ export const TenantCreateModal = ({ isOpen, onClose }: TenantCreateModalProps) =
                                     type="email"
                                     value={formData.owner_email}
                                     onChange={e => setFormData({ ...formData, owner_email: e.target.value })}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                     required
                                 />
                             </div>
@@ -121,7 +121,7 @@ export const TenantCreateModal = ({ isOpen, onClose }: TenantCreateModalProps) =
                                 <select
                                     value={formData.product_code}
                                     onChange={e => setFormData({ ...formData, product_code: e.target.value })}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                 >
                                     {Object.entries(PRODUCT_REGISTRY)
                                         .filter(([, config]) => config.enabled && config.creatable)
@@ -138,7 +138,7 @@ export const TenantCreateModal = ({ isOpen, onClose }: TenantCreateModalProps) =
                                 <select
                                     value={formData.status}
                                     onChange={e => setFormData({ ...formData, status: e.target.value as TenantStatus })}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                 >
                                     <option value="trial">Deneme (Trial)</option>
                                     <option value="active">Aktif</option>
@@ -149,14 +149,14 @@ export const TenantCreateModal = ({ isOpen, onClose }: TenantCreateModalProps) =
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="mr-3 inline-flex justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none"
+                                    className="mr-3 inline-flex justify-center rounded-xl border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none"
                                 >
                                     İptal
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isPending}
-                                    className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+                                    className="inline-flex justify-center rounded-xl border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
                                 >
                                     {isPending ? 'Oluşturuluyor...' : 'Oluştur'}
                                 </button>

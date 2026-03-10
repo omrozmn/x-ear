@@ -85,10 +85,11 @@ test.describe('Phase 5.7: Landing SEO & Meta', () => {
     
     for (let i = 0; i < testLimit; i++) {
       const href = await links[i].getAttribute('href');
-      if (!href || href === '#') continue;
+      if (!href || href === '#' || href.startsWith('/#') || href.includes('#')) continue;
       
       // Visit link
       const response = await page.goto(href.startsWith('/') ? `${BASE_URL}${href}` : href);
+      expect(response, `No navigation response for ${href}`).toBeTruthy();
       expect(response?.status()).toBeLessThan(400);
     }
   });

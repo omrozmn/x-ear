@@ -124,7 +124,7 @@ export const InsightCard: React.FC<InsightCardProps> = ({
                 {state === 'ACKNOWLEDGED' && recommendedCapability && (
                     <Button
                         size="sm"
-                        className="px-4 h-9 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2 shadow-sm"
+                        className="px-4 h-9 text-xs font-semibold premium-gradient tactile-press text-white flex items-center gap-2 shadow-sm"
                         onClick={handleSimulate}
                     >
                         <PlayCircle size={16} />

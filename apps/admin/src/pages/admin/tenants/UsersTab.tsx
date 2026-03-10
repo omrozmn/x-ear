@@ -10,6 +10,7 @@ import {
 } from '@/api/generated/admin-tenants/admin-tenants';
 import { UserRead } from '@/api/generated/schemas';
 import Pagination from '@/components/ui/Pagination';
+import { unwrapData } from '@/lib/orval-response';
 
 interface UsersTabProps {
     tenantId: string;
@@ -17,6 +18,8 @@ interface UsersTabProps {
 
 interface TenantUsersResponse {
     users?: ExtendedTenantUser[];
+    items?: ExtendedTenantUser[];
+    total?: number;
 }
 
 interface ExtendedTenantUser extends UserRead {
@@ -62,12 +65,19 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
     const queryClient = useQueryClient();
 
     const { data: usersResponse, isLoading } = useListAdminTenantUsers(tenantId);
-    const users = ((usersResponse as TenantUsersResponse | undefined)?.users ?? []) as ExtendedTenantUser[];
+    const usersPayload = unwrapData<TenantUsersResponse | ExtendedTenantUser[] | undefined>(usersResponse);
+    const users = Array.isArray(usersPayload)
+        ? usersPayload
+        : Array.isArray(usersPayload?.users)
+            ? usersPayload.users
+            : Array.isArray(usersPayload?.items)
+                ? usersPayload.items
+                : [];
 
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
     const totalItems = users.length;
-    const totalPages = Math.ceil(totalItems / limit);
+    const totalPages = Math.max(1, Math.ceil(totalItems / limit));
     const paginatedUsers = users.slice((page - 1) * limit, page * limit);
 
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -211,7 +221,7 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
 
             {isLoading ? <div>Yükleniyor...</div> : (
                 <div className="space-y-4">
-                    <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+                    <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-2xl">
                         <table className="min-w-full divide-y divide-gray-300">
                             <thead className="bg-gray-50">
                                 <tr>
@@ -236,7 +246,7 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
                                                 <div className="text-xs text-gray-400">{user.username || ''}</div>
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                {user.role === 'tenant_admin' ? 'Yönetici' : 'Kullanıcı'}
+                                                {String(user.role || '').toLowerCase().includes('admin') ? 'Yönetici' : 'Kullanıcı'}
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm">
                                                 <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{user.isActive ? 'Aktif' : 'Pasif'}</span>
@@ -274,7 +284,10 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
                             totalItems={totalItems}
                             itemsPerPage={limit}
                             onPageChange={setPage}
-                            onItemsPerPageChange={setLimit}
+                            onItemsPerPageChange={(nextLimit) => {
+                                setLimit(nextLimit);
+                                setPage(1);
+                            }}
                         />
                     )}
                 </div>
@@ -283,7 +296,7 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
             <Dialog.Root open={isAddModalOpen || isEditModalOpen} onOpenChange={(open) => { if (!open) { setIsAddModalOpen(false); setIsEditModalOpen(false); } }}>
                 <Dialog.Portal>
                     <Dialog.Overlay className="fixed inset-0 bg-black/50 z-40" />
-                    <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[600px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-xl z-50 overflow-y-auto">
+                    <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[600px] translate-x-[-50%] translate-y-[-50%] rounded-2xl bg-white p-6 shadow-xl z-50 overflow-y-auto">
                         <div className="flex justify-between items-center mb-4">
                             <Dialog.Title className="text-lg font-bold">{isEditModalOpen ? 'Kullanıcı Düzenle' : 'Yeni Kullanıcı'}</Dialog.Title>
                             <Dialog.Close className="text-gray-400 hover:text-gray-600"><X className="h-6 w-6" /></Dialog.Close>
@@ -293,17 +306,17 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700">Ad</label>
-                                    <input type="text" value={formData.first_name} onChange={e => setFormData({ ...formData, first_name: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" required />
+                                    <input type="text" value={formData.first_name} onChange={e => setFormData({ ...formData, first_name: e.target.value })} className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm p-2 border" required />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700">Soyad</label>
-                                    <input type="text" value={formData.last_name} onChange={e => setFormData({ ...formData, last_name: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" required />
+                                    <input type="text" value={formData.last_name} onChange={e => setFormData({ ...formData, last_name: e.target.value })} className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm p-2 border" required />
                                 </div>
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Kullanıcı Adı</label>
-                                <div className="mt-1 flex rounded-md shadow-sm">
+                                <div className="mt-1 flex rounded-xl shadow-sm">
                                     <input type="text" value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} className="flex-1 block w-full rounded-none rounded-l-md border-gray-300 p-2 border" />
                                     <button type="button" onClick={generateUsername} className="inline-flex items-center px-3 py-2 border border-l-0 border-gray-300 rounded-r-md bg-gray-50 text-sm hover:bg-gray-100">
                                         <RefreshCw className="h-4 w-4 mr-1" /> Oluştur
@@ -313,13 +326,13 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Email</label>
-                                <input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" required />
+                                <input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm p-2 border" required />
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">{isEditModalOpen ? 'Yeni Şifre (Opsiyonel)' : 'Şifre'}</label>
-                                <div className="mt-1 relative rounded-md shadow-sm">
-                                    <input type={showPassword ? 'text' : 'password'} value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className="block w-full pr-10 rounded-md border-gray-300 p-2 border" required={!isEditModalOpen} />
+                                <div className="mt-1 relative rounded-xl shadow-sm">
+                                    <input type={showPassword ? 'text' : 'password'} value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className="block w-full pr-10 rounded-xl border-gray-300 p-2 border" required={!isEditModalOpen} />
                                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer" onClick={() => setShowPassword(!showPassword)}>
                                         {showPassword ? <EyeOff className="h-4 w-4 text-gray-400" /> : <Eye className="h-4 w-4 text-gray-400" />}
                                     </div>
@@ -328,15 +341,15 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Rol</label>
-                                <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                                <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm p-2 border">
                                     <option value="tenant_user">Kullanıcı</option>
                                     <option value="tenant_admin">Yönetici</option>
                                 </select>
                             </div>
 
                             <div className="flex justify-end space-x-3 pt-4 border-t mt-4">
-                                <button type="button" onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); }} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">İptal</button>
-                                <button type="submit" disabled={isSubmitting} className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50">
+                                <button type="button" onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); }} className="px-4 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50">İptal</button>
+                                <button type="submit" disabled={isSubmitting} className="px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white premium-gradient tactile-press disabled:opacity-50">
                                     {isSubmitting ? 'Kaydediliyor...' : 'Kaydet'}
                                 </button>
                             </div>
@@ -348,7 +361,7 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
             <Dialog.Root open={!!userToToggle} onOpenChange={() => setUserToToggle(null)}>
                 <Dialog.Portal>
                     <Dialog.Overlay className="fixed inset-0 bg-black/50 z-40" />
-                    <Dialog.Content className="fixed left-[50%] top-[50%] w-[90vw] max-w-[400px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-xl z-50">
+                    <Dialog.Content className="fixed left-[50%] top-[50%] w-[90vw] max-w-[400px] translate-x-[-50%] translate-y-[-50%] rounded-2xl bg-white p-6 shadow-xl z-50">
                         <div className="flex items-center mb-4 text-amber-500">
                             <AlertTriangle className="h-6 w-6 mr-2" />
                             <Dialog.Title className="text-xl font-bold text-gray-900">Durum Değişikliği</Dialog.Title>
@@ -357,8 +370,8 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
                             Kullanıcı durumunu değiştirmek üzeresiniz. Emin misiniz?
                         </div>
                         <div className="flex justify-end space-x-3">
-                            <button onClick={() => setUserToToggle(null)} className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">İptal</button>
-                            <button onClick={handleToggleStatus} disabled={isSubmitting} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">
+                            <button onClick={() => setUserToToggle(null)} className="px-4 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50">İptal</button>
+                            <button onClick={handleToggleStatus} disabled={isSubmitting} className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50">
                                 {isSubmitting ? 'İşleniyor...' : 'Onayla'}
                             </button>
                         </div>

@@ -32,7 +32,7 @@ export const test = base.extend<TestFixtures & TestOptions>({
 
         // 1. Login via API - Use the dedicated tenant test user
         console.log('[Fixture] Logging in as tenant test user (e2etest)...');
-        const tokens = await loginApi(request, 'e2etest', 'Test123!');
+        const tokens = await loginApi(request, 'e2etest', 'Admin123!');
         
         console.log('[Fixture] Login successful:', {
             userId: tokens.userId,
@@ -171,7 +171,7 @@ export const test = base.extend<TestFixtures & TestOptions>({
 
     // Shared auth tokens if needed directly
     authTokens: async ({ request }, use) => {
-        const tokens = await loginApi(request, 'e2etest', 'Test123!');
+        const tokens = await loginApi(request, 'e2etest', 'Admin123!');
         await use(tokens);
     },
 
@@ -184,7 +184,7 @@ export const test = base.extend<TestFixtures & TestOptions>({
         
         // Login as tenant admin
         console.log('[API Context] Logging in as tenant admin...');
-        const tokens = await loginApi(tempContext, 'e2etest', 'Test123!');
+        const tokens = await loginApi(tempContext, 'e2etest', 'Admin123!');
         await tempContext.dispose();
         
         console.log('[API Context] Creating authenticated context with tenant:', tokens.tenantId);

@@ -492,7 +492,7 @@ export function SupplierFormModal({
           <Button
             type="submit"
             disabled={isLoading}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="premium-gradient tactile-press text-white"
           >
             {isLoading ? 'Kaydediliyor...' : supplier ? 'Güncelle' : 'Kaydet'}
           </Button>

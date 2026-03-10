@@ -1,6 +1,6 @@
 import React from 'react';
 import { Search, Filter } from 'lucide-react';
-import { Input, Select, Button } from '@x-ear/ui-web';
+import { Input, Select, Button, DatePicker } from '@x-ear/ui-web';
 
 interface SalesFiltersProps {
   searchTerm: string;
@@ -102,10 +102,10 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Başlangıç Tarihi
             </label>
-            <Input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => onDateFromChange(e.target.value)}
+            <DatePicker
+              value={dateFrom ? new Date(dateFrom) : null}
+              onChange={(date) => onDateFromChange(date ? date.toISOString().split('T')[0] : '')}
+              fullWidth
             />
           </div>
 
@@ -113,10 +113,10 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Bitiş Tarihi
             </label>
-            <Input
-              type="date"
-              value={dateTo}
-              onChange={(e) => onDateToChange(e.target.value)}
+            <DatePicker
+              value={dateTo ? new Date(dateTo) : null}
+              onChange={(date) => onDateToChange(date ? date.toISOString().split('T')[0] : '')}
+              fullWidth
             />
           </div>
         </div>

@@ -160,14 +160,14 @@ export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant; 
     return (
         <form onSubmit={handleSave} className="space-y-6 max-w-3xl p-6">
             {/* POS Integration */}
-            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
                 <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
                     <CreditCard className="w-5 h-5 text-gray-500" />
                     Sanal POS Entegrasyonu
                 </h3>
 
                 <div className="grid grid-cols-1 gap-6">
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
                         <div>
                             <span className="font-medium text-gray-900">Aktif</span>
                             <p className="text-sm text-gray-500">POS entegrasyonunu etkinleştir</p>
@@ -190,7 +190,7 @@ export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant; 
                                 <select
                                     value={config.provider}
                                     onChange={e => handleChange('provider', e.target.value)}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                 >
                                     <option value="paytr">PayTR</option>
                                     <option value="iyzico">Iyzico (Yakında)</option>
@@ -208,7 +208,7 @@ export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant; 
                                             type="text"
                                             value={config.merchant_id}
                                             onChange={e => handleChange('merchant_id', e.target.value)}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                            className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                             placeholder="örn. 123456"
                                         />
                                     </div>
@@ -219,7 +219,7 @@ export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant; 
                                             type="text"
                                             value={config.merchant_key}
                                             onChange={e => handleChange('merchant_key', e.target.value)}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                            className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                             placeholder="Gizli anahtar"
                                         />
                                     </div>
@@ -230,7 +230,7 @@ export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant; 
                                             type="text"
                                             value={config.merchant_salt}
                                             onChange={e => handleChange('merchant_salt', e.target.value)}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                            className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                             placeholder="Gizli tuz (salt)"
                                         />
                                     </div>
@@ -255,14 +255,14 @@ export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant; 
             </div>
 
             {/* Invoice Integration */}
-            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
                 <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
                     <FileText className="w-5 h-5 text-gray-500" />
                     Fatura Entegrasyonu
                 </h3>
 
                 <div className="grid grid-cols-1 gap-6">
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
                         <div>
                             <span className="font-medium text-gray-900">Aktif</span>
                             <p className="text-sm text-gray-500">Fatura entegrasyonunu etkinleştir</p>
@@ -285,7 +285,7 @@ export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant; 
                                 <select
                                     value={invoiceConfig.provider}
                                     onChange={e => handleInvoiceChange('provider', e.target.value)}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                                 >
                                     <option value="birfatura">BirFatura</option>
                                     <option value="others">Diğer (Yakında)</option>
@@ -294,7 +294,7 @@ export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant; 
 
                             <div className="space-y-4 border-t pt-4">
                                 <h4 className="text-sm font-medium text-gray-900">BirFatura Ayarları</h4>
-                                <div className="bg-blue-50 p-4 rounded-md text-sm text-blue-700 mb-4">
+                                <div className="bg-blue-50 p-4 rounded-xl text-sm text-blue-700 mb-4">
                                     Integration Key (Entegrasyon Anahtarı) sistem ayarlarından otomatik olarak alınacaktır.
                                 </div>
 
@@ -305,7 +305,7 @@ export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant; 
                                             type="text"
                                             value={invoiceConfig.api_key}
                                             onChange={e => handleInvoiceChange('api_key', e.target.value)}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border font-mono"
+                                            className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border font-mono"
                                             placeholder="Abone'ye özel API Key"
                                         />
                                     </div>
@@ -316,7 +316,7 @@ export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant; 
                                             type="text"
                                             value={invoiceConfig.secret_key}
                                             onChange={e => handleInvoiceChange('secret_key', e.target.value)}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border font-mono"
+                                            className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border font-mono"
                                             placeholder="Abone'ye özel Secret Key"
                                         />
                                     </div>
@@ -328,7 +328,7 @@ export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant; 
             </div>
 
             {/* SMS Integration */}
-            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
                 <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
                     <MessageSquare className="w-5 h-5 text-gray-500" />
                     SMS Entegrasyonu
@@ -338,14 +338,14 @@ export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant; 
                     {loadingSmsConfig ? (
                         <div className="p-4 text-center text-gray-500">Yükleniyor...</div>
                     ) : !canEnableSms ? (
-                        <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <div className="p-4 bg-yellow-50 rounded-2xl border border-yellow-200">
                             <p className="text-sm text-yellow-800">
                                 SMS entegrasyonunu aktifleştirmek için önce tenant'ın SMS API bilgilerini (API Username ve Documents Email) doldurması gerekiyor.
                             </p>
                         </div>
                     ) : (
                         <>
-                            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
                                 <div>
                                     <span className="font-medium text-gray-900">Aktif</span>
                                     <p className="text-sm text-gray-500">SMS entegrasyonunu etkinleştir</p>
@@ -364,7 +364,7 @@ export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant; 
 
                             {smsConfig.enabled && (
                                 <div className="space-y-4 border-t pt-4">
-                                    <div className="bg-green-50 p-4 rounded-md text-sm text-green-700">
+                                    <div className="bg-green-50 p-4 rounded-xl text-sm text-green-700">
                                         <p className="font-medium mb-1">SMS Entegrasyonu Aktif</p>
                                         <p>Tenant artık SMS belge yükleme alanını görebilir ve SMS başvurusu yapabilir.</p>
                                     </div>
@@ -401,7 +401,7 @@ export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant; 
                 <button
                     type="submit"
                     disabled={isPending}
-                    className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+                    className="inline-flex justify-center rounded-xl border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
                 >
                     {isPending ? 'Kaydediliyor...' : 'Ayarları Kaydet'}
                 </button>

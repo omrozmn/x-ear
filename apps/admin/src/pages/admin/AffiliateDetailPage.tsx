@@ -117,7 +117,7 @@ const AffiliateDetailPage: React.FC<AffiliateDetailPageProps> = ({ affiliateId }
       </div>
 
       {/* Profile Card */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 border border-gray-100 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-2xl p-6 border border-gray-100 dark:border-gray-700">
         <h2 className={`font-semibold text-gray-800 dark:text-white mb-4 border-b border-gray-200 dark:border-gray-700 pb-2 ${isMobile ? 'text-base' : 'text-lg'}`}>Profil ve Ödeme Bilgileri</h2>
         <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
           <div>
@@ -152,7 +152,7 @@ const AffiliateDetailPage: React.FC<AffiliateDetailPageProps> = ({ affiliateId }
       </div>
 
       {/* Commissions Card */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden border border-gray-100 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700">
         <div className={`border-b border-gray-100 dark:border-gray-700 flex items-center ${isMobile ? 'flex-col gap-4 p-4' : 'justify-between p-6'}`}>
           <h2 className={`font-semibold text-gray-800 dark:text-white ${isMobile ? 'text-base' : 'text-lg'}`}>Komisyon Geçmişi</h2>
           <div className={isMobile ? 'text-center' : 'text-right'}>

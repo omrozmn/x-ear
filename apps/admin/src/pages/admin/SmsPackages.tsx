@@ -167,7 +167,7 @@ export default function SMSPackagesPage() {
                             </div>
 
                             <div className="flex items-center gap-3 mb-4">
-                                <div className="p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400">
+                                <div className="p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl text-indigo-600 dark:text-indigo-400">
                                     <Package className="w-6 h-6" />
                                 </div>
                                 <div>

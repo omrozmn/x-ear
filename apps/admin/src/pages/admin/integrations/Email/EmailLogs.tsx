@@ -357,7 +357,7 @@ const EmailLogs: React.FC = () => {
       </Card>
 
       {/* Email Logs Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
         {logs.length === 0 ? (
           <div className="text-center py-12" data-testid="empty-state">
             <EnvelopeIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600" />

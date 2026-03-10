@@ -22,7 +22,7 @@ export function KeyInsight({ content, className, label = "Kritik İçgörü" }: 
             )}
         >
             <div className="flex items-start gap-4">
-                <div className="mt-1 p-2 rounded-lg bg-accent-purple/20 text-accent-purple shrink-0">
+                <div className="mt-1 p-2 rounded-2xl bg-accent-purple/20 text-accent-purple shrink-0">
                     <Lightbulb className="w-5 h-5" />
                 </div>
                 <div>

@@ -24,7 +24,7 @@ const translations: Record<string, Record<Locale, string>> = {
     "nav.partner": { tr: "Partner Programı", en: "Partner Program" },
     "nav.blog": { tr: "Blog", en: "Blog" },
     "nav.faq": { tr: "SSS", en: "FAQ" },
-    "header.login": { tr: "Giriş Yap", en: "Log In" },
+    "header.login": { tr: "Giriş Yap", en: "Login" },
     "header.register": { tr: "Ücretsiz Başla", en: "Start Free" },
     "header.start": { tr: "Hemen Başla", en: "Get Started" },
 

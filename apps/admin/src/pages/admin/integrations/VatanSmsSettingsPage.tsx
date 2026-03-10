@@ -104,7 +104,7 @@ const VatanSmsSettingsPage: React.FC = () => {
                 </p>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg divide-y divide-gray-200 dark:divide-gray-700">
+            <div className="bg-white dark:bg-gray-800 shadow rounded-2xl divide-y divide-gray-200 dark:divide-gray-700">
                 {/* Approval Email Section */}
                 <div className={isMobile ? 'p-4' : 'p-6'}>
                     <h2 className={`font-medium text-gray-900 dark:text-white mb-4 ${isMobile ? 'text-base' : 'text-lg'}`}>
@@ -119,7 +119,7 @@ const VatanSmsSettingsPage: React.FC = () => {
                                 type="email"
                                 value={approvalEmail}
                                 onChange={(e) => setApprovalEmail(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500"
+                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500"
                                 placeholder="belgeler@vatansms.com.tr"
                             />
                             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -144,7 +144,7 @@ const VatanSmsSettingsPage: React.FC = () => {
                                 type="text"
                                 value={emailSubject}
                                 onChange={(e) => setEmailSubject(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500"
+                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500"
                                 placeholder="[X-Ear CRM] {{tenant_name}} - Yeni Belge Onayı"
                             />
                         </div>
@@ -158,7 +158,7 @@ const VatanSmsSettingsPage: React.FC = () => {
                                 rows={isMobile ? 6 : 10}
                                 value={emailBody}
                                 onChange={(e) => setEmailBody(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 font-mono text-sm"
+                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-primary-500 focus:border-primary-500 font-mono text-sm"
                                 placeholder="<h3>Merhaba,</h3><p>{{tenant_name}} adlı müşterimiz yeni belge yükledi.</p>"
                             />
                             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -173,7 +173,7 @@ const VatanSmsSettingsPage: React.FC = () => {
                     <h2 className={`font-medium text-gray-900 dark:text-white mb-4 ${isMobile ? 'text-base' : 'text-lg'}`}>
                         Önizleme
                     </h2>
-                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-4">
                         <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                             <strong>Konu:</strong> {emailSubject || '[Konu Girilmedi]'}
                         </div>
@@ -198,7 +198,7 @@ const VatanSmsSettingsPage: React.FC = () => {
                             setEmailSubject(configView.emailTemplate?.emailSubject ?? DEFAULT_SUBJECT);
                             setEmailBody(configView.emailTemplate?.emailBodyHtml ?? DEFAULT_BODY);
                         }}
-                        className={`px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 touch-feedback ${isMobile ? 'w-full' : ''}`}
+                        className={`px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 touch-feedback ${isMobile ? 'w-full' : ''}`}
                     >
                         İptal
                     </button>
@@ -206,7 +206,7 @@ const VatanSmsSettingsPage: React.FC = () => {
                         type="button"
                         onClick={handleSave}
                         disabled={updateMutation.isPending}
-                        className={`inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed touch-feedback ${isMobile ? 'w-full' : ''}`}
+                        className={`inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed touch-feedback ${isMobile ? 'w-full' : ''}`}
                     >
                         {updateMutation.isPending ? (
                             <>

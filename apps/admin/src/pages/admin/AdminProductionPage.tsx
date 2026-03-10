@@ -159,7 +159,7 @@ const AdminProductionPage: React.FC = () => {
                     value={order.status}
                     onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
                     disabled={updateStatusMutation.isPending}
-                    className="text-sm border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white touch-feedback"
+                    className="text-sm border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:border-primary-500 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white touch-feedback"
                 >
                     <option value="new">Yeni</option>
                     <option value="in_production">Üretimde</option>
@@ -182,7 +182,7 @@ const AdminProductionPage: React.FC = () => {
                 </div>
                 {!isMobile && (
                     <div className="flex space-x-3">
-                        <div className="relative rounded-md shadow-sm">
+                        <div className="relative rounded-xl shadow-sm">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <Search className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                             </div>
@@ -190,14 +190,14 @@ const AdminProductionPage: React.FC = () => {
                                 type="text"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 sm:text-sm border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                className="focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 sm:text-sm border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                 placeholder="Sipariş No Ara"
                             />
                         </div>
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
-                            className="block rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            className="block rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         >
                             <option value="">Tüm Durumlar</option>
                             <option value="new">Yeni</option>
@@ -212,7 +212,7 @@ const AdminProductionPage: React.FC = () => {
 
             {isMobile && (
                 <div className="mb-4">
-                    <div className="relative rounded-md shadow-sm mb-3">
+                    <div className="relative rounded-xl shadow-sm mb-3">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <Search className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                         </div>
@@ -220,14 +220,14 @@ const AdminProductionPage: React.FC = () => {
                             type="text"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 text-sm border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            className="focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 text-sm border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                             placeholder="Sipariş No Ara"
                         />
                     </div>
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
-                        className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        className="block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     >
                         <option value="">Tüm Durumlar</option>
                         <option value="new">Yeni</option>
@@ -239,7 +239,7 @@ const AdminProductionPage: React.FC = () => {
                 </div>
             )}
 
-            <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
+            <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-2xl">
                 {isLoading ? (
                     <div className="p-12 text-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>

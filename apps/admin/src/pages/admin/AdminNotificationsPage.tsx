@@ -70,7 +70,7 @@ const AdminNotificationsPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Send Notification Form */}
                 <div className="lg:col-span-2">
-                    <div className="bg-white shadow rounded-lg p-6">
+                    <div className="bg-white shadow rounded-2xl p-6">
                         <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
                             <PaperAirplaneIcon className="h-5 w-5 mr-2 text-primary-600" />
                             Bildirim Gönder
@@ -82,7 +82,7 @@ const AdminNotificationsPage: React.FC = () => {
                                 <select
                                     value={targetType}
                                     onChange={(e) => setTargetType(e.target.value as 'user' | 'tenant' | 'all')}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                                 >
                                     <option value="all">Tüm Kullanıcılar</option>
                                     <option value="tenant">Belirli Bir Tenant</option>
@@ -99,7 +99,7 @@ const AdminNotificationsPage: React.FC = () => {
                                         type="text"
                                         value={targetId}
                                         onChange={(e) => setTargetId(e.target.value)}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                        className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                                         placeholder={targetType === 'tenant' ? 'tnt_...' : 'usr_...'}
                                     />
                                 </div>
@@ -111,7 +111,7 @@ const AdminNotificationsPage: React.FC = () => {
                                     type="text"
                                     value={customTitle}
                                     onChange={(e) => setCustomTitle(e.target.value)}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                                 />
                             </div>
 
@@ -121,7 +121,7 @@ const AdminNotificationsPage: React.FC = () => {
                                     rows={4}
                                     value={customMessage}
                                     onChange={(e) => setCustomMessage(e.target.value)}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                                 />
                             </div>
 
@@ -129,7 +129,7 @@ const AdminNotificationsPage: React.FC = () => {
                                 <button
                                     onClick={handleSend}
                                     disabled={sendNotificationMutation.isPending}
-                                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+                                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
                                 >
                                     {sendNotificationMutation.isPending ? 'Gönderiliyor...' : 'Gönder'}
                                 </button>
@@ -140,7 +140,7 @@ const AdminNotificationsPage: React.FC = () => {
 
                 {/* Templates List */}
                 <div className="lg:col-span-1">
-                    <div className="bg-white shadow rounded-lg p-6 h-full">
+                    <div className="bg-white shadow rounded-2xl p-6 h-full">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-lg font-medium text-gray-900 flex items-center">
                                 <ChatBubbleLeftRightIcon className="h-5 w-5 mr-2 text-primary-600" />
@@ -160,7 +160,7 @@ const AdminNotificationsPage: React.FC = () => {
                                     <div
                                         key={template.id}
                                         onClick={() => handleTemplateSelect(template)}
-                                        className={`p-3 rounded-md border cursor-pointer transition-colors ${selectedTemplate?.id === template.id
+                                        className={`p-3 rounded-xl border cursor-pointer transition-colors ${selectedTemplate?.id === template.id
                                             ? 'border-primary-500 bg-primary-50'
                                             : 'border-gray-200 hover:bg-gray-50'
                                             }`}

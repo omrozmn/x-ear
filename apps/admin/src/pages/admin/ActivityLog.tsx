@@ -41,7 +41,7 @@ interface PaginationMeta {
 }
 
 interface ActivityLogListParams extends ListActivityLogsParams {
-  page_size?: number;
+  limit?: number;
   action_type?: string;
   critical_only?: boolean;
 }
@@ -59,9 +59,9 @@ interface ActivityLogFilterOption {
 }
 
 interface ActivityLogFilterOptions {
-  tenants?: ActivityLogFilterOption[];
   actions?: string[];
-  actionTypes?: string[];
+  entityTypes?: string[];
+  users?: ActivityLogFilterOption[];
 }
 
 interface ActivityLogFilterOptionsResponse {
@@ -202,7 +202,7 @@ function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalProps) {
         {log.data && Object.keys(log.data).length > 0 && (
           <div>
             <label className="text-xs text-gray-500 dark:text-gray-400">Veri</label>
-            <pre className="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg text-xs overflow-x-auto text-gray-900 dark:text-white">
+            <pre className="bg-gray-100 dark:bg-gray-700 p-3 rounded-2xl text-xs overflow-x-auto text-gray-900 dark:text-white">
               {JSON.stringify(log.data, null, 2)}
             </pre>
           </div>
@@ -211,7 +211,7 @@ function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalProps) {
         {log.details && typeof log.details === 'object' && Object.keys(log.details).length > 0 && (
           <div>
             <label className="text-xs text-gray-500 dark:text-gray-400">Detaylar</label>
-            <pre className="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg text-xs overflow-x-auto text-gray-900 dark:text-white">
+            <pre className="bg-gray-100 dark:bg-gray-700 p-3 rounded-2xl text-xs overflow-x-auto text-gray-900 dark:text-white">
               {JSON.stringify(log.details, null, 2)}
             </pre>
           </div>
@@ -246,7 +246,7 @@ export default function ActivityLogPage() {
     ...filters,
     critical_only: filters.critical_only === 'true',
     page,
-    page_size: pageSize,
+    limit: pageSize,
   };
 
   const { data: logsData, isLoading } = useListActivityLogs(queryParams as ListActivityLogsParams);
@@ -386,27 +386,33 @@ export default function ActivityLogPage() {
       <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
         <div className={`grid gap-4 items-end ${isMobile ? 'grid-cols-1' : 'grid-cols-6'}`}>
           <div>
-            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Tenant</label>
+            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Kullanıcı</label>
             <select
-              className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              value={filters.tenant_id}
-              onChange={(e) => setFilters({ ...filters, tenant_id: e.target.value })}
+              className="w-full border dark:border-gray-600 rounded-2xl px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              value={filters.user_id}
+              onChange={(e) => {
+                setFilters({ ...filters, user_id: e.target.value });
+                setPage(1);
+              }}
             >
               <option value="">Tümü</option>
-              {options.tenants?.map((tenant) => (
-                <option key={tenant.id} value={tenant.id}>{tenant.name}</option>
+              {options.users?.map((user) => (
+                <option key={user.id} value={user.id}>{user.name}</option>
               ))}
             </select>
           </div>
           <div>
             <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Aksiyon Tipi</label>
             <select
-              className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full border dark:border-gray-600 rounded-2xl px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               value={filters.action_type}
-              onChange={(e) => setFilters({ ...filters, action_type: e.target.value })}
+              onChange={(e) => {
+                setFilters({ ...filters, action_type: e.target.value });
+                setPage(1);
+              }}
             >
               <option value="">Tümü</option>
-              {options.actionTypes?.map((type) => (
+              {options.entityTypes?.map((type) => (
                 <option key={type} value={type}>{type}</option>
               ))}
             </select>
@@ -414,9 +420,12 @@ export default function ActivityLogPage() {
           <div>
             <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Aksiyon</label>
             <select
-              className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full border dark:border-gray-600 rounded-2xl px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               value={filters.action}
-              onChange={(e) => setFilters({ ...filters, action: e.target.value })}
+              onChange={(e) => {
+                setFilters({ ...filters, action: e.target.value });
+                setPage(1);
+              }}
             >
               <option value="">Tümü</option>
               {options.actions?.map((action) => (
@@ -427,9 +436,12 @@ export default function ActivityLogPage() {
           <div>
             <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Kritik</label>
             <select
-              className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full border dark:border-gray-600 rounded-2xl px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               value={filters.critical_only}
-              onChange={(e) => setFilters({ ...filters, critical_only: e.target.value as ActivityLogFilters['critical_only'] })}
+              onChange={(e) => {
+                setFilters({ ...filters, critical_only: e.target.value as ActivityLogFilters['critical_only'] });
+                setPage(1);
+              }}
             >
               <option value="false">Tümü</option>
               <option value="true">Sadece Kritik</option>
@@ -440,10 +452,13 @@ export default function ActivityLogPage() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
               <input
-                className="w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Mesaj veya aksiyon ara..."
                 value={filters.search}
-                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                onChange={(e) => {
+                  setFilters({ ...filters, search: e.target.value });
+                  setPage(1);
+                }}
               />
             </div>
           </div>

@@ -84,7 +84,7 @@ export function AdminSidebar() {
                                 key={item.name}
                                 to={item.href}
                                 className={`
-                  group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors
+                  group flex items-center px-2 py-2 text-sm font-medium rounded-xl transition-colors
                   ${isActive
                                         ? 'bg-gray-800 text-white'
                                         : 'text-gray-300 hover:bg-gray-800 hover:text-white'}

@@ -8,6 +8,7 @@ import gzip
 import io
 import logging
 import os
+import re
 import uuid
 import zipfile
 from typing import Optional, Literal
@@ -245,6 +246,74 @@ def _decode_birfatura_content(content_b64: str) -> bytes:
 import json as _json
 
 
+def _pdf_escape(text: str) -> str:
+    return re.sub(r"([()\\\\])", r"\\\1", text or "")
+
+
+def _render_minimal_pdf(invoice: "PurchaseInvoice") -> bytes:
+    raw = {}
+    if invoice.raw_data:
+        try:
+            raw = _json.loads(invoice.raw_data) if isinstance(invoice.raw_data, str) else invoice.raw_data
+        except Exception:
+            raw = {}
+
+    source_form = raw.get("_source_form_data") if isinstance(raw.get("_source_form_data"), dict) else {}
+    customer_name = (
+        raw.get("ReceiverName")
+        or (raw.get("customer") or {}).get("name")
+        or source_form.get("customerName")
+        or " ".join(filter(None, [source_form.get("customerFirstName"), source_form.get("customerLastName")])).strip()
+        or ""
+    )
+    lines = raw.get("lines") if isinstance(raw.get("lines"), list) else (source_form.get("items") or [])
+    first_line = ""
+    if lines and isinstance(lines[0], dict):
+        first_line = str(lines[0].get("name") or lines[0].get("description") or "")
+
+    text_lines = [
+        "E-FATURA",
+        f"Invoice No: {raw.get('InvoiceNo') or invoice.invoice_number or invoice.id}",
+        f"Issue Date: {(raw.get('IssueDate') or str(invoice.invoice_date or ''))[:10]}",
+        f"Customer: {customer_name}",
+        f"Type: {raw.get('InvoiceTypeCode') or raw.get('invoiceTypeCode') or ''}",
+    ]
+    if first_line:
+        text_lines.append(f"Item: {first_line}")
+
+    y = 780
+    content_parts = ["BT", "/F1 12 Tf"]
+    for line in text_lines:
+        content_parts.append(f"1 0 0 1 50 {y} Tm ({_pdf_escape(line)}) Tj")
+        y -= 20
+    content_parts.append("ET")
+    content_stream = "\n".join(content_parts).encode("latin-1", errors="replace")
+
+    objects = [
+        b"1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n",
+        b"2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj\n",
+        b"3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj\n",
+        b"4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\n",
+        f"5 0 obj << /Length {len(content_stream)} >> stream\n".encode("latin-1") + content_stream + b"\nendstream endobj\n",
+    ]
+
+    pdf = bytearray(b"%PDF-1.4\n")
+    offsets = [0]
+    for obj in objects:
+        offsets.append(len(pdf))
+        pdf.extend(obj)
+
+    xref_pos = len(pdf)
+    pdf.extend(f"xref\n0 {len(objects) + 1}\n".encode("latin-1"))
+    pdf.extend(b"0000000000 65535 f \n")
+    for offset in offsets[1:]:
+        pdf.extend(f"{offset:010d} 00000 n \n".encode("latin-1"))
+    pdf.extend(
+        f"trailer << /Size {len(objects) + 1} /Root 1 0 R >>\nstartxref\n{xref_pos}\n%%EOF".encode("latin-1")
+    )
+    return bytes(pdf)
+
+
 def _render_invoice_pdf(invoice: "PurchaseInvoice", tenant_id: str = None) -> bytes:
     """Render a PDF from stored raw_data using WeasyPrint + Jinja2 templates."""
     from utils.pdf_renderer import render_invoice_to_pdf
@@ -263,8 +332,21 @@ def _render_invoice_pdf(invoice: "PurchaseInvoice", tenant_id: str = None) -> by
     supplier_addr_parts = [invoice.sender_address or "", invoice.sender_city or ""]
     supplier_addr = ", ".join(p for p in supplier_addr_parts if p)
 
-    customer_name = raw.get("ReceiverName") or invoice.buyer_name or ""
-    customer_vkn = raw.get("ReceiverKN") or ""
+    source_form = raw.get("_source_form_data") if isinstance(raw.get("_source_form_data"), dict) else {}
+    customer_name = (
+        raw.get("ReceiverName")
+        or (raw.get("customer") or {}).get("name")
+        or source_form.get("customerName")
+        or " ".join(filter(None, [source_form.get("customerFirstName"), source_form.get("customerLastName")])).strip()
+    )
+    customer_vkn = (
+        raw.get("ReceiverKN")
+        or (raw.get("customer") or {}).get("tax_id")
+        or source_form.get("customerTaxId")
+        or source_form.get("customerTaxNumber")
+        or source_form.get("customerTcNumber")
+        or ""
+    )
 
     subtotal = float(raw.get("LineExtensionAmount") or invoice.subtotal or 0)
     tax_inclusive = float(raw.get("TaxInclusiveAmount") or 0)
@@ -272,6 +354,28 @@ def _render_invoice_pdf(invoice: "PurchaseInvoice", tenant_id: str = None) -> by
     tax_total = (tax_inclusive - tax_exclusive) if tax_inclusive else float(invoice.tax_amount or 0)
     payable = float(raw.get("PayableAmount") or invoice.total_amount or 0)
     currency = raw.get("DocumentCurrencyCode") or invoice.currency or "TRY"
+
+    raw_lines = raw.get("lines") if isinstance(raw.get("lines"), list) else (source_form.get("items") or [])
+    normalized_lines = []
+    for line in raw_lines:
+        if not isinstance(line, dict):
+            continue
+        quantity = line.get("quantity") or 0
+        unit_price = line.get("unit_price") or line.get("unitPrice") or line.get("price") or 0
+        line_total = (
+            line.get("line_total")
+            or line.get("lineTotal")
+            or line.get("line_extension_amount")
+            or line.get("total")
+            or 0
+        )
+        normalized_lines.append({
+            **line,
+            "name": line.get("name") or line.get("description") or "",
+            "quantity": quantity,
+            "unit_price": unit_price,
+            "line_total": line_total,
+        })
 
     invoice_data = {
         "invoice_id": raw.get("InvoiceNo") or invoice.invoice_number or "",
@@ -290,11 +394,11 @@ def _render_invoice_pdf(invoice: "PurchaseInvoice", tenant_id: str = None) -> by
             "name": customer_name,
             "tax_id": customer_vkn,
         },
-        "lines": [],
+        "lines": normalized_lines,
         "line_extension_amount": subtotal,
         "tax_total": tax_total,
         "payable_amount": payable,
-        "note": raw.get("Note") or "",
+        "note": raw.get("Note") or raw.get("notes") or "",
     }
     return render_invoice_to_pdf(invoice_data, tenant_id=tenant_id)
 
@@ -455,6 +559,15 @@ def get_invoice_document(
     if not invoice:
         raise HTTPException(status_code=404, detail="Invoice not found")
 
+    raw_data = {}
+    if invoice.raw_data:
+        try:
+            raw_data = invoice.raw_data if isinstance(invoice.raw_data, dict) else _json.loads(invoice.raw_data)
+        except Exception:
+            raw_data = {}
+
+    local_xml = raw_data.get("_local_document_xml") if isinstance(raw_data, dict) else None
+
     in_out_code = "IN" if invoice.invoice_type == "INCOMING" else "OUT"
     ext_map = {"pdf": "PDF", "html": "HTML", "xml": "XML"}
     mime_map = {"pdf": "application/pdf", "html": "text/html", "xml": "application/xml"}
@@ -513,14 +626,16 @@ def get_invoice_document(
                 return Response(content=content, media_type="application/pdf",
                                 headers={"Content-Disposition": f'inline; filename="{filename}"'})
             except Exception as e:
-                logger.warning(f"WeasyPrint unavailable for invoice {invoice_id}: {e} — falling back to HTML")
-                html_content = _render_invoice_html(invoice)
-                filename = f"{invoice.invoice_number or invoice_id}.html"
-                return Response(content=html_content, media_type="text/html",
+                logger.warning(f"WeasyPrint unavailable for invoice {invoice_id}: {e} — falling back to minimal PDF")
+                content = _render_minimal_pdf(invoice)
+                filename = f"{invoice.invoice_number or invoice_id}.pdf"
+                return Response(content=content, media_type="application/pdf",
                                 headers={"Content-Disposition": f'inline; filename="{filename}"'})
 
     # XML download
     try:
+        if local_xml:
+            raise RuntimeError("use-local-xml")
         client = _get_birfatura_client(tenant_id, db)
         resp = client.document_download_by_uuid({
             "documentUUID": invoice.birfatura_uuid,
@@ -531,11 +646,19 @@ def get_invoice_document(
         if not resp.get("Success"):
             raise HTTPException(status_code=502, detail=resp.get("Message", "BirFatura error"))
         content = _decode_birfatura_content(resp["Result"]["content"])
+    except RuntimeError as e:
+        if str(e) != "use-local-xml" or not local_xml:
+            raise
+        content = local_xml.encode("utf-8")
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error downloading document {invoice_id}: {e}")
-        raise HTTPException(status_code=502, detail="Failed to fetch document from BirFatura")
+        if local_xml:
+            logger.warning(f"Falling back to locally stored XML for invoice {invoice_id}: {e}")
+            content = local_xml.encode("utf-8")
+        else:
+            logger.error(f"Error downloading document {invoice_id}: {e}")
+            raise HTTPException(status_code=502, detail="Failed to fetch document from BirFatura")
 
     filename = f"{invoice.invoice_number or invoice_id}.{format}"
     headers = {"Content-Disposition": f'inline; filename="{filename}"'}

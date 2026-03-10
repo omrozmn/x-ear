@@ -136,7 +136,7 @@ const Analytics: React.FC = () => {
 
   if (error) {
     return (
-        <div className="p-6 text-center text-red-600 bg-red-50 m-4 rounded-lg border border-red-200">
+        <div className="p-6 text-center text-red-600 bg-red-50 m-4 rounded-2xl border border-red-200">
         <h3 className="font-bold text-lg">Veriler Yüklenemedi</h3>
         <p className="mt-2">{getErrorMessage(error)}</p>
       </div>
@@ -170,18 +170,18 @@ const Analytics: React.FC = () => {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="block rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+              className="block rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
             />
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="block rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+              className="block rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
             />
             <select
               value={selectedMetric}
               onChange={(e) => setSelectedMetric(e.target.value)}
-              className="block rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+              className="block rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
             >
               <option value="revenue">Gelir</option>
               <option value="users">Kullanıcılar</option>
@@ -189,7 +189,7 @@ const Analytics: React.FC = () => {
             </select>
             <button
               onClick={handleExport}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-700 dark:hover:bg-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 touch-feedback"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-700 dark:hover:bg-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 touch-feedback"
             >
               <ArrowDownTrayIcon className="-ml-1 mr-2 h-5 w-5" />
               {!isMobile && 'Dışa Aktar'}
@@ -200,7 +200,7 @@ const Analytics: React.FC = () => {
         {/* Key Metrics */}
         <div className={`grid gap-4 ${isMobile ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'}`}>
           {/* Total Revenue */}
-          <div className={`bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg ${isMobile ? 'p-3' : 'p-5'}`}>
+          <div className={`bg-white dark:bg-gray-800 overflow-hidden shadow rounded-2xl ${isMobile ? 'p-3' : 'p-5'}`}>
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <CurrencyDollarIcon className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'} text-gray-400 dark:text-gray-500`} />
@@ -232,7 +232,7 @@ const Analytics: React.FC = () => {
           </div>
 
           {/* Active Tenants */}
-          <div className={`bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg ${isMobile ? 'p-3' : 'p-5'}`}>
+          <div className={`bg-white dark:bg-gray-800 overflow-hidden shadow rounded-2xl ${isMobile ? 'p-3' : 'p-5'}`}>
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <UsersIcon className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'} text-gray-400 dark:text-gray-500`} />
@@ -264,7 +264,7 @@ const Analytics: React.FC = () => {
           </div>
 
           {/* Monthly Active Users */}
-          <div className={`bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg ${isMobile ? 'p-3' : 'p-5'}`}>
+          <div className={`bg-white dark:bg-gray-800 overflow-hidden shadow rounded-2xl ${isMobile ? 'p-3' : 'p-5'}`}>
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <UsersIcon className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'} text-purple-400`} />
@@ -296,7 +296,7 @@ const Analytics: React.FC = () => {
           </div>
 
           {/* Churn Rate */}
-          <div className={`bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg ${isMobile ? 'p-3' : 'p-5'}`}>
+          <div className={`bg-white dark:bg-gray-800 overflow-hidden shadow rounded-2xl ${isMobile ? 'p-3' : 'p-5'}`}>
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <ArrowTrendingDownIcon className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'} text-red-400`} />
@@ -332,7 +332,7 @@ const Analytics: React.FC = () => {
         {!isMobile && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Revenue Trend */}
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 lg:col-span-2">
+            <div className="bg-white dark:bg-gray-800 shadow rounded-2xl p-6 lg:col-span-2">
               <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-4">Gelir Trendi</h3>
               <div className="w-full">
                 <ResponsiveContainer width="100%" height={320}>
@@ -354,7 +354,7 @@ const Analytics: React.FC = () => {
             </div>
 
             {/* Plan Distribution */}
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <div className="bg-white dark:bg-gray-800 shadow rounded-2xl p-6">
               <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-4">Plan Dağılımı</h3>
               <div className="w-full">
                 <ResponsiveContainer width="100%" height={320}>
@@ -385,7 +385,7 @@ const Analytics: React.FC = () => {
         {!isMobile && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* User Engagement */}
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 lg:col-span-2">
+            <div className="bg-white dark:bg-gray-800 shadow rounded-2xl p-6 lg:col-span-2">
               <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-4">Kullanıcı Etkileşimi</h3>
               <div className="w-full">
                 <ResponsiveContainer width="100%" height={320}>
@@ -404,7 +404,7 @@ const Analytics: React.FC = () => {
             </div>
 
             {/* Revenue Growth */}
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <div className="bg-white dark:bg-gray-800 shadow rounded-2xl p-6">
               <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-4">Gelir Büyümesi</h3>
               <div className="w-full">
                 <ResponsiveContainer width="100%" height={320}>
@@ -425,7 +425,7 @@ const Analytics: React.FC = () => {
         {!isMobile && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* SGK Submissions */}
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <div className="bg-white dark:bg-gray-800 shadow rounded-2xl p-6">
               <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-4">SGK Başvuru Durumu</h3>
               <div className="w-full">
                 <ResponsiveContainer width="100%" height={320}>
@@ -443,7 +443,7 @@ const Analytics: React.FC = () => {
             </div>
 
             {/* Device Fittings Trend */}
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <div className="bg-white dark:bg-gray-800 shadow rounded-2xl p-6">
               <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white mb-4">Cihaz Uygulama Trendi</h3>
               <div className="w-full">
                 <ResponsiveContainer width="100%" height={320}>
@@ -462,7 +462,7 @@ const Analytics: React.FC = () => {
 
         {/* KPI Cards */}
         <div className={`grid ${isMobile ? 'grid-cols-2 gap-3' : 'grid-cols-1 md:grid-cols-3 gap-6'}`}>
-          <div className={`bg-white dark:bg-gray-800 ${isMobile ? 'p-3' : 'p-6'} rounded-lg shadow flex items-center justify-between`}>
+          <div className={`bg-white dark:bg-gray-800 ${isMobile ? 'p-3' : 'p-6'} rounded-2xl shadow flex items-center justify-between`}>
             <div>
               <p className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium text-gray-500 dark:text-gray-400`}>Randevu Dönüşüm</p>
               <p className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-gray-900 dark:text-white`}>%{domainMetrics.appointmentConversion}</p>
@@ -471,7 +471,7 @@ const Analytics: React.FC = () => {
               <ArrowTrendingUpIcon className={`${isMobile ? 'w-4 h-4' : 'w-6 h-6'}`} />
             </div>
           </div>
-          <div className={`bg-white dark:bg-gray-800 ${isMobile ? 'p-3' : 'p-6'} rounded-lg shadow flex items-center justify-between`}>
+          <div className={`bg-white dark:bg-gray-800 ${isMobile ? 'p-3' : 'p-6'} rounded-2xl shadow flex items-center justify-between`}>
             <div>
               <p className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium text-gray-500 dark:text-gray-400`}>Ort. Uygulama</p>
               <p className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-gray-900 dark:text-white`}>{domainMetrics.avgFittingTime} dk</p>
@@ -480,7 +480,7 @@ const Analytics: React.FC = () => {
               <UsersIcon className={`${isMobile ? 'w-4 h-4' : 'w-6 h-6'}`} />
             </div>
           </div>
-          <div className={`bg-white dark:bg-gray-800 ${isMobile ? 'p-3 col-span-2' : 'p-6'} rounded-lg shadow flex items-center justify-between`}>
+          <div className={`bg-white dark:bg-gray-800 ${isMobile ? 'p-3 col-span-2' : 'p-6'} rounded-2xl shadow flex items-center justify-between`}>
             <div>
               <p className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium text-gray-500 dark:text-gray-400`}>Toplam Cihazlanan</p>
               <p className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-gray-900 dark:text-white`}>{domainMetrics.totalPatientsFitted}</p>
@@ -493,7 +493,7 @@ const Analytics: React.FC = () => {
 
         {/* Top Tenants Table - Hide on mobile */}
         {!isMobile && (
-          <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 shadow rounded-2xl overflow-hidden">
             <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white">En İyi Performans Gösteren Aboneler</h3>
             </div>

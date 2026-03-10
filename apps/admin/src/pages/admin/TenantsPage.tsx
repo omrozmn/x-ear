@@ -226,7 +226,7 @@ export default function TenantsPage() {
                 const productCode = tenant.productCode || tenant.product_code;
                 const productConfig = getProductConfig(productCode ?? ProductCode.xear_hearing);
                 return (
-                    <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${
+                    <span className={`inline-flex items-center rounded-xl px-2 py-1 text-xs font-medium ring-1 ring-inset ${
                         productConfig.badge === 'purple' ? 'bg-purple-50 text-purple-700 ring-purple-600/20 dark:bg-purple-900/30 dark:text-purple-400' :
                         productConfig.badge === 'green' ? 'bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-400' :
                         productConfig.badge === 'red' ? 'bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-900/30 dark:text-red-400' :
@@ -332,7 +332,7 @@ export default function TenantsPage() {
                 <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
                     <button
                         onClick={() => setIsCreateModalOpen(true)}
-                        className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto touch-feedback"
+                        className="inline-flex items-center justify-center rounded-xl border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto touch-feedback"
                     >
                         <Plus className="mr-2 h-4 w-4" />
                         Yeni Abone Ekle
@@ -347,7 +347,7 @@ export default function TenantsPage() {
                     </div>
                     <input
                         type="text"
-                        className="block w-full rounded-md border-gray-300 pl-10 focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                        className="block w-full rounded-xl border-gray-300 pl-10 focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                         placeholder="Abone ara..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -357,7 +357,7 @@ export default function TenantsPage() {
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
-                        className="block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                        className="block w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                     >
                         <option value="all">Tüm Durumlar</option>
                         <option value="active">Aktif</option>
@@ -370,7 +370,7 @@ export default function TenantsPage() {
                     <select
                         value={productFilter}
                         onChange={(e) => setProductFilter(e.target.value)}
-                        className="block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                        className="block w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                     >
                         <option value="all">Tüm Ürünler</option>
                         {Object.entries(PRODUCT_REGISTRY).map(([key, config]) => (
@@ -380,7 +380,7 @@ export default function TenantsPage() {
                 </div>
             </div>
 
-            <div className="mt-8 bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+            <div className="mt-8 bg-white dark:bg-gray-800 shadow rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
                 {isLoading ? (
                     <div className={`${isMobile ? 'p-8' : 'p-12'} text-center`}>
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
@@ -437,14 +437,14 @@ export default function TenantsPage() {
                         <div className="flex justify-end space-x-3">
                             <Dialog.Close asChild>
                                 <button
-                                    className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                    className="inline-flex justify-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                                 >
                                     İptal
                                 </button>
                             </Dialog.Close>
                             <button
                                 onClick={confirmStatusChange}
-                                className={`inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 ${selectedTenantForStatus?.status === 'suspended' ? 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500' : 'bg-green-600 hover:bg-green-700 focus:ring-green-500'}`}
+                                className={`inline-flex justify-center rounded-xl border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 ${selectedTenantForStatus?.status === 'suspended' ? 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500' : 'bg-green-600 hover:bg-green-700 focus:ring-green-500'}`}
                             >
                                 Onayla
                             </button>

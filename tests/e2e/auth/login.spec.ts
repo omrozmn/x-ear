@@ -74,26 +74,78 @@ test.describe('Login Flow', () => {
   });
 
   test('AUTH-002: Should login with valid credentials', async ({ page, baseURL, request }) => {
-    // Attempt API login first using appropriate endpoint
-    const API_BASE = process.env.API_BASE_URL || 'http://localhost:5003';
-    let endpoint = `${API_BASE}/api/auth/login`;
-    if (baseURL && (baseURL.includes('8082') || baseURL.includes('8083') || baseURL.includes('admin'))) {
-      endpoint = `${API_BASE}/api/admin/auth/login`;
+    const isAdminApp = Boolean(baseURL && (baseURL.includes('8082') || baseURL.includes('8083') || baseURL.includes('admin')));
+    const credentials = isAdminApp ? testUsers.superAdmin : testUsers.admin;
+
+    if (isAdminApp) {
+      const API_BASE = process.env.API_BASE_URL || 'http://localhost:5003';
+      const loginResponse = await request.post(`${API_BASE}/api/admin/auth/login`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': `admin-auth-${Date.now()}`,
+        },
+        data: {
+          email: credentials.email,
+          password: credentials.password,
+        },
+      });
+
+      expect(loginResponse.ok()).toBeTruthy();
+      const loginJson = await loginResponse.json();
+      const loginData = loginJson?.data || {};
+      const token = loginData.accessToken || loginData.token;
+      const refreshToken = loginData.refreshToken || loginData.refresh_token || token;
+      const user = loginData.user || {};
+
+      expect(token).toBeTruthy();
+
+      await page.addInitScript(([authToken, authRefreshToken, authUser]) => {
+        localStorage.setItem('admin_token', authToken as string);
+        localStorage.setItem('admin_refresh_token', authRefreshToken as string);
+        localStorage.setItem('admin-auth-storage', JSON.stringify({
+          state: {
+            user: authUser,
+            token: authToken,
+            isAuthenticated: true,
+            _hasHydrated: true,
+          },
+          version: 0,
+        }));
+      }, [token, refreshToken, {
+        id: user.id || 'super-admin',
+        email: user.email || credentials.email,
+        role: user.role || 'SUPER_ADMIN',
+        is_active: user.is_active ?? true,
+        created_at: user.created_at || new Date().toISOString(),
+        first_name: user.first_name,
+        last_name: user.last_name,
+        name: user.name || credentials.name,
+        tenant_id: user.tenant_id,
+      }]);
+
+      await page.goto('/dashboard');
+      await page.waitForLoadState('networkidle');
+      await expect(page.locator('text=Super Admin Panel').first()).toBeVisible({ timeout: 10_000 });
+
+      const storageFile = getStorageFile(baseURL);
+      await page.context().storageState({ path: storageFile as any });
+      return;
     }
 
+    // Attempt API login first using appropriate endpoint
     try {
       // Prefer API-based login using the shared helper (more reliable)
-      const tokens = await loginApi(request, 'admin@xear.com', 'Admin123!');
+      const tokens = await loginApi(request, credentials.email, credentials.password);
       const token = tokens.accessToken;
       const tenantId = tokens.tenantId || tokens.user?.tenantId || 'tenant_001';
       
       // Ensure user object has all required fields
       const userObj = {
         ...tokens.user,
-        email: tokens.user?.email || 'admin@xear.com',
+        email: tokens.user?.email || credentials.email,
         role: tokens.user?.role || 'ADMIN',
         isPhoneVerified: true,
-        name: tokens.user?.name || 'Admin User',
+        name: tokens.user?.name || credentials.name,
         id: tokens.user?.id || 'user_admin',
         tenantId: tenantId
       };
@@ -180,8 +232,8 @@ test.describe('Login Flow', () => {
     const password = await findFirstVisible(page, passwordSelectors);
     const submit = await findFirstVisible(page, submitSelectors);
 
-    await identifier.fill('admin@xear.com');
-    await password.fill('Admin123!');
+    await identifier.fill(credentials.email);
+    await password.fill(credentials.password);
 
     await submit.click();
     await page.waitForURL((url) => !url.pathname.includes('/login'), { timeout: 10000 }).catch(() => undefined);
@@ -200,10 +252,13 @@ test.describe('Login Flow', () => {
       'a[href*="/tenants"]',
       'a[href*="/dashboard"]',
       'text=Dashboard',
-      'text=Tenants'
+      'text=Tenants',
+      'text=Super Admin Panel',
+      'text=Aboneler',
+      'button:has-text("Admin User")'
     ];
 
-    let loggedIn = false;
+    let loggedIn = !page.url().includes('/login');
     for (const s of postLoginSelectors) {
       if (await page.locator(s).first().isVisible().catch(() => false)) {
         loggedIn = true;

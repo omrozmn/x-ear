@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Button, Input, Select, Textarea } from '@x-ear/ui-web';
+import { Button, Input, Select, Textarea, DatePicker } from '@x-ear/ui-web';
 import { Invoice, CreateInvoiceData, InvoiceStatus, InvoiceTypeLegacy, PaymentMethod, InvoiceAddress, InvoiceItem } from '../../types/invoice';
 import { InvoiceScenarioSection } from './InvoiceScenarioSection';
 import { InvoiceTypeSection } from './InvoiceTypeSection';
@@ -37,6 +37,18 @@ import { InvoiceProfileDetailsCard } from './InvoiceProfileDetailsCard';
 import { useGetTenantCompany } from '@/api/client/tenant-users.client';
 import { normalizeCustomerTaxIdFields } from '../../utils/customerTaxId';
 import { customInstance } from '@/api/orval-mutator';
+
+type InvoicePrefixSettingsResponse = {
+  invoicePrefix?: string;
+  invoice_prefix?: string;
+  invoicePrefixes?: string[];
+  invoice_prefixes?: string[];
+};
+
+type TenantSettingsResponse = {
+  invoiceIntegration?: InvoicePrefixSettingsResponse;
+  invoice_integration?: InvoicePrefixSettingsResponse;
+};
 
 // Local form state interface to replace 'any'
 interface InvoiceFormState {
@@ -228,7 +240,7 @@ export function InvoiceFormExtended({
   useEffect(() => {
     const loadPrefixSettings = async () => {
       try {
-        const response = await customInstance<{ data: { settings: any } }>({
+        const response = await customInstance<{ data: { settings: TenantSettingsResponse } }>({
           url: '/api/tenants/current',
           method: 'GET',
         });
@@ -240,7 +252,14 @@ export function InvoiceFormExtended({
         console.log('🔍 Invoice settings:', invoiceSettings);
         
         const prefix = invoiceSettings.invoicePrefix || invoiceSettings.invoice_prefix || 'XER';
-        const prefixes = invoiceSettings.invoicePrefixes || invoiceSettings.invoice_prefixes || [];
+        const rawPrefixes = invoiceSettings.invoicePrefixes || invoiceSettings.invoice_prefixes || [];
+        const prefixes = Array.from(
+          new Set(
+            [prefix, ...rawPrefixes]
+              .map((item) => String(item || '').trim().toUpperCase())
+              .filter(Boolean)
+          )
+        );
         
         console.log('📋 Loaded invoice prefix settings:', { prefix, prefixes, prefixCount: prefixes.length });
         
@@ -678,6 +697,7 @@ export function InvoiceFormExtended({
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-1">İade Fatura No</label>
                                   <Input
+                                    data-testid="return-invoice-number"
                                     type="text"
                                     value={extendedData.returnInvoiceDetails?.returnInvoiceNumber || ''}
                                     onChange={(e) => handleExtendedFieldChange('returnInvoiceDetails', {
@@ -689,9 +709,10 @@ export function InvoiceFormExtended({
                                 </div>
                                 <div>
                                   <DatePicker
+                                    data-testid="return-invoice-date"
                                     label="İade Fatura Tarihi"
                                     value={extendedData.returnInvoiceDetails?.returnInvoiceDate ? new Date(extendedData.returnInvoiceDetails.returnInvoiceDate) : null}
-                                    onChange={(date) => handleExtendedFieldChange('returnInvoiceDetails', {
+                                    onChange={(date: Date | null) => handleExtendedFieldChange('returnInvoiceDetails', {
                                       ...extendedData.returnInvoiceDetails,
                                       returnInvoiceDate: date ? date.toISOString().split('T')[0] : ''
                                     })}
@@ -700,6 +721,7 @@ export function InvoiceFormExtended({
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-1">İade Nedeni</label>
                                   <Input
+                                    data-testid="return-invoice-reason"
                                     type="text"
                                     value={extendedData.returnInvoiceDetails?.returnReason || ''}
                                     onChange={(e) => handleExtendedFieldChange('returnInvoiceDetails', {
@@ -777,7 +799,6 @@ export function InvoiceFormExtended({
               <InvoiceDateTimeSection
                 issueDate={(extendedData.issueDate || invoice?.issueDate || new Date().toISOString().split('T')[0]) as string}
                 issueTime={extendedData.issueTime}
-                dueDate={extendedData.dueDate || invoice?.dueDate}
                 discount={extendedData.totalDiscount ?? invoice?.totalDiscount}
                 discountType="amount"
                 onChange={handleExtendedFieldChange}

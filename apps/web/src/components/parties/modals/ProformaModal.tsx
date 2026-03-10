@@ -797,7 +797,7 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
               <Button
                 type="submit"
                 disabled={isLoading || items.length === 0}
-                className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl transition-colors disabled:opacity-50 flex items-center space-x-2"
+                className="px-6 py-2 premium-gradient tactile-press text-white rounded-2xl transition-colors disabled:opacity-50 flex items-center space-x-2"
               >
                 {isLoading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
                 <span>Proforma Oluştur</span>

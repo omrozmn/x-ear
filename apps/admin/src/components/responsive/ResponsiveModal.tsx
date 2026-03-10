@@ -69,7 +69,7 @@ export function ResponsiveModal({
         <div
           className={`
             relative bg-white dark:bg-gray-800 
-            ${isMobile ? 'modal-mobile-fullscreen' : `${sizeClasses[size]} w-full rounded-lg`}
+            ${isMobile ? 'modal-mobile-fullscreen' : `${sizeClasses[size]} w-full rounded-2xl`}
             shadow-xl
             ${className}
           `}
@@ -82,7 +82,7 @@ export function ResponsiveModal({
               </h3>
               <button
                 onClick={onClose}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors touch-feedback"
+                className="p-2 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors touch-feedback"
                 aria-label="Close"
               >
                 <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />

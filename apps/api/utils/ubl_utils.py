@@ -236,7 +236,7 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
 
     INVOICE_TYPE_MAP = {
         'standard': 'SATIS', '0': 'SATIS', '8': 'SATIS', '16': 'SATIS', '21': 'SATIS', '30': 'SATIS',
-        'ihracat': 'IHRACAT', 'export': 'IHRACAT', '5': 'IHRACAT', '27': 'IHRACKAYITLI',
+        'ihracat': 'IHRACAT', 'export': 'IHRACAT', '5': 'IHRACAT', '27': 'IHRACAT',
         'return': 'IADE', 'iade': 'IADE', '9': 'IADE', '50': 'IADE', '49': 'IADE', '15': 'IADE',
         'istisna': 'ISTISNA', '10': 'ISTISNA', '13': 'ISTISNA', '17': 'ISTISNA', '23': 'ISTISNA', '29': 'ISTISNA', '31': 'ISTISNA',
         'tevkifat': 'TEVKIFAT', '11': 'TEVKIFAT', '18': 'TEVKIFAT', '24': 'TEVKIFAT', '32': 'TEVKIFAT',
@@ -256,9 +256,6 @@ def generate_ubl_xml(invoice: dict, output_path: str, currency: str = 'TRY'):
     itype_key = str(itype_raw).lower().strip()
     resolved_type_code = INVOICE_TYPE_MAP.get(itype_key, str(itype_raw).upper() if itype_raw else 'SATIS')
     invoice_type_code_for_xml = resolved_type_code
-    if resolved_type_code == 'IHRACAT':
-        invoice_type_code_for_xml = 'ISTISNA'
-
     # ProfileID resolution based on scenario + type
     PROFILE_MAP = {
         'export': 'IHRACAT',

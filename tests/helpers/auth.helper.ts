@@ -47,7 +47,8 @@ function buildFallbackTokens(identifier: string): AuthTokens {
   const secret = process.env.JWT_SECRET_KEY || 'default-dev-secret-key-change-in-prod';
   const isAdmin = identifier === 'admin@x-ear.com';
   const userId = isAdmin ? 'adm_a65dc009' : 'usr_e2etest';
-  const tenantId = isAdmin ? 'system' : 'tenant_001';
+  // Use actual tenant ID from database (created by create_e2e_user.py)
+  const tenantId = isAdmin ? 'system' : '95625589-a4ad-41ff-a99e-4955943bb421';
   const role = isAdmin ? 'super_admin' : 'ADMIN';
   const email = isAdmin ? 'admin@x-ear.com' : 'e2etest@xear.com';
 

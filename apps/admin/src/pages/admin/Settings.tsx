@@ -178,7 +178,7 @@ const Settings: React.FC = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md touch-feedback ${isMobile ? 'whitespace-nowrap flex-shrink-0' : 'w-full'} ${activeTab === tab.id
+                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-xl touch-feedback ${isMobile ? 'whitespace-nowrap flex-shrink-0' : 'w-full'} ${activeTab === tab.id
                     ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400'
                     : 'text-gray-900 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
@@ -194,7 +194,7 @@ const Settings: React.FC = () => {
           </div>
 
           {/* Main Content */}
-          <div className={`flex-1 bg-white dark:bg-gray-800 shadow rounded-lg ${isMobile ? 'p-4' : 'p-6'}`}>
+          <div className={`flex-1 bg-white dark:bg-gray-800 shadow rounded-2xl ${isMobile ? 'p-4' : 'p-6'}`}>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* ... existing tabs ... */}
               {activeTab === 'general' && (
@@ -205,7 +205,7 @@ const Settings: React.FC = () => {
                       <input
                         type="text"
                         {...register('siteName', { required: true })}
-                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
 
@@ -213,7 +213,7 @@ const Settings: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700">Varsayılan Saat Dilimi</label>
                       <select
                         {...register('timezone')}
-                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       >
                         <option value="UTC">UTC</option>
                         <option value="Europe/Istanbul">İstanbul</option>
@@ -228,7 +228,7 @@ const Settings: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Varsayılan Dil</label>
                       <select
                         {...register('language')}
-                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       >
                         <option value="tr">Türkçe</option>
                         <option value="en">İngilizce</option>
@@ -242,7 +242,7 @@ const Settings: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Para Birimi</label>
                       <select
                         {...register('currency')}
-                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       >
                         <option value="TRY">TRY - Türk Lirası</option>
                         <option value="USD">USD - Amerikan Doları</option>
@@ -256,7 +256,7 @@ const Settings: React.FC = () => {
                       <textarea
                         {...register('siteDescription')}
                         rows={3}
-                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
                   </div>
@@ -304,7 +304,7 @@ const Settings: React.FC = () => {
                         type="text"
                         {...register('smtpHost')}
                         placeholder="smtp.gmail.com"
-                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
 
@@ -314,7 +314,7 @@ const Settings: React.FC = () => {
                         type="text"
                         {...register('smtpPort')}
                         placeholder="587"
-                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
 
@@ -323,7 +323,7 @@ const Settings: React.FC = () => {
                       <input
                         type="text"
                         {...register('smtpUsername')}
-                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
 
@@ -332,7 +332,7 @@ const Settings: React.FC = () => {
                       <input
                         type="password"
                         {...register('smtpPassword')}
-                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
 
@@ -341,7 +341,7 @@ const Settings: React.FC = () => {
                       <input
                         type="email"
                         {...register('fromEmail')}
-                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
 
@@ -350,7 +350,7 @@ const Settings: React.FC = () => {
                       <input
                         type="text"
                         {...register('fromName')}
-                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
                   </div>
@@ -378,7 +378,7 @@ const Settings: React.FC = () => {
                       <input
                         type="number"
                         {...register('sessionTimeout')}
-                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
 
@@ -387,7 +387,7 @@ const Settings: React.FC = () => {
                       <input
                         type="number"
                         {...register('maxLoginAttempts')}
-                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
 
@@ -396,7 +396,7 @@ const Settings: React.FC = () => {
                       <input
                         type="number"
                         {...register('passwordMinLength')}
-                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
 
@@ -405,7 +405,7 @@ const Settings: React.FC = () => {
                       <input
                         type="number"
                         {...register('jwtExpiry')}
-                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
                   </div>
@@ -451,7 +451,7 @@ const Settings: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Yedekleme Zamanlaması</label>
                       <select
                         {...register('backupSchedule')}
-                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       >
                         <option value="daily">Günlük</option>
                         <option value="weekly">Haftalık</option>
@@ -464,7 +464,7 @@ const Settings: React.FC = () => {
                       <input
                         type="number"
                         {...register('backupRetention')}
-                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
 
@@ -472,7 +472,7 @@ const Settings: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Yedekleme Konumu</label>
                       <select
                         {...register('backupLocation')}
-                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       >
                         <option value="local">Yerel Depolama</option>
                         <option value="s3">Amazon S3</option>
@@ -485,7 +485,7 @@ const Settings: React.FC = () => {
                       <input
                         type="password"
                         {...register('backupEncryptionKey')}
-                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       />
                     </div>
                   </div>
@@ -503,7 +503,7 @@ const Settings: React.FC = () => {
                         <input
                           type="text"
                           {...register('birFaturaApiKey')}
-                          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                          className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         />
                       </div>
                       <div className={isMobile ? '' : 'sm:col-span-3'}>
@@ -511,7 +511,7 @@ const Settings: React.FC = () => {
                         <input
                           type="password"
                           {...register('birFaturaApiSecret')}
-                          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                          className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         />
                       </div>
                     </div>
@@ -525,7 +525,7 @@ const Settings: React.FC = () => {
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">SMS Sağlayıcı</label>
                         <select
                           {...register('smsProvider')}
-                          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                          className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         >
                           <option value="vatansms">VatanSMS</option>
                           <option value="netgsm">NetGSM</option>
@@ -537,7 +537,7 @@ const Settings: React.FC = () => {
                         <input
                           type="text"
                           {...register('smsHeader')}
-                          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                          className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         />
                       </div>
                       <div className={isMobile ? '' : 'sm:col-span-3'}>
@@ -545,7 +545,7 @@ const Settings: React.FC = () => {
                         <input
                           type="text"
                           {...register('smsUsername')}
-                          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                          className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         />
                       </div>
                       <div className={isMobile ? '' : 'sm:col-span-3'}>
@@ -553,7 +553,7 @@ const Settings: React.FC = () => {
                         <input
                           type="password"
                           {...register('smsPassword')}
-                          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                          className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         />
                       </div>
                     </div>
@@ -567,7 +567,7 @@ const Settings: React.FC = () => {
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Ödeme Sağlayıcı</label>
                         <select
                           {...register('paymentProvider')}
-                          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                          className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         >
                           <option value="stripe">Stripe</option>
                           <option value="iyzico">Iyzico</option>
@@ -581,7 +581,7 @@ const Settings: React.FC = () => {
                         <input
                           type="text"
                           {...register('paymentApiKey')}
-                          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                          className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         />
                       </div>
                       <div className={isMobile ? '' : 'sm:col-span-3'}>
@@ -589,7 +589,7 @@ const Settings: React.FC = () => {
                         <input
                           type="password"
                           {...register('paymentSecretKey')}
-                          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                          className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         />
                       </div>
                     </div>
@@ -602,14 +602,14 @@ const Settings: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => reset()}
-                    className={`bg-white dark:bg-gray-800 py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 touch-feedback ${isMobile ? 'w-full' : ''}`}
+                    className={`bg-white dark:bg-gray-800 py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 touch-feedback ${isMobile ? 'w-full' : ''}`}
                   >
                     İptal
                   </button>
                   <button
                     type="submit"
                     disabled={isUpdating}
-                    className={`inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 touch-feedback ${isMobile ? 'w-full' : 'ml-3'}`}
+                    className={`inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-xl text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 touch-feedback ${isMobile ? 'w-full' : 'ml-3'}`}
                   >
                     {isUpdating ? 'Kaydediliyor...' : 'Ayarları Kaydet'}
                   </button>

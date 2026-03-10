@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '../ui/Button';
-import { Modal } from '../ui/Modal';
+import { Button, Modal, DatePicker } from '@x-ear/ui-web';
 import { Calendar, Clock, User, FileText, MapPin } from 'lucide-react';
 import { getCurrentUserId } from '@/utils/auth-utils';
 
@@ -172,7 +171,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
 
   return (
     <Modal
-      open={isOpen}
+      isOpen={isOpen}
       onClose={onClose}
       title={appointment ? 'Randevuyu Düzenle' : 'Yeni Randevu Oluştur'}
     >
@@ -187,17 +186,13 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Calendar className="w-4 h-4 text-gray-400" />
               </div>
-              <input
-                data-allow-raw="true"
-                type="date"
-                value={formData.appointmentDate || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, appointmentDate: e.target.value }))}
-                min={new Date().toISOString().split('T')[0]}
-                className={`w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.appointmentDate ? 'border-red-300' : ''}`}
+              <DatePicker
+                value={formData.appointmentDate ? new Date(formData.appointmentDate) : null}
+                onChange={(date) => setFormData(prev => ({ ...prev, appointmentDate: date ? date.toISOString().split('T')[0] : '' }))}
+                placeholder="GG/AA/YYYY"
+                fullWidth
+                error={errors.appointmentDate}
               />
-              {errors.appointmentDate && (
-                <p className="mt-1 text-sm text-red-600">{errors.appointmentDate}</p>
-              )}
             </div>
           </div>
 

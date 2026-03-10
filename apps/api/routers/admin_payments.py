@@ -27,7 +27,7 @@ async def get_pos_transactions(
     """Get all POS transactions for admin panel"""
     try:
         with unbound_session(reason="admin-cross-tenant"):
-            query = db.query(PaymentRecord).filter(PaymentRecord.pos_provider.isnot(None))
+            query = db.query(PaymentRecord)
             
             if provider:
                 query = query.filter(PaymentRecord.pos_provider == provider)

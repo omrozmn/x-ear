@@ -518,7 +518,7 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
                 <Button
                   onClick={() => document.getElementById('file-upload')?.click()}
                   disabled={isUploading}
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="premium-gradient tactile-press"
                 >
                   Dosya Seç
                 </Button>
@@ -640,7 +640,7 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Belgeler</h3>
         <Button
           onClick={() => setIsUploadModalOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
+          className="premium-gradient tactile-press w-full sm:w-auto"
         >
           <Upload className="w-4 h-4 mr-2" />
           Belge Yükle

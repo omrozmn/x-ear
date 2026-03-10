@@ -165,7 +165,7 @@ export function SpecialBaseModal({
               type="button"
               onClick={handleSave}
               variant="default"
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="premium-gradient tactile-press text-white"
               disabled={!specialBaseAmount || !specialBaseRate}
             >
               Kaydet

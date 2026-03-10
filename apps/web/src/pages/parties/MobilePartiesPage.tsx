@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, X, Download, Tags } from 'lucide-react';
 import { MobileLayout } from '@/components/mobile/MobileLayout';
 import { MobileHeader } from '@/components/mobile/MobileHeader';
 import { PartyCard } from '@/components/mobile/PartyCard';
@@ -8,6 +8,7 @@ import { FloatingActionButton } from '@/components/mobile/FloatingActionButton';
 import { useParties } from '@/hooks/useParties';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import type { PartyRead } from '@/api/generated';
+import { useHaptic } from '@/hooks/useHaptic';
 import { Input, Button } from '@x-ear/ui-web';
 
 export const MobilePartiesPage: React.FC = () => {
@@ -15,6 +16,18 @@ export const MobilePartiesPage: React.FC = () => {
     const [searchValue, setSearchValue] = useState('');
     const { data, isLoading } = useParties();
     const parties = data?.parties || [];
+    const { triggerSelection } = useHaptic();
+
+    const [isSelectionMode, setIsSelectionMode] = useState(false);
+    const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+
+    const toggleSelect = (id: number) => {
+        const newSet = new Set(selectedIds);
+        if (newSet.has(id)) newSet.delete(id);
+        else newSet.add(id);
+        setSelectedIds(newSet);
+        triggerSelection();
+    };
 
     const handleRefresh = async () => {
         window.location.reload();
@@ -30,6 +43,21 @@ export const MobilePartiesPage: React.FC = () => {
         );
     });
 
+    const toggleSelectAll = () => {
+        if (selectedIds.size === filteredParties.length && filteredParties.length > 0) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(filteredParties.map((p: PartyRead) => Number(p.id))));
+        }
+        triggerSelection();
+    };
+
+    const handleCancelSelection = () => {
+        setIsSelectionMode(false);
+        setSelectedIds(new Set());
+        triggerSelection();
+    };
+
     const handleCall = (phone: string) => {
         window.location.href = `tel:${phone}`;
     };
@@ -42,13 +70,31 @@ export const MobilePartiesPage: React.FC = () => {
         <MobileLayout className="bg-gray-50">
             <div className="sticky top-0 z-30 bg-white">
                 <MobileHeader
-                    title="Hastalar"
+                    title={isSelectionMode ? `${selectedIds.size} Seçilen` : "Hastalar"}
                     showBack={false}
                     className="border-none"
                     actions={
-                        <Button variant="ghost" size="sm" className="p-2 text-gray-600">
-                            <Filter className="h-5 w-5" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                            {isSelectionMode ? (
+                                <>
+                                    <Button variant="ghost" size="sm" onClick={toggleSelectAll} className="px-2 py-1 h-auto text-sm text-blue-600 font-medium">
+                                        {selectedIds.size === filteredParties.length && filteredParties.length > 0 ? 'Hiçbiri' : 'Tümünü Seç'}
+                                    </Button>
+                                    <Button variant="ghost" size="sm" onClick={handleCancelSelection} className="p-2 text-gray-600">
+                                        <X className="h-5 w-5" />
+                                    </Button>
+                                </>
+                            ) : (
+                                <>
+                                    <Button variant="ghost" size="sm" onClick={() => { setIsSelectionMode(true); triggerSelection(); }} className="px-2 py-1 h-auto text-sm text-blue-600 font-medium">
+                                        Seç
+                                    </Button>
+                                    <Button variant="ghost" size="sm" className="p-2 text-gray-600">
+                                        <Filter className="h-5 w-5" />
+                                    </Button>
+                                </>
+                            )}
+                        </div>
                     }
                 />
 
@@ -78,12 +124,20 @@ export const MobilePartiesPage: React.FC = () => {
                             <PartyCard
                                 key={party.id}
                                 party={party}
-                                onClick={() => navigate({
-                                    to: '/parties/$partyId',
-                                    params: { partyId: String(party.id) }
-                                })}
+                                onClick={() => {
+                                    if (isSelectionMode) {
+                                        toggleSelect(Number(party.id));
+                                    } else {
+                                        navigate({
+                                            to: '/parties/$partyId',
+                                            params: { partyId: String(party.id) }
+                                        });
+                                    }
+                                }}
                                 onCall={handleCall}
                                 onMessage={handleMessage}
+                                isSelectionMode={isSelectionMode}
+                                isSelected={selectedIds.has(Number(party.id))}
                             />
                         ))
                     ) : (
@@ -94,18 +148,28 @@ export const MobilePartiesPage: React.FC = () => {
                 </div>
             </PullToRefresh>
 
-            <FloatingActionButton
-                onClick={() => {
-                    // New Party Action - could trigger modal or navigate
-                    // For now, assuming current desktop modal logic or navigate to new page
-                    // We'll just log or alert as a placeholder if modal logic isn't extracted
-                    console.log("Open New Party Modal");
-                    // If there was a route for new party, we'd use it.
-                    // But since the desktop uses a modal state `showNewPartyModal`,
-                    // we might need to extract that context or create a dedicated mobile route '/parties/new'
-                    // For now, let's keep it simple.
-                }}
-            />
+            {/* Bulk Action Bar */}
+            {selectedIds.size > 0 && isSelectionMode && (
+                <div className="fixed bottom-24 left-4 right-4 z-40 bg-gray-900 dark:bg-gray-800 rounded-2xl shadow-xl px-4 py-3 flex items-center justify-between pointer-events-auto transition-transform">
+                    <span className="text-sm font-medium text-white">{selectedIds.size} Hasta</span>
+                    <div className="flex gap-2">
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-gray-800 dark:hover:bg-gray-700 h-8 px-3 rounded-xl border border-gray-700">
+                            <Download className="w-4 h-4 mr-1.5" /> Dışa Aktar
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-gray-800 dark:hover:bg-gray-700 h-8 px-3 rounded-xl border border-gray-700">
+                            <Tags className="w-4 h-4 mr-1.5" /> Etiketle
+                        </Button>
+                    </div>
+                </div>
+            )}
+
+            {!isSelectionMode && (
+                <FloatingActionButton
+                    onClick={() => {
+                        console.log("Open New Party Modal");
+                    }}
+                />
+            )}
         </MobileLayout>
     );
 };

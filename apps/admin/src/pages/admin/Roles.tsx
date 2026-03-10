@@ -200,7 +200,7 @@ const Roles: React.FC = () => {
                 <PermissionGate permission={AdminPermissions.ROLES_MANAGE}>
                     <button
                         onClick={() => setIsCreateModalOpen(true)}
-                        className={`flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors touch-feedback ${isMobile ? 'w-full' : ''}`}
+                        className={`flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-2xl hover:bg-primary/90 transition-colors touch-feedback ${isMobile ? 'w-full' : ''}`}
                     >
                         <Plus className="h-4 w-4" />
                         Yeni Rol
@@ -216,7 +216,7 @@ const Roles: React.FC = () => {
                     placeholder="Rol ara..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
             </div>
 
@@ -229,7 +229,7 @@ const Roles: React.FC = () => {
                     >
                         <div className="flex items-start justify-between mb-4">
                             <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-lg ${role.isSystem ? 'bg-purple-100 dark:bg-purple-900/30' : 'bg-blue-100 dark:bg-blue-900/30'}`}>
+                                <div className={`p-2 rounded-2xl ${role.isSystem ? 'bg-purple-100 dark:bg-purple-900/30' : 'bg-blue-100 dark:bg-blue-900/30'}`}>
                                     <Shield className={`h-5 w-5 ${role.isSystem ? 'text-purple-600 dark:text-purple-400' : 'text-blue-600 dark:text-blue-400'}`} />
                                 </div>
                                 <div>
@@ -251,7 +251,7 @@ const Roles: React.FC = () => {
                                 <div className="flex items-center gap-1">
                                     <button
                                         onClick={() => openEditModal(role)}
-                                        className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                        className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors"
                                         title="Düzenle"
                                     >
                                         <Pencil className="h-4 w-4" />
@@ -259,7 +259,7 @@ const Roles: React.FC = () => {
                                     {!role.isSystem && (
                                         <button
                                             onClick={() => openDeleteModal(role)}
-                                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl transition-colors"
                                             title="Sil"
                                         >
                                             <Trash2 className="h-4 w-4" />
@@ -326,7 +326,7 @@ const Roles: React.FC = () => {
                                     type="text"
                                     value={formData.name}
                                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
+                                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
                                     required
                                 />
                             </div>
@@ -339,7 +339,7 @@ const Roles: React.FC = () => {
                                     value={formData.description}
                                     onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                                     rows={3}
-                                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
+                                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
                                 />
                             </div>
 
@@ -348,7 +348,7 @@ const Roles: React.FC = () => {
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     İzinler
                                 </label>
-                                <div className="max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-lg p-3 space-y-3">
+                                <div className="max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-2xl p-3 space-y-3">
                                     {permissionGroups.map((group) => (
                                         <div key={group.category}>
                                             <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">
@@ -394,14 +394,14 @@ const Roles: React.FC = () => {
                                         setIsCreateModalOpen(false);
                                         resetForm();
                                     }}
-                                    className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                    className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors"
                                 >
                                     İptal
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={createRoleMutation.isPending}
-                                    className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+                                    className="px-4 py-2 bg-primary text-white rounded-2xl hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
                                 >
                                     {createRoleMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                                     Oluştur
@@ -432,7 +432,7 @@ const Roles: React.FC = () => {
                                         value={formData.name}
                                         onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                                         disabled={selectedRole?.isSystem}
-                                        className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50"
+                                        className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50"
                                         required
                                     />
                                     {selectedRole?.isSystem && (
@@ -450,7 +450,7 @@ const Roles: React.FC = () => {
                                         type="text"
                                         value={formData.description}
                                         onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                                        className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
                                     />
                                 </div>
                             </div>
@@ -459,14 +459,14 @@ const Roles: React.FC = () => {
                                 <button
                                     type="button"
                                     onClick={() => setIsEditModalOpen(false)}
-                                    className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                    className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors"
                                 >
                                     İptal
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={updateRoleMutation.isPending}
-                                    className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+                                    className="px-4 py-2 bg-primary text-white rounded-2xl hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
                                 >
                                     {updateRoleMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                                     Kaydet
@@ -484,7 +484,7 @@ const Roles: React.FC = () => {
 
                                 <div className="space-y-4">
                                     {permissionGroups.map((group) => (
-                                        <div key={group.category} className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                                        <div key={group.category} className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-4">
                                             <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
                                                 {group.label}
                                             </h4>
@@ -498,7 +498,7 @@ const Roles: React.FC = () => {
                                                             key={perm.id}
                                                             onClick={() => handleTogglePermission(selectedRole!.id, perm.name, currentPerms)}
                                                             disabled={updatePermissionsMutation.isPending}
-                                                            className={`flex items-center justify-between p-2 rounded-lg border transition-colors ${isActive
+                                                            className={`flex items-center justify-between p-2 rounded-2xl border transition-colors ${isActive
                                                                 ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-700 text-green-700 dark:text-green-400'
                                                                 : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-500'
                                                                 }`}
@@ -520,7 +520,7 @@ const Roles: React.FC = () => {
                         )}
 
                         {selectedRole?.name === 'SuperAdmin' && (
-                            <div className="mt-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
+                            <div className="mt-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-2xl">
                                 <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
                                     <AlertTriangle className="h-5 w-5" />
                                     <span className="font-medium">SuperAdmin rolünün izinleri değiştirilemez</span>
@@ -540,7 +540,7 @@ const Roles: React.FC = () => {
                     <Dialog.Overlay className="fixed inset-0 bg-black/50" />
                     <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
                         <div className="flex items-center gap-3 text-red-600 dark:text-red-400 mb-4">
-                            <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                            <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-2xl">
                                 <AlertTriangle className="h-6 w-6" />
                             </div>
                             <Dialog.Title className="text-lg font-semibold">
@@ -556,14 +556,14 @@ const Roles: React.FC = () => {
                         <div className="flex justify-end gap-3">
                             <button
                                 onClick={() => setIsDeleteModalOpen(false)}
-                                className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors"
                             >
                                 İptal
                             </button>
                             <button
                                 onClick={() => selectedRole && deleteRoleMutation.mutate({ roleId: selectedRole.id })}
                                 disabled={deleteRoleMutation.isPending}
-                                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                                className="px-4 py-2 bg-red-600 text-white rounded-2xl hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center gap-2"
                             >
                                 {deleteRoleMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                                 Sil

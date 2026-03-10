@@ -71,7 +71,7 @@ async def upload_document(
     file: UploadFile = File(...),
     doc_type: str = "medical",
     auto_crop: bool = True,
-    access: UnifiedAccess = Depends(require_access())
+    access: UnifiedAccess = Depends(require_access(admin_only=True, tenant_required=False))
 ):
     """Upload and process a document (PDF/Image) for OCR"""
     temp_file_path = None
@@ -179,7 +179,7 @@ def health_check():
 
 @router.post("/init-db", operation_id="createOcrInitDb", response_model=ResponseEnvelope[OcrInitResponse])
 def init_database(
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(admin_only=True, tenant_required=False)),
     db: Session = Depends(get_db)
 ):
     """Initialize database and create tables (System Admin)"""
@@ -207,7 +207,7 @@ def init_database(
 @router.post("/initialize", operation_id="createOcrInitialize", response_model=ResponseEnvelope[OcrInitResponse])
 def initialize_nlp_endpoint(
     background_tasks: BackgroundTasks,
-    access: UnifiedAccess = Depends(require_access())
+    access: UnifiedAccess = Depends(require_access(admin_only=True, tenant_required=False))
 ):
     """Initialize NLP/OCR service (System Admin)"""
     try:
@@ -237,7 +237,7 @@ def initialize_nlp_endpoint(
 @router.post("/process", operation_id="createOcrProcess", response_model=ResponseEnvelope[OcrProcessResponse])
 def process_document(
     request_data: OcrProcessRequest,
-    access: UnifiedAccess = Depends(require_access())
+    access: UnifiedAccess = Depends(require_access(admin_only=True, tenant_required=False))
 ):
     """Process document with OCR"""
     try:
@@ -307,7 +307,7 @@ def process_document(
 @router.post("/similarity", operation_id="createOcrSimilarity", response_model=ResponseEnvelope[OcrSimilarityResponse])
 def calculate_similarity(
     request_data: SimilarityRequest,
-    access: UnifiedAccess = Depends(require_access())
+    access: UnifiedAccess = Depends(require_access(admin_only=True, tenant_required=False))
 ):
     """Calculate similarity between documents"""
     try:
@@ -351,7 +351,7 @@ def calculate_similarity(
 @router.post("/entities", operation_id="createOcrEntities", response_model=ResponseEnvelope[OcrEntitiesResponse])
 def extract_entities(
     request_data: EntityExtractionRequest,
-    access: UnifiedAccess = Depends(require_access())
+    access: UnifiedAccess = Depends(require_access(admin_only=True, tenant_required=False))
 ):
     """Extract entities from image using OCR"""
     try:
@@ -392,7 +392,7 @@ def extract_entities(
 @router.post("/extract_patient", operation_id="createOcrExtractPatient", response_model=ResponseEnvelope[OcrPatientResponse])
 def extract_patient_name(
     request_data: PatientExtractionRequest,
-    access: UnifiedAccess = Depends(require_access())
+    access: UnifiedAccess = Depends(require_access(admin_only=True, tenant_required=False))
 ):
     """Extract patient name from image using OCR"""
     try:
@@ -443,7 +443,7 @@ def extract_patient_name(
 @router.post("/debug_ner", operation_id="createOcrDebugNer", response_model=ResponseEnvelope[OcrDebugResponse])
 def debug_ner(
     request_data: DebugNERRequest,
-    access: UnifiedAccess = Depends(require_access())
+    access: UnifiedAccess = Depends(require_access(admin_only=True, tenant_required=False))
 ):
     """Debug endpoint for NER (System Admin)"""
     try:
@@ -516,7 +516,7 @@ def debug_ner(
 @router.get("/jobs", operation_id="listOcrJobs", response_model=ResponseEnvelope[List[OcrJobRead]])
 def list_jobs(
     status: Optional[str] = None,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(admin_only=True, tenant_required=False)),
     db: Session = Depends(get_db)
 ):
     """List OCR jobs"""
@@ -552,7 +552,7 @@ def list_jobs(
 def create_job(
     request_data: CreateJobRequest,
     background_tasks: BackgroundTasks,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(admin_only=True, tenant_required=False)),
     db: Session = Depends(get_db)
 ):
     """Create a new OCR job"""
@@ -623,7 +623,7 @@ def create_job(
 @router.get("/jobs/{job_id}", operation_id="getOcrJob", response_model=ResponseEnvelope[OcrJobRead])
 def get_job(
     job_id: str,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(admin_only=True, tenant_required=False)),
     db: Session = Depends(get_db)
 ):
     """Get OCR job status"""

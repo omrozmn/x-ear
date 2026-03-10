@@ -407,7 +407,7 @@ export default function IntegrationsPage() {
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                         <div className={`flex items-center mb-6 ${isMobile ? 'flex-col gap-4' : 'justify-between'}`}>
                             <div className={`flex items-center gap-3 ${isMobile ? 'w-full' : ''}`}>
-                                <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+                                <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-2xl">
                                     <Zap className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                                 </div>
                                 <div>
@@ -432,7 +432,7 @@ export default function IntegrationsPage() {
                                     type="text"
                                     value={smsConfig.username}
                                     onChange={(e) => setSmsConfig({ ...smsConfig, username: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                                     placeholder="API kullanıcı adı"
                                 />
                             </div>
@@ -445,7 +445,7 @@ export default function IntegrationsPage() {
                                     type="password"
                                     value={smsConfig.password}
                                     onChange={(e) => setSmsConfig({ ...smsConfig, password: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                                     placeholder="API şifresi"
                                 />
                             </div>
@@ -458,7 +458,7 @@ export default function IntegrationsPage() {
                                     type="text"
                                     value={smsConfig.senderId}
                                     onChange={(e) => setSmsConfig({ ...smsConfig, senderId: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                                     placeholder="Örn: XEAR"
                                     maxLength={11}
                                 />
@@ -473,7 +473,7 @@ export default function IntegrationsPage() {
                                 </p>
 
                                 {/* Contract Document */}
-                                <div className="mb-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                                <div className="mb-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-200 dark:border-gray-700">
                                     <div className="flex items-center justify-between mb-2">
                                         <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                             Sözleşme Belgesi (Boş Şablon)
@@ -512,7 +512,7 @@ export default function IntegrationsPage() {
                                             </div>
                                         </div>
                                     ) : (
-                                        <label className="flex items-center justify-center gap-2 px-3 py-2 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors cursor-pointer touch-feedback">
+                                        <label className="flex items-center justify-center gap-2 px-3 py-2 border border-dashed border-gray-300 dark:border-gray-600 rounded-2xl hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors cursor-pointer touch-feedback">
                                             <Upload className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                                             <span className="text-sm text-gray-600 dark:text-gray-400">
                                                 {uploadingDoc === 'contract' ? 'Yükleniyor...' : 'Belge Yükle'}
@@ -534,7 +534,7 @@ export default function IntegrationsPage() {
                                 </div>
 
                                 {/* Example Document */}
-                                <div className="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                                <div className="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-200 dark:border-gray-700">
                                     <div className="flex items-center justify-between mb-2">
                                         <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                             Örnek Sözleşme (Dolu Örnek)
@@ -573,7 +573,7 @@ export default function IntegrationsPage() {
                                             </div>
                                         </div>
                                     ) : (
-                                        <label className="flex items-center justify-center gap-2 px-3 py-2 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors cursor-pointer touch-feedback">
+                                        <label className="flex items-center justify-center gap-2 px-3 py-2 border border-dashed border-gray-300 dark:border-gray-600 rounded-2xl hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors cursor-pointer touch-feedback">
                                             <Upload className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                                             <span className="text-sm text-gray-600 dark:text-gray-400">
                                                 {uploadingDoc === 'example' ? 'Yükleniyor...' : 'Belge Yükle'}
@@ -610,14 +610,14 @@ export default function IntegrationsPage() {
                             <div className={`pt-4 flex gap-3 ${isMobile ? 'flex-col' : ''}`}>
                                 <button
                                     onClick={handleSave}
-                                    className={`flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors touch-feedback ${isMobile ? 'flex-1 w-full' : 'flex-1'}`}
+                                    className={`flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 transition-colors touch-feedback ${isMobile ? 'flex-1 w-full' : 'flex-1'}`}
                                 >
                                     <Save className="w-4 h-4" />
                                     Kaydet
                                 </button>
                                 <button
                                     onClick={handleTest}
-                                    className={`flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors touch-feedback ${isMobile ? 'w-full' : ''}`}
+                                    className={`flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors touch-feedback ${isMobile ? 'w-full' : ''}`}
                                 >
                                     <RefreshCw className="w-4 h-4" />
                                     Test Et
@@ -630,7 +630,7 @@ export default function IntegrationsPage() {
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                         <div className={`flex items-center mb-6 ${isMobile ? 'flex-col gap-4' : 'justify-between'}`}>
                             <div className={`flex items-center gap-3 ${isMobile ? 'w-full' : ''}`}>
-                                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-2xl">
                                     <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <div>
@@ -655,7 +655,7 @@ export default function IntegrationsPage() {
                                     type="text"
                                     value={birFaturaConfig.integrationKey}
                                     onChange={(e) => setBirFaturaConfig({ ...birFaturaConfig, integrationKey: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
                                     placeholder="865c3848-fda5-48f8-aeb6-9ae58abbb3bf"
                                 />
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Tüm üyeler için geçerli ortak anahtar (INTEGRATION KEY)</p>
@@ -669,7 +669,7 @@ export default function IntegrationsPage() {
                                     type="text"
                                     value={birFaturaConfig.appApiKey}
                                     onChange={(e) => setBirFaturaConfig({ ...birFaturaConfig, appApiKey: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
                                     placeholder="d500f61b-2104-4a59-b306-71cf72dd52d1"
                                 />
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Uygulama API anahtarı (API KEY)</p>
@@ -683,7 +683,7 @@ export default function IntegrationsPage() {
                                     type="password"
                                     value={birFaturaConfig.appSecretKey}
                                     onChange={(e) => setBirFaturaConfig({ ...birFaturaConfig, appSecretKey: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
                                     placeholder="b72389be-6285-4ec6-9128-c162e43f19c2"
                                 />
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Uygulama gizli anahtarı (SECRET KEY)</p>
@@ -692,7 +692,7 @@ export default function IntegrationsPage() {
                             <div className="pt-4 flex gap-3">
                                 <button
                                     onClick={handleSaveBirFatura}
-                                    className={`flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors touch-feedback ${isMobile ? 'flex-1 w-full' : 'flex-1'}`}
+                                    className={`flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 transition-colors touch-feedback ${isMobile ? 'flex-1 w-full' : 'flex-1'}`}
                                 >
                                     <Save className="w-4 h-4" />
                                     Kaydet
@@ -705,7 +705,7 @@ export default function IntegrationsPage() {
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                         <div className={`flex items-center mb-6 ${isMobile ? 'flex-col gap-4' : 'justify-between'}`}>
                             <div className={`flex items-center gap-3 ${isMobile ? 'w-full' : ''}`}>
-                                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl">
                                     <MessageSquare className="w-6 h-6 text-blue-500 dark:text-blue-400" />
                                 </div>
                                 <div>
@@ -730,7 +730,7 @@ export default function IntegrationsPage() {
                                     type="text"
                                     value={telegramConfig.botToken}
                                     onChange={(e) => setTelegramConfig({ ...telegramConfig, botToken: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
                                     placeholder="7921642358:AAHeyvqyoFHak-T23EjYBq-eLX5l8ky9uIE"
                                 />
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">BotFather'dan alınan API anahtarı</p>
@@ -744,7 +744,7 @@ export default function IntegrationsPage() {
                                     type="text"
                                     value={telegramConfig.chatId}
                                     onChange={(e) => setTelegramConfig({ ...telegramConfig, chatId: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
                                     placeholder="12345678"
                                 />
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Bildirimlerin gönderileceği sohbet ID'si</p>
@@ -765,7 +765,7 @@ export default function IntegrationsPage() {
                             <div className="pt-4 flex gap-3">
                                 <button
                                     onClick={handleSaveTelegram}
-                                    className={`flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors touch-feedback ${isMobile ? 'flex-1 w-full' : 'flex-1'}`}
+                                    className={`flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 transition-colors touch-feedback ${isMobile ? 'flex-1 w-full' : 'flex-1'}`}
                                 >
                                     <Save className="w-4 h-4" />
                                     Kaydet
@@ -822,19 +822,19 @@ export default function IntegrationsPage() {
                 <Dialog.Root open={!!previewDoc} onOpenChange={() => setPreviewDoc(null)}>
                     <Dialog.Portal>
                         <Dialog.Overlay className="fixed inset-0 bg-black/50 z-[90]" />
-                        <Dialog.Content className={`fixed left-[50%] top-[50%] max-h-[90vh] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white dark:bg-gray-800 shadow-2xl focus:outline-none z-[100] flex flex-col ${isMobile ? 'w-[95vw]' : 'w-[90vw] max-w-4xl'}`}>
+                        <Dialog.Content className={`fixed left-[50%] top-[50%] max-h-[90vh] translate-x-[-50%] translate-y-[-50%] rounded-2xl bg-white dark:bg-gray-800 shadow-2xl focus:outline-none z-[100] flex flex-col ${isMobile ? 'w-[95vw]' : 'w-[90vw] max-w-4xl'}`}>
                             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
                                 <Dialog.Title className={`font-semibold text-gray-900 dark:text-white ${isMobile ? 'text-base' : 'text-lg'}`}>
                                     {previewDoc.type === 'contract' ? 'Sözleşme Belgesi' : 'Örnek Sözleşme'}
                                 </Dialog.Title>
-                                <Dialog.Close className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg touch-feedback">
+                                <Dialog.Close className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl touch-feedback">
                                     <XMarkIcon className="h-5 w-5 text-gray-900 dark:text-white" />
                                 </Dialog.Close>
                             </div>
                             <div className="flex-1 p-4 overflow-auto">
                                 <iframe
                                     src={previewDoc.url}
-                                    className={`w-full h-full border-0 rounded-lg ${isMobile ? 'min-h-[500px]' : 'min-h-[600px]'}`}
+                                    className={`w-full h-full border-0 rounded-2xl ${isMobile ? 'min-h-[500px]' : 'min-h-[600px]'}`}
                                     title="Document Preview"
                                 />
                             </div>

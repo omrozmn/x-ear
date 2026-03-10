@@ -49,7 +49,7 @@ const Dashboard = () => {
           {/* Error State */}
           {!!error && (
             <div className="mb-6">
-              <div className="bg-red-50 border border-red-200 rounded-md p-4">
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
                 <div className="flex">
                   <div className="flex-shrink-0">
                     <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -194,7 +194,7 @@ const Dashboard = () => {
                     </p>
 
                     {user?.tenant_id && (
-                      <div className="mt-4 p-4 bg-blue-50 rounded-md">
+                      <div className="mt-4 p-4 bg-blue-50 rounded-xl">
                         <p className="text-blue-800">
                           <strong>Tenant Context:</strong> You are currently managing tenant ID: {String(user.tenant_id)}
                         </p>
@@ -202,7 +202,7 @@ const Dashboard = () => {
                     )}
 
                     {String(user?.role) === 'SUPER_ADMIN' && (
-                      <div className="mt-4 p-4 bg-purple-50 rounded-md">
+                      <div className="mt-4 p-4 bg-purple-50 rounded-xl">
                         <p className="text-purple-800">
                           <strong>Super Admin:</strong> You have access to all tenants and system-wide operations.
                         </p>

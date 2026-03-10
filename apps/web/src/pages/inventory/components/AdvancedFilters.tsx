@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, Input, Select, Button, Checkbox, Badge } from '@x-ear/ui-web';
+import { Card, CardHeader, CardTitle, CardContent, Input, Select, Button, Checkbox, Badge, DatePicker } from '@x-ear/ui-web';
 import BrandAutocomplete from './BrandAutocomplete';
 import { ChevronDown, ChevronUp, X } from 'lucide-react';
 import { InventoryFilters as IInventoryFilters } from '../../../types/inventory';
@@ -99,12 +99,12 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
     });
   };
 
-  const handleDateRangeChange = (field: 'start' | 'end', value: string) => {
+  const handleDateRangeChange = (field: 'start' | 'end', value: Date | null) => {
     onFiltersChange({
       ...filters,
       dateRange: {
         ...filters.dateRange,
-        [field]: value || undefined
+        [field]: value ? value.toISOString().split('T')[0] : undefined
       }
     });
   };
@@ -281,16 +281,16 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
             <div className="space-y-3">
               <h4 className="font-medium text-gray-900 dark:text-white">Tarih Aralığı</h4>
               <div className="flex gap-2">
-                <Input
-                  type="date"
-                  value={filters.dateRange?.start || ''}
-                  onChange={(e) => handleDateRangeChange('start', e.target.value)}
+                <DatePicker
+                  placeholder="Başlangıç"
+                  value={filters.dateRange?.start ? new Date(filters.dateRange.start) : null}
+                  onChange={(date) => handleDateRangeChange('start', date)}
                   className="flex-1"
                 />
-                <Input
-                  type="date"
-                  value={filters.dateRange?.end || ''}
-                  onChange={(e) => handleDateRangeChange('end', e.target.value)}
+                <DatePicker
+                  placeholder="Bitiş"
+                  value={filters.dateRange?.end ? new Date(filters.dateRange.end) : null}
+                  onChange={(date) => handleDateRangeChange('end', date)}
                   className="flex-1"
                 />
               </div>

@@ -29,7 +29,7 @@ def get_activity_logs(
     date_from: Optional[str] = None,
     date_to: Optional[str] = None,
     search: Optional[str] = None,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(admin_only=True, tenant_required=False)),
     db: Session = Depends(get_db)
 ):
     """Get activity logs with unified access"""
@@ -106,7 +106,7 @@ def get_activity_logs(
 
 @router.get("/activity-logs/stats", operation_id="listActivityLogStats", response_model=ResponseEnvelope[ActivityLogStats])
 def get_activity_stats(
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(admin_only=True, tenant_required=False)),
     db: Session = Depends(get_db)
 ):
     """Get activity statistics"""
@@ -152,7 +152,7 @@ def get_activity_stats(
 
 @router.get("/activity-logs/filter-options", operation_id="listActivityLogFilterOptions")
 def get_activity_log_filter_options(
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access(admin_only=True, tenant_required=False)),
     db: Session = Depends(get_db)
 ):
     """Get available filter options for activity logs"""
@@ -208,7 +208,7 @@ def get_audit_logs_alias(
     user_id: Optional[str] = Query(None, alias="userId"),
     start_date: Optional[str] = Query(None, alias="startDate"),
     end_date: Optional[str] = Query(None, alias="endDate"),
-    access: UnifiedAccess = Depends(require_access("activity_logs.view")),
+    access: UnifiedAccess = Depends(require_access("activity_logs.view", admin_only=True, tenant_required=False)),
     db_session: Session = Depends(get_db)
 ):
     """Get audit logs (alias for activity logs)"""

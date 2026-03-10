@@ -123,36 +123,36 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
       )}
 
       {/* Header */}
-      <div className={`px-4 py-3 ${earStyle.bg} border-b dark:border-slate-700`}>
-        <div className="flex items-center justify-between">
+      <div className={`px-3 md:px-4 py-2 md:py-3 ${earStyle.bg} border-b dark:border-slate-700`}>
+        <div className="flex items-start md:items-center justify-between flex-col md:flex-row gap-2 md:gap-0">
           <div>
-            <h4 className="font-semibold text-gray-900 dark:text-gray-100">
+            <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm md:text-base">
               {device.deviceName || `${device.brand || ''} ${device.model || ''}`.trim() || 'Bilinmeyen Cihaz'}
             </h4>
             {/* Delivery & Loaner Badges */}
-            <div className="flex flex-wrap gap-2 mt-1">
+            <div className="flex flex-wrap gap-1.5 md:gap-2 mt-1">
               {/* Delivery Status */}
               {deliveryStatus === 'pending' && !isCancelled && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300 dark:border-yellow-800">
+                <span className="inline-flex items-center px-1.5 md:px-2 py-0.5 rounded text-[10px] md:text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300 dark:border-yellow-800">
                   Teslim Bekliyor
                 </span>
               )}
               {deliveryStatus === 'delivered' && !isCancelled && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 border border-green-200 dark:bg-green-900/50 dark:text-green-300 dark:border-green-800">
+                <span className="inline-flex items-center px-1.5 md:px-2 py-0.5 rounded text-[10px] md:text-xs font-medium bg-green-100 text-green-800 border border-green-200 dark:bg-green-900/50 dark:text-green-300 dark:border-green-800">
                   Teslim Edildi
                 </span>
               )}
 
               {/* Loaner Status */}
               {isLoaner && !isCancelled && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200 dark:bg-purple-900/50 dark:text-purple-300 dark:border-purple-800">
+                <span className="inline-flex items-center px-1.5 md:px-2 py-0.5 rounded text-[10px] md:text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200 dark:bg-purple-900/50 dark:text-purple-300 dark:border-purple-800">
                   Emanet Cihaz
                 </span>
               )}
 
               {/* Report Status Badge */}
               {device.reason?.toLowerCase() === 'sale' && !isCancelled && (reportStatus !== 'none') && (
-                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border
+                <span className={`inline-flex items-center px-1.5 md:px-2 py-0.5 rounded text-[10px] md:text-xs font-medium border
                   ${['raporlu', 'received', 'has_report', 'true'].includes(reportStatus) ? 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/50 dark:text-green-300 dark:border-green-800' :
                     ['bekleniyor', 'pending'].includes(reportStatus) ? 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300 dark:border-yellow-800' :
                       'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'}`}>
@@ -162,7 +162,7 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
               )}
             </div>
           </div>
-          <span className={`px-2 py-1 rounded text-xs font-medium border ${earStyle.badge}`}>
+          <span className={`px-2 py-0.5 md:py-1 rounded text-[10px] md:text-xs font-medium border ${earStyle.badge} self-start md:self-auto`}>
             {displaySide === 'left' || device.earSide === 'LEFT' || device.ear === 'left' ? 'Sol' :
               displaySide === 'right' || device.earSide === 'RIGHT' || device.ear === 'right' ? 'Sağ' : 'Bilateral'}
           </span>
@@ -170,24 +170,24 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
       </div>
 
       {/* Content */}
-      <div className="px-4 py-3 space-y-2 text-sm">
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+      <div className="px-3 md:px-4 py-2 md:py-3 space-y-2 text-xs md:text-sm">
+        <div className="grid grid-cols-2 gap-x-2 md:gap-x-4 gap-y-2">
           <div>
-            <span className="text-gray-500 dark:text-gray-400">Atama ID:</span>
-            <p className="font-medium text-gray-900 dark:text-gray-200 font-mono text-xs">
+            <span className="text-gray-500 dark:text-gray-400 block text-[10px] md:text-xs mb-0.5">Atama ID:</span>
+            <p className="font-medium text-gray-900 dark:text-gray-200 font-mono text-[10px] md:text-xs truncate">
               {device.assignmentUid || '-'}
               {device.reason?.toLowerCase() === 'sale' && device.saleId && (
-                <span className="text-[10px] text-gray-500 ml-1">({device.saleId})</span>
+                <span className="text-[9px] md:text-[10px] text-gray-500 ml-1">({device.saleId})</span>
               )}
             </p>
           </div>
           <div>
-            <span className="text-gray-500 dark:text-gray-400">Barkod No:</span>
-            <p className="font-medium text-gray-900 dark:text-gray-200 font-mono">{device.barcode || '-'}</p>
+            <span className="text-gray-500 dark:text-gray-400 block text-[10px] md:text-xs mb-0.5">Barkod No:</span>
+            <p className="font-medium text-gray-900 dark:text-gray-200 font-mono text-[11px] md:text-sm truncate">{device.barcode || '-'}</p>
           </div>
           <div>
-            <span className="text-gray-500 dark:text-gray-400">Seri No:</span>
-            <p className="font-medium text-gray-900 dark:text-gray-200 font-mono">
+            <span className="text-gray-500 dark:text-gray-400 block text-[10px] md:text-xs mb-0.5">Seri No:</span>
+            <p className="font-medium text-gray-900 dark:text-gray-200 font-mono text-[11px] md:text-sm truncate">
               {/* For bilateral cards, show the correct serial based on ear side */}
               {(() => {
                 const earSide = displaySide || device.earSide || device.ear || '';
@@ -216,11 +216,11 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
 
 
           <div>
-            <span className="text-gray-500 dark:text-gray-400">Atama Nedeni:</span>
+            <span className="text-gray-500 dark:text-gray-400 block text-[10px] md:text-xs mb-0.5">Atama Nedeni:</span>
             <p className="font-medium text-gray-900 dark:text-gray-200">{getReasonText(device.reason)}</p>
           </div>
           <div>
-            <span className="text-gray-500 dark:text-gray-400">Atama Tarihi:</span>
+            <span className="text-gray-500 dark:text-gray-400 block text-[10px] md:text-xs mb-0.5">Atama Tarihi:</span>
             <p className="font-medium text-gray-900 dark:text-gray-200">{formatDate(device.assignedDate || device.createdAt || device.created_at)}</p>
           </div>
 
@@ -228,11 +228,11 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
           {device.reason?.toLowerCase() === 'sale' && (
             <>
               <div>
-                <span className="text-gray-500 dark:text-gray-400">Liste Fiyatı:</span>
+                <span className="text-gray-500 dark:text-gray-400 block text-[10px] md:text-xs mb-0.5">Liste Fiyatı:</span>
                 <p className="font-medium text-gray-900 dark:text-gray-200">{formatCurrency(device.listPrice)}</p>
               </div>
               <div>
-                <span className="text-gray-500 dark:text-gray-400">Satış Fiyatı:</span>
+                <span className="text-gray-500 dark:text-gray-400 block text-[10px] md:text-xs mb-0.5">Satış Fiyatı:</span>
                 <p className="font-medium text-gray-900 dark:text-gray-200">
                   {(() => {
                     // Prefer showing per-unit sale price for the card.
@@ -276,7 +276,7 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
 
                   return (
                     <div>
-                      <span className="text-gray-500 dark:text-gray-400">SGK Desteği:</span>
+                      <span className="text-gray-500 dark:text-gray-400 block text-[10px] md:text-xs mb-0.5">SGK Desteği:</span>
                       <p className="font-medium text-green-600 dark:text-green-400">{formatCurrency(perEarSgk)}</p>
                     </div>
                   );
@@ -286,13 +286,13 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
               })()}
 
               <div>
-                <span className="text-gray-500 dark:text-gray-400">Ödeme Yöntemi:</span>
+                <span className="text-gray-500 dark:text-gray-400 block text-[10px] md:text-xs mb-0.5">Ödeme Yöntemi:</span>
                 <p className="font-medium text-gray-900 dark:text-gray-200">{getPaymentMethodText(device.paymentMethod)}</p>
               </div>
 
               {/* Down Payment / Peşinat - Always show for sales */}
               <div>
-                <span className="text-gray-500 dark:text-gray-400">Ön Ödeme:</span>
+                <span className="text-gray-500 dark:text-gray-400 block text-[10px] md:text-xs mb-0.5">Ön Ödeme:</span>
                 <p className="font-medium text-blue-600 dark:text-blue-400">
                   {formatCurrency(legacyDownPayment)}
                 </p>
@@ -302,26 +302,26 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
 
           {device.assignedBy && (
             <div>
-              <span className="text-gray-500 dark:text-gray-400">Atayan:</span>
+              <span className="text-gray-500 dark:text-gray-400 block text-[10px] md:text-xs mb-0.5">Atayan:</span>
               <p className="font-medium text-gray-900 dark:text-gray-200">{device.assignedBy}</p>
             </div>
           )}
         </div>
 
         {(device.notes || device.isLoaner || device.is_loaner) && (
-          <div className="pt-2 border-t text-xs">
+          <div className="pt-2 border-t text-[11px] md:text-xs">
             {device.notes && (
               <>
-                <span className="text-gray-500 dark:text-gray-400 block">Notlar:</span>
-                <p className="text-gray-700 dark:text-gray-300 mt-1">{device.notes}</p>
+                <span className="text-gray-500 dark:text-gray-400 block mb-0.5">Notlar:</span>
+                <p className="text-gray-700 dark:text-gray-300 md:mt-1 hover:whitespace-normal truncate md:overflow-visible">{device.notes}</p>
               </>
             )}
 
             {(device.isLoaner || device.is_loaner) && (
-              <div className={`mt-2 p-2 bg-purple-50 dark:bg-purple-900/20 rounded border border-purple-100 dark:border-purple-800 ${!device.notes ? 'mt-0' : ''}`}>
-                <div className="flex justify-between items-start">
+              <div className={`mt-2 p-1.5 md:p-2 bg-purple-50 dark:bg-purple-900/20 rounded border border-purple-100 dark:border-purple-800 ${!device.notes ? 'mt-0' : ''}`}>
+                <div className="flex flex-col md:flex-row justify-between items-start gap-2 md:gap-0">
                   <div>
-                    <span className="text-purple-800 dark:text-purple-300 font-semibold block mb-1">Emanet Cihaz Verildi:</span>
+                    <span className="text-purple-800 dark:text-purple-300 font-semibold block mb-0.5 md:mb-1">Emanet Cihaz Verildi:</span>
                     <p className="text-purple-700 dark:text-purple-400">
                       {device.loanerBrand || device.loaner_brand || 'Bilinmiyor'} {device.loanerModel || device.loaner_model || ''}
                       {(() => {
@@ -350,7 +350,7 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
                         e.stopPropagation();
                         onReturnLoaner?.(device);
                       }}
-                      className="ml-2 px-2 py-1 text-xs font-medium text-purple-700 dark:text-purple-300 bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-800 rounded hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors flex items-center gap-1 shadow-sm"
+                      className="md:ml-2 px-2 py-1 text-[10px] md:text-xs font-medium text-purple-700 dark:text-purple-300 bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-800 rounded hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors flex items-center justify-center gap-1 shadow-sm w-full md:w-auto"
                       title="Emaneti Stoğa Geri Al"
                     >
                       <RefreshCw className="w-3 h-3" />
@@ -365,31 +365,31 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
       </div>
 
       {/* Actions */}
-      <div className="px-4 py-3 bg-gray-50 dark:bg-slate-900/50 border-t dark:border-slate-700 flex items-center justify-end gap-2">
+      <div className="px-3 md:px-4 py-2 md:py-3 bg-gray-50 dark:bg-slate-900/50 border-t dark:border-slate-700 flex flex-wrap items-center justify-end gap-1.5 md:gap-2">
 
         <button data-allow-raw="true"
           onClick={() => onEdit?.(device)}
-          className="px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-colors flex items-center gap-1"
+          className="px-2 md:px-3 py-1 md:py-1.5 text-[11px] md:text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl md:rounded-2xl transition-colors flex items-center gap-1"
           title="Düzenle"
         >
-          <Edit className="w-4 h-4" />
+          <Edit className="w-3.5 h-3.5 md:w-4 md:h-4" />
           Düzenle
         </button>
         <button data-allow-raw="true"
           onClick={() => onReplace?.(device)}
-          className="px-3 py-1.5 text-sm font-medium text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-2xl transition-colors flex items-center gap-1"
+          className="px-2 md:px-3 py-1 md:py-1.5 text-[11px] md:text-sm font-medium text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-xl md:rounded-2xl transition-colors flex items-center gap-1"
           title="Değiştir"
         >
-          <RefreshCw className="w-4 h-4" />
+          <RefreshCw className="w-3.5 h-3.5 md:w-4 md:h-4" />
           Değiştir
         </button>
         <button data-allow-raw="true"
           onClick={() => onCancel?.(device)}
-          className="px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl transition-colors flex items-center gap-1"
+          className="px-2 md:px-3 py-1 md:py-1.5 text-[11px] md:text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl md:rounded-2xl transition-colors flex items-center gap-1"
           title="İptal Et"
           disabled={isCancelled}
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
           {isCancelled ? 'İptal Edildi' : 'İptal'}
         </button>
       </div>

@@ -366,7 +366,7 @@ const Support: React.FC = () => {
           </p>
         </div>
         <div className={`flex ${isMobile ? 'flex-col w-full' : 'space-x-3'} gap-3`}>
-          <div className="flex rounded-md shadow-sm">
+          <div className="flex rounded-xl shadow-sm">
             <button
               onClick={() => setViewMode('list')}
               className={`px-4 py-2 text-sm font-medium rounded-l-md border touch-feedback ${
@@ -390,7 +390,7 @@ const Support: React.FC = () => {
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
-            className={`inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 touch-feedback ${isMobile ? 'w-full' : ''}`}
+            className={`inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white premium-gradient tactile-press focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 touch-feedback ${isMobile ? 'w-full' : ''}`}
           >
             <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
             Yeni Ticket
@@ -399,7 +399,7 @@ const Support: React.FC = () => {
       </div>
 
       <div className={`grid gap-6 ${isMobile ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-4'}`}>
-        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-2xl">
           <div className={isMobile ? 'p-4' : 'p-5'}>
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -417,7 +417,7 @@ const Support: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-2xl">
           <div className={isMobile ? 'p-4' : 'p-5'}>
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -435,7 +435,7 @@ const Support: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-2xl">
           <div className={isMobile ? 'p-4' : 'p-5'}>
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -457,7 +457,7 @@ const Support: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-2xl">
           <div className={isMobile ? 'p-4' : 'p-5'}>
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -476,7 +476,7 @@ const Support: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-2xl p-6">
         <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-4'}`}>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -487,7 +487,7 @@ const Support: React.FC = () => {
               placeholder="Ticket ara..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
@@ -498,7 +498,7 @@ const Support: React.FC = () => {
                 setStatusFilter(e.target.value);
               }
             }}
-            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            className="block w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="all">Tüm Durumlar</option>
             <option value="open">Açık</option>
@@ -514,7 +514,7 @@ const Support: React.FC = () => {
                 setPriorityFilter(e.target.value);
               }
             }}
-            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            className="block w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="all">Tüm Öncelikler</option>
             <option value="urgent">Acil</option>
@@ -716,7 +716,7 @@ const TicketListView: React.FC<TicketListViewProps> = ({
   ];
 
   return (
-    <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 shadow rounded-2xl overflow-hidden">
       {isLoading ? (
         <div className="p-6 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
@@ -785,7 +785,7 @@ const TicketKanbanView: React.FC<TicketKanbanViewProps> = ({
   return (
     <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'}`}>
       {columns.map((column) => (
-        <div key={column.id} className={`rounded-lg border-2 ${column.color} p-4`}>
+        <div key={column.id} className={`rounded-2xl border-2 ${column.color} p-4`}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-medium text-gray-900">{column.title}</h3>
             <span className="bg-white px-2 py-1 rounded-full text-xs font-medium text-gray-600">
@@ -797,7 +797,7 @@ const TicketKanbanView: React.FC<TicketKanbanViewProps> = ({
             {getTicketsByStatus(column.id).map((ticket) => (
               <div
                 key={ticket.id}
-                className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 cursor-pointer hover:shadow-md transition-shadow touch-feedback"
+                className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 cursor-pointer hover:shadow-md transition-shadow touch-feedback"
                 onClick={() => onViewTicket(ticket)}
               >
                 <div className="flex items-start justify-between mb-2">
@@ -899,7 +899,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-md bg-white">
+      <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-xl bg-white">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-medium text-gray-900">Ticket Detayları</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
@@ -909,7 +909,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-gray-50 rounded-lg p-4">
+            <div className="bg-gray-50 rounded-2xl p-4">
               <h4 className="text-lg font-medium text-gray-900 mb-2">{ticket.title}</h4>
               <p className="text-gray-700 whitespace-pre-wrap">{ticket.description}</p>
             </div>
@@ -920,7 +920,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                 value={response}
                 onChange={(e) => setResponse(e.target.value)}
                 rows={4}
-                className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="block w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Müşteriye yanıt yazın..."
               />
               <div className="mt-2 flex justify-end">
@@ -929,7 +929,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                     void handleSendResponse();
                   }}
                   disabled={!response.trim() || isSending}
-                  className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSending ? 'Gönderiliyor...' : 'Yanıt Gönder'}
                 </button>
@@ -938,7 +938,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
           </div>
 
           <div className="space-y-6">
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="bg-white border border-gray-200 rounded-2xl p-4">
               <h5 className="text-sm font-medium text-gray-900 mb-3">Durum & Öncelik</h5>
 
               <div className="space-y-3">
@@ -952,7 +952,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                       }
                     }}
                     disabled={isLoading}
-                    className="block w-full text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="block w-full text-sm border border-gray-300 rounded-xl px-2 py-1 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <option value="open">Açık</option>
                     <option value="in_progress">İşlemde</option>
@@ -978,7 +978,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                     value={ticket.assignedTo || ''}
                     onChange={(e) => handleAssignmentUpdate(e.target.value)}
                     disabled={isLoading}
-                    className="block w-full text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="block w-full text-sm border border-gray-300 rounded-xl px-2 py-1 focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <option value="">Atanmamış</option>
                     {adminUsers.map((admin) => (
@@ -991,7 +991,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
               </div>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="bg-white border border-gray-200 rounded-2xl p-4">
               <h5 className="text-sm font-medium text-gray-900 mb-3">Ticket Bilgileri</h5>
 
               <dl className="space-y-2 text-sm">
@@ -1050,7 +1050,7 @@ const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ onClose, onCreate
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 shadow-lg rounded-md bg-white">
+      <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 shadow-lg rounded-xl bg-white">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-medium text-gray-900">Yeni Ticket Oluştur</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
@@ -1067,7 +1067,7 @@ const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ onClose, onCreate
               id="title"
               type="text"
               required
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="mt-1 block w-full border border-gray-300 rounded-xl shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               value={formData.title}
               onChange={(e) => setFormData((current) => ({ ...current, title: e.target.value }))}
             />
@@ -1081,7 +1081,7 @@ const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ onClose, onCreate
               id="description"
               required
               rows={4}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="mt-1 block w-full border border-gray-300 rounded-xl shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               value={formData.description}
               onChange={(e) => setFormData((current) => ({ ...current, description: e.target.value }))}
             />
@@ -1094,7 +1094,7 @@ const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ onClose, onCreate
               </label>
               <select
                 id="priority"
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-xl shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 value={formData.priority}
                 onChange={(e) => {
                   const nextPriority = e.target.value;
@@ -1116,7 +1116,7 @@ const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ onClose, onCreate
               </label>
               <select
                 id="category"
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-xl shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 value={formData.category}
                 onChange={(e) => {
                   const nextCategory = e.target.value;
@@ -1137,14 +1137,14 @@ const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ onClose, onCreate
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="px-4 py-2 border border-gray-300 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               İptal
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white premium-gradient tactile-press focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Oluşturuluyor...' : 'Oluştur'}
             </button>

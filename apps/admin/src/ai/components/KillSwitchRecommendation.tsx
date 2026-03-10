@@ -255,7 +255,7 @@ export function KillSwitchRecommendation({
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-start space-x-3">
-          <div className="flex-shrink-0 p-2 bg-red-100 rounded-lg">
+          <div className="flex-shrink-0 p-2 bg-red-100 rounded-2xl">
             <ShieldAlert className="h-6 w-6 text-red-600" />
           </div>
           <div>
@@ -303,7 +303,7 @@ export function KillSwitchRecommendation({
           disabled={isLoading}
           className={`
             inline-flex items-center px-4 py-2 text-sm font-medium text-white
-            bg-red-600 border border-transparent rounded-md shadow-sm
+            bg-red-600 border border-transparent rounded-xl shadow-sm
             hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2
             focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed
             transition-colors

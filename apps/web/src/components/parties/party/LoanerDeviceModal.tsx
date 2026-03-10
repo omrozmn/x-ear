@@ -99,7 +99,7 @@ export const LoanerDeviceModal: React.FC<LoanerDeviceModalProps> = ({
                     <button data-allow-raw="true"
                         onClick={handleSubmit}
                         disabled={!selectedLoanerItem || isSubmitting}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-4 py-2 premium-gradient tactile-press text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isSubmitting ? 'Ekleniyor...' : 'Ekle'}
                     </button>

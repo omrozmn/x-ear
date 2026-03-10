@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card, CardContent, Input, Label, Textarea, Button } from '@x-ear/ui-web';
-import { CreditCard, Calendar, DollarSign, FileText, Percent, Package } from 'lucide-react';
+import { Card, CardContent, Input, Label, Textarea, Button, DatePicker } from '@x-ear/ui-web';
+import { CreditCard, DollarSign, FileText, Percent, Package } from 'lucide-react';
 
 interface PaymentInfoProps {
   paymentMethod: string;
@@ -102,17 +102,12 @@ export const PaymentInfo: React.FC<PaymentInfoProps> = ({
           <Label className="text-xs font-medium text-gray-600 mb-1 block">
             Satış Tarihi
           </Label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-              <Calendar className="w-3 h-3 text-gray-400" />
-            </div>
-            <Input
-              type="date"
-              value={saleDate}
-              onChange={(e) => onSaleDateChange(e.target.value)}
-              className="pl-6"
-            />
-          </div>
+          <DatePicker
+            value={saleDate ? new Date(saleDate) : null}
+            onChange={(date) => onSaleDateChange(date ? date.toISOString().split('T')[0] : '')}
+            fullWidth
+            placeholder="GG/AA/YYYY"
+          />
         </div>
 
         {/* Paid Amount */}
@@ -189,7 +184,7 @@ export const PaymentInfo: React.FC<PaymentInfoProps> = ({
               <Package className="w-3 h-3 text-blue-600" />
               <h4 className="text-xs font-semibold text-gray-700">Ürün Detayları</h4>
             </div>
-            
+
             {onProductBarcodeChange && (
               <div>
                 <Label className="text-xs font-medium text-gray-600 mb-1 block">
@@ -225,7 +220,7 @@ export const PaymentInfo: React.FC<PaymentInfoProps> = ({
         {/* SGK Information */}
         <div className="space-y-3 pt-2 border-t border-gray-200">
           <h4 className="text-xs font-semibold text-gray-700">SGK Bilgileri</h4>
-          
+
           <div>
             <Label className="text-xs font-medium text-gray-600 mb-1 block">
               SGK Onay Numarası
@@ -242,17 +237,12 @@ export const PaymentInfo: React.FC<PaymentInfoProps> = ({
             <Label className="text-xs font-medium text-gray-600 mb-1 block">
               SGK Onay Tarihi
             </Label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                <Calendar className="w-3 h-3 text-gray-400" />
-              </div>
-              <Input
-                type="date"
-                value={sgkApprovalDate}
-                onChange={(e) => onSgkApprovalDateChange(e.target.value)}
-                className="pl-6"
-              />
-            </div>
+            <DatePicker
+              value={sgkApprovalDate ? new Date(sgkApprovalDate) : null}
+              onChange={(date) => onSgkApprovalDateChange(date ? date.toISOString().split('T')[0] : '')}
+              fullWidth
+              placeholder="GG/AA/YYYY"
+            />
           </div>
         </div>
 

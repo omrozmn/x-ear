@@ -207,7 +207,7 @@ export default function DemoClient() {
                                     <button
                                         type="submit"
                                         disabled={isSubmitting}
-                                        className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 text-white font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-3 group relative overflow-hidden"
+                                        className="w-full premium-gradient tactile-press hover:bg-blue-500 disabled:premium-gradient tactile-press/50 text-white font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-3 group relative overflow-hidden"
                                     >
                                         {isSubmitting ? (
                                             <Loader2 className="w-5 h-5 animate-spin" />

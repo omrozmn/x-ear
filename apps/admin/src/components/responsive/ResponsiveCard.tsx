@@ -32,7 +32,7 @@ export function ResponsiveCard({
       className={`
         bg-white dark:bg-gray-800 
         border border-gray-200 dark:border-gray-700 
-        ${isMobile ? 'rounded-xl' : 'rounded-lg'}
+        ${isMobile ? 'rounded-xl' : 'rounded-2xl'}
         shadow-sm
         ${className}
       `}

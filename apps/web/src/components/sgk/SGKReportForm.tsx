@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Input, Select, Textarea, Card, CardHeader, CardContent } from '@x-ear/ui-web';
+import { Button, Input, Select, Textarea, Card, CardHeader, CardContent, DatePicker } from '@x-ear/ui-web';
 import { useToastHelpers } from '@x-ear/ui-web';
 import { Calendar, FileText, User, Stethoscope, Building2, Hash, Save, X } from 'lucide-react';
 import { Party } from '../../types/party/party-base.types';
@@ -53,8 +53,8 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
     tcNumber: party?.tcNumber || '',
     documentType: 'rapor' as SGKDocumentType,
     reportNumber: '',
-    reportDate: new Date().toISOString().split('T')[0],
-    validityDate: '',
+    reportDate: new Date(),
+    validityDate: null as Date | null,
     doctorName: '',
     doctorTitle: 'Dr.',
     hospitalName: '',
@@ -86,7 +86,7 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
         reportNumber: `RPT-${year}${month}${day}-${time}`
       }));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
 
   // Auto-calculate validity date (6 months from report date)
@@ -97,7 +97,7 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
       validityDate.setMonth(validityDate.getMonth() + 6);
       setFormData(prev => ({
         ...prev,
-        validityDate: validityDate.toISOString().split('T')[0]
+        validityDate
       }));
     }
   }, [formData.reportDate]);
@@ -146,8 +146,8 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
           partyName: formData.partyName,
           tcNumber: formData.tcNumber,
           reportNumber: formData.reportNumber,
-          reportDate: formData.reportDate,
-          validityDate: formData.validityDate,
+          reportDate: formData.reportDate.toISOString().split('T')[0],
+          validityDate: formData.validityDate ? formData.validityDate.toISOString().split('T')[0] : '',
           doctorName: formData.doctorName,
           hospitalName: formData.hospitalName,
           diagnosis: formData.diagnosis,
@@ -171,7 +171,7 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
     }
   };
 
-  const handleInputChange = (field: string, value: string | number | boolean) => {
+  const handleInputChange = (field: string, value: unknown) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
@@ -272,10 +272,9 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
                 <Calendar className="h-4 w-4" />
                 Rapor Tarihi *
               </label>
-              <Input
-                type="date"
+              <DatePicker
                 value={formData.reportDate}
-                onChange={(e) => handleInputChange('reportDate', e.target.value)}
+                onChange={(date) => handleInputChange('reportDate', date)}
                 error={errors.reportDate}
               />
             </div>
@@ -285,10 +284,9 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
                 <Calendar className="h-4 w-4" />
                 Geçerlilik Tarihi
               </label>
-              <Input
-                type="date"
+              <DatePicker
                 value={formData.validityDate}
-                onChange={(e) => handleInputChange('validityDate', e.target.value)}
+                onChange={() => { }} // Disabled but needed for component
                 disabled
                 className="bg-gray-50"
               />

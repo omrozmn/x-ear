@@ -58,6 +58,75 @@ interface ApiErrorLike {
     message?: string;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+}
+
+function normalizeAffiliateDetails(value: unknown): AffiliateDetails | null {
+    if (!isRecord(value)) {
+        return null;
+    }
+
+    const stats = isRecord(value.stats) ? value.stats : {};
+    const referrals = Array.isArray(value.referrals) ? value.referrals : [];
+    const commissions = Array.isArray(value.recent_commissions)
+        ? value.recent_commissions
+        : Array.isArray(value.recentCommissions)
+            ? value.recentCommissions
+            : [];
+
+    return {
+        id: Number(value.id ?? 0),
+        display_id: String(value.display_id ?? value.displayId ?? ''),
+        email: String(value.email ?? ''),
+        code: String(value.code ?? value.referralCode ?? ''),
+        iban: typeof value.iban === 'string' ? value.iban : null,
+        account_holder_name: typeof value.account_holder_name === 'string'
+            ? value.account_holder_name
+            : typeof value.accountHolderName === 'string'
+                ? value.accountHolderName
+                : null,
+        phone_number: typeof value.phone_number === 'string'
+            ? value.phone_number
+            : typeof value.phoneNumber === 'string'
+                ? value.phoneNumber
+                : null,
+        is_active: Boolean(value.is_active ?? value.isActive),
+        created_at: String(value.created_at ?? value.createdAt ?? ''),
+        stats: {
+            total_referrals: Number(stats.total_referrals ?? stats.totalReferrals ?? 0),
+            total_revenue: Number(stats.total_revenue ?? stats.totalRevenue ?? 0),
+            total_commission: Number(stats.total_commission ?? stats.totalCommission ?? 0),
+            active_subscriptions: Number(stats.active_subscriptions ?? stats.activeSubscriptions ?? 0),
+        },
+        referrals: referrals
+            .filter(isRecord)
+            .map((referral) => ({
+                tenant_id: String(referral.tenant_id ?? referral.tenantId ?? ''),
+                tenant_name: String(referral.tenant_name ?? referral.tenantName ?? '-'),
+                created_at: String(referral.created_at ?? referral.createdAt ?? ''),
+                subscription: isRecord(referral.subscription)
+                    ? {
+                        plan_name: String(referral.subscription.plan_name ?? referral.subscription.planName ?? ''),
+                        price: Number(referral.subscription.price ?? 0),
+                        status: String(referral.subscription.status ?? ''),
+                        start_date: String(referral.subscription.start_date ?? referral.subscription.startDate ?? ''),
+                        end_date: String(referral.subscription.end_date ?? referral.subscription.endDate ?? ''),
+                    }
+                    : null,
+            })),
+        recent_commissions: commissions
+            .filter(isRecord)
+            .map((commission) => ({
+                id: Number(commission.id ?? 0),
+                event: String(commission.event ?? ''),
+                amount: Number(commission.amount ?? 0),
+                status: String(commission.status ?? ''),
+                created_at: String(commission.created_at ?? commission.createdAt ?? ''),
+            })),
+    };
+}
+
 const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
     affiliateId,
     isOpen,
@@ -66,15 +135,18 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
 }) => {
     const queryClient = useQueryClient();
 
-    const { data, isLoading, error } = useQuery<AffiliateDetails>({
+    const { data, isLoading, error } = useQuery<AffiliateDetails | null>({
         queryKey: ['affiliate-details', affiliateId],
-        queryFn: () => adminApi({ url: `/affiliate/${affiliateId}/details`, method: 'GET' }),
+        queryFn: async () => {
+            const response = await adminApi<unknown>({ url: `/affiliates/${affiliateId}/details`, method: 'GET' });
+            return normalizeAffiliateDetails(response);
+        },
         enabled: isOpen && !!affiliateId,
     });
 
     const toggleStatusMutation = useMutation({
         mutationFn: () => adminApi({
-            url: `/affiliate/${affiliateId}/toggle-status`,
+            url: `/affiliates/${affiliateId}/toggle-status`,
             method: 'PATCH'
         }),
         onSuccess: () => {
@@ -118,11 +190,11 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
 
     return (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-10 mx-auto p-6 border w-11/12 max-w-6xl shadow-lg rounded-md bg-white mb-10">
+            <div className="relative top-10 mx-auto p-6 border w-11/12 max-w-6xl shadow-lg rounded-xl bg-white mb-10">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-primary-100 rounded-lg">
+                        <div className="p-2 bg-primary-100 rounded-2xl">
                             <UserGroupIcon className="h-6 w-6 text-primary-600" />
                         </div>
                         <div>
@@ -149,7 +221,7 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                 )}
 
                 {error && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
+                    <div className="bg-red-50 border border-red-200 rounded-2xl p-4 text-red-800">
                         Hata: {(error as ApiErrorLike).message || 'Veri yüklenemedi'}
                     </div>
                 )}
@@ -158,7 +230,7 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                     <div className="space-y-6">
                         {/* Stats Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm text-blue-600 font-medium">Toplam Yönlendirme</p>
@@ -168,7 +240,7 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                                 </div>
                             </div>
 
-                            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <div className="bg-green-50 border border-green-200 rounded-2xl p-4">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm text-green-600 font-medium">Aktif Abonelik</p>
@@ -178,7 +250,7 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                                 </div>
                             </div>
 
-                            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                            <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm text-purple-600 font-medium">Toplam Gelir</p>
@@ -188,7 +260,7 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                                 </div>
                             </div>
 
-                            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                            <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-sm text-orange-600 font-medium">Toplam Komisyon</p>
@@ -200,7 +272,7 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                         </div>
 
                         {/* Affiliate Info */}
-                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <div className="bg-gray-50 rounded-2xl p-4 border border-gray-200">
                             <h4 className="font-semibold text-gray-900 mb-3">Affiliate Bilgileri</h4>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                                 <div>
@@ -241,7 +313,7 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                                 Getirilen Aboneler ({data.referrals.length})
                             </h4>
                             {data.referrals.length > 0 ? (
-                                <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                                <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
                                     <table className="min-w-full divide-y divide-gray-200">
                                         <thead className="bg-gray-50">
                                             <tr>
@@ -272,7 +344,7 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                                     </table>
                                 </div>
                             ) : (
-                                <div className="bg-gray-50 rounded-lg p-8 text-center border border-gray-200">
+                                <div className="bg-gray-50 rounded-2xl p-8 text-center border border-gray-200">
                                     <UserGroupIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
                                     <p className="text-gray-500">Henüz yönlendirme yok</p>
                                 </div>
@@ -286,7 +358,7 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                                     <CurrencyDollarIcon className="h-5 w-5 mr-2 text-green-600" />
                                     Son Komisyonlar
                                 </h4>
-                                <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                                <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
                                     <table className="min-w-full divide-y divide-gray-200">
                                         <thead className="bg-gray-50">
                                             <tr>
@@ -323,7 +395,7 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                         <button
                             onClick={() => toggleStatusMutation.mutate()}
                             disabled={toggleStatusMutation.isPending}
-                            className={`px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white ${data.is_active
+                            className={`px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-white ${data.is_active
                                 ? 'bg-red-600 hover:bg-red-700'
                                 : 'bg-green-600 hover:bg-green-700'
                                 } disabled:opacity-50 disabled:cursor-not-allowed`}
@@ -332,7 +404,7 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                         </button>
                         <button
                             onClick={onClose}
-                            className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                            className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50"
                         >
                             Kapat
                         </button>

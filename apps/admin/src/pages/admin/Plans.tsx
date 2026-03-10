@@ -115,6 +115,7 @@ const Plans: React.FC = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedPlanIds, setSelectedPlanIds] = useState<string[]>([]);
 
   const params: ListAdminPlansParams = { page, limit };
   const { data: plansData, isLoading, error } = useListAdminPlans(params);
@@ -267,10 +268,35 @@ const Plans: React.FC = () => {
       await deletePlan({ planId: deletingPlanId });
       await queryClient.invalidateQueries({ queryKey: ['/api/admin/plans'] });
       toast.success('Plan silindi');
+      setSelectedPlanIds((prev) => prev.filter((id) => id !== deletingPlanId));
       setIsDeleteModalOpen(false);
     } catch (error: unknown) {
       console.error('Delete plan error:', error);
       toast.error(getApiErrorMessage(error, 'Silme başarısız'));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedPlanIds.length === 0) {
+      toast.error('Secili plan yok');
+      return;
+    }
+
+    if (!window.confirm(`${selectedPlanIds.length} plan silinsin mi?`)) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await Promise.all(selectedPlanIds.map((planId) => deletePlan({ planId })));
+      await queryClient.invalidateQueries({ queryKey: ['/api/admin/plans'] });
+      toast.success(`${selectedPlanIds.length} plan silindi`);
+      setSelectedPlanIds([]);
+    } catch (error: unknown) {
+      console.error('Bulk delete plan error:', error);
+      toast.error(getApiErrorMessage(error, 'Toplu silme başarısız'));
     } finally {
       setIsSubmitting(false);
     }
@@ -401,14 +427,14 @@ const Plans: React.FC = () => {
           </div>
           <button
             onClick={() => handleOpenModal()}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 touch-feedback"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white premium-gradient tactile-press dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 touch-feedback"
           >
             <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
             {!isMobile && 'Plan Ekle'}
           </button>
         </div>
         <div className="max-w-md">
-          <div className="relative rounded-md shadow-sm">
+          <div className="relative rounded-xl shadow-sm">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
               <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
             </div>
@@ -417,7 +443,7 @@ const Plans: React.FC = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Plan adı, açıklama veya tip ara..."
-              className="block w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white pl-10 pr-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
+              className="block w-full rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white pl-10 pr-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -428,16 +454,46 @@ const Plans: React.FC = () => {
             <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">Planlar yükleniyor...</p>
           </div>
         ) : error ? (
-          <div className="p-6 text-center text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg">
+          <div className="p-6 text-center text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-2xl">
             Planlar yüklenirken hata oluştu
           </div>
         ) : (
-          <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 shadow rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
             <ResponsiveTable
               data={plans}
               columns={columns}
               keyExtractor={(plan: PlanRead) => plan.id!}
               emptyMessage="Plan bulunamadı"
+              selectable
+              selectedKeys={selectedPlanIds}
+              onSelectionChange={setSelectedPlanIds}
+              selectionLabel="plan secildi"
+              bulkActions={(
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPlanIds(plans.map((plan) => plan.id!))}
+                    className="rounded-xl border border-primary-200 bg-white px-3 py-1.5 text-sm font-medium text-primary-700 hover:bg-primary-100"
+                  >
+                    Tumunu sec
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPlanIds([])}
+                    className="rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                  >
+                    Secimi temizle
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleBulkDelete}
+                    disabled={isSubmitting}
+                    className="rounded-xl bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                  >
+                    Secilenleri sil
+                  </button>
+                </>
+              )}
             />
 
             <div className="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-4 py-3 sm:px-6">
@@ -447,7 +503,10 @@ const Plans: React.FC = () => {
                 totalItems={pagination?.total || 0}
                 itemsPerPage={limit}
                 onPageChange={setPage}
-                onItemsPerPageChange={setLimit}
+                onItemsPerPageChange={(nextLimit) => {
+                  setLimit(nextLimit);
+                  setPage(1);
+                }}
               />
             </div>
           </div>
@@ -457,7 +516,7 @@ const Plans: React.FC = () => {
         <Dialog.Root open={isModalOpen} onOpenChange={setIsModalOpen}>
           <Dialog.Portal>
             <Dialog.Overlay className="fixed inset-0 bg-black/50 z-40" />
-            <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[700px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-xl z-50 overflow-y-auto">
+            <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[700px] translate-x-[-50%] translate-y-[-50%] rounded-2xl bg-white p-6 shadow-xl z-50 overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
                 <Dialog.Title className="text-xl font-bold text-gray-900">
                   {editingPlan ? 'Planı Düzenle' : 'Yeni Plan Oluştur'}
@@ -474,7 +533,7 @@ const Plans: React.FC = () => {
                     <input
                       type="text"
                       required
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                      className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     />
@@ -485,7 +544,7 @@ const Plans: React.FC = () => {
                       type="number"
                       required
                       min="0"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                      className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                       value={formData.price}
                       onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
                     />
@@ -495,7 +554,7 @@ const Plans: React.FC = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Açıklama</label>
                   <textarea
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                     rows={3}
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -506,7 +565,7 @@ const Plans: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Plan Tipi</label>
                     <select
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                      className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                       value={formData.planType}
                       onChange={(e) => setFormData({ ...formData, planType: e.target.value as PlanType })}
                     >
@@ -516,7 +575,7 @@ const Plans: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Faturalama Aralığı</label>
                     <select
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                      className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                       value={formData.billingInterval}
                       onChange={(e) => setFormData({ ...formData, billingInterval: e.target.value as BillingInterval })}
                     >
@@ -531,7 +590,7 @@ const Plans: React.FC = () => {
                     <input
                       type="number"
                       min="1"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                      className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                       value={formData.maxUsers}
                       onChange={(e) => setFormData({ ...formData, maxUsers: Number(e.target.value) })}
                     />
@@ -541,7 +600,7 @@ const Plans: React.FC = () => {
                     <input
                       type="number"
                       min="1"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                      className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                       value={formData.maxStorageGb}
                       onChange={(e) => setFormData({ ...formData, maxStorageGb: Number(e.target.value) })}
                     />
@@ -553,7 +612,7 @@ const Plans: React.FC = () => {
 
                   <div className="space-y-3 mb-4 max-h-[200px] overflow-y-auto px-1">
                     {formData.features.map((feature, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-md border border-gray-200">
+                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-200">
                         <div>
                           <div className="font-medium text-sm text-gray-900">{feature.name}</div>
                           <div className="text-xs text-gray-500 flex gap-2">
@@ -565,7 +624,7 @@ const Plans: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => toggleFeature(index)}
-                            className={`p-1.5 rounded-md transition-colors ${feature.is_visible ? 'text-green-600 bg-green-100 hover:bg-green-200' : 'text-gray-400 bg-gray-200 hover:bg-gray-300'}`}
+                            className={`p-1.5 rounded-xl transition-colors ${feature.is_visible ? 'text-green-600 bg-green-100 hover:bg-green-200' : 'text-gray-400 bg-gray-200 hover:bg-gray-300'}`}
                             title={feature.is_visible ? 'Görünür' : 'Gizli'}
                           >
                             {feature.is_visible ? <CheckIcon className="h-4 w-4" /> : <XMarkIcon className="h-4 w-4" />}
@@ -577,7 +636,7 @@ const Plans: React.FC = () => {
                               newFeatures.splice(index, 1);
                               setFormData({ ...formData, features: newFeatures });
                             }}
-                            className="p-1.5 text-red-600 hover:bg-red-100 rounded-md transition-colors"
+                            className="p-1.5 text-red-600 hover:bg-red-100 rounded-xl transition-colors"
                             title="Sil"
                           >
                             <TrashIcon className="h-4 w-4" />
@@ -588,7 +647,7 @@ const Plans: React.FC = () => {
                   </div>
 
                   {/* Add New Feature */}
-                  <div className="bg-blue-50 p-4 rounded-md border border-blue-100">
+                  <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
                     <h5 className="text-xs font-semibold text-blue-800 uppercase mb-2">Yeni Özellik Ekle</h5>
                     <div className="grid grid-cols-12 gap-3 items-end">
                       <div className="col-span-4">
@@ -626,7 +685,7 @@ const Plans: React.FC = () => {
                               toast.error('Özellik ismi gerekli');
                             }
                           }}
-                          className="w-full inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700"
+                          className="w-full inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white premium-gradient tactile-press"
                         >
                           <PlusIcon className="h-3 w-3 mr-1" /> Ekle
                         </button>
@@ -639,14 +698,14 @@ const Plans: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="px-4 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50"
                   >
                     İptal
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                    className="px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white premium-gradient tactile-press disabled:opacity-50"
                   >
                     {isSubmitting ? 'İşleniyor...' : (editingPlan ? 'Güncelle' : 'Oluştur')}
                   </button>
@@ -671,14 +730,14 @@ const Plans: React.FC = () => {
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => setIsDeleteModalOpen(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                  className="px-4 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50"
                 >
                   İptal
                 </button>
                 <button
                   onClick={handleConfirmDelete}
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 disabled:opacity-50"
                 >
                   {isSubmitting ? 'Siliniyor...' : 'Sil'}
                 </button>
@@ -702,14 +761,14 @@ const Plans: React.FC = () => {
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => setIsToggleModalOpen(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                  className="px-4 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50"
                 >
                   İptal
                 </button>
                 <button
                   onClick={handleConfirmToggle}
                   disabled={isSubmitting}
-                  className={`px-4 py-2 rounded-md text-white shadow-sm disabled:opacity-50 ${togglingPlan?.isActive ? 'bg-amber-600 hover:bg-amber-700' : 'bg-green-600 hover:bg-green-700'}`}
+                  className={`px-4 py-2 rounded-xl text-white shadow-sm disabled:opacity-50 ${togglingPlan?.isActive ? 'bg-amber-600 hover:bg-amber-700' : 'bg-green-600 hover:bg-green-700'}`}
                 >
                   {isSubmitting ? 'İşleniyor...' : 'Onayla'}
                 </button>

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, Plus, Edit, X, Check, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
-import { Button, Badge, Input, Textarea, Select } from '@x-ear/ui-web';
+import { Button, Badge, Input, Textarea, Select, DatePicker } from '@x-ear/ui-web';
 import { Party } from '../../types/party';
 import { listPartyAppointments } from '@/api/client/parties.client';
 import {
@@ -30,6 +30,7 @@ export const PartyAppointmentsTab: React.FC<PartyAppointmentsTabProps> = ({ part
     dateRange: 'all',
     search: ''
   });
+  const [newAppointmentDate, setNewAppointmentDate] = useState<Date | null>(null);
 
   // Load appointments for this party
   const loadAppointments = useCallback(async () => {
@@ -168,7 +169,7 @@ export const PartyAppointmentsTab: React.FC<PartyAppointmentsTabProps> = ({ part
         </div>
         <Button
           onClick={() => setShowBookingForm(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
+          className="premium-gradient tactile-press text-white"
         >
           <Plus className="w-4 h-4 mr-2" />
           Yeni Randevu
@@ -176,10 +177,10 @@ export const PartyAppointmentsTab: React.FC<PartyAppointmentsTabProps> = ({ part
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-2xl shadow-sm border">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="bg-white p-3 md:p-4 rounded-xl md:rounded-2xl shadow-sm border">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Durum</label>
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Durum</label>
             <Select
               value={filters.status}
               onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
@@ -195,16 +196,16 @@ export const PartyAppointmentsTab: React.FC<PartyAppointmentsTabProps> = ({ part
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tarih</label>
-            <Input
-              type="date"
-              value={filters.dateRange === 'all' ? '' : filters.dateRange}
-              onChange={(e) => setFilters(prev => ({ ...prev, dateRange: e.target.value || 'all' }))}
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Tarih</label>
+            <DatePicker
+              value={filters.dateRange === 'all' ? null : new Date(filters.dateRange)}
+              onChange={(date) => setFilters(prev => ({ ...prev, dateRange: date ? date.toISOString().split('T')[0] : 'all' }))}
+              placeholder="Tarih"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Arama</label>
+          <div className="col-span-2 md:col-span-1">
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Arama</label>
             <Input
               type="text"
               placeholder="Notlarda ara..."
@@ -322,7 +323,7 @@ export const PartyAppointmentsTab: React.FC<PartyAppointmentsTabProps> = ({ part
               const formData = new FormData(e.currentTarget);
               const appointmentData: AppointmentCreate = {
                 partyId: party.id || '',
-                date: formData.get('date') as string,
+                date: newAppointmentDate ? newAppointmentDate.toISOString().split('T')[0] : '',
                 time: formData.get('time') as string,
                 duration: parseInt(formData.get('duration') as string) || 30,
                 // appointmentType: (formData.get('type') as any) || 'General',
@@ -334,7 +335,13 @@ export const PartyAppointmentsTab: React.FC<PartyAppointmentsTabProps> = ({ part
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Tarih</label>
-                  <Input type="date" name="date" required />
+                  <DatePicker
+                    value={newAppointmentDate}
+                    onChange={setNewAppointmentDate}
+                    required
+                    fullWidth
+                    placeholder="GG/AA/YYYY"
+                  />
                 </div>
 
                 <div>
@@ -368,7 +375,7 @@ export const PartyAppointmentsTab: React.FC<PartyAppointmentsTabProps> = ({ part
                 </Button>
                 <Button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl"
+                  className="px-4 py-2 premium-gradient tactile-press text-white rounded-xl"
                 >
                   Randevu Oluştur
                 </Button>

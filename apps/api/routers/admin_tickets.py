@@ -2,6 +2,7 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
+from sqlalchemy.exc import OperationalError
 from typing import Optional
 from datetime import datetime, timezone
 import logging
@@ -13,10 +14,78 @@ from schemas.tickets import TicketCreate, TicketUpdate, TicketResponseCreate
 from schemas.base import ResponseEnvelope
 from core.models.ticket import Ticket, TicketResponse, TicketStatus, TicketPriority
 from core.models.tenant import Tenant
+from core.models.notification import Notification
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin/tickets", tags=["Admin Tickets"])
+
+
+def _build_notification_ticket_rows(
+    db: Session,
+    page: int,
+    limit: int,
+    status: Optional[str],
+    priority: Optional[str],
+    search: Optional[str],
+):
+    """Fallback legacy support source backed by notifications."""
+    query = db.query(Notification)
+
+    if priority:
+        query = query.filter(Notification.priority == priority)
+
+    if search:
+        search_pattern = f"%{search}%"
+        query = query.filter(
+            or_(
+                Notification.title.ilike(search_pattern),
+                Notification.message.ilike(search_pattern),
+            )
+        )
+
+    total = query.count()
+    notifications = (
+        query.order_by(Notification.created_at.desc())
+        .offset((page - 1) * limit)
+        .limit(limit)
+        .all()
+    )
+
+    tickets = []
+    for notification in notifications:
+        tenant_name = None
+        if notification.tenant_id:
+            tenant = db.query(Tenant).filter(Tenant.id == notification.tenant_id).first()
+            if tenant:
+                tenant_name = tenant.name
+
+        read_state = bool(getattr(notification, "is_read", False))
+        mapped_status = "resolved" if read_state else "open"
+        if status and status != mapped_status:
+            continue
+
+        raw_priority = (notification.priority or "").lower()
+        mapped_priority = raw_priority if raw_priority in {"low", "medium", "high", "urgent"} else "medium"
+
+        tickets.append({
+            "id": notification.id,
+            "title": notification.title,
+            "description": notification.message,
+            "status": mapped_status,
+            "priority": mapped_priority,
+            "category": "general",
+            "tenantId": notification.tenant_id,
+            "tenantName": tenant_name,
+            "assignedTo": None,
+            "assignedAdminName": None,
+            "slaDueDate": getattr(notification, "expires_at", None).isoformat() if getattr(notification, "expires_at", None) else None,
+            "createdBy": notification.user_id,
+            "createdAt": notification.created_at.isoformat() if notification.created_at else None,
+            "updatedAt": notification.updated_at.isoformat() if notification.updated_at else None,
+        })
+
+    return tickets, total
 
 
 @router.get("", operation_id="listAdminTickets", response_model=ResponseEnvelope[dict])
@@ -32,38 +101,48 @@ async def get_admin_tickets(
     """Get list of tickets"""
     try:
         with unbound_session(reason="admin-cross-tenant"):
-            # Build query
-            query = db.query(Ticket)
+            try:
+                query = db.query(Ticket)
             
-            # Filter by status
-            if status:
-                try:
-                    query = query.filter(Ticket.status == TicketStatus(status))
-                except ValueError:
-                    pass
+                if status:
+                    try:
+                        query = query.filter(Ticket.status == TicketStatus(status))
+                    except ValueError:
+                        pass
             
-            # Filter by priority
-            if priority:
-                try:
-                    query = query.filter(Ticket.priority == TicketPriority(priority))
-                except ValueError:
-                    pass
+                if priority:
+                    try:
+                        query = query.filter(Ticket.priority == TicketPriority(priority))
+                    except ValueError:
+                        pass
             
-            # Search in title and description
-            if search:
-                search_pattern = f"%{search}%"
-                query = query.filter(
-                    or_(
-                        Ticket.title.ilike(search_pattern),
-                        Ticket.description.ilike(search_pattern)
+                if search:
+                    search_pattern = f"%{search}%"
+                    query = query.filter(
+                        or_(
+                            Ticket.title.ilike(search_pattern),
+                            Ticket.description.ilike(search_pattern)
+                        )
                     )
+            
+                total = query.count()
+            
+                tickets = query.order_by(Ticket.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
+            except OperationalError:
+                tickets, total = _build_notification_ticket_rows(db, page, limit, status, priority, search)
+                return ResponseEnvelope(
+                    success=True,
+                    data={
+                        "tickets": tickets,
+                        "pagination": {
+                            "page": page,
+                            "limit": limit,
+                            "perPage": limit,
+                            "total": total,
+                            "totalPages": (total + limit - 1) // limit
+                        }
+                    }
                 )
-            
-            # Get total count
-            total = query.count()
-            
-            # Paginate
-            tickets = query.order_by(Ticket.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
         
         # Format response
         tickets_data = []
@@ -104,6 +183,7 @@ async def get_admin_tickets(
                 "pagination": {
                     "page": page,
                     "limit": limit,
+                    "perPage": limit,
                     "total": total,
                     "totalPages": (total + limit - 1) // limit
                 }
@@ -269,4 +349,3 @@ async def create_ticket_response(
         db.rollback()
         logger.error(f"Error creating ticket response: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-

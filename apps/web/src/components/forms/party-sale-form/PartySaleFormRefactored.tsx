@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useToastHelpers, Button, Input, Select, Textarea, Label } from '@x-ear/ui-web';
+import { useToastHelpers, Button, Input, Select, Textarea, Label, DatePicker } from '@x-ear/ui-web';
 import { PartyApiService } from '../../../services/party/party-api.service';
 import { listInventory } from '@/api/client/inventory.client';
 import { unwrapArray } from '../../../utils/response-unwrap';
@@ -791,10 +791,9 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
             <Label className="mb-1">
               Satış Tarihi *
             </Label>
-            <Input
-              type="date"
-              value={saleDate}
-              onChange={(e) => setSaleDate(e.target.value)}
+            <DatePicker
+              value={saleDate ? new Date(saleDate) : null}
+              onChange={(date) => setSaleDate(date ? date.toISOString().split('T')[0] : '')}
               required
               fullWidth
             />

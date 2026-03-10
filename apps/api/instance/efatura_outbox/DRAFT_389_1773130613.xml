@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2">
+	<ext:UBLExtensions>
+		<ext:UBLExtension>
+			<ext:ExtensionContent/>
+		</ext:UBLExtension>
+	</ext:UBLExtensions>
+	<cbc:UBLVersionID>2.1</cbc:UBLVersionID>
+	<cbc:CustomizationID>TR1.2</cbc:CustomizationID>
+	<cbc:ProfileID>TICARIFATURA</cbc:ProfileID>
+	<cbc:ID>E062026000000006</cbc:ID>
+	<cbc:IssueDate>2026-03-10</cbc:IssueDate>
+	<cbc:UUID>7885d20a-5483-45cb-bf98-0d9c6358f5d4</cbc:UUID>
+	<cbc:IssueTime>11:16:53</cbc:IssueTime>
+	<cbc:CopyIndicator>false</cbc:CopyIndicator>
+	<cbc:InvoiceTypeCode>OZELMATRAH</cbc:InvoiceTypeCode>
+	<cbc:DocumentCurrencyCode>TRY</cbc:DocumentCurrencyCode>
+	<cbc:Note>Genel not ozelmatrah 8179</cbc:Note>
+	<cac:PaymentMeans>
+		<cbc:PaymentMeansCode>1</cbc:PaymentMeansCode>
+		<cbc:PaymentChannelCode>TESTTRIS8179</cbc:PaymentChannelCode>
+		<cbc:PaymentDueDate>2026-03-31</cbc:PaymentDueDate>
+		<cac:PayeeFinancialAccount>
+			<cbc:ID>TR120006100519786457848179</cbc:ID>
+			<cbc:Name>X-Ear 8179</cbc:Name>
+			<cac:FinancialInstitutionBranch>
+				<cac:FinancialInstitution>
+					<cbc:Name>Test Bank 8179</cbc:Name>
+				</cac:FinancialInstitution>
+			</cac:FinancialInstitutionBranch>
+		</cac:PayeeFinancialAccount>
+	</cac:PaymentMeans>
+	<cac:PaymentTerms>
+		<cbc:Note>21 gun vadeli ozelmatrah | Odeme vadesi: 21 gun | Erken odeme indirimi %2 | Gec odeme cezasi %1</cbc:Note>
+	</cac:PaymentTerms>
+	<cac:AdditionalDocumentReference>
+		<cbc:ID>7885d20a-5483-45cb-bf98-0d9c6358f5d4</cbc:ID>
+		<cbc:IssueDate>2026-03-10</cbc:IssueDate>
+		<cbc:DocumentTypeCode>CUST_INV_ID</cbc:DocumentTypeCode>
+	</cac:AdditionalDocumentReference>
+	<cac:AdditionalDocumentReference>
+		<cbc:ID>0100</cbc:ID>
+		<cbc:IssueDate>2026-03-10</cbc:IssueDate>
+		<cbc:DocumentTypeCode>OUTPUT_TYPE</cbc:DocumentTypeCode>
+	</cac:AdditionalDocumentReference>
+	<cac:AdditionalDocumentReference>
+		<cbc:ID>99</cbc:ID>
+		<cbc:IssueDate>2026-03-10</cbc:IssueDate>
+		<cbc:DocumentTypeCode>TRANSPORT_TYPE</cbc:DocumentTypeCode>
+	</cac:AdditionalDocumentReference>
+	<cac:AdditionalDocumentReference>
+		<cbc:ID>ELEKTRONIK</cbc:ID>
+		<cbc:IssueDate>2026-03-10</cbc:IssueDate>
+		<cbc:DocumentTypeCode>EREPSENDT</cbc:DocumentTypeCode>
+	</cac:AdditionalDocumentReference>
+	<cac:AdditionalDocumentReference>
+		<cbc:ID>default</cbc:ID>
+		<cbc:IssueDate>2026-03-10</cbc:IssueDate>
+		<cbc:DocumentTypeCode>XSLT</cbc:DocumentTypeCode>
+	</cac:AdditionalDocumentReference>
+	<cac:AccountingSupplierParty>
+		<cac:Party>
+			<cac:PartyName>
+				<cbc:Name>deneme</cbc:Name>
+			</cac:PartyName>
+			<cac:PartyIdentification>
+				<cbc:ID schemeID="VKN">1234567801</cbc:ID>
+			</cac:PartyIdentification>
+			<cac:PartyTaxScheme>
+				<cbc:RegistrationName>deneme</cbc:RegistrationName>
+				<cac:TaxScheme>
+					<cbc:Name>ANKARA</cbc:Name>
+				</cac:TaxScheme>
+			</cac:PartyTaxScheme>
+			<cac:PostalAddress>
+				<cbc:StreetName>Test Sokak No:1</cbc:StreetName>
+				<cbc:CitySubdivisionName>Cankaya</cbc:CitySubdivisionName>
+				<cbc:CityName>ANKARA</cbc:CityName>
+				<cbc:PostalZone>06100</cbc:PostalZone>
+				<cac:Country>
+					<cbc:IdentificationCode>TR</cbc:IdentificationCode>
+					<cbc:Name>Türkiye</cbc:Name>
+				</cac:Country>
+			</cac:PostalAddress>
+		</cac:Party>
+	</cac:AccountingSupplierParty>
+	<cac:AccountingCustomerParty>
+		<cac:Party>
+			<cac:PartyName>
+				<cbc:Name>GIB TEST RECEIVER</cbc:Name>
+			</cac:PartyName>
+			<cac:PartyIdentification>
+				<cbc:ID schemeID="VKN">1234567801</cbc:ID>
+			</cac:PartyIdentification>
+			<cac:PartyTaxScheme>
+				<cac:TaxScheme>
+					<cbc:Name>ANKARA</cbc:Name>
+				</cac:TaxScheme>
+			</cac:PartyTaxScheme>
+			<cac:PostalAddress>
+				<cbc:StreetName>Alici sokak</cbc:StreetName>
+				<cbc:CitySubdivisionName>MERKEZ</cbc:CitySubdivisionName>
+				<cbc:CityName>ANKARA</cbc:CityName>
+				<cac:Country>
+					<cbc:IdentificationCode>TR</cbc:IdentificationCode>
+					<cbc:Name>Türkiye</cbc:Name>
+				</cac:Country>
+			</cac:PostalAddress>
+		</cac:Party>
+	</cac:AccountingCustomerParty>
+	<cbc:LineCountNumeric>1</cbc:LineCountNumeric>
+	<cac:InvoiceLine>
+		<cbc:ID>1</cbc:ID>
+		<cbc:InvoicedQuantity unitCode="NIU">1.0</cbc:InvoicedQuantity>
+		<cbc:LineExtensionAmount currencyID="TRY">100.00</cbc:LineExtensionAmount>
+		<cac:Item>
+			<cbc:Name>E2E ozelmatrah urun 408117</cbc:Name>
+		</cac:Item>
+		<cac:Price>
+			<cbc:PriceAmount currencyID="TRY">100.00</cbc:PriceAmount>
+		</cac:Price>
+		<cac:TaxTotal>
+			<cbc:TaxAmount currencyID="TRY">20.00</cbc:TaxAmount>
+			<cac:TaxSubtotal>
+				<cbc:TaxableAmount currencyID="TRY">100.00</cbc:TaxableAmount>
+				<cbc:TaxAmount currencyID="TRY">20.00</cbc:TaxAmount>
+				<cbc:Percent>20.0</cbc:Percent>
+				<cbc:CalculationSequenceNumeric>1</cbc:CalculationSequenceNumeric>
+				<cac:TaxCategory>
+					<cbc:TaxExemptionReasonCode>806</cbc:TaxExemptionReasonCode>
+					<cbc:TaxExemptionReason>Özel Matrah</cbc:TaxExemptionReason>
+					<cac:TaxScheme>
+						<cbc:Name>KDV</cbc:Name>
+					</cac:TaxScheme>
+				</cac:TaxCategory>
+			</cac:TaxSubtotal>
+		</cac:TaxTotal>
+	</cac:InvoiceLine>
+	<cac:TaxTotal>
+		<cbc:TaxAmount currencyID="TRY">20.00</cbc:TaxAmount>
+		<cac:TaxSubtotal>
+			<cbc:TaxableAmount currencyID="TRY">100.00</cbc:TaxableAmount>
+			<cbc:TaxAmount currencyID="TRY">20.00</cbc:TaxAmount>
+			<cbc:Percent>20.0</cbc:Percent>
+			<cac:TaxCategory>
+				<cbc:TaxExemptionReasonCode>806</cbc:TaxExemptionReasonCode>
+				<cbc:TaxExemptionReason>Özel Matrah</cbc:TaxExemptionReason>
+				<cac:TaxScheme>
+					<cbc:Name>KDV</cbc:Name>
+				</cac:TaxScheme>
+			</cac:TaxCategory>
+		</cac:TaxSubtotal>
+	</cac:TaxTotal>
+	<cac:LegalMonetaryTotal>
+		<cbc:LineExtensionAmount currencyID="TRY">100.00</cbc:LineExtensionAmount>
+		<cbc:TaxExclusiveAmount currencyID="TRY">100.00</cbc:TaxExclusiveAmount>
+		<cbc:TaxInclusiveAmount currencyID="TRY">120.00</cbc:TaxInclusiveAmount>
+		<cbc:PayableAmount currencyID="TRY">120.00</cbc:PayableAmount>
+	</cac:LegalMonetaryTotal>
+</Invoice>

@@ -81,6 +81,7 @@ const AdminApiKeysPage: React.FC = () => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
     const [search, setSearch] = useState('');
+    const [selectedKeyIds, setSelectedKeyIds] = useState<string[]>([]);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [newKey, setNewKey] = useState<string | null>(null);
 
@@ -139,9 +140,30 @@ const AdminApiKeysPage: React.FC = () => {
         try {
             await revokeApiKeyMutation.mutateAsync({ keyId });
             toast.success('API Anahtarı silindi');
+            setSelectedKeyIds((prev) => prev.filter((id) => id !== keyId));
             refetch();
         } catch (error) {
             toast.error('Silme işlemi başarısız');
+        }
+    };
+
+    const handleBulkRevoke = async () => {
+        if (selectedKeyIds.length === 0) {
+            toast.error('Secili API anahtari yok');
+            return;
+        }
+
+        if (!confirm(`${selectedKeyIds.length} API anahtari silinsin mi?`)) {
+            return;
+        }
+
+        try {
+            await Promise.all(selectedKeyIds.map((keyId) => revokeApiKeyMutation.mutateAsync({ keyId })));
+            toast.success(`${selectedKeyIds.length} API anahtari silindi`);
+            setSelectedKeyIds([]);
+            refetch();
+        } catch (error) {
+            toast.error('Toplu silme işlemi başarısız');
         }
     };
 
@@ -227,14 +249,14 @@ const AdminApiKeysPage: React.FC = () => {
                 </div>
                 <button
                     onClick={() => setIsCreateModalOpen(true)}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 touch-feedback"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 touch-feedback"
                 >
                     <PlusIcon className="h-5 w-5 mr-2" />
                     {!isMobile && 'Yeni Anahtar'}
                 </button>
             </div>
 
-	            <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+	            <div className="bg-white dark:bg-gray-800 shadow rounded-2xl overflow-hidden">
                 <div className="border-b border-gray-200 dark:border-gray-700 p-4">
                     <div className="relative max-w-md">
                         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -248,7 +270,7 @@ const AdminApiKeysPage: React.FC = () => {
                                 setPage(1);
                             }}
                             placeholder="İsim, prefix, tenant veya scope ara..."
-                            className="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white pl-10 pr-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500"
+                            className="block w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white pl-10 pr-3 py-2 text-sm focus:border-primary-500 focus:ring-primary-500"
                         />
                     </div>
                 </div>
@@ -266,6 +288,35 @@ const AdminApiKeysPage: React.FC = () => {
                             columns={columns}
                             keyExtractor={(key) => key.id}
                             emptyMessage="API anahtarı bulunamadı"
+                            selectable
+                            selectedKeys={selectedKeyIds}
+                            onSelectionChange={setSelectedKeyIds}
+                            selectionLabel="anahtar secildi"
+                            bulkActions={(
+                                <>
+                                    <button
+                                        type="button"
+                                        onClick={() => setSelectedKeyIds(filteredKeys.map((key) => key.id))}
+                                        className="rounded-xl border border-primary-200 bg-white px-3 py-1.5 text-sm font-medium text-primary-700 hover:bg-primary-100"
+                                    >
+                                        Tumunu sec
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setSelectedKeyIds([])}
+                                        className="rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                                    >
+                                        Secimi temizle
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleBulkRevoke}
+                                        className="rounded-xl bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
+                                    >
+                                        Secilenleri sil
+                                    </button>
+                                </>
+                            )}
                         />
                         <div className="bg-gray-50 dark:bg-gray-700/50 px-4 py-3 border-t border-gray-200 dark:border-gray-700">
                             <Pagination
@@ -286,7 +337,7 @@ const AdminApiKeysPage: React.FC = () => {
 
             {isCreateModalOpen && (
                 <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6">
                         <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Yeni API Anahtarı</h3>
 
                         {!newKey ? (
@@ -297,7 +348,7 @@ const AdminApiKeysPage: React.FC = () => {
                                         type="text"
                                         value={keyName}
                                         onChange={(e) => setKeyName(e.target.value)}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                        className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                                         placeholder="Orn: Mobil Uygulama"
                                     />
                                 </div>
@@ -307,7 +358,7 @@ const AdminApiKeysPage: React.FC = () => {
                                         type="text"
                                         value={tenantId}
                                         onChange={(e) => setTenantId(e.target.value)}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                                        className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                                         placeholder="tnt_..."
                                     />
                                 </div>
@@ -336,14 +387,14 @@ const AdminApiKeysPage: React.FC = () => {
                                 <div className="flex justify-end space-x-3 mt-6">
                                     <button
                                         onClick={() => setIsCreateModalOpen(false)}
-                                        className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                        className="px-4 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50"
                                     >
                                         Iptal
                                     </button>
                                     <button
                                         onClick={handleCreate}
                                         disabled={createApiKeyMutation.isPending}
-                                        className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
+                                        className="px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
                                     >
                                         {createApiKeyMutation.isPending ? 'Olusturuluyor...' : 'Olustur'}
                                     </button>
@@ -358,7 +409,7 @@ const AdminApiKeysPage: React.FC = () => {
                                 <p className="mt-1 text-sm text-gray-500">
                                     Bu anahtari guvenli bir yere kaydedin. Bir daha goremeyeceksiniz.
                                 </p>
-                                <div className="mt-4 flex items-center justify-between p-3 bg-gray-50 rounded-md border border-gray-200">
+                                <div className="mt-4 flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-200">
                                     <code className="text-sm font-mono text-gray-800 break-all">{newKey}</code>
                                     <button
                                         onClick={() => copyToClipboard(newKey)}

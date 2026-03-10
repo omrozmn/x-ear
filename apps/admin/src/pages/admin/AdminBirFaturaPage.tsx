@@ -150,7 +150,7 @@ const AdminBirFaturaPage: React.FC = () => {
                     <p className="text-gray-500 dark:text-gray-400">Fatura entegrasyon durumu ve kuyruk yönetimi</p>
                 </div>
                 <div className="flex space-x-2">
-                    <button className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg touch-feedback">
+                    <button className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl touch-feedback">
                         <RefreshCw className="w-5 h-5" />
                     </button>
                 </div>
@@ -245,7 +245,7 @@ const AdminBirFaturaPage: React.FC = () => {
                             <select
                                 value={statusFilter}
                                 onChange={(e) => setStatusFilter(e.target.value)}
-                                className={`text-sm border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-blue-500 ${isMobile ? 'w-full' : ''}`}
+                                className={`text-sm border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-blue-500 ${isMobile ? 'w-full' : ''}`}
                             >
                                 <option value="">Tüm Durumlar</option>
                                 <option value="draft">Taslak</option>

@@ -339,7 +339,7 @@ const AddOns: React.FC = () => {
                     </div>
                     <button
                         onClick={() => handleOpenModal()}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 touch-feedback"
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white premium-gradient tactile-press dark:bg-blue-700 dark:hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 touch-feedback"
                     >
                         <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
                         {!isMobile && 'Eklenti Ekle'}
@@ -351,7 +351,7 @@ const AddOns: React.FC = () => {
                 ) : error ? (
                     <div className="p-6 text-center text-red-600 dark:text-red-400">Eklentiler yüklenirken hata oluştu</div>
                 ) : (
-                    <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+                    <div className="bg-white dark:bg-gray-800 shadow rounded-2xl overflow-hidden">
                         <ResponsiveTable
                             data={addons}
                             columns={columns}
@@ -385,7 +385,7 @@ const AddOns: React.FC = () => {
                                     id="addon-name"
                                     type="text"
                                     required
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 />
@@ -397,7 +397,7 @@ const AddOns: React.FC = () => {
                                     type="number"
                                     required
                                     min="0"
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                                     value={formData.price}
                                     onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
                                 />
@@ -406,7 +406,7 @@ const AddOns: React.FC = () => {
                                 <label htmlFor="addon-type" className="block text-sm font-medium text-gray-700">Tip</label>
                                 <select
                                     id="addon-type"
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                                     value={formData.addon_type}
                                     onChange={(e) => setFormData({ ...formData, addon_type: e.target.value as AddonType })}
                                 >
@@ -419,7 +419,7 @@ const AddOns: React.FC = () => {
                                 <Dialog.Close asChild>
                                     <button
                                         type="button"
-                                        className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                                        className="inline-flex justify-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                                     >
                                         İptal
                                     </button>
@@ -427,7 +427,7 @@ const AddOns: React.FC = () => {
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="inline-flex justify-center rounded-xl border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isSubmitting ? 'İşleniyor...' : (editingAddon ? 'Güncelle' : 'Oluştur')}
                                 </button>
@@ -460,7 +460,7 @@ const AddOns: React.FC = () => {
                             <Dialog.Close asChild>
                                 <button
                                     type="button"
-                                    className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                                    className="inline-flex justify-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                                 >
                                     İptal
                                 </button>
@@ -468,7 +468,7 @@ const AddOns: React.FC = () => {
                             <button
                                 onClick={handleConfirmDelete}
                                 disabled={isSubmitting}
-                                className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="inline-flex justify-center rounded-xl border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isSubmitting ? 'Siliniyor...' : 'Sil'}
                             </button>
@@ -503,7 +503,7 @@ const AddOns: React.FC = () => {
                             <Dialog.Close asChild>
                                 <button
                                     type="button"
-                                    className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                                    className="inline-flex justify-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                                 >
                                     İptal
                                 </button>
@@ -511,7 +511,7 @@ const AddOns: React.FC = () => {
                             <button
                                 onClick={confirmStatusChange}
                                 disabled={isSubmitting}
-                                className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="inline-flex justify-center rounded-xl border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isSubmitting ? 'Güncelleniyor...' : 'Onayla'}
                             </button>

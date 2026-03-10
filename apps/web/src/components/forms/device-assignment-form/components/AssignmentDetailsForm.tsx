@@ -1,8 +1,8 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import { listInventory } from '@/api/client/inventory.client';
 import { unwrapObject } from '@/utils/response-unwrap';
-import { Input, Select } from '@x-ear/ui-web';
-import { Calendar, CheckCircle } from 'lucide-react';
+import { Input, Select, DatePicker } from '@x-ear/ui-web';
+import { CheckCircle } from 'lucide-react';
 import type { InventoryItemRead } from '@/api/generated';
 
 export interface DeviceAssignment {
@@ -184,15 +184,12 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Atama Tarihi *
           </label>
-          <Input
-            type="date"
-            value={formData.assignedDate || ''}
-            onChange={(e) => updateFormData('assignedDate', e.target.value)}
-            className={`dark:bg-slate-800 dark:text-white ${errors.assignedDate ? 'border-red-300 dark:border-red-700' : ''}`}
+          <DatePicker
+            value={formData.assignedDate ? new Date(formData.assignedDate) : null}
+            onChange={(date) => updateFormData('assignedDate', date ? date.toISOString().split('T')[0] : '')}
+            fullWidth
+            error={errors.assignedDate}
           />
-          {errors.assignedDate && (
-            <p className="mt-1 text-sm text-red-600">{errors.assignedDate}</p>
-          )}
         </div>
 
         <div>
@@ -221,13 +218,13 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
             { value: 'left', label: 'Sol Kulak', icon: 'L', position: 'right' }
           ].map((ear) => {
             const isSelected = formData.ear === ear.value;
-            
+
             // Gradient colors based on position
             let gradientClass = '';
-            
+
             if (ear.position === 'left') {
               // Right ear - Red gradient
-              gradientClass = isSelected 
+              gradientClass = isSelected
                 ? 'bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg ring-2 ring-red-300 dark:ring-red-700'
                 : 'bg-white border-2 border-red-300 text-red-600 hover:border-red-400 hover:bg-red-50 dark:bg-slate-800 dark:text-red-400 dark:border-red-700 dark:hover:bg-red-900/20';
             } else if (ear.position === 'right') {
@@ -271,20 +268,12 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Deneme Bitiş Tarihi *
           </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Calendar className="w-4 h-4 text-gray-400" />
-            </div>
-            <Input
-              type="date"
-              value={formData.trialEndDate || ''}
-              onChange={(e) => updateFormData('trialEndDate', e.target.value)}
-              className={`pl-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white ${errors.trialEndDate ? 'border-red-300 dark:border-red-700' : ''}`}
-            />
-            {errors.trialEndDate && (
-              <p className="mt-1 text-sm text-red-600">{errors.trialEndDate}</p>
-            )}
-          </div>
+          <DatePicker
+            value={formData.trialEndDate ? new Date(formData.trialEndDate) : null}
+            onChange={(date) => updateFormData('trialEndDate', date ? date.toISOString().split('T')[0] : '')}
+            fullWidth
+            error={errors.trialEndDate}
+          />
         </div>
       )}
 
@@ -294,17 +283,11 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             İade Tarihi
           </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Calendar className="w-4 h-4 text-gray-400" />
-            </div>
-            <Input
-              type="date"
-              value={formData.returnDate || ''}
-              onChange={(e) => updateFormData('returnDate', e.target.value)}
-              className="pl-10 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
-            />
-          </div>
+          <DatePicker
+            value={formData.returnDate ? new Date(formData.returnDate) : null}
+            onChange={(date) => updateFormData('returnDate', date ? date.toISOString().split('T')[0] : '')}
+            fullWidth
+          />
         </div>
       )}
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Package, Search, Filter, ScanLine, Tag } from 'lucide-react';
+import { Package, Search, Filter, ScanLine, Tag, CheckSquare, Square, X, Trash2, Edit } from 'lucide-react';
 import { MobileLayout } from '@/components/mobile/MobileLayout';
 import { MobileHeader } from '@/components/mobile/MobileHeader';
 import { FloatingActionButton } from '@/components/mobile/FloatingActionButton';
@@ -9,6 +9,8 @@ import { formatCurrency } from '@/utils/format';
 import { cn } from '@/lib/utils';
 import { useHaptic } from '@/hooks/useHaptic';
 import { toast } from 'react-hot-toast';
+import { Modal, Button } from '@x-ear/ui-web';
+import { InventoryForm } from '@/components/inventory/InventoryForm';
 
 interface InventoryItem {
     id: string;
@@ -27,6 +29,32 @@ export const MobileInventoryPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [searchValue, setSearchValue] = useState('');
     const { triggerSelection } = useHaptic();
+    const [isSelectionMode, setIsSelectionMode] = useState(false);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+    const toggleSelect = (id: string) => {
+        const newSet = new Set(selectedIds);
+        if (newSet.has(id)) newSet.delete(id);
+        else newSet.add(id);
+        setSelectedIds(newSet);
+        triggerSelection();
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIds.size === items.length && items.length > 0) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(items.map(item => item.id)));
+        }
+        triggerSelection();
+    };
+
+    const handleCancelSelection = () => {
+        setIsSelectionMode(false);
+        setSelectedIds(new Set());
+        triggerSelection();
+    };
+    const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
 
     const loadInventory = useCallback(async () => {
         try {
@@ -78,12 +106,30 @@ export const MobileInventoryPage: React.FC = () => {
     return (
         <MobileLayout>
             <MobileHeader
-                title="Envanter"
+                title={isSelectionMode ? `${selectedIds.size} Seçilen` : "Envanter"}
                 showBack={false}
                 actions={
-                    <button data-allow-raw="true" className="p-2 text-gray-600 dark:text-gray-300">
-                        <Filter className="h-5 w-5" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                        {isSelectionMode ? (
+                            <>
+                                <Button variant="ghost" size="sm" onClick={toggleSelectAll} className="px-2 py-1 h-auto text-sm text-blue-600 font-medium">
+                                    {selectedIds.size === items.length && items.length > 0 ? 'Hiçbiri' : 'Tümünü Seç'}
+                                </Button>
+                                <Button variant="ghost" size="sm" onClick={handleCancelSelection} className="p-2 text-gray-600">
+                                    <X className="h-5 w-5" />
+                                </Button>
+                            </>
+                        ) : (
+                            <>
+                                <Button variant="ghost" size="sm" onClick={() => { setIsSelectionMode(true); triggerSelection(); }} className="px-2 py-1 h-auto text-sm text-blue-600 font-medium">
+                                    Seç
+                                </Button>
+                                <Button variant="ghost" size="sm" className="p-2 text-gray-600">
+                                    <Filter className="h-5 w-5" />
+                                </Button>
+                            </>
+                        )}
+                    </div>
                 }
             />
 
@@ -123,11 +169,29 @@ export const MobileInventoryPage: React.FC = () => {
                                 key={item.id}
                                 onClick={() => {
                                     triggerSelection();
-                                    toast('Detay görünümü yakında', { icon: '🚧' });
+                                    if (isSelectionMode) {
+                                        toggleSelect(item.id);
+                                    } else {
+                                        setSelectedItem(item);
+                                    }
                                 }}
-                                className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm active:scale-[0.99] transition-transform"
+                                className={cn(
+                                    "p-4 rounded-xl border shadow-sm active:scale-[0.99] transition-all relative overflow-hidden",
+                                    selectedIds.has(item.id)
+                                        ? "border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 dark:border-blue-500"
+                                        : "bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700"
+                                )}
                             >
-                                <div className="flex gap-4">
+                                {isSelectionMode && (
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                        {selectedIds.has(item.id) ? (
+                                            <CheckSquare className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                                        ) : (
+                                            <Square className="w-6 h-6 text-gray-300 dark:text-gray-600" />
+                                        )}
+                                    </div>
+                                )}
+                                <div className={cn("flex gap-4 transition-all", isSelectionMode && "pr-8")}>
                                     <div className="h-16 w-16 bg-gray-50 dark:bg-gray-700 rounded-2xl flex items-center justify-center flex-shrink-0">
                                         {item.imageUrl ? (
                                             <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover rounded-2xl" />
@@ -183,9 +247,44 @@ export const MobileInventoryPage: React.FC = () => {
                 </div>
             </PullToRefresh>
 
-            <FloatingActionButton
-                onClick={() => toast('Yeni ürün ekleme masaüstünde yapılmalıdır', { icon: '💻' })}
-            />
+            {/* Bulk Action Bar */}
+            {selectedIds.size > 0 && isSelectionMode && (
+                <div className="fixed bottom-24 left-4 right-4 z-40 bg-gray-900 dark:bg-gray-800 rounded-2xl shadow-xl px-4 py-3 flex items-center justify-between pointer-events-auto transition-transform">
+                    <span className="text-sm font-medium text-white">{selectedIds.size} Ürün</span>
+                    <div className="flex gap-2">
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-gray-800 dark:hover:bg-gray-700 h-8 px-3 rounded-xl border border-gray-700">
+                            <Edit className="w-4 h-4 mr-1.5" /> Düzenle
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-300 hover:bg-gray-800 dark:hover:bg-gray-700 h-8 px-3 rounded-xl border border-gray-700">
+                            <Trash2 className="w-4 h-4 mr-1.5" /> Sil
+                        </Button>
+                    </div>
+                </div>
+            )}
+
+            {!isSelectionMode && (
+                <FloatingActionButton
+                    onClick={() => toast('Yeni ürün ekleme masaüstünde yapılmalıdır', { icon: '💻' })}
+                />
+            )}
+
+            <Modal
+                isOpen={!!selectedItem}
+                onClose={() => setSelectedItem(null)}
+                title="Ürün Detayı"
+                size="xl"
+            >
+                {selectedItem && (
+                    <InventoryForm
+                        item={selectedItem as any}
+                        onSave={() => {
+                            setSelectedItem(null);
+                            handleRefresh();
+                        }}
+                        onCancel={() => setSelectedItem(null)}
+                    />
+                )}
+            </Modal>
         </MobileLayout>
     );
 };

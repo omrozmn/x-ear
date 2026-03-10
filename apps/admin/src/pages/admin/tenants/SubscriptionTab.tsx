@@ -320,7 +320,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
         <div className="space-y-8">
             {/* Özet Kartları */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-gradient-to-br from-blue-50 to-white p-4 rounded-lg border border-blue-100 shadow-sm relative overflow-hidden">
+                <div className="bg-gradient-to-br from-blue-50 to-white p-4 rounded-2xl border border-blue-100 shadow-sm relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-2 opacity-10">
                         <CreditCard className="w-16 h-16 text-blue-900" />
                     </div>
@@ -351,7 +351,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
                     </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-indigo-50 to-white p-4 rounded-lg border border-indigo-100 shadow-sm relative overflow-hidden">
+                <div className="bg-gradient-to-br from-indigo-50 to-white p-4 rounded-2xl border border-indigo-100 shadow-sm relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-2 opacity-10">
                         <MessageSquare className="w-16 h-16 text-indigo-900" />
                     </div>
@@ -412,7 +412,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
                         <select
                             value={selectedAddonId}
                             onChange={e => setSelectedAddonId(e.target.value)}
-                            className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                            className="flex-1 rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                         >
                             <option value="">Özellik Seç...</option>
                             {addons.map((addon) => (
@@ -425,13 +425,13 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
                             onClick={handleAddAddon}
                             type="button"
                             disabled={loadingAddon || !selectedAddonId}
-                            className="bg-green-600 text-white px-3 py-2 rounded-md hover:bg-green-700 disabled:opacity-50 text-sm font-medium whitespace-nowrap"
+                            className="bg-green-600 text-white px-3 py-2 rounded-xl hover:bg-green-700 disabled:opacity-50 text-sm font-medium whitespace-nowrap"
                         >
                             {loadingAddon ? '...' : '+ Ekle'}
                         </button>
                     </div>
 
-                    <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden min-h-[150px]">
+                    <div className="bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden min-h-[150px]">
                         {(tenant.settings?.addons ?? []).length === 0 ? (
                             <div className="p-4 text-center text-gray-500 text-sm italic">
                                 Henüz eklenmiş özellik yok.
@@ -472,7 +472,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
                         </h4>
                     </div>
 
-                    <div className="bg-indigo-50 p-3 rounded-md border border-indigo-100">
+                    <div className="bg-indigo-50 p-3 rounded-xl border border-indigo-100">
                         <label className="block text-xs font-medium text-indigo-800 mb-1">Mevcut SMS Limiti (Manuel Düzenle)</label>
                         <div className="flex gap-2">
                             <input
@@ -502,7 +502,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
                                     type="button"
                                     onClick={() => setSelectedSmsPackage(selectedSmsPackage === amount ? null : amount)}
                                     className={`
-                                        px-3 py-2 border rounded-md text-center transition-all
+                                        px-3 py-2 border rounded-xl text-center transition-all
                                         ${selectedSmsPackage === amount
                                             ? 'border-indigo-600 bg-indigo-50 text-indigo-700 ring-1 ring-indigo-600'
                                             : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50 text-gray-700'}
@@ -519,7 +519,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
                                 onClick={handleAddSmsPackage}
                                 type="button"
                                 disabled={loadingSmsUpdate}
-                                className="w-full mt-2 bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 shadow-md flex items-center justify-center font-medium transition-all animate-in fade-in slide-in-from-top-2"
+                                className="w-full mt-2 bg-indigo-600 text-white py-2 px-4 rounded-xl hover:bg-indigo-700 shadow-md flex items-center justify-center font-medium transition-all animate-in fade-in slide-in-from-top-2"
                             >
                                 <Plus className="w-4 h-4 mr-2" />
                                 {loadingSmsUpdate ? 'Ekleniyor...' : `${selectedSmsPackage} SMS Paketini Ekle`}
@@ -532,7 +532,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
             {/* Mevcut Limitler Tablosu */}
             <div className="space-y-4">
                 <h4 className="text-sm font-semibold text-gray-900 border-b pb-2">Mevcut Özellik Limitleri (Read-Only)</h4>
-                <div className="bg-white border rounded-lg overflow-hidden">
+                <div className="bg-white border rounded-2xl overflow-hidden">
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                             <tr>
@@ -576,7 +576,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
             </div>
 
             {/* Plan Değiştirme */}
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mt-8">
+            <div className="bg-gray-50 p-4 rounded-2xl border border-gray-200 mt-8">
                 <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center">
                     <Settings className="w-4 h-4 mr-2" />
                     Plan Değişikliği
@@ -587,7 +587,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
                         <select
                             value={selectedPlanId}
                             onChange={e => setSelectedPlanId(e.target.value)}
-                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                            className="block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                         >
                             <option value="">Plan Seçin...</option>
                             {plans.map((plan) => (
@@ -600,7 +600,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
                         <select
                             value={billingInterval}
                             onChange={e => setBillingInterval(e.target.value as BillingInterval)}
-                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                            className="block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                         >
                             <option value="MONTHLY">Aylık</option>
                             <option value="YEARLY">Yıllık</option>
@@ -610,7 +610,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
                         onClick={handleSubscribe}
                         type="button"
                         disabled={loadingSubscribe || !selectedPlanId}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 text-sm font-medium h-[38px]"
+                        className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 disabled:opacity-50 text-sm font-medium h-[38px]"
                     >
                         {loadingSubscribe ? '...' : 'Planı Güncelle'}
                     </button>
@@ -621,7 +621,7 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
             <Dialog.Root open={!!confirmDeleteId} onOpenChange={(open) => !open && setConfirmDeleteId(null)}>
                 <Dialog.Portal>
                     <Dialog.Overlay className="fixed inset-0 bg-black/50 z-40" />
-                    <Dialog.Content className="fixed left-[50%] top-[50%] w-[90vw] max-w-[400px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-xl z-50">
+                    <Dialog.Content className="fixed left-[50%] top-[50%] w-[90vw] max-w-[400px] translate-x-[-50%] translate-y-[-50%] rounded-2xl bg-white p-6 shadow-xl z-50">
                         <div className="flex items-center mb-4 text-red-500">
                             <AlertTriangle className="h-6 w-6 mr-2" />
                             <Dialog.Title className="text-xl font-bold text-gray-900">Özelliği Kaldır</Dialog.Title>
@@ -630,8 +630,8 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
                             Bu özelliği kaldırmak istediğinize emin misiniz? Bu işlem geri alınamaz.
                         </div>
                         <div className="flex justify-end space-x-3">
-                            <button onClick={() => setConfirmDeleteId(null)} className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">İptal</button>
-                            <button onClick={handleRemoveAddon} disabled={loadingRemoveAddon} className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50">
+                            <button onClick={() => setConfirmDeleteId(null)} className="px-4 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50">İptal</button>
+                            <button onClick={handleRemoveAddon} disabled={loadingRemoveAddon} className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 disabled:opacity-50">
                                 {loadingRemoveAddon ? 'Kaldırılıyor...' : 'Kaldır'}
                             </button>
                         </div>

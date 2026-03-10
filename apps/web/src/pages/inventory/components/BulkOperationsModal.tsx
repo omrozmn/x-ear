@@ -318,11 +318,11 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
             disabled={!operationType || isLoading}
             loading={isLoading}
             className={`inline-flex items-center px-4 py-2 rounded-xl ${selectedOperation?.color === 'red' ? 'bg-red-600 hover:bg-red-700 text-white' :
-              selectedOperation?.color === 'blue' ? 'bg-blue-600 hover:bg-blue-700 text-white' :
+              selectedOperation?.color === 'blue' ? 'premium-gradient tactile-press text-white' :
                 selectedOperation?.color === 'green' ? 'bg-green-600 hover:bg-green-700 text-white' :
                   selectedOperation?.color === 'yellow' ? 'bg-yellow-500 hover:bg-yellow-600 text-white' :
                     selectedOperation?.color === 'purple' ? 'bg-purple-600 hover:bg-purple-700 text-white' :
-                      'bg-blue-600 hover:bg-blue-700 text-white'
+                      'premium-gradient tactile-press text-white'
               }`}
           >
             <span className="mr-2">{selectedOperation?.icon}</span>

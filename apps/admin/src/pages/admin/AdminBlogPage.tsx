@@ -132,7 +132,7 @@ const AdminBlogPage: React.FC = () => {
                     <button
                         onClick={() => togglePublish(post)}
                         title={post.is_published ? "Taslağa Çek" : "Yayınla"}
-                        className={`p-1.5 rounded-lg flex items-center justify-center transition-all ${post.is_published ? 'bg-green-50 text-green-600 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400' : 'bg-gray-50 text-gray-500 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-400'}`}
+                        className={`p-1.5 rounded-2xl flex items-center justify-center transition-all ${post.is_published ? 'bg-green-50 text-green-600 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400' : 'bg-gray-50 text-gray-500 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-400'}`}
                     >
                         <GlobeAltIcon className="w-5 h-5" />
                     </button>
@@ -142,21 +142,21 @@ const AdminBlogPage: React.FC = () => {
                             setIsEditModalOpen(true);
                         }}
                         title="Düzenle"
-                        className="p-1.5 rounded-lg bg-gray-50 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-indigo-900/20 dark:hover:text-indigo-400 transition-all flex items-center justify-center"
+                        className="p-1.5 rounded-2xl bg-gray-50 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-indigo-900/20 dark:hover:text-indigo-400 transition-all flex items-center justify-center"
                     >
                         <PencilSquareIcon className="w-5 h-5" />
                     </button>
                     <button
                         onClick={() => window.open(`http://localhost:3000/blog/${post.slug}`, '_blank')}
                         title="Görüntüle"
-                        className="p-1.5 rounded-lg bg-gray-50 text-gray-500 hover:bg-blue-50 hover:text-blue-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-blue-900/20 dark:hover:text-blue-400 transition-all flex items-center justify-center"
+                        className="p-1.5 rounded-2xl bg-gray-50 text-gray-500 hover:bg-blue-50 hover:text-blue-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-blue-900/20 dark:hover:text-blue-400 transition-all flex items-center justify-center"
                     >
                         <EyeIcon className="w-5 h-5" />
                     </button>
                     <button
                         onClick={() => handleDeleteClick(post)}
                         title="Sil"
-                        className="p-1.5 rounded-lg bg-gray-50 text-gray-500 hover:bg-red-50 hover:text-red-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-all flex items-center justify-center"
+                        className="p-1.5 rounded-2xl bg-gray-50 text-gray-500 hover:bg-red-50 hover:text-red-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-all flex items-center justify-center"
                     >
                         <TrashIcon className="w-5 h-5" />
                     </button>
@@ -177,7 +177,7 @@ const AdminBlogPage: React.FC = () => {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => setIsCreateModalOpen(true)}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
+                        className="inline-flex items-center gap-2 px-4 py-2 premium-gradient tactile-press text-white text-sm font-medium rounded-2xl transition-colors shadow-sm"
                     >
                         <PlusIcon className="w-5 h-5" />
                         Yeni Yazı
@@ -193,13 +193,13 @@ const AdminBlogPage: React.FC = () => {
 
             {/* Search */}
             <div className="mb-6">
-                <div className="relative rounded-md shadow-sm">
+                <div className="relative rounded-xl shadow-sm">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                         <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
                     </div>
                     <input
                         type="text"
-                        className="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white pl-10 focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                        className="block w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white pl-10 focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                         placeholder="Başlık veya içerik ara..."
                         value={search}
                         onChange={(e) => {
@@ -211,7 +211,7 @@ const AdminBlogPage: React.FC = () => {
             </div>
 
             {/* Table */}
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-800 shadow rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
                 {isLoading ? (
                     <div className="p-12 text-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>

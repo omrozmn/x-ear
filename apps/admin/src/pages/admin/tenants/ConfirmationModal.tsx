@@ -7,7 +7,7 @@ export const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }
         <Dialog.Root open={isOpen} onOpenChange={onClose}>
             <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 z-[70]" />
-                <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[400px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white shadow-2xl focus:outline-none z-[80] p-6">
+                <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[400px] translate-x-[-50%] translate-y-[-50%] rounded-2xl bg-white shadow-2xl focus:outline-none z-[80] p-6">
                     <Dialog.Title className="text-lg font-bold text-gray-900 mb-2">
                         {title}
                     </Dialog.Title>
@@ -17,13 +17,13 @@ export const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }
                     <div className="flex justify-end space-x-3">
                         <button
                             onClick={onClose}
-                            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                            className="px-4 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50"
                         >
                             İptal
                         </button>
                         <button
                             onClick={onConfirm}
-                            className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                            className="px-4 py-2 border border-transparent rounded-xl text-sm font-medium text-white premium-gradient tactile-press"
                         >
                             Onayla
                         </button>

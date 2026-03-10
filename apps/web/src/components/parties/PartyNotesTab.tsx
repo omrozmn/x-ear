@@ -230,7 +230,7 @@ export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party }) => {
         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Hasta Notları</h3>
         <Button
           onClick={() => setShowAddForm(true)}
-          className="bg-blue-600 hover:bg-blue-700"
+          className="premium-gradient tactile-press"
         >
           <Plus className="w-4 h-4 mr-2" />
           Not Ekle

@@ -196,7 +196,7 @@ export function CashflowPage() {
               <Download className="h-4 w-4 mr-2" />
               Dışa Aktar
             </Button>
-            <Button onClick={() => setShowNewRecordModal(true)} className="bg-blue-600 hover:bg-blue-700">
+            <Button onClick={() => setShowNewRecordModal(true)} className="premium-gradient tactile-press">
               <Plus className="h-4 w-4 mr-2" />
               Yeni Kayıt
             </Button>

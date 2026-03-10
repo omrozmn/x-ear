@@ -503,7 +503,7 @@ export const Users: React.FC = () => {
         </div>
         <button
           onClick={handleAddClick}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 touch-feedback"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white premium-gradient tactile-press focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 touch-feedback"
         >
           <UserPlus className="-ml-1 mr-2 h-5 w-5" />
           Kullanıcı Ekle
@@ -526,7 +526,7 @@ export const Users: React.FC = () => {
           </Tabs.Trigger>
         </Tabs.List>
 
-        <div className={`bg-white dark:bg-gray-800 shadow rounded-lg ${isMobile ? 'p-4 mb-4' : 'p-6 mb-6'}`}>
+        <div className={`bg-white dark:bg-gray-800 shadow rounded-2xl ${isMobile ? 'p-4 mb-4' : 'p-6 mb-6'}`}>
           <div className="flex flex-col gap-4">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -537,7 +537,7 @@ export const Users: React.FC = () => {
                 placeholder="Arama yapın..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md leading-5 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl leading-5 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
             </div>
 
@@ -546,7 +546,7 @@ export const Users: React.FC = () => {
                 <select
                   value={roleFilter}
                   onChange={(e) => setRoleFilter(e.target.value)}
-                  className="block w-full pl-3 pr-10 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                  className="block w-full pl-3 pr-10 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-xl"
                 >
                   <option value="all">Tüm Roller</option>
                   <option value="tenant_admin">Yönetici</option>
@@ -555,7 +555,7 @@ export const Users: React.FC = () => {
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="block w-full pl-3 pr-10 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                  className="block w-full pl-3 pr-10 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-xl"
                 >
                   <option value="all">Tüm Durumlar</option>
                   <option value="active">Aktif</option>
@@ -566,7 +566,7 @@ export const Users: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 shadow rounded-2xl overflow-hidden">
           <Tabs.Content value="admin">
             {loadingAdmins ? (
               <div className={`${isMobile ? 'p-8' : 'p-12'} text-center text-gray-500 dark:text-gray-400`}>Yükleniyor...</div>
@@ -617,7 +617,7 @@ export const Users: React.FC = () => {
       <Dialog.Root open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/50 z-40" />
-          <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[600px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-xl z-50 overflow-y-auto">
+          <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[600px] translate-x-[-50%] translate-y-[-50%] rounded-2xl bg-white p-6 shadow-xl z-50 overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <Dialog.Title className="text-lg font-bold">Yeni Kullanıcı Ekle</Dialog.Title>
               <Dialog.Close className="text-gray-400 hover:text-gray-600"><XMarkIcon className="h-6 w-6" /></Dialog.Close>
@@ -625,7 +625,7 @@ export const Users: React.FC = () => {
 
             <form onSubmit={handleCreateSubmit} className="space-y-4">
               {/* User Type Selection */}
-              <div className="bg-gray-50 p-3 rounded-md">
+              <div className="bg-gray-50 p-3 rounded-xl">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Kullanıcı Tipi</label>
                 <div className="flex space-x-4">
                   <label className="flex items-center space-x-2 cursor-pointer">
@@ -652,17 +652,17 @@ export const Users: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">İsim</label>
-                  <input type="text" required value={formData.first_name} onChange={e => setFormData({ ...formData, first_name: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+                  <input type="text" required value={formData.first_name} onChange={e => setFormData({ ...formData, first_name: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-xl shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Soyisim</label>
-                  <input type="text" required value={formData.last_name} onChange={e => setFormData({ ...formData, last_name: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+                  <input type="text" required value={formData.last_name} onChange={e => setFormData({ ...formData, last_name: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-xl shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">Kullanıcı Adı</label>
-                <div className="mt-1 flex rounded-md shadow-sm">
+                <div className="mt-1 flex rounded-xl shadow-sm">
                   <input type="text" value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-l-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-gray-300 border" placeholder="Otomatik oluşturabilir veya elle girebilirsiniz" />
                   <button type="button" onClick={generateUsername} className="inline-flex items-center px-3 py-2 border border-l-0 border-gray-300 rounded-r-md bg-gray-50 text-gray-500 text-sm hover:bg-gray-100">
                     <RefreshCw className="h-4 w-4 mr-1" /> Oluştur
@@ -672,13 +672,13 @@ export const Users: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">E-posta</label>
-                <input type="email" required value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+                <input type="email" required value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-xl shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">Şifre</label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <input type={showPassword ? "text" : "password"} required value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className="focus:ring-blue-500 focus:border-blue-500 block w-full pr-10 sm:text-sm border-gray-300 rounded-md p-2 border" />
+                <div className="mt-1 relative rounded-xl shadow-sm">
+                  <input type={showPassword ? "text" : "password"} required value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className="focus:ring-blue-500 focus:border-blue-500 block w-full pr-10 sm:text-sm border-gray-300 rounded-xl p-2 border" />
                   <div className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer" onClick={() => setShowPassword(!showPassword)}>
                     {showPassword ? <EyeOff className="h-4 w-4 text-gray-400" /> : <Eye className="h-4 w-4 text-gray-400" />}
                   </div>
@@ -687,14 +687,14 @@ export const Users: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">Rol</label>
-                <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value as AdminUserRole })} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border">
+                <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value as AdminUserRole })} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-xl border">
                   {AdminUserRoleValues.map(role => <option key={role} value={role}>{role}</option>)}
                 </select>
               </div>
 
               <div className="flex justify-end space-x-3 pt-4 border-t mt-4">
-                <button type="button" onClick={() => setIsAddModalOpen(false)} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">İptal</button>
-                <button type="submit" disabled={isSubmitting} className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50">
+                <button type="button" onClick={() => setIsAddModalOpen(false)} className="px-4 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50">İptal</button>
+                <button type="submit" disabled={isSubmitting} className="px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white premium-gradient tactile-press disabled:opacity-50">
                   {isSubmitting ? 'Kaydediliyor...' : 'Kaydet'}
                 </button>
               </div>
@@ -707,7 +707,7 @@ export const Users: React.FC = () => {
       <Dialog.Root open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/50 z-40" />
-          <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[600px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-xl z-50 overflow-y-auto">
+          <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[600px] translate-x-[-50%] translate-y-[-50%] rounded-2xl bg-white p-6 shadow-xl z-50 overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <Dialog.Title className="text-lg font-bold">Kullanıcı Düzenle</Dialog.Title>
               <Dialog.Close className="text-gray-400 hover:text-gray-600"><XMarkIcon className="h-6 w-6" /></Dialog.Close>
@@ -717,28 +717,28 @@ export const Users: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">İsim</label>
-                  <input type="text" required value={formData.first_name} onChange={e => setFormData({ ...formData, first_name: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+                  <input type="text" required value={formData.first_name} onChange={e => setFormData({ ...formData, first_name: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-xl shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Soyisim</label>
-                  <input type="text" required value={formData.last_name} onChange={e => setFormData({ ...formData, last_name: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+                  <input type="text" required value={formData.last_name} onChange={e => setFormData({ ...formData, last_name: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-xl shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">Kullanıcı Adı</label>
-                <input type="text" disabled value={formData.username} className="mt-1 block w-full bg-gray-100 border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm text-gray-500" />
+                <input type="text" disabled value={formData.username} className="mt-1 block w-full bg-gray-100 border border-gray-300 rounded-xl shadow-sm p-2 sm:text-sm text-gray-500" />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">E-posta</label>
-                <input type="email" required value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+                <input type="email" required value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="mt-1 block w-full border border-gray-300 rounded-xl shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">Şifre (Değiştirmek istemiyorsanız boş bırakın)</label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <input type={showPassword ? "text" : "password"} value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className="focus:ring-blue-500 focus:border-blue-500 block w-full pr-10 sm:text-sm border-gray-300 rounded-md p-2 border" placeholder="Değiştirilmeyecek" />
+                <div className="mt-1 relative rounded-xl shadow-sm">
+                  <input type={showPassword ? "text" : "password"} value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className="focus:ring-blue-500 focus:border-blue-500 block w-full pr-10 sm:text-sm border-gray-300 rounded-xl p-2 border" placeholder="Değiştirilmeyecek" />
                   <div className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer" onClick={() => setShowPassword(!showPassword)}>
                     {showPassword ? <EyeOff className="h-4 w-4 text-gray-400" /> : <Eye className="h-4 w-4 text-gray-400" />}
                   </div>
@@ -747,14 +747,14 @@ export const Users: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">Rol</label>
-                <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value as AdminUserRole })} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border">
+                <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value as AdminUserRole })} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-xl border">
                   {AdminUserRoleValues.map(role => <option key={role} value={role}>{role}</option>)}
                 </select>
               </div>
 
               <div className="flex justify-end space-x-3 pt-4 border-t mt-4">
-                <button type="button" onClick={() => setIsEditModalOpen(false)} className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">İptal</button>
-                <button type="submit" disabled={isSubmitting} className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50">
+                <button type="button" onClick={() => setIsEditModalOpen(false)} className="px-4 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50">İptal</button>
+                <button type="submit" disabled={isSubmitting} className="px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white premium-gradient tactile-press disabled:opacity-50">
                   {isSubmitting ? 'Güncelleniyor...' : 'Güncelle'}
                 </button>
               </div>
@@ -767,7 +767,7 @@ export const Users: React.FC = () => {
       <Dialog.Root open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/50 z-40" />
-          <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[500px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-xl z-50">
+          <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[500px] translate-x-[-50%] translate-y-[-50%] rounded-2xl bg-white p-6 shadow-xl z-50">
             <div className="flex justify-between items-center mb-4">
               <Dialog.Title className="text-lg font-bold">Kullanıcı Detayları</Dialog.Title>
               <Dialog.Close className="text-gray-400 hover:text-gray-600"><XMarkIcon className="h-6 w-6" /></Dialog.Close>
@@ -775,7 +775,7 @@ export const Users: React.FC = () => {
 
             {selectedUser && (
               <div className="space-y-4">
-                <div className="bg-gray-50 p-4 rounded-lg flex items-center space-x-4">
+                <div className="bg-gray-50 p-4 rounded-2xl flex items-center space-x-4">
                   <div className="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xl font-bold">
                     {(selectedUser.firstName || selectedUser.first_name || selectedUser.email?.[0] || '?').substring(0, 1).toUpperCase()}
                   </div>
@@ -820,7 +820,7 @@ export const Users: React.FC = () => {
       <Dialog.Root open={confirmModalOpen} onOpenChange={setConfirmModalOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/50 z-40" />
-          <Dialog.Content className="fixed left-[50%] top-[50%] w-[90vw] max-w-[400px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-xl z-50">
+          <Dialog.Content className="fixed left-[50%] top-[50%] w-[90vw] max-w-[400px] translate-x-[-50%] translate-y-[-50%] rounded-2xl bg-white p-6 shadow-xl z-50">
             <div className="flex items-center mb-4 text-amber-500">
               <ExclamationTriangleIcon className="h-6 w-6 mr-2" />
               <Dialog.Title className="text-xl font-bold text-gray-900">Durum Değişikliği</Dialog.Title>
@@ -829,8 +829,8 @@ export const Users: React.FC = () => {
               Kullanıcı durumunu değiştirmek üzeresiniz. Emin misiniz?
             </div>
             <div className="flex justify-end space-x-3">
-              <button onClick={() => setConfirmModalOpen(false)} className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">İptal</button>
-              <button onClick={confirmStatusToggle} disabled={isSubmitting} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">
+              <button onClick={() => setConfirmModalOpen(false)} className="px-4 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50">İptal</button>
+              <button onClick={confirmStatusToggle} disabled={isSubmitting} className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50">
                 {isSubmitting ? 'İşleniyor...' : 'Onayla'}
               </button>
             </div>

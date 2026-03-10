@@ -228,7 +228,7 @@ const PanelPage = () => {
                         <p className="text-lg font-mono font-bold tracking-widest">{affiliateCode}</p>
                         <button
                           onClick={() => copyToClipboard(affiliateCode, 'code')}
-                          className={`p-1.5 rounded-lg transition-all ${copiedCode ? 'bg-emerald-500/20 text-emerald-400 scale-110' : 'bg-foreground/5 hover:bg-foreground/10 text-foreground/40 hover:text-foreground'}`}
+                          className={`p-1.5 rounded-2xl transition-all ${copiedCode ? 'bg-emerald-500/20 text-emerald-400 scale-110' : 'bg-foreground/5 hover:bg-foreground/10 text-foreground/40 hover:text-foreground'}`}
                           title="Kodu Kopyala"
                         >
                           <AnimatePresence mode="wait">
@@ -300,7 +300,7 @@ const PanelPage = () => {
                           <td className="px-6 py-4 text-foreground/40">{new Date(c.created_at).toLocaleDateString('tr-TR')}</td>
                           <td className="px-6 py-4 font-bold">{c.event === 'payment' ? 'Satış Komisyonu' : c.event}</td>
                           <td className="px-6 py-4">
-                            <span className={`px-2 py-1 rounded-lg text-[10px] font-bold ${c.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                            <span className={`px-2 py-1 rounded-2xl text-[10px] font-bold ${c.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
                               {c.status.toUpperCase()}
                             </span>
                           </td>

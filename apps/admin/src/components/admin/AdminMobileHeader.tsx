@@ -23,7 +23,7 @@ export function AdminMobileHeader({ onMenuClick, title = 'Super Admin Panel' }: 
         {/* Left: Menu Button */}
         <button
           onClick={onMenuClick}
-          className="p-2 -ml-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors touch-feedback"
+          className="p-2 -ml-2 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors touch-feedback"
           aria-label="Open menu"
         >
           <Menu className="h-6 w-6 text-gray-700 dark:text-gray-300" />
@@ -39,7 +39,7 @@ export function AdminMobileHeader({ onMenuClick, title = 'Super Admin Panel' }: 
           {/* AI Composer Button */}
           <button
             onClick={toggleOpen}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors touch-feedback relative"
+            className="p-2 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors touch-feedback relative"
             aria-label="Open AI Composer"
           >
             <Bot className="h-5 w-5 text-gray-700 dark:text-gray-300" />
@@ -49,7 +49,7 @@ export function AdminMobileHeader({ onMenuClick, title = 'Super Admin Panel' }: 
           {/* Search Button */}
           <button
             onClick={() => setShowSearch(!showSearch)}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors touch-feedback"
+            className="p-2 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors touch-feedback"
             aria-label="Search"
           >
             <Search className="h-5 w-5 text-gray-700 dark:text-gray-300" />
@@ -57,7 +57,7 @@ export function AdminMobileHeader({ onMenuClick, title = 'Super Admin Panel' }: 
 
           {/* Notifications Button */}
           <button
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors touch-feedback relative"
+            className="p-2 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors touch-feedback relative"
             aria-label="Notifications"
           >
             <Bell className="h-5 w-5 text-gray-700 dark:text-gray-300" />
@@ -74,7 +74,7 @@ export function AdminMobileHeader({ onMenuClick, title = 'Super Admin Panel' }: 
             <input
               type="text"
               placeholder="Ara..."
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-100 dark:bg-gray-800 border-0 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 dark:text-white"
+              className="w-full pl-10 pr-4 py-2.5 bg-gray-100 dark:bg-gray-800 border-0 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500 dark:text-white"
               autoFocus
             />
           </div>

@@ -224,7 +224,7 @@ export function DesktopSuppliersPage() {
               <RefreshCw className="h-4 w-4 mr-2" />
               Yenile
             </Button>
-            <Button onClick={handleNewSupplier} className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
+            <Button onClick={handleNewSupplier} className="premium-gradient tactile-press text-white shadow-sm">
               <Plus className="h-4 w-4 mr-2" />
               Yeni Tedarikçi
             </Button>
@@ -351,7 +351,7 @@ export function DesktopSuppliersPage() {
                       </div>
                       <h3 className="text-lg font-medium text-gray-900 dark:text-white">Tedarikçi Bulunamadı</h3>
                       <p className="text-sm text-gray-500 mt-1 mb-4">Arama kriterlerinize uygun kayıt bulunmuyor.</p>
-                      <Button onClick={handleNewSupplier} className="bg-blue-600 hover:bg-blue-700 text-white">
+                      <Button onClick={handleNewSupplier} className="premium-gradient tactile-press text-white">
                         <Plus className="h-4 w-4 mr-2" />
                         Yeni Tedarikçi Ekle
                       </Button>

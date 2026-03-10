@@ -104,7 +104,7 @@ export const GeneralTab = ({ tenant, onUpdate }: GeneralTabProps) => {
                         type="text"
                         value={formData.name}
                         onChange={e => setFormData({ ...formData, name: e.target.value })}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                        className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                         required
                     />
                 </div>
@@ -115,7 +115,7 @@ export const GeneralTab = ({ tenant, onUpdate }: GeneralTabProps) => {
                         type="email"
                         value={formData.owner_email}
                         onChange={e => setFormData({ ...formData, owner_email: e.target.value })}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                        className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                         required
                     />
                 </div>
@@ -125,7 +125,7 @@ export const GeneralTab = ({ tenant, onUpdate }: GeneralTabProps) => {
                     <select
                         value={formData.status}
                         onChange={e => setFormData({ ...formData, status: e.target.value as TenantStatus })}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                        className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                     >
                         <option value="active">Aktif</option>
                         <option value="trial">Deneme</option>
@@ -139,7 +139,7 @@ export const GeneralTab = ({ tenant, onUpdate }: GeneralTabProps) => {
                     <select
                         value={formData.product_code}
                         onChange={e => setFormData({ ...formData, product_code: e.target.value })}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                        className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                     >
                         {Object.entries(PRODUCT_REGISTRY)
                             .filter(([, config]) => config.enabled && config.creatable)
@@ -156,7 +156,7 @@ export const GeneralTab = ({ tenant, onUpdate }: GeneralTabProps) => {
                         type="number"
                         value={formData.max_users}
                         onChange={e => setFormData({ ...formData, max_users: Number.parseInt(e.target.value, 10) || 1 })}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                        className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                         min={1}
                     />
                 </div>
@@ -166,7 +166,7 @@ export const GeneralTab = ({ tenant, onUpdate }: GeneralTabProps) => {
                 <button
                     type="submit"
                     disabled={isPending}
-                    className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+                    className="inline-flex justify-center rounded-xl border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
                 >
                     {isPending ? 'Kaydediliyor...' : 'Kaydet'}
                 </button>

@@ -62,7 +62,7 @@ export default function IntegrationsIndexPage() {
                             <div className="flex items-start gap-4">
                                 <div
                                     className={`
-                                        p-3 rounded-lg
+                                        p-3 rounded-2xl
                                         ${isActive ? 'bg-blue-50' : 'bg-gray-50'}
                                     `}
                                 >

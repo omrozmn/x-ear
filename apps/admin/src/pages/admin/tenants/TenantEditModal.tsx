@@ -69,7 +69,7 @@ export const TenantEditModal = ({ tenantId, isOpen, onClose }: { tenantId: strin
         <Dialog.Root open={isOpen} onOpenChange={onClose}>
             <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 data-[state=open]:animate-overlayShow z-40" />
-                <Dialog.Content className={`fixed ${isMobile ? 'inset-0' : 'left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%]'} ${isMobile ? 'w-full h-full' : 'max-h-[90vh] w-[90vw] max-w-[900px]'} ${isMobile ? 'rounded-none' : 'rounded-lg'} bg-white dark:bg-gray-800 shadow-2xl focus:outline-none data-[state=open]:animate-contentShow z-50 flex flex-col`}>
+                <Dialog.Content className={`fixed ${isMobile ? 'inset-0' : 'left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%]'} ${isMobile ? 'w-full h-full' : 'max-h-[90vh] w-[90vw] max-w-[900px]'} ${isMobile ? 'rounded-none' : 'rounded-2xl'} bg-white dark:bg-gray-800 shadow-2xl focus:outline-none data-[state=open]:animate-contentShow z-50 flex flex-col`}>
                     <div className={`flex justify-between items-center ${isMobile ? 'p-4' : 'p-6'} border-b border-gray-200 dark:border-gray-700`}>
                         <Dialog.Title className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold text-gray-900 dark:text-white`}>
                             {loadingTenant ? 'Yükleniyor...' : `Abone: ${tenant?.name}`}

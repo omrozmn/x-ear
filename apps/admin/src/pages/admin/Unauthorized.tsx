@@ -24,7 +24,7 @@ const Unauthorized: React.FC = () => {
                 <div className="flex items-center justify-center gap-4">
                     <button
                         onClick={() => window.history.back()}
-                        className="flex items-center gap-2 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors"
                     >
                         <ArrowLeft className="h-4 w-4" />
                         Geri Dön
@@ -32,7 +32,7 @@ const Unauthorized: React.FC = () => {
                     
                     <Link
                         to="/"
-                        className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-2xl hover:bg-primary/90 transition-colors"
                     >
                         <Home className="h-4 w-4" />
                         Ana Sayfa

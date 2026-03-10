@@ -111,7 +111,7 @@ function SettingItem({ label, value, icon, description }: SettingItemProps) {
     <div className="flex items-start justify-between py-3 border-b border-gray-100 last:border-0">
       <div className="flex items-start space-x-3">
         {icon && (
-          <div className="p-1.5 bg-gray-100 rounded-md mt-0.5">
+          <div className="p-1.5 bg-gray-100 rounded-xl mt-0.5">
             {icon}
           </div>
         )}
@@ -141,7 +141,7 @@ interface SectionCardProps {
 
 function SectionCard({ title, icon, children, className = '' }: SectionCardProps) {
   return (
-    <div className={`bg-white rounded-lg border border-gray-200 overflow-hidden ${className}`}>
+    <div className={`bg-white rounded-2xl border border-gray-200 overflow-hidden ${className}`}>
       <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
         <div className="flex items-center space-x-2">
           {icon}
@@ -168,14 +168,14 @@ function PhaseCard({ phase, isActive }: PhaseCardProps) {
   
   return (
     <div className={`
-      p-4 rounded-lg border-2 transition-all
+      p-4 rounded-2xl border-2 transition-all
       ${isActive 
         ? `${config.bgColor} ${config.borderColor} shadow-sm` 
         : 'bg-gray-50 border-gray-200 opacity-60'
       }
     `}>
       <div className="flex items-start space-x-3">
-        <div className={`p-2 rounded-lg ${isActive ? 'bg-white shadow-sm' : 'bg-gray-100'}`}>
+        <div className={`p-2 rounded-2xl ${isActive ? 'bg-white shadow-sm' : 'bg-gray-100'}`}>
           {config.icon}
         </div>
         <div className="flex-1">
@@ -251,10 +251,10 @@ export function AISettingsPanel({ className = '' }: AISettingsPanelProps) {
   // Loading state
   if (isLoading) {
     return (
-      <div className={`bg-white shadow rounded-lg p-6 ${className}`}>
+      <div className={`bg-white shadow rounded-2xl p-6 ${className}`}>
         <div className="animate-pulse space-y-6">
           <div className="flex items-center space-x-3">
-            <div className="h-10 w-10 bg-gray-200 rounded-lg"></div>
+            <div className="h-10 w-10 bg-gray-200 rounded-2xl"></div>
             <div className="h-6 bg-gray-200 rounded w-1/3"></div>
           </div>
           <div className="space-y-4">
@@ -270,7 +270,7 @@ export function AISettingsPanel({ className = '' }: AISettingsPanelProps) {
   // Error state
   if (isError || !settings) {
     return (
-      <div className={`bg-white shadow rounded-lg p-6 ${className}`}>
+      <div className={`bg-white shadow rounded-2xl p-6 ${className}`}>
         <div className="text-center py-8">
           <AlertTriangle className="h-12 w-12 mx-auto mb-3 text-red-400" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">Ayarlar Yüklenemedi</h3>
@@ -278,7 +278,7 @@ export function AISettingsPanel({ className = '' }: AISettingsPanelProps) {
           <button
             onClick={handleRefresh}
             className="inline-flex items-center px-4 py-2 text-sm font-medium text-white 
-              bg-primary-600 rounded-md hover:bg-primary-700"
+              bg-primary-600 rounded-xl hover:bg-primary-700"
           >
             <RefreshCw size={16} className="mr-2" />
             Tekrar Dene
@@ -301,12 +301,12 @@ export function AISettingsPanel({ className = '' }: AISettingsPanelProps) {
   const normalizedPhase = phaseMap[settings.phase?.toUpperCase()] || currentPhase;
 
   return (
-    <div className={`bg-white shadow rounded-lg overflow-hidden ${className}`}>
+    <div className={`bg-white shadow rounded-2xl overflow-hidden ${className}`}>
       {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-primary-100 rounded-lg">
+            <div className="p-2 bg-primary-100 rounded-2xl">
               <Settings className="h-6 w-6 text-primary-600" />
             </div>
             <div>
@@ -318,7 +318,7 @@ export function AISettingsPanel({ className = '' }: AISettingsPanelProps) {
             <StatusBadge enabled={settings.enabled} />
             <button
               onClick={handleRefresh}
-              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
               title="Yenile"
             >
               <RefreshCw size={18} />
@@ -329,7 +329,7 @@ export function AISettingsPanel({ className = '' }: AISettingsPanelProps) {
 
       <div className="p-6 space-y-6">
         {/* Read-only Notice */}
-        <div className="flex items-start space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="flex items-start space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-2xl">
           <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-sm text-blue-800">
@@ -407,25 +407,25 @@ export function AISettingsPanel({ className = '' }: AISettingsPanelProps) {
           icon={<CheckCircle className="h-4 w-4 text-gray-500" />}
         >
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-2">
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
+            <div className="text-center p-3 bg-gray-50 rounded-2xl">
               <p className="text-xs text-gray-500 uppercase tracking-wide">Durum</p>
               <div className="mt-1">
                 <StatusBadge enabled={settings.enabled} />
               </div>
             </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
+            <div className="text-center p-3 bg-gray-50 rounded-2xl">
               <p className="text-xs text-gray-500 uppercase tracking-wide">Faz</p>
               <p className="text-lg font-bold text-gray-900 mt-1">
                 {normalizedPhase}
               </p>
             </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
+            <div className="text-center p-3 bg-gray-50 rounded-2xl">
               <p className="text-xs text-gray-500 uppercase tracking-wide">Provider</p>
               <p className="text-sm font-semibold text-gray-900 mt-1 truncate">
                 {settings.model_provider || 'N/A'}
               </p>
             </div>
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
+            <div className="text-center p-3 bg-gray-50 rounded-2xl">
               <p className="text-xs text-gray-500 uppercase tracking-wide">Rate Limit</p>
               <p className="text-lg font-bold text-gray-900 mt-1">
                 {settings.rate_limit_per_minute || 0}

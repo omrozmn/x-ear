@@ -215,7 +215,7 @@ export const SGKWorkflow: React.FC<SGKWorkflowProps> = ({
                   setError(err instanceof Error ? err.message : 'Failed to create workflow');
                 }
               }}
-              className="mt-3 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="mt-3 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-xl text-white premium-gradient tactile-press focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               variant='default'>
               İş Akışı Oluştur
             </Button>
@@ -383,7 +383,7 @@ export const SGKWorkflow: React.FC<SGKWorkflowProps> = ({
                 <Button
                   onClick={handleStatusUpdate}
                   disabled={loading}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-medium text-white premium-gradient tactile-press rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                   variant='default'>
                   {loading ? 'Güncelleniyor...' : 'Güncelle'}
                 </Button>

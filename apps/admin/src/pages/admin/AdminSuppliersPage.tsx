@@ -224,6 +224,7 @@ const AdminSuppliersPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
+  const [selectedSupplierIds, setSelectedSupplierIds] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<SupplierFilterStatus>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<SupplierRead | null>(null);
@@ -295,7 +296,24 @@ const AdminSuppliersPage: React.FC = () => {
   const handleDelete = (id: string | number) => {
     if (window.confirm('Bu tedarikçiyi silmek istediğinizden emin misiniz?')) {
       deleteMutation.mutate({ supplierId: Number(id) });
+      setSelectedSupplierIds((prev) => prev.filter((item) => item !== String(id)));
     }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedSupplierIds.length === 0) {
+      toast.error('Secili tedarikci yok');
+      return;
+    }
+
+    if (!window.confirm(`${selectedSupplierIds.length} tedarikci silinsin mi?`)) {
+      return;
+    }
+
+    selectedSupplierIds.forEach((id) => {
+      deleteMutation.mutate({ supplierId: Number(id) });
+    });
+    setSelectedSupplierIds([]);
   };
 
   const columns = [
@@ -386,22 +404,22 @@ const AdminSuppliersPage: React.FC = () => {
         </h1>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-700 dark:hover:bg-primary-800 touch-feedback"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-700 dark:hover:bg-primary-800 touch-feedback"
         >
           <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
           {!isMobile && 'Yeni Tedarikçi'}
         </button>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow sm:flex sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow sm:flex sm:items-center sm:justify-between space-y-3 sm:space-y-0">
         <div className="flex-1 min-w-0 max-w-lg">
-          <div className="relative rounded-md shadow-sm">
+          <div className="relative rounded-xl shadow-sm">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
             </div>
             <input
               type="text"
-              className="focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md py-2"
+              className="focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl py-2"
               placeholder="Tedarikçi ara..."
               value={search}
               onChange={(e) => {
@@ -420,7 +438,7 @@ const AdminSuppliersPage: React.FC = () => {
                 setPage(1);
               }
             }}
-            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md"
+            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-xl"
           >
             <option value="all">Tüm Durumlar</option>
             <option value="active">Aktif</option>
@@ -429,7 +447,7 @@ const AdminSuppliersPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
+      <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-2xl">
         {isLoading ? (
           <div className="p-4 text-center text-gray-500 dark:text-gray-400">Yükleniyor...</div>
         ) : (
@@ -438,6 +456,35 @@ const AdminSuppliersPage: React.FC = () => {
             columns={columns}
             keyExtractor={(supplier: SupplierRead) => String(supplier.id)}
             emptyMessage="Kayıt bulunamadı."
+            selectable
+            selectedKeys={selectedSupplierIds}
+            onSelectionChange={setSelectedSupplierIds}
+            selectionLabel="tedarikci secildi"
+            bulkActions={(
+              <>
+                <button
+                  type="button"
+                  onClick={() => setSelectedSupplierIds(suppliers.map((supplier) => String(supplier.id)))}
+                  className="rounded-xl border border-primary-200 bg-white px-3 py-1.5 text-sm font-medium text-primary-700 hover:bg-primary-100"
+                >
+                  Tumunu sec
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedSupplierIds([])}
+                  className="rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                >
+                  Secimi temizle
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBulkDelete}
+                  className="rounded-xl bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
+                >
+                  Secilenleri sil
+                </button>
+              </>
+            )}
           />
         )}
 
@@ -512,7 +559,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" role="dialog" aria-modal="true">
-      <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+      <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-xl bg-white">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-medium text-gray-900">
             {initialData ? 'Tedarikçi Düzenle' : 'Yeni Tedarikçi Ekle'}
@@ -529,7 +576,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
               required
               value={formData.tenantId}
               onChange={(e) => setFormData((current) => ({ ...current, tenantId: e.target.value }))}
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              className="mt-1 block w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               disabled={!!initialData}
             >
               <option value="">Seçiniz</option>
@@ -549,7 +596,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                 required
                 value={formData.companyName}
                 onChange={(e) => setFormData((current) => ({ ...current, companyName: e.target.value }))}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                className="mt-1 block w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
             <div>
@@ -558,7 +605,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                 type="text"
                 value={formData.contactName}
                 onChange={(e) => setFormData((current) => ({ ...current, contactName: e.target.value }))}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                className="mt-1 block w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
           </div>
@@ -570,7 +617,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData((current) => ({ ...current, email: e.target.value }))}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                className="mt-1 block w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
             <div>
@@ -579,7 +626,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                 type="text"
                 value={formData.phone}
                 onChange={(e) => setFormData((current) => ({ ...current, phone: e.target.value }))}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                className="mt-1 block w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
           </div>
@@ -590,7 +637,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
               rows={3}
               value={formData.address}
               onChange={(e) => setFormData((current) => ({ ...current, address: e.target.value }))}
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              className="mt-1 block w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
 
@@ -601,7 +648,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                 type="text"
                 value={formData.taxNumber}
                 onChange={(e) => setFormData((current) => ({ ...current, taxNumber: e.target.value }))}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                className="mt-1 block w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
             <div>
@@ -610,7 +657,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                 type="text"
                 value={formData.taxOffice}
                 onChange={(e) => setFormData((current) => ({ ...current, taxOffice: e.target.value }))}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                className="mt-1 block w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
           </div>
@@ -625,7 +672,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                   status: e.target.value === 'inactive' ? 'inactive' : 'active',
                 }))
               }
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              className="mt-1 block w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="active">Aktif</option>
               <option value="inactive">Pasif</option>
@@ -636,14 +683,14 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50"
             >
               İptal
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
+              className="px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
             >
               {isLoading ? 'Kaydediliyor...' : 'Kaydet'}
             </button>

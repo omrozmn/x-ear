@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Party } from '../../types/party/party-base.types';
-import { Button, Input, Textarea } from '@x-ear/ui-web';
+import { Button, Input, Textarea, DatePicker } from '@x-ear/ui-web';
 
 interface SGKEReceiptFormProps {
   party: Party;
@@ -8,14 +8,13 @@ interface SGKEReceiptFormProps {
   onCancel?: () => void;
 }
 
-interface EReceiptData {
+interface EReceiptFormData {
   partyId: string;
   prescriptionNumber: string;
   doctorName: string;
   hospitalName: string;
-  prescriptionDate: string;
-  medications: EReceiptMedication[];
-  notes?: string;
+  prescriptionDate: Date | null;
+  notes: string;
 }
 
 interface EReceiptMedication {
@@ -26,17 +25,22 @@ interface EReceiptMedication {
   duration: string;
 }
 
+interface EReceiptData extends Omit<EReceiptFormData, 'prescriptionDate'> {
+  prescriptionDate: string;
+  medications: EReceiptMedication[];
+}
+
 export const SGKEReceiptForm: React.FC<SGKEReceiptFormProps> = ({
   party,
   onSubmit,
   onCancel,
 }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<EReceiptFormData>({
     partyId: party.id || '',
     prescriptionNumber: '',
     doctorName: '',
     hospitalName: '',
-    prescriptionDate: new Date().toISOString().split('T')[0],
+    prescriptionDate: new Date(),
     notes: '',
   });
 
@@ -75,11 +79,10 @@ export const SGKEReceiptForm: React.FC<SGKEReceiptFormProps> = ({
     if (!formData.prescriptionDate) {
       newErrors.prescriptionDate = 'Reçete tarihi gereklidir';
     } else {
-      const prescriptionDate = new Date(formData.prescriptionDate);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
-      if (prescriptionDate > today) {
+
+      if (formData.prescriptionDate > today) {
         newErrors.prescriptionDate = 'Reçete tarihi gelecek bir tarih olamaz';
       }
     }
@@ -117,7 +120,7 @@ export const SGKEReceiptForm: React.FC<SGKEReceiptFormProps> = ({
       ...prev,
       [name]: value
     }));
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
@@ -127,11 +130,18 @@ export const SGKEReceiptForm: React.FC<SGKEReceiptFormProps> = ({
     }
   };
 
+  const handleDateChange = (date: Date | null) => {
+    setFormData(prev => ({ ...prev, prescriptionDate: date }));
+    if (errors.prescriptionDate) {
+      setErrors(prev => ({ ...prev, prescriptionDate: '' }));
+    }
+  };
+
   const handleMedicationChange = (index: number, field: keyof EReceiptMedication, value: string | number) => {
-    setMedications(prev => prev.map((med, i) => 
+    setMedications(prev => prev.map((med, i) =>
       i === index ? { ...med, [field]: value } : med
     ));
-    
+
     // Clear medication-specific errors when user starts typing
     const errorKey = `medication_${index}_${field}`;
     if (errors[errorKey]) {
@@ -160,16 +170,17 @@ export const SGKEReceiptForm: React.FC<SGKEReceiptFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     try {
       const eReceiptData: EReceiptData = {
         ...formData,
+        prescriptionDate: formData.prescriptionDate ? formData.prescriptionDate.toISOString().split('T')[0] : '',
         medications,
       };
 
@@ -186,7 +197,7 @@ export const SGKEReceiptForm: React.FC<SGKEReceiptFormProps> = ({
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-2xl shadow-lg">
       <h2 className="text-2xl font-bold text-gray-900 mb-6">SGK E-Reçete Oluştur</h2>
-      
+
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Hasta Bilgileri */}
         <div className="bg-gray-50 p-4 rounded-2xl">
@@ -220,16 +231,16 @@ export const SGKEReceiptForm: React.FC<SGKEReceiptFormProps> = ({
               required
               error={errors.prescriptionNumber}
             />
-            <Input
-              label="Reçete Tarihi"
-              name="prescriptionDate"
-              type="date"
-              value={formData.prescriptionDate}
-              onChange={handleInputChange}
-              fullWidth
-              required
-              error={errors.prescriptionDate}
-            />
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">Reçete Tarihi</label>
+              <DatePicker
+                value={formData.prescriptionDate}
+                onChange={handleDateChange}
+                fullWidth
+                required
+                error={errors.prescriptionDate}
+              />
+            </div>
             <Input
               label="Doktor Adı"
               name="doctorName"
@@ -263,7 +274,7 @@ export const SGKEReceiptForm: React.FC<SGKEReceiptFormProps> = ({
               İlaç Ekle
             </Button>
           </div>
-          
+
           {medications.map((medication, index) => (
             <div key={index} className="border border-gray-200 rounded-2xl p-4 mb-4">
               <div className="flex justify-between items-center mb-3">
@@ -279,7 +290,7 @@ export const SGKEReceiptForm: React.FC<SGKEReceiptFormProps> = ({
                   </Button>
                 )}
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Input
                   label="İlaç Adı"

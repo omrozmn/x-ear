@@ -5,7 +5,7 @@ from typing import Optional, List
 import logging
 
 from database import get_db
-from schemas.base import ResponseEnvelope
+from schemas.base import AppBaseModel, ResponseEnvelope
 from schemas.affiliates import AffiliateRead, AffiliateCreate, AffiliateUpdate, CommissionRead, AffiliateLoginRequest
 from models.affiliate_user import AffiliateUser
 from services.affiliate_service import AffiliateService
@@ -18,6 +18,51 @@ logger = logging.getLogger(__name__)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/affiliates/login", auto_error=False)
 SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'default-dev-secret-key-change-in-prod')
 ALGORITHM = "HS256"
+
+
+class AffiliateReferralSubscriptionRead(AppBaseModel):
+    plan_name: Optional[str] = None
+    price: float = 0
+    status: Optional[str] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+
+
+class AffiliateReferralRead(AppBaseModel):
+    tenant_id: str
+    tenant_name: str
+    created_at: Optional[str] = None
+    subscription: Optional[AffiliateReferralSubscriptionRead] = None
+
+
+class AffiliateCommissionEventRead(AppBaseModel):
+    id: int
+    event: str
+    amount: float
+    status: str
+    created_at: Optional[str] = None
+
+
+class AffiliateStatsRead(AppBaseModel):
+    total_referrals: int = 0
+    total_revenue: float = 0
+    total_commission: float = 0
+    active_subscriptions: int = 0
+
+
+class AffiliateDetailRead(AppBaseModel):
+    id: int
+    display_id: str
+    email: str
+    code: str
+    iban: Optional[str] = None
+    account_holder_name: Optional[str] = None
+    phone_number: Optional[str] = None
+    is_active: bool
+    created_at: Optional[str] = None
+    stats: AffiliateStatsRead
+    referrals: List[AffiliateReferralRead]
+    recent_commissions: List[AffiliateCommissionEventRead]
 
 def require_affiliate(token: str = Depends(oauth2_scheme)):
     if not token:
@@ -140,7 +185,7 @@ async def get_affiliate_commissions(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/{affiliate_id}/details", operation_id="listAffiliateDetails", response_model=ResponseEnvelope[AffiliateRead])
+@router.get("/{affiliate_id}/details", operation_id="listAffiliateDetails", response_model=ResponseEnvelope[AffiliateDetailRead])
 async def get_affiliate_details(affiliate_id: int, db: Session = Depends(get_db)):
     """Get detailed affiliate information with referrals"""
     try:
@@ -181,7 +226,7 @@ async def get_affiliate_details(affiliate_id: int, db: Session = Depends(get_db)
                     total_revenue += float(plan.price)
             
             referrals.append({
-                "access.tenant_id": tenant.id,
+                "tenant_id": tenant.id,
                 "tenant_name": tenant.name,
                 "created_at": tenant.created_at.isoformat() if tenant.created_at else None,
                 "subscription": subscription_info
@@ -191,31 +236,39 @@ async def get_affiliate_details(affiliate_id: int, db: Session = Depends(get_db)
         commissions = AffiliateService.get_commissions(db, affiliate_id)
         total_commission = sum(float(c.amount) for c in commissions)
         
-        return {
-            "id": affiliate.id,
-            "display_id": f"{affiliate.created_at.strftime('%y%m%d')}{affiliate.id}",
-            "email": affiliate.email,
-            "code": affiliate.code,
-            "iban": affiliate.iban,
-            "account_holder_name": affiliate.account_holder_name,
-            "phone_number": affiliate.phone_number,
-            "is_active": affiliate.is_active,
-            "created_at": affiliate.created_at.isoformat() if affiliate.created_at else None,
-            "stats": {
-                "total_referrals": len(referrals),
-                "total_revenue": total_revenue,
-                "total_commission": total_commission,
-                "active_subscriptions": sum(1 for r in referrals if r["subscription"] and r["subscription"]["status"] == "active")
-            },
-            "referrals": referrals,
-            "recent_commissions": [{
-                "id": c.id,
-                "event": c.event,
-                "amount": float(c.amount),
-                "status": c.status,
-                "created_at": c.created_at.isoformat() if c.created_at else None
-            } for c in commissions[:10]]  # Last 10 commissions
-        }
+        return ResponseEnvelope(
+            data=AffiliateDetailRead(
+                id=affiliate.id,
+                display_id=f"{affiliate.created_at.strftime('%y%m%d')}{affiliate.id}",
+                email=affiliate.email,
+                code=affiliate.code,
+                iban=affiliate.iban,
+                account_holder_name=affiliate.account_holder_name,
+                phone_number=affiliate.phone_number,
+                is_active=affiliate.is_active,
+                created_at=affiliate.created_at.isoformat() if affiliate.created_at else None,
+                stats=AffiliateStatsRead(
+                    total_referrals=len(referrals),
+                    total_revenue=total_revenue,
+                    total_commission=total_commission,
+                    active_subscriptions=sum(
+                        1 for referral in referrals
+                        if referral["subscription"] and referral["subscription"]["status"] == "active"
+                    ),
+                ),
+                referrals=[AffiliateReferralRead(**referral) for referral in referrals],
+                recent_commissions=[
+                    AffiliateCommissionEventRead(
+                        id=c.id,
+                        event=c.event,
+                        amount=float(c.amount),
+                        status=c.status,
+                        created_at=c.created_at.isoformat() if c.created_at else None,
+                    )
+                    for c in commissions[:10]
+                ],
+            )
+        )
     except HTTPException:
         raise
     except Exception as e:

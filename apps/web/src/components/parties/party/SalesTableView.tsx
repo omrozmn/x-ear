@@ -66,20 +66,20 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
     // ✅ FIXED: Prioritize productName from sale, then smart fallback
     const firstDevice = sale.devices[0];
     const isBilateral = sale.devices.length === 2;
-    
+
     // Get all available data
     const saleProductName = sale.productName || '';  // e.g., "deneme" (from inventory.name)
     const deviceName = firstDevice.name || '';  // e.g., "earnet force100" (brand + model)
     const brand = firstDevice.brand || sale.brand || '';  // e.g., "earnet"
     const model = firstDevice.model || sale.model || '';  // e.g., "force100"
-    
+
     // Build brand+model string
     const brandModel = `${brand} ${model}`.trim();
-    
+
     // Decide what to show
     let title = '';
     let subtitle = '';
-    
+
     if (saleProductName) {
       // We have a product name from sale - use it as title
       title = saleProductName;
@@ -89,7 +89,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
       // No sale product name, use device name as title
       // Check if deviceName is same as brand+model to avoid duplication
       const isDuplicate = deviceName.toLowerCase() === brandModel.toLowerCase();
-      
+
       if (isDuplicate) {
         // deviceName is same as brand+model, use category or generic name as title
         title = firstDevice.category || 'İşitme Cihazı';
@@ -104,7 +104,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
       title = brandModel || firstDevice.category || 'Ürün';
       subtitle = '';
     }
-    
+
     return (
       <div className="space-y-1">
         <div className="text-sm">
@@ -214,6 +214,151 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
     setOpenMenuId(null);
   };
 
+  // Mobile card view for a single sale
+  const renderMobileCard = (sale: PartySale) => {
+    const displayTotal = calculateDisplayTotal(sale);
+    const paidAmount = sale.paidAmount || 0;
+    const remainingAmount = displayTotal - paidAmount;
+    const discountAmount = sale.discountAmount || 0;
+    const sgkAmount = sale.sgkCoverage || 0;
+    const hasInvoice = !!sale.invoice;
+    const cancelledClass = sale.status === 'cancelled' ? 'opacity-50 pointer-events-none' : '';
+    const actualTotal = sale.actualListPriceTotal || sale.totalAmount || 0;
+
+    return (
+      <div
+        key={sale.id}
+        className={`bg-white border rounded-xl p-4 shadow-sm relative ${cancelledClass} transition-all active:scale-[0.98] cursor-pointer`}
+        onClick={() => onSaleClick?.(sale)}
+      >
+        {/* Header: Date, ID, and Context Menu */}
+        <div className="flex justify-between items-start mb-3">
+          <div>
+            <div className="text-xs text-gray-500 font-medium mb-0.5">{formatDate(sale.saleDate)}</div>
+            <div className="text-sm font-semibold text-gray-900">#{sale.id}</div>
+          </div>
+          <div className="flex items-center gap-2">
+            {renderStatusBadge(sale.status, paidAmount, remainingAmount)}
+
+            {/* Overflow Menu */}
+            <div className="relative" onClick={(e) => e.stopPropagation()}>
+              <Button
+                variant="ghost"
+                className="w-8 h-8 p-0"
+                onClick={(e) => toggleOverflowMenu(e, sale.id)}
+              >
+                <MoreVertical className="w-4 h-4 text-gray-500" />
+              </Button>
+              {openMenuId === sale.id && (
+                <div className="absolute right-0 mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
+                  <div className="py-1">
+                    <button
+                      onClick={() => {
+                        if (hasInvoice) {
+                          onViewInvoice?.(sale);
+                        } else {
+                          onCreateInvoice?.(sale);
+                        }
+                        closeOverflowMenu();
+                      }}
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      <FileText className="w-4 h-4 mr-2" />
+                      Fatura kes
+                    </button>
+                    <button
+                      onClick={() => {
+                        onManagePromissoryNotes?.(sale);
+                        closeOverflowMenu();
+                      }}
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      <Banknote className="w-4 h-4 mr-2" />
+                      Senetler
+                    </button>
+                    <button
+                      onClick={() => {
+                        onCancelSale?.(sale);
+                        closeOverflowMenu();
+                      }}
+                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                    >
+                      <Ban className="w-4 h-4 mr-2" />
+                      Satışı İptal Et
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Product & Device Details */}
+        <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 mb-3 space-y-2">
+          {renderDevicesSummary(sale)}
+          <div className="pt-2 border-t border-gray-200">
+            {renderBarcodeSerialInfo(sale)}
+          </div>
+        </div>
+
+        {/* Financial Details */}
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between items-center text-gray-600">
+            <span>Liste Fiyatı</span>
+            <span className="font-medium text-gray-900">{formatCurrency(actualTotal)}</span>
+          </div>
+
+          {(discountAmount > 0 || sgkAmount > 0) && (
+            <>
+              {discountAmount > 0 && (
+                <div className="flex justify-between items-center text-gray-600">
+                  <span>İndirim</span>
+                  <span className="font-medium text-red-600">-{formatCurrency(discountAmount)}</span>
+                </div>
+              )}
+              {sgkAmount > 0 && (
+                <div className="flex justify-between items-center text-gray-600">
+                  <span>SGK Desteği</span>
+                  <span className="font-medium text-blue-600">-{formatCurrency(sgkAmount)}</span>
+                </div>
+              )}
+              <div className="h-px bg-gray-100 my-1"></div>
+            </>
+          )}
+
+          <div className="flex justify-between items-center">
+            <span className="font-medium text-gray-700">Toplam</span>
+            <span className="font-bold text-gray-900 text-base">{formatCurrency(displayTotal)}</span>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">Alınan Ödeme</span>
+            <div className="text-right">
+              <span className="font-semibold text-green-700">{formatCurrency(paidAmount)}</span>
+              {paidAmount > 0 && (
+                <div className="text-[10px] text-gray-500 mt-0.5">{renderPaymentMethods(sale)}</div>
+              )}
+            </div>
+          </div>
+
+          {remainingAmount > 0 && (
+            <div className="flex justify-between items-center pt-1 border-t border-gray-100">
+              <span className="font-medium text-gray-700">Kalan</span>
+              <span className="font-bold text-orange-600 text-base">{formatCurrency(remainingAmount)}</span>
+            </div>
+          )}
+        </div>
+
+        {hasInvoice && (
+          <div className="mt-3">
+            <span className="inline-block px-2 py-1 text-[10px] font-medium bg-green-50 border border-green-200 text-green-700 rounded-md">
+              Fatura Mevcut
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   console.log('📋 SalesTableView: Rendering sales table with', sales?.length || 0, 'sales');
   if (sales && sales.length > 0) {
@@ -226,55 +371,64 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
     }, null, 2));
   }
 
+  if (!sales || sales.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 bg-gray-50 border border-gray-100 rounded-xl text-gray-500">
+        <FileText className="w-10 h-10 text-gray-300 mb-3" />
+        <p className="font-medium">Henüz satış kaydı bulunmuyor</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Satış ID/Tarih
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Ürün/Hizmet
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Barkod/Seri No
-            </th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Liste Fiyatı
-            </th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              İndirim
-            </th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              SGK Desteği
-            </th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Toplam Tutar
-            </th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Alınan Ödeme
-            </th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Kalan Tutar
-            </th>
-            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Durum
-            </th>
-            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-              İşlemler
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {(!sales || sales.length === 0) ? (
+    <>
+      {/* Mobile view - Cards */}
+      <div className="flex flex-col gap-4 md:hidden pb-20">
+        {sales.map(sale => renderMobileCard(sale))}
+      </div>
+
+      {/* Desktop view - Table */}
+      <div className="hidden md:block overflow-x-auto rounded-lg border border-gray-200">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
             <tr>
-              <td colSpan={11} className="px-6 py-8 text-center text-gray-500">
-                Henüz satış kaydı bulunmuyor
-              </td>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Satış ID/Tarih
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Ürün/Hizmet
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Barkod/Seri No
+              </th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Liste Fiyatı
+              </th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                İndirim
+              </th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                SGK Desteği
+              </th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Toplam Tutar
+              </th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Alınan Ödeme
+              </th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Kalan Tutar
+              </th>
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Durum
+              </th>
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                İşlemler
+              </th>
             </tr>
-          ) : (
-            sales.map((sale) => {
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {sales.map((sale) => {
               const displayTotal = calculateDisplayTotal(sale);
 
               // DEBUG: Check paidAmount value
@@ -324,7 +478,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                       // ✅ UPDATED: Format discount display based on type (User Decision)
                       const discountType = (sale.discountType as 'none' | 'percentage' | 'amount') || 'none';
                       const discountValue = sale.discountValue || 0;
-                      
+
                       if (discountType === 'none' || discountAmount === 0) {
                         return '-';
                       } else if (discountType === 'percentage') {
@@ -419,10 +573,10 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                   </td>
                 </tr>
               );
-            })
-          )}
-        </tbody>
-      </table>
-    </div>
+            })}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 };

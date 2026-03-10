@@ -388,7 +388,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Satış İşlemleri</h3>
         <div className="flex space-x-2">
-          <Button onClick={handleCreateSale} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={handleCreateSale} className="premium-gradient tactile-press">
             <Plus className="w-4 h-4 mr-2" />
             Yeni Satış
           </Button>

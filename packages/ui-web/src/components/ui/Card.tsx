@@ -7,9 +7,9 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const cardVariants = {
-  default: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm',
+  default: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm premium-shadow',
   outlined: 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-2xl',
-  elevated: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg',
+  elevated: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg premium-shadow',
   filled: 'bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl'
 };
 
@@ -30,6 +30,7 @@ export const Card: React.FC<CardProps> = ({
   const classes = [
     cardVariants[variant],
     paddingVariants[padding],
+    'tactile-press active:scale-[0.998]',
     className
   ].filter(Boolean).join(' ');
 

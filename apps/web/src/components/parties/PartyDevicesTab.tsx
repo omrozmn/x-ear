@@ -443,80 +443,82 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
 
   return (
     <div className="space-y-6">
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-2xl shadow-sm border">
+      {/* Quick Stats - Hiddden per user request */}
+      {/* 
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        <div className="bg-white p-3 md:p-4 rounded-xl md:rounded-2xl shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Aktif Cihaz</p>
-              <p className="text-2xl font-bold text-green-600">{quickStats.activeDevices}</p>
+              <p className="text-xs md:text-sm font-medium text-gray-600">Aktif Cihaz</p>
+              <p className="text-xl md:text-2xl font-bold text-green-600">{quickStats.activeDevices}</p>
             </div>
-            <div className="p-2 bg-green-100 rounded-full">
-              <Settings className="w-6 h-6 text-green-600" />
+            <div className="p-1.5 md:p-2 bg-green-100 rounded-full">
+              <Settings className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl shadow-sm border">
+        <div className="bg-white p-3 md:p-4 rounded-xl md:rounded-2xl shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Deneme</p>
-              <p className="text-2xl font-bold text-blue-600">{quickStats.trials}</p>
+              <p className="text-xs md:text-sm font-medium text-gray-600">Deneme</p>
+              <p className="text-xl md:text-2xl font-bold text-blue-600">{quickStats.trials}</p>
             </div>
-            <div className="p-2 bg-blue-100 rounded-full">
-              <Calendar className="w-6 h-6 text-blue-600" />
+            <div className="p-1.5 md:p-2 bg-blue-100 rounded-full">
+              <Calendar className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl shadow-sm border">
+        <div className="bg-white p-3 md:p-4 rounded-xl md:rounded-2xl shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Toplam Değer</p>
-              <p className="text-2xl font-bold text-purple-600">₺{quickStats.totalValue.toLocaleString()}</p>
+              <p className="text-xs md:text-sm font-medium text-gray-600">Toplam Değer</p>
+              <p className="text-lg md:text-2xl font-bold text-purple-600">₺{quickStats.totalValue.toLocaleString()}</p>
             </div>
-            <div className="p-2 bg-purple-100 rounded-full">
-              <DollarSign className="w-6 h-6 text-purple-600" />
+            <div className="p-1.5 md:p-2 bg-purple-100 rounded-full hidden sm:block">
+              <DollarSign className="w-5 h-5 md:w-6 md:h-6 text-purple-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl shadow-sm border">
+        <div className="bg-white p-3 md:p-4 rounded-xl md:rounded-2xl shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">E-Reçete</p>
-              <p className="text-2xl font-bold text-orange-600">{quickStats.ereceiptsCount}</p>
+              <p className="text-xs md:text-sm font-medium text-gray-600">E-Reçete</p>
+              <p className="text-xl md:text-2xl font-bold text-orange-600">{quickStats.ereceiptsCount}</p>
             </div>
-            <div className="p-2 bg-orange-100 rounded-full">
-              <FileText className="w-6 h-6 text-orange-600" />
+            <div className="p-1.5 md:p-2 bg-orange-100 rounded-full hidden sm:block">
+              <FileText className="w-5 h-5 md:w-6 md:h-6 text-orange-600" />
             </div>
           </div>
         </div>
-      </div>
+      </div> 
+      */}
 
       {/* Header with Add Device Button */}
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium text-gray-900">Atanmış Cihazlar</h3>
+      <div className="flex justify-between items-center sm:mt-6">
+        <h3 className="text-base md:text-lg font-medium text-gray-900">Atanmış Cihazlar</h3>
         <Button
           onClick={() => setShowDeviceForm(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors rounded-xl"
+          className="inline-flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 text-sm md:text-base premium-gradient tactile-press text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors rounded-xl"
           aria-label="Yeni Cihaz Ata"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-4 h-4 md:w-5 md:h-5" />
           <span>Yeni Cihaz Ata</span>
         </Button>
       </div>
 
       {/* Error Message */}
       {(error || devicesError) && (
-        <div className="rounded-xl bg-red-50 p-4 border border-red-200">
+        <div className="rounded-xl bg-red-50 p-3 md:p-4 border border-red-200">
           <div className="flex">
             <div className="flex-shrink-0">
-              <XCircle className="h-5 w-5 text-red-400" aria-hidden="true" />
+              <XCircle className="h-4 w-4 md:h-5 md:w-5 text-red-400" aria-hidden="true" />
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Hata</h3>
-              <div className="mt-2 text-sm text-red-700">
+              <h3 className="text-xs md:text-sm font-medium text-red-800">Hata</h3>
+              <div className="mt-1 md:mt-2 text-xs md:text-sm text-red-700">
                 <p>{error || (devicesError instanceof Error ? devicesError.message : 'Cihazlar yüklenirken bir hata oluştu.')}</p>
               </div>
             </div>
@@ -526,7 +528,8 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
 
       {/* Devices List - Row-based Layout for proper bilateral alignment */}
       <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        {/* Only show these headers on desktop, on mobile they take unnecessary space since cards have indicator labels */}
+        <div className="hidden md:grid grid-cols-2 gap-4">
           <h4 className="text-sm font-medium text-red-600 dark:text-red-400 flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-red-500"></span>
             Sağ Kulak
@@ -579,22 +582,22 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
 
           if (rows.length === 0) {
             return (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center py-8 text-gray-400 border-2 border-dashed border-red-200 dark:border-red-800 rounded-2xl bg-red-50/50 dark:bg-red-900/10">
-                  <p className="text-sm">Sağ kulak için cihaz atanmamış</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="text-center py-6 md:py-8 text-gray-400 border-2 border-dashed border-red-200 dark:border-red-800 rounded-2xl bg-red-50/50 dark:bg-red-900/10">
+                  <p className="text-xs md:text-sm">Sağ kulak için cihaz atanmamış</p>
                 </div>
-                <div className="text-center py-8 text-gray-400 border-2 border-dashed border-blue-200 dark:border-blue-800 rounded-2xl bg-blue-50/50 dark:bg-blue-900/10">
-                  <p className="text-sm">Sol kulak için cihaz atanmamış</p>
+                <div className="text-center py-6 md:py-8 text-gray-400 border-2 border-dashed border-blue-200 dark:border-blue-800 rounded-2xl bg-blue-50/50 dark:bg-blue-900/10">
+                  <p className="text-xs md:text-sm">Sol kulak için cihaz atanmamış</p>
                 </div>
               </div>
             );
           }
 
           return rows.map((row, index) => (
-            <div key={index} className="grid grid-cols-2 gap-4">
+            <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               {/* Right Ear */}
-              <div>
-                {row.right ? (
+              {row.right ? (
+                <div>
                   <PartyDeviceCard
                     key={`${row.right.id}-right-${index}`}
                     displaySide="right"
@@ -613,14 +616,14 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
                       }
                     }}
                   />
-                ) : (
-                  <div className="h-full min-h-[100px]"></div>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="hidden md:block h-full min-h-[100px]"></div>
+              )}
 
               {/* Left Ear */}
-              <div>
-                {row.left ? (
+              {row.left ? (
+                <div>
                   <PartyDeviceCard
                     key={`${row.left.id}-left-${index}`}
                     displaySide="left"
@@ -639,10 +642,10 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
                       }
                     }}
                   />
-                ) : (
-                  <div className="h-full min-h-[100px]"></div>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="hidden md:block h-full min-h-[100px]"></div>
+              )}
             </div>
           ));
         })()}

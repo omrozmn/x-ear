@@ -128,7 +128,7 @@ function ReasonModal({ isOpen, onClose, onConfirm, title, description, isLoading
         />
         
         {/* Modal */}
-        <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+        <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
             <button
@@ -149,7 +149,7 @@ function ReasonModal({ isOpen, onClose, onConfirm, title, description, isLoading
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Kill switch aktivasyon sebebini yazın..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm 
                 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500
                 text-sm resize-none"
               rows={3}
@@ -162,7 +162,7 @@ function ReasonModal({ isOpen, onClose, onConfirm, title, description, isLoading
               onClick={handleClose}
               disabled={isLoading}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border 
-                border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none 
+                border-gray-300 rounded-xl hover:bg-gray-50 focus:outline-none 
                 focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
             >
               İptal
@@ -171,7 +171,7 @@ function ReasonModal({ isOpen, onClose, onConfirm, title, description, isLoading
               onClick={handleConfirm}
               disabled={isLoading || !reason.trim()}
               className="px-4 py-2 text-sm font-medium text-white bg-red-600 border 
-                border-transparent rounded-md hover:bg-red-700 focus:outline-none 
+                border-transparent rounded-xl hover:bg-red-700 focus:outline-none 
                 focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50
                 disabled:cursor-not-allowed"
             >
@@ -220,7 +220,7 @@ function ActiveKillSwitchCard({
     <div className={`border-l-4 border-${config.color}-500 bg-${config.color}-50 p-4 rounded-r-lg`}>
       <div className="flex items-start justify-between">
         <div className="flex items-start space-x-3">
-          <div className={`p-2 bg-${config.color}-100 rounded-lg`}>
+          <div className={`p-2 bg-${config.color}-100 rounded-2xl`}>
             <Icon className={`h-5 w-5 text-${config.color}-600`} />
           </div>
           <div>
@@ -253,7 +253,7 @@ function ActiveKillSwitchCard({
           onClick={onDeactivate}
           disabled={isLoading}
           className="px-3 py-1.5 text-sm font-medium text-green-700 bg-green-100 
-            rounded-md hover:bg-green-200 focus:outline-none focus:ring-2 
+            rounded-xl hover:bg-green-200 focus:outline-none focus:ring-2 
             focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50
             disabled:cursor-not-allowed flex items-center"
         >
@@ -318,7 +318,7 @@ function TenantKillSwitchSection({
           onClick={() => setShowAddModal(true)}
           disabled={isLoading}
           className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 
-            bg-white border border-gray-300 rounded-md hover:bg-gray-50 
+            bg-white border border-gray-300 rounded-xl hover:bg-gray-50 
             focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500
             disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -358,7 +358,7 @@ function TenantKillSwitchSection({
               className="fixed inset-0 bg-black bg-opacity-25 transition-opacity" 
               onClick={() => setShowAddModal(false)}
             />
-            <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">Tenant Kill Switch Ekle</h3>
                 <button
@@ -378,7 +378,7 @@ function TenantKillSwitchSection({
                   value={newTenantId}
                   onChange={(e) => setNewTenantId(e.target.value)}
                   placeholder="Tenant ID girin..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm 
                     focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm"
                   disabled={isLoading}
                 />
@@ -421,7 +421,7 @@ function TenantReasonInput({ onConfirm, onCancel, isLoading, disabled }: TenantR
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           placeholder="Kill switch aktivasyon sebebini yazın..."
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+          className="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm 
             focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500
             text-sm resize-none"
           rows={3}
@@ -434,7 +434,7 @@ function TenantReasonInput({ onConfirm, onCancel, isLoading, disabled }: TenantR
           onClick={onCancel}
           disabled={isLoading}
           className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border 
-            border-gray-300 rounded-md hover:bg-gray-50"
+            border-gray-300 rounded-xl hover:bg-gray-50"
         >
           İptal
         </button>
@@ -442,7 +442,7 @@ function TenantReasonInput({ onConfirm, onCancel, isLoading, disabled }: TenantR
           onClick={() => onConfirm(reason)}
           disabled={isLoading || disabled || !reason.trim()}
           className="px-4 py-2 text-sm font-medium text-white bg-red-600 border 
-            border-transparent rounded-md hover:bg-red-700 disabled:opacity-50
+            border-transparent rounded-xl hover:bg-red-700 disabled:opacity-50
             disabled:cursor-not-allowed"
         >
           {isLoading ? 'İşleniyor...' : 'Aktive Et'}
@@ -524,7 +524,7 @@ function CapabilityKillSwitchSection({
             <div
               key={capability.id}
               className={`
-                p-4 rounded-lg border-2 transition-colors
+                p-4 rounded-2xl border-2 transition-colors
                 ${isActive 
                   ? 'border-red-300 bg-red-50' 
                   : 'border-gray-200 bg-white hover:border-gray-300'
@@ -635,7 +635,7 @@ export function KillSwitchPanel({ className = '' }: KillSwitchPanelProps) {
 
   if (!status && isLoading) {
     return (
-      <div className={`bg-white shadow rounded-lg p-6 ${className}`}>
+      <div className={`bg-white shadow rounded-2xl p-6 ${className}`}>
         <div className="animate-pulse space-y-4">
           <div className="h-6 bg-gray-200 rounded w-1/3"></div>
           <div className="h-20 bg-gray-200 rounded"></div>
@@ -646,12 +646,12 @@ export function KillSwitchPanel({ className = '' }: KillSwitchPanelProps) {
   }
 
   return (
-    <div className={`bg-white shadow rounded-lg overflow-hidden ${className}`}>
+    <div className={`bg-white shadow rounded-2xl overflow-hidden ${className}`}>
       {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-red-100 rounded-lg">
+            <div className="p-2 bg-red-100 rounded-2xl">
               <AlertTriangle className="h-6 w-6 text-red-600" />
             </div>
             <div>
@@ -676,7 +676,7 @@ export function KillSwitchPanel({ className = '' }: KillSwitchPanelProps) {
           </div>
 
           <div className={`
-            p-4 rounded-lg border-2 transition-colors
+            p-4 rounded-2xl border-2 transition-colors
             ${isGlobalActive 
               ? 'border-red-500 bg-red-50' 
               : 'border-gray-200 bg-white'

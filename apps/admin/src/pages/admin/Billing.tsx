@@ -523,7 +523,7 @@ const Billing: React.FC = () => {
             {!isMobile && (
               <button
                 onClick={() => setShowPlansModal(true)}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 touch-feedback"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-xl text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 touch-feedback"
               >
                 <BuildingOfficeIcon className="-ml-1 mr-2 h-5 w-5" />
                 Planları Yönet
@@ -531,7 +531,7 @@ const Billing: React.FC = () => {
             )}
             <button
               onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 touch-feedback"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white premium-gradient tactile-press dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 touch-feedback"
             >
               <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
               {!isMobile && 'Fatura Oluştur'}
@@ -570,7 +570,7 @@ const Billing: React.FC = () => {
           <>
             {/* Stats Cards */}
             <div className={`grid gap-6 ${isMobile ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-4'}`}>
-              <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+              <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-2xl">
                 <div className="p-5">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
@@ -590,7 +590,7 @@ const Billing: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+              <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-2xl">
                 <div className="p-5">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
@@ -612,7 +612,7 @@ const Billing: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+              <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-2xl">
                 <div className="p-5">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
@@ -634,7 +634,7 @@ const Billing: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+              <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-2xl">
                 <div className="p-5">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
@@ -658,7 +658,7 @@ const Billing: React.FC = () => {
             </div>
 
             {/* Filters */}
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+            <div className="bg-white dark:bg-gray-800 shadow rounded-2xl p-6">
               <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-3'}`}>
                 {/* Search */}
                 <div className="relative">
@@ -670,7 +670,7 @@ const Billing: React.FC = () => {
                     placeholder="Fatura ara..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
                   />
                 </div>
 
@@ -678,7 +678,7 @@ const Billing: React.FC = () => {
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                  className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 >
                   <option value="all">Tüm Durumlar</option>
                   <option value="active">Aktif</option>
@@ -699,7 +699,7 @@ const Billing: React.FC = () => {
             </div>
 
             {/* Invoices Table */}
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 shadow rounded-2xl overflow-hidden">
               {isLoading ? (
                 <div className="p-6 text-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
@@ -741,7 +741,7 @@ const Billing: React.FC = () => {
 
         {/* Plans Tab */}
         {activeTab === 'plans' && (
-          <div className="bg-white shadow rounded-lg overflow-hidden">
+          <div className="bg-white shadow rounded-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
               <h3 className="text-lg font-medium text-gray-900">Abonelik Planları</h3>
               <p className="mt-1 text-sm text-gray-500">
@@ -750,7 +750,7 @@ const Billing: React.FC = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
               {plans.map((plan) => (
-                <div key={plan.id} className="border border-gray-200 rounded-lg p-6">
+                <div key={plan.id} className="border border-gray-200 rounded-2xl p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="text-lg font-semibold text-gray-900">{plan.name}</h4>
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${plan.isActive
@@ -797,7 +797,7 @@ const Billing: React.FC = () => {
         {/* Invoice Detail Modal */}
         {showInvoiceModal && selectedInvoice && (
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-xl bg-white">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-medium text-gray-900">
                   Fatura Detayları - {selectedInvoice.invoiceNumber}
@@ -848,7 +848,7 @@ const Billing: React.FC = () => {
                 {/* Invoice Items (Single Device) */}
                 <div>
                   <h4 className="text-sm font-medium text-gray-900 mb-2">Fatura Kalemleri</h4>
-                  <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+                  <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-2xl">
                     <table className="min-w-full divide-y divide-gray-300">
                       <thead className="bg-gray-50">
                         <tr>
@@ -882,7 +882,7 @@ const Billing: React.FC = () => {
                 <div className="flex justify-end space-x-3 pt-4 border-t">
                   <button
                     onClick={() => handleDownloadPDF(selectedInvoice.id!.toString())}
-                    className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50"
                   >
                     <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
                     PDF İndir
@@ -892,7 +892,7 @@ const Billing: React.FC = () => {
                       onClick={() => {
                         handlePaymentRecordClick(selectedInvoice.id!.toString());
                       }}
-                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-white bg-green-600 hover:bg-green-700"
                     >
                       <CreditCardIcon className="h-4 w-4 mr-2" />
                       Ödeme Kaydet
@@ -918,7 +918,7 @@ const Billing: React.FC = () => {
         {/* Plans Management Modal */}
         {showPlansModal && (
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-md bg-white">
+            <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-xl bg-white">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-medium text-gray-900">
                   {planModalView === 'list' ? 'Plan Yönetimi' : (editingPlan ? 'Plan Düzenle' : 'Yeni Plan Ekle')}
@@ -942,7 +942,7 @@ const Billing: React.FC = () => {
                   <div className="flex justify-end">
                     <button
                       onClick={handleAddPlanClick}
-                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700"
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white bg-primary-600 hover:bg-primary-700"
                     >
                       <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
                       Yeni Plan Ekle
@@ -988,7 +988,7 @@ const Billing: React.FC = () => {
                       <input
                         type="text"
                         required
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         value={planFormData.name}
                         onChange={(e) => setPlanFormData({ ...planFormData, name: e.target.value })}
                       />
@@ -1000,7 +1000,7 @@ const Billing: React.FC = () => {
                         required
                         min="0"
                         step="0.01"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         value={planFormData.price}
                         onChange={(e) => setPlanFormData({ ...planFormData, price: Number(e.target.value) })}
                       />
@@ -1010,7 +1010,7 @@ const Billing: React.FC = () => {
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Fatura Aralığı</label>
                       <select
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         value={planFormData.billing_interval}
                         onChange={(e) => setPlanFormData({ ...planFormData, billing_interval: e.target.value as 'MONTHLY' | 'YEARLY' })}
                       >
@@ -1022,7 +1022,7 @@ const Billing: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Açıklama</label>
                     <textarea
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                      className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                       rows={3}
                       value={planFormData.description}
                       onChange={(e) => setPlanFormData({ ...planFormData, description: e.target.value })}
@@ -1033,7 +1033,7 @@ const Billing: React.FC = () => {
                     <div className="flex space-x-2 mt-1 mb-2">
                       <input
                         type="text"
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
+                        className="block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border p-2"
                         placeholder="Özellik ekle..."
                         value={newFeature}
                         onChange={(e) => setNewFeature(e.target.value)}
@@ -1042,14 +1042,14 @@ const Billing: React.FC = () => {
                       <button
                         type="button"
                         onClick={handleAddFeature}
-                        className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                        className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-xl text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                       >
                         Ekle
                       </button>
                     </div>
                     <ul className="space-y-2">
                       {planFeaturesList.map((feature, index) => (
-                        <li key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded-md">
+                        <li key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded-xl">
                           <span className="text-sm text-gray-700">{feature}</span>
                           <button
                             type="button"
@@ -1078,14 +1078,14 @@ const Billing: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setPlanModalView('list')}
-                      className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                      className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50"
                     >
                       İptal
                     </button>
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isSubmitting ? 'İşleniyor...' : (editingPlan ? 'Güncelle' : 'Oluştur')}
                     </button>
@@ -1112,7 +1112,7 @@ const Billing: React.FC = () => {
                   <Dialog.Close asChild>
                     <button
                       type="button"
-                      className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                      className="inline-flex justify-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                     >
                       İptal
                     </button>
@@ -1120,7 +1120,7 @@ const Billing: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="inline-flex justify-center rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex justify-center rounded-xl border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? 'Kaydediliyor...' : 'Kaydet'}
                   </button>
@@ -1172,7 +1172,7 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+      <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-xl bg-white">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-medium text-gray-900">Yeni Fatura Oluştur</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
@@ -1187,7 +1187,7 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
               <select
                 value={formData.tenant_id}
                 onChange={(e) => setFormData(prev => ({ ...prev, tenant_id: e.target.value }))}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                className="mt-1 block w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 required
               >
                 <option value="">Abone seçin</option>
@@ -1204,7 +1204,7 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                 type="number"
                 value={formData.amount}
                 onChange={(e) => setFormData(prev => ({ ...prev, amount: Number(e.target.value) }))}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                className="mt-1 block w-full border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                 required
                 min="0"
                 step="0.01"
@@ -1216,14 +1216,14 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50"
             >
               İptal
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
+              className="px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
             >
               {isLoading ? 'Oluşturuluyor...' : 'Fatura Oluştur'}
             </button>
