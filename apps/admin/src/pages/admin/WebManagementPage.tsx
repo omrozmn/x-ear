@@ -1,17 +1,24 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Bot, BrushCleaning, FileStack, Globe2, LayoutTemplate, MessageCircle, Package, Rocket, Store, WandSparkles } from 'lucide-react';
 import { useAdminResponsive } from '@/hooks';
-import { loadWebsiteGeneratorSnapshot, type WebsiteGeneratorSnapshot } from '@/lib/website-generator-client';
-
-type FeatureState = {
-    blog: boolean;
-    productListing: boolean;
-    ecommerce: boolean;
-    appointments: boolean;
-    whatsapp: boolean;
-    chatbot: boolean;
-    marketplace: boolean;
-};
+import {
+    applyAiEdit,
+    createPreview,
+    createSiteFromAi,
+    loadSiteWorkspace,
+    loadWebsiteGeneratorSnapshot,
+    proposeAiEdit,
+    publishSite,
+    revertAiEdit,
+    rollbackSite,
+    updateSiteTheme,
+    type AIDiscoveryResponse,
+    type AIDraftAnswers,
+    type AIEditProposalResponse,
+    type SiteWorkspace,
+    type ThemeSettings,
+    type WebsiteGeneratorSnapshot,
+} from '@/lib/website-generator-client';
 
 type TabKey =
     | 'content'
@@ -26,48 +33,69 @@ type TabKey =
     | 'chatbot'
     | 'marketplace';
 
+type DiscoveryAnswerKey = Exclude<keyof AIDraftAnswers, 'chatbot_mode'>;
+
+const ACTIVE_SITE_STORAGE_KEY = 'xear.websiteGenerator.activeSiteId';
+
 const aiQuestionGroups = [
     {
-        title: 'Temel Site Yapısı',
+        title: 'Temel Site Yapisi',
         items: [
-            'Ürünlerinizi web sitenizde listelemek istiyor musunuz?',
-            'Randevu veya form toplama alanı olsun mu?',
-            'WhatsApp iletişim butonu olsun mu?',
+            'Urunlerinizi web sitenizde listelemek istiyor musunuz?',
+            'Randevu veya form toplama alani olsun mu?',
+            'WhatsApp iletisim butonu olsun mu?',
         ],
     },
     {
-        title: 'İçerik ve Büyüme',
+        title: 'Icerik ve Buyume',
         items: [
-            'Blog bölümü olsun mu?',
-            'Kampanya veya duyuru sayfası ister misiniz?',
-            'Yorumlar veya referanslar bölümü eklensin mi?',
+            'Blog bolumu olsun mu?',
+            'Kampanya veya duyuru sayfasi ister misiniz?',
+            'Yorumlar veya referanslar bolumu eklensin mi?',
         ],
     },
     {
-        title: 'Satış ve Entegrasyon',
+        title: 'Satis ve Entegrasyon',
         items: [
-            'Online satış ister misiniz?',
-            'Pazaryeri bağlantıları olsun mu?',
-            'AI chatbot müşteri desteği aktif olsun mu?',
+            'Online satis ister misiniz?',
+            'Pazaryeri baglantilari olsun mu?',
+            'AI chatbot musteri destegi aktif olsun mu?',
         ],
     },
 ];
 
-const featureCards: Array<{ key: keyof FeatureState; label: string; detail: string }> = [
-    { key: 'blog', label: 'Blog Modülü', detail: 'Bilgilendirme, kampanya ve duyuru içerikleri' },
-    { key: 'productListing', label: 'Ürün Modülü', detail: 'Katalog, markalar ve ürün listeleme alanları' },
-    { key: 'ecommerce', label: 'E-Ticaret', detail: 'Sipariş, ödeme ve kargo süreçleri' },
-    { key: 'appointments', label: 'Randevu & Formlar', detail: 'Lead toplama ve randevu talepleri' },
-    { key: 'whatsapp', label: 'WhatsApp İletişim', detail: 'Hızlı destek ve dönüşüm CTA alanları' },
-    { key: 'chatbot', label: 'AI Chatbot', detail: 'SSS, katalog ve sipariş desteği' },
-    { key: 'marketplace', label: 'Pazaryeri Bağlantıları', detail: 'Trendyol, Amazon, Hepsiburada yönlendirmeleri' },
+const featureCards: Array<{ key: DiscoveryAnswerKey; label: string; detail: string }> = [
+    { key: 'blog', label: 'Blog Modulu', detail: 'Bilgilendirme, kampanya ve duyuru icerikleri' },
+    { key: 'product_listing', label: 'Urun Modulu', detail: 'Katalog, markalar ve urun listeleme alanlari' },
+    { key: 'ecommerce', label: 'E-Ticaret', detail: 'Siparis, odeme ve kargo surecleri' },
+    { key: 'appointment_forms', label: 'Randevu ve Formlar', detail: 'Lead toplama ve randevu talepleri' },
+    { key: 'whatsapp_contact', label: 'WhatsApp Iletisim', detail: 'Hizli destek ve donusum CTA alanlari' },
+    { key: 'ai_chatbot', label: 'AI Chatbot', detail: 'SSS, katalog ve siparis destegi' },
+    { key: 'marketplace_links', label: 'Pazaryeri Baglantilari', detail: 'Trendyol, Amazon, Hepsiburada yonlendirmeleri' },
 ];
 
-const themeOptions = [
-    { key: 'hearing-center-modern', label: 'Hearing Center Modern', detail: 'Premium clinic hero, trust blocks, calm motion' },
-    { key: 'commerce-modern', label: 'Commerce Modern', detail: 'Snap commerce highlights, product storytelling, CTA rhythm' },
-    { key: 'soft-minimal', label: 'Soft Minimal', detail: 'Calm typography, lightweight motion, content-first layout' },
+const themeOptions: Array<{ key: string; label: string; detail: string; settings: ThemeSettings }> = [
+    {
+        key: 'hearing-center-modern',
+        label: 'Hearing Center Modern',
+        detail: 'Premium clinic hero, trust blocks, calm motion',
+        settings: { primary_color: '#0f172a', accent_color: '#14b8a6', font_family: 'Manrope' },
+    },
+    {
+        key: 'commerce-modern',
+        label: 'Commerce Modern',
+        detail: 'Snap commerce highlights, product storytelling, CTA rhythm',
+        settings: { primary_color: '#111827', accent_color: '#f97316', font_family: 'Manrope' },
+    },
+    {
+        key: 'soft-minimal',
+        label: 'Soft Minimal',
+        detail: 'Calm typography, lightweight motion, content-first layout',
+        settings: { primary_color: '#1f2937', accent_color: '#8b5cf6', font_family: 'Instrument Sans' },
+    },
 ];
+
+const suggestedCommands = ['Hero basligini degistir', 'Blog ekle', 'E-ticareti ac', 'Footera Instagram ekle'];
 
 function TabButton({
     active,
@@ -97,24 +125,47 @@ const WebManagementPage: React.FC = () => {
     const [entryMode, setEntryMode] = useState<'template' | 'ai'>('ai');
     const [activeTab, setActiveTab] = useState<TabKey>('content');
     const [snapshot, setSnapshot] = useState<WebsiteGeneratorSnapshot | null>(null);
+    const [workspace, setWorkspace] = useState<SiteWorkspace | null>(null);
     const [selectedTheme, setSelectedTheme] = useState('hearing-center-modern');
-    const [chatMessages, setChatMessages] = useState([
-        'Isitme merkezim icin modern bir site olustur.',
-        'Randevu formu olsun, cihaz markalarini gosterelim, WhatsApp aktif olsun.',
-        'Ilk surum hazir. Hero basligini degistirebilir veya blog ekleyebilirim.',
-    ]);
-    const [features, setFeatures] = useState<FeatureState>({
+    const [siteName, setSiteName] = useState('X-Ear Hearing Center');
+    const [siteSlug, setSiteSlug] = useState('x-ear-hearing-center');
+    const [aiPrompt, setAiPrompt] = useState('Isitme merkezim icin modern bir site olustur. Randevu formu olsun, cihaz markalarini gosterelim ve WhatsApp aktif olsun.');
+    const [chatCommand, setChatCommand] = useState('Hero basligini degistir');
+    const [answers, setAnswers] = useState<AIDraftAnswers>({
         blog: true,
-        productListing: true,
+        product_listing: true,
         ecommerce: true,
-        appointments: true,
-        whatsapp: true,
-        chatbot: true,
-        marketplace: true,
+        appointment_forms: true,
+        whatsapp_contact: true,
+        ai_chatbot: true,
+        marketplace_links: true,
+        chatbot_mode: 'platform_managed',
     });
+    const [chatMessages, setChatMessages] = useState<string[]>([
+        'Isletme ihtiyacini cikar, sonra feature config ve site draft olustur.',
+    ]);
+    const [discovery, setDiscovery] = useState<AIDiscoveryResponse | null>(null);
+    const [proposal, setProposal] = useState<AIEditProposalResponse | null>(null);
+    const [busyKey, setBusyKey] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
+
+    const loadWorkspace = async (siteId: string) => {
+        setBusyKey('load-workspace');
+        setError(null);
+        try {
+            const nextWorkspace = await loadSiteWorkspace(siteId);
+            setWorkspace(nextWorkspace);
+            window.localStorage.setItem(ACTIVE_SITE_STORAGE_KEY, siteId);
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'Web Yonetim workspace yuklenemedi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
 
     useEffect(() => {
         let cancelled = false;
+        const activeSiteId = window.localStorage.getItem(ACTIVE_SITE_STORAGE_KEY);
 
         loadWebsiteGeneratorSnapshot().then((data) => {
             if (!cancelled) {
@@ -122,51 +173,265 @@ const WebManagementPage: React.FC = () => {
             }
         });
 
+        if (activeSiteId) {
+            loadSiteWorkspace(activeSiteId)
+                .then((data) => {
+                    if (!cancelled) {
+                        setWorkspace(data);
+                    }
+                })
+                .catch(() => {
+                    if (!cancelled) {
+                        window.localStorage.removeItem(ACTIVE_SITE_STORAGE_KEY);
+                    }
+                });
+        }
+
         return () => {
             cancelled = true;
         };
     }, []);
 
-    const visibleTabs = useMemo(
+    useEffect(() => {
+        if (workspace) {
+            const activePreset = themeOptions.find(
+                (theme) =>
+                    theme.settings.primary_color === workspace.site.theme_settings.primary_color &&
+                    theme.settings.accent_color === workspace.site.theme_settings.accent_color,
+            );
+            if (activePreset) {
+                setSelectedTheme(activePreset.key);
+            }
+        }
+    }, [workspace]);
+
+    const visibleTabs = useMemo(() => {
+        const featureFlags = workspace?.site.feature_flags ?? discovery?.inferred_features;
+        return [
+            { key: 'content' as const, label: 'Icerik Yonetimi' },
+            { key: 'appearance' as const, label: 'Gorunum Yonetimi' },
+            { key: 'pages' as const, label: 'Sayfa ve Menu Yonetimi' },
+            { key: 'publishing' as const, label: 'Yayinlama' },
+            ...(featureFlags?.blog ? [{ key: 'blog' as const, label: 'Blog Yonetimi' }] : []),
+            ...(featureFlags?.product_listing ? [{ key: 'products' as const, label: 'Urun Yonetimi' }] : []),
+            ...(featureFlags?.ecommerce ? [{ key: 'orders' as const, label: 'Siparisler' }, { key: 'commerce' as const, label: 'Kargo / Odeme Ayarlari' }] : []),
+            ...(featureFlags?.appointment_forms ? [{ key: 'appointments' as const, label: 'Randevu ve Formlar' }] : []),
+            ...(featureFlags?.ai_chatbot ? [{ key: 'chatbot' as const, label: 'AI Chatbot' }] : []),
+            ...(featureFlags?.marketplace_links ? [{ key: 'marketplace' as const, label: 'Pazaryeri Entegrasyonlari' }] : []),
+        ];
+    }, [discovery?.inferred_features, workspace?.site.feature_flags]);
+
+    useEffect(() => {
+        if (!visibleTabs.some((tab) => tab.key === activeTab)) {
+            setActiveTab(visibleTabs[0]?.key ?? 'content');
+        }
+    }, [activeTab, visibleTabs]);
+
+    const activeFeatureCount = useMemo(
         () =>
-            [
-                { key: 'content' as const, label: 'İçerik Yönetimi' },
-                { key: 'appearance' as const, label: 'Görünüm Yönetimi' },
-                { key: 'pages' as const, label: 'Sayfa ve Menü Yönetimi' },
-                { key: 'publishing' as const, label: 'Yayınlama' },
-                ...(features.blog ? [{ key: 'blog' as const, label: 'Blog Yönetimi' }] : []),
-                ...(features.productListing ? [{ key: 'products' as const, label: 'Ürün Yönetimi' }] : []),
-                ...(features.ecommerce ? [{ key: 'orders' as const, label: 'Siparişler' }, { key: 'commerce' as const, label: 'Kargo / Ödeme Ayarları' }] : []),
-                ...(features.appointments ? [{ key: 'appointments' as const, label: 'Randevu ve Formlar' }] : []),
-                ...(features.chatbot ? [{ key: 'chatbot' as const, label: 'AI Chatbot' }] : []),
-                ...(features.marketplace ? [{ key: 'marketplace' as const, label: 'Pazaryeri Entegrasyonları' }] : []),
-            ],
-        [features],
+            Object.values({
+                blog: workspace?.site.feature_flags.blog ?? discovery?.inferred_features.blog ?? false,
+                product_listing: workspace?.site.feature_flags.product_listing ?? discovery?.inferred_features.product_listing ?? false,
+                ecommerce: workspace?.site.feature_flags.ecommerce ?? discovery?.inferred_features.ecommerce ?? false,
+                appointment_forms: workspace?.site.feature_flags.appointment_forms ?? discovery?.inferred_features.appointment_forms ?? false,
+                whatsapp_contact: workspace?.site.feature_flags.whatsapp_contact ?? discovery?.inferred_features.whatsapp_contact ?? false,
+                ai_chatbot: workspace?.site.feature_flags.ai_chatbot ?? discovery?.inferred_features.ai_chatbot ?? false,
+                marketplace_links: workspace?.site.feature_flags.marketplace_links ?? discovery?.inferred_features.marketplace_links ?? false,
+            }).filter(Boolean).length,
+        [discovery?.inferred_features, workspace?.site.feature_flags],
     );
+
+    const pages = workspace?.site.pages ?? [];
+    const menuItems = workspace?.site.menu_items ?? [];
+    const previewChecks = workspace?.previewStatus.checks ?? [];
+
+    const handleCreateDraft = async () => {
+        setBusyKey('create-draft');
+        setError(null);
+        try {
+            const result = await createSiteFromAi({
+                prompt: aiPrompt,
+                siteName,
+                siteSlug,
+                answers,
+            });
+            setDiscovery(result.discovery);
+            setChatMessages((current) => [
+                ...current,
+                `AI draft olustu: ${result.site.name}`,
+                `Oncelikli tema: ${result.draft.theme_key}`,
+            ]);
+            await loadWorkspace(result.site.id);
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'AI draft olusturulamadi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
+    const handleProposeEdit = async (command: string) => {
+        if (!workspace) {
+            setError('Chat ile duzenleme icin once aktif bir site olusturulmasi gerekiyor.');
+            return;
+        }
+        setBusyKey('propose-edit');
+        setError(null);
+        try {
+            const nextProposal = await proposeAiEdit(workspace.site.id, command);
+            setProposal(nextProposal);
+            setChatMessages((current) => [...current, command, nextProposal.summary]);
+            setChatCommand('');
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'AI edit onerisi olusturulamadi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
+    const handleApplyProposal = async () => {
+        if (!proposal || !workspace) {
+            return;
+        }
+        setBusyKey('apply-proposal');
+        setError(null);
+        try {
+            await applyAiEdit(proposal.proposal_id);
+            await loadWorkspace(workspace.site.id);
+            setProposal((current) => (current ? { ...current, status: 'applied' } : current));
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'AI edit uygulanamadi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
+    const handleRevertProposal = async () => {
+        if (!proposal || !workspace) {
+            return;
+        }
+        setBusyKey('revert-proposal');
+        setError(null);
+        try {
+            await revertAiEdit(proposal.proposal_id);
+            await loadWorkspace(workspace.site.id);
+            setProposal((current) => (current ? { ...current, status: 'reverted' } : current));
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'AI edit geri alinamadi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
+    const handleApplyTheme = async () => {
+        if (!workspace) {
+            setError('Tema uygulamak icin once aktif bir site olusturulmasi gerekiyor.');
+            return;
+        }
+        const theme = themeOptions.find((item) => item.key === selectedTheme);
+        if (!theme) {
+            return;
+        }
+        setBusyKey('apply-theme');
+        setError(null);
+        try {
+            await updateSiteTheme(workspace.site.id, theme.settings);
+            await loadWorkspace(workspace.site.id);
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'Tema ayarlari guncellenemedi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
+    const handlePreview = async () => {
+        if (!workspace) {
+            setError('Preview icin once aktif bir site olusturulmasi gerekiyor.');
+            return;
+        }
+        setBusyKey('preview');
+        setError(null);
+        try {
+            await createPreview(workspace.site.id);
+            await loadWorkspace(workspace.site.id);
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'Preview olusturulamadi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
+    const handlePublish = async () => {
+        if (!workspace) {
+            setError('Publish icin once aktif bir site olusturulmasi gerekiyor.');
+            return;
+        }
+        setBusyKey('publish');
+        setError(null);
+        try {
+            await publishSite(workspace.site.id);
+            await loadWorkspace(workspace.site.id);
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'Publish islemi basarisiz oldu.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
+    const handleRollback = async () => {
+        if (!workspace) {
+            setError('Rollback icin once aktif bir site olusturulmasi gerekiyor.');
+            return;
+        }
+        setBusyKey('rollback');
+        setError(null);
+        try {
+            await rollbackSite(workspace.site.id);
+            await loadWorkspace(workspace.site.id);
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'Rollback islemi basarisiz oldu.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
 
     const tabContent: Record<TabKey, React.ReactNode> = {
         content: (
             <div className="grid gap-4 lg:grid-cols-2">
                 <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-900">Sayfa İçerikleri</h3>
-                    <p className="mt-2 text-sm text-gray-500">Hero başlıkları, section metinleri, CTA’lar, görseller ve iletişim alanları burada düzenlenir.</p>
+                    <h3 className="text-lg font-semibold text-gray-900">Sayfa Icerikleri</h3>
+                    <p className="mt-2 text-sm text-gray-500">Aktif draft icindeki sayfalar ve section tipleri servis durumundan okunur.</p>
                     <div className="mt-4 space-y-3">
-                        {['Ana Sayfa Hero', 'Hizmetler Bölümü', 'Markalar Bölümü', 'İletişim Kartı'].map((item) => (
-                            <div key={item} className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
-                                {item}
-                            </div>
-                        ))}
+                        {pages.length > 0 ? (
+                            pages.map((page) => (
+                                <div key={page.slug} className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                                    <div className="font-medium text-gray-900">{page.title}</div>
+                                    <div className="mt-1 text-xs text-gray-500">{page.slug}</div>
+                                    <div className="mt-2 flex flex-wrap gap-2">
+                                        {page.sections.map((section) => (
+                                            <span key={`${page.slug}-${section.type}-${section.variant}`} className="rounded-full bg-white px-3 py-1 text-xs ring-1 ring-gray-200">
+                                                {section.type} / {section.variant}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-600">Henüz olusturulmus bir draft yok.</div>
+                        )}
                     </div>
                 </div>
                 <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-900">Section Kütüphanesi</h3>
-                    <p className="mt-2 text-sm text-gray-500">Kullanıcı controlled builder mantığıyla section ekler, kaldırır ve sıralar.</p>
+                    <h3 className="text-lg font-semibold text-gray-900">Section ve Revizyon Akisi</h3>
+                    <p className="mt-2 text-sm text-gray-500">Host builder shell destekleri aktif site baglamindan gelir.</p>
                     <div className="mt-4 flex flex-wrap gap-2">
-                        {['Hero', 'Services', 'Brands', 'Testimonials', 'Appointment Form', 'FAQ', 'Map'].map((item) => (
+                        {(workspace?.builderShell.supported_flows ?? ['add_section', 'remove_section', 'reorder_section', 'edit_content']).map((item) => (
                             <span key={item} className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
                                 {item}
                             </span>
                         ))}
+                    </div>
+                    <div className="mt-4 rounded-2xl bg-gray-50 p-4 text-sm text-gray-600">
+                        Autosave: {workspace?.builderShell.revision_policy.autosave_interval_seconds ?? 0}s
                     </div>
                 </div>
             </div>
@@ -189,6 +454,13 @@ const WebManagementPage: React.FC = () => {
                             </button>
                         ))}
                     </div>
+                    <button
+                        onClick={handleApplyTheme}
+                        disabled={!workspace || busyKey === 'apply-theme'}
+                        className="mt-4 rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                        {busyKey === 'apply-theme' ? 'Uygulaniyor...' : 'Temayi Uygula'}
+                    </button>
                 </div>
                 <div className="grid gap-4">
                     {[
@@ -206,32 +478,56 @@ const WebManagementPage: React.FC = () => {
         ),
         pages: (
             <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900">Sayfa ve Menü Yapısı</h3>
+                <h3 className="text-lg font-semibold text-gray-900">Sayfa ve Menu Yapisi</h3>
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
-                    {['/ Ana Sayfa', '/about Hakkımızda', '/services Hizmetler', '/contact İletişim', '/products Ürünler'].map((item) => (
-                        <div key={item} className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
-                            {item}
-                        </div>
-                    ))}
+                    {menuItems.length > 0 ? (
+                        menuItems.map((item) => (
+                            <div key={`${item.page_slug}-${item.position}`} className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                                {item.position}. {item.label} ({item.page_slug})
+                            </div>
+                        ))
+                    ) : (
+                        <div className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-600">Menu item henuz yok.</div>
+                    )}
                 </div>
             </div>
         ),
         publishing: (
             <div className="grid gap-4 xl:grid-cols-[1fr_0.9fr]">
                 <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-900">Draft Durumu</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">Draft ve Readiness Durumu</h3>
                     <ul className="mt-4 space-y-2 text-sm text-gray-600">
-                        <li>Preview hazır</li>
-                        <li>Publish readiness kontrolü aktif</li>
-                        <li>Rollback destekli release modeli</li>
+                        <li>Preview state: {workspace?.previewStatus.preview_state ?? 'bekleniyor'}</li>
+                        <li>Publish state: {workspace?.previewStatus.publish_state ?? 'bekleniyor'}</li>
+                        <li>Release status: {workspace?.publishStatus.status ?? 'draft'}</li>
                     </ul>
+                    <div className="mt-4 space-y-2">
+                        {previewChecks.map((check) => (
+                            <div key={check.key} className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                                <div className="font-medium">{check.label}</div>
+                                <div className="mt-1 text-xs text-gray-500">{check.status} - {check.detail}</div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
                 <div className="rounded-3xl bg-gray-900 p-6 text-white">
-                    <h3 className="text-lg font-semibold">Canlıya Alma</h3>
-                    <p className="mt-2 text-sm text-gray-300">Preview, publish ve rollback akışları bu sekmeden yönetilir.</p>
+                    <h3 className="text-lg font-semibold">Canliya Alma</h3>
+                    <p className="mt-2 text-sm text-gray-300">Preview, publish ve rollback akislari bu sekmeden yonetilir.</p>
                     <div className="mt-4 flex flex-wrap gap-3">
-                        <button className="rounded-2xl bg-white px-4 py-2 text-sm font-medium text-gray-900">Preview Aç</button>
-                        <button className="rounded-2xl bg-emerald-400 px-4 py-2 text-sm font-medium text-gray-950">Publish Et</button>
+                        <button onClick={handlePreview} disabled={!workspace || busyKey === 'preview'} className="rounded-2xl bg-white px-4 py-2 text-sm font-medium text-gray-900 disabled:cursor-not-allowed disabled:opacity-60">
+                            {busyKey === 'preview' ? 'Hazirlaniyor...' : 'Preview Ac'}
+                        </button>
+                        <button onClick={handlePublish} disabled={!workspace || busyKey === 'publish'} className="rounded-2xl bg-emerald-400 px-4 py-2 text-sm font-medium text-gray-950 disabled:cursor-not-allowed disabled:opacity-60">
+                            {busyKey === 'publish' ? 'Publish...' : 'Publish Et'}
+                        </button>
+                        <button onClick={handleRollback} disabled={!workspace || busyKey === 'rollback'} className="rounded-2xl bg-white/10 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+                            {busyKey === 'rollback' ? 'Rollback...' : 'Rollback'}
+                        </button>
+                    </div>
+                    <div className="mt-4 space-y-2 text-xs text-gray-300">
+                        <div>Preview URL: {workspace?.publishStatus.preview_url ?? '-'}</div>
+                        <div>Published URL: {workspace?.publishStatus.published_url ?? '-'}</div>
+                        <div>Release ID: {workspace?.publishStatus.active_release_id ?? '-'}</div>
                     </div>
                 </div>
                 <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
@@ -251,17 +547,17 @@ const WebManagementPage: React.FC = () => {
                 </div>
             </div>
         ),
-        blog: <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200 text-sm text-gray-600">Blog listesi, post oluşturma ve yayın durumu bu sekmede yer alır.</div>,
-        products: <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200 text-sm text-gray-600">Katalog, ürün kartları, SKU yönetimi ve ürün görünürlüğü burada yönetilir.</div>,
-        orders: <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200 text-sm text-gray-600">Sipariş listesi, sipariş detayları, fulfillment ve ödeme durumları burada görünür.</div>,
-        commerce: <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200 text-sm text-gray-600">Kargo, ödeme metotları ve checkout davranışı bu sekmede yönetilir.</div>,
-        appointments: <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200 text-sm text-gray-600">Form alanları, lead listesi ve randevu ayarları burada yönetilir.</div>,
-        chatbot: <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200 text-sm text-gray-600">AI chatbot modu, handoff kanalı, message limiti ve widget görünürlüğü burada yönetilir.</div>,
-        marketplace: <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200 text-sm text-gray-600">Pazaryeri linkleri ve CTA kartları bu sekmede yönetilir.</div>,
+        blog: <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200 text-sm text-gray-600">Blog tabi aktif. Iceriklerin gercek yonetimi servis modullerine baglanacak.</div>,
+        products: <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200 text-sm text-gray-600">Urun tabi aktif. Katalog ve SKU yonetimi ayni host altindan acildi.</div>,
+        orders: <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200 text-sm text-gray-600">Siparisler sekmesi e-ticaret aktifken gorunur.</div>,
+        commerce: <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200 text-sm text-gray-600">Kargo ve odeme ayarlari commerce flag ile acilir.</div>,
+        appointments: <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200 text-sm text-gray-600">Randevu ve lead toplama sekmesi aktif site feature state ile bagli.</div>,
+        chatbot: <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200 text-sm text-gray-600">AI chatbot modu, handoff ve message limiti servis uzerinden yonetilir.</div>,
+        marketplace: <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200 text-sm text-gray-600">Pazaryeri linkleri ve CTA kartlari feature state ile acilir.</div>,
     };
 
     return (
-        <div className={isMobile ? 'p-4 pb-safe max-w-7xl mx-auto' : 'p-6 max-w-7xl mx-auto'}>
+        <div className={isMobile ? 'mx-auto max-w-7xl p-4 pb-safe' : 'mx-auto max-w-7xl p-6'}>
             <div className="rounded-[2rem] bg-gradient-to-br from-gray-950 via-slate-900 to-slate-800 p-6 text-white shadow-xl">
                 <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                     <div className="max-w-3xl">
@@ -293,6 +589,12 @@ const WebManagementPage: React.FC = () => {
                 </div>
             </div>
 
+            {error ? (
+                <div className="mt-6 rounded-3xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                    {error}
+                </div>
+            ) : null}
+
             <div className="mt-6 grid gap-6 xl:grid-cols-[1.3fr_0.9fr]">
                 <div className="rounded-[2rem] bg-white p-6 ring-1 ring-gray-200">
                     <div className="flex items-center gap-3">
@@ -304,6 +606,20 @@ const WebManagementPage: React.FC = () => {
 
                     {entryMode === 'ai' ? (
                         <div className="mt-5 space-y-4">
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <label className="rounded-3xl bg-gray-50 p-4 text-sm text-gray-700">
+                                    <div className="font-medium text-gray-900">Site adi</div>
+                                    <input value={siteName} onChange={(event) => setSiteName(event.target.value)} className="mt-3 w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" />
+                                </label>
+                                <label className="rounded-3xl bg-gray-50 p-4 text-sm text-gray-700">
+                                    <div className="font-medium text-gray-900">Slug</div>
+                                    <input value={siteSlug} onChange={(event) => setSiteSlug(event.target.value)} className="mt-3 w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" />
+                                </label>
+                            </div>
+                            <label className="block rounded-3xl bg-gray-50 p-4 text-sm text-gray-700">
+                                <div className="font-medium text-gray-900">AI prompt</div>
+                                <textarea value={aiPrompt} onChange={(event) => setAiPrompt(event.target.value)} rows={4} className="mt-3 w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" />
+                            </label>
                             {aiQuestionGroups.map((group) => (
                                 <div key={group.title} className="rounded-3xl bg-gray-50 p-5">
                                     <h3 className="text-sm font-semibold text-gray-900">{group.title}</h3>
@@ -317,13 +633,20 @@ const WebManagementPage: React.FC = () => {
                                 </div>
                             ))}
                             <div className="rounded-3xl border border-dashed border-sky-300 bg-sky-50 p-5 text-sm text-sky-900">
-                                AI sonunda serbest HTML degil; feature config + typed site draft + section plan uretir.
+                                AI sonunda serbest HTML degil; feature config, typed site draft ve section plan uretir.
                             </div>
+                            <button
+                                onClick={handleCreateDraft}
+                                disabled={busyKey === 'create-draft'}
+                                className="rounded-2xl bg-gray-900 px-4 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                {busyKey === 'create-draft' ? 'Draft olusturuluyor...' : 'AI ile Taslak Olustur'}
+                            </button>
                         </div>
                     ) : (
                         <div className="mt-5 grid gap-4 md:grid-cols-3">
                             {[
-                                { icon: LayoutTemplate, title: 'Tema Sec', detail: 'Health / clinic / commerce presetleri' },
+                                { icon: LayoutTemplate, title: 'Tema Sec', detail: 'Health, clinic ve commerce presetleri' },
                                 { icon: FileStack, title: 'Sayfa Seti', detail: 'Ana sayfa, hakkimizda, iletisim ve opsiyonel moduller' },
                                 { icon: Rocket, title: 'Draft Baslat', detail: 'Kullanici sonra panel veya chat ile duzenler' },
                             ].map((item) => (
@@ -346,20 +669,37 @@ const WebManagementPage: React.FC = () => {
                         {featureCards.map((item) => (
                             <button
                                 key={item.key}
-                                onClick={() => setFeatures((current) => ({ ...current, [item.key]: !current[item.key] }))}
+                                onClick={() => setAnswers((current) => ({ ...current, [item.key]: !current[item.key] }))}
                                 className={`flex w-full items-start justify-between rounded-3xl px-4 py-4 text-left ring-1 transition-colors ${
-                                    features[item.key] ? 'bg-emerald-50 ring-emerald-200' : 'bg-gray-50 ring-gray-200'
+                                    answers[item.key] ? 'bg-emerald-50 ring-emerald-200' : 'bg-gray-50 ring-gray-200'
                                 }`}
                             >
                                 <div>
                                     <div className="text-sm font-semibold text-gray-900">{item.label}</div>
                                     <div className="mt-1 text-xs text-gray-500">{item.detail}</div>
                                 </div>
-                                <div className={`rounded-full px-2 py-1 text-[11px] font-semibold ${features[item.key] ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600'}`}>
-                                    {features[item.key] ? 'Aktif' : 'Pasif'}
+                                <div className={`rounded-full px-2 py-1 text-[11px] font-semibold ${answers[item.key] ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600'}`}>
+                                    {answers[item.key] ? 'Aktif' : 'Pasif'}
                                 </div>
                             </button>
                         ))}
+                    </div>
+                    <div className="mt-4 rounded-3xl bg-gray-50 p-4">
+                        <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Chatbot Faturalama Modu</div>
+                        <div className="mt-3 flex gap-2">
+                            {[
+                                { key: 'platform_managed', label: 'Biz Yonetelim' },
+                                { key: 'bring_your_own_api', label: 'Kendi API Anahtari' },
+                            ].map((option) => (
+                                <button
+                                    key={option.key}
+                                    onClick={() => setAnswers((current) => ({ ...current, chatbot_mode: option.key as AIDraftAnswers['chatbot_mode'] }))}
+                                    className={`rounded-2xl px-3 py-2 text-xs font-medium ${answers.chatbot_mode === option.key ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 ring-1 ring-gray-200'}`}
+                                >
+                                    {option.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -377,14 +717,14 @@ const WebManagementPage: React.FC = () => {
                         detail: 'Host uyumluluk checklist surface',
                     },
                     {
-                        title: 'Mobile QA',
-                        value: snapshot?.mobileMatrix ? 'Yuklendi' : 'Bekleniyor',
-                        detail: 'Responsive ve motion guard matrix',
+                        title: 'Active Site',
+                        value: workspace?.site.name ?? 'Yok',
+                        detail: workspace?.site.slug ?? 'Olusturulmus aktif site bekleniyor',
                     },
                     {
-                        title: 'Release Validation',
-                        value: snapshot?.releaseValidation ? 'Yuklendi' : 'Bekleniyor',
-                        detail: 'Regression summary contract',
+                        title: 'Visible Tabs',
+                        value: `${visibleTabs.length}`,
+                        detail: `${activeFeatureCount} aktif modul / feature`,
                     },
                 ].map((item) => (
                     <div key={item.title} className="rounded-3xl bg-white p-5 ring-1 ring-gray-200">
@@ -413,35 +753,73 @@ const WebManagementPage: React.FC = () => {
                             </div>
                         ))}
                     </div>
+                    <div className="mt-4 rounded-3xl bg-gray-50 p-4">
+                        <div className="flex flex-col gap-3">
+                            <input value={chatCommand} onChange={(event) => setChatCommand(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="Ornek: Blog ekle" />
+                            <button onClick={() => handleProposeEdit(chatCommand)} disabled={!chatCommand || busyKey === 'propose-edit'} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+                                {busyKey === 'propose-edit' ? 'Oneri hazirlaniyor...' : 'AI Onerisi Uret'}
+                            </button>
+                        </div>
+                    </div>
                     <div className="mt-4 flex flex-wrap gap-2">
-                        {['Hero basligini degistir', 'Blog ekle', 'E-ticareti ac', 'Footera Instagram ekle'].map((command) => (
+                        {suggestedCommands.map((command) => (
                             <button
                                 key={command}
-                                onClick={() => setChatMessages((current) => [...current, command])}
+                                onClick={() => setChatCommand(command)}
                                 className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700"
                             >
                                 {command}
                             </button>
                         ))}
                     </div>
+                    {proposal ? (
+                        <div className="mt-4 rounded-3xl border border-gray-200 bg-gray-50 p-4">
+                            <div className="text-sm font-semibold text-gray-900">Son Oneri</div>
+                            <div className="mt-2 text-sm text-gray-600">{proposal.summary}</div>
+                            <div className="mt-2 text-xs text-gray-500">Durum: {proposal.status}</div>
+                            <div className="mt-3 flex gap-2">
+                                <button onClick={handleApplyProposal} disabled={proposal.status !== 'proposed' || busyKey === 'apply-proposal'} className="rounded-2xl bg-emerald-500 px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60">
+                                    Uygula
+                                </button>
+                                <button onClick={handleRevertProposal} disabled={proposal.status !== 'applied' || busyKey === 'revert-proposal'} className="rounded-2xl bg-gray-900 px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60">
+                                    Geri Al
+                                </button>
+                            </div>
+                        </div>
+                    ) : null}
                 </div>
                 <div className="rounded-[2rem] bg-white p-6 ring-1 ring-gray-200">
                     <div className="flex items-center gap-3">
                         <LayoutTemplate className="h-5 w-5 text-orange-500" />
-                        <h2 className="text-lg font-semibold text-gray-900">Oluşturulan Draft Özeti</h2>
+                        <h2 className="text-lg font-semibold text-gray-900">Olusturulan Draft Ozeti</h2>
                     </div>
                     <div className="mt-5 grid gap-3">
                         {[
                             `Tema: ${selectedTheme}`,
                             `Gorunen sekme sayisi: ${visibleTabs.length}`,
                             `AI mesaj sayisi: ${chatMessages.length}`,
-                            `Aktif modul sayisi: ${Object.values(features).filter(Boolean).length}`,
+                            `Aktif modul sayisi: ${activeFeatureCount}`,
+                            `Menu item sayisi: ${workspace?.adminMenu.visible_items.length ?? 0}`,
                         ].map((item) => (
                             <div key={item} className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
                                 {item}
                             </div>
                         ))}
                     </div>
+                    {discovery ? (
+                        <div className="mt-4 rounded-3xl border border-sky-200 bg-sky-50 p-4">
+                            <div className="text-sm font-semibold text-sky-900">AI Discovery Sonucu</div>
+                            <div className="mt-2 text-sm text-sky-800">Site tipi: {discovery.inferred_site_type}</div>
+                            <div className="mt-1 text-sm text-sky-800">Onerilen tema: {discovery.suggested_theme_key}</div>
+                            <div className="mt-3 space-y-2">
+                                {discovery.questions.map((question) => (
+                                    <div key={question.key} className="rounded-2xl bg-white px-3 py-2 text-xs text-sky-900 ring-1 ring-sky-200">
+                                        {question.label}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ) : null}
                 </div>
             </div>
 
@@ -465,9 +843,9 @@ const WebManagementPage: React.FC = () => {
 
             <div className="mt-6 grid gap-4 md:grid-cols-3">
                 {[
-                    { icon: WandSparkles, title: 'AI ile Taslak Olustur', detail: 'Kullanici prompt verir, AI draft cikarir.' },
-                    { icon: MessageCircle, title: 'Chat ile Duzenle', detail: 'Hero basligini degistir, blog ekle, footeri guncelle gibi komutlar.' },
-                    { icon: Globe2, title: 'Preview ve Publish', detail: 'Draft ayni panelden preview edilir ve canliya alinir.' },
+                    { icon: WandSparkles, title: 'AI ile Taslak Olustur', detail: 'Kullanici prompt verir, AI discovery ve draft cikarir.' },
+                    { icon: MessageCircle, title: 'Chat ile Duzenle', detail: 'AI edit proposal olusur, host admin icinden uygula veya geri al.' },
+                    { icon: Globe2, title: 'Preview ve Publish', detail: 'Draft ayni panelden preview edilir, publish edilir ve rollback desteklenir.' },
                 ].map((card) => (
                     <div key={card.title} className="rounded-3xl bg-white p-5 ring-1 ring-gray-200">
                         <card.icon className="h-5 w-5 text-gray-700" />
