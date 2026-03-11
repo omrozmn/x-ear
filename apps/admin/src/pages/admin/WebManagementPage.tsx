@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from 'react';
-import { Bot, BrushCleaning, FileStack, Globe2, LayoutTemplate, MessageCircle, Package, Rocket, ShoppingBag, Store, WandSparkles } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Bot, BrushCleaning, FileStack, Globe2, LayoutTemplate, MessageCircle, Package, Rocket, Store, WandSparkles } from 'lucide-react';
 import { useAdminResponsive } from '@/hooks';
+import { loadWebsiteGeneratorSnapshot, type WebsiteGeneratorSnapshot } from '@/lib/website-generator-client';
 
 type FeatureState = {
     blog: boolean;
@@ -89,6 +90,7 @@ const WebManagementPage: React.FC = () => {
     const { isMobile } = useAdminResponsive();
     const [entryMode, setEntryMode] = useState<'template' | 'ai'>('ai');
     const [activeTab, setActiveTab] = useState<TabKey>('content');
+    const [snapshot, setSnapshot] = useState<WebsiteGeneratorSnapshot | null>(null);
     const [features, setFeatures] = useState<FeatureState>({
         blog: true,
         productListing: true,
@@ -98,6 +100,20 @@ const WebManagementPage: React.FC = () => {
         chatbot: true,
         marketplace: true,
     });
+
+    useEffect(() => {
+        let cancelled = false;
+
+        loadWebsiteGeneratorSnapshot().then((data) => {
+            if (!cancelled) {
+                setSnapshot(data);
+            }
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
     const visibleTabs = useMemo(
         () =>
@@ -300,6 +316,37 @@ const WebManagementPage: React.FC = () => {
                         ))}
                     </div>
                 </div>
+            </div>
+
+            <div className="mt-6 grid gap-4 lg:grid-cols-4">
+                {[
+                    {
+                        title: 'Service Baglantisi',
+                        value: snapshot?.featureCatalog ? 'Hazir' : 'Bekleniyor',
+                        detail: snapshot?.baseUrl ?? 'Website Generator API baglantisi',
+                    },
+                    {
+                        title: 'x-ear Checklist',
+                        value: snapshot?.xearChecklist ? 'Yuklendi' : 'Bekleniyor',
+                        detail: 'Host uyumluluk checklist surface',
+                    },
+                    {
+                        title: 'Mobile QA',
+                        value: snapshot?.mobileMatrix ? 'Yuklendi' : 'Bekleniyor',
+                        detail: 'Responsive ve motion guard matrix',
+                    },
+                    {
+                        title: 'Release Validation',
+                        value: snapshot?.releaseValidation ? 'Yuklendi' : 'Bekleniyor',
+                        detail: 'Regression summary contract',
+                    },
+                ].map((item) => (
+                    <div key={item.title} className="rounded-3xl bg-white p-5 ring-1 ring-gray-200">
+                        <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">{item.title}</div>
+                        <div className="mt-3 text-lg font-semibold text-gray-900">{item.value}</div>
+                        <div className="mt-2 text-sm text-gray-500">{item.detail}</div>
+                    </div>
+                ))}
             </div>
 
             <div className="mt-6 rounded-[2rem] bg-white p-6 ring-1 ring-gray-200">
