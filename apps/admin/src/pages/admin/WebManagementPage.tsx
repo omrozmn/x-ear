@@ -31,6 +31,7 @@ import {
     type ThemeSettings,
     type WebsiteGeneratorSnapshot,
 } from '@/lib/website-generator-client';
+import { WebsitePreviewCanvas } from '@/components/admin/web-management/WebsitePreviewCanvas';
 
 type TabKey =
     | 'content'
@@ -48,6 +49,7 @@ type TabKey =
 type DiscoveryAnswerKey = Exclude<keyof AIDraftAnswers, 'chatbot_mode'>;
 
 const ACTIVE_SITE_STORAGE_KEY = 'xear.websiteGenerator.activeSiteId';
+const PENDING_PREVIEW_COMMAND_STORAGE_KEY = 'xear.websiteGenerator.pendingPreviewCommand';
 
 const aiQuestionGroups = [
     {
@@ -177,7 +179,7 @@ const WebManagementPage: React.FC = () => {
     const [domainSearch, setDomainSearch] = useState<DomainAvailabilityResponse | null>(null);
     const [domainQuery, setDomainQuery] = useState('xear-clinic.com.tr');
     const [selectedDomainProvider, setSelectedDomainProvider] = useState('metunic');
-    const [previewReviewTarget, setPreviewReviewTarget] = useState<string>('');
+    const [previewReviewTarget, setPreviewReviewTarget] = useState<{ key: string; label: string } | null>(null);
     const [selectedPageSlug, setSelectedPageSlug] = useState('/');
     const [newPageTitle, setNewPageTitle] = useState('Yeni Sayfa');
     const [newPageSlug, setNewPageSlug] = useState('/new-page');
@@ -205,6 +207,12 @@ const WebManagementPage: React.FC = () => {
     useEffect(() => {
         let cancelled = false;
         const activeSiteId = window.localStorage.getItem(ACTIVE_SITE_STORAGE_KEY);
+        const pendingPreviewCommand = window.localStorage.getItem(PENDING_PREVIEW_COMMAND_STORAGE_KEY);
+        if (pendingPreviewCommand) {
+            setChatCommand(pendingPreviewCommand);
+            setActiveTab('publishing');
+            window.localStorage.removeItem(PENDING_PREVIEW_COMMAND_STORAGE_KEY);
+        }
 
         loadWebsiteGeneratorSnapshot().then((data) => {
             if (!cancelled) {
@@ -517,9 +525,9 @@ const WebManagementPage: React.FC = () => {
         }
     };
 
-    const handlePreviewTargetFeedback = (target: string) => {
+    const handlePreviewTargetFeedback = (target: { key: string; label: string }) => {
         setPreviewReviewTarget(target);
-        setChatCommand(`${target} kartini daha modern hale getir ve icerigi guclendir`);
+        setChatCommand(`${target.label} kartini daha modern hale getir ve icerigi guclendir`);
         setActiveTab('content');
     };
 
@@ -926,18 +934,11 @@ const WebManagementPage: React.FC = () => {
                 <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
                     <h3 className="text-lg font-semibold text-gray-900">Preview Shell</h3>
                     <div className="mt-4 grid gap-4">
-                        <div className="rounded-[2rem] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-4">
-                            <div className="rounded-[1.5rem] bg-white/95 p-4">
-                                <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Preview Review Mode</div>
-                                <div className="mt-3 rounded-[1.5rem] bg-gray-100 p-4">
-                                    <div className="h-24 rounded-2xl bg-gradient-to-r from-cyan-100 to-emerald-100" />
-                                    <div className="mt-3 grid gap-3 md:grid-cols-2">
-                                        <div className="h-20 rounded-2xl bg-white" />
-                                        <div className="h-20 rounded-2xl bg-white" />
-                                    </div>
-                                </div>
+                        {workspace ? <WebsitePreviewCanvas site={workspace.site} pageSlug={selectedPageSlug} selectedTargetKey={previewReviewTarget?.key} onSelectTarget={handlePreviewTargetFeedback} /> : (
+                            <div className="rounded-[2rem] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-8 text-sm text-slate-200">
+                                Preview icin once aktif bir site gerekiyor.
                             </div>
-                        </div>
+                        )}
                         <div className="rounded-3xl bg-gray-50 p-4">
                             <div className="text-sm font-semibold text-gray-900">Preview icinden AI geri bildirim</div>
                             <div className="mt-3 flex flex-wrap gap-2">
@@ -945,9 +946,9 @@ const WebManagementPage: React.FC = () => {
                                     previewTargets.map((target) => (
                                         <button
                                             key={target.key}
-                                            onClick={() => handlePreviewTargetFeedback(target.label)}
+                                            onClick={() => handlePreviewTargetFeedback(target)}
                                             className={`rounded-full px-3 py-1 text-xs font-medium ${
-                                                previewReviewTarget === target.label ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 ring-1 ring-gray-200'
+                                                previewReviewTarget?.key === target.key ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 ring-1 ring-gray-200'
                                             }`}
                                         >
                                             {target.label}
@@ -960,6 +961,9 @@ const WebManagementPage: React.FC = () => {
                             <div className="mt-3 text-xs text-gray-500">
                                 Bir hedef secip chat komutunu otomatik doldurabilir, sonra AI&apos;a karti veya icerigi degistir diyebilirsin.
                             </div>
+                            <a href="/web-management-preview" className="mt-4 inline-flex rounded-2xl bg-gray-900 px-4 py-2 text-xs font-semibold text-white">
+                                Ayrı preview sayfasinda ac
+                            </a>
                         </div>
                         <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
                             <div className="flex items-center justify-between gap-3">
