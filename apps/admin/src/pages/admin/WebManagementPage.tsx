@@ -63,6 +63,12 @@ const featureCards: Array<{ key: keyof FeatureState; label: string; detail: stri
     { key: 'marketplace', label: 'Pazaryeri Bağlantıları', detail: 'Trendyol, Amazon, Hepsiburada yönlendirmeleri' },
 ];
 
+const themeOptions = [
+    { key: 'hearing-center-modern', label: 'Hearing Center Modern', detail: 'Premium clinic hero, trust blocks, calm motion' },
+    { key: 'commerce-modern', label: 'Commerce Modern', detail: 'Snap commerce highlights, product storytelling, CTA rhythm' },
+    { key: 'soft-minimal', label: 'Soft Minimal', detail: 'Calm typography, lightweight motion, content-first layout' },
+];
+
 function TabButton({
     active,
     label,
@@ -91,6 +97,12 @@ const WebManagementPage: React.FC = () => {
     const [entryMode, setEntryMode] = useState<'template' | 'ai'>('ai');
     const [activeTab, setActiveTab] = useState<TabKey>('content');
     const [snapshot, setSnapshot] = useState<WebsiteGeneratorSnapshot | null>(null);
+    const [selectedTheme, setSelectedTheme] = useState('hearing-center-modern');
+    const [chatMessages, setChatMessages] = useState([
+        'Isitme merkezim icin modern bir site olustur.',
+        'Randevu formu olsun, cihaz markalarini gosterelim, WhatsApp aktif olsun.',
+        'Ilk surum hazir. Hero basligini degistirebilir veya blog ekleyebilirim.',
+    ]);
     const [features, setFeatures] = useState<FeatureState>({
         blog: true,
         productListing: true,
@@ -160,17 +172,36 @@ const WebManagementPage: React.FC = () => {
             </div>
         ),
         appearance: (
-            <div className="grid gap-4 lg:grid-cols-3">
-                {[
-                    { title: 'Tema', detail: 'hearing-center-modern' },
-                    { title: 'Motion', detail: 'sticky-story + snap-sections' },
-                    { title: 'WebGL', detail: 'ambient fallback-ready preset' },
-                ].map((item) => (
-                    <div key={item.title} className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
-                        <h3 className="text-base font-semibold text-gray-900">{item.title}</h3>
-                        <p className="mt-2 text-sm text-gray-500">{item.detail}</p>
+            <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+                <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
+                    <h3 className="text-base font-semibold text-gray-900">Tema ve Sablon Secimi</h3>
+                    <div className="mt-4 space-y-3">
+                        {themeOptions.map((theme) => (
+                            <button
+                                key={theme.key}
+                                onClick={() => setSelectedTheme(theme.key)}
+                                className={`w-full rounded-3xl px-4 py-4 text-left ring-1 transition-colors ${
+                                    selectedTheme === theme.key ? 'bg-gray-900 text-white ring-gray-900' : 'bg-gray-50 text-gray-900 ring-gray-200'
+                                }`}
+                            >
+                                <div className="text-sm font-semibold">{theme.label}</div>
+                                <div className={`mt-1 text-xs ${selectedTheme === theme.key ? 'text-gray-300' : 'text-gray-500'}`}>{theme.detail}</div>
+                            </button>
+                        ))}
                     </div>
-                ))}
+                </div>
+                <div className="grid gap-4">
+                    {[
+                        { title: 'Motion', detail: 'sticky-story + snap-sections' },
+                        { title: 'WebGL', detail: 'ambient fallback-ready preset' },
+                        { title: 'Aktif Tema', detail: selectedTheme },
+                    ].map((item) => (
+                        <div key={item.title} className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
+                            <h3 className="text-base font-semibold text-gray-900">{item.title}</h3>
+                            <p className="mt-2 text-sm text-gray-500">{item.detail}</p>
+                        </div>
+                    ))}
+                </div>
             </div>
         ),
         pages: (
@@ -186,7 +217,7 @@ const WebManagementPage: React.FC = () => {
             </div>
         ),
         publishing: (
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid gap-4 xl:grid-cols-[1fr_0.9fr]">
                 <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
                     <h3 className="text-lg font-semibold text-gray-900">Draft Durumu</h3>
                     <ul className="mt-4 space-y-2 text-sm text-gray-600">
@@ -201,6 +232,21 @@ const WebManagementPage: React.FC = () => {
                     <div className="mt-4 flex flex-wrap gap-3">
                         <button className="rounded-2xl bg-white px-4 py-2 text-sm font-medium text-gray-900">Preview Aç</button>
                         <button className="rounded-2xl bg-emerald-400 px-4 py-2 text-sm font-medium text-gray-950">Publish Et</button>
+                    </div>
+                </div>
+                <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900">Preview Shell</h3>
+                    <div className="mt-4 rounded-[2rem] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-4">
+                        <div className="rounded-[1.5rem] bg-white/95 p-4">
+                            <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Desktop Preview</div>
+                            <div className="mt-3 rounded-[1.5rem] bg-gray-100 p-4">
+                                <div className="h-24 rounded-2xl bg-gradient-to-r from-cyan-100 to-emerald-100" />
+                                <div className="mt-3 grid gap-3 md:grid-cols-2">
+                                    <div className="h-20 rounded-2xl bg-white" />
+                                    <div className="h-20 rounded-2xl bg-white" />
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -347,6 +393,56 @@ const WebManagementPage: React.FC = () => {
                         <div className="mt-2 text-sm text-gray-500">{item.detail}</div>
                     </div>
                 ))}
+            </div>
+
+            <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_1fr]">
+                <div className="rounded-[2rem] bg-white p-6 ring-1 ring-gray-200">
+                    <div className="flex items-center gap-3">
+                        <WandSparkles className="h-5 w-5 text-violet-500" />
+                        <h2 className="text-lg font-semibold text-gray-900">AI Chat ile Duzenleme</h2>
+                    </div>
+                    <div className="mt-5 space-y-3">
+                        {chatMessages.map((message, index) => (
+                            <div
+                                key={`${message}-${index}`}
+                                className={`rounded-3xl px-4 py-3 text-sm ${
+                                    index % 2 === 0 ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-700'
+                                }`}
+                            >
+                                {message}
+                            </div>
+                        ))}
+                    </div>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                        {['Hero basligini degistir', 'Blog ekle', 'E-ticareti ac', 'Footera Instagram ekle'].map((command) => (
+                            <button
+                                key={command}
+                                onClick={() => setChatMessages((current) => [...current, command])}
+                                className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700"
+                            >
+                                {command}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+                <div className="rounded-[2rem] bg-white p-6 ring-1 ring-gray-200">
+                    <div className="flex items-center gap-3">
+                        <LayoutTemplate className="h-5 w-5 text-orange-500" />
+                        <h2 className="text-lg font-semibold text-gray-900">Oluşturulan Draft Özeti</h2>
+                    </div>
+                    <div className="mt-5 grid gap-3">
+                        {[
+                            `Tema: ${selectedTheme}`,
+                            `Gorunen sekme sayisi: ${visibleTabs.length}`,
+                            `AI mesaj sayisi: ${chatMessages.length}`,
+                            `Aktif modul sayisi: ${Object.values(features).filter(Boolean).length}`,
+                        ].map((item) => (
+                            <div key={item} className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                                {item}
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
 
             <div className="mt-6 rounded-[2rem] bg-white p-6 ring-1 ring-gray-200">
