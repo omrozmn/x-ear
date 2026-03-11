@@ -23,6 +23,8 @@ import { Route as CashflowRouteImport } from './routes/cashflow'
 import { Route as CampaignsRouteImport } from './routes/campaigns'
 import { Route as AutomationRouteImport } from './routes/automation'
 import { Route as AppointmentsRouteImport } from './routes/appointments'
+import { Route as WebManagementPreviewRouteImport } from './routes/web-management-preview'
+import { Route as WebManagementRouteImport } from './routes/web-management'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SuppliersIndexRouteImport } from './routes/suppliers/index'
 import { Route as SgkIndexRouteImport } from './routes/sgk/index'
@@ -122,6 +124,16 @@ const AutomationRoute = AutomationRouteImport.update({
 const AppointmentsRoute = AppointmentsRouteImport.update({
   id: '/appointments',
   path: '/appointments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WebManagementPreviewRoute = WebManagementPreviewRouteImport.update({
+  id: '/web-management-preview',
+  path: '/web-management-preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WebManagementRoute = WebManagementRouteImport.update({
+  id: '/web-management',
+  path: '/web-management',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -278,6 +290,8 @@ const CashflowIdRoute = CashflowIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
+  '/web-management': typeof WebManagementRoute
+  '/web-management-preview': typeof WebManagementPreviewRoute
   '/automation': typeof AutomationRoute
   '/campaigns': typeof CampaignsRoute
   '/cashflow': typeof CashflowRouteWithChildren
@@ -324,6 +338,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
+  '/web-management': typeof WebManagementRoute
+  '/web-management-preview': typeof WebManagementPreviewRoute
   '/automation': typeof AutomationRoute
   '/campaigns': typeof CampaignsRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -367,6 +383,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
+  '/web-management': typeof WebManagementRoute
+  '/web-management-preview': typeof WebManagementPreviewRoute
   '/automation': typeof AutomationRoute
   '/campaigns': typeof CampaignsRoute
   '/cashflow': typeof CashflowRouteWithChildren
@@ -415,6 +433,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/appointments'
+    | '/web-management'
+    | '/web-management-preview'
     | '/automation'
     | '/campaigns'
     | '/cashflow'
@@ -461,6 +481,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/appointments'
+    | '/web-management'
+    | '/web-management-preview'
     | '/automation'
     | '/campaigns'
     | '/forgot-password'
@@ -503,6 +525,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/appointments'
+    | '/web-management'
+    | '/web-management-preview'
     | '/automation'
     | '/campaigns'
     | '/cashflow'
@@ -550,6 +574,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppointmentsRoute: typeof AppointmentsRoute
+  WebManagementPreviewRoute: typeof WebManagementPreviewRoute
+  WebManagementRoute: typeof WebManagementRoute
   AutomationRoute: typeof AutomationRoute
   CampaignsRoute: typeof CampaignsRoute
   CashflowRoute: typeof CashflowRouteWithChildren
@@ -674,6 +700,20 @@ declare module '@tanstack/react-router' {
       path: '/appointments'
       fullPath: '/appointments'
       preLoaderRoute: typeof AppointmentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/web-management-preview': {
+      id: '/web-management-preview'
+      path: '/web-management-preview'
+      fullPath: '/web-management-preview'
+      preLoaderRoute: typeof WebManagementPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/web-management': {
+      id: '/web-management'
+      path: '/web-management'
+      fullPath: '/web-management'
+      preLoaderRoute: typeof WebManagementRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -968,6 +1008,8 @@ const SettingsRouteWithChildren = SettingsRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppointmentsRoute: AppointmentsRoute,
+  WebManagementPreviewRoute: WebManagementPreviewRoute,
+  WebManagementRoute: WebManagementRoute,
   AutomationRoute: AutomationRoute,
   CampaignsRoute: CampaignsRoute,
   CashflowRoute: CashflowRouteWithChildren,

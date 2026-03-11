@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import WebManagementPreviewPage from '../pages/admin/WebManagementPreviewPage'
+import WebManagementOversightPage from '../pages/admin/WebManagementOversightPage'
 
 export const Route = createFileRoute('/web-management-preview')({
-    component: WebManagementPreviewPage,
+    component: WebManagementOversightPage,
 })

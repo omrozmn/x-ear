@@ -56,6 +56,8 @@ const getPageKeyFromPath = (pathname: string): { key: string; title: string } | 
     '/devices': { key: 'devices', title: 'Cihazlar' },
     '/inventory': { key: 'inventory', title: 'Stok' },
     '/campaigns': { key: 'campaigns', title: 'Kampanyalar' },
+    '/web-management': { key: 'web-management', title: 'Web Sitesi' },
+    '/web-management-preview': { key: 'web-management-preview', title: 'Web Sitesi Onizleme' },
     '/sgk': { key: 'sgk', title: 'SGK' },
     '/settings': { key: 'settings', title: 'Ayarlar' },
     '/team': { key: 'team', title: 'Ekip' },

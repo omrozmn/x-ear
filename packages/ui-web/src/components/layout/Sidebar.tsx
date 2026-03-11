@@ -17,6 +17,7 @@ import {
   ShoppingCart,
   CreditCard,
   PlusCircle,
+  PanelTop,
 } from 'lucide-react';
 import { useBreakpoints } from '../../hooks/useMediaQuery';
 
@@ -95,6 +96,12 @@ const menuItems: MenuItem[] = [
     label: 'Kampanyalar',
     icon: <Megaphone className="w-5 h-5" />,
     href: '/campaigns',
+  },
+  {
+    id: 'website-builder',
+    label: 'Web Sitesi',
+    icon: <PanelTop className="w-5 h-5" />,
+    href: '/web-management',
   },
   {
     id: 'invoices',
@@ -241,7 +248,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const isActive = (href?: string) => {
     if (!href) return false;
     if (href === '/') return currentPath === '/';
-    return currentPath === href;
+    return currentPath === href || currentPath.startsWith(`${href}/`) || currentPath.startsWith(`${href}?`);
   };
 
   const handleNavigation = (href?: string) => {
