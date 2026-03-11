@@ -4,6 +4,8 @@ export type WebsiteGeneratorSnapshot = {
     xearChecklist?: unknown;
     mobileMatrix?: unknown;
     releaseValidation?: unknown;
+    safeLayoutPolicy?: SafeLayoutPolicyResponse;
+    sectionRegistry?: BuilderSectionRegistryResponse;
 };
 
 export type FeatureFlags = {
@@ -257,6 +259,27 @@ export type BuilderShellResponse = {
     recommended_libraries: string[];
 };
 
+export type BuilderSectionRegistryResponse = {
+    sections: Array<{
+        type: string;
+        label: string;
+        category: 'core' | 'content' | 'commerce' | 'social' | 'support';
+        variants: Array<{ key: string; label: string; description: string }>;
+        safe_style_controls: Array<{ key: string; options: string[] }>;
+        responsive_behavior: { mobile: string; tablet: string; desktop: string };
+        recommended_for_features: string[];
+    }>;
+};
+
+export type SafeLayoutPolicyResponse = {
+    max_content_width_px: number;
+    supported_breakpoints: Array<'mobile' | 'tablet' | 'desktop'>;
+    enforce_safe_area: boolean;
+    clamp_headings: boolean;
+    clamp_body_copy: boolean;
+    guard_rules: string[];
+};
+
 export type SiteWorkspace = {
     site: SiteResponse;
     adminMenu: SiteAdminMenuResponse;
@@ -309,7 +332,7 @@ export type SiteDomainSetupResponse = {
 const DEFAULT_BASE_URL = (import.meta.env.VITE_WEBSITE_GENERATOR_API_URL as string | undefined) ?? 'http://127.0.0.1:8000';
 
 type RequestOptions = {
-    method?: 'GET' | 'POST' | 'PUT';
+    method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
     body?: unknown;
 };
 
@@ -337,11 +360,13 @@ async function getJson<T>(baseUrl: string, path: string): Promise<T | undefined>
 }
 
 export async function loadWebsiteGeneratorSnapshot(baseUrl: string = DEFAULT_BASE_URL): Promise<WebsiteGeneratorSnapshot> {
-    const [featureCatalog, xearChecklist, mobileMatrix, releaseValidation] = await Promise.all([
+    const [featureCatalog, xearChecklist, mobileMatrix, releaseValidation, safeLayoutPolicy, sectionRegistry] = await Promise.all([
         getJson(baseUrl, '/api/v1/features/catalog'),
         getJson(baseUrl, '/api/v1/integrations/x-ear/checklist'),
         getJson(baseUrl, '/api/v1/quality/mobile-matrix'),
         getJson(baseUrl, '/api/v1/release/validation'),
+        getJson(baseUrl, '/api/v1/builder/safe-layout-policy'),
+        getJson(baseUrl, '/api/v1/builder/sections'),
     ]);
 
     return {
@@ -350,6 +375,8 @@ export async function loadWebsiteGeneratorSnapshot(baseUrl: string = DEFAULT_BAS
         xearChecklist,
         mobileMatrix,
         releaseValidation,
+        safeLayoutPolicy,
+        sectionRegistry,
     };
 }
 
@@ -472,5 +499,76 @@ export async function connectSiteDomain(
     return requestJson(baseUrl, `/api/v1/sites/${siteId}/domains/connect`, {
         method: 'POST',
         body: payload,
+    });
+}
+
+export async function updateSitePage(
+    siteId: string,
+    pageSlug: string,
+    payload: { title: string; slug: string; sections: PageDocument['sections'] },
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<SiteResponse> {
+    return requestJson(baseUrl, `/api/v1/sites/${siteId}/pages/by-slug?page_slug=${encodeURIComponent(pageSlug)}`, {
+        method: 'PUT',
+        body: payload,
+    });
+}
+
+export async function createSitePage(
+    siteId: string,
+    payload: { title: string; slug: string; sections: PageDocument['sections'] },
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<SiteResponse> {
+    return requestJson(baseUrl, `/api/v1/sites/${siteId}/pages`, {
+        method: 'POST',
+        body: payload,
+    });
+}
+
+export async function addSitePageSection(
+    siteId: string,
+    pageSlug: string,
+    payload: { type: string; variant: string; fields: Record<string, unknown> },
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<SiteResponse> {
+    return requestJson(baseUrl, `/api/v1/sites/${siteId}/pages/by-slug/sections?page_slug=${encodeURIComponent(pageSlug)}`, {
+        method: 'POST',
+        body: payload,
+    });
+}
+
+export async function updateSitePageSection(
+    siteId: string,
+    pageSlug: string,
+    sectionIndex: number,
+    payload: { variant: string; fields: Record<string, unknown> },
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<SiteResponse> {
+    return requestJson(baseUrl, `/api/v1/sites/${siteId}/pages/by-slug/sections/${sectionIndex}?page_slug=${encodeURIComponent(pageSlug)}`, {
+        method: 'PUT',
+        body: payload,
+    });
+}
+
+export async function deleteSitePageSection(
+    siteId: string,
+    pageSlug: string,
+    sectionIndex: number,
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<SiteResponse> {
+    return requestJson(baseUrl, `/api/v1/sites/${siteId}/pages/by-slug/sections/${sectionIndex}?page_slug=${encodeURIComponent(pageSlug)}`, {
+        method: 'DELETE',
+    });
+}
+
+export async function reorderSitePageSections(
+    siteId: string,
+    pageSlug: string,
+    sectionOrder: number[],
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<SiteResponse> {
+    return requestJson(baseUrl, `/api/v1/sites/${siteId}/pages/by-slug/sections/reorder?page_slug=${encodeURIComponent(pageSlug)}`, {
+        method: 'PUT',
+        body: { section_order: sectionOrder },
     });
 }

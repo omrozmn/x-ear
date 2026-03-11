@@ -2,22 +2,29 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Bot, BrushCleaning, FileStack, Globe2, LayoutTemplate, MessageCircle, Package, Rocket, Store, WandSparkles } from 'lucide-react';
 import { useAdminResponsive } from '@/hooks';
 import {
+    addSitePageSection,
     applyAiEdit,
+    createSitePage,
     createPreview,
     createSiteFromAi,
     connectSiteDomain,
+    deleteSitePageSection,
     listDomainProviders,
     loadSiteWorkspace,
     loadWebsiteGeneratorSnapshot,
     proposeAiEdit,
     publishSite,
+    reorderSitePageSections,
     revertAiEdit,
     rollbackSite,
     searchSiteDomain,
+    updateSitePage,
+    updateSitePageSection,
     updateSiteTheme,
     type AIDiscoveryResponse,
     type AIDraftAnswers,
     type AIEditProposalResponse,
+    type BuilderSectionRegistryResponse,
     type DomainAvailabilityResponse,
     type DomainProviderCatalogResponse,
     type SiteWorkspace,
@@ -171,6 +178,15 @@ const WebManagementPage: React.FC = () => {
     const [domainQuery, setDomainQuery] = useState('xear-clinic.com.tr');
     const [selectedDomainProvider, setSelectedDomainProvider] = useState('metunic');
     const [previewReviewTarget, setPreviewReviewTarget] = useState<string>('');
+    const [selectedPageSlug, setSelectedPageSlug] = useState('/');
+    const [newPageTitle, setNewPageTitle] = useState('Yeni Sayfa');
+    const [newPageSlug, setNewPageSlug] = useState('/new-page');
+    const [newSectionType, setNewSectionType] = useState('hero');
+    const [newSectionVariant, setNewSectionVariant] = useState('hero-clinic-a');
+    const [editingSectionIndex, setEditingSectionIndex] = useState<number | null>(null);
+    const [sectionTitleDraft, setSectionTitleDraft] = useState('');
+    const [pageTitleDraft, setPageTitleDraft] = useState('Ana Sayfa');
+    const [pageSlugDraft, setPageSlugDraft] = useState('/');
 
     const loadWorkspace = async (siteId: string) => {
         setBusyKey('load-workspace');
@@ -275,15 +291,44 @@ const WebManagementPage: React.FC = () => {
         [discovery?.inferred_features, workspace?.site.feature_flags],
     );
 
-    const pages = workspace?.site.pages ?? [];
-    const menuItems = workspace?.site.menu_items ?? [];
-    const previewChecks = workspace?.previewStatus.checks ?? [];
+    const pages = useMemo(() => workspace?.site.pages ?? [], [workspace?.site.pages]);
+    const menuItems = useMemo(() => workspace?.site.menu_items ?? [], [workspace?.site.menu_items]);
+    const previewChecks = useMemo(() => workspace?.previewStatus.checks ?? [], [workspace?.previewStatus.checks]);
+    const sectionRegistry = snapshot?.sectionRegistry as BuilderSectionRegistryResponse | undefined;
+    const selectedPage = pages.find((page) => page.slug === selectedPageSlug) ?? pages[0] ?? null;
     const previewTargets = pages.flatMap((page) =>
         page.sections.map((section) => ({
             key: `${page.slug}::${section.type}`,
             label: `${page.title} / ${section.type}`,
         })),
     );
+    const selectedSectionDefinition = useMemo(
+        () => sectionRegistry?.sections.find((section) => section.type === newSectionType),
+        [newSectionType, sectionRegistry?.sections],
+    );
+    const availableSectionVariants = useMemo(
+        () => selectedSectionDefinition?.variants ?? [],
+        [selectedSectionDefinition],
+    );
+
+    useEffect(() => {
+        if (pages.length > 0 && !pages.some((page) => page.slug === selectedPageSlug)) {
+            setSelectedPageSlug(pages[0].slug);
+        }
+    }, [pages, selectedPageSlug]);
+
+    useEffect(() => {
+        if (availableSectionVariants.length > 0 && !availableSectionVariants.some((variant) => variant.key === newSectionVariant)) {
+            setNewSectionVariant(availableSectionVariants[0].key);
+        }
+    }, [availableSectionVariants, newSectionVariant]);
+
+    useEffect(() => {
+        if (selectedPage) {
+            setPageTitleDraft(selectedPage.title);
+            setPageSlugDraft(selectedPage.slug);
+        }
+    }, [selectedPage]);
 
     const handleCreateDraft = async () => {
         setBusyKey('create-draft');
@@ -478,24 +523,184 @@ const WebManagementPage: React.FC = () => {
         setActiveTab('content');
     };
 
+    const handleCreatePage = async () => {
+        if (!workspace) {
+            setError('Sayfa eklemek icin once aktif bir site olusturulmasi gerekiyor.');
+            return;
+        }
+        setBusyKey('create-page');
+        setError(null);
+        try {
+            await createSitePage(workspace.site.id, {
+                title: newPageTitle,
+                slug: newPageSlug,
+                sections: [],
+            });
+            await loadWorkspace(workspace.site.id);
+            setSelectedPageSlug(newPageSlug);
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'Yeni sayfa eklenemedi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
+    const handleSavePageMeta = async () => {
+        if (!workspace || !selectedPage) {
+            setError('Guncellenecek sayfa bulunamadi.');
+            return;
+        }
+        setBusyKey('save-page');
+        setError(null);
+        try {
+            await updateSitePage(workspace.site.id, selectedPage.slug, {
+                title: pageTitleDraft,
+                slug: pageSlugDraft,
+                sections: selectedPage.sections,
+            });
+            await loadWorkspace(workspace.site.id);
+            setSelectedPageSlug(pageSlugDraft);
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'Sayfa bilgileri guncellenemedi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
+    const handleAddSection = async () => {
+        if (!workspace || !selectedPage) {
+            setError('Section eklemek icin once bir sayfa secilmesi gerekiyor.');
+            return;
+        }
+        setBusyKey('add-section');
+        setError(null);
+        try {
+            await addSitePageSection(workspace.site.id, selectedPage.slug, {
+                type: newSectionType,
+                variant: newSectionVariant,
+                fields: { title: `${selectedSectionDefinition?.label ?? newSectionType} basligi` },
+            });
+            await loadWorkspace(workspace.site.id);
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'Section eklenemedi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
+    const handleSaveSectionContent = async (sectionIndex: number, currentVariant: string) => {
+        if (!workspace || !selectedPage) {
+            return;
+        }
+        setBusyKey('save-section');
+        setError(null);
+        try {
+            await updateSitePageSection(workspace.site.id, selectedPage.slug, sectionIndex, {
+                variant: currentVariant,
+                fields: { title: sectionTitleDraft },
+            });
+            await loadWorkspace(workspace.site.id);
+            setEditingSectionIndex(null);
+            setSectionTitleDraft('');
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'Section icerigi guncellenemedi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
+    const handleDeleteSection = async (sectionIndex: number) => {
+        if (!workspace || !selectedPage) {
+            return;
+        }
+        setBusyKey('delete-section');
+        setError(null);
+        try {
+            await deleteSitePageSection(workspace.site.id, selectedPage.slug, sectionIndex);
+            await loadWorkspace(workspace.site.id);
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'Section silinemedi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
+    const handleMoveSection = async (sectionIndex: number, direction: 'up' | 'down') => {
+        if (!workspace || !selectedPage) {
+            return;
+        }
+        const nextOrder = selectedPage.sections.map((_, index) => index);
+        const targetIndex = direction === 'up' ? sectionIndex - 1 : sectionIndex + 1;
+        if (targetIndex < 0 || targetIndex >= nextOrder.length) {
+            return;
+        }
+        [nextOrder[sectionIndex], nextOrder[targetIndex]] = [nextOrder[targetIndex], nextOrder[sectionIndex]];
+        setBusyKey('reorder-sections');
+        setError(null);
+        try {
+            await reorderSitePageSections(workspace.site.id, selectedPage.slug, nextOrder);
+            await loadWorkspace(workspace.site.id);
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'Section sirasi guncellenemedi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
     const tabContent: Record<TabKey, React.ReactNode> = {
         content: (
             <div className="grid gap-4 lg:grid-cols-2">
                 <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-900">Sayfa Icerikleri</h3>
-                    <p className="mt-2 text-sm text-gray-500">Aktif draft icindeki sayfalar ve section tipleri servis durumundan okunur.</p>
+                    <h3 className="text-lg font-semibold text-gray-900">Sayfa Icerikleri ve Section Composer</h3>
+                    <p className="mt-2 text-sm text-gray-500">Secili sayfa icin header, body sections ve footer controlled olarak duzenlenir.</p>
+                    <div className="mt-4 rounded-3xl bg-gray-50 p-4">
+                        <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Secili sayfa</div>
+                        <select value={selectedPage?.slug ?? ''} onChange={(event) => setSelectedPageSlug(event.target.value)} className="mt-3 w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none">
+                            {pages.map((page) => (
+                                <option key={page.slug} value={page.slug}>
+                                    {page.title} ({page.slug})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                     <div className="mt-4 space-y-3">
-                        {pages.length > 0 ? (
-                            pages.map((page) => (
-                                <div key={page.slug} className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
-                                    <div className="font-medium text-gray-900">{page.title}</div>
-                                    <div className="mt-1 text-xs text-gray-500">{page.slug}</div>
-                                    <div className="mt-2 flex flex-wrap gap-2">
-                                        {page.sections.map((section) => (
-                                            <span key={`${page.slug}-${section.type}-${section.variant}`} className="rounded-full bg-white px-3 py-1 text-xs ring-1 ring-gray-200">
-                                                {section.type} / {section.variant}
-                                            </span>
-                                        ))}
+                        {selectedPage ? (
+                            selectedPage.sections.map((section, index) => (
+                                <div key={`${selectedPage.slug}-${section.type}-${index}`} className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div>
+                                            <div className="font-medium text-gray-900">{section.type}</div>
+                                            <div className="mt-1 text-xs text-gray-500">{section.variant}</div>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button onClick={() => handleMoveSection(index, 'up')} className="rounded-xl bg-white px-2 py-1 text-xs ring-1 ring-gray-200">Yukari</button>
+                                            <button onClick={() => handleMoveSection(index, 'down')} className="rounded-xl bg-white px-2 py-1 text-xs ring-1 ring-gray-200">Asagi</button>
+                                            <button onClick={() => handleDeleteSection(index)} className="rounded-xl bg-white px-2 py-1 text-xs ring-1 ring-gray-200">Sil</button>
+                                        </div>
+                                    </div>
+                                    <div className="mt-3 rounded-2xl bg-white p-3 ring-1 ring-gray-200">
+                                        <div className="text-xs uppercase tracking-wide text-gray-500">Icerik</div>
+                                        {editingSectionIndex === index ? (
+                                            <div className="mt-3 space-y-3">
+                                                <input value={sectionTitleDraft} onChange={(event) => setSectionTitleDraft(event.target.value)} className="w-full rounded-2xl border border-gray-200 px-3 py-2 text-sm outline-none" placeholder="Section basligi" />
+                                                <button onClick={() => handleSaveSectionContent(index, section.variant)} className="rounded-2xl bg-gray-900 px-3 py-2 text-xs font-semibold text-white">
+                                                    Kaydet
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="mt-2 flex items-center justify-between gap-3">
+                                                <div className="text-sm text-gray-600">{String(section.fields.title ?? 'Baslik veya icerik girilmemis.')}</div>
+                                                <button
+                                                    onClick={() => {
+                                                        setEditingSectionIndex(index);
+                                                        setSectionTitleDraft(String(section.fields.title ?? ''));
+                                                    }}
+                                                    className="rounded-2xl bg-gray-100 px-3 py-2 text-xs font-medium text-gray-700"
+                                                >
+                                                    Icerigi Duzenle
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ))
@@ -505,17 +710,44 @@ const WebManagementPage: React.FC = () => {
                     </div>
                 </div>
                 <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-900">Section ve Revizyon Akisi</h3>
-                    <p className="mt-2 text-sm text-gray-500">Host builder shell destekleri aktif site baglamindan gelir.</p>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                        {(workspace?.builderShell.supported_flows ?? ['add_section', 'remove_section', 'reorder_section', 'edit_content']).map((item) => (
-                            <span key={item} className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
-                                {item}
-                            </span>
+                    <h3 className="text-lg font-semibold text-gray-900">Section Kutuphanesi</h3>
+                    <p className="mt-2 text-sm text-gray-500">Kullanici controlled builder mantigiyla sadece izinli section ve varyantlari kullanir.</p>
+                    <div className="mt-4 grid gap-3">
+                        <select value={newSectionType} onChange={(event) => setNewSectionType(event.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none">
+                            {(sectionRegistry?.sections ?? []).map((section) => (
+                                <option key={section.type} value={section.type}>
+                                    {section.label}
+                                </option>
+                            ))}
+                        </select>
+                        <select value={newSectionVariant} onChange={(event) => setNewSectionVariant(event.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none">
+                            {availableSectionVariants.map((variant) => (
+                                <option key={variant.key} value={variant.key}>
+                                    {variant.label}
+                                </option>
+                            ))}
+                        </select>
+                        <button onClick={handleAddSection} disabled={!selectedPage || busyKey === 'add-section'} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+                            {busyKey === 'add-section' ? 'Ekleniyor...' : 'Section Ekle'}
+                        </button>
+                    </div>
+                    <div className="mt-4 space-y-3">
+                        {(sectionRegistry?.sections ?? []).map((section) => (
+                            <div key={section.type} className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                                <div className="font-medium text-gray-900">{section.label}</div>
+                                <div className="mt-1 text-xs text-gray-500">{section.responsive_behavior.mobile} / {section.responsive_behavior.tablet} / {section.responsive_behavior.desktop}</div>
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                    {section.variants.map((variant) => (
+                                        <span key={variant.key} className="rounded-full bg-white px-3 py-1 text-xs ring-1 ring-gray-200">
+                                            {variant.label}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
                         ))}
                     </div>
-                    <div className="mt-4 rounded-2xl bg-gray-50 p-4 text-sm text-gray-600">
-                        Autosave: {workspace?.builderShell.revision_policy.autosave_interval_seconds ?? 0}s
+                    <div className="mt-4 rounded-3xl bg-gray-50 p-4 text-sm text-gray-600">
+                        Safe area zorunlu. Icerik ne kadar uzarsa uzasin layout container disina cikamaz.
                     </div>
                 </div>
             </div>
@@ -523,7 +755,17 @@ const WebManagementPage: React.FC = () => {
         appearance: (
             <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
                 <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
-                    <h3 className="text-base font-semibold text-gray-900">Tema ve Sablon Secimi</h3>
+                    <h3 className="text-base font-semibold text-gray-900">Secilen Sayfanin Gorunumu</h3>
+                    <div className="mt-4 rounded-3xl bg-gray-50 p-4">
+                        <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Sayfa Secici</div>
+                        <select value={selectedPage?.slug ?? ''} onChange={(event) => setSelectedPageSlug(event.target.value)} className="mt-3 w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none">
+                            {pages.map((page) => (
+                                <option key={page.slug} value={page.slug}>
+                                    {page.title} ({page.slug})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                     <div className="mt-4 space-y-3">
                         {themeOptions.map((theme) => (
                             <button
@@ -545,6 +787,14 @@ const WebManagementPage: React.FC = () => {
                     >
                         {busyKey === 'apply-theme' ? 'Uygulaniyor...' : 'Temayi Uygula'}
                     </button>
+                    <div className="mt-4 rounded-3xl bg-gray-50 p-4">
+                        <div className="text-sm font-semibold text-gray-900">Header / Footer ve Section Composer</div>
+                        <div className="mt-3 grid gap-3 md:grid-cols-3">
+                            <div className="rounded-2xl bg-white px-4 py-3 text-sm text-gray-700 ring-1 ring-gray-200">Header varyanti: controlled</div>
+                            <div className="rounded-2xl bg-white px-4 py-3 text-sm text-gray-700 ring-1 ring-gray-200">Section sayisi: {selectedPage?.sections.length ?? 0}</div>
+                            <div className="rounded-2xl bg-white px-4 py-3 text-sm text-gray-700 ring-1 ring-gray-200">Footer varyanti: controlled</div>
+                        </div>
+                    </div>
                 </div>
                 <div className="grid gap-4">
                     {[
@@ -557,22 +807,79 @@ const WebManagementPage: React.FC = () => {
                             <p className="mt-2 text-sm text-gray-500">{item.detail}</p>
                         </div>
                     ))}
+                    <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
+                        <h3 className="text-base font-semibold text-gray-900">Safe Layout Guard</h3>
+                        <div className="mt-3 text-sm text-gray-600">
+                            Max content width: {snapshot?.safeLayoutPolicy?.max_content_width_px ?? '-'}px
+                        </div>
+                        <div className="mt-3 space-y-2">
+                            {(snapshot?.safeLayoutPolicy?.guard_rules ?? []).map((rule) => (
+                                <div key={rule} className="rounded-2xl bg-gray-50 px-4 py-3 text-xs text-gray-700">
+                                    {rule}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </div>
         ),
         pages: (
-            <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900">Sayfa ve Menu Yapisi</h3>
-                <div className="mt-4 grid gap-3 md:grid-cols-2">
-                    {menuItems.length > 0 ? (
-                        menuItems.map((item) => (
-                            <div key={`${item.page_slug}-${item.position}`} className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
-                                {item.position}. {item.label} ({item.page_slug})
-                            </div>
-                        ))
-                    ) : (
-                        <div className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-600">Menu item henuz yok.</div>
-                    )}
+            <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+                <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900">Sayfa Yapisi</h3>
+                    <div className="mt-4 space-y-3">
+                        {pages.map((page) => (
+                            <button
+                                key={page.slug}
+                                onClick={() => setSelectedPageSlug(page.slug)}
+                                className={`w-full rounded-2xl px-4 py-3 text-left text-sm ${
+                                    selectedPage?.slug === page.slug ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-700'
+                                }`}
+                            >
+                                <div className="font-medium">{page.title}</div>
+                                <div className={`mt-1 text-xs ${selectedPage?.slug === page.slug ? 'text-gray-300' : 'text-gray-500'}`}>{page.slug}</div>
+                            </button>
+                        ))}
+                    </div>
+                    <div className="mt-4 rounded-3xl bg-gray-50 p-4">
+                        <div className="text-sm font-semibold text-gray-900">Yeni Sayfa</div>
+                        <div className="mt-3 grid gap-3">
+                            <input value={newPageTitle} onChange={(event) => setNewPageTitle(event.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="Sayfa basligi" />
+                            <input value={newPageSlug} onChange={(event) => setNewPageSlug(event.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="/ornek-sayfa" />
+                            <button onClick={handleCreatePage} disabled={!workspace || busyKey === 'create-page'} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+                                {busyKey === 'create-page' ? 'Ekleniyor...' : 'Sayfa Ekle'}
+                            </button>
+                        </div>
+                    </div>
+                    <div className="mt-4 rounded-3xl bg-white p-4 ring-1 ring-gray-200">
+                        <div className="text-sm font-semibold text-gray-900">Secilen Sayfa Bilgileri</div>
+                        <div className="mt-3 grid gap-3">
+                            <input value={pageTitleDraft} onChange={(event) => setPageTitleDraft(event.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" />
+                            <input value={pageSlugDraft} onChange={(event) => setPageSlugDraft(event.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" />
+                            <button onClick={handleSavePageMeta} disabled={!selectedPage || busyKey === 'save-page'} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+                                {busyKey === 'save-page' ? 'Kaydediliyor...' : 'Sayfa Bilgilerini Kaydet'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900">Menu ve Yayin Baglami</h3>
+                    <div className="mt-4 grid gap-3 md:grid-cols-2">
+                        {menuItems.length > 0 ? (
+                            menuItems.map((item) => (
+                                <div key={`${item.page_slug}-${item.position}`} className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                                    {item.position}. {item.label} ({item.page_slug})
+                                </div>
+                            ))
+                        ) : (
+                            <div className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-600">Menu item henuz yok.</div>
+                        )}
+                    </div>
+                    <div className="mt-4 rounded-3xl bg-gray-50 p-4">
+                        <div className="text-sm font-semibold text-gray-900">Yayin Durumu</div>
+                        <div className="mt-2 text-sm text-gray-600">Preview: {workspace?.previewStatus.preview_state ?? '-'}</div>
+                        <div className="mt-1 text-sm text-gray-600">Publish: {workspace?.publishStatus.status ?? '-'}</div>
+                    </div>
                 </div>
             </div>
         ),
