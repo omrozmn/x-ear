@@ -145,7 +145,7 @@ test.describe('Unauthorized Redirect to Login', () => {
         test.skip();
       }
 
-      await identifier.fill('admin@xear.com');
+      await identifier.fill('e2etest');
       await password.fill('Admin123!');
       await submit.click();
       

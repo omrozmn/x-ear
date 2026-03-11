@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
-import { Modal, Button, Select, Alert, Input } from '@x-ear/ui-web';
+import { Modal, Button, Select, Alert, Input, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import { z } from 'zod';
 
 import { apiClient } from '../../api/orval-mutator';
@@ -101,6 +102,12 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
   const [step, setStep] = useState<number>(1);
   const [importResult, setImportResult] = useState<{ created: number; updated: number; errors: ImportError[] } | null>(null);
   const schema = zodSchema || defaultSchema;
+  const previewTableRows = preview.map((row, index) => ({ ...row, _idx: index }));
+  const previewColumns: Column<RowData & { _idx: number }>[] = entityFields.map((field) => ({
+    key: field.key,
+    title: field.label,
+    render: (value: unknown) => String(value ?? ''),
+  }));
 
   useEffect(() => {
     if (!file) {
@@ -345,23 +352,13 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
         {step === 3 && (
           <div>
             <h4 className="font-medium">Önizleme (ilk {previewRows} satır)</h4>
-            <div className="overflow-auto border rounded mt-2">
-              <table className="min-w-full text-sm">
-                <thead className="bg-gray-50">
-                  <tr>
-                    {entityFields.map(f => <th key={f.key} className="px-2 py-1 text-left font-medium">{f.label}</th>)}
-                  </tr>
-                </thead>
-                <tbody>
-                  {preview.map((r, idx) => (
-                    <tr key={idx} className="border-t">
-                      {entityFields.map(f => (
-                        <td key={f.key} className="px-2 py-1">{String(r[f.key] ?? '')}</td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="mt-2">
+              <DataTable<RowData & { _idx: number }>
+                data={previewTableRows}
+                columns={previewColumns}
+                rowKey="_idx"
+                emptyText="Önizleme verisi bulunamadı"
+              />
             </div>
 
             {errors.length > 0 && (

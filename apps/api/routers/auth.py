@@ -635,7 +635,10 @@ def refresh_token(
             
             return ResponseEnvelope(data=RefreshTokenResponse(access_token=access_token))
         else:
-            user = db_session.get(User, user_id)
+            from database import unbound_session
+
+            with unbound_session(reason="auth-refresh-user-lookup"):
+                user = db_session.get(User, user_id)
             
             if not user:
                 raise HTTPException(
@@ -658,7 +661,13 @@ def refresh_token(
             # FIXED: logic was using access.tenant_id which AIAuthMiddleware rejected
             access_token = create_access_token(
                 identity=user.id,
-                additional_claims={'tenant_id': user.tenant_id, 'role': user.role}
+                additional_claims={
+                    'tenant_id': user.tenant_id,
+                    'role': user.role,
+                    'role_permissions': ['*'] if (user.role and user.role.upper() == 'ADMIN') else [],
+                    'perm_ver': getattr(user, 'permissions_version', 1) or 1,
+                    'is_admin': False,
+                }
             )
             
             return ResponseEnvelope(data=RefreshTokenResponse(access_token=access_token))

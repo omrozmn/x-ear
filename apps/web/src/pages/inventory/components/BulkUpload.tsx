@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { Card, Button, Badge } from '@x-ear/ui-web';
+import { Card, Button, Badge, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import { Upload, Download, FileText, AlertCircle, CheckCircle, X } from 'lucide-react';
 import { InventoryItem } from '../../../types/inventory';
 
@@ -392,6 +393,49 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
     }
   };
 
+  const previewColumns: Column<PreviewItem>[] = [
+    {
+      key: 'row',
+      title: 'Satır',
+      render: (_, item) => item.row,
+    },
+    {
+      key: '_name',
+      title: 'Ürün Adı',
+      render: (_, item) => String(item.data.name || '-'),
+    },
+    {
+      key: '_brand',
+      title: 'Marka',
+      render: (_, item) => String(item.data.brand || '-'),
+    },
+    {
+      key: '_stock',
+      title: 'Stok',
+      render: (_, item) => String(item.data.availableInventory || '-'),
+    },
+    {
+      key: '_price',
+      title: 'Fiyat',
+      render: (_, item) => item.data.price ? `₺${item.data.price}` : '-',
+    },
+    {
+      key: '_status',
+      title: 'Durum',
+      render: (_, item) => item.isValid ? (
+        <Badge variant="success" className="flex items-center">
+          <CheckCircle className="w-3 h-3 mr-1" />
+          Gecerli
+        </Badge>
+      ) : (
+        <Badge variant="danger" className="flex items-center">
+          <AlertCircle className="w-3 h-3 mr-1" />
+          Hata
+        </Badge>
+      ),
+    },
+  ];
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
@@ -497,66 +541,12 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
               <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                 Önizleme (İlk 10 satır)
               </h4>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead className="bg-gray-50 dark:bg-gray-700">
-                    <tr>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Satır
-                      </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Ürün Adı
-                      </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Marka
-                      </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Stok
-                      </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Fiyat
-                      </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Durum
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                    {previewData.map((item, index) => (
-                      <tr key={index}>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                          {item.row}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                          {item.data.name || '-'}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                          {item.data.brand || '-'}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                          {item.data.availableInventory || '-'}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                          {item.data.price ? `₺${item.data.price}` : '-'}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap">
-                          {item.isValid ? (
-                            <Badge variant="success" className="flex items-center">
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                              Geçerli
-                            </Badge>
-                          ) : (
-                            <Badge variant="danger" className="flex items-center">
-                              <AlertCircle className="w-3 h-3 mr-1" />
-                              Hata
-                            </Badge>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <DataTable<PreviewItem>
+                data={previewData}
+                columns={previewColumns}
+                rowKey={(item) => item.row}
+                emptyText="Önizleme verisi bulunamadı"
+              />
             </div>
           )}
 

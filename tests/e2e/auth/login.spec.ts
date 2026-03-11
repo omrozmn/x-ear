@@ -75,7 +75,14 @@ test.describe('Login Flow', () => {
 
   test('AUTH-002: Should login with valid credentials', async ({ page, baseURL, request }) => {
     const isAdminApp = Boolean(baseURL && (baseURL.includes('8082') || baseURL.includes('8083') || baseURL.includes('admin')));
-    const credentials = isAdminApp ? testUsers.superAdmin : testUsers.admin;
+    const credentials = isAdminApp
+      ? testUsers.superAdmin
+      : {
+          ...testUsers.admin,
+          email: 'e2etest',
+          password: 'Admin123!',
+          name: 'E2E Test User',
+        };
 
     if (isAdminApp) {
       const API_BASE = process.env.API_BASE_URL || 'http://localhost:5003';

@@ -10,7 +10,8 @@ import {
 import { unwrapArray, unwrapData } from '@/lib/orval-response';
 import { Link } from '@tanstack/react-router';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
-import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
+import { DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 
 interface AffiliateDetailPageProps {
   affiliateId: string;
@@ -71,21 +72,21 @@ const AffiliateDetailPage: React.FC<AffiliateDetailPageProps> = ({ affiliateId }
     .filter((commission) => commission.status !== 'cancelled')
     .reduce((sum, commission) => sum + commission.amount, 0);
 
-  const columns = [
+  const columns: Column<AffiliateCommission>[] = [
     {
       key: 'createdAt',
-      header: 'Tarih',
-      render: (commission: AffiliateCommission) => commission.createdAt ? new Date(commission.createdAt).toLocaleDateString('tr-TR') : '-',
+      title: 'Tarih',
+      render: (_: unknown, commission: AffiliateCommission) => commission.createdAt ? new Date(commission.createdAt).toLocaleDateString('tr-TR') : '-',
     },
     {
       key: 'event',
-      header: 'Olay / Tip',
-      render: (commission: AffiliateCommission) => commission.event ?? '-',
+      title: 'Olay / Tip',
+      render: (_: unknown, commission: AffiliateCommission) => commission.event ?? '-',
     },
     {
       key: 'status',
-      header: 'Durum',
-      render: (commission: AffiliateCommission) => (
+      title: 'Durum',
+      render: (_: unknown, commission: AffiliateCommission) => (
         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
           ${commission.status === 'paid' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' :
             commission.status === 'cancelled' ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400' :
@@ -96,13 +97,13 @@ const AffiliateDetailPage: React.FC<AffiliateDetailPageProps> = ({ affiliateId }
     },
     {
       key: 'amount',
-      header: 'Tutar',
-      render: (commission: AffiliateCommission) => (
+      title: 'Tutar',
+      align: 'right',
+      render: (_: unknown, commission: AffiliateCommission) => (
         <span className="font-mono">
           {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(commission.amount)}
         </span>
       ),
-      align: 'right' as const,
     },
   ];
 
@@ -163,51 +164,16 @@ const AffiliateDetailPage: React.FC<AffiliateDetailPageProps> = ({ affiliateId }
           </div>
         </div>
 
-        {isMobile ? (
-          <div className="p-4">
-            <ResponsiveTable
-              data={commissions}
-              columns={columns}
-              keyExtractor={(commission) => String(commission.id)}
-              emptyMessage="Henüz komisyon kaydı bulunmuyor."
-            />
-          </div>
-        ) : (
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-900">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tarih</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Olay / Tip</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Durum</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tutar</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {commissions.map((commission) => (
-                <tr key={String(commission.id)}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{commission.createdAt ? new Date(commission.createdAt).toLocaleDateString('tr-TR') : '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{commission.event ?? '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                          ${commission.status === 'paid' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' :
-                        commission.status === 'cancelled' ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400' :
-                        'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400'}`}>
-                      {commission.status ?? '-'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right font-mono">
-                    {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(commission.amount)}
-                  </td>
-                </tr>
-              ))}
-              {commissions.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">Henüz komisyon kaydı bulunmuyor.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        )}
+        <DataTable<AffiliateCommission>
+          data={commissions}
+          columns={columns}
+          rowKey={(c) => String(c.id)}
+          emptyText="Henüz komisyon kaydı bulunmuyor."
+          striped
+          hoverable
+          responsive
+          size="medium"
+        />
       </div>
     </div>
   );

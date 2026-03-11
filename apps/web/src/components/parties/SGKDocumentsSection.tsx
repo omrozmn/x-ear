@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { Button, Select } from '@x-ear/ui-web';
-import { Download, Eye, FileText, Filter } from 'lucide-react';
+import { Button, Select, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
+import { Download, Eye, Filter } from 'lucide-react';
 
 interface DeliveredEReceipt {
   id: string;
@@ -87,6 +88,61 @@ export const SGKDocumentsSection: React.FC<SGKDocumentsSectionProps> = ({
     setSelectedEReceipt(eReceipt);
   };
 
+  const sgkColumns: Column<DeliveredEReceipt>[] = [
+    {
+      key: 'number',
+      title: 'E-Reçete No',
+      render: (_, r) => <span className="text-sm font-medium text-gray-900">{r.number}</span>,
+    },
+    {
+      key: 'date',
+      title: 'Tarih',
+      render: (_, r) => <span className="text-sm text-gray-500">{new Date(r.date).toLocaleDateString('tr-TR')}</span>,
+    },
+    {
+      key: 'doctorName',
+      title: 'Doktor',
+      render: (_, r) => <span className="text-sm text-gray-500">{r.doctorName}</span>,
+    },
+    {
+      key: '_materials',
+      title: 'Malzeme Sayısı',
+      render: (_, r) => <span className="text-sm text-gray-500">{r.materials.length}</span>,
+    },
+    {
+      key: 'sgkDocumentAvailable',
+      title: 'SGK Belge',
+      render: (_, r) => (
+        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+          r.sgkDocumentAvailable ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+        }`}>
+          {r.sgkDocumentAvailable ? 'Mevcut' : 'Bekleniyor'}
+        </span>
+      ),
+    },
+    {
+      key: '_actions',
+      title: 'İşlemler',
+      render: (_, r) => (
+        <div className="space-x-2">
+          <Button size="sm" variant="outline" onClick={() => handleViewDetails(r)}>
+            <Eye className="w-4 h-4" />
+          </Button>
+          {r.partyFormAvailable && (
+            <Button
+              size="sm"
+              onClick={() => handleDownloadPartyForm(r.id)}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              <Download className="w-4 h-4 mr-1" />
+              Hasta İşlem Formu
+            </Button>
+          )}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <>
       <div className="bg-white rounded-2xl border p-6">
@@ -122,86 +178,12 @@ export const SGKDocumentsSection: React.FC<SGKDocumentsSectionProps> = ({
           </div>
         </div>
 
-        {filteredEReceipts.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    E-Reçete No
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Tarih
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Doktor
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Malzeme Sayısı
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    SGK Belge
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    İşlemler
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredEReceipts.map((receipt) => (
-                  <tr key={receipt.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {receipt.number}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(receipt.date).toLocaleDateString('tr-TR')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {receipt.doctorName}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {receipt.materials.length}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        receipt.sgkDocumentAvailable
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {receipt.sgkDocumentAvailable ? 'Mevcut' : 'Bekleniyor'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleViewDetails(receipt)}
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-
-                      {receipt.partyFormAvailable && (
-                        <Button
-                          size="sm"
-                          onClick={() => handleDownloadPartyForm(receipt.id)}
-                          className="bg-green-600 hover:bg-green-700 text-white"
-                        >
-                          <Download className="w-4 h-4 mr-1" />
-                          Hasta İşlem Formu
-                        </Button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="text-center py-6 text-gray-500">
-            <FileText className="w-10 h-10 mx-auto mb-3 text-gray-300" />
-            <p>{selectedMonth ? 'Bu ay için teslim edilmiş e-reçete bulunamadı' : 'Henüz teslim edilmiş e-reçete yok'}</p>
-          </div>
-        )}
+        <DataTable<DeliveredEReceipt>
+          data={filteredEReceipts}
+          columns={sgkColumns}
+          rowKey="id"
+          emptyText={selectedMonth ? 'Bu ay için teslim edilmiş e-reçete bulunamadı' : 'Henüz teslim edilmiş e-reçete yok'}
+        />
       </div>
 
       {/* Detay Modal */}

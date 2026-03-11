@@ -7,10 +7,10 @@ import {
     CreditCard,
     Wallet,
     Filter,
-    Phone,
-    DollarSign
+    Phone
 } from 'lucide-react';
-import { Button, Select } from '@x-ear/ui-web';
+import { Button, Select, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import { unwrapObject, unwrapPaginated } from '../../../utils/response-unwrap';
 import {
     useListReportRemainingPayments,
@@ -70,6 +70,51 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
     const summary = paymentsSummary?.summary;
     const cashflowData_unwrapped = unwrapObject<{ totalIncome?: number; totalExpense?: number; netCashflow?: number }>(cashflowData);
     const cashflow = cashflowData_unwrapped;
+
+    const remainingPaymentColumns: Column<RemainingPaymentItem>[] = [
+        {
+            key: 'partyName',
+            title: 'Hasta',
+            render: (_, party) => (
+                <div>
+                    <p className="font-medium">{party.partyName}</p>
+                    {party.phone && (
+                        <p className="text-xs text-gray-500 flex items-center gap-1">
+                            <Phone className="w-3 h-3" /> {party.phone}
+                        </p>
+                    )}
+                </div>
+            ),
+        },
+        {
+            key: 'saleCount',
+            title: 'Satış Sayısı',
+            align: 'center',
+            render: (_, party) => (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                    {party.saleCount}
+                </span>
+            ),
+        },
+        {
+            key: 'totalAmount',
+            title: 'Toplam Tutar',
+            align: 'right',
+            render: (_, party) => <span>{formatCurrency(party.totalAmount)}</span>,
+        },
+        {
+            key: 'paidAmount',
+            title: 'Ödenen',
+            align: 'right',
+            render: (_, party) => <span className="text-green-600">{formatCurrency(party.paidAmount)}</span>,
+        },
+        {
+            key: 'remainingAmount',
+            title: 'Kalan',
+            align: 'right',
+            render: (_, party) => <span className="font-bold text-red-600">{formatCurrency(party.remainingAmount)}</span>,
+        },
+    ];
 
     return (
         <div className="space-y-6">
@@ -173,82 +218,18 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
                     <p className="text-sm text-gray-500 dark:text-gray-400">Ödemesi kalan hastalar</p>
                 </div>
 
-                {payments.length > 0 ? (
-                    <>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm">
-                                <thead className="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                                    <tr>
-                                        <th className="px-4 py-3 font-medium">Hasta</th>
-                                        <th className="px-4 py-3 font-medium text-center">Satış Sayısı</th>
-                                        <th className="px-4 py-3 font-medium text-right">Toplam Tutar</th>
-                                        <th className="px-4 py-3 font-medium text-right">Ödenen</th>
-                                        <th className="px-4 py-3 font-medium text-right">Kalan</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                    {payments.map((party) => (
-                                        <tr key={party.partyId} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-300">
-                                            <td className="px-4 py-3">
-                                                <p className="font-medium">{party.partyName}</p>
-                                                {party.phone && (
-                                                    <p className="text-xs text-gray-500 flex items-center gap-1">
-                                                        <Phone className="w-3 h-3" /> {party.phone}
-                                                    </p>
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-3 text-center">
-                                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
-                                                    {party.saleCount}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-3 text-right">{formatCurrency(party.totalAmount)}</td>
-                                            <td className="px-4 py-3 text-right text-green-600">
-                                                {formatCurrency(party.paidAmount)}
-                                            </td>
-                                            <td className="px-4 py-3 text-right font-bold text-red-600">
-                                                {formatCurrency(party.remainingAmount)}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {/* Pagination */}
-                        {typedMeta && typedMeta.totalPages && typedMeta.totalPages > 1 && (
-                            <div className="px-4 py-3 border-t bg-gray-50 flex items-center justify-between">
-                                <span className="text-sm text-gray-500">
-                                    Toplam {typedMeta.total || 0} hasta
-                                </span>
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        onClick={() => setPage(p => Math.max(1, p - 1))}
-                                        disabled={page === 1}
-                                        variant="outline"
-                                        className="px-3 py-1.5 text-sm disabled:opacity-50 !w-auto !h-auto"
-                                    >
-                                        Önceki
-                                    </Button>
-                                    <span className="text-sm">{page} / {typedMeta.totalPages}</span>
-                                    <Button
-                                        onClick={() => setPage(p => Math.min(typedMeta.totalPages || 1, p + 1))}
-                                        disabled={page >= (typedMeta.totalPages || 1)}
-                                        variant="outline"
-                                        className="px-3 py-1.5 text-sm disabled:opacity-50 !w-auto !h-auto"
-                                    >
-                                        Sonraki
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-                    </>
-                ) : (
-                    <div className="p-8 text-center text-gray-500">
-                        <DollarSign className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-                        <p>Ödemesi kalan hasta bulunamadı</p>
-                    </div>
-                )}
+                <DataTable<RemainingPaymentItem>
+                    data={payments}
+                    columns={remainingPaymentColumns}
+                    rowKey="partyId"
+                    emptyText="Ödemesi kalan hasta bulunamadı"
+                    pagination={typedMeta && (typedMeta.total ?? 0) > 0 ? {
+                        current: page,
+                        pageSize: 20,
+                        total: typedMeta.total ?? 0,
+                        onChange: (p) => { setPage(p); },
+                    } : undefined}
+                />
             </div>
         </div>
     );

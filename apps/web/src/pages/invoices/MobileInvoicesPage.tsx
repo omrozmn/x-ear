@@ -6,7 +6,6 @@ import { MobileHeader } from '@/components/mobile/MobileHeader';
 import { FloatingActionButton } from '@/components/mobile/FloatingActionButton';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import { invoiceService } from '@/services/invoice.service';
-import { Invoice } from '@/types/invoice';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { cn } from '@/lib/utils';
 import { useHaptic } from '@/hooks/useHaptic';
@@ -25,12 +24,16 @@ async function fetchInvoiceDocument(invoiceId: string | number, format: 'pdf' | 
     return { data: resp.data, contentType };
 }
 
+async function fetchInvoiceDocumentUrl(invoiceId: string | number): Promise<string | null> {
+    const resp = await apiClient.get<{ data?: { pdfUrl?: string | null } }>(`/api/invoices/${invoiceId}/document-url`);
+    return resp.data?.data?.pdfUrl || null;
+}
+
 export const MobileInvoicesPage: React.FC = () => {
     const navigate = useNavigate();
     const [invoices, setInvoices] = useState<OutgoingInvoiceResponse[]>([]);
     const [totalCount, setTotalCount] = useState(0);
     const [totalAmount, setTotalAmount] = useState(0);
-    const [paidAmount, setPaidAmount] = useState(0);
     const [hasMore, setHasMore] = useState(false);
     const [loading, setLoading] = useState(true);
     const [isFetchingMore, setIsFetchingMore] = useState(false);
@@ -57,7 +60,7 @@ export const MobileInvoicesPage: React.FC = () => {
         if (selectedIds.size === filteredInvoices.length && filteredInvoices.length > 0) {
             setSelectedIds(new Set());
         } else {
-            setSelectedIds(new Set(filteredInvoices.map((inv) => String(inv.id))));
+            setSelectedIds(new Set(filteredInvoices.map((inv) => String(inv.invoiceId))));
         }
         triggerSelection();
     };
@@ -84,7 +87,6 @@ export const MobileInvoicesPage: React.FC = () => {
             setInvoices(items);
             setTotalCount(pagination?.total ?? items.length);
             setTotalAmount(Number(payload?.totalAmount ?? 0));
-            setPaidAmount(Number(payload?.paidAmount ?? 0));
             setHasMore((pagination?.total ?? items.length) > items.length);
         } catch (error) {
             console.error('Failed to load invoices:', error);
@@ -158,11 +160,16 @@ export const MobileInvoicesPage: React.FC = () => {
 
         try {
             const invoiceId = invoice.invoiceId;
-            const { data, contentType } = await fetchInvoiceDocument(invoiceId, 'pdf', 'local');
+            const directUrl = await fetchInvoiceDocumentUrl(invoiceId);
+            if (directUrl) {
+                window.open(directUrl, '_blank', 'noopener,noreferrer');
+                return;
+            }
+            const { data, contentType } = await fetchInvoiceDocument(invoiceId, 'pdf');
             const isPdf = contentType.includes('application/pdf');
             const blob = new Blob([data], { type: isPdf ? 'application/pdf' : 'text/html' });
             const url = URL.createObjectURL(blob);
-            window.open(isPdf ? `${url}#pagemode=none&toolbar=1` : url, '_blank');
+            window.open(isPdf ? `${url}#pagemode=none&toolbar=1` : url, '_blank', 'noopener,noreferrer');
         } catch {
             toast.error('Fatura önizlemesi açılamadı');
         }
@@ -223,7 +230,6 @@ export const MobileInvoicesPage: React.FC = () => {
     }, [filteredInvoices, selectedIds, loadInvoices]);
 
     const draftCount = invoices.filter((invoice) => (invoice.status || '').toLowerCase() === 'draft').length;
-    const sentCount = invoices.filter((invoice) => (invoice.status || '').toLowerCase() === 'sent').length;
 
     return (
         <MobileLayout>
@@ -389,7 +395,7 @@ export const MobileInvoicesPage: React.FC = () => {
                                             <div className="text-right">
                                                 <p className="text-xs text-gray-400">Tutar</p>
                                                 <p className="text-lg font-bold text-gray-900 dark:text-white">
-                                                    {formatCurrency(Number(inv.totalAmount || 0), inv.currency || 'TRY')}
+                                                    {formatCurrency(Number(inv.totalAmount || 0), 'TRY')}
                                                 </p>
                                             </div>
                                         </div>

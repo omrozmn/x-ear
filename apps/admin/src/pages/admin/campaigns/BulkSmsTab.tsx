@@ -1,5 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { Button, Card, DatePicker, Select, Textarea } from '@x-ear/ui-web';
+import { Button, Card, DatePicker, Select, Textarea, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import toast from 'react-hot-toast';
 import {
     AlertTriangle,
@@ -361,32 +362,23 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance }) => {
                     </div>
                 )}
             </div>
-            {excelPreview && (
-                <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700">
-                    <table className="min-w-full text-xs">
-                        <thead className="bg-gray-50 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400">
-                            <tr>
-                                {excelPreview.headers.map((header, index) => (
-                                    <th key={`${header}-${index}`} className="px-3 py-2 text-left font-medium">
-                                        {header || `Sütun ${index + 1}`}
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                            {excelPreview.rows.map((row, rowIndex) => (
-                                <tr key={rowIndex} className="text-gray-700 dark:text-gray-300">
-                                    {excelPreview.headers.map((_, colIndex) => (
-                                        <td key={colIndex} className="px-3 py-2">
-                                            {row[colIndex] ?? ''}
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
+            {excelPreview && (() => {
+                const excelColumns: Column<{ _idx: number; _row: (string | number | undefined)[] }>[] = excelPreview.headers.map((header, index) => ({
+                    key: `col_${index}`,
+                    title: String(header || `Sütun ${index + 1}`),
+                    render: (_, item) => String(item._row[index] ?? ''),
+                }));
+                const excelRows = excelPreview.rows.map((row, index) => ({ _idx: index, _row: row }));
+
+                return (
+                    <DataTable<{ _idx: number; _row: (string | number | undefined)[] }>
+                        data={excelRows}
+                        columns={excelColumns}
+                        rowKey="_idx"
+                        emptyText="Excel önizlemesi bulunamadı"
+                    />
+                );
+            })()}
         </div>
     );
 

@@ -5,9 +5,11 @@ interface LayoutState {
   sidebarOpen: boolean;
   sidebarCollapsed: boolean;
   aiInboxOpen: boolean;
+  hideGlobalHeader: boolean;
   setSidebarOpen: (open: boolean) => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
   setAiInboxOpen: (open: boolean) => void;
+  setHideGlobalHeader: (hide: boolean) => void;
   toggleSidebar: () => void;
   toggleSidebarCollapse: () => void;
   toggleAiInbox: () => void;
@@ -19,12 +21,15 @@ export const useLayoutStore = create<LayoutState>()(
       sidebarOpen: false,
       sidebarCollapsed: false,
       aiInboxOpen: false,
+      hideGlobalHeader: false,
 
       setSidebarOpen: (open) => set({ sidebarOpen: open }),
 
       setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
 
       setAiInboxOpen: (open) => set({ aiInboxOpen: open }),
+
+      setHideGlobalHeader: (hide) => set({ hideGlobalHeader: hide }),
 
       toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
 

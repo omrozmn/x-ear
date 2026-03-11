@@ -6,6 +6,7 @@ export interface Column<T = any> {
   key: string;
   title: string | React.ReactNode;
   sortable?: boolean;
+  sortAccessor?: (record: T) => unknown;
   filterable?: boolean;
   render?: (value: any, record: T, index: number) => React.ReactNode;
   width?: string | number;
@@ -91,6 +92,15 @@ export const DataTable = <T extends Record<string, any>>({
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [isMobileInternal, setIsMobileInternal] = useState(false);
 
+  const isActionColumn = useCallback((column: Column<T>) => /^_actions?$/i.test(column.key), []);
+
+  const isColumnSortable = useCallback((column: Column<T>) => {
+    if (column.sortable !== undefined) return column.sortable;
+    return !isActionColumn(column);
+  }, [isActionColumn]);
+
+  const sortingEnabled = sortable || columns.some((column) => isColumnSortable(column));
+
   useEffect(() => {
     if (!responsive) return;
 
@@ -117,8 +127,78 @@ export const DataTable = <T extends Record<string, any>>({
     );
   }, [data, rowSelection, getRowKey]);
 
+  const extractSortableText = useCallback((node: React.ReactNode): string => {
+    if (node == null || typeof node === 'boolean') return '';
+    if (typeof node === 'string' || typeof node === 'number') return String(node);
+    if (Array.isArray(node)) return node.map(extractSortableText).join(' ');
+    if (React.isValidElement(node)) return extractSortableText(node.props.children);
+    return '';
+  }, []);
+
+  const getColumnByKey = useCallback((key: string) => columns.find((column) => column.key === key), [columns]);
+
+  const getSortValue = useCallback((record: T, column: Column<T>, index: number) => {
+    if (column.sortAccessor) {
+      return column.sortAccessor(record);
+    }
+
+    const rawValue = record[column.key];
+    if (rawValue !== undefined && rawValue !== null && rawValue !== '') {
+      return rawValue;
+    }
+
+    if (column.render) {
+      return extractSortableText(column.render(rawValue, record, index));
+    }
+
+    return rawValue;
+  }, [extractSortableText]);
+
+  const normalizeSortValue = useCallback((value: unknown) => {
+    if (value == null) return '';
+    if (value instanceof Date) return value.getTime();
+    if (typeof value === 'number' || typeof value === 'boolean') return value;
+
+    const stringValue = String(value).trim();
+    if (!stringValue) return '';
+
+    const numericValue = Number(stringValue.replace(/\s/g, '').replace(',', '.'));
+    if (!Number.isNaN(numericValue) && /^-?\d+[.,]?\d*$/.test(stringValue.replace(/\s/g, ''))) {
+      return numericValue;
+    }
+
+    const timestamp = Date.parse(stringValue);
+    if (!Number.isNaN(timestamp) && /\d{2,4}/.test(stringValue)) {
+      return timestamp;
+    }
+
+    return stringValue.toLocaleLowerCase('tr-TR');
+  }, []);
+
+  const sortedData = useMemo(() => {
+    if (!sortingEnabled || !sortConfig) return data;
+
+    const column = getColumnByKey(sortConfig.key);
+    if (!column || !isColumnSortable(column)) return data;
+
+    return [...data].sort((leftRecord, rightRecord) => {
+      const leftValue = normalizeSortValue(getSortValue(leftRecord, column, data.indexOf(leftRecord)));
+      const rightValue = normalizeSortValue(getSortValue(rightRecord, column, data.indexOf(rightRecord)));
+
+      if (leftValue === rightValue) return 0;
+      if (leftValue === '') return 1;
+      if (rightValue === '') return -1;
+
+      const comparison = leftValue < rightValue ? -1 : 1;
+      return sortConfig.direction === 'asc' ? comparison : -comparison;
+    });
+  }, [data, getColumnByKey, getSortValue, isColumnSortable, normalizeSortValue, sortConfig, sortingEnabled]);
+
   const handleSort = (key: string) => {
-    if (!sortable) return;
+    if (!sortingEnabled) return;
+
+    const column = getColumnByKey(key);
+    if (!column || !isColumnSortable(column)) return;
 
     let direction: 'asc' | 'desc' | null = 'asc';
 
@@ -408,12 +488,12 @@ export const DataTable = <T extends Record<string, any>>({
       {/* Table / Card List */}
       {isMobileInternal ? (
         <div className="p-4">
-          {data.length === 0 ? (
+          {sortedData.length === 0 ? (
             <div className="py-8 text-center text-gray-500 dark:text-gray-400">
               {emptyText}
             </div>
           ) : (
-            data.map((record, index) => (
+            sortedData.map((record, index) => (
               <DataCard
                 key={getRowKey(record, index)}
                 record={record}
@@ -449,15 +529,15 @@ export const DataTable = <T extends Record<string, any>>({
                     key={column.key}
                     className={`
                       ${cellPadding[size]} text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider
-                      ${column.sortable && sortable ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600' : ''}
+                      ${isColumnSortable(column) && sortingEnabled ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600' : ''}
                       ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left'}
                     `}
                     style={{ width: column.width }}
-                    onClick={() => column.sortable && handleSort(column.key)}
+                    onClick={() => isColumnSortable(column) && handleSort(column.key)}
                   >
                     <div className="flex items-center space-x-1">
                       <span>{column.title}</span>
-                      {column.sortable && sortable && (
+                      {isColumnSortable(column) && sortingEnabled && (
                         <div className="flex flex-col">
                           <ChevronUp
                             className={`w-3 h-3 ${sortConfig?.key === column.key && sortConfig.direction === 'asc'
@@ -495,14 +575,14 @@ export const DataTable = <T extends Record<string, any>>({
                     </div>
                   </td>
                 </tr>
-              ) : data.length === 0 ? (
+              ) : sortedData.length === 0 ? (
                 <tr>
                   <td colSpan={columns.length + (rowSelection ? 1 : 0) + (actions ? 1 : 0)} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                     {emptyText}
                   </td>
                 </tr>
               ) : (
-                data.map((record, index) => {
+                sortedData.map((record, index) => {
                   const key = getRowKey(record, index);
                   const isSelected = rowSelection?.selectedRowKeys.includes(key);
                   const checkboxProps = rowSelection?.getCheckboxProps?.(record) || {};

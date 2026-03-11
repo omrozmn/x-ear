@@ -7,7 +7,6 @@ import { useParty } from '@/hooks/party/useParty';
 import { cn } from '@/lib/utils';
 import { useHaptic } from '@/hooks/useHaptic';
 import { Button } from '@x-ear/ui-web';
-import { PartyAppointmentsTab } from '@/components/parties/PartyAppointmentsTab';
 import { PartyDevicesTab } from '@/components/parties/PartyDevicesTab';
 import PartySalesTab from '@/components/parties/PartySalesTab';
 import { PartyNotesTab } from '@/components/parties/PartyNotesTab';

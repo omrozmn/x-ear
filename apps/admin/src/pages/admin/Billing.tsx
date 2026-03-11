@@ -11,7 +11,8 @@ import {
   BuildingOfficeIcon,
 } from '@heroicons/react/24/outline';
 import * as Dialog from '@radix-ui/react-dialog';
-import Pagination from '@/components/ui/Pagination';
+import { DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import toast from 'react-hot-toast';
 import {
   useListAdminInvoices,
@@ -37,7 +38,6 @@ import type {
   SchemasBaseResponseEnvelope,
 } from '@/api/generated/schemas';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
-import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
 import { isRecord as isEnvelopeRecord, unwrapData } from '@/lib/orval-response';
 
 interface CreateInvoiceData {
@@ -415,11 +415,11 @@ const Billing: React.FC = () => {
     return new Date(dateString).toLocaleDateString('tr-TR');
   };
 
-  const invoiceColumns = [
+  const invoiceColumns: Column<AdminInvoice>[] = [
     {
       key: 'invoiceNumber',
-      header: 'Fatura No',
-      render: (invoice: AdminInvoice) => (
+      title: 'Fatura No',
+      render: (_: unknown, invoice: AdminInvoice) => (
         <div className="flex items-center">
           <DocumentTextIcon className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-2" />
           <div>
@@ -435,9 +435,8 @@ const Billing: React.FC = () => {
     },
     {
       key: 'tenantName',
-      header: 'Abone',
-      mobileHidden: true,
-      render: (invoice: AdminInvoice) => (
+      title: 'Abone',
+      render: (_: unknown, invoice: AdminInvoice) => (
         <div className="text-sm font-medium text-gray-900 dark:text-white">
           {invoice.tenantName || '-'}
         </div>
@@ -445,13 +444,13 @@ const Billing: React.FC = () => {
     },
     {
       key: 'status',
-      header: 'Durum',
-      render: (invoice: AdminInvoice) => getStatusBadge(invoice.status ?? undefined)
+      title: 'Durum',
+      render: (_: unknown, invoice: AdminInvoice) => getStatusBadge(invoice.status ?? undefined)
     },
     {
       key: 'devicePrice',
-      header: 'Tutar',
-      render: (invoice: AdminInvoice) => (
+      title: 'Tutar',
+      render: (_: unknown, invoice: AdminInvoice) => (
         <div>
           <div className="text-sm font-medium text-gray-900 dark:text-white">
             {formatCurrency(Number(invoice.devicePrice || 0))}
@@ -466,9 +465,8 @@ const Billing: React.FC = () => {
     },
     {
       key: 'createdAt',
-      header: 'Vade Tarihi',
-      mobileHidden: true,
-      render: (invoice: AdminInvoice) => (
+      title: 'Vade Tarihi',
+      render: (_: unknown, invoice: AdminInvoice) => (
         <span className="text-sm text-gray-500 dark:text-gray-400">
           {invoice.createdAt ? formatDate(invoice.createdAt) : '-'}
         </span>
@@ -476,8 +474,9 @@ const Billing: React.FC = () => {
     },
     {
       key: 'actions',
-      header: 'İşlemler',
-      render: (invoice: AdminInvoice) => (
+      title: 'İşlemler',
+      align: 'right',
+      render: (_: unknown, invoice: AdminInvoice) => (
         <div className="flex justify-end space-x-2">
           <button
             onClick={() => handleViewInvoice(invoice.id!.toString())}
@@ -700,12 +699,7 @@ const Billing: React.FC = () => {
 
             {/* Invoices Table */}
             <div className="bg-white dark:bg-gray-800 shadow rounded-2xl overflow-hidden">
-              {isLoading ? (
-                <div className="p-6 text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-                  <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Faturalar yükleniyor...</p>
-                </div>
-              ) : error ? (
+              {error ? (
                 <div className="p-6 text-center">
                   <p className="text-red-600 dark:text-red-400">Faturalar yüklenirken hata oluştu</p>
                   <button
@@ -716,24 +710,24 @@ const Billing: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                <>
-                  <ResponsiveTable
-                    data={invoices}
-                    columns={invoiceColumns}
-                    keyExtractor={(invoice: AdminInvoice) => invoice.id!.toString()}
-                    emptyMessage="Fatura bulunamadı"
-                  />
-
-                  {/* Pagination */}
-                  <Pagination
-                    currentPage={page}
-                    totalPages={pagination?.totalPages || 1}
-                    totalItems={pagination?.total || 0}
-                    itemsPerPage={limit}
-                    onPageChange={setPage}
-                    onItemsPerPageChange={setLimit}
-                  />
-                </>
+                <DataTable<AdminInvoice>
+                  data={invoices}
+                  columns={invoiceColumns}
+                  loading={isLoading}
+                  rowKey={(invoice) => invoice.id!.toString()}
+                  emptyText="Fatura bulunamadı"
+                  striped
+                  hoverable
+                  responsive
+                  pagination={{
+                    current: page,
+                    pageSize: limit,
+                    total: pagination?.total || 0,
+                    showSizeChanger: true,
+                    pageSizeOptions: [10, 20, 50],
+                    onChange: (p: number, ps: number) => { setPage(p); setLimit(ps); },
+                  }}
+                />
               )}
             </div>
           </>
@@ -848,24 +842,16 @@ const Billing: React.FC = () => {
                 {/* Invoice Items (Single Device) */}
                 <div>
                   <h4 className="text-sm font-medium text-gray-900 mb-2">Fatura Kalemleri</h4>
-                  <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-2xl">
-                    <table className="min-w-full divide-y divide-gray-300">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cihaz</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tutar</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-200 bg-white">
-                        <tr>
-                          <td className="px-6 py-4 text-sm text-gray-900">{selectedInvoice.deviceName || 'Cihaz Satışı'}</td>
-                          <td className="px-6 py-4 text-sm text-gray-900">
-                            {formatCurrency(toNumber(selectedInvoice.devicePrice))}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
+                  <DataTable<{ key: string; device: string; amount: string }>
+                    data={[{ key: '1', device: selectedInvoice.deviceName || 'Cihaz Satışı', amount: formatCurrency(toNumber(selectedInvoice.devicePrice)) }]}
+                    columns={[
+                      { key: 'device', title: 'Cihaz', render: (_: unknown, row) => row.device },
+                      { key: 'amount', title: 'Tutar', render: (_: unknown, row) => row.amount },
+                    ]}
+                    rowKey={(row) => row.key}
+                    size="small"
+                    bordered
+                  />
                 </div>
 
                 {/* Invoice Totals */}
@@ -948,37 +934,51 @@ const Billing: React.FC = () => {
                       Yeni Plan Ekle
                     </button>
                   </div>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan Adı</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fiyat</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Periyot</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
-                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {plans.map((plan) => (
-                          <tr key={plan.id}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{plan.name}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatCurrency(plan.price || 0, 'TRY')}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{plan.billingInterval === 'MONTHLY' ? 'Aylık' : 'Yıllık'}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${plan.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                {plan.isActive ? 'Aktif' : 'Pasif'}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <button onClick={() => handleEditPlanClick(plan)} className="text-indigo-600 hover:text-indigo-900 mr-4">Düzenle</button>
-                              <button onClick={() => handleDeletePlanClick(plan.id!)} className="text-red-600 hover:text-red-900">Sil</button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <DataTable<PlanRead>
+                    data={plans}
+                    columns={[
+                      {
+                        key: 'name',
+                        title: 'Plan Adı',
+                        render: (_: unknown, plan: PlanRead) => plan.name,
+                      },
+                      {
+                        key: 'price',
+                        title: 'Fiyat',
+                        render: (_: unknown, plan: PlanRead) => formatCurrency(plan.price || 0, 'TRY'),
+                      },
+                      {
+                        key: 'billingInterval',
+                        title: 'Periyot',
+                        render: (_: unknown, plan: PlanRead) => plan.billingInterval === 'MONTHLY' ? 'Aylık' : 'Yıllık',
+                      },
+                      {
+                        key: 'isActive',
+                        title: 'Durum',
+                        render: (_: unknown, plan: PlanRead) => (
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${plan.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                            {plan.isActive ? 'Aktif' : 'Pasif'}
+                          </span>
+                        ),
+                      },
+                      {
+                        key: '_actions',
+                        title: 'İşlemler',
+                        align: 'right',
+                        render: (_: unknown, plan: PlanRead) => (
+                          <div className="flex justify-end gap-4">
+                            <button onClick={() => handleEditPlanClick(plan)} className="text-indigo-600 hover:text-indigo-900">Düzenle</button>
+                            <button onClick={() => handleDeletePlanClick(plan.id!)} className="text-red-600 hover:text-red-900">Sil</button>
+                          </div>
+                        ),
+                      },
+                    ] as Column<PlanRead>[]}
+                    rowKey={(plan) => plan.id!}
+                    emptyText="Henüz plan eklenmemiş"
+                    striped
+                    hoverable
+                    size="small"
+                  />
                 </div>
               ) : (
                 <form onSubmit={handleSavePlan} className="space-y-4">

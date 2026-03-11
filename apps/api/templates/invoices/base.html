@@ -553,6 +553,28 @@
                   {% if invoice.customer.tax_id %}<div class="party-details-row">VKN: {{ invoice.customer.tax_id }}</div>{% endif %}
                   {% if invoice.customer.identity_number %}<div class="party-details-row">TCKN: {{ invoice.customer.identity_number }}</div>{% endif %}
                 {% endif %}
+                {% if invoice.buyer_customer %}
+                  {% if invoice.buyer_customer.name and invoice.buyer_customer.name != (invoice.customer.name if invoice.customer else '') %}
+                  <div class="party-details-row">Yolcu/Hasta: {{ invoice.buyer_customer.name }}</div>
+                  {% endif %}
+                  {% if invoice.buyer_customer.tax_id %}
+                  <div class="party-details-row">Ek Kimlik/VKN: {{ invoice.buyer_customer.tax_id }}</div>
+                  {% endif %}
+                  {% if invoice.buyer_customer.passport_no %}
+                  <div class="party-details-row">Pasaport No: {{ invoice.buyer_customer.passport_no }}</div>
+                  {% endif %}
+                  {% if invoice.buyer_customer.nationality %}
+                  <div class="party-details-row">Uyruk: {{ invoice.buyer_customer.nationality }}</div>
+                  {% endif %}
+                {% endif %}
+                {% if invoice.profile_details %}
+                  {% if invoice.profile_details.taxRepresentativeName %}
+                  <div class="party-details-row">Vergi Temsilcisi: {{ invoice.profile_details.taxRepresentativeName }}</div>
+                  {% endif %}
+                  {% if invoice.profile_details.taxRepresentativeTaxId %}
+                  <div class="party-details-row">Temsilci Vergi No: {{ invoice.profile_details.taxRepresentativeTaxId }}</div>
+                  {% endif %}
+                {% endif %}
               </div>
             </div>
           </div>

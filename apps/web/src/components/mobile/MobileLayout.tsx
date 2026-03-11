@@ -1,6 +1,7 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useLayoutEffect } from 'react';
 import { BottomNav } from './BottomNav';
 import { useIsMobile } from '@/hooks/useBreakpoint';
+import { useLayoutStore } from '@/stores/layoutStore';
 import { cn } from '@/lib/utils';
 import '@/styles/mobile.css';
 
@@ -16,6 +17,12 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
   className
 }) => {
   const isMobile = useIsMobile();
+  const setHideGlobalHeader = useLayoutStore((state) => state.setHideGlobalHeader);
+
+  useLayoutEffect(() => {
+    setHideGlobalHeader(true);
+    return () => setHideGlobalHeader(false);
+  }, [setHideGlobalHeader]);
 
   return (
     <div className={cn("min-h-screen bg-gray-50 dark:bg-gray-900", className)}>

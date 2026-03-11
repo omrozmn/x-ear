@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { CreditCard, MessageSquare, PlusCircle, Plus, Settings, Trash2, AlertTriangle } from 'lucide-react';
+import { DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import toast from 'react-hot-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -532,47 +534,55 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
             {/* Mevcut Limitler Tablosu */}
             <div className="space-y-4">
                 <h4 className="text-sm font-semibold text-gray-900 border-b pb-2">Mevcut Özellik Limitleri (Read-Only)</h4>
-                <div className="bg-white border rounded-2xl overflow-hidden">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Özellik</th>
-                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Limit</th>
-                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Kullanılan</th>
-                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sıfırlanma</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {tenant.feature_usage && Object.entries(tenant.feature_usage).map(([key, value]) => (
-                                <tr key={key}>
-                                    <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900 capitalize">{key}</td>
-                                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{value.limit === 0 ? 'Sınırsız' : value.limit}</td>
-                                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{value.used || 0}</td>
-                                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-400 text-xs">
-                                        {value.last_reset ? new Date(value.last_reset).toLocaleDateString() : '-'}
-                                    </td>
-                                </tr>
-                            ))}
-                            {tenant.featureUsage && Object.entries(tenant.featureUsage).map(([key, value]) => (
-                                <tr key={key}>
-                                    <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900 capitalize">{key}</td>
-                                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{value.limit === 0 ? 'Sınırsız' : value.limit}</td>
-                                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{value.used || 0}</td>
-                                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-400 text-xs">
-                                        {(value.last_reset || value.lastReset) ? new Date(value.last_reset || value.lastReset || '').toLocaleDateString() : '-'}
-                                    </td>
-                                </tr>
-                            ))}
-                            {!tenant.feature_usage && !tenant.featureUsage && (
-                                <tr>
-                                    <td colSpan={4} className="px-4 py-4 text-center text-sm text-gray-500">
-                                        Henüz özellik kullanımı kaydı yok
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                {(() => {
+                    type FeatureRow = { key: string; limit?: number; used?: number; lastReset?: string; };
+                    const featureRows: FeatureRow[] = [
+                        ...Object.entries(tenant.feature_usage || {}).map(([key, value]) => ({
+                            key,
+                            limit: value.limit,
+                            used: value.used,
+                            lastReset: value.last_reset,
+                        })),
+                        ...Object.entries(tenant.featureUsage || {}).map(([key, value]) => ({
+                            key,
+                            limit: value.limit,
+                            used: value.used,
+                            lastReset: value.last_reset || value.lastReset,
+                        })),
+                    ];
+                    const featureColumns: Column<FeatureRow>[] = [
+                        {
+                            key: 'key',
+                            title: 'Özellik',
+                            render: (_: unknown, row: FeatureRow) => <span className="capitalize">{row.key}</span>,
+                        },
+                        {
+                            key: 'limit',
+                            title: 'Limit',
+                            render: (_: unknown, row: FeatureRow) => row.limit === 0 ? 'Sınırsız' : String(row.limit ?? '-'),
+                        },
+                        {
+                            key: 'used',
+                            title: 'Kullanılan',
+                            render: (_: unknown, row: FeatureRow) => String(row.used ?? 0),
+                        },
+                        {
+                            key: 'lastReset',
+                            title: 'Sıfırlanma',
+                            render: (_: unknown, row: FeatureRow) => row.lastReset ? new Date(row.lastReset).toLocaleDateString() : '-',
+                        },
+                    ];
+                    return (
+                        <DataTable<FeatureRow>
+                            data={featureRows}
+                            columns={featureColumns}
+                            rowKey={(r) => r.key}
+                            emptyText="Henüz özellik kullanımı kaydı yok"
+                            size="small"
+                            striped
+                        />
+                    );
+                })()}
             </div>
 
             {/* Plan Değiştirme */}

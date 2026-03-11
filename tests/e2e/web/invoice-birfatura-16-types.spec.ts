@@ -1,7 +1,10 @@
 import { test, expect, type Locator } from '../fixtures/fixtures';
-import type { APIRequestContext, Page, Response } from '@playwright/test';
+import type { Page, Response } from '@playwright/test';
+import { execFileSync } from 'node:child_process';
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { inflateSync } from 'node:zlib';
-import { deleteTestSupplier, ensureTestSupplier } from '../../helpers/auth.helper';
 
 type DocumentKind = 'invoice' | 'despatch';
 
@@ -379,134 +382,135 @@ const CASES: InvoiceCase[] = [
 test.describe.serial('BirFatura 16 Invoice Types', () => {
   test.setTimeout(20 * 60 * 1000);
 
-  test('creates, issues, validates XML/PDF and opens PDF for all 16 invoice types', async ({ tenantPage, apiContext, authTokens }) => {
-    test.slow();
+  CASES.forEach((invoiceCase, index) => {
+    test(`${invoiceCase.title}: creates, issues, validates XML/PDF and opens PDF`, async ({ tenantPage, apiContext }) => {
+      test.slow();
 
-    // Generate unique prefix for this test run to avoid duplicate invoice numbers
-    // Format: E2E (3 chars) - ensures uniqueness across test runs
-    const timestamp = Date.now().toString();
-    const uniquePrefix = `E${timestamp.slice(-2)}`; // E + last 2 digits of timestamp (e.g., E45, E67, E89)
-    console.log(`🔢 Test run using unique invoice prefix: ${uniquePrefix}`);
+      const seededParty = getExistingReceiverParty();
+      console.log(`✅ Using existing receiver: ${seededParty.firstName} ${seededParty.lastName} (${seededParty.taxNumber})`);
 
-    // Update tenant settings to use this unique prefix
-    try {
-      const tenantResponse = await apiContext.get('/api/tenants/current');
-      if (tenantResponse.ok()) {
-        const tenantData = await tenantResponse.json();
-        const currentSettings = tenantData.data?.settings || {};
-        const currentCompanyInfo = tenantData.data?.companyInfo || tenantData.data?.company_info || {};
-        const invoiceIntegration = currentSettings.invoice_integration || currentSettings.invoiceIntegration || {};
-        
-        // Align tenant company + invoice integration with the BirFatura sandbox sender identity.
-        // Backend-only invoice matrix tests use controlled tenant data; FE E2E needs the same baseline.
-        const updatedSettings = {
-          ...currentSettings,
-          company: {
-            ...(currentSettings.company || {}),
-            name: currentCompanyInfo.companyName || currentCompanyInfo.name || 'X-Ear Test Isitme Merkezi',
-            address: currentCompanyInfo.address || 'Test Sokak No:1',
-            city: currentCompanyInfo.city || 'Ankara',
-            district: currentCompanyInfo.district || 'Cankaya',
-            taxOffice: currentCompanyInfo.taxOffice || currentCompanyInfo.tax_office || 'ANKARA',
-          },
-          invoice_integration: {
-            ...invoiceIntegration,
-            invoice_prefix: uniquePrefix,
-            invoice_prefixes: [uniquePrefix, ...(invoiceIntegration.invoice_prefixes || [])],
-            vkn: '1234567801',
-            tax_office: invoiceIntegration.tax_office || currentCompanyInfo.taxOffice || currentCompanyInfo.tax_office || 'ANKARA',
-          },
-        };
+      await ensureTenantInvoiceSettings(apiContext, index);
 
-        await apiContext.patch('/api/tenants/current', {
-          headers: {
-            'Content-Type': 'application/json',
-            'Idempotency-Key': `test-prefix-${timestamp}`,
-          },
-          data: {
-            settings: updatedSettings,
-            companyInfo: {
-              ...currentCompanyInfo,
-              companyName: currentCompanyInfo.companyName || currentCompanyInfo.name || 'X-Ear Test Isitme Merkezi',
-              taxNumber: '1234567801',
-              taxOffice: currentCompanyInfo.taxOffice || currentCompanyInfo.tax_office || 'ANKARA',
-              address: currentCompanyInfo.address || 'Test Sokak No:1',
-              city: currentCompanyInfo.city || 'Ankara',
-              district: currentCompanyInfo.district || 'Cankaya',
-              country: currentCompanyInfo.country || 'Turkiye',
-              email: currentCompanyInfo.email || 'test@example.com',
-              phone: currentCompanyInfo.phone || '03120000000',
-            },
-          },
-        });
-        
-        console.log(`✅ Tenant settings updated with unique prefix and sandbox VKN: ${uniquePrefix}`);
+      const { invoiceId, invoiceNumber, lineName } = await createInvoiceFromUi(tenantPage, invoiceCase, seededParty);
+
+      const xmlResponse = await apiContext.get(`/api/invoices/${invoiceId}/document?format=xml`);
+      expect(xmlResponse.ok(), `${invoiceCase.title} XML fetch failed`).toBeTruthy();
+      const xmlText = await xmlResponse.text();
+      if (invoiceCase.key !== 'sgk') {
+        expect(xmlText).toContain(lineName);
       }
-    } catch (error) {
-      console.error('⚠️ Failed to update tenant settings:', error);
-      // Continue with test - backend will use default prefix
-    }
+      invoiceCase.xmlChecks(xmlText, seededParty, invoiceNumber);
 
-    // Seed party ONCE for all test cases (optimization)
-    const seededParty = await seedParty(apiContext, authTokens.accessToken, 'all-types');
-    console.log(`✅ Seeded party once: ${seededParty.firstName} ${seededParty.lastName} (${seededParty.taxNumber})`);
-
-    try {
-      for (const invoiceCase of CASES) {
-        await test.step(invoiceCase.title, async () => {
-          const { invoiceId, invoiceNumber, lineName } = await createInvoiceFromUi(tenantPage, invoiceCase, seededParty);
-
-          const xmlResponse = await apiContext.get(`/api/invoices/${invoiceId}/document?format=xml`);
-          expect(xmlResponse.ok(), `${invoiceCase.title} XML fetch failed`).toBeTruthy();
-          const xmlText = await xmlResponse.text();
-          if (invoiceCase.key !== 'sgk') {
-            expect(xmlText).toContain(lineName);
-          }
-          invoiceCase.xmlChecks(xmlText, seededParty, invoiceNumber);
-
-          const htmlResponse = await apiContext.get(`/api/invoices/${invoiceId}/document?format=html`);
-          expect(htmlResponse.ok(), `${invoiceCase.title} HTML fetch failed`).toBeTruthy();
-          const htmlText = normalizeText(await htmlResponse.text());
-          if (invoiceCase.key !== 'sgk') {
-            expect(htmlText).toContain(normalizeText(lineName));
-          }
-          expect(htmlText).toContain(normalizeText(invoiceNumber));
-
-          const pdfResponse = await apiContext.get(`/api/invoices/${invoiceId}/document?format=pdf`);
-          expect(pdfResponse.ok(), `${invoiceCase.title} PDF fetch failed`).toBeTruthy();
-          const pdfHeaders = pdfResponse.headers();
-          expect(pdfHeaders['content-type'] || '').toContain('application/pdf');
-          const pdfBuffer = Buffer.from(await pdfResponse.body());
-          expect(pdfBuffer.subarray(0, 4).toString('latin1')).toBe('%PDF');
-
-          // PDF text extraction - try to extract but don't fail if invoice number not found
-          // (PDF may contain invoice number in binary/encoded format)
-          const pdfText = normalizeText(extractPdfText(pdfBuffer));
-          if (pdfText.length > 100) {
-            // PDF has readable text, try checks but don't fail on invoice number
-            try {
-              invoiceCase.pdfChecks(pdfText, seededParty, invoiceNumber);
-              console.log(`[${invoiceCase.title}] ✅ PDF text checks passed`);
-            } catch (error) {
-              // PDF text extraction may fail for encoded content - this is OK
-              console.log(`[${invoiceCase.title}] ⚠️ PDF text checks skipped (content may be encoded)`);
-            }
-          } else {
-            console.log(`[${invoiceCase.title}] PDF text extraction minimal, skipping text checks`);
-          }
-
-          await openInvoicePdfFromTable(tenantPage, invoiceId, invoiceNumber);
-        });
+      const htmlResponse = await apiContext.get(`/api/invoices/${invoiceId}/document?format=html`);
+      expect(htmlResponse.ok(), `${invoiceCase.title} HTML fetch failed`).toBeTruthy();
+      const htmlText = normalizeText(await htmlResponse.text());
+      if (invoiceCase.key !== 'sgk') {
+        expect(htmlText).toContain(normalizeText(lineName));
       }
-    } finally {
-      // Cleanup: delete the single seeded party
-      if (seededParty.created) {
-        await deleteTestSupplier(apiContext, authTokens.accessToken, Number(seededParty.id));
-        console.log(`✅ Cleaned up seeded party: ${seededParty.id}`);
+      expect(htmlText).toContain(normalizeText(invoiceNumber));
+
+      const pdfResponse = await apiContext.get(`/api/invoices/${invoiceId}/document?format=pdf`);
+      expect(pdfResponse.ok(), `${invoiceCase.title} PDF fetch failed`).toBeTruthy();
+      const pdfHeaders = pdfResponse.headers();
+      expect(pdfHeaders['content-type'] || '').toContain('application/pdf');
+      const pdfBuffer = Buffer.from(await pdfResponse.body());
+      expect(pdfBuffer.subarray(0, 4).toString('latin1')).toBe('%PDF');
+
+      let pdfChecksPassed = false;
+      const providerPdfText = normalizeText(extractPdfText(pdfBuffer));
+      if (providerPdfText.length > 100) {
+        try {
+          invoiceCase.pdfChecks(providerPdfText, seededParty, invoiceNumber);
+          pdfChecksPassed = true;
+          console.log(`[${invoiceCase.title}] ✅ Provider PDF text checks passed`);
+        } catch {
+          console.log(`[${invoiceCase.title}] Provider PDF text extraction readable but content checks failed; retrying with local PDF`);
+        }
+      } else {
+        console.log(`[${invoiceCase.title}] Provider PDF text extraction minimal; retrying with local PDF`);
       }
-    }
+
+      if (!pdfChecksPassed) {
+        const localPdfResponse = await apiContext.get(`/api/invoices/${invoiceId}/document?format=pdf&render_mode=local`);
+        expect(localPdfResponse.ok(), `${invoiceCase.title} local PDF fetch failed`).toBeTruthy();
+        const localPdfHeaders = localPdfResponse.headers();
+        expect(localPdfHeaders['content-type'] || '').toContain('application/pdf');
+        const localPdfBuffer = Buffer.from(await localPdfResponse.body());
+        expect(localPdfBuffer.subarray(0, 4).toString('latin1')).toBe('%PDF');
+
+        const localPdfText = normalizeText(extractPdfText(localPdfBuffer));
+        expect(localPdfText.length, `${invoiceCase.title} local PDF text extraction should be readable`).toBeGreaterThan(50);
+        invoiceCase.pdfChecks(localPdfText, seededParty, invoiceNumber);
+        console.log(`[${invoiceCase.title}] ✅ Local PDF text checks passed`);
+      }
+
+      await openInvoicePdfFromTable(tenantPage, invoiceId, invoiceNumber);
+    });
   });
 });
+
+async function ensureTenantInvoiceSettings(apiContext: { get: Function; patch: Function }, caseIndex: number) {
+  const timestamp = (Date.now() + caseIndex).toString();
+  const uniquePrefix = `E${timestamp.slice(-2)}`;
+  console.log(`🔢 Test run using unique invoice prefix: ${uniquePrefix}`);
+
+  try {
+    const tenantResponse = await apiContext.get('/api/tenants/current');
+    if (!tenantResponse.ok()) {
+      return;
+    }
+
+    const tenantData = await tenantResponse.json();
+    const currentSettings = tenantData.data?.settings || {};
+    const currentCompanyInfo = tenantData.data?.companyInfo || tenantData.data?.company_info || {};
+    const invoiceIntegration = currentSettings.invoice_integration || currentSettings.invoiceIntegration || {};
+
+    const updatedSettings = {
+      ...currentSettings,
+      company: {
+        ...(currentSettings.company || {}),
+        name: currentCompanyInfo.companyName || currentCompanyInfo.name || 'X-Ear Test Isitme Merkezi',
+        address: currentCompanyInfo.address || 'Test Sokak No:1',
+        city: currentCompanyInfo.city || 'Ankara',
+        district: currentCompanyInfo.district || 'Cankaya',
+        taxOffice: currentCompanyInfo.taxOffice || currentCompanyInfo.tax_office || 'ANKARA',
+      },
+      invoice_integration: {
+        ...invoiceIntegration,
+        invoice_prefix: uniquePrefix,
+        invoice_prefixes: [uniquePrefix, ...(invoiceIntegration.invoice_prefixes || [])],
+        vkn: '1234567801',
+        tax_office: invoiceIntegration.tax_office || currentCompanyInfo.taxOffice || currentCompanyInfo.tax_office || 'ANKARA',
+      },
+    };
+
+    await apiContext.patch('/api/tenants/current', {
+      headers: {
+        'Content-Type': 'application/json',
+        'Idempotency-Key': `test-prefix-${timestamp}`,
+      },
+      data: {
+        settings: updatedSettings,
+        companyInfo: {
+          ...currentCompanyInfo,
+          companyName: currentCompanyInfo.companyName || currentCompanyInfo.name || 'X-Ear Test Isitme Merkezi',
+          taxNumber: '1234567801',
+          taxOffice: currentCompanyInfo.taxOffice || currentCompanyInfo.tax_office || 'ANKARA',
+          address: currentCompanyInfo.address || 'Test Sokak No:1',
+          city: currentCompanyInfo.city || 'Ankara',
+          district: currentCompanyInfo.district || 'Cankaya',
+          country: currentCompanyInfo.country || 'Turkiye',
+          email: currentCompanyInfo.email || 'test@example.com',
+          phone: currentCompanyInfo.phone || '03120000000',
+        },
+      },
+    });
+
+    console.log(`✅ Tenant settings updated with unique prefix and sandbox VKN: ${uniquePrefix}`);
+  } catch (error) {
+    console.error('⚠️ Failed to update tenant settings:', error);
+  }
+}
 
 async function createInvoiceFromUi(page: Page, invoiceCase: InvoiceCase, seededParty: PartySeed): Promise<CreatedInvoiceResult> {
   const issueResponsePromise = page.waitForResponse((response) => isIssueResponse(response), { timeout: 180_000 });
@@ -659,29 +663,16 @@ async function openInvoicePdfFromTable(page: Page, invoiceId: number, invoiceNum
   await page.keyboard.press('Escape').catch(() => {});
 }
 
-async function seedParty(api: APIRequestContext, accessToken: string, key: string): Promise<PartySeed> {
+function getExistingReceiverParty(): PartySeed {
   const taxNumber = process.env.E2E_TEST_RECEIVER_VKN || '1234567801';
   const companyName = process.env.E2E_TEST_RECEIVER_NAME || 'GIB TEST RECEIVER';
   const city = process.env.E2E_TEST_RECEIVER_CITY || 'ANKARA';
   const district = process.env.E2E_TEST_RECEIVER_DISTRICT || 'Cankaya';
   const address = process.env.E2E_TEST_RECEIVER_ADDRESS || 'Alici sokak';
-  const taxOffice = process.env.E2E_TEST_RECEIVER_TAX_OFFICE || 'ANKARA';
-  const ensuredSupplier = await ensureTestSupplier(api, accessToken, {
-    name: companyName,
-    companyName,
-    taxNumber,
-    taxOffice,
-    email: 'gib-test-receiver@example.com',
-    phone: '03120000001',
-    address,
-    city,
-    notes: `Provider-ready E2E receiver for ${key}`,
-  });
-
   const [firstName, ...rest] = companyName.split(/\s+/);
   return {
-    id: String(ensuredSupplier.id),
-    created: ensuredSupplier.created,
+    id: taxNumber,
+    created: false,
     firstName,
     lastName: rest.join(' '),
     taxNumber,
@@ -780,6 +771,11 @@ function normalizeText(value: string) {
 }
 
 function extractPdfText(buffer: Buffer): string {
+  const fitzText = extractPdfTextWithPyMuPdf(buffer);
+  if (fitzText) {
+    return fitzText;
+  }
+
   const parts = new Set<string>();
 
   const pushChunk = (candidate: string) => {
@@ -821,6 +817,35 @@ function extractPdfText(buffer: Buffer): string {
   return Array.from(parts).join(' ');
 }
 
+function extractPdfTextWithPyMuPdf(buffer: Buffer): string {
+  const pythonPath = '/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/.venv/bin/python';
+  if (!existsSync(pythonPath)) {
+    return '';
+  }
+
+  const tempDir = mkdtempSync(join(tmpdir(), 'xear-pdf-'));
+  const pdfPath = join(tempDir, 'document.pdf');
+  try {
+    writeFileSync(pdfPath, buffer);
+    const script = [
+      'import fitz, sys',
+      'doc = fitz.open(sys.argv[1])',
+      'parts = []',
+      'for page in doc:',
+      '    parts.append(page.get_text("text"))',
+      'print("\\n".join(parts))',
+    ].join('\n');
+    return execFileSync(pythonPath, ['-c', script, pdfPath], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    return '';
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+}
+
 function extractAsciiStrings(buffer: Buffer): string {
   const matches = buffer.toString('latin1').match(/[A-Za-z0-9ÇĞİÖŞÜçğıöşü@:/.#_\- ]{4,}/g);
   return matches ? matches.join(' ') : '';
@@ -859,15 +884,38 @@ function extractLiteralPdfStrings(pdfSource: string): string {
           .slice(1, -1)
           .replace(/\\\(/g, '(')
           .replace(/\\\)/g, ')')
+          .replace(/\\([0-7]{3})/g, (_, octal) => String.fromCharCode(Number.parseInt(octal, 8)))
           .replace(/\\n/g, ' ')
           .replace(/\\r/g, ' ')
           .replace(/\\t/g, ' ')
+          .replace(/\\b/g, ' ')
+          .replace(/\\f/g, ' ')
           .replace(/\\\\/g, '\\')
       );
     } else if (match[1]) {
       try {
         const hex = Buffer.from(match[1], 'hex');
-        chunks.push(hex.toString('utf8'));
+        const decoded = new Set<string>();
+        const pushDecoded = (value: string) => {
+          const normalized = value.replace(/\u0000/g, ' ').trim();
+          if (normalized.length >= 2) {
+            decoded.add(normalized);
+          }
+        };
+
+        pushDecoded(hex.toString('utf8'));
+        pushDecoded(hex.toString('latin1'));
+
+        if (hex.length >= 2) {
+          const utf16 = hex.toString('utf16le').replace(/\uFEFF/g, '');
+          pushDecoded(utf16);
+
+          const swapped = Buffer.from(hex);
+          swapped.swap16();
+          pushDecoded(swapped.toString('utf16le').replace(/\uFEFF/g, ''));
+        }
+
+        chunks.push(...decoded);
       } catch {
         // ignore invalid hex strings
       }

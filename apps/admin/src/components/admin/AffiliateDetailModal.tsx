@@ -3,6 +3,8 @@ import { XMarkIcon, UserGroupIcon, CurrencyDollarIcon, ChartBarIcon, ShoppingBag
 import { adminApi } from '@/lib/apiMutator';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 
 interface AffiliateDetailModalProps {
     affiliateId: string;
@@ -312,43 +314,41 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                                 <ShoppingBagIcon className="h-5 w-5 mr-2 text-primary-600" />
                                 Getirilen Aboneler ({data.referrals.length})
                             </h4>
-                            {data.referrals.length > 0 ? (
-                                <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50">
-                                            <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Müşteri</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paket</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fiyat</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kayıt Tarihi</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
-                                            {data.referrals.map((ref, idx) => (
-                                                <tr key={idx} className="hover:bg-gray-50">
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{ref.tenant_name}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                                        {ref.subscription?.plan_name || 'Paket yok'}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                                        {ref.subscription ? formatCurrency(ref.subscription.price) : '-'}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                                        {ref.subscription ? getStatusBadge(ref.subscription.status) : '-'}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(ref.created_at)}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            ) : (
-                                <div className="bg-gray-50 rounded-2xl p-8 text-center border border-gray-200">
-                                    <UserGroupIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                                    <p className="text-gray-500">Henüz yönlendirme yok</p>
-                                </div>
-                            )}
+                            <DataTable<Referral>
+                                data={data.referrals}
+                                columns={[
+                                    {
+                                        key: 'tenant_name',
+                                        title: 'Müşteri',
+                                        render: (_: unknown, ref: Referral) => ref.tenant_name,
+                                    },
+                                    {
+                                        key: 'plan_name',
+                                        title: 'Paket',
+                                        render: (_: unknown, ref: Referral) => ref.subscription?.plan_name || 'Paket yok',
+                                    },
+                                    {
+                                        key: 'price',
+                                        title: 'Fiyat',
+                                        render: (_: unknown, ref: Referral) => ref.subscription ? formatCurrency(ref.subscription.price) : '-',
+                                    },
+                                    {
+                                        key: 'status',
+                                        title: 'Durum',
+                                        render: (_: unknown, ref: Referral) => ref.subscription ? getStatusBadge(ref.subscription.status) : '-',
+                                    },
+                                    {
+                                        key: 'created_at',
+                                        title: 'Kayıt Tarihi',
+                                        render: (_: unknown, ref: Referral) => formatDate(ref.created_at),
+                                    },
+                                ] as Column<Referral>[]}
+                                rowKey={(ref, idx) => ref.tenant_id || String(idx)}
+                                emptyText="Henüz yönlendirme yok"
+                                striped
+                                hoverable
+                                size="small"
+                            />
                         </div>
 
                         {/* Recent Commissions */}
@@ -358,32 +358,43 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                                     <CurrencyDollarIcon className="h-5 w-5 mr-2 text-green-600" />
                                     Son Komisyonlar
                                 </h4>
-                                <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50">
-                                            <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Olay</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Miktar</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
-                                            {data.recent_commissions.map((comm) => (
-                                                <tr key={comm.id} className="hover:bg-gray-50">
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{comm.event}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">{formatCurrency(comm.amount)}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${comm.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                                                            {comm.status === 'paid' ? 'Ödendi' : 'Beklemede'}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(comm.created_at)}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                <DataTable<Commission>
+                                    data={data.recent_commissions}
+                                    columns={[
+                                        {
+                                            key: 'event',
+                                            title: 'Olay',
+                                            render: (_: unknown, comm: Commission) => comm.event,
+                                        },
+                                        {
+                                            key: 'amount',
+                                            title: 'Miktar',
+                                            render: (_: unknown, comm: Commission) => (
+                                                <span className="font-semibold text-green-600">
+                                                    {formatCurrency(comm.amount)}
+                                                </span>
+                                            ),
+                                        },
+                                        {
+                                            key: 'status',
+                                            title: 'Durum',
+                                            render: (_: unknown, comm: Commission) => (
+                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${comm.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                                                    {comm.status === 'paid' ? 'Ödendi' : 'Beklemede'}
+                                                </span>
+                                            ),
+                                        },
+                                        {
+                                            key: 'created_at',
+                                            title: 'Tarih',
+                                            render: (_: unknown, comm: Commission) => formatDate(comm.created_at),
+                                        },
+                                    ] as Column<Commission>[]}
+                                    rowKey={(comm) => String(comm.id)}
+                                    striped
+                                    hoverable
+                                    size="small"
+                                />
                             </div>
                         )}
                     </div>

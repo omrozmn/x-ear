@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { DatePicker, DataTable } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
 import { useListInventoryMovements, getListInventoryMovementsQueryKey } from '@/api/client/inventory.client';
@@ -26,7 +26,7 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
 
     // Use orval-generated hook with CORRECT endpoint (path param, not query)
     // Note: Backend supports startTime/endTime
-    const { data: movementsResponseRaw, isLoading, error } = useListInventoryMovements(
+    const { data: movementsResponseRaw, isLoading } = useListInventoryMovements(
         inventoryId || '', // item_id as path parameter
         {},
         {
@@ -41,7 +41,7 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
     const movementsResponse = movementsResponseRaw as { data: StockMovement[]; meta: { total: number } } | undefined;
     const movements = movementsResponse?.data || [];
 
-    const getMovementIcon = (type: string, quantity: number) => {
+    const getMovementIcon = (quantity: number) => {
         if (quantity > 0) return <ArrowDownLeft className="w-4 h-4 text-green-600" />;
         return <ArrowUpRight className="w-4 h-4 text-red-600" />;
     };
@@ -130,7 +130,7 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
             title: 'Miktar',
             render: (_: unknown, record: StockMovement) => (
                 <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
-                    {getMovementIcon(record.movementType ?? 'unknown', record.quantity ?? 0)}
+                    {getMovementIcon(record.quantity ?? 0)}
                     <span className={(record.quantity ?? 0) > 0 ? 'text-green-600' : 'text-red-600'}>
                         {(record.quantity ?? 0) > 0 ? '+' : ''}{record.quantity ?? 0}
                     </span>

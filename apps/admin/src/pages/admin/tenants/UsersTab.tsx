@@ -9,7 +9,8 @@ import {
     getListAdminTenantUsersQueryKey
 } from '@/api/generated/admin-tenants/admin-tenants';
 import { UserRead } from '@/api/generated/schemas';
-import Pagination from '@/components/ui/Pagination';
+import { DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import { unwrapData } from '@/lib/orval-response';
 
 interface UsersTabProps {
@@ -221,75 +222,89 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
 
             {isLoading ? <div>Yükleniyor...</div> : (
                 <div className="space-y-4">
-                    <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-2xl">
-                        <table className="min-w-full divide-y divide-gray-300">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900">Kullanıcı</th>
-                                    <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Rol</th>
-                                    <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Durum</th>
-                                    <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Son Giriş</th>
-                                    <th className="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">İşlemler</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200 bg-white">
-                                {paginatedUsers.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={5} className="py-4 text-center text-sm text-gray-500">Kullanıcı bulunamadı</td>
-                                    </tr>
-                                ) : (
-                                    paginatedUsers.map((user) => (
-                                        <tr key={String(user.id)}>
-                                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm">
-                                                <div className="font-medium text-gray-900">{user.firstName} {user.lastName}</div>
-                                                <div className="text-gray-500">{user.email}</div>
-                                                <div className="text-xs text-gray-400">{user.username || ''}</div>
-                                            </td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                {String(user.role || '').toLowerCase().includes('admin') ? 'Yönetici' : 'Kullanıcı'}
-                                            </td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm">
-                                                <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{user.isActive ? 'Aktif' : 'Pasif'}</span>
-                                            </td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{user.createdAt ? new Date(user.createdAt).toLocaleDateString('tr-TR') : '-'}</td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-right">
-                                                <div className="flex justify-end space-x-2">
-                                                    <button
-                                                        onClick={() => setUserToToggle(user)}
-                                                        className={`text-xs font-medium px-2 py-1 rounded ${user.isActive ? 'text-red-600 bg-red-50 hover:bg-red-100' : 'text-green-600 bg-green-50 hover:bg-green-100'}`}
-                                                        type="button"
-                                                    >
-                                                        {user.isActive ? 'Pasife Al' : 'Aktifleştir'}
-                                                    </button>
-                                                    <button
-                                                        onClick={() => openEditModal(user)}
-                                                        className="text-blue-600 hover:text-blue-900 p-1"
-                                                        title="Düzenle"
-                                                        type="button"
-                                                    >
-                                                        <Edit className="h-4 w-4" />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                    {totalItems > 0 && (
-                        <Pagination
-                            currentPage={page}
-                            totalPages={totalPages}
-                            totalItems={totalItems}
-                            itemsPerPage={limit}
-                            onPageChange={setPage}
-                            onItemsPerPageChange={(nextLimit) => {
-                                setLimit(nextLimit);
-                                setPage(1);
-                            }}
-                        />
-                    )}
+                    <DataTable<ExtendedTenantUser>
+                        data={paginatedUsers}
+                        columns={[
+                            {
+                                key: 'firstName',
+                                title: 'Kullanıcı',
+                                render: (_: unknown, user: ExtendedTenantUser) => (
+                                    <div>
+                                        <div className="font-medium text-gray-900">{user.firstName} {user.lastName}</div>
+                                        <div className="text-gray-500 text-sm">{user.email}</div>
+                                        <div className="text-xs text-gray-400">{user.username || ''}</div>
+                                    </div>
+                                )
+                            },
+                            {
+                                key: 'role',
+                                title: 'Rol',
+                                render: (_: unknown, user: ExtendedTenantUser) => (
+                                    <span className="text-sm text-gray-500">
+                                        {String(user.role || '').toLowerCase().includes('admin') ? 'Yönetici' : 'Kullanıcı'}
+                                    </span>
+                                )
+                            },
+                            {
+                                key: 'isActive',
+                                title: 'Durum',
+                                render: (_: unknown, user: ExtendedTenantUser) => (
+                                    <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                        {user.isActive ? 'Aktif' : 'Pasif'}
+                                    </span>
+                                )
+                            },
+                            {
+                                key: 'createdAt',
+                                title: 'Son Giriş',
+                                render: (_: unknown, user: ExtendedTenantUser) => (
+                                    <span className="text-sm text-gray-500">
+                                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString('tr-TR') : '-'}
+                                    </span>
+                                )
+                            },
+                            {
+                                key: 'id',
+                                title: 'İşlemler',
+                                align: 'right',
+                                render: (_: unknown, user: ExtendedTenantUser) => (
+                                    <div className="flex justify-end space-x-2">
+                                        <button
+                                            onClick={() => setUserToToggle(user)}
+                                            className={`text-xs font-medium px-2 py-1 rounded ${user.isActive ? 'text-red-600 bg-red-50 hover:bg-red-100' : 'text-green-600 bg-green-50 hover:bg-green-100'}`}
+                                            type="button"
+                                        >
+                                            {user.isActive ? 'Pasife Al' : 'Aktifleştir'}
+                                        </button>
+                                        <button
+                                            onClick={() => openEditModal(user)}
+                                            className="text-blue-600 hover:text-blue-900 p-1"
+                                            title="Düzenle"
+                                            type="button"
+                                        >
+                                            <Edit className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                )
+                            },
+                        ] as Column<ExtendedTenantUser>[]}
+                        rowKey={(user) => String(user.id)}
+                        emptyText="Kullanıcı bulunamadı"
+                        striped
+                        hoverable
+                        size="medium"
+                        pagination={totalItems > 0 ? {
+                            current: page,
+                            pageSize: limit,
+                            total: totalItems,
+                            showSizeChanger: true,
+                            pageSizeOptions: [10, 25, 50],
+                            onChange: (p: number, s: number) => {
+                                setPage(p);
+                                if (s !== limit) { setLimit(s); setPage(1); }
+                            }
+                        } : undefined}
+                    />
                 </div>
             )}
 

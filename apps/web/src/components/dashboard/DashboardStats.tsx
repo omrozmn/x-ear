@@ -56,7 +56,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         <div
           key={card.key}
           onClick={() => onCardClick?.(card.key)}
-          className={`${card.color} rounded-2xl p-6 shadow-lg shadow-gray-100 transform transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer relative overflow-hidden group`}
+          className={`${card.color} bg-opacity-90 dark:bg-opacity-80 backdrop-blur-xl rounded-2xl p-6 shadow-lg shadow-gray-200/50 dark:shadow-none border border-white/20 dark:border-white/10 transform transition-all duration-300 hover:scale-[1.03] hover:shadow-xl cursor-pointer relative overflow-hidden group`}
           data-testid={`dashboard-widget-${card.key}`}
         >
           {/* Decorative background circle */}

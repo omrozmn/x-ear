@@ -18,8 +18,8 @@ export function AdminMobileHeader({ onMenuClick, title = 'Super Admin Panel' }: 
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 mobile-header">
-      <div className="flex items-center justify-between px-4 py-3">
+    <header className="sticky top-2 z-40 mx-2 mb-2 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50 shadow-sm rounded-xl mobile-header transition-all">
+      <div className="flex items-center justify-between px-3 py-2">
         {/* Left: Menu Button */}
         <button
           onClick={onMenuClick}

@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { Card, Button, DatePicker, Input } from '@x-ear/ui-web';
-import { ShoppingCart, Download, Search, FileText, ChevronLeft, ChevronRight, ChevronUp, ChevronDown as ChevronDownIcon, X, RefreshCw, Filter, CheckSquare, Square, CreditCard } from 'lucide-react';
+import { Card, Button, DatePicker, Input, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
+import { ShoppingCart, Download, Search, FileText, X, RefreshCw, Filter, CheckSquare, CreditCard, Square } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { useListSales } from '@/api/client/sales.client';
 import type { SaleRead } from '@/api/generated/schemas';
@@ -28,15 +29,6 @@ export function SalesPage() {
 
   const debouncedSearch = useDebounce(searchTerm, 300);
 
-  const handleSort = (field: string) => {
-    if (sortField === field) setSortDir((value) => value === 'asc' ? 'desc' : 'asc');
-    else { setSortField(field); setSortDir('asc'); }
-  };
-
-  const SortIcon = ({ field }: { field: string }) => {
-    if (sortField !== field) return <span className="ml-1 opacity-30">↕</span>;
-    return sortDir === 'asc' ? <ChevronUp className="inline w-3 h-3 ml-1" /> : <ChevronDownIcon className="inline w-3 h-3 ml-1" />;
-  };
 
   const { data, isLoading, isFetching, refetch } = useListSales({
     page: isMobile ? 1 : currentPage,
@@ -51,7 +43,6 @@ export function SalesPage() {
   }, [data]);
 
   const totalCount = data?.meta?.total ?? salesList.length;
-  const totalPages = data?.meta?.totalPages ?? (Math.ceil(totalCount / perPage) || 1);
   const hasMoreMobile = isMobile && salesList.length < totalCount;
 
   useEffect(() => {
@@ -197,10 +188,6 @@ export function SalesPage() {
     });
   };
 
-  const toggleSelectAll = () => {
-    if (selectedIds.size === sortedSales.length) setSelectedIds(new Set());
-    else setSelectedIds(new Set(sortedSales.map((sale) => String(sale.id))));
-  };
 
   const clearFilters = () => {
     setDateFrom(null);
@@ -374,77 +361,77 @@ export function SalesPage() {
 
       {isMobile ? renderMobileCards() : (
         <Card>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                <tr>
-                  <th className="px-3 py-3 w-10">
-                    <input data-allow-raw="true" type="checkbox" checked={sortedSales.length > 0 && selectedIds.size === sortedSales.length} onChange={toggleSelectAll} className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 accent-blue-600" />
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('patient')}>Hasta<SortIcon field="patient" /></th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('productName')}>Ürün<SortIcon field="productName" /></th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('finalAmount')}>Tutar<SortIcon field="finalAmount" /></th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('saleDate')}>Tarih<SortIcon field="saleDate" /></th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('status')}>Durum<SortIcon field="status" /></th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">İşlemler</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-                {sortedSales.map((sale) => (
-                  <tr key={sale.id} className={`hover:bg-gray-50 dark:hover:bg-gray-800 ${selectedIds.has(String(sale.id)) ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`}>
-                    <td className="px-3 py-4">
-                      <input data-allow-raw="true" type="checkbox" checked={selectedIds.has(String(sale.id))} onChange={() => toggleSelect(String(sale.id))} className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 accent-blue-600" />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900 dark:text-white">{getPatientName(sale) ?? <span className="text-gray-400">—</span>}</div>
-                      {sale.partyId && <div className="text-xs text-gray-400 dark:text-gray-500 font-mono mt-0.5">{sale.partyId.slice(0, 8)}</div>}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">{sale.productName || sale.brand || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-white">{formatCurrency(Number(sale.finalAmount || sale.totalAmount || 0), 'TRY')}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">{sale.saleDate ? formatDate(String(sale.saleDate)) : '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(sale.status as string)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <Button variant="ghost" size="sm" onClick={() => sale.partyId && navigate({ to: '/parties/$partyId', params: { partyId: sale.partyId } })}>Hasta Detayı</Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {sortedSales.length === 0 && (
-            <div className="text-center py-12">
-              <ShoppingCart className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Satış kaydı bulunamadı</h3>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Arama kriterlerinize uygun satış kaydı yok.</p>
-            </div>
-          )}
-
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Toplam {totalCount} kayıt</span>
-                <select
-                  data-allow-raw="true"
-                  value={perPage}
-                  onChange={(e) => { setPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                  className="text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                >
-                  <option value={10}>10 / sayfa</option>
-                  <option value={20}>20 / sayfa</option>
-                  <option value={50}>50 / sayfa</option>
-                  <option value={100}>100 / sayfa</option>
-                </select>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => setCurrentPage(1)} disabled={currentPage <= 1}>İlk</Button>
-                <Button variant="outline" size="sm" onClick={() => setCurrentPage((page) => Math.max(1, page - 1))} disabled={currentPage <= 1}><ChevronLeft size={16} />Önceki</Button>
-                <span className="text-sm text-gray-600 dark:text-gray-400 px-2">Sayfa {currentPage} / {totalPages}</span>
-                <Button variant="outline" size="sm" onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))} disabled={currentPage >= totalPages}>Sonraki<ChevronRight size={16} /></Button>
-                <Button variant="outline" size="sm" onClick={() => setCurrentPage(totalPages)} disabled={currentPage >= totalPages}>Son</Button>
-              </div>
-            </div>
-          )}
+          <DataTable<SaleRead>
+            data={sortedSales}
+            loading={isLoading}
+            rowKey={(sale) => String(sale.id)}
+            emptyText="Satış kaydı bulunamadı"
+            hoverable
+            striped
+            sortable
+            onSort={(key, dir) => {
+              if (dir) { setSortField(key); setSortDir(dir); }
+              else { setSortField(''); }
+            }}
+            rowSelection={{
+              selectedRowKeys: Array.from(selectedIds),
+              onChange: (keys) => setSelectedIds(new Set(keys.map(String))),
+            }}
+            pagination={{
+              current: currentPage,
+              pageSize: perPage,
+              total: totalCount,
+              showSizeChanger: true,
+              pageSizeOptions: [10, 20, 50, 100],
+              onChange: (p: number, ps: number) => { setCurrentPage(p); setPerPage(ps); },
+            }}
+            columns={[
+              {
+                key: 'patient',
+                title: 'Hasta',
+                sortable: true,
+                render: (_: unknown, sale: SaleRead) => (
+                  <div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">{getPatientName(sale) ?? <span className="text-gray-400">—</span>}</div>
+                    {sale.partyId && <div className="text-xs text-gray-400 dark:text-gray-500 font-mono mt-0.5">{sale.partyId.slice(0, 8)}</div>}
+                  </div>
+                ),
+              },
+              {
+                key: 'productName',
+                title: 'Ürün',
+                sortable: true,
+                render: (_: unknown, sale: SaleRead) => sale.productName || sale.brand || '-',
+              },
+              {
+                key: 'finalAmount',
+                title: 'Tutar',
+                sortable: true,
+                render: (_: unknown, sale: SaleRead) => (
+                  <span className="text-sm font-semibold">{formatCurrency(Number(sale.finalAmount || sale.totalAmount || 0), 'TRY')}</span>
+                ),
+              },
+              {
+                key: 'saleDate',
+                title: 'Tarih',
+                sortable: true,
+                render: (_: unknown, sale: SaleRead) => sale.saleDate ? formatDate(String(sale.saleDate)) : '-',
+              },
+              {
+                key: 'status',
+                title: 'Durum',
+                sortable: true,
+                render: (_: unknown, sale: SaleRead) => getStatusBadge(sale.status as string),
+              },
+              {
+                key: '_actions',
+                title: 'İşlemler',
+                render: (_: unknown, sale: SaleRead) => (
+                  <Button variant="ghost" size="sm" onClick={() => sale.partyId && navigate({ to: '/parties/$partyId', params: { partyId: sale.partyId } })}>Hasta Detayı</Button>
+                ),
+              },
+            ] as Column<SaleRead>[]}
+          />
         </Card>
       )}
 

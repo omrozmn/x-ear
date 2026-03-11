@@ -32,6 +32,7 @@ export function SalesTab({ filters }: SalesTabProps) {
     };
 
     type SaleRow = { brand: string; sales: number; revenue: number };
+    const financial = unwrapObject<ReportFinancial>(financialData);
 
     const salesRows = useMemo<SaleRow[]>(() => {
         if (!financial?.product_sales) return [];
@@ -75,8 +76,6 @@ export function SalesTab({ filters }: SalesTabProps) {
             </div>
         );
     }
-
-    const financial = unwrapObject<ReportFinancial>(financialData);
 
     return (
         <div className="space-y-6">

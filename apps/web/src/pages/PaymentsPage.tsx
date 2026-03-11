@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button } from '@x-ear/ui-web';
+import { Card, Button, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import { CreditCard, Calendar, DollarSign, Filter, Download, Search } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 
@@ -215,74 +216,23 @@ export function PaymentsPage() {
 
       {/* Payments Table */}
       <Card>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Fatura No
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Hasta
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Tutar
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Ödeme Yöntemi
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Tarih
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Durum
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  İşlemler
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredPayments.map((payment) => (
-                <tr key={payment.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                    {payment.invoiceNumber}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
-                    {payment.partyName}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-white">
-                    {formatCurrency(payment.amount, 'TRY')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
-                    {payment.paymentMethod}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
-                    {formatDate(payment.paymentDate)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {getStatusBadge(payment.status)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <Button variant="ghost" size="sm">
-                      Detay
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {filteredPayments.length === 0 && (
-          <div className="text-center py-12">
-            <CreditCard className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Ödeme bulunamadı</h3>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Arama kriterlerinize uygun ödeme kaydı yok.
-            </p>
-          </div>
-        )}
+        <DataTable<Payment>
+          data={filteredPayments}
+          loading={loading}
+          rowKey="id"
+          emptyText="Ödeme bulunamadı"
+          hoverable
+          striped
+          columns={[
+            { key: 'invoiceNumber', title: 'Fatura No', render: (_: unknown, p: Payment) => p.invoiceNumber },
+            { key: 'partyName', title: 'Hasta', render: (_: unknown, p: Payment) => p.partyName },
+            { key: 'amount', title: 'Tutar', render: (_: unknown, p: Payment) => <span className="font-semibold">{formatCurrency(p.amount, 'TRY')}</span> },
+            { key: 'paymentMethod', title: 'Ödeme Yöntemi', render: (_: unknown, p: Payment) => p.paymentMethod },
+            { key: 'paymentDate', title: 'Tarih', render: (_: unknown, p: Payment) => formatDate(p.paymentDate) },
+            { key: 'status', title: 'Durum', render: (_: unknown, p: Payment) => getStatusBadge(p.status) },
+            { key: '_actions', title: 'İşlemler', render: () => <Button variant="ghost" size="sm">Detay</Button> },
+          ] as Column<Payment>[]}
+        />
       </Card>
     </div>
   );

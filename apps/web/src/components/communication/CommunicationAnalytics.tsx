@@ -8,7 +8,8 @@ import {
   Download,
   RefreshCw
 } from 'lucide-react';
-import { Card, Button, Badge, Select } from '@x-ear/ui-web';
+import { Card, Button, Badge, Select, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import { listCommunicationStats } from '@/api/client/communications.client';
 
 interface CommunicationStats {
@@ -224,6 +225,80 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
     );
   };
 
+  const templateColumns: Column<TemplateUsage>[] = [
+    {
+      key: 'templateName',
+      title: 'Şablon Adı',
+      render: (_, t) => <div className="text-sm font-medium text-gray-900">{t.templateName}</div>,
+    },
+    {
+      key: 'category',
+      title: 'Kategori',
+      render: (_, t) => <Badge variant="secondary">{t.category}</Badge>,
+    },
+    {
+      key: 'usageCount',
+      title: 'Kullanım',
+      render: (_, t) => <span className="text-sm text-gray-900">{t.usageCount.toLocaleString('tr-TR')}</span>,
+    },
+    {
+      key: 'successRate',
+      title: 'Başarı Oranı',
+      render: (_, t) => <span className="text-sm text-gray-900">%{t.successRate.toFixed(1)}</span>,
+    },
+    {
+      key: '_performance',
+      title: 'Performans',
+      render: (_, t) => (
+        <div className="flex items-center">
+          <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
+            <div className="bg-green-600 h-2 rounded-full" style={{ width: `${t.successRate}%` }} />
+          </div>
+          <span className="text-sm text-gray-600">
+            {t.successRate > 95 ? 'Mükemmel' : t.successRate > 90 ? 'İyi' : t.successRate > 80 ? 'Orta' : 'Düşük'}
+          </span>
+        </div>
+      ),
+    },
+  ];
+
+  const campaignColumns: Column<CampaignPerformance>[] = [
+    {
+      key: 'campaignName',
+      title: 'Kampanya',
+      render: (_, c) => <div className="text-sm font-medium text-gray-900">{c.campaignName}</div>,
+    },
+    {
+      key: 'totalSent',
+      title: 'Gönderilen',
+      render: (_, c) => <span className="text-sm text-gray-900">{c.totalSent.toLocaleString('tr-TR')}</span>,
+    },
+    {
+      key: 'delivered',
+      title: 'Teslim Edilen',
+      render: (_, c) => <span className="text-sm text-gray-900">{c.delivered.toLocaleString('tr-TR')}</span>,
+    },
+    {
+      key: 'opened',
+      title: 'Açılan',
+      render: (_, c) => <span className="text-sm text-gray-900">{c.opened.toLocaleString('tr-TR')}</span>,
+    },
+    {
+      key: 'clicked',
+      title: 'Tıklanan',
+      render: (_, c) => <span className="text-sm text-gray-900">{c.clicked.toLocaleString('tr-TR')}</span>,
+    },
+    {
+      key: 'roi',
+      title: 'ROI',
+      render: (_, c) => (
+        <Badge variant={c.roi > 2 ? 'success' : c.roi > 1.5 ? 'warning' : 'secondary'}>
+          {c.roi.toFixed(1)}x
+        </Badge>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -370,62 +445,12 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Şablon Kullanım İstatistikleri</h3>
 
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Şablon Adı
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Kategori
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Kullanım
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Başarı Oranı
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Performans
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {templateUsage.map((template, index) => (
-                <tr key={index}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{template.templateName}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <Badge variant="secondary">{template.category}</Badge>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {template.usageCount.toLocaleString('tr-TR')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    %{template.successRate.toFixed(1)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
-                        <div
-                          className="bg-green-600 h-2 rounded-full"
-                          style={{ width: `${template.successRate}%` }}
-                        />
-                      </div>
-                      <span className="text-sm text-gray-600">
-                        {template.successRate > 95 ? 'Mükemmel' :
-                          template.successRate > 90 ? 'İyi' :
-                            template.successRate > 80 ? 'Orta' : 'Düşük'}
-                      </span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable<TemplateUsage>
+          data={templateUsage}
+          columns={templateColumns}
+          rowKey={(item) => item.templateName}
+          emptyText="Henüz şablon verisi yok"
+        />
       </Card>
 
       {/* Campaign Performance */}
@@ -444,58 +469,12 @@ export default function CommunicationAnalytics({ dateRange, onRefresh }: Communi
         </div>
 
         {/* Campaign Performance Table */}
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Kampanya
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Gönderilen
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Teslim Edilen
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Açılan
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tıklanan
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ROI
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {campaignPerformance.map((campaign, index) => (
-                <tr key={index}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{campaign.campaignName}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {campaign.totalSent.toLocaleString('tr-TR')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {campaign.delivered.toLocaleString('tr-TR')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {campaign.opened.toLocaleString('tr-TR')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {campaign.clicked.toLocaleString('tr-TR')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <Badge variant={campaign.roi > 2 ? 'success' : campaign.roi > 1.5 ? 'warning' : 'secondary'}>
-                      {campaign.roi.toFixed(1)}x
-                    </Badge>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable<CampaignPerformance>
+          data={campaignPerformance}
+          columns={campaignColumns}
+          rowKey={(item) => item.campaignName}
+          emptyText="Henüz kampanya verisi yok"
+        />
       </Card>
     </div>
   );

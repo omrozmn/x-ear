@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Input, Select, Textarea, Modal } from '@x-ear/ui-web';
+import { Button, Input, Select, Textarea, Modal, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import {
   Search,
   Plus,
@@ -432,6 +433,84 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
     return { color: 'text-green-600', label: 'Good' };
   };
 
+  const inventoryColumns: Column<InventoryItem>[] = [
+    {
+      key: '_item',
+      title: 'Item Details',
+      render: (_: unknown, item: InventoryItem) => (
+        <div className="space-y-1">
+          <div className="font-medium text-gray-900">{item.name}</div>
+          <div className="text-sm text-gray-600">{item.brand} - {item.model}</div>
+          <div className="text-xs text-gray-500">
+            {categoryOptions.find(c => c.value === item.category)?.label} &bull;
+            {typeOptions.find(t => t.value === item.type)?.label}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: '_stock',
+      title: 'Stock Status',
+      render: (_: unknown, item: InventoryItem) => {
+        const stockStatus = getStockStatus(item);
+        return (
+          <div className="space-y-1">
+            <div className="text-sm"><span className="font-medium">Available:</span> {item.availableStock}</div>
+            <div className="text-sm"><span className="font-medium">Assigned:</span> {item.assignedStock}</div>
+            <div className="text-sm"><span className="font-medium">On Trial:</span> {item.onTrialStock || 0}</div>
+            <div className="text-sm"><span className="font-medium">Defective:</span> {item.defectiveStock || 0}</div>
+            <div className="text-sm"><span className="font-medium">Total:</span> {item.totalStock}</div>
+            <div className={`text-xs font-medium ${stockStatus.color}`}>{stockStatus.label}</div>
+          </div>
+        );
+      },
+    },
+    {
+      key: '_pricing',
+      title: 'Pricing',
+      render: (_: unknown, item: InventoryItem) => (
+        <div className="space-y-1 text-sm">
+          <div><span className="font-medium">Price:</span> ₺{item.price.toLocaleString()}</div>
+          <div><span className="font-medium">List:</span> ₺{item.listPrice.toLocaleString()}</div>
+          <div><span className="font-medium">SGK:</span> ₺{item.sgkPrice.toLocaleString()}</div>
+        </div>
+      ),
+    },
+    {
+      key: '_warranty',
+      title: 'Warranty',
+      render: (_: unknown, item: InventoryItem) => (
+        <div className="text-sm">{item.warrantyPeriod} months</div>
+      ),
+    },
+    {
+      key: '_actions',
+      title: 'Actions',
+      align: 'center',
+      render: (_: unknown, item: InventoryItem) => (
+        <div className="flex justify-center gap-2">
+          <Button
+            onClick={() => startEdit(item)}
+            variant="outline"
+            size="sm"
+            disabled={saving}
+          >
+            <Edit className="w-4 h-4" />
+          </Button>
+          <Button
+            onClick={() => handleDeleteItem(item.id)}
+            variant="outline"
+            size="sm"
+            disabled={saving}
+            className="text-red-600 hover:text-red-700 hover:border-red-300"
+          >
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
   if (!isOpen) return null;
 
   return (
@@ -559,99 +638,13 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
                 </div>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="bg-gray-50">
-                      <th className="text-left p-3 font-medium border-b">Item Details</th>
-                      <th className="text-left p-3 font-medium border-b">Stock Status</th>
-                      <th className="text-left p-3 font-medium border-b">Pricing</th>
-                      <th className="text-left p-3 font-medium border-b">Warranty</th>
-                      <th className="text-center p-3 font-medium border-b">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredInventory.map((item) => {
-                      const stockStatus = getStockStatus(item);
-                      return (
-                        <tr key={item.id} className="border-b hover:bg-gray-50">
-                          <td className="p-3 border-b">
-                            <div className="space-y-1">
-                              <div className="font-medium text-gray-900">{item.name}</div>
-                              <div className="text-sm text-gray-600">{item.brand} - {item.model}</div>
-                              <div className="text-xs text-gray-500">
-                                {categoryOptions.find(c => c.value === item.category)?.label} •
-                                {typeOptions.find(t => t.value === item.type)?.label}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="p-3 border-b">
-                            <div className="space-y-1">
-                              <div className="text-sm">
-                                <span className="font-medium">Available:</span> {item.availableStock}
-                              </div>
-                              <div className="text-sm">
-                                <span className="font-medium">Assigned:</span> {item.assignedStock}
-                              </div>
-                              <div className="text-sm">
-                                <span className="font-medium">On Trial:</span> {item.onTrialStock || 0}
-                              </div>
-                              <div className="text-sm">
-                                <span className="font-medium">Defective:</span> {item.defectiveStock || 0}
-                              </div>
-                              <div className="text-sm">
-                                <span className="font-medium">Total:</span> {item.totalStock}
-                              </div>
-                              <div className={`text-xs font-medium ${stockStatus.color}`}>
-                                {stockStatus.label}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="p-3 border-b">
-                            <div className="space-y-1 text-sm">
-                              <div><span className="font-medium">Price:</span> ₺{item.price.toLocaleString()}</div>
-                              <div><span className="font-medium">List:</span> ₺{item.listPrice.toLocaleString()}</div>
-                              <div><span className="font-medium">SGK:</span> ₺{item.sgkPrice.toLocaleString()}</div>
-                            </div>
-                          </td>
-                          <td className="p-3 border-b">
-                            <div className="text-sm">
-                              {item.warrantyPeriod} months
-                            </div>
-                          </td>
-                          <td className="p-3 border-b">
-                            <div className="flex justify-center gap-2">
-                              <Button
-                                onClick={() => startEdit(item)}
-                                variant="outline"
-                                size="sm"
-                                disabled={saving}
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                onClick={() => handleDeleteItem(item.id)}
-                                variant="outline"
-                                size="sm"
-                                disabled={saving}
-                                className="text-red-600 hover:text-red-700 hover:border-red-300"
-                              >
-                                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-
-                {filteredInventory.length === 0 && !loading && (
-                  <div className="text-center py-8 text-gray-500">
-                    {inventory.length === 0 ? 'No inventory items found.' : 'No items match your search criteria.'}
-                  </div>
-                )}
-              </div>
+              <DataTable<InventoryItem>
+                data={filteredInventory}
+                columns={inventoryColumns}
+                rowKey={(item) => item.id}
+                loading={false}
+                emptyText={inventory.length === 0 ? 'No inventory items found.' : 'No items match your search criteria.'}
+              />
             )}
 
             {/* Add/Edit Item Modal */}

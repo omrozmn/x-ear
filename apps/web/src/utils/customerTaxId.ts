@@ -29,3 +29,12 @@ export const normalizeCustomerTaxIdFields = <T extends object>(source: T & Custo
     customerTcNumber,
   };
 };
+
+export const normalizeCustomerTaxIdChange = (
+  field: 'customerTaxId' | 'customerTaxNumber' | 'customerTcNumber',
+  value: string,
+): Required<CustomerTaxIdState> => normalizeCustomerTaxIdFields({
+  customerTaxId: field === 'customerTaxId' ? value : '',
+  customerTaxNumber: field === 'customerTaxNumber' ? value : '',
+  customerTcNumber: field === 'customerTcNumber' ? value : '',
+});

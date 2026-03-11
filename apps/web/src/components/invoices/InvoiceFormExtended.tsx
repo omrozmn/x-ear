@@ -35,7 +35,7 @@ import { getAutoCurrency } from '../../utils/currencyManager';
 import { ProductLinesSection } from './ProductLinesSection';
 import { InvoiceProfileDetailsCard } from './InvoiceProfileDetailsCard';
 import { useGetTenantCompany } from '@/api/client/tenant-users.client';
-import { normalizeCustomerTaxIdFields } from '../../utils/customerTaxId';
+import { normalizeCustomerTaxIdFields, normalizeCustomerTaxIdChange } from '../../utils/customerTaxId';
 import { customInstance } from '@/api/orval-mutator';
 
 type InvoicePrefixSettingsResponse = {
@@ -91,6 +91,8 @@ interface InvoiceFormState {
 
   // Helper fields
   customerLabel?: CustomerLabelData;
+  receiverTag?: string;
+  senderTag?: string;
   governmentExemptionReason?: string;
 
   // Extended typed fields
@@ -186,6 +188,8 @@ export function InvoiceFormExtended({
     totalDiscount: initialData?.totalDiscount ?? invoice?.totalDiscount ?? 0,
     customerId: invoice?.customerId || '',
     customerName: invoice?.customerName || '',
+    customerFirstName: (initialData?.customerFirstName as string | undefined) || '',
+    customerLastName: (initialData?.customerLastName as string | undefined) || '',
     customerTaxId: (initialData?.customerTaxId as string | undefined) || invoice?.customerTaxNumber || '',
     subtotal: invoice?.subtotal ?? 0,
     totalAmount: invoice?.totalAmount ?? invoice?.grandTotal ?? 0,
@@ -213,6 +217,8 @@ export function InvoiceFormExtended({
       totalDiscount: initialData.totalDiscount ?? prev.totalDiscount,
       items: (hasItems ? initialData.items : prev.items) as InvoiceItem[],
       sgkData: (initialData.sgkData as SGKInvoiceData | undefined) || prev.sgkData,
+      customerFirstName: (initialData.customerFirstName as string) || prev.customerFirstName,
+      customerLastName: (initialData.customerLastName as string) || prev.customerLastName,
       customerName: (initialData.customerName as string) || prev.customerName,
       customerId: (initialData.customerId as string) || prev.customerId,
       customerTaxId: (initialData.customerTaxId as string) || prev.customerTaxId,
@@ -283,11 +289,7 @@ export function InvoiceFormExtended({
       if (field === 'customerTaxId' || field === 'customerTaxNumber' || field === 'customerTcNumber') {
         return {
           ...prev,
-          ...normalizeCustomerTaxIdFields({
-            customerTaxId: field === 'customerTaxId' ? value as string : prev.customerTaxId,
-            customerTaxNumber: field === 'customerTaxNumber' ? value as string : prev.customerTaxNumber,
-            customerTcNumber: field === 'customerTcNumber' ? value as string : prev.customerTcNumber,
-          }),
+          ...normalizeCustomerTaxIdChange(field, String(value || '')),
         };
       }
       return { ...prev, [field]: value };
@@ -299,11 +301,7 @@ export function InvoiceFormExtended({
         onDataChange('scenarioData', value);
         onDataChange('scenario', val?.scenario || 'other');
       } else if (field === 'customerTaxId' || field === 'customerTaxNumber' || field === 'customerTcNumber') {
-        const normalized = normalizeCustomerTaxIdFields({
-          customerTaxId: field === 'customerTaxId' ? value as string : extendedData.customerTaxId,
-          customerTaxNumber: field === 'customerTaxNumber' ? value as string : extendedData.customerTaxNumber,
-          customerTcNumber: field === 'customerTcNumber' ? value as string : extendedData.customerTcNumber,
-        });
+        const normalized = normalizeCustomerTaxIdChange(field, String(value || ''));
         onDataChange('customerTaxId', normalized.customerTaxId);
         onDataChange('customerTaxNumber', normalized.customerTaxNumber);
         onDataChange('customerTcNumber', normalized.customerTcNumber);
@@ -311,7 +309,7 @@ export function InvoiceFormExtended({
         onDataChange(field, value);
       }
     }
-  }, [extendedData.customerTaxId, extendedData.customerTaxNumber, extendedData.customerTcNumber, onDataChange]);
+  }, [onDataChange]);
 
   // SGK fatura türü seçildiğinde otomatik ürün ekle (sadece items boşsa ve firma tipi işitme merkezi ise)
   useEffect(() => {
@@ -554,8 +552,9 @@ export function InvoiceFormExtended({
                         <CustomerSectionCompact
                           isSGK={extendedData.invoiceType === '14'}
                           customerId={extendedData.customerId}
-                          customerFirstName={(extendedData.customerName || '').split(' ')[0] || ''}
-                          customerLastName={(extendedData.customerName || '').split(' ').slice(1).join(' ') || ''}
+                          customerName={extendedData.customerName || ''}
+                          customerFirstName={extendedData.customerFirstName || ''}
+                          customerLastName={extendedData.customerLastName || ''}
                           customerTcNumber={extendedData.customerTcNumber || ''}
                           customerTaxNumber={extendedData.customerTaxNumber || ''}
                           customerTaxId={extendedData.customerTaxId || ''}
@@ -934,6 +933,7 @@ export function InvoiceFormExtended({
             // Map top-level specialized data
             taxOffice: (typeof extendedData.customerAddress === 'object' && extendedData.customerAddress ? (extendedData.customerAddress as unknown as Record<string, unknown>)?.taxOffice as string | undefined : undefined) ||
               (typeof extendedData.billingAddress === 'object' && extendedData.billingAddress ? (extendedData.billingAddress as unknown as Record<string, unknown>)?.taxOffice as string | undefined : undefined),
+            receiverTag: typeof extendedData.receiverTag === 'string' ? extendedData.receiverTag : undefined,
             returnReferenceNumber: extendedData.returnInvoiceDetails?.returnInvoiceNumber,
             returnReferenceDate: extendedData.returnInvoiceDetails?.returnInvoiceDate,
             sgkData: extendedData.sgkData,
@@ -952,6 +952,9 @@ export function InvoiceFormExtended({
               returnInvoiceDetails: extendedData.returnInvoiceDetails,
               withholdingData: extendedData.withholdingData,
               profileDetails: extendedData.profileDetails,
+              customerLabel: extendedData.customerLabel,
+              receiverTag: typeof extendedData.receiverTag === 'string' ? extendedData.receiverTag : undefined,
+              senderTag: typeof extendedData.senderTag === 'string' ? extendedData.senderTag : undefined,
             }
           };
           onSubmit(submissionData);

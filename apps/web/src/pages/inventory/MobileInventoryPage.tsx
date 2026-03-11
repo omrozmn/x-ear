@@ -12,6 +12,7 @@ import { toast } from 'react-hot-toast';
 import { Modal, Button } from '@x-ear/ui-web';
 import { InventoryForm } from '@/components/inventory/InventoryForm';
 import { useNewActionStore } from '@/stores/newActionStore';
+import type { InventoryItem as InventoryFormItem } from '@/types/inventory';
 
 interface InventoryItem {
     id: string;
@@ -302,7 +303,7 @@ export const MobileInventoryPage: React.FC = () => {
             >
                 {selectedItem && (
                     <InventoryForm
-                        item={selectedItem as any}
+                        item={selectedItem as unknown as InventoryFormItem}
                         onSave={() => {
                             setSelectedItem(null);
                             handleRefresh();

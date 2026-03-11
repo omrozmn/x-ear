@@ -85,7 +85,7 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
         URL.revokeObjectURL(revokedUrl);
       }
     };
-  }, [currentUrl]);
+  }, [currentUrl, label]);
 
   const handleFileSelect = async (file: File) => {
     if (!file.type.startsWith('image/')) {

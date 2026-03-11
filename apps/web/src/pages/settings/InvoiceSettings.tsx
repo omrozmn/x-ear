@@ -1,20 +1,23 @@
 import { useState, useEffect } from 'react';
 import { Loader2, Save, Plus, Trash2, AlertCircle, Hash } from 'lucide-react';
-import { Button, Input, useToastHelpers } from '@x-ear/ui-web';
+import { Button, Input, Select, useToastHelpers } from '@x-ear/ui-web';
 import { useAuthStore } from '@/stores/authStore';
 import { useGetCurrentTenant, useUpdateTenantSettings } from '@/api/generated';
 import { GOVERNMENT_EXEMPTION_REASONS } from '@/constants/governmentInvoiceConstants';
 import { useQueryClient } from '@tanstack/react-query';
+import { apiClient } from '@/api/orval-mutator';
 
 // Type definitions for tenant settings structure
 interface InvoiceIntegrationSettings {
     useManualNumbering?: boolean;
     invoicePrefix?: string;
     invoicePrefixes?: string[];
+    defaultSenderTag?: string;
     // Legacy snake_case support
     use_manual_numbering?: boolean;
     invoice_prefix?: string;
     invoice_prefixes?: string[];
+    default_sender_tag?: string;
 }
 
 interface TenantSettings {
@@ -41,6 +44,9 @@ export function InvoiceSettings() {
     const [defaultPrefix, setDefaultPrefix] = useState('XER');
     const [additionalPrefixes, setAdditionalPrefixes] = useState<string[]>([]);
     const [defaultExemptionCode, setDefaultExemptionCode] = useState('');
+    const [senderTags, setSenderTags] = useState<Array<{ value: string; label: string; type?: string }>>([]);
+    const [senderTagsLoading, setSenderTagsLoading] = useState(false);
+    const [defaultSenderTag, setDefaultSenderTag] = useState('');
     const { success: showSuccessToast, error: showErrorToast } = useToastHelpers();
     const { user } = useAuthStore();
     const queryClient = useQueryClient();
@@ -91,6 +97,7 @@ export function InvoiceSettings() {
             
             setDefaultPrefix(prefix);
             setDefaultExemptionCode(companyInfo.defaultExemptionCode || '');
+            setDefaultSenderTag(invoiceSettings.defaultSenderTag || invoiceSettings.default_sender_tag || '');
 
             // Load additional prefixes (excluding default)
             const allPrefixes = invoiceSettings.invoicePrefixes || invoiceSettings.invoice_prefixes || [];
@@ -107,6 +114,31 @@ export function InvoiceSettings() {
             setAdditionalPrefixes(additional);
         }
     }, [tenantData]);
+
+    useEffect(() => {
+        let isMounted = true;
+        const loadSenderTags = async () => {
+            setSenderTagsLoading(true);
+            try {
+                const response = await apiClient.get<{ data?: Array<{ value: string; label: string; type?: string }> }>('/api/birfatura/sender-tags');
+                if (!isMounted) return;
+                setSenderTags(response.data?.data ?? []);
+            } catch (error) {
+                console.error('❌ Failed to load sender tags:', error);
+                if (isMounted) {
+                    setSenderTags([]);
+                }
+            } finally {
+                if (isMounted) {
+                    setSenderTagsLoading(false);
+                }
+            }
+        };
+        void loadSenderTags();
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     const handleSave = async () => {
         if (!isTenantAdmin) {
@@ -158,6 +190,7 @@ export function InvoiceSettings() {
                         use_manual_numbering: true,
                         invoice_prefix: defaultPrefix,
                         invoice_prefixes: uniquePrefixes,
+                        default_sender_tag: defaultSenderTag || undefined,
                     },
                 },
                 companyInfo: {
@@ -180,6 +213,7 @@ export function InvoiceSettings() {
                                 useManualNumbering: true,
                                 invoicePrefix: defaultPrefix,
                                 invoicePrefixes: uniquePrefixes,
+                                defaultSenderTag: defaultSenderTag || undefined,
                             },
                         },
                         companyInfo: {
@@ -211,6 +245,7 @@ export function InvoiceSettings() {
                 if (savedSettings) {
                     const savedPrefix = savedSettings.invoicePrefix || savedSettings.invoice_prefix || defaultPrefix;
                     setDefaultPrefix(savedPrefix);
+                    setDefaultSenderTag(savedSettings.defaultSenderTag || savedSettings.default_sender_tag || '');
                     
                     const savedPrefixes = savedSettings.invoicePrefixes || savedSettings.invoice_prefixes || [];
                     const additional = savedPrefixes.filter((p: string) => p !== savedPrefix);
@@ -410,6 +445,30 @@ export function InvoiceSettings() {
                             ))}
                         </div>
                     )}
+                </div>
+
+                <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <div className="mb-4">
+                        <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+                            Varsayılan Gönderici Etiketi
+                        </h4>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            BirFatura hesabınızda birden fazla GB etiketi varsa varsayılanı seçebilirsiniz.
+                        </p>
+                    </div>
+                    <Select
+                        value={defaultSenderTag}
+                        onChange={(e) => setDefaultSenderTag(e.target.value)}
+                        disabled={!isTenantAdmin || senderTagsLoading}
+                        options={[
+                            { value: '', label: senderTagsLoading ? 'Yükleniyor...' : 'Varsayılan etiketi seçiniz' },
+                            ...senderTags.map((tag) => ({
+                                value: tag.value,
+                                label: `${tag.label}${tag.type ? ` (${tag.type})` : ''}`,
+                            })),
+                        ]}
+                        className="max-w-2xl"
+                    />
                 </div>
             </div>
 

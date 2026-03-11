@@ -46,14 +46,14 @@ export const MobileDashboard: React.FC = () => {
                             {statCards.map((stat, idx) => (
                                 <div
                                     key={idx}
-                                    className={`${stat.color} p-4 rounded-2xl min-w-[160px] text-white shadow-lg snap-start flex flex-col justify-between h-32 active:scale-95 transition-transform duration-100`}
+                                    className={`${stat.color} bg-opacity-90 backdrop-blur-md border border-white/20 p-4 rounded-3xl min-w-[160px] text-white shadow-lg shadow-gray-200/50 dark:shadow-none snap-start flex flex-col justify-between h-32 active:scale-95 transition-all duration-200 ease-out`}
                                 >
                                     <div className="flex justify-between items-start">
-                                        <span className="p-2 bg-white/20 rounded-2xl">{stat.icon}</span>
+                                        <span className="p-2 bg-white/20 backdrop-blur-xl border border-white/10 rounded-2xl">{stat.icon}</span>
                                     </div>
                                     <div>
-                                        <p className="text-2xl font-bold">{stat.value}</p>
-                                        <p className="text-sm opacity-90">{stat.label}</p>
+                                        <p className="text-2xl font-bold tracking-tight">{stat.value}</p>
+                                        <p className="text-sm opacity-90 font-medium">{stat.label}</p>
                                     </div>
                                 </div>
                             ))}
@@ -72,9 +72,9 @@ export const MobileDashboard: React.FC = () => {
                                         navigate({ to: action.to });
                                         triggerSelection();
                                     }}
-                                    className="flex flex-col items-center gap-2 group active:scale-95 transition-transform duration-100"
+                                    className="flex flex-col items-center gap-2 group active:scale-95 transition-all duration-200"
                                 >
-                                    <div className={`${action.bg} ${action.text} p-4 rounded-2xl shadow-sm w-full aspect-square flex items-center justify-center group-hover:brightness-95 transition-all`}>
+                                    <div className={`${action.bg} ${action.text} bg-opacity-80 backdrop-blur-sm border border-white/40 dark:border-white/10 p-4 rounded-2xl shadow-sm w-full aspect-square flex items-center justify-center group-hover:brightness-95 transition-all`}>
                                         {action.icon}
                                     </div>
                                     <span className="text-xs font-medium text-gray-600 dark:text-gray-400 text-center leading-tight">
@@ -88,12 +88,12 @@ export const MobileDashboard: React.FC = () => {
                     {/* Recent Activity List */}
                     <section>
                         <h2 className="text-lg font-semibold mb-3 px-1 text-gray-900 dark:text-white">Son Aktiviteler</h2>
-                        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800">
+                        <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl shadow-sm overflow-hidden border border-gray-200/50 dark:border-gray-700/50">
                             {recentActivity && recentActivity.length > 0 ? (
-                                <div className="divide-y divide-gray-100">
+                                <div className="divide-y divide-gray-200/30 dark:divide-gray-700/30">
                                     {recentActivity.map((activity: { description?: string; timestamp?: string; user?: string }, idx: number) => (
-                                        <div key={idx} className="p-4 flex gap-3 active:bg-gray-50 dark:active:bg-gray-800 transition-colors">
-                                            <div className="h-10 w-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+                                        <div key={idx} className="p-4 flex gap-3 hover:bg-white/40 dark:hover:bg-gray-700/40 active:bg-gray-100/50 dark:active:bg-gray-800/50 transition-colors cursor-pointer">
+                                            <div className="h-10 w-10 rounded-2xl bg-gray-100/80 dark:bg-gray-800/80 flex items-center justify-center flex-shrink-0 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
                                                 <Clock className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                                             </div>
                                             <div className="flex-1 min-w-0">

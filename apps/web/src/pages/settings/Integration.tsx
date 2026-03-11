@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Loader2, CheckCircle, AlertCircle, X, FileText, Upload, Trash2, Eye, CreditCard, ExternalLink, MessageSquare, Download, Receipt } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle, X, FileText, Upload, Trash2, Eye, CreditCard, ExternalLink, MessageSquare, Download, Receipt, Zap } from 'lucide-react';
 import {
     useListSmConfig,
     useListSmHeaders,
@@ -20,6 +20,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { customInstance } from '@/api/orval-mutator';
 import { PosSettings } from './PosSettings';
 import { InvoiceSettings } from './InvoiceSettings';
+import { AutomationSettings } from './AutomationSettings';
 import { extractErrorMessage } from '@/utils/error-utils';
 
 interface SmsDocument {
@@ -237,6 +238,9 @@ export default function IntegrationSettings() {
                     </Tabs.Trigger>
                     <Tabs.Trigger value="pos" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'pos' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
                         <div className="flex items-center gap-2"><CreditCard className="w-4 h-4" />Online Ödeme (POS)</div>
+                    </Tabs.Trigger>
+                    <Tabs.Trigger value="automation" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'automation' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                        <div className="flex items-center gap-2"><Zap className="w-4 h-4" />Otomasyon</div>
                     </Tabs.Trigger>
                 </Tabs.List>
                 <Tabs.Content value="sms" className="space-y-6">
@@ -532,6 +536,7 @@ export default function IntegrationSettings() {
                 </Tabs.Content>
                 <Tabs.Content value="invoice"><InvoiceSettings /></Tabs.Content>
                 <Tabs.Content value="pos"><PosSettings /></Tabs.Content>
+                <Tabs.Content value="automation"><AutomationSettings /></Tabs.Content>
             </Tabs.Root>
 
             <Dialog.Root open={!!previewDoc} onOpenChange={() => setPreviewDoc(null)}>

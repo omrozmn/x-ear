@@ -341,3 +341,88 @@ def get_segment_usage(
     except Exception as e:
         logger.error(f"Get segment usage error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# --- Automation Settings ---
+
+class AutomationSettingsResponse(BaseModel):
+    auto_add_suppliers: bool = False
+    auto_add_invoice_products: bool = False
+    auto_update_stock: bool = False
+
+class AutomationSettingsUpdate(BaseModel):
+    auto_add_suppliers: bool | None = None
+    auto_add_invoice_products: bool | None = None
+    auto_update_stock: bool | None = None
+
+AUTOMATION_KEYS = [
+    'auto_add_suppliers',
+    'auto_add_invoice_products',
+    'auto_update_stock',
+]
+
+@router.get("/settings/automation", operation_id="getAutomationSettings", response_model=ResponseEnvelope[AutomationSettingsResponse])
+def get_automation_settings(
+    db_session: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access())
+):
+    """Get automation settings for current tenant"""
+    from core.models.integration_config import IntegrationConfig
+
+    configs = db_session.query(IntegrationConfig).filter(
+        IntegrationConfig.tenant_id == access.tenant_id,
+        IntegrationConfig.integration_type == 'automation',
+        IntegrationConfig.config_key.in_(AUTOMATION_KEYS)
+    ).all()
+
+    result = {}
+    for c in configs:
+        result[c.config_key] = c.config_value == 'true'
+
+    return ResponseEnvelope(data=AutomationSettingsResponse(**result))
+
+@router.put("/settings/automation", operation_id="updateAutomationSettings", response_model=ResponseEnvelope[AutomationSettingsResponse])
+def update_automation_settings(
+    payload: AutomationSettingsUpdate = Body(...),
+    db_session: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access())
+):
+    """Update automation settings for current tenant"""
+    from core.models.integration_config import IntegrationConfig
+
+    updates = payload.model_dump(exclude_unset=True)
+    for key, value in updates.items():
+        if key not in AUTOMATION_KEYS:
+            continue
+        existing = db_session.query(IntegrationConfig).filter(
+            IntegrationConfig.tenant_id == access.tenant_id,
+            IntegrationConfig.integration_type == 'automation',
+            IntegrationConfig.config_key == key
+        ).first()
+        if existing:
+            existing.config_value = 'true' if value else 'false'
+        else:
+            new_config = IntegrationConfig(
+                integration_type='automation',
+                config_key=key,
+                config_value='true' if value else 'false',
+                tenant_id=access.tenant_id,
+                is_active=True,
+                description=f'Automation: {key}'
+            )
+            db_session.add(new_config)
+
+    db_session.commit()
+
+    # Return current state
+    configs = db_session.query(IntegrationConfig).filter(
+        IntegrationConfig.tenant_id == access.tenant_id,
+        IntegrationConfig.integration_type == 'automation',
+        IntegrationConfig.config_key.in_(AUTOMATION_KEYS)
+    ).all()
+
+    result = {}
+    for c in configs:
+        result[c.config_key] = c.config_value == 'true'
+
+    return ResponseEnvelope(data=AutomationSettingsResponse(**result))

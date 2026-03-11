@@ -301,8 +301,9 @@ def _build_access_from_token(
         role=user.role,
         permissions=permissions,
         is_authenticated=True,
-        is_admin=(user.role.upper() in ("ADMIN", "SUPER_ADMIN")),
-        is_super_admin=(user.role.upper() == "SUPER_ADMIN"),
+        # Tenant-side ADMIN is a tenant admin, not a platform/admin principal.
+        is_admin=False,
+        is_super_admin=False,
         is_tenant_admin=(user.role.upper() in ("TENANT_ADMIN", "ADMIN", "SUPER_ADMIN")),
         is_impersonating=is_impersonating_tenant,  # Set impersonation flag
         claims=payload

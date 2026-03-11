@@ -13,7 +13,8 @@ import {
 } from '@/api/client/activity-logs.client';
 import { useExecuteToolApiAiComposerExecutePost } from '@/api/client/ai-composer.client';
 import type { ActivityLogRead, ExecuteResponse, ListActivityLogsParams } from '@/api/generated/schemas';
-import { Button, Input, Select } from '@x-ear/ui-web';
+import { Button, Input, Select, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 
 // Extended interface to cover properties present in API response but missing from current schema
 interface ExtendedActivityLogRead extends ActivityLogRead {
@@ -202,6 +203,86 @@ export default function ActivityLogsPage() {
     const pagination = logsResponse?.meta;
     const options = filterOptions;
 
+    const activityColumns: Column<ExtendedActivityLogRead>[] = [
+        {
+            key: '_critical',
+            title: '',
+            render: (_, log) => log.isCritical ? (
+                <span title="Kritik İşlem"><AlertTriangle className="w-4 h-4 text-red-500" /></span>
+            ) : null,
+        },
+        {
+            key: 'createdAt',
+            title: 'Tarih',
+            render: (_, log) => (
+                <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400 whitespace-nowrap text-xs">
+                    <Calendar className="w-3 h-3" />
+                    {log.createdAt ? new Date(String(log.createdAt)).toLocaleString('tr-TR') : '-'}
+                </div>
+            ),
+        },
+        {
+            key: 'user',
+            title: 'Kullanıcı',
+            render: (_, log) => (
+                <div>
+                    <p className="font-medium text-gray-900 dark:text-white truncate max-w-[150px]">{log.userName || '-'}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">{log.userEmail}</p>
+                </div>
+            ),
+        },
+        {
+            key: 'action',
+            title: 'Aksiyon',
+            render: (_, log) => (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200">{log.action}</span>
+            ),
+        },
+        {
+            key: 'message',
+            title: 'Mesaj',
+            render: (_, log) => (
+                <span className="text-gray-600 dark:text-gray-400 max-w-[250px] truncate block" title={log.message ?? undefined}>{log.message || '-'}</span>
+            ),
+        },
+        {
+            key: 'ipAddress',
+            title: 'IP',
+            render: (_, log) => (
+                <span className="text-xs text-gray-400 dark:text-gray-500 font-mono">{log.ipAddress}</span>
+            ),
+        },
+        {
+            key: '_actions',
+            title: '',
+            render: (_, log) => (
+                <div className="flex items-center gap-1">
+                    {log.action === 'TOPLU_YUKLEME' && log.data?.batch_id && !log.data?.rolled_back ? (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRollback(String(log.data!.batch_id))}
+                            className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                            title="Bu Toplu Yüklemeyi Geri Al"
+                            disabled={isRollingBack}
+                        >
+                            {isRollingBack ? <Loader2 className="w-4 h-4 animate-spin" /> : <span className="text-xs font-semibold select-none flex items-center gap-1"> Geri Al</span>}
+                        </Button>
+                    ) : null}
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedLog(log)}
+                        className="p-1.5"
+                        title="Detay"
+                    >
+                        <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                    </Button>
+                </div>
+            ),
+        },
+    ];
+
     return (
         <div className="p-6 max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-8">
@@ -275,141 +356,21 @@ export default function ActivityLogsPage() {
 
             {/* Table */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                {isLoading ? (
-                    <div className="p-8 flex justify-center">
-                        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-                    </div>
-                ) : (
-                    <>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm">
-                                <thead className="bg-gray-50 dark:bg-gray-900/50 text-gray-500 dark:text-gray-400 border-b dark:border-gray-700">
-                                    <tr>
-                                        <th className="px-4 py-3 font-medium w-10"></th>
-                                        <th className="px-4 py-3 font-medium">Tarih</th>
-                                        <th className="px-4 py-3 font-medium">Kullanıcı</th>
-                                        <th className="px-4 py-3 font-medium">Aksiyon</th>
-                                        <th className="px-4 py-3 font-medium">Mesaj</th>
-                                        <th className="px-4 py-3 font-medium">IP</th>
-                                        <th className="px-4 py-3 font-medium w-10"></th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                    {logs.map((log) => (
-                                        <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                                            <td className="px-4 py-3">
-                                                {log.isCritical && (
-                                                    <span title="Kritik İşlem">
-                                                        <AlertTriangle className="w-4 h-4 text-red-500" />
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-3 text-gray-500 dark:text-gray-400 whitespace-nowrap text-xs">
-                                                <div className="flex items-center gap-1">
-                                                    <Calendar className="w-3 h-3" />
-                                                    {log.createdAt ? new Date(String(log.createdAt)).toLocaleString('tr-TR') : '-'}
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <p className="font-medium text-gray-900 dark:text-white truncate max-w-[150px]">
-                                                    {log.userName || '-'}
-                                                </p>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
-                                                    {log.userEmail}
-                                                </p>
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200">
-                                                    {log.action}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-3 text-gray-600 dark:text-gray-400 max-w-[250px] truncate" title={log.message ?? undefined}>
-                                                {log.message || '-'}
-                                            </td>
-                                            <td className="px-4 py-3 text-xs text-gray-400 dark:text-gray-500 font-mono">
-                                                {log.ipAddress}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <div className="flex items-center gap-1">
-                                                    {log.action === 'TOPLU_YUKLEME' && log.data?.batch_id && !log.data?.rolled_back ? (
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => handleRollback(String(log.data!.batch_id))}
-                                                            className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                                            title="Bu Toplu Yüklemeyi Geri Al"
-                                                            disabled={isRollingBack}
-                                                        >
-                                                            {isRollingBack ? <Loader2 className="w-4 h-4 animate-spin" /> : <span className="text-xs font-semibold select-none flex items-center gap-1"> Geri Al</span>}
-                                                        </Button>
-                                                    ) : null}
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => setSelectedLog(log)}
-                                                        className="p-1.5"
-                                                        title="Detay"
-                                                    >
-                                                        <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                                                    </Button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    {logs.length === 0 && (
-                                        <tr>
-                                            <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                                                <FileText className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-                                                <p>Kayıt bulunamadı.</p>
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {/* Pagination */}
-                        {pagination && (pagination.total ?? 0) > 0 && (
-                            <div className="px-4 py-3 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex items-center justify-between">
-                                <div className="text-sm text-gray-500 dark:text-gray-400">
-                                    Toplam {pagination.total} kayıt, Sayfa {page}/{pagination.totalPages ?? 1}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => setPage(p => Math.max(1, p - 1))}
-                                        disabled={page === 1}
-                                    >
-                                        Önceki
-                                    </Button>
-                                    <Select
-                                        value={String(perPage)}
-                                        onChange={(e) => {
-                                            setPerPage(Number(e.target.value));
-                                            setPage(1);
-                                        }}
-                                        options={[
-                                            { value: '10', label: '10' },
-                                            { value: '20', label: '20' },
-                                            { value: '50', label: '50' },
-                                            { value: '100', label: '100' }
-                                        ]}
-                                        className="w-20"
-                                    />
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => setPage(p => Math.min(pagination.totalPages ?? 1, p + 1))}
-                                        disabled={page >= (pagination.totalPages ?? 1)}
-                                    >
-                                        Sonraki
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-                    </>
-                )}
+                <DataTable<ExtendedActivityLogRead>
+                    data={logs}
+                    columns={activityColumns}
+                    loading={isLoading}
+                    rowKey="id"
+                    emptyText="Kayıt bulunamadı."
+                    pagination={pagination ? {
+                        current: page,
+                        pageSize: perPage,
+                        total: pagination.total ?? 0,
+                        showSizeChanger: true,
+                        pageSizeOptions: [10, 20, 50, 100],
+                        onChange: (p, ps) => { setPage(p); setPerPage(ps); },
+                    } : undefined}
+                />
             </div>
 
             {/* Detail Modal */}

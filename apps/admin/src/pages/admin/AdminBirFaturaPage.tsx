@@ -12,7 +12,8 @@ import {
     Clock,
     RefreshCw,
 } from 'lucide-react';
-import Pagination from '../../components/ui/Pagination';
+import { DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 import {
     type BirFaturaLogEntry,
@@ -258,108 +259,138 @@ const AdminBirFaturaPage: React.FC = () => {
                     )}
                 </div>
 
-                <div className={isMobile ? '' : 'overflow-x-auto'}>
+                <div>
                     {activeTab === 'logs' ? (
-                        <table className="w-full text-left text-sm">
-                            <thead className="bg-gray-50 text-gray-500">
-                                <tr>
-                                    <th className="px-6 py-3 font-medium">Tarih</th>
-                                    <th className="px-6 py-3 font-medium">İşlem</th>
-                                    <th className="px-6 py-3 font-medium">Kullanıcı</th>
-                                    <th className="px-6 py-3 font-medium">Mesaj</th>
-                                    <th className="px-6 py-3 font-medium">Detay</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200">
-                                {logsLoading ? (
-                                    <tr><td colSpan={5} className="p-8 text-center">Yükleniyor...</td></tr>
-                                ) : logs.map((log) => (
-                                    <tr key={log.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 text-gray-500">
-                                            {log.createdAt ? new Date(log.createdAt).toLocaleString('tr-TR') : '-'}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                                {log.action}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-gray-900">{log.userName || 'Sistem'}</td>
-                                        <td className="px-6 py-4 text-gray-600">{log.message}</td>
-                                        <td className="px-6 py-4">
-                                            <button className="text-blue-600 hover:text-blue-800 text-xs font-medium">
-                                                Görüntüle
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                        <DataTable<BirFaturaLogEntry>
+                            data={logs}
+                            loading={logsLoading}
+                            rowKey={(log) => String(log.id)}
+                            emptyText="Log bulunamadı"
+                            striped
+                            hoverable
+                            size="small"
+                            columns={[
+                                {
+                                    key: 'createdAt',
+                                    title: 'Tarih',
+                                    render: (_: unknown, log: BirFaturaLogEntry) =>
+                                        log.createdAt ? new Date(log.createdAt).toLocaleString('tr-TR') : '-',
+                                },
+                                {
+                                    key: 'action',
+                                    title: 'İşlem',
+                                    render: (_: unknown, log: BirFaturaLogEntry) => (
+                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+                                            {log.action}
+                                        </span>
+                                    ),
+                                },
+                                {
+                                    key: 'userName',
+                                    title: 'Kullanıcı',
+                                    render: (_: unknown, log: BirFaturaLogEntry) => (log.userName as string) || 'Sistem',
+                                },
+                                {
+                                    key: 'message',
+                                    title: 'Mesaj',
+                                    render: (_: unknown, log: BirFaturaLogEntry) => log.message as string,
+                                },
+                                {
+                                    key: '_actions',
+                                    title: 'Detay',
+                                    render: () => (
+                                        <button className="text-blue-600 hover:text-blue-800 text-xs font-medium">
+                                            Görüntüle
+                                        </button>
+                                    ),
+                                },
+                            ] as Column<BirFaturaLogEntry>[]}
+                            pagination={pagination ? {
+                                current: page,
+                                pageSize: pagination.limit,
+                                total: pagination.total,
+                                onChange: (p: number) => setPage(p),
+                            } : undefined}
+                        />
                     ) : (
-                        <table className="w-full text-left text-sm">
-                            <thead className="bg-gray-50 text-gray-500">
-                                <tr>
-                                    <th className="px-6 py-3 font-medium">Fatura No</th>
-                                    <th className="px-6 py-3 font-medium">Tarih</th>
-                                    <th className="px-6 py-3 font-medium">
-                                        {activeTab === 'outgoing' ? 'Alıcı' : 'Gönderici'}
-                                    </th>
-                                    <th className="px-6 py-3 font-medium">Tutar</th>
-                                    <th className="px-6 py-3 font-medium">Durum</th>
-                                    <th className="px-6 py-3 font-medium">ETTN</th>
-                                    <th className="px-6 py-3 font-medium">İşlem</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200">
-                                {invoicesLoading ? (
-                                    <tr><td colSpan={7} className="p-8 text-center">Yükleniyor...</td></tr>
-                                ) : invoices.map((inv) => (
-                                    <tr key={inv.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 font-medium text-gray-900">
-                                            {inv.invoiceNumber || '-'}
-                                        </td>
-                                        <td className="px-6 py-4 text-gray-500">
-                                            {new Date(inv.invoiceDate || inv.createdAt || Date.now()).toLocaleDateString('tr-TR')}
-                                        </td>
-                                        <td className="px-6 py-4 text-gray-700">
-                                            {activeTab === 'outgoing'
-                                                ? (inv.patientName || inv.receiverName || '-')
-                                                : (inv.senderName || '-')}
-                                        </td>
-                                        <td className="px-6 py-4 font-medium">
-                                            {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: inv.currency || 'TRY' }).format(inv.totalAmount || inv.devicePrice || 0)}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${(inv.edocumentStatus === 'approved' || inv.status === 'RECEIVED') ? 'bg-green-100 text-green-800' :
-                                                (inv.edocumentStatus === 'rejected' || inv.status === 'error') ? 'bg-red-100 text-red-800' :
-                                                    'bg-yellow-100 text-yellow-800'
-                                                }`}>
-                                                {activeTab === 'outgoing' ? inv.edocumentStatus : inv.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-xs font-mono text-gray-500">
+                        <DataTable<BirFaturaInvoiceView>
+                            data={invoices}
+                            loading={invoicesLoading}
+                            rowKey={(inv) => inv.id}
+                            emptyText="Fatura bulunamadı"
+                            striped
+                            hoverable
+                            size="small"
+                            columns={[
+                                {
+                                    key: 'invoiceNumber',
+                                    title: 'Fatura No',
+                                    render: (_: unknown, inv: BirFaturaInvoiceView) => inv.invoiceNumber || '-',
+                                },
+                                {
+                                    key: 'invoiceDate',
+                                    title: 'Tarih',
+                                    render: (_: unknown, inv: BirFaturaInvoiceView) =>
+                                        new Date(inv.invoiceDate || inv.createdAt || Date.now()).toLocaleDateString('tr-TR'),
+                                },
+                                {
+                                    key: '_party',
+                                    title: activeTab === 'outgoing' ? 'Alıcı' : 'Gönderici',
+                                    render: (_: unknown, inv: BirFaturaInvoiceView) =>
+                                        activeTab === 'outgoing'
+                                            ? (inv.patientName || inv.receiverName || '-')
+                                            : (inv.senderName || '-'),
+                                },
+                                {
+                                    key: 'totalAmount',
+                                    title: 'Tutar',
+                                    render: (_: unknown, inv: BirFaturaInvoiceView) =>
+                                        new Intl.NumberFormat('tr-TR', { style: 'currency', currency: inv.currency || 'TRY' })
+                                            .format(inv.totalAmount || inv.devicePrice || 0),
+                                },
+                                {
+                                    key: '_status',
+                                    title: 'Durum',
+                                    render: (_: unknown, inv: BirFaturaInvoiceView) => (
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                            (inv.edocumentStatus === 'approved' || inv.status === 'RECEIVED')
+                                                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                                                : (inv.edocumentStatus === 'rejected' || inv.status === 'error')
+                                                ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                                                : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                        }`}>
+                                            {activeTab === 'outgoing' ? inv.edocumentStatus : inv.status}
+                                        </span>
+                                    ),
+                                },
+                                {
+                                    key: 'ettn',
+                                    title: 'ETTN',
+                                    render: (_: unknown, inv: BirFaturaInvoiceView) => (
+                                        <span className="text-xs font-mono text-gray-500">
                                             {inv.ettn || inv.birfaturaUuid || '-'}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <button className="text-blue-600 hover:text-blue-800 font-medium text-xs">
-                                                Detay
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                        </span>
+                                    ),
+                                },
+                                {
+                                    key: '_detail',
+                                    title: 'İşlem',
+                                    render: () => (
+                                        <button className="text-blue-600 hover:text-blue-800 font-medium text-xs">
+                                            Detay
+                                        </button>
+                                    ),
+                                },
+                            ] as Column<BirFaturaInvoiceView>[]}
+                            pagination={pagination ? {
+                                current: page,
+                                pageSize: pagination.limit,
+                                total: pagination.total,
+                                onChange: (p: number) => setPage(p),
+                            } : undefined}
+                        />
                     )}
                 </div>
-
-                {pagination && (
-                    <Pagination
-                        currentPage={page}
-                        totalPages={pagination.totalPages}
-                        totalItems={pagination.total}
-                        itemsPerPage={pagination.limit}
-                        onPageChange={setPage}
-                    />
-                )}
             </div>
         </div>
     );

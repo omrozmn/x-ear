@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Grid, List, Download, Trash2, Eye, Filter, RotateCcw, Clock, CheckCircle, AlertCircle, FileText } from 'lucide-react';
-import { Button, Input, Select, Checkbox } from '@x-ear/ui-web';
+import { Button, Input, Select, Checkbox, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import DocumentViewer from './DocumentViewer';
 import DocumentPreview from './DocumentPreview';
 import { SGKDocument, SGKDocumentType } from '../../types/sgk';
@@ -190,6 +191,88 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
       minute: '2-digit'
     });
   };
+
+  const documentColumns: Column<SGKDocument>[] = [
+    {
+      key: '_document',
+      title: 'Belge',
+      render: (_: unknown, document: SGKDocument) => (
+        <div className="flex items-center">
+          <FileText className="w-5 h-5 text-gray-400 mr-3" />
+          <div className="text-sm font-medium text-gray-900 truncate max-w-xs">
+            {document.filename}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: '_type',
+      title: 'Tür',
+      render: (_: unknown, document: SGKDocument) => (
+        <span className="text-sm text-gray-900">{getDocumentTypeLabel(document.documentType)}</span>
+      ),
+    },
+    {
+      key: '_status',
+      title: 'Durum',
+      render: (_: unknown, document: SGKDocument) => {
+        const statusInfo = getStatusInfo(document.processingStatus);
+        const StatusIcon = statusInfo.icon;
+        return (
+          <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${statusInfo.color}`}>
+            <StatusIcon className="w-3 h-3" />
+            {statusInfo.label}
+          </div>
+        );
+      },
+    },
+    {
+      key: '_size',
+      title: 'Boyut',
+      render: (_: unknown, document: SGKDocument) => (
+        <span className="text-sm text-gray-500">{formatFileSize(document.fileSize)}</span>
+      ),
+    },
+    {
+      key: '_date',
+      title: 'Tarih',
+      render: (_: unknown, document: SGKDocument) => (
+        <span className="text-sm text-gray-500">{formatDate(document.uploadedAt)}</span>
+      ),
+    },
+    {
+      key: '_actions',
+      title: 'İşlemler',
+      render: (_: unknown, document: SGKDocument) => (
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleViewDocument(document)}
+            className="text-blue-600 hover:text-blue-700"
+          >
+            <Eye className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleDownloadDocument(document)}
+            className="text-green-600 hover:text-green-700"
+          >
+            <Download className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handlePreviewDocument(document)}
+            className="text-purple-600 hover:text-purple-700"
+          >
+            <Search className="w-4 h-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-4">
@@ -534,115 +617,17 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
           })}
         </div>
       ) : (
-        /* List view */
-        <div className="bg-white border rounded-2xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <Checkbox
-                      checked={selectedDocuments.size === filteredDocuments.length}
-                      onChange={handleSelectAll}
-                    />
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Belge
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Tür
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Durum
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Boyut
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Tarih
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    İşlemler
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredDocuments.map((document) => {
-                  const statusInfo = getStatusInfo(document.processingStatus);
-                  const StatusIcon = statusInfo.icon;
-
-                  return (
-                    <tr
-                      key={document.id}
-                      className={`hover:bg-gray-50 ${selectedDocuments.has(document.id) ? 'bg-blue-50' : ''
-                        }`}
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <Checkbox
-                          checked={selectedDocuments.has(document.id)}
-                          onChange={() => handleSelectDocument(document.id)}
-                        />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <FileText className="w-5 h-5 text-gray-400 mr-3" />
-                          <div>
-                            <div className="text-sm font-medium text-gray-900 truncate max-w-xs">
-                              {document.filename}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {getDocumentTypeLabel(document.documentType)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${statusInfo.color}`}>
-                          <StatusIcon className="w-3 h-3" />
-                          {statusInfo.label}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatFileSize(document.fileSize)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(document.uploadedAt)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleViewDocument(document)}
-                            className="text-blue-600 hover:text-blue-700"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDownloadDocument(document)}
-                            className="text-green-600 hover:text-green-700"
-                          >
-                            <Download className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handlePreviewDocument(document)}
-                            className="text-purple-600 hover:text-purple-700"
-                          >
-                            <Search className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <DataTable<SGKDocument>
+          data={filteredDocuments}
+          columns={documentColumns}
+          rowKey={(doc) => doc.id}
+          loading={loading}
+          rowSelection={{
+            selectedRowKeys: Array.from(selectedDocuments),
+            onChange: (newKeys) => setSelectedDocuments(new Set(newKeys.map(String))),
+          }}
+          emptyText="Belge bulunamadı"
+        />
       )}
 
       {/* Document Viewer Modal */}

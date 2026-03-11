@@ -123,7 +123,7 @@ class InvoiceSyncService:
                 'pageSize': page_size,
             }
             
-            response = self.client.get_inbox_documents(params)
+            response = self.client.get_inbox_documents_with_detail(params)
             
             if not response.get('Success'):
                 logger.error(f"API Error: {response.get('Message')}")
@@ -138,9 +138,47 @@ class InvoiceSyncService:
                 break
             
             # Process each invoice
-            for invoice_data in invoices:
+            for raw_obj in invoices:
                 try:
-                    if self._process_incoming_invoice(tenant_id, invoice_data):
+                    # WithDetail wraps as {inBoxInvoice: {...}, jsonData: "..."}
+                    inbox_inv = raw_obj.get('inBoxInvoice', raw_obj)
+                    json_data_str = raw_obj.get('jsonData')
+                    
+                    parsed_detail = {}
+                    if json_data_str and isinstance(json_data_str, str):
+                        import json
+                        try:
+                            parsed_detail = json.loads(json_data_str)
+                        except Exception:
+                            pass
+                    elif isinstance(json_data_str, dict):
+                        parsed_detail = json_data_str
+                    
+                    # Process the invoice header (uses inBoxInvoice data)
+                    if self._process_incoming_invoice(tenant_id, inbox_inv):
+                        # Also extract and save line items from parsed detail
+                        if parsed_detail:
+                            birfatura_uuid = inbox_inv.get('UUID') or inbox_inv.get('uuid')
+                            inv = self.db.query(PurchaseInvoice).filter_by(
+                                birfatura_uuid=birfatura_uuid, tenant_id=tenant_id
+                            ).first()
+                            if inv:
+                                detail_items = extract_invoice_items(parsed_detail)
+                                for item_data in detail_items:
+                                    item = PurchaseInvoiceItem(
+                                        tenant_id=tenant_id,
+                                        purchase_invoice_id=inv.id,
+                                        product_code=item_data['product_code'],
+                                        product_name=item_data['product_name'],
+                                        product_description=item_data.get('product_description', ''),
+                                        quantity=item_data['quantity'],
+                                        unit=item_data['unit'],
+                                        unit_price=item_data['unit_price'],
+                                        tax_rate=item_data['tax_rate'],
+                                        tax_amount=item_data['tax_amount'],
+                                        line_total=item_data['line_total'],
+                                    )
+                                    self.db.add(item)
                         count += 1
                 except Exception as e:
                     logger.error(f"Error processing invoice: {e}")
@@ -154,6 +192,10 @@ class InvoiceSyncService:
             page += 1
         
         self.db.commit()
+        
+        # Run automation after sync
+        self._run_automation(tenant_id)
+        
         return count
     
     def _sync_outgoing_invoices(self, tenant_id: str, start_date: datetime, end_date: datetime) -> int:
@@ -298,6 +340,179 @@ class InvoiceSyncService:
         
         return True
     
+    def backfill_invoice_items(self, tenant_id: str, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None) -> Dict[str, int]:
+        """Re-fetch invoices with detail to populate missing invoice items."""
+        # Initialize client (same as sync_invoices)
+        tenant = self.db.get(Tenant, tenant_id)
+        if not tenant:
+            raise ValueError(f"Tenant {tenant_id} not found")
+
+        tenant_invoice_settings = (tenant.settings or {}).get('invoice_integration', {})
+        tenant_api_key = tenant_invoice_settings.get('api_key')
+        tenant_secret_key = tenant_invoice_settings.get('secret_key')
+
+        integration_key_config = self.db.query(IntegrationConfig).filter_by(
+            integration_type='birfatura',
+            config_key='integration_key'
+        ).first()
+        global_integration_key = integration_key_config.config_value if integration_key_config else None
+
+        mock_env = os.getenv('BIRFATURA_MOCK')
+        if mock_env == '1':
+            using_mock = True
+        elif mock_env == '0':
+            using_mock = False
+        else:
+            using_mock = os.getenv('ENVIRONMENT', 'production') != 'production'
+        if not using_mock and (not tenant_api_key or not tenant_secret_key or not global_integration_key):
+            raise ValueError("Missing BirFatura credentials.")
+
+        self.client = BirfaturaClient(
+            api_key=tenant_api_key,
+            secret_key=tenant_secret_key,
+            integration_key=global_integration_key
+        )
+        
+        if not end_date:
+            end_date = datetime.now(timezone.utc)
+        if not start_date:
+            start_date = end_date - timedelta(days=365)
+        
+        stats = {'updated': 0, 'skipped': 0, 'errors': 0}
+        page = 1
+        page_size = 50
+        
+        while True:
+            params = {
+                'systemType': 'EFATURA',
+                'startDateTime': start_date.isoformat(),
+                'endDateTime': end_date.isoformat(),
+                'documentType': 'INVOICE',
+                'pageNumber': page,
+                'pageSize': page_size,
+            }
+            
+            try:
+                response = self.client.get_inbox_documents_with_detail(params)
+            except Exception as e:
+                logger.error(f"Backfill API error page {page}: {e}")
+                stats['errors'] += 1
+                break
+            
+            if not response.get('Success'):
+                logger.error(f"Backfill API Error: {response.get('Message')}")
+                break
+            
+            result = response.get('Result', {})
+            inbox_invoices = result.get('InBoxInvoices', {})
+            invoices = inbox_invoices.get('objects', [])
+            
+            if not invoices:
+                break
+            
+            for raw_obj in invoices:
+                # WithDetail wraps each object as {inBoxInvoice: {...}, jsonData: "..."}
+                inbox_inv = raw_obj.get('inBoxInvoice', raw_obj)
+                json_data_str = raw_obj.get('jsonData')
+                
+                # Parse the jsonData string (UBL format with InvoiceLine)
+                parsed_detail = {}
+                if json_data_str and isinstance(json_data_str, str):
+                    try:
+                        import json
+                        parsed_detail = json.loads(json_data_str)
+                    except Exception:
+                        pass
+                elif isinstance(json_data_str, dict):
+                    parsed_detail = json_data_str
+                
+                birfatura_uuid = inbox_inv.get('UUID') or inbox_inv.get('uuid')
+                if not birfatura_uuid:
+                    continue
+                
+                existing = self.db.query(PurchaseInvoice).filter_by(
+                    birfatura_uuid=birfatura_uuid, tenant_id=tenant_id
+                ).first()
+                
+                if not existing:
+                    # New invoice — process with the inBoxInvoice data (flat format)
+                    try:
+                        if self._process_incoming_invoice(tenant_id, inbox_inv):
+                            # Also try to extract items from parsed_detail
+                            if parsed_detail:
+                                inv = self.db.query(PurchaseInvoice).filter_by(
+                                    birfatura_uuid=birfatura_uuid, tenant_id=tenant_id
+                                ).first()
+                                if inv:
+                                    detail_items = extract_invoice_items(parsed_detail)
+                                    for item_data in detail_items:
+                                        item = PurchaseInvoiceItem(
+                                            tenant_id=tenant_id,
+                                            purchase_invoice_id=inv.id,
+                                            product_code=item_data['product_code'],
+                                            product_name=item_data['product_name'],
+                                            product_description=item_data.get('product_description', ''),
+                                            quantity=item_data['quantity'],
+                                            unit=item_data['unit'],
+                                            unit_price=item_data['unit_price'],
+                                            tax_rate=item_data['tax_rate'],
+                                            tax_amount=item_data['tax_amount'],
+                                            line_total=item_data['line_total'],
+                                        )
+                                        self.db.add(item)
+                            stats['updated'] += 1
+                    except Exception as e:
+                        logger.error(f"Backfill new invoice error: {e}")
+                        stats['errors'] += 1
+                    continue
+                
+                # Check if it already has items
+                item_count = self.db.query(PurchaseInvoiceItem).filter_by(
+                    purchase_invoice_id=existing.id
+                ).count()
+                
+                if item_count > 0:
+                    stats['skipped'] += 1
+                    continue
+                
+                # Extract items from parsed UBL detail
+                try:
+                    items = extract_invoice_items(parsed_detail) if parsed_detail else []
+                    if items:
+                        for item_data in items:
+                            item = PurchaseInvoiceItem(
+                                tenant_id=tenant_id,
+                                purchase_invoice_id=existing.id,
+                                product_code=item_data['product_code'],
+                                product_name=item_data['product_name'],
+                                product_description=item_data.get('product_description', ''),
+                                quantity=item_data['quantity'],
+                                unit=item_data['unit'],
+                                unit_price=item_data['unit_price'],
+                                tax_rate=item_data['tax_rate'],
+                                tax_amount=item_data['tax_amount'],
+                                line_total=item_data['line_total'],
+                            )
+                            self.db.add(item)
+                        
+                        # Update raw_data with detailed version
+                        existing.raw_data = parsed_detail
+                        stats['updated'] += 1
+                        logger.info(f"Backfilled {len(items)} items for invoice {existing.invoice_number}")
+                    else:
+                        stats['skipped'] += 1
+                except Exception as e:
+                    logger.error(f"Backfill item extraction error for {birfatura_uuid}: {e}")
+                    stats['errors'] += 1
+            
+            total = inbox_invoices.get('total', 0)
+            if page * page_size >= total:
+                break
+            page += 1
+        
+        self.db.commit()
+        return stats
+
     def _process_outgoing_invoice(self, tenant_id: str, invoice_data: Dict[str, Any]) -> bool:
         """Process a single outgoing invoice (return/correction to supplier)"""
         # Similar to incoming but with invoice_type='OUTGOING'
@@ -392,3 +607,151 @@ class InvoiceSyncService:
             suggested.total_amount += amounts['total_amount']
             if invoice_date and (not suggested.last_invoice_date or invoice_date > suggested.last_invoice_date):
                 suggested.last_invoice_date = invoice_date
+
+    def _get_automation_settings(self, tenant_id: str) -> dict:
+        """Get automation settings for a tenant"""
+        configs = self.db.query(IntegrationConfig).filter(
+            IntegrationConfig.tenant_id == tenant_id,
+            IntegrationConfig.integration_type == 'automation',
+        ).all()
+        return {c.config_key: c.config_value == 'true' for c in configs}
+
+    def _run_automation(self, tenant_id: str):
+        """Run automation tasks based on tenant settings after invoice sync"""
+        try:
+            settings = self._get_automation_settings(tenant_id)
+            if not any(settings.values()):
+                return
+
+            if settings.get('auto_add_suppliers'):
+                self._auto_add_suppliers(tenant_id)
+
+            if settings.get('auto_add_invoice_products') or settings.get('auto_update_stock'):
+                self._auto_process_inventory(
+                    tenant_id,
+                    auto_add=settings.get('auto_add_invoice_products', False),
+                    auto_update=settings.get('auto_update_stock', False),
+                )
+
+            self.db.commit()
+        except Exception as e:
+            logger.error(f"Automation error for tenant {tenant_id}: {e}")
+
+    def _auto_add_suppliers(self, tenant_id: str):
+        """Auto-add suggested suppliers to the suppliers list"""
+        suggested_list = self.db.query(SuggestedSupplier).filter(
+            SuggestedSupplier.tenant_id == tenant_id,
+            SuggestedSupplier.status == 'PENDING',
+        ).all()
+
+        for suggested in suggested_list:
+            existing = self.db.query(Supplier).filter(
+                Supplier.tenant_id == tenant_id,
+                Supplier.tax_number == suggested.tax_number,
+            ).first()
+            if existing:
+                suggested.status = 'ADDED'
+                continue
+
+            new_supplier = Supplier(
+                tenant_id=tenant_id,
+                company_name=suggested.company_name,
+                tax_number=suggested.tax_number,
+                tax_office=suggested.tax_office,
+                address=suggested.address,
+                city=suggested.city,
+                is_active=True,
+            )
+            self.db.add(new_supplier)
+            self.db.flush()
+
+            suggested.status = 'ADDED'
+            # Link invoices to the new supplier
+            self.db.query(PurchaseInvoice).filter(
+                PurchaseInvoice.tenant_id == tenant_id,
+                PurchaseInvoice.sender_tax_number == suggested.tax_number,
+                PurchaseInvoice.supplier_id.is_(None),
+            ).update({'supplier_id': new_supplier.id, 'is_matched': True}, synchronize_session='fetch')
+
+        logger.info(f"Auto-added {len(suggested_list)} suppliers for tenant {tenant_id}")
+
+    def _auto_process_inventory(self, tenant_id: str, auto_add: bool, auto_update: bool):
+        """Auto-add invoice products to inventory and/or update stock"""
+        from core.models.inventory import InventoryItem
+
+        # Get invoice items that are not yet linked to inventory
+        unlinked_items = self.db.query(PurchaseInvoiceItem).filter(
+            PurchaseInvoiceItem.tenant_id == tenant_id,
+            PurchaseInvoiceItem.inventory_id.is_(None),
+        ).all()
+
+        added = 0
+        updated = 0
+
+        for item in unlinked_items:
+            if not item.product_name:
+                continue
+
+            # Try to find matching inventory item by name + supplier
+            invoice = self.db.query(PurchaseInvoice).filter_by(id=item.purchase_invoice_id).first()
+            supplier_name = invoice.sender_name if invoice else None
+
+            existing_inv = self.db.query(InventoryItem).filter(
+                InventoryItem.tenant_id == tenant_id,
+                InventoryItem.name == item.product_name,
+            ).first()
+
+            if existing_inv:
+                if auto_update:
+                    existing_inv.available_inventory = (existing_inv.available_inventory or 0) + int(item.quantity or 1)
+                    existing_inv.total_inventory = (existing_inv.total_inventory or 0) + int(item.quantity or 1)
+                    item.inventory_id = existing_inv.id
+                    updated += 1
+            elif auto_add:
+                # Parse brand/model from product name
+                brand, model = self._parse_brand_model(item.product_name)
+                from datetime import datetime as dt, timezone as tz
+                from uuid import uuid4
+                new_inv = InventoryItem(
+                    id=f"item_{dt.now(tz.utc).strftime('%d%m%Y%H%M%S')}_{uuid4().hex[:6]}",
+                    tenant_id=tenant_id,
+                    name=item.product_name,
+                    brand=brand,
+                    model=model,
+                    category='hearing_aid',
+                    supplier=supplier_name,
+                    unit=item.unit or 'Adet',
+                    price=float(item.unit_price or 0),
+                    cost=float(item.unit_price or 0),
+                    kdv_rate=float(item.tax_rate or 18),
+                    available_inventory=int(item.quantity or 1),
+                    total_inventory=int(item.quantity or 1),
+                    reorder_level=1,
+                    stock_code=item.product_code or None,
+                )
+                self.db.add(new_inv)
+                self.db.flush()
+                item.inventory_id = new_inv.id
+                added += 1
+
+        logger.info(f"Auto-inventory for tenant {tenant_id}: added={added}, updated={updated}")
+
+    KNOWN_BRANDS = [
+        'Phonak', 'Signia', 'Oticon', 'ReSound', 'Resound', 'Widex', 'Starkey',
+        'Unitron', 'Bernafon', 'Sonic', 'Hansaton', 'Rexton', 'Audio Service',
+        'Audifon', 'Beltone', 'Interton', 'Philips', 'Siemens', 'GN',
+        'Ear Teknik', 'Rayovac', 'Duracell', 'PowerOne', 'Power One',
+        'Sonova', 'WS Audiology', 'Demant', 'GN Hearing',
+    ]
+
+    def _parse_brand_model(self, product_name: str) -> tuple:
+        """Parse brand and model from product name"""
+        trimmed = product_name.strip()
+        lower = trimmed.lower()
+        sorted_brands = sorted(self.KNOWN_BRANDS, key=len, reverse=True)
+        for brand in sorted_brands:
+            if lower.startswith(brand.lower()):
+                rest = trimmed[len(brand):].strip().lstrip('-:').strip()
+                return brand, rest or trimmed
+        parts = trimmed.split(None, 1)
+        return parts[0] if parts else trimmed, parts[1] if len(parts) > 1 else trimmed

@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { Card, Button, DatePicker, Input, Select } from '@x-ear/ui-web';
-import { ShoppingCart, Download, Search, FileText, ChevronLeft, ChevronRight, X, ChevronUp, ChevronDown as ChevronDownIcon, RefreshCw, Filter, CheckSquare, Square, CreditCard } from 'lucide-react';
+import { Card, Button, DatePicker, Input, Select, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
+import { ShoppingCart, Download, Search, FileText, X, RefreshCw, Filter, CheckSquare, CreditCard, Square } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { useNavigate } from '@tanstack/react-router';
 import { useListIncomingInvoices } from '@/api/client/invoices.client';
@@ -32,16 +33,6 @@ export function PurchasesPage() {
 
   const debouncedSearch = useDebounce(searchTerm, 300);
 
-  const handleSort = (field: string) => {
-    if (sortField === field) setSortDir((value) => value === 'asc' ? 'desc' : 'asc');
-    else { setSortField(field); setSortDir('asc'); }
-  };
-
-  const SortIcon = ({ field }: { field: string }) => {
-    if (sortField !== field) return <span className="ml-1 opacity-30">↕</span>;
-    return sortDir === 'asc' ? <ChevronUp className="inline w-3 h-3 ml-1" /> : <ChevronDownIcon className="inline w-3 h-3 ml-1" />;
-  };
-
   const { data, isLoading, isFetching, refetch } = useListIncomingInvoices({
     page: isMobile ? 1 : currentPage,
     per_page: isMobile ? mobileVisibleCount : perPage,
@@ -54,7 +45,6 @@ export function PurchasesPage() {
   const invoiceList = useMemo(() => data?.data?.invoices ?? [], [data?.data?.invoices]);
   const pagination = data?.data?.pagination;
   const totalCount = pagination?.total ?? invoiceList.length;
-  const totalPages = pagination?.totalPages ?? 1;
   const hasMoreMobile = isMobile && invoiceList.length < totalCount;
 
   useEffect(() => {
@@ -134,11 +124,6 @@ export function PurchasesPage() {
       else next.add(id);
       return next;
     });
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedIds.size === sortedInvoices.length) setSelectedIds(new Set());
-    else setSelectedIds(new Set(sortedInvoices.map((invoice: IncomingInvoiceResponse) => String(invoice.invoiceId))));
   };
 
   const handleBulkExportCsv = useCallback(() => {
@@ -354,77 +339,77 @@ export function PurchasesPage() {
 
       {isMobile ? renderMobileCards() : (
         <Card>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                <tr>
-                  <th className="px-3 py-3 w-10">
-                    <input data-allow-raw="true" type="checkbox" checked={sortedInvoices.length > 0 && selectedIds.size === sortedInvoices.length} onChange={toggleSelectAll} className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 accent-blue-600" />
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('invoiceNumber')}>Fatura No<SortIcon field="invoiceNumber" /></th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('supplierName')}>Tedarikçi<SortIcon field="supplierName" /></th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('totalAmount')}>Tutar<SortIcon field="totalAmount" /></th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('invoiceDate')}>Tarih<SortIcon field="invoiceDate" /></th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200" onClick={() => handleSort('status')}>Durum<SortIcon field="status" /></th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">İşlemler</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-                {sortedInvoices.map((invoice: IncomingInvoiceResponse) => (
-                  <tr key={invoice.invoiceId} className={`hover:bg-gray-50 dark:hover:bg-gray-800 ${selectedIds.has(String(invoice.invoiceId)) ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`}>
-                    <td className="px-3 py-4">
-                      <input data-allow-raw="true" type="checkbox" checked={selectedIds.has(String(invoice.invoiceId))} onChange={() => toggleSelect(String(invoice.invoiceId))} className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 accent-blue-600" />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{invoice.invoiceNumber}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 dark:text-white">{invoice.supplierName}</div>
-                      {invoice.supplierTaxNumber && <div className="text-xs text-gray-500 dark:text-gray-400">VKN: {invoice.supplierTaxNumber}</div>}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-white">{formatCurrency(Number(invoice.totalAmount), invoice.currency || 'TRY')}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">{formatDate(invoice.invoiceDate)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(invoice.status)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <Button variant="ghost" size="sm" onClick={() => setSelectedInvoice(invoice)}>Detay</Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {invoiceList.length === 0 && (
-            <div className="text-center py-12">
-              <ShoppingCart className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Alış kaydı bulunamadı</h3>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Henüz gelen faturadan oluşturulmuş alış kaydı bulunmuyor.</p>
-            </div>
-          )}
-
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Toplam {totalCount} kayıt</span>
-                <select
-                  data-allow-raw="true"
-                  value={perPage}
-                  onChange={(e) => { setPerPage(Number(e.target.value)); setCurrentPage(1); }}
-                  className="text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                >
-                  <option value={10}>10 / sayfa</option>
-                  <option value={20}>20 / sayfa</option>
-                  <option value={50}>50 / sayfa</option>
-                  <option value={100}>100 / sayfa</option>
-                </select>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => setCurrentPage(1)} disabled={currentPage <= 1}>İlk</Button>
-                <Button variant="outline" size="sm" onClick={() => setCurrentPage((page) => Math.max(1, page - 1))} disabled={currentPage <= 1}><ChevronLeft size={16} />Önceki</Button>
-                <span className="text-sm text-gray-600 dark:text-gray-400 px-2">Sayfa {currentPage} / {totalPages}</span>
-                <Button variant="outline" size="sm" onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))} disabled={currentPage >= totalPages}>Sonraki<ChevronRight size={16} /></Button>
-                <Button variant="outline" size="sm" onClick={() => setCurrentPage(totalPages)} disabled={currentPage >= totalPages}>Son</Button>
-              </div>
-            </div>
-          )}
+          <DataTable<IncomingInvoiceResponse>
+            data={sortedInvoices}
+            loading={isLoading}
+            rowKey={(inv) => String(inv.invoiceId)}
+            emptyText="Alış kaydı bulunamadı"
+            hoverable
+            striped
+            sortable
+            onSort={(key, dir) => {
+              if (dir) { setSortField(key); setSortDir(dir); }
+              else { setSortField(''); }
+            }}
+            rowSelection={{
+              selectedRowKeys: Array.from(selectedIds),
+              onChange: (keys) => setSelectedIds(new Set(keys.map(String))),
+            }}
+            pagination={{
+              current: currentPage,
+              pageSize: perPage,
+              total: totalCount,
+              showSizeChanger: true,
+              pageSizeOptions: [10, 20, 50, 100],
+              onChange: (p: number, ps: number) => { setCurrentPage(p); setPerPage(ps); },
+            }}
+            columns={[
+              {
+                key: 'invoiceNumber',
+                title: 'Fatura No',
+                sortable: true,
+                render: (_: unknown, inv: IncomingInvoiceResponse) => inv.invoiceNumber,
+              },
+              {
+                key: 'supplierName',
+                title: 'Tedarikçi',
+                sortable: true,
+                render: (_: unknown, inv: IncomingInvoiceResponse) => (
+                  <div>
+                    <div className="text-sm text-gray-900 dark:text-white">{inv.supplierName}</div>
+                    {inv.supplierTaxNumber && <div className="text-xs text-gray-500 dark:text-gray-400">VKN: {inv.supplierTaxNumber}</div>}
+                  </div>
+                ),
+              },
+              {
+                key: 'totalAmount',
+                title: 'Tutar',
+                sortable: true,
+                render: (_: unknown, inv: IncomingInvoiceResponse) => (
+                  <span className="font-semibold">{formatCurrency(Number(inv.totalAmount), inv.currency || 'TRY')}</span>
+                ),
+              },
+              {
+                key: 'invoiceDate',
+                title: 'Tarih',
+                sortable: true,
+                render: (_: unknown, inv: IncomingInvoiceResponse) => formatDate(inv.invoiceDate),
+              },
+              {
+                key: 'status',
+                title: 'Durum',
+                sortable: true,
+                render: (_: unknown, inv: IncomingInvoiceResponse) => getStatusBadge(inv.status),
+              },
+              {
+                key: '_actions',
+                title: 'İşlemler',
+                render: (_: unknown, inv: IncomingInvoiceResponse) => (
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedInvoice(inv)}>Detay</Button>
+                ),
+              },
+            ] as Column<IncomingInvoiceResponse>[]}
+          />
         </Card>
       )}
 

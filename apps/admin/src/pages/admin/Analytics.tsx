@@ -24,11 +24,14 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { Helmet } from 'react-helmet-async';
+import { DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import {
   useGetAdminAnalytics,
   type AdminAnalyticsData,
   type AdminAnalyticsDataDomainMetrics,
   type ResponseEnvelopeAdminAnalyticsData,
+  type TopTenantItem,
 } from '@/lib/api-client';
 import { useAdminResponsive } from '@/hooks';
 import { unwrapData } from '@/lib/orval-response';
@@ -497,51 +500,44 @@ const Analytics: React.FC = () => {
             <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white">En İyi Performans Gösteren Aboneler</h3>
             </div>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-700">
-                  <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Abone
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Gelir
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Büyüme
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Kullanıcılar
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  {data?.topTenants.map((tenant) => (
-                    <tr key={tenant.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                        {tenant.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {formatCurrency(tenant.revenue || 0)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <div className={`flex items-center ${(tenant.growth || 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                          {(tenant.growth || 0) >= 0 ? (
-                            <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
-                          ) : (
-                            <ArrowTrendingDownIcon className="h-4 w-4 mr-1" />
-                          )}
-                          {Math.abs(tenant.growth || 0)}%
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {formatNumber(tenant.users || 0)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <DataTable<TopTenantItem>
+              data={data?.topTenants ?? []}
+              columns={[
+                { key: 'name', title: 'Abone', sortable: true },
+                {
+                  key: 'revenue',
+                  title: 'Gelir',
+                  sortable: true,
+                  render: (_: unknown, record: TopTenantItem) => formatCurrency(record.revenue || 0)
+                },
+                {
+                  key: 'growth',
+                  title: 'Büyüme',
+                  sortable: true,
+                  render: (_: unknown, record: TopTenantItem) => (
+                    <div className={`flex items-center ${(record.growth || 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                      {(record.growth || 0) >= 0 ? (
+                        <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
+                      ) : (
+                        <ArrowTrendingDownIcon className="h-4 w-4 mr-1" />
+                      )}
+                      {Math.abs(record.growth || 0)}%
+                    </div>
+                  )
+                },
+                {
+                  key: 'users',
+                  title: 'Kullanıcılar',
+                  sortable: true,
+                  render: (_: unknown, record: TopTenantItem) => formatNumber(record.users || 0)
+                },
+              ] as Column<TopTenantItem>[]}
+              rowKey="id"
+              emptyText="Veri bulunamadı"
+              striped
+              hoverable
+              size="medium"
+            />
           </div>
         )}
       </div>

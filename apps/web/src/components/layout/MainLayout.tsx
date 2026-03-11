@@ -97,7 +97,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const { isMobile, isTablet, isDesktop } = useBreakpoints();
 
   // Sidebar state from Zustand store
-  const { sidebarOpen, setSidebarOpen, toggleAiInbox } = useLayoutStore();
+  const { sidebarOpen, setSidebarOpen, toggleAiInbox, hideGlobalHeader } = useLayoutStore();
 
   // AI Status for header indicator
   const { data: aiStatus } = useAIStatus({ enabled: !!user });
@@ -138,7 +138,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="flex min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white">
+    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950 text-black dark:text-white">
       {/* New Sidebar Component */}
       <Sidebar
         isOpen={sidebarOpen}
@@ -158,11 +158,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <div className={cn(
         "flex-1 flex flex-col transition-[margin] duration-300 min-w-0",
         isMobile ? "ml-0" : (
-          isDesktop ? (sidebarOpen ? "ml-64" : "ml-16") : "ml-16"
+          isTablet ? "ml-16" : (sidebarOpen ? "ml-0 md:ml-64" : "ml-0 md:ml-16")
         )
       )}>
-        {/* Header */}
-        <header className="sticky top-0 z-40 px-3 sm:px-4 md:px-8 py-3 md:py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+        {/* Header - Modern Floating Glassmorphism Pill */}
+        {!hideGlobalHeader && (
+        <header className="sticky top-2 md:top-4 z-40 mx-2 md:mx-6 mb-2 md:mb-4 px-3 sm:px-4 md:px-6 py-2 md:py-3 bg-white/70 dark:bg-gray-800/70 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50 shadow-sm rounded-xl md:rounded-2xl transition-all">
           <div className="flex justify-between items-center gap-2 md:gap-4">
             {/* Mobile Menu Button */}
             {isMobile && (
@@ -316,6 +317,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             </div>
           </div>
         </header>
+        )}
 
         {/* Content */}
         <main className={cn(
@@ -370,7 +372,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
       <AIChatWidget />
 
-      {isMobile && <BottomNav />}
+      {isMobile && !hideGlobalHeader && <BottomNav />}
 
       <ComposerOverlay />
       <AIInboxDrawer />

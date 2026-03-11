@@ -9,12 +9,15 @@ import io
 import logging
 import os
 import re
+import ast
+import requests
 import uuid
 import zipfile
 from typing import Optional, Literal
 from datetime import datetime, date
 from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
 from core.database import get_db, unbound_session
@@ -26,9 +29,12 @@ from schemas.invoices_new import (
     ConvertToPurchaseRequest, ConvertToPurchaseResponse,
     InvoiceStatus, InvoiceSummaryStats,
     InvoiceActionResponse, InvoiceRejectRequest, InvoiceCancelRequest,
-    InvoiceDraftRequest, InvoiceDraftResponse
+    InvoiceDraftRequest, InvoiceDraftResponse,
+    SupplierInvoiceItemResponse, SupplierInvoiceItemsListResponse,
+    InvoiceProviderStatusResponse, InvoiceProviderActionResponse,
+    ReferenceCodeItemResponse, TaxOfficeItemResponse, RecipientCheckResponse,
 )
-from core.models.purchase_invoice import PurchaseInvoice
+from core.models.purchase_invoice import PurchaseInvoice, PurchaseInvoiceItem
 from core.models.tenant import Tenant
 from core.models.integration_config import IntegrationConfig
 from core.models.purchase import Purchase
@@ -37,6 +43,8 @@ from services.invoice_service_new import InvoiceServiceNew
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/invoices", tags=["invoices"])
+_REFERENCE_CACHE_TTL_SECONDS = 60 * 60 * 12
+_reference_cache: dict[str, tuple[datetime, object]] = {}
 
 
 def _resolve_tenant(access: UnifiedAccess) -> str:
@@ -50,6 +58,21 @@ def _resolve_tenant(access: UnifiedAccess) -> str:
     return tid
 
 
+def _reference_cache_get(key: str) -> object | None:
+    cached = _reference_cache.get(key)
+    if not cached:
+        return None
+    created_at, payload = cached
+    if (datetime.utcnow() - created_at).total_seconds() > _REFERENCE_CACHE_TTL_SECONDS:
+        _reference_cache.pop(key, None)
+        return None
+    return payload
+
+
+def _reference_cache_set(key: str, payload: object) -> None:
+    _reference_cache[key] = (datetime.utcnow(), payload)
+
+
 @router.get("/incoming", 
             operation_id="listIncomingInvoices",
             response_model=ResponseEnvelope[IncomingInvoiceListResponse])
@@ -59,7 +82,7 @@ def list_incoming_invoices(
     date_from: Optional[date] = Query(None, description="Filter from date"),
     date_to: Optional[date] = Query(None, description="Filter to date"),
     page: int = Query(1, ge=1, description="Page number"),
-    per_page: int = Query(50, ge=1, le=100, description="Items per page"),
+    per_page: int = Query(50, ge=1, le=500, description="Items per page"),
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access("invoices.view"))
 ):
@@ -88,6 +111,62 @@ def list_incoming_invoices(
     except Exception as e:
         logger.error(f"Error listing incoming invoices: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to retrieve incoming invoices")
+
+
+@router.get("/incoming/supplier-items",
+            operation_id="listSupplierInvoiceItems",
+            response_model=ResponseEnvelope[SupplierInvoiceItemsListResponse])
+def list_supplier_invoice_items(
+    supplier_name: str = Query(..., description="Supplier name to filter by"),
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access("invoices.view"))
+):
+    """
+    List all invoice items (ürünler) from a specific supplier's incoming invoices.
+    Returns individual line items with their parent invoice number.
+    """
+    try:
+        tenant_id = _resolve_tenant(access)
+
+        invoices = db.query(PurchaseInvoice).filter(
+            PurchaseInvoice.tenant_id == tenant_id,
+            PurchaseInvoice.invoice_type == 'INCOMING',
+            PurchaseInvoice.sender_name.ilike(f"%{supplier_name}%")
+        ).all()
+
+        items = []
+        for invoice in invoices:
+            for item in (invoice.items or []):
+                items.append(SupplierInvoiceItemResponse(
+                    id=item.id,
+                    purchase_invoice_id=invoice.id,
+                    invoice_number=invoice.invoice_number or f"INV-{invoice.id}",
+                    invoice_date=invoice.invoice_date,
+                    product_code=item.product_code,
+                    product_name=item.product_name,
+                    product_description=item.product_description,
+                    quantity=item.quantity,
+                    unit=item.unit,
+                    unit_price=item.unit_price,
+                    tax_rate=item.tax_rate or 18,
+                    tax_amount=item.tax_amount,
+                    line_total=item.line_total,
+                    inventory_id=item.inventory_id,
+                ))
+
+        return ResponseEnvelope(
+            success=True,
+            data=SupplierInvoiceItemsListResponse(
+                items=items,
+                total=len(items),
+                supplier_name=supplier_name
+            ),
+            message="Supplier invoice items retrieved successfully"
+        )
+
+    except Exception as e:
+        logger.error(f"Error listing supplier invoice items: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve supplier invoice items")
 
 
 @router.get("/outgoing",
@@ -244,11 +323,104 @@ def _decode_birfatura_content(content_b64: str) -> bytes:
         return raw  # Return as-is
 
 
+def _extract_provider_payload(response: dict) -> dict:
+    result = response.get("Result")
+    if isinstance(result, dict):
+        return result
+    if isinstance(response.get("Data"), dict):
+        return response["Data"]
+    return {}
+
+
+def _stringify_status(value: object) -> str:
+    if value is None:
+        return ""
+    return str(value).strip()
+
+
+def _is_retryable_status(status: str) -> bool:
+    normalized = status.upper()
+    retryable_tokens = ("REJECT", "ERROR", "FAIL", "RETURN", "IPTAL", "RED")
+    return any(token in normalized for token in retryable_tokens)
+
+
+def _normalize_provider_status(response: dict, fallback_status: str) -> tuple[str, str | None, str | None]:
+    result = _extract_provider_payload(response)
+    provider_status = (
+        _stringify_status(result.get("status"))
+        or _stringify_status(result.get("Status"))
+        or _stringify_status(result.get("durum"))
+        or _stringify_status(response.get("Result"))
+        or fallback_status
+    )
+    provider_code = (
+        _stringify_status(result.get("code"))
+        or _stringify_status(result.get("Code"))
+        or _stringify_status(result.get("statusCode"))
+        or _stringify_status(response.get("Code"))
+        or None
+    )
+    provider_message = (
+        _stringify_status(result.get("description"))
+        or _stringify_status(result.get("Description"))
+        or _stringify_status(response.get("Message"))
+        or None
+    )
+    return provider_status or fallback_status, provider_code, provider_message
+
+
 import json as _json
 
 
 def _pdf_escape(text: str) -> str:
     return re.sub(r"([()\\\\])", r"\\\1", text or "")
+
+
+def _normalize_invoice_type_code(value: object) -> str:
+    if isinstance(value, dict):
+        return str(value.get("Value") or value.get("value") or value.get("name") or value.get("code") or "").strip() or "SATIS"
+    if isinstance(value, str):
+        stripped = value.strip()
+        if not stripped:
+            return "SATIS"
+        if stripped.startswith("{") and "Value" in stripped:
+            try:
+                parsed = ast.literal_eval(stripped)
+            except Exception:
+                parsed = None
+            if isinstance(parsed, dict):
+                return _normalize_invoice_type_code(parsed)
+        return stripped
+    return str(value or "SATIS").strip() or "SATIS"
+
+
+def _get_provider_pdf_link_for_invoice(invoice: "PurchaseInvoice", tenant_id: str, db: Session, raw_data: dict[str, object] | None = None) -> str | None:
+    raw_data = raw_data or {}
+    provider_response = raw_data.get("_provider_response") if isinstance(raw_data, dict) else None
+    if isinstance(provider_response, dict):
+        cached_link = str(provider_response.get("pdfLink") or "").strip()
+        if cached_link:
+            return cached_link
+
+    is_real_birfatura_uuid = (
+        invoice.birfatura_uuid
+        and not str(invoice.birfatura_uuid).startswith("local-")
+        and not str(invoice.birfatura_uuid).startswith("draft-")
+    )
+    if not is_real_birfatura_uuid:
+        return None
+
+    client = _get_birfatura_client(tenant_id, db)
+    system_type_code = str(raw_data.get("systemType") or raw_data.get("systemTypeCode") or "EFATURA")
+    pdf_link_resp = client.get_pdf_link_by_uuid({
+        "uuids": [invoice.birfatura_uuid],
+        "systemType": system_type_code,
+    })
+    if not pdf_link_resp.get("Success"):
+        return None
+    pdf_links = pdf_link_resp.get("Result") or []
+    first_link = str(pdf_links[0]).strip() if pdf_links else ""
+    return first_link or None
 
 
 def _render_minimal_pdf(invoice: "PurchaseInvoice") -> bytes:
@@ -277,7 +449,7 @@ def _render_minimal_pdf(invoice: "PurchaseInvoice") -> bytes:
         f"Invoice No: {raw.get('InvoiceNo') or invoice.invoice_number or invoice.id}",
         f"Issue Date: {(raw.get('IssueDate') or str(invoice.invoice_date or ''))[:10]}",
         f"Customer: {customer_name}",
-        f"Type: {raw.get('InvoiceTypeCode') or raw.get('invoiceTypeCode') or ''}",
+        f"Type: {_normalize_invoice_type_code(raw.get('InvoiceTypeCode') or raw.get('invoiceTypeCode') or '')}",
     ]
     if first_line:
         text_lines.append(f"Item: {first_line}")
@@ -325,7 +497,7 @@ def _render_invoice_pdf(invoice: "PurchaseInvoice", tenant_id: str = None) -> by
         except Exception:
             raw = {}
 
-    inv_type = (
+    inv_type = _normalize_invoice_type_code(
         raw.get("InvoiceTypeCode")
         or raw.get("invoiceTypeCode")
         or raw.get("invoiceType")
@@ -374,6 +546,30 @@ def _render_invoice_pdf(invoice: "PurchaseInvoice", tenant_id: str = None) -> by
     supplier_addr = ", ".join(p for p in supplier_addr_parts if p)
 
     source_form = raw.get("_source_form_data") if isinstance(raw.get("_source_form_data"), dict) else {}
+    profile_details = raw.get("profile_details") if isinstance(raw.get("profile_details"), dict) else {}
+    if not profile_details:
+        profile_details = raw.get("profileDetails") if isinstance(raw.get("profileDetails"), dict) else {}
+    if not profile_details:
+        profile_details = source_form.get("profileDetails") if isinstance(source_form.get("profileDetails"), dict) else {}
+
+    buyer_customer = raw.get("buyer_customer") if isinstance(raw.get("buyer_customer"), dict) else {}
+    if not buyer_customer:
+        buyer_customer = raw.get("buyerCustomer") if isinstance(raw.get("buyerCustomer"), dict) else {}
+    if not buyer_customer and profile_details:
+        buyer_customer = {
+            "name": (
+                profile_details.get("passengerName")
+                or profile_details.get("patientName")
+                or ""
+            ),
+            "tax_id": (
+                profile_details.get("patientTaxId")
+                or ""
+            ),
+            "passport_no": profile_details.get("passengerPassportNo") or "",
+            "nationality": profile_details.get("passengerNationality") or "",
+        }
+
     customer_name = (
         raw.get("ReceiverName")
         or customer.get("name")
@@ -448,6 +644,8 @@ def _render_invoice_pdf(invoice: "PurchaseInvoice", tenant_id: str = None) -> by
             "name": customer_name,
             "tax_id": customer_vkn,
         },
+        "buyer_customer": buyer_customer,
+        "profile_details": profile_details,
         "lines": normalized_lines,
         "line_extension_amount": subtotal,
         "tax_total": tax_total,
@@ -606,7 +804,7 @@ def _render_invoice_html(invoice: "PurchaseInvoice") -> bytes:
 def get_invoice_document(
     invoice_id: int,
     format: Literal["pdf", "html", "xml"] = Query("pdf", description="Document format"),
-    render_mode: Literal["auto", "local", "remote"] = Query("auto", description="PDF rendering mode"),
+    render_mode: Literal["auto", "local", "remote", "direct"] = Query("auto", description="PDF rendering mode"),
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access("invoices.view"))
 ):
@@ -634,15 +832,58 @@ def get_invoice_document(
     in_out_code = "IN" if invoice.invoice_type == "INCOMING" else "OUT"
     ext_map = {"pdf": "PDF", "html": "HTML", "xml": "XML"}
     mime_map = {"pdf": "application/pdf", "html": "text/html", "xml": "application/xml"}
+    _is_real_birfatura_uuid = (
+        invoice.birfatura_uuid
+        and not str(invoice.birfatura_uuid).startswith("local-")
+        and not str(invoice.birfatura_uuid).startswith("draft-")
+    )
 
-    # HTML format: always render from stored raw_data (fast, no BirFatura round-trip)
+    # HTML format: render locally by default, provider-side when explicitly requested.
     if format == "html":
+        if render_mode == "remote":
+            try:
+                client = _get_birfatura_client(tenant_id, db)
+                xml_b64 = None
+                if _is_real_birfatura_uuid:
+                    xml_resp = client.document_download_by_uuid({
+                        "documentUUID": invoice.birfatura_uuid,
+                        "inOutCode": in_out_code,
+                        "systemTypeCodes": "EFATURA",
+                        "fileExtension": "XML"
+                    })
+                    xml_b64 = (xml_resp.get("Result") or {}).get("content")
+                elif local_xml:
+                    xml_b64 = base64.b64encode(local_xml.encode("utf-8")).decode("utf-8")
+
+                if xml_b64:
+                    preview_resp = client.preview_document_html({
+                        "documentBytes": xml_b64,
+                        "systemTypeCodes": "EFATURA"
+                    })
+                    html_zip_b64 = (preview_resp.get("Result") or {}).get("zipped")
+                    if html_zip_b64:
+                        content = _decode_birfatura_content(html_zip_b64)
+                        filename = f"{invoice.invoice_number or invoice_id}.html"
+                        return Response(content=content, media_type="text/html",
+                                        headers={"Content-Disposition": f'inline; filename="{filename}"'})
+            except Exception as e:
+                logger.warning("Remote HTML preview failed for invoice %s: %s", invoice_id, e)
         content = _render_invoice_html(invoice)
         filename = f"{invoice.invoice_number or invoice_id}.html"
         return Response(content=content, media_type="text/html",
                         headers={"Content-Disposition": f'inline; filename="{filename}"'})
 
     if format == "pdf":
+        provider_pdf_link = _get_provider_pdf_link_for_invoice(invoice, tenant_id, db, raw_data if isinstance(raw_data, dict) else {})
+        system_type_code = str(raw_data.get("systemType") or raw_data.get("systemTypeCode") or "EFATURA")
+
+        if render_mode == "direct" and _is_real_birfatura_uuid:
+            try:
+                if provider_pdf_link:
+                    return RedirectResponse(url=provider_pdf_link, status_code=307)
+            except Exception as e:
+                logger.warning("Direct PDF redirect failed for invoice %s: %s", invoice_id, e)
+
         if render_mode == "local":
             try:
                 content = _render_invoice_pdf(invoice, tenant_id)
@@ -659,12 +900,6 @@ def get_invoice_document(
 
         # 2-step: Download XML from BirFatura then convert to PDF via PreviewDocumentReturnPDF
         pdf_bytes = None
-        _is_real_birfatura_uuid = (
-            invoice.birfatura_uuid
-            and not str(invoice.birfatura_uuid).startswith("local-")
-            and not str(invoice.birfatura_uuid).startswith("draft-")
-        )
-
         # -- Step A: For local/draft invoices, use stored XML + PreviewDocumentReturnPDF --
         if not _is_real_birfatura_uuid and local_xml:
             try:
@@ -721,17 +956,41 @@ def get_invoice_document(
         if _is_real_birfatura_uuid:
             try:
                 client = _get_birfatura_client(tenant_id, db)
+                pdf_link_resp = client.get_pdf_link_by_uuid({
+                    "uuids": [invoice.birfatura_uuid],
+                    "systemType": system_type_code,
+                })
+                if pdf_link_resp.get("Success"):
+                    pdf_links = pdf_link_resp.get("Result") or []
+                    first_link = str(pdf_links[0]).strip() if pdf_links else ""
+                    if first_link:
+                        pdf_link_response = requests.get(first_link, timeout=30)
+                        pdf_link_response.raise_for_status()
+                        if pdf_link_response.content[:4] == b"%PDF":
+                            pdf_bytes = pdf_link_response.content
+                else:
+                    logger.warning(
+                        "GetPDFLinkByUUID failed for invoice %s: %s",
+                        invoice_id,
+                        pdf_link_resp.get("Message"),
+                    )
+            except Exception as e:
+                logger.warning(f"BirFatura direct PDF link failed for invoice {invoice_id}: {e}")
+
+        if _is_real_birfatura_uuid and not pdf_bytes:
+            try:
+                client = _get_birfatura_client(tenant_id, db)
                 xml_resp = client.document_download_by_uuid({
                     "documentUUID": invoice.birfatura_uuid,
                     "inOutCode": in_out_code,
-                    "systemTypeCodes": "EFATURA",
+                    "systemTypeCodes": system_type_code,
                     "fileExtension": "XML"
                 })
                 if xml_resp.get("Success") and xml_resp.get("Result", {}).get("content"):
                     xml_b64 = xml_resp["Result"]["content"]
                     preview_resp = client.preview_document_pdf({
                         "documentBytes": xml_b64,
-                        "systemTypeCodes": "EFATURA"
+                        "systemTypeCodes": system_type_code
                     })
                     if preview_resp.get("Success") and preview_resp.get("Result", {}).get("zipped"):
                         pdf_raw = base64.b64decode(preview_resp["Result"]["zipped"])
@@ -820,6 +1079,40 @@ def get_invoice_document(
     filename = f"{invoice.invoice_number or invoice_id}.{format}"
     headers = {"Content-Disposition": f'inline; filename="{filename}"'}
     return Response(content=content, media_type=mime_map[format], headers=headers)
+
+
+@router.get("/{invoice_id}/document-url", operation_id="getInvoiceDocumentUrl")
+def get_invoice_document_url(
+    invoice_id: int,
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access("invoices.view"))
+):
+    tenant_id = _resolve_tenant(access)
+    invoice = db.query(PurchaseInvoice).filter(
+        PurchaseInvoice.id == invoice_id,
+        PurchaseInvoice.tenant_id == tenant_id
+    ).first()
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+
+    raw_data = {}
+    if invoice.raw_data:
+        try:
+            raw_data = invoice.raw_data if isinstance(invoice.raw_data, dict) else _json.loads(invoice.raw_data)
+        except Exception:
+            raw_data = {}
+
+    try:
+        pdf_url = _get_provider_pdf_link_for_invoice(invoice, tenant_id, db, raw_data if isinstance(raw_data, dict) else {})
+    except Exception as exc:
+        logger.warning("Provider PDF URL lookup failed for invoice %s: %s", invoice_id, exc)
+        pdf_url = None
+
+    return ResponseEnvelope(data={
+        "invoiceId": invoice_id,
+        "pdfUrl": pdf_url,
+        "hasDirectUrl": bool(pdf_url),
+    })
 
 
 @router.post("/{invoice_id}/accept",
@@ -973,6 +1266,213 @@ def get_invoice_logs(
     except Exception as e:
         logger.error(f"Error fetching logs for invoice {invoice_id}: {e}")
         return ResponseEnvelope(success=True, data=[], message="Could not fetch logs")
+
+
+@router.get("/{invoice_id}/status",
+            operation_id="getInvoiceProviderStatus",
+            response_model=ResponseEnvelope[InvoiceProviderStatusResponse])
+def get_invoice_provider_status(
+    invoice_id: int,
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access("invoices.view"))
+):
+    """Get the latest BirFatura/GIB status for an invoice."""
+    tenant_id = _resolve_tenant(access)
+    invoice = db.query(PurchaseInvoice).filter(
+        PurchaseInvoice.id == invoice_id,
+        PurchaseInvoice.tenant_id == tenant_id
+    ).first()
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    if not invoice.birfatura_uuid:
+        raise HTTPException(status_code=400, detail="Invoice has no BirFatura UUID")
+
+    raw = {}
+    if invoice.raw_data:
+        try:
+            raw = invoice.raw_data if isinstance(invoice.raw_data, dict) else _json.loads(invoice.raw_data)
+        except Exception:
+            raw = {}
+
+    fallback_status = str(invoice.status or raw.get("Status") or "UNKNOWN")
+    in_out_code = "IN" if invoice.invoice_type == "INCOMING" else "OUT"
+    provider_status = fallback_status
+    provider_code = None
+    provider_message = None
+    provider_result = {}
+
+    try:
+        client = _get_birfatura_client(tenant_id, db)
+        response = client.get_envelope_status_from_gib({
+            "envelopeID": invoice.birfatura_uuid,
+            "inOutCode": in_out_code,
+        })
+        provider_result = _extract_provider_payload(response)
+        provider_status, provider_code, provider_message = _normalize_provider_status(response, fallback_status)
+    except Exception as e:
+        logger.warning("Failed to fetch provider status for invoice %s: %s", invoice_id, e)
+        provider_message = str(e)
+
+    current_status = provider_status or fallback_status
+    retryable = _is_retryable_status(current_status)
+
+    return ResponseEnvelope(
+        success=True,
+        data=InvoiceProviderStatusResponse(
+            invoiceId=invoice.id,
+            birfaturaUuid=invoice.birfatura_uuid,
+            envelopeId=invoice.birfatura_uuid,
+            inOutCode=in_out_code,
+            currentStatus=current_status,
+            providerStatusCode=provider_code,
+            providerMessage=provider_message,
+            retryable=retryable,
+            rawResult=provider_result or None,
+        ),
+        message="Provider status retrieved",
+    )
+
+
+@router.post("/{invoice_id}/retry-send",
+             operation_id="retryInvoiceProviderSend",
+             response_model=ResponseEnvelope[InvoiceProviderActionResponse])
+def retry_invoice_provider_send(
+    invoice_id: int,
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access("integration.birfatura.edit"))
+):
+    """Retry sending/re-enveloping an outgoing invoice on BirFatura."""
+    tenant_id = _resolve_tenant(access)
+    invoice = db.query(PurchaseInvoice).filter(
+        PurchaseInvoice.id == invoice_id,
+        PurchaseInvoice.tenant_id == tenant_id,
+        PurchaseInvoice.invoice_type == "OUTGOING",
+    ).first()
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Outgoing invoice not found")
+    if not invoice.birfatura_uuid:
+        raise HTTPException(status_code=400, detail="Invoice has no BirFatura UUID")
+
+    try:
+        client = _get_birfatura_client(tenant_id, db)
+        response = client.re_envelope_and_send({"uuid": invoice.birfatura_uuid})
+        if not response.get("Success"):
+            raise HTTPException(status_code=502, detail=response.get("Message", "BirFatura retry failed"))
+        return ResponseEnvelope(
+            success=True,
+            data=InvoiceProviderActionResponse(
+                invoiceId=invoice.id,
+                success=True,
+                message=response.get("Message") or "Belge yeniden gönderim kuyruğuna alındı",
+                providerResult=_extract_provider_payload(response) or response,
+            ),
+            message="Retry send queued",
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Error retrying invoice %s via BirFatura: %s", invoice_id, e)
+        raise HTTPException(status_code=502, detail="Failed to retry invoice via BirFatura")
+
+
+@router.get("/{invoice_id}/provider-detail",
+            operation_id="getInvoiceProviderDetail")
+def get_invoice_provider_detail(
+    invoice_id: int,
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access("invoices.view"))
+):
+    """Return provider-side outbox detail for an outgoing invoice."""
+    tenant_id = _resolve_tenant(access)
+    invoice = db.query(PurchaseInvoice).filter(
+        PurchaseInvoice.id == invoice_id,
+        PurchaseInvoice.tenant_id == tenant_id,
+        PurchaseInvoice.invoice_type == "OUTGOING",
+    ).first()
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Outgoing invoice not found")
+    if not invoice.birfatura_uuid:
+        raise HTTPException(status_code=400, detail="Invoice has no BirFatura UUID")
+
+    raw = {}
+    if invoice.raw_data:
+        try:
+            raw = invoice.raw_data if isinstance(invoice.raw_data, dict) else _json.loads(invoice.raw_data)
+        except Exception:
+            raw = {}
+    system_type = str(raw.get("systemType") or raw.get("systemTypeCode") or "EFATURA")
+
+    try:
+        client = _get_birfatura_client(tenant_id, db)
+        response = client.get_outbox_document_by_uuid({
+            "uuid": invoice.birfatura_uuid,
+            "systemType": system_type,
+        })
+        if not response.get("Success"):
+            raise HTTPException(status_code=502, detail=response.get("Message", "BirFatura outbox detail error"))
+        detail = response.get("Result") or []
+        return ResponseEnvelope(success=True, data=detail, message="Provider detail retrieved")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Error fetching provider detail for invoice %s: %s", invoice_id, e)
+        raise HTTPException(status_code=502, detail="Failed to fetch provider detail")
+
+
+@router.post("/{invoice_id}/mark-read",
+             operation_id="markIncomingInvoiceRead",
+             response_model=ResponseEnvelope[InvoiceProviderActionResponse])
+def mark_incoming_invoice_read(
+    invoice_id: int,
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access("invoices.view"))
+):
+    """Mark an incoming BirFatura invoice as read."""
+    tenant_id = _resolve_tenant(access)
+    invoice = db.query(PurchaseInvoice).filter(
+        PurchaseInvoice.id == invoice_id,
+        PurchaseInvoice.tenant_id == tenant_id,
+        PurchaseInvoice.invoice_type == "INCOMING",
+    ).first()
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Incoming invoice not found")
+    if not invoice.birfatura_uuid:
+        raise HTTPException(status_code=400, detail="Invoice has no BirFatura UUID")
+
+    raw = {}
+    if invoice.raw_data:
+        try:
+            raw = invoice.raw_data if isinstance(invoice.raw_data, dict) else _json.loads(invoice.raw_data)
+        except Exception:
+            raw = {}
+    system_type = str(raw.get("systemType") or raw.get("systemTypeCode") or "EFATURA")
+    document_type = "DESPATCHADVICE" if system_type == "EIRSALIYE" else "INVOICE"
+
+    try:
+        client = _get_birfatura_client(tenant_id, db)
+        response = client.update_unreaded_status({
+            "uuid": invoice.birfatura_uuid,
+            "systemType": system_type,
+            "documentType": document_type,
+            "inOutCode": "IN",
+        })
+        if not response.get("Success"):
+            raise HTTPException(status_code=502, detail=response.get("Message", "BirFatura update unread status failed"))
+        return ResponseEnvelope(
+            success=True,
+            data=InvoiceProviderActionResponse(
+                invoiceId=invoice.id,
+                success=True,
+                message=response.get("Message") or "Belge okundu olarak işaretlendi",
+                providerResult=_extract_provider_payload(response) or response,
+            ),
+            message="Invoice marked as read",
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Error marking invoice %s as read: %s", invoice_id, e)
+        raise HTTPException(status_code=502, detail="Failed to update read status")
 
 
 @router.post("/draft",
@@ -1156,6 +1656,170 @@ def copy_invoice(
     if not original:
         raise HTTPException(status_code=404, detail="Invoice not found")
 
+    raw = original.raw_data if isinstance(original.raw_data, dict) else (original.raw_data or {})
+
+    # --- Build form_data for the draft ---
+    # Priority: existing form data > BirFatura raw_data mapping > DB fields
+    if raw.get("_source_form_data") and isinstance(raw["_source_form_data"], dict):
+        # Original was itself a copy with form data
+        form_data = dict(raw["_source_form_data"])
+    elif raw.get("_is_form_draft"):
+        # Original was a form-created draft
+        form_data = {k: v for k, v in raw.items() if k != "_is_form_draft"}
+    else:
+        # BirFatura-synced or rich-format invoice: map to form state
+        # Detect format: rich (from draft_to_invoice) vs basic (BirFatura API)
+        is_rich = "invoiceType" in raw and "customer" in raw
+
+        if is_rich:
+            # Rich format (sent via X-EAR): invoiceType, customer, lines, sgk_data, etc.
+            form_invoice_type = raw.get("invoiceType", "0")
+            form_scenario = raw.get("scenario", "other")
+            customer = raw.get("customer") or {}
+            customer_addr = customer.get("address") or {}
+            form_data = {
+                "invoiceType": form_invoice_type,
+                "scenario": form_scenario,
+                "currency": raw.get("currency") or original.currency or "TRY",
+                "customerFirstName": customer.get("name") or original.sender_name or "",
+                "customerTaxNumber": customer.get("tax_id") or original.sender_tax_number or "",
+                "customerTaxId": customer.get("tax_id") or original.sender_tax_number or "",
+                "customerTaxOffice": customer.get("tax_office") or original.sender_tax_office or "",
+                "customerAddress": customer_addr.get("street") or original.sender_address or "",
+                "customerCity": customer_addr.get("city") or original.sender_city or "",
+            }
+            # Extract items from rich-format lines
+            rich_lines = raw.get("lines") or []
+            if rich_lines:
+                form_items = []
+                for line in rich_lines:
+                    form_items.append({
+                        "id": str(uuid.uuid4()),
+                        "name": line.get("name") or line.get("description") or "",
+                        "description": line.get("description") or "",
+                        "quantity": float(line.get("quantity", 1)),
+                        "unit": line.get("unit") or "Adet",
+                        "unitPrice": float(line.get("unitPrice") or line.get("price", 0)),
+                        "taxRate": float(line.get("tax_rate", 0)),
+                        "taxAmount": float(line.get("tax_amount", 0)),
+                        "total": float(line.get("line_extension_amount") or line.get("total", 0)),
+                    })
+                form_data["items"] = form_items
+        else:
+            # Basic BirFatura API format: DocumentTypeCode, ProfileID, etc.
+            doc_type_map = {
+                "SATIS": "0", "IADE": "50", "ISTISNA": "13",
+                "TEVKIFAT": "11", "OZELMATRAH": "12", "IHRAC": "27",
+                "SGK": "14", "TEVKIFAT_IADE": "15",
+            }
+            doc_type_code = raw.get("DocumentTypeCode", "")
+            form_invoice_type = doc_type_map.get(doc_type_code, "0")
+
+            profile_map = {
+                "TEMELFATURA": "other", "TICARIFATURA": "other",
+                "IHRACFATURA": "export", "KAMUFATURA": "government",
+            }
+            profile_id = raw.get("ProfileID", "")
+            form_scenario = profile_map.get(profile_id, "other")
+
+            form_data = {
+                "invoiceType": form_invoice_type,
+                "scenario": form_scenario,
+                "currency": raw.get("DocumentCurrencyCode") or original.currency or "TRY",
+                "customerFirstName": original.sender_name or raw.get("ReceiverName", ""),
+                "customerTaxNumber": original.sender_tax_number or raw.get("ReceiverKN", ""),
+                "customerTaxId": original.sender_tax_number or raw.get("ReceiverKN", ""),
+                "customerTaxOffice": original.sender_tax_office or "",
+                "customerAddress": original.sender_address or "",
+                "customerCity": original.sender_city or "",
+            }
+
+        # --- Extract type-specific nested data from raw_data ---
+        # SGK data (snake_case sgk_data from invoice_dict, or camelCase sgkData from form)
+        sgk = raw.get("sgk_data") or raw.get("sgkData")
+        if isinstance(sgk, dict) and sgk:
+            form_data["sgkData"] = sgk
+
+        # Export details
+        export = raw.get("exportDetails") or raw.get("export_details")
+        if isinstance(export, dict) and export:
+            form_data["exportDetails"] = export
+
+        # Withholding data
+        withholding = raw.get("withholdingData") or raw.get("withholding_data")
+        if isinstance(withholding, dict) and withholding:
+            form_data["withholdingData"] = withholding
+
+        # Government fields
+        for gk in ("governmentPayingCustomer", "governmentExemptionReason", "governmentExportRegisteredReason"):
+            if raw.get(gk) is not None:
+                form_data[gk] = raw[gk]
+
+        # Profile details
+        profile = raw.get("profileDetails") or raw.get("profile_details")
+        if isinstance(profile, dict) and profile:
+            form_data["profileDetails"] = profile
+
+        # Return invoice details
+        ret = raw.get("returnInvoiceDetails") or raw.get("return_invoice_details")
+        if isinstance(ret, dict) and ret:
+            form_data["returnInvoiceDetails"] = ret
+
+        # Special tax base
+        stb = raw.get("specialTaxBase") or raw.get("special_tax_base")
+        if isinstance(stb, dict) and stb:
+            form_data["specialTaxBase"] = stb
+
+        # Medical device data
+        med = raw.get("medicalDeviceData") or raw.get("medical_device_data")
+        if isinstance(med, dict) and med:
+            form_data["medicalDeviceData"] = med
+
+        # Notes
+        notes_val = raw.get("notes")
+        if notes_val:
+            if isinstance(notes_val, list):
+                form_data["notes"] = " ".join(str(n) for n in notes_val if n)
+            elif isinstance(notes_val, str):
+                form_data["notes"] = notes_val
+
+    # Build items from PurchaseInvoiceItem records (if any)
+    original_items = db.query(PurchaseInvoiceItem).filter_by(purchase_invoice_id=original.id).all()
+    if original_items:
+        form_items = []
+        for item in original_items:
+            form_items.append({
+                "id": str(uuid.uuid4()),
+                "name": item.product_name or "",
+                "description": item.product_description or "",
+                "quantity": float(item.quantity or 1),
+                "unit": item.unit or "Adet",
+                "unitPrice": float(item.unit_price or 0),
+                "taxRate": float(item.tax_rate or 0),
+                "taxAmount": float(item.tax_amount or 0),
+                "total": float(item.line_total or 0),
+            })
+        form_data["items"] = form_items
+    elif "items" not in form_data:
+        # No DB items and no items in form_data → create a default line from totals
+        form_data["items"] = [{
+            "id": str(uuid.uuid4()),
+            "name": "",
+            "description": "",
+            "quantity": 1,
+            "unit": "Adet",
+            "unitPrice": float(original.subtotal or original.total_amount or 0),
+            "taxRate": 0,
+            "taxAmount": float(original.tax_amount or 0),
+            "total": float(original.total_amount or 0),
+        }]
+
+    # Store totals in form_data
+    form_data.setdefault("totalAmount", float(original.total_amount or 0))
+    form_data.setdefault("subTotal", float(original.subtotal or 0))
+    form_data.setdefault("taxAmount", float(original.tax_amount or 0))
+
+    # Create the draft PurchaseInvoice
     copy = PurchaseInvoice(
         tenant_id=tenant_id,
         branch_id=original.branch_id,
@@ -1173,12 +1837,32 @@ def copy_invoice(
         subtotal=original.subtotal,
         tax_amount=original.tax_amount,
         total_amount=original.total_amount,
-        raw_data=dict(original.raw_data) if isinstance(original.raw_data, dict) else original.raw_data,
+        raw_data={"_source_form_data": form_data},
         status="DRAFT",
         is_matched=False,
         notes=f"Fatura #{original.id} kopyası",
     )
     db.add(copy)
+    db.flush()
+
+    # Copy invoice items to DB as well
+    for item in original_items:
+        new_item = PurchaseInvoiceItem(
+            tenant_id=tenant_id,
+            purchase_invoice_id=copy.id,
+            branch_id=item.branch_id,
+            product_code=item.product_code,
+            product_name=item.product_name,
+            product_description=item.product_description,
+            quantity=item.quantity,
+            unit=item.unit,
+            unit_price=item.unit_price,
+            tax_rate=item.tax_rate,
+            tax_amount=item.tax_amount,
+            line_total=item.line_total,
+        )
+        db.add(new_item)
+
     try:
         db.commit()
         db.refresh(copy)

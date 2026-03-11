@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { DataTable, Column, Badge, Button } from '@x-ear/ui-web';
+import { DataTable, Column, Badge } from '@x-ear/ui-web';
 import { formatCurrency, formatDate } from '@/utils/format';
 import type { SaleRead } from '@/api/generated/schemas';
 import { useNavigate } from '@tanstack/react-router';

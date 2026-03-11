@@ -247,8 +247,8 @@ def get_me(
     
     user = access.user
     
-    # Check if this is an admin user - access.is_admin is set for admin tokens
-    if access.is_admin and user:
+    # Only platform/admin principals should use the admin serialization branch.
+    if access.user_type == "admin" and user:
         payload = build_payload(user, is_admin_user=True)
         return ResponseEnvelope(data=UserMeRead(**payload))
     

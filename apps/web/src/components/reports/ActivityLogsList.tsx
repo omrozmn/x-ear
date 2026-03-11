@@ -34,14 +34,20 @@ export function ActivityLogsList({ logs, isLoading, pagination, onSort }: Activi
     );
   };
 
+  const formatDetails = (log: ActivityLogRead) => {
+    if (typeof log.details === 'string') return log.details;
+    if (log.details) return JSON.stringify(log.details);
+    return log.message || '-';
+  };
+
   const columns: Column<ActivityLogRead>[] = useMemo(() => [
     {
-      key: 'timestamp',
+      key: 'createdAt',
       title: 'Tarih/Saat',
       sortable: true,
       render: (_, log) => (
         <span className="text-sm text-gray-600 dark:text-gray-400">
-          {log.timestamp ? formatDate(log.timestamp) : '-'}
+          {log.createdAt ? formatDate(log.createdAt) : '-'}
         </span>
       )
     },
@@ -80,24 +86,24 @@ export function ActivityLogsList({ logs, isLoading, pagination, onSort }: Activi
       title: 'Detay',
       render: (_, log) => (
         <span className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">
-          {log.details || '-'}
+          {formatDetails(log)}
         </span>
       )
     },
     {
-      key: 'ipAddress',
-      title: 'IP Adresi',
+      key: 'message',
+      title: 'Mesaj',
       render: (_, log) => (
         <span className="text-sm text-gray-500 dark:text-gray-400 font-mono">
-          {log.ipAddress || '-'}
+          {log.message || '-'}
         </span>
       )
     },
     {
-      key: 'severity',
-      title: 'Durum',
+      key: 'isCritical',
+      title: 'Önem',
       sortable: true,
-      render: (_, log) => getSeverityBadge(log.severity)
+      render: (_, log) => getSeverityBadge(log.isCritical ? 'Critical' : 'Info')
     }
   ], []);
 

@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { Button, Input } from '@x-ear/ui-web';
+import { Button, Input, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import { useStartBulkUtsRegistration } from '@/hooks/uts/useUts';
 import { outbox } from '@/utils/outbox';
 import { parseAndMapCsv, UtsCsvPreview } from '@/utils/uts-csv';
@@ -50,6 +51,29 @@ export const UTSBulkUpload: React.FC<{ onStarted?: (jobId: string) => void }> = 
     }
   };
 
+  type PreviewRow = {
+    _idx: number;
+    serial?: string;
+    manufacturer?: string;
+    model?: string;
+    partyTc?: string;
+  };
+
+  const previewColumns: Column<PreviewRow>[] = [
+    { key: 'serial', title: 'Serial' },
+    { key: 'manufacturer', title: 'Manufacturer' },
+    { key: 'model', title: 'Model' },
+    { key: 'partyTc', title: 'Party TC' },
+  ];
+
+  const previewRows: PreviewRow[] = (preview?.mapped || []).map((item, index) => ({
+    _idx: index,
+    serial: item.mapped.serial,
+    manufacturer: item.mapped.manufacturer,
+    model: item.mapped.model,
+    partyTc: item.mapped.partyTc,
+  }));
+
   return (
     <div>
       <div>
@@ -68,27 +92,13 @@ export const UTSBulkUpload: React.FC<{ onStarted?: (jobId: string) => void }> = 
               </ul>
             </div>
           )}
-          <div style={{ maxHeight: 200, overflow: 'auto', border: '1px solid #eee', padding: 8 }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  <th>Serial</th>
-                  <th>Manufacturer</th>
-                  <th>Model</th>
-                  <th>Party TC</th>
-                </tr>
-              </thead>
-              <tbody>
-                {preview.mapped && preview.mapped.map((m, i) => (
-                  <tr key={i} style={{ borderTop: '1px solid #f3f3f3' }}>
-                    <td>{m.mapped.serial}</td>
-                    <td>{m.mapped.manufacturer}</td>
-                    <td>{m.mapped.model}</td>
-                    <td>{m.mapped.partyTc}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div style={{ marginTop: 8 }}>
+            <DataTable<PreviewRow>
+              data={previewRows}
+              columns={previewColumns}
+              rowKey="_idx"
+              emptyText="Önizleme verisi bulunamadı"
+            />
           </div>
         </div>
       )}

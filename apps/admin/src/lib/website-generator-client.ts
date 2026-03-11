@@ -361,12 +361,12 @@ async function getJson<T>(baseUrl: string, path: string): Promise<T | undefined>
 
 export async function loadWebsiteGeneratorSnapshot(baseUrl: string = DEFAULT_BASE_URL): Promise<WebsiteGeneratorSnapshot> {
     const [featureCatalog, xearChecklist, mobileMatrix, releaseValidation, safeLayoutPolicy, sectionRegistry] = await Promise.all([
-        getJson(baseUrl, '/api/v1/features/catalog'),
-        getJson(baseUrl, '/api/v1/integrations/x-ear/checklist'),
-        getJson(baseUrl, '/api/v1/quality/mobile-matrix'),
-        getJson(baseUrl, '/api/v1/release/validation'),
-        getJson(baseUrl, '/api/v1/builder/safe-layout-policy'),
-        getJson(baseUrl, '/api/v1/builder/sections'),
+        getJson<unknown>(baseUrl, '/api/v1/features/catalog'),
+        getJson<unknown>(baseUrl, '/api/v1/integrations/x-ear/checklist'),
+        getJson<unknown>(baseUrl, '/api/v1/quality/mobile-matrix'),
+        getJson<unknown>(baseUrl, '/api/v1/release/validation'),
+        getJson<SafeLayoutPolicyResponse>(baseUrl, '/api/v1/builder/safe-layout-policy'),
+        getJson<BuilderSectionRegistryResponse>(baseUrl, '/api/v1/builder/sections'),
     ]);
 
     return {

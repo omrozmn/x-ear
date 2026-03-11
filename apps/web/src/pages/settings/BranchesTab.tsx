@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Building2, Pencil, AlertCircle, AlertTriangle, MapPin, Phone, Mail } from 'lucide-react';
 import { branchService, Branch } from '../../services/branch.service';
-import { Button, Input, Textarea } from '@x-ear/ui-web';
+import { Button, Input, Textarea, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import toast from 'react-hot-toast';
 
 interface ConfirmationModal {
@@ -136,6 +137,61 @@ export function BranchesTab() {
         setFormError('');
     };
 
+    const branchColumns: Column<Branch>[] = [
+        {
+            key: 'name',
+            title: 'Şube Adı',
+            render: (_, branch) => (
+                <div className="flex items-center">
+                    <div className="w-10 h-10 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mr-3">
+                        <Building2 className="w-5 h-5" />
+                    </div>
+                    <div className="font-medium text-gray-900 dark:text-white">{branch.name}</div>
+                </div>
+            ),
+        },
+        {
+            key: 'address',
+            title: 'Adres',
+            render: (_, branch) => branch.address ? (
+                <div className="flex items-center text-sm text-gray-500">
+                    <MapPin className="w-4 h-4 mr-1 text-gray-400" />
+                    <span className="truncate max-w-[200px]">{branch.address}</span>
+                </div>
+            ) : <span className="text-sm text-gray-500">-</span>,
+        },
+        {
+            key: 'contact',
+            title: 'İletişim',
+            render: (_, branch) => (
+                <div className="space-y-1 text-sm text-gray-500">
+                    {branch.phone && (
+                        <div className="flex items-center"><Phone className="w-4 h-4 mr-1 text-gray-400" />{branch.phone}</div>
+                    )}
+                    {branch.email && (
+                        <div className="flex items-center"><Mail className="w-4 h-4 mr-1 text-gray-400" />{branch.email}</div>
+                    )}
+                    {!branch.phone && !branch.email && '-'}
+                </div>
+            ),
+        },
+        {
+            key: '_actions',
+            title: 'İşlemler',
+            align: 'right',
+            render: (_, branch) => (
+                <div className="flex justify-end">
+                    <Button variant="ghost" size="sm" onClick={() => openEditModal(branch)} className="text-blue-600 mr-2" title="Düzenle">
+                        <Pencil className="w-5 h-5" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleDelete(branch.id)} className="text-gray-400 hover:text-red-600" title="Sil">
+                        <Trash2 className="w-5 h-5" />
+                    </Button>
+                </div>
+            ),
+        },
+    ];
+
     return (
         <div>
             <div className="flex justify-between items-center mb-6">
@@ -158,89 +214,13 @@ export function BranchesTab() {
                 </div>
             )}
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <table className="w-full text-left">
-                    <thead className="bg-gray-50 dark:bg-gray-700/50">
-                        <tr>
-                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Sube Adi</th>
-                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Adres</th>
-                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Iletisim</th>
-                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Islemler</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                        {isLoading ? (
-                            <tr>
-                                <td colSpan={4} className="px-6 py-8 text-center text-gray-500">Yukleniyor...</td>
-                            </tr>
-                        ) : branches.length === 0 ? (
-                            <tr>
-                                <td colSpan={4} className="px-6 py-8 text-center text-gray-500">Henuz sube eklenmemis.</td>
-                            </tr>
-                        ) : (
-                            branches.map((branch) => (
-                                <tr key={branch.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center">
-                                            <div className="w-10 h-10 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mr-3">
-                                                <Building2 className="w-5 h-5" />
-                                            </div>
-                                            <div className="font-medium text-gray-900 dark:text-white">
-                                                {branch.name}
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-gray-500">
-                                        {branch.address ? (
-                                            <div className="flex items-center">
-                                                <MapPin className="w-4 h-4 mr-1 text-gray-400" />
-                                                <span className="truncate max-w-[200px]">{branch.address}</span>
-                                            </div>
-                                        ) : '-'}
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-gray-500">
-                                        <div className="space-y-1">
-                                            {branch.phone && (
-                                                <div className="flex items-center">
-                                                    <Phone className="w-4 h-4 mr-1 text-gray-400" />
-                                                    {branch.phone}
-                                                </div>
-                                            )}
-                                            {branch.email && (
-                                                <div className="flex items-center">
-                                                    <Mail className="w-4 h-4 mr-1 text-gray-400" />
-                                                    {branch.email}
-                                                </div>
-                                            )}
-                                            {!branch.phone && !branch.email && '-'}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => openEditModal(branch)}
-                                            className="text-blue-600 mr-2"
-                                            title="Düzenle"
-                                        >
-                                            <Pencil className="w-5 h-5" />
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleDelete(branch.id)}
-                                            className="text-gray-400 hover:text-red-600"
-                                            title="Sil"
-                                        >
-                                            <Trash2 className="w-5 h-5" />
-                                        </Button>
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
-            </div>
+            <DataTable<Branch>
+                data={branches}
+                columns={branchColumns}
+                loading={isLoading}
+                rowKey="id"
+                emptyText="Henuz sube eklenmemis."
+            />
 
             {/* Create/Edit Modal */}
             {isModalOpen && (

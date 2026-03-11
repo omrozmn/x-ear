@@ -55,7 +55,7 @@ export const KPICard: React.FC<KPICardProps> = ({
 
   return (
     <div
-      className={`bg-white dark:bg-gray-800 rounded-2xl shadow dark:shadow-none border dark:border border-transparent dark:border-gray-700 p-6 hover:shadow-lg transition-shadow ${onClick ? 'cursor-pointer' : ''
+      className={`bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-2xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 p-6 hover:shadow-lg transition-all duration-300 ${onClick ? 'cursor-pointer hover:bg-white/80 dark:hover:bg-gray-800/80' : ''
         } ${className}`}
       onClick={onClick}
       data-testid="kpi-card"

@@ -49,6 +49,10 @@ export interface OutgoingInvoiceResponse {
   systemTypeCode?: OutgoingInvoiceResponseSystemTypeCode;
   /** Can create proforma */
   canCreateProforma?: boolean;
+  /** E-document status from BirFatura */
+  edocumentStatus?: string;
+  /** Has GIB PDF available */
+  hasGibPdf?: boolean;
   /** Creation timestamp */
   createdAt: string;
 }

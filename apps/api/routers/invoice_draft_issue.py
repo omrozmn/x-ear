@@ -259,6 +259,8 @@ def issue_invoice_draft(
         provider_response = None
         provider_message = None
         local_issue_fallback = False
+        invoice_settings = (tenant.settings or {}).get("invoice_integration", {}) if tenant else {}
+        default_sender_tag = invoice_settings.get("default_sender_tag") or invoice_settings.get("defaultSenderTag")
 
         try:
             response = client.send_document({
@@ -266,6 +268,15 @@ def issue_invoice_draft(
                 "documentBytes": base64.b64encode(xml_content).decode("utf-8"),
                 "systemTypeCodes": invoice_dict.get("systemType") or "EFATURA",
                 "isDocumentNoAuto": is_auto_number,  # Use manual number if configured
+                "receiverTag": (
+                    form_data.get("receiverTag")
+                    or ((form_data.get("metadata") or {}) if isinstance(form_data.get("metadata"), dict) else {}).get("receiverTag")
+                ),
+                "senderTag": (
+                    form_data.get("senderTag")
+                    or ((form_data.get("metadata") or {}) if isinstance(form_data.get("metadata"), dict) else {}).get("senderTag")
+                    or default_sender_tag
+                ),
             })
             provider_response = response
             provider_message = response.get("Message")

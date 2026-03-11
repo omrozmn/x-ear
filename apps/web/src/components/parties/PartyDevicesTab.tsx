@@ -1,17 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@x-ear/ui-web';
-import { FileText, Plus, Calendar, DollarSign, Settings, XCircle } from 'lucide-react';
+import { Plus, Settings, XCircle } from 'lucide-react';
 import { Party, PartyDevice } from '../../types/party';
 import { useToastHelpers } from '@x-ear/ui-web';
 import { deleteDevice } from '@/api/client/devices.client';
 import { createPartyDeviceAssignments } from '@/api/client/sales.client';
 import { useCreateReplacement } from '@/api/client/replacements.client';
 import { apiClient } from '@/api/orval-mutator';
-import type {
-  SaleRead
-} from '@/api/generated/schemas';
-
-import { ExtendedSaleRead } from '@/types/extended-sales';
 import { DeviceAssignmentForm } from '../forms/device-assignment-form/DeviceAssignmentForm';
 import { DeviceAssignment } from '../forms/device-assignment-form/components/AssignmentDetailsForm';
 import { PartyDeviceCard } from '../party/PartyDeviceCard';
@@ -60,7 +55,6 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
 
   // State for other API data
   // const [inventoryItems, setInventoryItems] = useState<InventoryItemRead[]>([]);
-  const [sales, setSales] = useState<SaleRead[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -79,23 +73,11 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
     }
   }, []);
 
-  const loadPartySales = useCallback(async () => {
-    if (!party.id) return;
-
-    try {
-      // Note: This would need to be filtered by party ID in a real implementation
-      // For now, we'll use mock data structure
-      setSales([]);
-    } catch (err) {
-      console.error('Error loading party sales:', err);
-    }
-  }, [party.id]);
 
   // Load data on component mount (effect defined after callbacks)
   useEffect(() => {
     loadInventoryItems();
-    loadPartySales();
-  }, [loadInventoryItems, loadPartySales]);
+  }, [loadInventoryItems]);
 
   const mapToFormAssignment = (device: PartyDevice): DeviceAssignment => {
     return {
@@ -201,7 +183,6 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
       showSuccess('Başarılı', 'Cihaz başarıyla atandı');
 
       await refetchDevices();
-      await loadPartySales();
       setShowDeviceForm(false);
       setError(null);
 
@@ -416,16 +397,6 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
     } finally {
       setLoading(false);
     }
-  };
-
-
-
-  // Calculate quick stats from loaded data
-  const quickStats = {
-    activeDevices: devices.filter(d => d.status === 'assigned').length,
-    trials: devices.filter(d => d.trialStartDate).length,
-    totalValue: sales.reduce((sum, s) => sum + ((s as unknown as ExtendedSaleRead).totalAmount || 0), 0),
-    ereceiptsCount: 0 // This would come from a separate API
   };
 
 

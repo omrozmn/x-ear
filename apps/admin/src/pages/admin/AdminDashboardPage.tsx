@@ -7,6 +7,8 @@ import { PermissionGate } from '@/hooks/PermissionGate';
 import type { ResponseEnvelopeAdminDashboardMetrics } from '@/api/generated/schemas';
 import { AdminPermissions } from '@/types';
 import { useAdminResponsive } from '@/hooks';
+import { DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import {
     Users,
     CreditCard,
@@ -351,46 +353,58 @@ export default function AdminDashboardPage() {
                         </div>
                         <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 px-2 py-1 rounded-xl border border-gray-200 dark:border-gray-600 shadow-sm">Son 24 Saat</span>
                     </div>
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700 table-fixed">
-                            <thead className="bg-gray-50/50 dark:bg-gray-700/50">
-                                <tr>
-                                    <th className={`${isMobile ? 'px-4 py-2' : 'px-6 py-3'} text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-32`}>Tarih</th>
-                                    <th className={`${isMobile ? 'px-4 py-2' : 'px-6 py-3'} text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-32`}>Aksiyon</th>
-                                    <th className={`${isMobile ? 'px-4 py-2' : 'px-6 py-3'} text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-1/3`}>Detay</th>
-                                    <th className={`${isMobile ? 'px-4 py-2' : 'px-6 py-3'} text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider`}>Kullanıcı / Sistem</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-50 dark:divide-gray-700">
-                                {recentErrors.map((error) => (
-                                    <tr key={error.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
-                                        <td className={`${isMobile ? 'px-4 py-3' : 'px-6 py-4'} whitespace-nowrap text-sm text-gray-600 dark:text-gray-300`}>
-                                            {new Date(error.created_at).toLocaleString('tr-TR')}
-                                        </td>
-                                        <td className={`${isMobile ? 'px-4 py-3' : 'px-6 py-4'} whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white`}>
-                                            <span className="px-2 py-1 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs border border-gray-200 dark:border-gray-600 truncate block max-w-[150px]" title={error.action}>
-                                                {error.action}
-                                            </span>
-                                        </td>
-                                        <td className={`${isMobile ? 'px-4 py-3' : 'px-6 py-4'} text-sm text-red-600/80 dark:text-red-400/80 font-medium break-words`}>
-                                            {error.details}
-                                        </td>
-                                        <td className={`${isMobile ? 'px-4 py-3' : 'px-6 py-4'} whitespace-nowrap text-sm text-gray-500 dark:text-gray-400`}>
-                                            <div className="flex flex-col">
-                                                <span className="font-medium text-gray-900 dark:text-white">{error.user_name || 'System'}</span>
-                                                {error.tenant_name && error.tenant_name !== 'System' && (
-                                                    <span className="text-xs text-gray-400 dark:text-gray-500">{error.tenant_name}</span>
-                                                )}
-                                                {error.user_email && (
-                                                    <span className="text-xs text-gray-400 dark:text-gray-500">{error.user_email}</span>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                    <DataTable<DashboardRecentError>
+                        data={recentErrors}
+                        columns={[
+                            {
+                                key: 'created_at',
+                                title: 'Tarih',
+                                render: (_: unknown, record: DashboardRecentError) => (
+                                    <span className="text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
+                                        {new Date(record.created_at).toLocaleString('tr-TR')}
+                                    </span>
+                                )
+                            },
+                            {
+                                key: 'action',
+                                title: 'Aksiyon',
+                                render: (_: unknown, record: DashboardRecentError) => (
+                                    <span className="px-2 py-1 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs border border-gray-200 dark:border-gray-600 truncate block max-w-[150px]" title={record.action}>
+                                        {record.action}
+                                    </span>
+                                )
+                            },
+                            {
+                                key: 'details',
+                                title: 'Detay',
+                                render: (_: unknown, record: DashboardRecentError) => (
+                                    <span className="text-sm text-red-600/80 dark:text-red-400/80 font-medium break-words">
+                                        {record.details}
+                                    </span>
+                                )
+                            },
+                            {
+                                key: 'user_name',
+                                title: 'Kullanıcı / Sistem',
+                                render: (_: unknown, record: DashboardRecentError) => (
+                                    <div className="flex flex-col text-sm">
+                                        <span className="font-medium text-gray-900 dark:text-white">{record.user_name || 'System'}</span>
+                                        {record.tenant_name && record.tenant_name !== 'System' && (
+                                            <span className="text-xs text-gray-400 dark:text-gray-500">{record.tenant_name}</span>
+                                        )}
+                                        {record.user_email && (
+                                            <span className="text-xs text-gray-400 dark:text-gray-500">{record.user_email}</span>
+                                        )}
+                                    </div>
+                                )
+                            },
+                        ] as Column<DashboardRecentError>[]}
+                        rowKey="id"
+                        emptyText="Hata bulunamadı"
+                        striped
+                        hoverable
+                        size="medium"
+                    />
                 </div>
             )}
         </div>

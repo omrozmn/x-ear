@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Button, Input, Badge, Textarea } from '@x-ear/ui-web';
+import { Button, Input, Badge, Textarea, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import { useToastHelpers } from '@x-ear/ui-web';
 import { Truck, Package, CheckCircle, Clock, AlertCircle, User, MapPin, Loader2 } from 'lucide-react';
 import { timelineService } from '../../services/timeline.service';
@@ -490,59 +491,63 @@ export const MaterialDeliverySection: React.FC<MaterialDeliverySectionProps> = (
                 Teslimat Öğeleri ({selectedBatch.items.length} öğe)
               </h4>
 
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse border border-gray-300">
-                  <thead>
-                    <tr className="bg-gray-50">
-                      <th className="border border-gray-300 p-3 text-left font-medium">Malzeme</th>
-                      <th className="border border-gray-300 p-3 text-left font-medium">Kod</th>
-                      <th className="border border-gray-300 p-3 text-center font-medium">Miktar</th>
-                      <th className="border border-gray-300 p-3 text-right font-medium">Birim Fiyat</th>
-                      <th className="border border-gray-300 p-3 text-right font-medium">Toplam</th>
-                      <th className="border border-gray-300 p-3 text-center font-medium">Durum</th>
-                      <th className="border border-gray-300 p-3 text-center font-medium">Tarih</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedBatch.items.map((item) => (
-                      <tr key={item.id} className="hover:bg-gray-50">
-                        <td className="border border-gray-300 p-3">
-                          <div className="font-medium text-gray-900">{item.materialName}</div>
-                        </td>
-                        <td className="border border-gray-300 p-3 text-center font-mono text-sm">
-                          {item.materialCode}
-                        </td>
-                        <td className="border border-gray-300 p-3 text-center">
-                          {item.quantity}
-                        </td>
-                        <td className="border border-gray-300 p-3 text-right">
-                          ₺{item.unitPrice.toFixed(2)}
-                        </td>
-                        <td className="border border-gray-300 p-3 text-right font-medium">
-                          ₺{item.totalPrice.toFixed(2)}
-                        </td>
-                        <td className="border border-gray-300 p-3 text-center">
-                          <StatusBadge status={item.status} />
-                        </td>
-                        <td className="border border-gray-300 p-3 text-center text-sm">
-                          {item.deliveryDate || '-'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr className="bg-gray-100">
-                      <td colSpan={4} className="border border-gray-300 p-3 text-right font-medium">
-                        Genel Toplam:
-                      </td>
-                      <td className="border border-gray-300 p-3 text-right font-bold text-lg">
-                        ₺{selectedBatch.items.reduce((sum, item) => sum + item.totalPrice, 0).toFixed(2)}
-                      </td>
-                      <td colSpan={2} className="border border-gray-300 p-3"></td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
+              {(() => {
+                const deliveryItemColumns: Column<DeliveryItem>[] = [
+                  {
+                    key: 'materialName',
+                    title: 'Malzeme',
+                    render: (_, item) => <div className="font-medium text-gray-900">{item.materialName}</div>,
+                  },
+                  {
+                    key: 'materialCode',
+                    title: 'Kod',
+                    render: (_, item) => <span className="font-mono text-sm">{item.materialCode}</span>,
+                  },
+                  {
+                    key: 'quantity',
+                    title: 'Miktar',
+                    align: 'center',
+                  },
+                  {
+                    key: '_unitPrice',
+                    title: 'Birim Fiyat',
+                    align: 'right',
+                    render: (_, item) => `₺${item.unitPrice.toFixed(2)}`,
+                  },
+                  {
+                    key: '_totalPrice',
+                    title: 'Toplam',
+                    align: 'right',
+                    render: (_, item) => <span className="font-medium">₺{item.totalPrice.toFixed(2)}</span>,
+                  },
+                  {
+                    key: 'status',
+                    title: 'Durum',
+                    align: 'center',
+                    render: (_, item) => <StatusBadge status={item.status} />,
+                  },
+                  {
+                    key: '_deliveryDate',
+                    title: 'Tarih',
+                    align: 'center',
+                    render: (_, item) => item.deliveryDate || '-',
+                  },
+                ];
+
+                return (
+                  <>
+                    <DataTable<DeliveryItem>
+                      data={selectedBatch.items}
+                      columns={deliveryItemColumns}
+                      rowKey="id"
+                      emptyText="Teslimat öğesi bulunamadı"
+                    />
+                    <div className="mt-3 flex justify-end rounded-xl bg-gray-100 px-4 py-3 text-sm font-medium text-gray-700">
+                      Genel Toplam: <span className="ml-2 font-bold text-lg text-gray-900">₺{selectedBatch.items.reduce((sum, item) => sum + item.totalPrice, 0).toFixed(2)}</span>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
 
             {selectedBatch.notes && (

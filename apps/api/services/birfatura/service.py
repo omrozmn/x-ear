@@ -170,10 +170,11 @@ class BirfaturaClient:
             "documentBytes": final_bytes_b64,
             "isDocumentNoAuto": payload.get("isDocumentNoAuto", True),
             "systemTypeCodes": payload.get("systemTypeCodes") or payload.get("systemType", "EFATURA"),
-            "receiverTag": payload.get("receiverTag")
+            "receiverTag": payload.get("receiverTag"),
+            "senderTag": payload.get("senderTag"),
         }
         
-        return self.post('/api/outEBelgeV2/SendDocument', final_payload)
+        return self.post('/api/OutEBelgeV2/SendDocument', final_payload)
 
     def send_basic_invoice(self, payload: dict) -> dict:
         if self._use_mock:
@@ -182,28 +183,36 @@ class BirfaturaClient:
                 'Message': 'Mocked send_basic_invoice',
                 'Received': payload
             }
-        return self.post('/api/outEBelgeV2/SendBasicInvoiceFromModel', payload)
+        return self.post('/api/OutEBelgeV2/SendBasicInvoiceFromModel', payload)
     
     def get_number_of_credits(self, payload: dict) -> dict:
         """Get remaining credits"""
         # Payload can be empty or have parameters like 'kn' if needed, generally empty works for self
-        return self.post('/api/outEBelgeV2/GetNumberOfCredits', payload)
+        return self.post('/api/OutEBelgeV2/GetNumberOfCredits', payload)
 
     def get_inbox_documents(self, payload: dict) -> dict:
         """Get incoming documents (invoices from suppliers)"""
-        return self.post('/api/outEBelgeV2/GetInBoxDocuments', payload)
+        return self.post('/api/OutEBelgeV2/GetInBoxDocuments', payload)
     
     def get_outbox_documents(self, payload: dict) -> dict:
         """Get outgoing documents (return/correction invoices to suppliers)"""
-        return self.post('/api/outEBelgeV2/GetOutBoxDocuments', payload)
+        return self.post('/api/OutEBelgeV2/GetOutBoxDocuments', payload)
     
     def get_inbox_documents_with_detail(self, payload: dict) -> dict:
         """Get incoming documents with detailed XML content"""
-        return self.post('/api/outEBelgeV2/GetInBoxDocumentsWithDetail', payload)
+        return self.post('/api/OutEBelgeV2/GetInBoxDocumentsWithDetail', payload)
+
+    def get_outbox_documents_with_detail(self, payload: dict) -> dict:
+        """Get outgoing documents with detailed XML content"""
+        return self.post('/api/OutEBelgeV2/GetOutBoxDocumentsWithDetail', payload)
 
     def preview_document_pdf(self, payload: dict) -> dict:
         """Get PDF preview of a document. Uses longer timeout as PDF rendering takes time."""
-        return self.post('/api/outEBelgeV2/PreviewDocumentReturnPDF', payload, timeout=60)
+        return self.post('/api/OutEBelgeV2/PreviewDocumentReturnPDF', payload, timeout=60)
+
+    def preview_document_html(self, payload: dict) -> dict:
+        """Get HTML preview of a document."""
+        return self.post('/api/OutEBelgeV2/PreviewDocumentReturnHTML', payload, timeout=60)
 
     def get_pdf_link_by_uuid(self, payload: dict) -> dict:
         """Get PDF download link by UUID.
@@ -223,7 +232,7 @@ class BirfaturaClient:
                 'Result': {'_mock_bytes': mock_gzipped},
                 '_mock': True
             }
-        return self.post('/api/outEBelgeV2/GetPDFLinkByUUID', payload)
+        return self.post('/api/OutEBelgeV2/GetPDFLinkByUUID', payload)
 
     def document_download_by_uuid(self, payload: dict) -> dict:
         """Download document by UUID in specified format (XML, HTML, PDF, ZARF)
@@ -275,7 +284,7 @@ class BirfaturaClient:
                 },
                 '_mock': True
             }
-        return self.post('/api/outEBelgeV2/DocumentDownloadByUUID', payload)
+        return self.post('/api/OutEBelgeV2/DocumentDownloadByUUID', payload)
     
     def create_invoice(self, payload: dict) -> dict:
         """Create invoice (draft mode, not sent to GİB yet)"""
@@ -341,7 +350,143 @@ class BirfaturaClient:
                 ],
                 '_mock': True
             }
-        return self.post('/api/outEBelgeV2/GetDocumentLogs', payload)
+        return self.post('/api/OutEBelgeV2/GetDocumentLogs', payload)
+
+    def get_user_pk(self, payload: dict) -> dict:
+        """List receiver tags for a taxpayer."""
+        if self._use_mock:
+            kn = payload.get("kn", "")
+            return {
+                'Success': True,
+                'Result': [
+                    {
+                        'identifier': f'urn:mail:defaultpk@{kn}.pk',
+                        'title': 'Varsayilan PK',
+                        'type2': 'PK',
+                        'name': 'Varsayilan Alici Etiketi',
+                        'pkGbTurKod': 'PK',
+                    }
+                ],
+                '_mock': True,
+            }
+        return self.post('/api/OutEBelgeV2/GetUserPK', payload)
+
+    def get_user_gb(self, payload: dict) -> dict:
+        """List sender tags for a taxpayer."""
+        if self._use_mock:
+            kn = payload.get("kn", "")
+            return {
+                'Success': True,
+                'Result': [
+                    {
+                        'identifier': f'urn:mail:defaultgb@{kn}.gb',
+                        'title': 'Varsayilan GB',
+                        'type2': 'GB',
+                        'name': 'Varsayilan Gonderici Etiketi',
+                        'pkGbTurKod': 'GB',
+                    }
+                ],
+                '_mock': True,
+            }
+        return self.post('/api/OutEBelgeV2/GetUserGB', payload)
+
+    def gib_user_list(self, payload: dict) -> dict:
+        """List GIB users by PK/GB type."""
+        if self._use_mock:
+            return {
+                'Success': True,
+                'Result': [
+                    {
+                        'identifier': '1234567890',
+                        'title': 'Mock GIB User',
+                        'type2': payload.get('pkGbTypeCode', 'PK'),
+                        'name': 'Mock GIB User',
+                    }
+                ],
+                '_mock': True,
+            }
+        return self.post('/api/OutEBelgeV2/GibUserList', payload)
+
+    def get_envelope_status_from_gib(self, payload: dict) -> dict:
+        """Query latest envelope status from GIB."""
+        if self._use_mock:
+            return {
+                'Success': True,
+                'Message': 'Mocked envelope status',
+                'Result': {
+                    'status': 'DELIVERED',
+                    'code': '1300',
+                    'description': 'Belge GIB uzerinden iletildi',
+                    'envelopeID': payload.get('envelopeID'),
+                },
+                '_mock': True,
+            }
+        return self.post('/api/OutEBelgeV2/GetEnvelopeStatusFromGIB', payload)
+
+    def get_tax_offices_and_codes(self, payload: dict | None = None) -> dict:
+        """Get tax office reference list."""
+        if self._use_mock:
+            return {
+                'Success': True,
+                'Result': [
+                    {'TaxOfficeName': 'CANKAYA', 'TaxOfficeCode': '6257'},
+                    {'TaxOfficeName': 'KADIKOY', 'TaxOfficeCode': '3418'},
+                ],
+                '_mock': True,
+            }
+        return self.post('/api/OutEBelgeV2/GetTaxOfficesAndCodes', payload or {})
+
+    def update_unreaded_status(self, payload: dict) -> dict:
+        """Mark inbox document as read on provider side."""
+        if self._use_mock:
+            return {
+                'Success': True,
+                'Message': f"Mocked unread status update for {payload.get('uuid')}",
+                '_mock': True,
+            }
+        return self.post('/api/OutEBelgeV2/UpdateUnreadedStatus', payload)
+
+    def re_envelope_and_send(self, payload: dict) -> dict:
+        """Retry envelope packaging/sending."""
+        if self._use_mock:
+            return {
+                'Success': True,
+                'Message': f"Mocked resend for {payload.get('uuid')}",
+                'Result': 'QUEUED',
+                '_mock': True,
+            }
+        return self.post('/api/OutEBelgeV2/ReEnvelopeAndSend', payload)
+
+    def get_code_list_by_type(self, payload: dict) -> dict:
+        """Get reference code lists."""
+        if self._use_mock:
+            code_type = int(payload.get('CodeType', 0))
+            samples = {
+                1: [{'name': 'Adet', 'code': 'C62'}, {'name': 'Kutu', 'code': 'BX'}],
+                2: [{'name': 'Tam Istisna', 'code': '301'}],
+                4: [{'name': '7/10 Tevkifat', 'code': '613'}, {'name': '5/10 Tevkifat', 'code': '601'}],
+                5: [{'name': 'Turk Lirasi', 'code': 'TRY'}, {'name': 'Euro', 'code': 'EUR'}],
+                6: [{'name': 'Turkiye', 'code': 'TR'}],
+                7: [{'name': 'Ankara', 'code': '06'}, {'name': 'Istanbul', 'code': '34'}],
+            }
+            return {'Success': True, 'Result': samples.get(code_type, []), '_mock': True}
+        return self.post('/api/OutEBelgeV2/GetCodeListByType', payload)
+
+    def get_outbox_document_by_uuid(self, payload: dict) -> dict:
+        """Get outbox document details by UUID."""
+        if self._use_mock:
+            return {
+                'Success': True,
+                'Result': [
+                    {
+                        'uuid': payload.get('uuid'),
+                        'invoiceNo': 'MOCK-001',
+                        'status': 'DELIVERED',
+                    }
+                ],
+                '_mock': True,
+            }
+        return self.post('/api/OutEBelgeV2/GetOutBoxDocumentByUUID', payload)
 
     def accept_reject_inbox(self, document_uuid: str, accept: bool = True, reason: str = None) -> dict:
         """Accept or reject an incoming (inbox) invoice via BirFatura.
@@ -367,4 +512,4 @@ class BirfaturaClient:
         }
         if reason:
             payload['reason'] = reason
-        return self.post('/api/outEBelgeV2/GetInBoxDocumentAcceptReject', payload)
+        return self.post('/api/OutEBelgeV2/GetInBoxDocumentAcceptReject', payload)

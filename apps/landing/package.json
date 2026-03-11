@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
     "orval": "orval && node scripts/generate-api-index.mjs",
     "generate-api-index": "node scripts/generate-api-index.mjs"
   },

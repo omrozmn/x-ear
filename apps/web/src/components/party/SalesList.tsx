@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { DollarSign, MoreVertical, Eye, Edit, FileText, File } from 'lucide-react';
 import type { SaleRead } from '@/api/client/sales.client';
 import { ExtendedSaleRead } from '@/types/extended-sales';
+import { Button, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 
 interface SalesListProps {
   sales: SaleRead[];
@@ -187,7 +189,7 @@ export const SalesList: React.FC<SalesListProps> = ({
     return methodLabels[paymentMethod] || paymentMethod;
   };
 
-  const renderStatusBadge = (status: string, paidAmount = 0, remainingAmount = 0) => {
+  const renderStatusBadge = (status?: string, paidAmount = 0, remainingAmount = 0) => {
     if (paidAmount > 0 && remainingAmount > 0) {
       return <span className="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full">Kısmi Ödendi</span>;
     } else if (paidAmount > 0 && remainingAmount === 0) {
@@ -201,7 +203,7 @@ export const SalesList: React.FC<SalesListProps> = ({
       'cancelled': <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">İptal edildi</span>,
       'completed': <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">Tamamlandı</span>
     };
-    return badges[status] || badges['pending'];
+    return (status ? badges[status] : undefined) || badges['pending'];
   };
 
   const calculatePaidAmount = (sale: SaleRead) => {
@@ -243,173 +245,177 @@ export const SalesList: React.FC<SalesListProps> = ({
     return Math.max(0, total - paid);
   };
 
+  const salesColumns: Column<SaleRead>[] = [
+    {
+      key: '_saleId',
+      title: 'Satış ID/Tarih',
+      render: (_: unknown, sale: SaleRead) => (
+        <div className="flex flex-col">
+          <span className="font-medium text-gray-900 text-xs">#{sale.id}</span>
+          <span className="text-xs text-gray-500">
+            {sale.saleDate ? new Date(sale.saleDate).toLocaleDateString('tr-TR') : '-'}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: '_product',
+      title: 'Ürün/Hizmet',
+      render: (_: unknown, sale: SaleRead) => renderDevicesSummary(sale),
+    },
+    {
+      key: '_barcode',
+      title: 'Barkod/Seri No',
+      render: (_: unknown, sale: SaleRead) => renderBarcodeSerialInfo(sale),
+    },
+    {
+      key: '_listPrice',
+      title: 'Liste Fiyatı',
+      align: 'right',
+      render: (_: unknown, sale: SaleRead) => {
+        const ext = sale as unknown as ExtendedSaleRead;
+        return <span className="font-medium">{formatCurrency(ext.listPrice || 0)}</span>;
+      },
+    },
+    {
+      key: '_discount',
+      title: 'İndirim',
+      align: 'right',
+      render: (_: unknown, sale: SaleRead) => {
+        const ext = sale as unknown as ExtendedSaleRead;
+        const discount = ext.discountAmount || (ext.discount_amount as number) || 0;
+        return discount > 0 ? (
+          <span className="text-red-600 font-medium">-{formatCurrency(discount)}</span>
+        ) : (
+          <span className="text-gray-400">-</span>
+        );
+      },
+    },
+    {
+      key: '_sgk',
+      title: 'SGK Desteği',
+      align: 'right',
+      render: (_: unknown, sale: SaleRead) => {
+        const ext = sale as unknown as ExtendedSaleRead;
+        const sgk = ext.sgkCoverage || 0;
+        return sgk > 0 ? (
+          <span className="text-blue-600 font-medium">{formatCurrency(sgk)}</span>
+        ) : (
+          <span className="text-gray-400">-</span>
+        );
+      },
+    },
+    {
+      key: '_totalWithVat',
+      title: 'Toplam Tutar',
+      align: 'right',
+      render: (_: unknown, sale: SaleRead) => (
+        <span className="font-semibold">{formatCurrency(calculateTotalWithVat(sale))}</span>
+      ),
+    },
+    {
+      key: '_paid',
+      title: 'Alınan Ödeme',
+      align: 'right',
+      render: (_: unknown, sale: SaleRead) => (
+        <div className="flex flex-col items-end gap-0.5">
+          <span className="font-medium text-green-700">{formatCurrency(calculatePaidAmount(sale))}</span>
+          {renderPaymentMethods(sale)}
+        </div>
+      ),
+    },
+    {
+      key: '_remaining',
+      title: 'Kalan Tutar',
+      align: 'right',
+      render: (_: unknown, sale: SaleRead) => {
+        const remaining = calculateRemaining(sale);
+        return remaining > 0 ? (
+          <span className="font-semibold text-orange-600">{formatCurrency(remaining)}</span>
+        ) : (
+          <span className="text-green-600 font-medium">Ödendi</span>
+        );
+      },
+    },
+    {
+      key: 'status',
+      title: 'Durum',
+      align: 'center',
+      render: (_: unknown, sale: SaleRead) => renderStatusBadge(sale.status || undefined),
+    },
+    {
+      key: '_actions',
+      title: 'İşlemler',
+      align: 'center',
+      render: (_: unknown, sale: SaleRead) => (
+        <div className="relative" ref={openMenuSaleId === String(sale.id) ? menuRef : undefined}>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => setOpenMenuSaleId(prev => prev === String(sale.id) ? null : String(sale.id))}
+            className="rounded p-1 hover:bg-gray-100"
+          >
+            <MoreVertical className="w-4 h-4 text-gray-600" />
+          </Button>
+          {openMenuSaleId === String(sale.id) && (
+            <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+              <ul className="py-1">
+                <li>
+                  <Button type="button" variant="ghost"
+                    onClick={() => { onViewInvoice(sale); setOpenMenuSaleId(null); }}
+                    className="flex w-full items-center justify-start gap-2 rounded-none px-4 py-2 text-sm hover:bg-gray-50"
+                  >
+                    <Eye className="w-4 h-4" /> Fatura Görüntüle
+                  </Button>
+                </li>
+                <li>
+                  <Button type="button" variant="ghost"
+                    onClick={() => { onCreateInvoice(sale); setOpenMenuSaleId(null); }}
+                    className="flex w-full items-center justify-start gap-2 rounded-none px-4 py-2 text-sm hover:bg-gray-50"
+                  >
+                    <FileText className="w-4 h-4" /> Fatura Oluştur
+                  </Button>
+                </li>
+                <li>
+                  <Button type="button" variant="ghost"
+                    onClick={() => { onCollectPayment(sale); setOpenMenuSaleId(null); }}
+                    className="flex w-full items-center justify-start gap-2 rounded-none px-4 py-2 text-sm hover:bg-gray-50"
+                  >
+                    <DollarSign className="w-4 h-4" /> Ödeme Al
+                  </Button>
+                </li>
+                <li>
+                  <Button type="button" variant="ghost"
+                    onClick={() => { onManagePromissoryNotes(sale); setOpenMenuSaleId(null); }}
+                    className="flex w-full items-center justify-start gap-2 rounded-none px-4 py-2 text-sm hover:bg-gray-50"
+                  >
+                    <File className="w-4 h-4" /> Senetleri Yönet
+                  </Button>
+                </li>
+                <li>
+                  <Button type="button" variant="ghost"
+                    onClick={() => { onManageInstallments(sale); setOpenMenuSaleId(null); }}
+                    className="flex w-full items-center justify-start gap-2 rounded-none px-4 py-2 text-sm hover:bg-gray-50"
+                  >
+                    <Edit className="w-4 h-4" /> Taksitleri Yönet
+                  </Button>
+                </li>
+              </ul>
+            </div>
+          )}
+        </div>
+      ),
+    },
+  ];
+
   return (
-    <div className="relative" data-testid="sales-list-container">
-      <div className="overflow-x-auto" role="table" aria-label="Hasta satışları tablosu" data-testid="sales-table-container">
-        <table className="min-w-full divide-y divide-gray-200" data-testid="sales-table">
-          <thead className="bg-gray-50" data-testid="sales-table-head">
-            <tr data-testid="sales-table-header-row">
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-testid="sales-header-date">
-                Satış ID/Tarih
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-testid="sales-header-product">
-                Ürün/Hizmet
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-testid="sales-header-barcode">
-                Barkod/Seri No
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" data-testid="sales-header-listprice">
-                Liste Fiyatı
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" data-testid="sales-header-discount">
-                İndirim
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" data-testid="sales-header-sgk">
-                SGK Desteği
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" data-testid="sales-header-total">
-                Toplam Tutar
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" data-testid="sales-header-paid">
-                Alınan Ödeme
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" data-testid="sales-header-remaining">
-                Kalan Tutar
-              </th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" data-testid="sales-header-status">
-                Durum
-              </th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" data-testid="sales-header-actions">
-                İşlemler
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200" data-testid="sales-table-body">
-            {filteredSales.map((sale) => {
-              const paid = calculatePaidAmount(sale);
-              const remaining = calculateRemaining(sale);
-              const cancelledClass = sale.status === 'cancelled' ? 'opacity-50 line-through pointer-events-none' : '';
-
-              return (
-                <tr
-                  key={sale.id}
-                  className={`hover:bg-gray-50 ${paid > 0 && remaining > 0 ? 'bg-yellow-50' : ''} ${cancelledClass} cursor-pointer transition-colors`}
-                  onClick={() => onSaleClick(sale)}
-                  role="row"
-                  data-testid={`sales-row-${sale.id}`}
-                >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-testid="sales-cell-date">
-                    <div className="font-medium" data-testid="sales-id">{sale.id}</div>
-                    <div className="text-xs text-gray-600" data-testid="sales-date">
-                      {new Date(sale.saleDate || sale.createdAt || '').toLocaleDateString('tr-TR')}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600" data-testid="sales-cell-product">
-                    {renderDevicesSummary(sale)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" data-testid="sales-cell-barcode">
-                    {renderBarcodeSerialInfo(sale)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900" data-testid="sales-cell-listprice">
-                    {formatCurrency((sale as unknown as ExtendedSaleRead).totalAmount || 0)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-red-600" data-testid="sales-cell-discount">
-                    {(sale as unknown as ExtendedSaleRead).discountAmount ? `-${formatCurrency((sale as unknown as ExtendedSaleRead).discountAmount)}` : formatCurrency(0)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-blue-600" data-testid="sales-cell-sgk">
-                    {(sale as unknown as ExtendedSaleRead).sgkCoverage ? `-${formatCurrency((sale as unknown as ExtendedSaleRead).sgkCoverage)}` : formatCurrency(0)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900" data-testid="sales-cell-total">
-                    {formatCurrency(calculateTotalWithVat(sale))}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-green-700" data-testid="sales-cell-paid">
-                    <div data-testid="sales-paid-amount">{formatCurrency(paid)}</div>
-                    <div className="text-xs text-gray-600" data-testid="sales-payment-method">{renderPaymentMethods(sale)}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-orange-700" data-testid="sales-cell-remaining">
-                    {formatCurrency(remaining)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center" data-testid="sales-cell-status">
-                    {renderStatusBadge(sale.status || '', paid, remaining)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center relative" onClick={(e) => e.stopPropagation()} data-testid="sales-cell-actions">
-                    <button
-                      data-allow-raw="true"
-                      data-testid={`sales-action-menu-button-${sale.id}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setOpenMenuSaleId(prev => prev === sale.id ? null : (sale.id as string));
-                      }}
-                      aria-haspopup="true"
-                      aria-expanded={openMenuSaleId === sale.id}
-                      className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-300"
-                    >
-                      <MoreVertical className="w-4 h-4 text-gray-600" />
-                    </button>
-
-                    {openMenuSaleId === sale.id && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
-                        <ul className="py-1">
-                          <li>
-                            <button
-                              data-allow-raw="true"
-                              data-testid={`sales-action-view-invoice-${sale.id}`}
-                              onClick={(e) => { e.stopPropagation(); onViewInvoice(sale); setOpenMenuSaleId(null); }}
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            >
-                              <Eye className="inline mr-2 w-4 h-4 align-middle" /> Görüntüle Fatura
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              data-allow-raw="true"
-                              data-testid={`sales-action-create-invoice-${sale.id}`}
-                              onClick={(e) => { e.stopPropagation(); onCreateInvoice(sale); setOpenMenuSaleId(null); }}
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            >
-                              <FileText className="inline mr-2 w-4 h-4 align-middle" /> Fatura Oluştur
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              data-allow-raw="true"
-                              data-testid={`sales-action-collect-payment-${sale.id}`}
-                              onClick={(e) => { e.stopPropagation(); onCollectPayment(sale); setOpenMenuSaleId(null); }}
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            >
-                              <DollarSign className="inline mr-2 w-4 h-4 align-middle" /> Tahsilat Yap
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              data-allow-raw="true"
-                              data-testid={`sales-action-promissory-notes-${sale.id}`}
-                              onClick={(e) => { e.stopPropagation(); onManagePromissoryNotes(sale); setOpenMenuSaleId(null); }}
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            >
-                              <File className="inline mr-2 w-4 h-4 align-middle" /> Senet İşlemleri
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              data-allow-raw="true"
-                              data-testid={`sales-action-installments-${sale.id}`}
-                              onClick={(e) => { e.stopPropagation(); onManageInstallments(sale); setOpenMenuSaleId(null); }}
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            >
-                              <Edit className="inline mr-2 w-4 h-4 align-middle" /> Taksit İşlemleri
-                            </button>
-                          </li>
-                        </ul>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <DataTable<SaleRead>
+      data={filteredSales}
+      columns={salesColumns}
+      rowKey={(sale) => String(sale.id)}
+      onRowClick={onSaleClick}
+      loading={false}
+      emptyText="Kayıt bulunamadı"
+    />
   );
 };

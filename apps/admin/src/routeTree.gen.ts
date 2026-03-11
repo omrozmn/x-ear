@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WebManagementPreviewRouteImport } from './routes/web-management-preview'
+import { Route as WebManagementRouteImport } from './routes/web-management'
 import { Route as UsersRouteImport } from './routes/users'
 import { Route as UnauthorizedRouteImport } from './routes/unauthorized'
 import { Route as TenantsRouteImport } from './routes/tenants'
@@ -48,6 +50,16 @@ import { Route as IntegrationsEmailLogsRouteImport } from './routes/integrations
 import { Route as IntegrationsEmailConfigRouteImport } from './routes/integrations/email/config'
 import { Route as AuthenticatedAdminIntegrationsVatanSmsRouteImport } from './routes/_authenticated/admin/integrations/vatan-sms'
 
+const WebManagementPreviewRoute = WebManagementPreviewRouteImport.update({
+  id: '/web-management-preview',
+  path: '/web-management-preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WebManagementRoute = WebManagementRouteImport.update({
+  id: '/web-management',
+  path: '/web-management',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UsersRoute = UsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -271,6 +283,8 @@ export interface FileRoutesByFullPath {
   '/tenants': typeof TenantsRoute
   '/unauthorized': typeof UnauthorizedRoute
   '/users': typeof UsersRoute
+  '/web-management': typeof WebManagementRoute
+  '/web-management-preview': typeof WebManagementPreviewRoute
   '/affiliates/$affiliateId': typeof AffiliatesAffiliateIdRoute
   '/integrations/vatan-sms': typeof IntegrationsVatanSmsRoute
   '/sms/headers': typeof SmsHeadersRoute
@@ -311,6 +325,8 @@ export interface FileRoutesByTo {
   '/tenants': typeof TenantsRoute
   '/unauthorized': typeof UnauthorizedRoute
   '/users': typeof UsersRoute
+  '/web-management': typeof WebManagementRoute
+  '/web-management-preview': typeof WebManagementPreviewRoute
   '/affiliates/$affiliateId': typeof AffiliatesAffiliateIdRoute
   '/integrations/vatan-sms': typeof IntegrationsVatanSmsRoute
   '/sms/headers': typeof SmsHeadersRoute
@@ -352,6 +368,8 @@ export interface FileRoutesById {
   '/tenants': typeof TenantsRoute
   '/unauthorized': typeof UnauthorizedRoute
   '/users': typeof UsersRoute
+  '/web-management': typeof WebManagementRoute
+  '/web-management-preview': typeof WebManagementPreviewRoute
   '/affiliates/$affiliateId': typeof AffiliatesAffiliateIdRoute
   '/integrations/vatan-sms': typeof IntegrationsVatanSmsRoute
   '/sms/headers': typeof SmsHeadersRoute
@@ -394,6 +412,8 @@ export interface FileRouteTypes {
     | '/tenants'
     | '/unauthorized'
     | '/users'
+    | '/web-management'
+    | '/web-management-preview'
     | '/affiliates/$affiliateId'
     | '/integrations/vatan-sms'
     | '/sms/headers'
@@ -434,6 +454,8 @@ export interface FileRouteTypes {
     | '/tenants'
     | '/unauthorized'
     | '/users'
+    | '/web-management'
+    | '/web-management-preview'
     | '/affiliates/$affiliateId'
     | '/integrations/vatan-sms'
     | '/sms/headers'
@@ -474,6 +496,8 @@ export interface FileRouteTypes {
     | '/tenants'
     | '/unauthorized'
     | '/users'
+    | '/web-management'
+    | '/web-management-preview'
     | '/affiliates/$affiliateId'
     | '/integrations/vatan-sms'
     | '/sms/headers'
@@ -515,6 +539,8 @@ export interface RootRouteChildren {
   TenantsRoute: typeof TenantsRoute
   UnauthorizedRoute: typeof UnauthorizedRoute
   UsersRoute: typeof UsersRoute
+  WebManagementRoute: typeof WebManagementRoute
+  WebManagementPreviewRoute: typeof WebManagementPreviewRoute
   IntegrationsVatanSmsRoute: typeof IntegrationsVatanSmsRoute
   SmsHeadersRoute: typeof SmsHeadersRoute
   SmsPackagesRoute: typeof SmsPackagesRoute
@@ -526,6 +552,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/web-management-preview': {
+      id: '/web-management-preview'
+      path: '/web-management-preview'
+      fullPath: '/web-management-preview'
+      preLoaderRoute: typeof WebManagementPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/web-management': {
+      id: '/web-management'
+      path: '/web-management'
+      fullPath: '/web-management'
+      preLoaderRoute: typeof WebManagementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/users': {
       id: '/users'
       path: '/users'
@@ -838,6 +878,8 @@ const rootRouteChildren: RootRouteChildren = {
   TenantsRoute: TenantsRoute,
   UnauthorizedRoute: UnauthorizedRoute,
   UsersRoute: UsersRoute,
+  WebManagementRoute: WebManagementRoute,
+  WebManagementPreviewRoute: WebManagementPreviewRoute,
   IntegrationsVatanSmsRoute: IntegrationsVatanSmsRoute,
   SmsHeadersRoute: SmsHeadersRoute,
   SmsPackagesRoute: SmsPackagesRoute,

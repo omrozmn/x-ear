@@ -414,6 +414,8 @@ export interface CreateInvoiceData {
 
   // Birfatura & Specialized Data
   taxOffice?: string;
+  receiverTag?: string;
+  senderTag?: string;
   returnReferenceNumber?: string;
   returnReferenceDate?: string;
   metadata?: Record<string, unknown>;
@@ -489,6 +491,8 @@ export interface InvoiceFormData {
 
   // UI helper fields
   customerLabel?: string;
+  receiverTag?: string;
+  senderTag?: string;
 
   // Legacy/extended fields used by validation and various flows
   scenario?: InvoiceScenario | string;

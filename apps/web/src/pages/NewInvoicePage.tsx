@@ -19,7 +19,7 @@ import { apiClient } from '@/api/orval-mutator';
 import toast from 'react-hot-toast';
 import { ErrorMessage } from '../components/ErrorMessage';
 import { useGetTenantCompany } from '@/api/client/tenant-users.client';
-import { normalizeCustomerTaxIdFields } from '../utils/customerTaxId';
+import { normalizeCustomerTaxIdFields, normalizeCustomerTaxIdChange } from '../utils/customerTaxId';
 
 interface InvoiceFormData {
   invoiceType: string;
@@ -43,6 +43,7 @@ interface ReturnInvoiceDetails {
 
 interface ExtendedData {
   customerId?: string;
+  customerName?: string;
   customerFirstName?: string;
   customerLastName?: string;
   customerTaxId?: string;
@@ -420,11 +421,7 @@ export function NewInvoicePage() {
       } else if (field === 'customerTaxId' || field === 'customerTaxNumber' || field === 'customerTcNumber') {
         return {
           ...next,
-          ...normalizeCustomerTaxIdFields({
-            customerTaxId: field === 'customerTaxId' ? value as string : String(next.customerTaxId || ''),
-            customerTaxNumber: field === 'customerTaxNumber' ? value as string : String(next.customerTaxNumber || ''),
-            customerTcNumber: field === 'customerTcNumber' ? value as string : String(next.customerTcNumber || ''),
-          }),
+          ...normalizeCustomerTaxIdChange(field, String(value || '')),
         };
       } else if (field === 'invoiceType') {
         next.invoiceType = value as string;
@@ -536,8 +533,10 @@ function InvoiceSidebar({
       <CustomerSectionCompact
         isSGK={showSGKSection}
         customerId={extendedData?.customerId as string | undefined}
+        customerName={extendedData?.customerName as string | undefined}
         customerFirstName={extendedData?.customerFirstName as string | undefined}
         customerLastName={extendedData?.customerLastName as string | undefined}
+        customerTaxId={extendedData?.customerTaxId as string | undefined}
         customerTcNumber={extendedData?.customerTcNumber as string | undefined}
         customerTaxNumber={extendedData?.customerTaxNumber as string | undefined}
         customerAddress={extendedData?.customerAddress as string | undefined}
@@ -934,8 +933,15 @@ function NewInvoicePageContent({
                 <CustomerSectionCompact
                   isSGK={showSGKSection}
                   customerId={formData.customerId as string}
+                  customerName={formData.customerName as string}
                   customerFirstName={formData.customerFirstName as string}
                   customerLastName={formData.customerLastName as string}
+                  customerTaxId={formData.customerTaxId as string}
+                  customerTcNumber={formData.customerTcNumber as string}
+                  customerTaxNumber={formData.customerTaxNumber as string}
+                  customerAddress={formData.customerAddress as string}
+                  customerCity={formData.customerCity as string}
+                  customerDistrict={formData.customerDistrict as string}
                   onChange={onFormDataChange}
                 />
               </div>

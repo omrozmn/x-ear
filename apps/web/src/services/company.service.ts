@@ -120,7 +120,7 @@ export const companyService = {
       responseType: 'blob',
     });
 
-    return URL.createObjectURL(response.data);
+    return URL.createObjectURL(response);
   },
 
   /**

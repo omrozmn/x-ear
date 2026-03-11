@@ -68,7 +68,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
                 {/* Desktop Header */}
                 {!isMobile && (
-                    <header className="bg-white shadow-sm z-10 h-16 flex items-center justify-between px-6 gap-4">
+                    <header className="sticky top-2 md:top-4 z-40 mx-2 md:mx-6 mb-2 md:mb-4 px-3 sm:px-4 md:px-6 py-2 md:py-3 bg-white/70 dark:bg-gray-800/70 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50 shadow-sm rounded-xl md:rounded-2xl flex items-center justify-between gap-4 transition-all">
                         <h1 className="text-lg font-semibold text-gray-900 whitespace-nowrap">Super Admin Panel</h1>
 
                         {/* AI Composer Trigger - Centered Search Bar */}

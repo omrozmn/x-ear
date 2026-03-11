@@ -60,26 +60,6 @@ export function PromissoryNotesTab() {
         return months[month - 1] || '';
     };
 
-    if (isLoading) {
-        return (
-            <div className="flex justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="text-center py-12">
-                <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-4">Veriler yüklenirken hata oluştu</p>
-                <Button onClick={() => refetch()} variant="outline" icon={<RefreshCw className="w-4 h-4" />}>
-                    Tekrar Dene
-                </Button>
-            </div>
-        );
-    }
-
     const notes = unwrapObject<ReportPromissoryNotes>(notesData);
     const byParty = unwrapArray<ReportPromissoryNoteByParty>(byPartyData);
     const { data: list, meta: listMeta } = unwrapPaginated<ReportPromissoryNoteListItem>(listData);
@@ -191,6 +171,26 @@ export function PromissoryNotesTab() {
             )
         },
     ], []);
+
+    if (isLoading) {
+        return (
+            <div className="flex justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="text-center py-12">
+                <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+                <p className="text-gray-600 mb-4">Veriler yüklenirken hata oluştu</p>
+                <Button onClick={() => refetch()} variant="outline" icon={<RefreshCw className="w-4 h-4" />}>
+                    Tekrar Dene
+                </Button>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">

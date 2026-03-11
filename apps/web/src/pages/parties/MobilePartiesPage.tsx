@@ -8,11 +8,11 @@ import { FloatingActionButton } from '@/components/mobile/FloatingActionButton';
 import { useParties, useCreateParty } from '@/hooks/useParties';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import type { PartyRead } from '@/api/generated';
+import type { Party } from '@/types/party';
 import { useHaptic } from '@/hooks/useHaptic';
 import { Input, Button } from '@x-ear/ui-web';
 import { PartyFormModal } from '@/components/parties/PartyFormModal';
 import { useNewActionStore } from '@/stores/newActionStore';
-import type { Party } from '@/api/generated';
 
 export const MobilePartiesPage: React.FC = () => {
     const navigate = useNavigate();
@@ -188,11 +188,13 @@ export const MobilePartiesPage: React.FC = () => {
                 onClose={() => setShowNewPartyModal(false)}
                 onSubmit={async (formData) => {
                     try {
-                        await createPartyMutation.mutateAsync(formData as unknown as Omit<Party, 'id' | 'createdAt' | 'updatedAt'>);
+                        const createdParty = await createPartyMutation.mutateAsync(formData as Omit<Party, 'id' | 'createdAt' | 'updatedAt'>);
                         setShowNewPartyModal(false);
-                        refetch();
+                        await refetch();
+                        return createdParty as PartyRead;
                     } catch {
                         // error handled by mutation
+                        return null;
                     }
                 }}
                 isLoading={createPartyMutation.isPending}

@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Plus, Trash2, Mail, User, Shield, AlertCircle, CheckCircle2, Lock, Eye, EyeOff, Building2, Pencil, AlertTriangle } from 'lucide-react';
-import { Button, Input, Select } from '@x-ear/ui-web';
+import { Button, Input, Select, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import {
     useListTenantUsers,
     useCreateTenantUsers,
@@ -254,6 +255,73 @@ export function TeamMembersTab() {
         return styles[role] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
     };
 
+    const teamMemberColumns: Column<UserRead>[] = [
+        {
+            key: 'name',
+            title: 'Kullanıcı',
+            render: (_, user) => (
+                <div className="flex items-center">
+                    <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold mr-3">
+                        {user.firstName?.[0] || user.email?.[0] || '?'}
+                    </div>
+                    <div>
+                        <div className="font-medium text-gray-900 dark:text-white">{user.firstName} {user.lastName}</div>
+                        <div className="text-sm text-gray-500">{user.email}</div>
+                    </div>
+                </div>
+            ),
+        },
+        {
+            key: 'role',
+            title: 'Rol',
+            render: (_, user) => (
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleStyle(user.role || '')}`}>
+                    {getRoleLabel(user.role || '')}
+                </span>
+            ),
+        },
+        {
+            key: 'isActive',
+            title: 'Durum',
+            render: (_, user) => (
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'}`}>
+                    {user.isActive ? 'Aktif' : 'Pasif'}
+                </span>
+            ),
+        },
+        {
+            key: 'createdAt',
+            title: 'Katılma Tarihi',
+            render: (_, user) => (
+                <span className="text-sm text-gray-500">{user.createdAt ? new Date(user.createdAt).toLocaleDateString('tr-TR') : '-'}</span>
+            ),
+        },
+        {
+            key: '_actions',
+            title: 'İşlemler',
+            align: 'right',
+            render: (_, user) => (
+                <div className="flex justify-end items-center space-x-2">
+                    {user.isActive ? (
+                        <Button onClick={() => handleToggleStatus(user)} size="sm" variant="outline" className="border-transparent text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:ring-yellow-500">
+                            Pasife Al
+                        </Button>
+                    ) : (
+                        <Button onClick={() => handleToggleStatus(user)} size="sm" variant="outline" className="border-transparent text-green-700 bg-green-100 hover:bg-green-200 focus:ring-green-500">
+                            Aktifleştir
+                        </Button>
+                    )}
+                    <Button onClick={() => handleEditClick(user)} variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800 p-1" title="Düzenle">
+                        <Pencil className="w-5 h-5" />
+                    </Button>
+                    <Button onClick={() => handleDelete(user.id)} variant="ghost" size="sm" className="text-gray-400 hover:text-red-600 p-1" title="Kullanıcıyı Sil">
+                        <Trash2 className="w-5 h-5" />
+                    </Button>
+                </div>
+            ),
+        },
+    ];
+
     return (
         <div>
             <div className="flex justify-between items-center mb-6">
@@ -283,103 +351,13 @@ export function TeamMembersTab() {
                 </div>
             )}
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <table className="w-full text-left">
-                    <thead className="bg-gray-50 dark:bg-gray-700/50">
-                        <tr>
-                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Kullanici</th>
-                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Rol</th>
-                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Durum</th>
-                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Katilma Tarihi</th>
-                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Islemler</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                        {loading ? (
-                            <tr>
-                                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">Yukleniyor...</td>
-                            </tr>
-                        ) : users.length === 0 ? (
-                            <tr>
-                                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">Henuz ekip uyesi eklenmemis.</td>
-                            </tr>
-                        ) : (
-                            users.map((user: UserRead) => (
-                                <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center">
-                                            <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold mr-3">
-                                                {user.firstName?.[0] || user.email?.[0] || '?'}
-                                            </div>
-                                            <div>
-                                                <div className="font-medium text-gray-900 dark:text-white">
-                                                    {user.firstName} {user.lastName}
-                                                </div>
-                                                <div className="text-sm text-gray-500">{user.email}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleStyle(user.role || '')} `}>
-                                            {getRoleLabel(user.role || '')}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isActive
-                                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                                            : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-                                            } `}>
-                                            {user.isActive ? 'Aktif' : 'Pasif'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-gray-500">
-                                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString('tr-TR') : '-'}
-                                    </td>
-                                    <td className="px-6 py-4 text-right flex justify-end items-center space-x-2">
-                                        {user.isActive ? (
-                                            <Button
-                                                onClick={() => handleToggleStatus(user)}
-                                                size="sm"
-                                                variant="outline"
-                                                className="border-transparent text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:ring-yellow-500"
-                                            >
-                                                Pasife Al
-                                            </Button>
-                                        ) : (
-                                            <Button
-                                                onClick={() => handleToggleStatus(user)}
-                                                size="sm"
-                                                variant="outline"
-                                                className="border-transparent text-green-700 bg-green-100 hover:bg-green-200 focus:ring-green-500"
-                                            >
-                                                Aktiflestir
-                                            </Button>
-                                        )}
-                                        <Button
-                                            onClick={() => handleEditClick(user)}
-                                            variant="ghost"
-                                            size="sm"
-                                            className="text-blue-600 hover:text-blue-800 p-1"
-                                            title="Duzenle"
-                                        >
-                                            <Pencil className="w-5 h-5" />
-                                        </Button>
-                                        <Button
-                                            onClick={() => handleDelete(user.id)}
-                                            variant="ghost"
-                                            size="sm"
-                                            className="text-gray-400 hover:text-red-600 p-1"
-                                            title="Kullaniciyi Sil"
-                                        >
-                                            <Trash2 className="w-5 h-5" />
-                                        </Button>
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
-            </div>
+            <DataTable<UserRead>
+                data={users}
+                columns={teamMemberColumns}
+                loading={loading}
+                rowKey="id"
+                emptyText="Henuz ekip uyesi eklenmemis."
+            />
 
             {/* Invite Modal */}
             {isModalOpen && (

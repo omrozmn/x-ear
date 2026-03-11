@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Bot, BrushCleaning, FileStack, Globe2, LayoutTemplate, MessageCircle, Package, Rocket, Store, WandSparkles } from 'lucide-react';
+import { Bot, Paintbrush2, FileStack, Globe2, LayoutTemplate, MessageCircle, Package, Rocket, Sparkles, Store } from 'lucide-react';
 import { useAdminResponsive } from '@/hooks';
 import {
     addSitePageSection,
@@ -1214,7 +1214,7 @@ const WebManagementPage: React.FC = () => {
                             onClick={() => setEntryMode('ai')}
                             className={`inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${entryMode === 'ai' ? 'bg-emerald-300 text-gray-950' : 'bg-emerald-400/20 text-emerald-100 hover:bg-emerald-400/30'}`}
                         >
-                            <WandSparkles className="h-4 w-4" />
+                            <Sparkles className="h-4 w-4" />
                             Yapay Zeka ile Olustur
                         </button>
                     </div>
@@ -1230,7 +1230,7 @@ const WebManagementPage: React.FC = () => {
             <div className="mt-6 grid gap-6 xl:grid-cols-[1.3fr_0.9fr]">
                 <div className="rounded-[2rem] bg-white p-6 ring-1 ring-gray-200">
                     <div className="flex items-center gap-3">
-                        {entryMode === 'ai' ? <Bot className="h-5 w-5 text-sky-500" /> : <BrushCleaning className="h-5 w-5 text-fuchsia-500" />}
+                        {entryMode === 'ai' ? <Bot className="h-5 w-5 text-sky-500" /> : <Paintbrush2 className="h-5 w-5 text-fuchsia-500" />}
                         <h2 className="text-lg font-semibold text-gray-900">
                             {entryMode === 'ai' ? 'AI Onboarding Akisi' : 'Hazir Sablon Baslangici'}
                         </h2>
@@ -1370,7 +1370,7 @@ const WebManagementPage: React.FC = () => {
             <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_1fr]">
                 <div className="rounded-[2rem] bg-white p-6 ring-1 ring-gray-200">
                     <div className="flex items-center gap-3">
-                        <WandSparkles className="h-5 w-5 text-violet-500" />
+                        <Sparkles className="h-5 w-5 text-violet-500" />
                         <h2 className="text-lg font-semibold text-gray-900">AI Chat ile Duzenleme</h2>
                     </div>
                     <div className="mt-5 space-y-3">
@@ -1475,7 +1475,7 @@ const WebManagementPage: React.FC = () => {
 
             <div className="mt-6 grid gap-4 md:grid-cols-3">
                 {[
-                    { icon: WandSparkles, title: 'AI ile Taslak Olustur', detail: 'Kullanici prompt verir, AI discovery ve draft cikarir.' },
+                    { icon: Sparkles, title: 'AI ile Taslak Olustur', detail: 'Kullanici prompt verir, AI discovery ve draft cikarir.' },
                     { icon: MessageCircle, title: 'Chat ile Duzenle', detail: 'AI edit proposal olusur, host admin icinden uygula veya geri al.' },
                     { icon: Globe2, title: 'Preview ve Publish', detail: 'Draft ayni panelden preview edilir, publish edilir ve rollback desteklenir.' },
                 ].map((card) => (

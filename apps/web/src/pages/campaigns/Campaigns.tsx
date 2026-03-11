@@ -1,5 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { Button, Card, DatePicker, Select, Textarea, useToastHelpers } from '@x-ear/ui-web';
+import { Button, Card, DatePicker, Select, Textarea, useToastHelpers, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import {
     AlertTriangle,
     Calculator,
@@ -508,32 +509,25 @@ const CampaignsPage: React.FC = () => {
                     </div>
                 )}
             </div>
-            {excelPreview && (
-                <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700">
-                    <table className="min-w-full text-xs">
-                        <thead className="bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
-                            <tr>
-                                {excelPreview.headers.map((header, index) => (
-                                    <th key={`${header}-${index}`} className="px-3 py-2 text-left font-medium">
-                                        {header || `Sütun ${index + 1}`}
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                            {excelPreview.rows.map((row, rowIndex) => (
-                                <tr key={rowIndex} className="text-gray-700 dark:text-gray-300 lg:hover:bg-gray-50 dark:lg:hover:bg-gray-800">
-                                    {excelPreview.headers.map((_, colIndex) => (
-                                        <td key={colIndex} className="px-3 py-2">
-                                            {row[colIndex] ?? ''}
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
+            {excelPreview && (() => {
+                const excelCols = excelPreview.headers.map((hdr, ci): Column<{ _k: number; _row: (string | number | undefined)[] }> => ({
+                    key: `c${ci}`,
+                    title: String(hdr || `Sütun ${ci + 1}`),
+                    render: (_, item) => <span className="text-xs">{String(item._row[ci] ?? '')}</span>,
+                }));
+                const excelData = excelPreview.rows.map((_row, i) => ({ _k: i, _row }));
+                return (
+                    <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700">
+                        <DataTable<{ _k: number; _row: (string | number | undefined)[] }>
+                            data={excelData}
+                            columns={excelCols}
+                            rowKey={(item) => item._k}
+                            size="small"
+                            responsive={false}
+                        />
+                    </div>
+                );
+            })()}
         </div>
     );
 

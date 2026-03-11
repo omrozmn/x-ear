@@ -1,6 +1,8 @@
 import React, { ReactNode } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Menu } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
+import { Button } from '@x-ear/ui-web';
+import { useLayoutStore } from '@/stores/layoutStore';
 import { cn } from '@/lib/utils';
 import '@/styles/mobile.css';
 
@@ -22,6 +24,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
     sticky = true
 }) => {
     const navigate = useNavigate();
+    const toggleSidebar = useLayoutStore((state) => state.toggleSidebar);
 
     const handleBack = () => {
         if (onBack) {
@@ -34,24 +37,34 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
     return (
         <header
             className={cn(
-                "bg-white border-b border-gray-200 z-40 pt-safe",
-                sticky && "sticky top-0",
+                "z-40 pt-safe transition-all",
+                sticky && "sticky top-2",
+                "mx-2 mb-2 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50 shadow-sm rounded-xl",
                 className
             )}
         >
-            <div className="flex items-center justify-between h-14 px-4">
+            <div className="flex items-center justify-between h-12 px-3">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                    {showBack && (
-                        <button
-                            data-allow-raw="true"
-                            onClick={handleBack}
-                            className="p-2 -ml-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors active:scale-95"
+                    {!showBack && (
+                        <Button
+                            onClick={toggleSidebar}
+                            variant="ghost"
+                            className="flex items-center justify-center rounded-full p-1.5 -ml-1 text-gray-700 transition-colors active:scale-95 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
                         >
-                            <ArrowLeft className="h-5 w-5" />
-                        </button>
+                            <Menu className="h-6 w-6" />
+                        </Button>
+                    )}
+                    {showBack && (
+                        <Button
+                            onClick={handleBack}
+                            variant="ghost"
+                            className="flex items-center justify-center rounded-full p-1.5 -ml-1 text-gray-700 transition-colors active:scale-95 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        >
+                            <ArrowLeft className="h-6 w-6" />
+                        </Button>
                     )}
 
-                    <h1 className="text-lg font-semibold text-gray-900 truncate">
+                    <h1 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
                         {title}
                     </h1>
                 </div>

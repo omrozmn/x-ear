@@ -75,6 +75,8 @@ class OutgoingInvoiceResponse(AppBaseModel):
     profile_id: Optional[str] = Field(None, description="UBL profile ID")
     system_type_code: Optional[str] = Field(None, description="Provider system type code")
     can_create_proforma: bool = Field(default=True, description="Can create proforma")
+    edocument_status: Optional[str] = Field(None, description="E-document status from BirFatura (Status code)")
+    has_gib_pdf: bool = Field(default=False, description="Has GIB PDF available")
     created_at: datetime = Field(..., description="Creation timestamp")
 
 
@@ -165,6 +167,57 @@ class InvoiceCancelRequest(AppBaseModel):
     reason: Optional[str] = Field(None, description="Cancellation reason")
 
 
+class InvoiceProviderStatusResponse(AppBaseModel):
+    """Normalized provider/GIB status for an invoice."""
+    invoice_id: int = Field(..., alias="invoiceId")
+    birfatura_uuid: str = Field(..., alias="birfaturaUuid")
+    envelope_id: str = Field(..., alias="envelopeId")
+    in_out_code: str = Field(..., alias="inOutCode")
+    current_status: str = Field(..., alias="currentStatus")
+    provider_status_code: Optional[str] = Field(None, alias="providerStatusCode")
+    provider_message: Optional[str] = Field(None, alias="providerMessage")
+    source: str = Field(default="provider")
+    retryable: bool = False
+    raw_result: Optional[Dict[str, Any]] = Field(None, alias="rawResult")
+
+
+class InvoiceProviderActionResponse(AppBaseModel):
+    """Result of a provider-side invoice action."""
+    invoice_id: int = Field(..., alias="invoiceId")
+    success: bool
+    message: str
+    provider_result: Optional[Dict[str, Any]] = Field(None, alias="providerResult")
+
+
+class ReferenceCodeItemResponse(AppBaseModel):
+    """Normalized provider reference code item."""
+    code: str
+    name: str
+
+
+class TaxOfficeItemResponse(AppBaseModel):
+    """Normalized provider tax office item."""
+    code: str
+    name: str
+
+
+class RecipientCheckResponse(AppBaseModel):
+    """Recipient/provider resolution summary."""
+    tax_id: str = Field(..., alias="taxId")
+    is_efatura_user: bool = Field(..., alias="isEfaturaUser")
+    matches_found: int = Field(..., alias="matchesFound")
+    default_receiver_tag: Optional[str] = Field(None, alias="defaultReceiverTag")
+    receiver_tags: List[Dict[str, str]] = Field(default_factory=list, alias="receiverTags")
+    recipient_name: Optional[str] = Field(None, alias="recipientName")
+    identity_type: Optional[str] = Field(None, alias="identityType")
+    company_title: Optional[str] = Field(None, alias="companyTitle")
+    first_name: Optional[str] = Field(None, alias="firstName")
+    last_name: Optional[str] = Field(None, alias="lastName")
+    tax_office: Optional[str] = Field(None, alias="taxOffice")
+    identity_source: Optional[str] = Field(None, alias="identitySource")
+    message: Optional[str] = None
+
+
 class InvoiceDraftRequest(AppBaseModel):
     """Request body for creating or updating an invoice draft"""
     form_data: Dict[str, Any] = Field(default_factory=dict, description="Form state as JSON")
@@ -174,3 +227,28 @@ class InvoiceDraftResponse(AppBaseModel):
     """Response schema for invoice draft form data"""
     draft_id: int = Field(..., description="Draft invoice ID")
     form_data: Dict[str, Any] = Field(..., description="Form data to pre-fill the invoice form")
+
+
+class SupplierInvoiceItemResponse(AppBaseModel):
+    """Response schema for a single item from a supplier's invoice"""
+    id: int = Field(..., description="Item ID")
+    purchase_invoice_id: int = Field(..., description="Parent invoice ID")
+    invoice_number: str = Field(..., description="Parent invoice number")
+    invoice_date: Optional[datetime] = Field(None, description="Parent invoice date")
+    product_code: Optional[str] = Field(None, description="Product code")
+    product_name: str = Field(..., description="Product name")
+    product_description: Optional[str] = Field(None, description="Product description")
+    quantity: Decimal = Field(..., description="Quantity")
+    unit: Optional[str] = Field(None, description="Unit")
+    unit_price: Decimal = Field(..., description="Unit price")
+    tax_rate: int = Field(default=18, description="Tax rate (%)")
+    tax_amount: Optional[Decimal] = Field(None, description="Tax amount")
+    line_total: Decimal = Field(..., description="Line total")
+    inventory_id: Optional[str] = Field(None, description="Linked inventory item ID")
+
+
+class SupplierInvoiceItemsListResponse(AppBaseModel):
+    """Response schema for supplier invoice items list"""
+    items: List[SupplierInvoiceItemResponse] = Field(default_factory=list, description="List of invoice items")
+    total: int = Field(default=0, description="Total items count")
+    supplier_name: str = Field(..., description="Supplier name")

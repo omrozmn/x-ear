@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Modal, Button, Input, Textarea } from '@x-ear/ui-web';
+import { Modal, Button, Input, Textarea, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import type { Party } from '../../../types/party/party-base.types';
 
 interface SGKEReceiptModalProps {
@@ -133,6 +134,51 @@ export const SGKEReceiptModal: React.FC<SGKEReceiptModalProps> = ({
 
   const isReadOnly = mode === 'view';
 
+  const medicationColumns: Column<SGKMedication>[] = [
+    {
+      key: 'name',
+      title: 'İlaç/Malzeme',
+      render: (_: unknown, med: SGKMedication) => (
+        <span className="text-sm text-gray-900">{med.name}</span>
+      ),
+    },
+    {
+      key: 'dosage',
+      title: 'Doz',
+      render: (_: unknown, med: SGKMedication) => (
+        <span className="text-sm text-gray-500">{med.dosage}</span>
+      ),
+    },
+    {
+      key: 'quantity',
+      title: 'Adet',
+      render: (_: unknown, med: SGKMedication) => (
+        <span className="text-sm text-gray-500">{med.quantity}</span>
+      ),
+    },
+    {
+      key: '_unitPrice',
+      title: 'Birim Fiyat',
+      render: (_: unknown, med: SGKMedication) => (
+        <span className="text-sm text-gray-500">₺{med.unitPrice.toFixed(2)}</span>
+      ),
+    },
+    {
+      key: '_totalPrice',
+      title: 'Toplam',
+      render: (_: unknown, med: SGKMedication) => (
+        <span className="text-sm font-medium text-gray-900">₺{med.totalPrice.toFixed(2)}</span>
+      ),
+    },
+    {
+      key: 'sgkCode',
+      title: 'SGK Kodu',
+      render: (_: unknown, med: SGKMedication) => (
+        <span className="text-sm text-gray-500">{med.sgkCode}</span>
+      ),
+    },
+  ];
+
   return (
     <Modal
       isOpen={isOpen}
@@ -211,32 +257,13 @@ export const SGKEReceiptModal: React.FC<SGKEReceiptModalProps> = ({
         {/* İlaçlar */}
         <div>
           <h4 className="font-medium text-gray-900 mb-3">İlaçlar ve Malzemeler</h4>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">İlaç/Malzeme</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Doz</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Adet</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Birim Fiyat</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Toplam</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">SGK Kodu</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {receiptData.medications.map((medication) => (
-                  <tr key={medication.id}>
-                    <td className="px-4 py-2 text-sm text-gray-900">{medication.name}</td>
-                    <td className="px-4 py-2 text-sm text-gray-500">{medication.dosage}</td>
-                    <td className="px-4 py-2 text-sm text-gray-500">{medication.quantity}</td>
-                    <td className="px-4 py-2 text-sm text-gray-500">₺{medication.unitPrice.toFixed(2)}</td>
-                    <td className="px-4 py-2 text-sm font-medium text-gray-900">₺{medication.totalPrice.toFixed(2)}</td>
-                    <td className="px-4 py-2 text-sm text-gray-500">{medication.sgkCode}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable<SGKMedication>
+            data={receiptData.medications}
+            columns={medicationColumns}
+            rowKey={(med) => med.id}
+            loading={false}
+            emptyText="İlaç bulunamadı"
+          />
         </div>
 
         {/* Ödeme Bilgileri */}

@@ -14,8 +14,10 @@ import {
   DatePicker,
   Checkbox,
   Select,
-  Textarea
+  Textarea,
+  DataTable
 } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import {
   FileText,
   Plus,
@@ -789,6 +791,86 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
     );
   };
 
+  const promissoryColumns: Column<PromissoryNoteRead>[] = [
+    {
+      key: 'noteNumber',
+      title: 'Senet No',
+      render: (_: unknown, note: PromissoryNoteRead) => (
+        <span className="text-sm font-medium text-gray-900">{note.noteNumber}</span>
+      ),
+    },
+    {
+      key: '_amount',
+      title: 'Tutar',
+      render: (_: unknown, note: PromissoryNoteRead) => (
+        <div className="text-sm font-semibold text-gray-900">
+          {formatCurrency(note.amount)}
+          {note.paidAmount && note.paidAmount > 0 && (
+            <div className="text-xs text-green-600">
+              Ödenen: {formatCurrency(note.paidAmount)}
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: '_dueDate',
+      title: 'Vade Tarihi',
+      render: (_: unknown, note: PromissoryNoteRead) => (
+        <span className="text-sm text-gray-600">{formatDate(note.dueDate)}</span>
+      ),
+    },
+    {
+      key: '_status',
+      title: 'Durum',
+      render: (_: unknown, note: PromissoryNoteRead) => getStatusBadge(note.status),
+    },
+    {
+      key: '_paidDate',
+      title: 'Ödeme Tarihi',
+      render: (_: unknown, note: PromissoryNoteRead) => (
+        <span className="text-sm text-gray-600">{note.paidDate ? formatDate(note.paidDate) : '-'}</span>
+      ),
+    },
+    {
+      key: '_actions',
+      title: 'İşlemler',
+      align: 'right',
+      render: (_: unknown, note: PromissoryNoteRead) => (
+        <div className="flex items-center justify-end gap-2">
+          {note.status === 'active' && (
+            <Button
+              size="sm"
+              variant="default"
+              onClick={(e) => {
+                e.stopPropagation();
+                openCollectModal(note);
+              }}
+              className="bg-green-600 hover:bg-green-700 text-white whitespace-nowrap"
+            >
+              <Banknote className="w-4 h-4 mr-1" />
+              Tahsil Et
+            </Button>
+          )}
+          {note.status === 'active' && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCancelNote(note.id);
+              }}
+              title="İptal Et"
+              className="text-red-600 hover:text-red-700"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Yeni Senet Oluştur Formu - LEGACY STYLE - COLLAPSIBLE */}
@@ -1148,86 +1230,13 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
         </CardHeader>
         {isListOpen && (
           <CardContent>
-            {promissoryNotes.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <FileText className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>Henüz senet bulunmuyor</p>
-                <p className="text-sm mt-2">Yukarıdaki formu kullanarak yeni senet oluşturabilirsiniz</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Senet No</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tutar</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vade Tarihi</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Durum</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ödeme Tarihi</th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">İşlemler</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {promissoryNotes.map((note) => (
-                      <tr key={note.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                          {note.noteNumber}
-                        </td>
-                        <td className="px-4 py-3 text-sm font-semibold text-gray-900">
-                          {formatCurrency(note.amount)}
-                          {note.paidAmount && note.paidAmount > 0 && (
-                            <div className="text-xs text-green-600">
-                              Ödenen: {formatCurrency(note.paidAmount)}
-                            </div>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-600">
-                          {formatDate(note.dueDate)}
-                        </td>
-                        <td className="px-4 py-3">
-                          {getStatusBadge(note.status)}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-600">
-                          {note.paidDate ? formatDate(note.paidDate) : '-'}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            {note.status === 'active' && (
-                              <Button
-                                size="sm"
-                                variant="default"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  openCollectModal(note);
-                                }}
-                                className="bg-green-600 hover:bg-green-700 text-white whitespace-nowrap"
-                              >
-                                <Banknote className="w-4 h-4 mr-1" />
-                                Tahsil Et
-                              </Button>
-                            )}
-                            {note.status === 'active' && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleCancelNote(note.id);
-                                }}
-                                title="İptal Et"
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+            <DataTable<PromissoryNoteRead>
+              data={promissoryNotes}
+              columns={promissoryColumns}
+              rowKey={(note) => note.id}
+              loading={isLoading}
+              emptyText="Henüz senet bulunmuyor"
+            />
           </CardContent>
         )}
       </Card>

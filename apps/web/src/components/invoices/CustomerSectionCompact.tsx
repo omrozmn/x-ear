@@ -1,10 +1,11 @@
-import { Input, Button, Textarea } from '@x-ear/ui-web';
+import { Input, Button, Textarea, Select } from '@x-ear/ui-web';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { User, CheckCircle } from 'lucide-react';
 import { partyService } from '../../services/party.service';
 import { Party } from '../../types/party';
 import type { SupplierRead } from '@/api/generated/schemas';
 import { listSuppliers } from '@/api/client/suppliers.client';
+import { apiClient } from '@/api/orval-mutator';
 import citiesData from '../../data/cities.json';
 import { SearchableSelect } from '../ui/SearchableSelect';
 import { normalizeCustomerTaxIdFields, resolveCustomerTaxId } from '../../utils/customerTaxId';
@@ -12,6 +13,7 @@ import { normalizeCustomerTaxIdFields, resolveCustomerTaxId } from '../../utils/
 interface CustomerSectionCompactProps {
   isSGK?: boolean;
   customerId?: string;
+  customerName?: string;
   customerFirstName?: string;
   customerLastName?: string;
   customerTcNumber?: string;
@@ -44,6 +46,48 @@ type SearchCandidate = {
   district?: string;
   taxOffice?: string;
 };
+
+type RecipientTagOption = {
+  value: string;
+  label: string;
+  type?: string;
+  email?: string;
+};
+
+type RecipientLookupResult = {
+  taxId: string;
+  isEfaturaUser: boolean;
+  matchesFound: number;
+  defaultReceiverTag?: string | null;
+  receiverTags: RecipientTagOption[];
+  recipientName?: string | null;
+  identityType?: 'company' | 'person' | null;
+  companyTitle?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  taxOffice?: string | null;
+  identitySource?: string | null;
+  message?: string | null;
+};
+
+function sanitizeLookupMessage(message?: string | null): string | null {
+  const normalized = String(message || '').trim();
+  if (!normalized) return null;
+  return normalized.replace(/BirFatura/gi, 'E-Fatura');
+}
+
+function normalizeDigits(value?: string | null): string {
+  return String(value || '').replace(/\D/g, '');
+}
+
+function inferIdentityType(taxId?: string | null, customerName?: string | null, customerFirstName?: string | null, customerLastName?: string | null): 'company' | 'person' {
+  const digits = normalizeDigits(taxId);
+  if (digits.length === 10) return 'company';
+  if (digits.length === 11) return 'person';
+  if (String(customerName || '').trim()) return 'company';
+  if (String(customerFirstName || customerLastName || '').trim()) return 'person';
+  return 'person';
+}
 
 function mapPartyCandidate(party: Party): SearchCandidate {
   return {
@@ -114,6 +158,7 @@ function extractSuppliers(payload: unknown): SupplierRead[] {
 
 export function CustomerSectionCompact({
   isSGK = false,
+  customerName,
   customerFirstName,
   customerLastName,
   customerTcNumber,
@@ -133,6 +178,120 @@ export function CustomerSectionCompact({
   // Removed unused selectedParty state - party selection is handled directly via onChange
   const [districts, setDistricts] = useState<string[]>([]);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [recipientLookup, setRecipientLookup] = useState<RecipientLookupResult | null>(null);
+  const [recipientLookupLoading, setRecipientLookupLoading] = useState(false);
+  const [selectedReceiverTag, setSelectedReceiverTag] = useState('');
+  const lastLookupKeyRef = useRef('');
+  const lookupTimerRef = useRef<number | null>(null);
+
+  const lookupBirFaturaRecipient = useCallback(async (rawTaxId: string, options?: { manualEntry?: boolean }) => {
+    const taxId = String(rawTaxId || '').trim();
+    const manualEntry = options?.manualEntry === true;
+    if (taxId.length < 10) {
+      setRecipientLookup(null);
+      setSelectedReceiverTag('');
+      onChange('receiverTag', '');
+      return;
+    }
+
+    setRecipientLookupLoading(true);
+    try {
+      const response = await apiClient.get<{ data?: RecipientLookupResult }>('/api/birfatura/recipients/check', {
+        params: { tax_id: taxId, manual_entry: manualEntry }
+      });
+      const data = response.data?.data
+        ? {
+            ...response.data.data,
+            message: sanitizeLookupMessage(response.data.data.message),
+          }
+        : null;
+      setRecipientLookup(data);
+
+      const nextReceiverTag = data?.defaultReceiverTag || data?.receiverTags?.[0]?.value || '';
+      setSelectedReceiverTag(nextReceiverTag);
+      onChange('receiverTag', nextReceiverTag);
+      if (manualEntry) {
+        const identityType = data?.identityType || inferIdentityType(taxId, customerName, customerFirstName, customerLastName);
+        if (identityType === 'company') {
+          const nextCompanyTitle = String(data?.companyTitle || data?.recipientName || '').trim();
+          if (nextCompanyTitle) {
+            onChange('customerName', nextCompanyTitle);
+          }
+          onChange('customerFirstName', '');
+          onChange('customerLastName', '');
+        } else {
+          const nextFirstName = String(data?.firstName || '').trim();
+          const nextLastName = String(data?.lastName || '').trim();
+          if (nextFirstName || nextLastName) {
+            onChange('customerFirstName', nextFirstName);
+            onChange('customerLastName', nextLastName);
+          }
+          onChange('customerName', '');
+        }
+        if (String(data?.taxOffice || '').trim()) {
+          onChange('taxOffice', String(data?.taxOffice || '').trim());
+        }
+      }
+      if (nextReceiverTag) {
+        const selectedTag = data?.receiverTags?.find((tag) => tag.value === nextReceiverTag);
+        onChange('customerLabel', {
+          labelId: nextReceiverTag,
+          labelName: selectedTag?.label || nextReceiverTag,
+          color: data?.isEfaturaUser ? '#2563EB' : '#6B7280',
+        });
+      }
+    } catch (error) {
+      console.error('E-Fatura alici sorgu hatasi:', error);
+      const providerDetail =
+        (error as { response?: { data?: { detail?: string; message?: string } }; message?: string })?.response?.data?.detail ||
+        (error as { response?: { data?: { detail?: string; message?: string } }; message?: string })?.response?.data?.message ||
+        (error as { message?: string })?.message ||
+        'E-Fatura sorgusu su anda tamamlanamadi';
+      setRecipientLookup({
+        taxId,
+        isEfaturaUser: false,
+        matchesFound: 0,
+        defaultReceiverTag: null,
+        receiverTags: [],
+        message: sanitizeLookupMessage(providerDetail),
+      });
+      setSelectedReceiverTag('');
+      onChange('receiverTag', '');
+    } finally {
+      setRecipientLookupLoading(false);
+    }
+  }, [customerFirstName, customerLastName, customerName, onChange]);
+
+  const resolvedCustomerTaxId = resolveCustomerTaxId({ customerTaxId, customerTcNumber, customerTaxNumber });
+  const identityType = inferIdentityType(resolvedCustomerTaxId, customerName, customerFirstName, customerLastName);
+
+  const scheduleRecipientLookup = useCallback((rawTaxId: string, manualEntry: boolean) => {
+    const normalizedTaxId = String(rawTaxId || '').trim();
+    if (lookupTimerRef.current) {
+      window.clearTimeout(lookupTimerRef.current);
+      lookupTimerRef.current = null;
+    }
+    if (normalizedTaxId.length < 10) {
+      lastLookupKeyRef.current = '';
+      setRecipientLookup(null);
+      setSelectedReceiverTag('');
+      onChange('receiverTag', '');
+      return;
+    }
+    const lookupKey = `${manualEntry ? 'manual' : 'selection'}:${normalizedTaxId}`;
+    if (lookupKey === lastLookupKeyRef.current) return;
+    lookupTimerRef.current = window.setTimeout(() => {
+      lastLookupKeyRef.current = lookupKey;
+      void lookupBirFaturaRecipient(normalizedTaxId, { manualEntry });
+    }, manualEntry ? 400 : 0);
+  }, [lookupBirFaturaRecipient, onChange]);
+
+  useEffect(() => () => {
+    if (lookupTimerRef.current) {
+      window.clearTimeout(lookupTimerRef.current);
+      lookupTimerRef.current = null;
+    }
+  }, []);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -154,11 +313,63 @@ export function CustomerSectionCompact({
       onChange('customerId', SGK_CUSTOMER.id);
       onChange('customerFirstName', 'Sosyal Güvenlik');
       onChange('customerLastName', 'Kurumu');
-      onChange('customerTaxNumber', SGK_CUSTOMER.taxNumber);
+      onChange('customerTaxId', SGK_CUSTOMER.taxNumber);
       onChange('customerAddress', SGK_CUSTOMER.address);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSGK]);
+
+  const applyCandidateSelection = useCallback((candidate: SearchCandidate) => {
+    if (lookupTimerRef.current) {
+      window.clearTimeout(lookupTimerRef.current);
+      lookupTimerRef.current = null;
+    }
+    setShowResults(false);
+    setShowSuccessMessage(true);
+
+    onChange('customerId', candidate.kind === 'supplier' ? `supplier:${candidate.id}` : candidate.id);
+    const normalizedIdentity = normalizeCustomerTaxIdFields({
+      customerTaxId: candidate.taxNumber || candidate.tcNumber || '',
+    });
+    onChange('customerTaxId', normalizedIdentity.customerTaxId);
+    if (candidate.taxNumber) {
+      onChange('customerName', candidate.firstName);
+      onChange('customerFirstName', '');
+      onChange('customerLastName', '');
+    } else {
+      onChange('customerName', '');
+      onChange('customerFirstName', candidate.firstName);
+      onChange('customerLastName', candidate.lastName);
+    }
+
+    let addressText = candidate.address || '';
+    const cityValue = candidate.city || '';
+    const districtValue = candidate.district || '';
+
+    if (!addressText) {
+      const parts: string[] = [];
+      if (districtValue) parts.push(districtValue);
+      if (cityValue) parts.push(cityValue);
+      addressText = parts.join(' - ');
+    }
+
+    onChange('customerAddress', addressText);
+    onChange('customerCity', cityValue);
+    onChange('customerDistrict', districtValue);
+    onChange('taxOffice', candidate.taxOffice || '');
+    if (cityValue) {
+      const cityData = citiesData.cities.find(c => c.name === cityValue);
+      if (cityData) {
+        setDistricts(cityData.districts);
+      }
+    }
+
+    // Mesajı 3 saniye sonra gizle
+    setTimeout(() => {
+      setShowSuccessMessage(false);
+    }, 3000);
+    scheduleRecipientLookup(normalizedIdentity.customerTaxId, false);
+  }, [onChange, scheduleRecipientLookup]);
 
   // TC ile hasta arama
   const handleIdentifierSearch = useCallback(async (query: string) => {
@@ -184,19 +395,28 @@ export function CustomerSectionCompact({
         })
       ]);
 
-      setSearchResults(
-        mergeCandidates(
-          partyResult.parties as Party[],
-          extractSuppliers(supplierResult as unknown)
-        )
+      const mergedResults = mergeCandidates(
+        partyResult.parties as Party[],
+        extractSuppliers(supplierResult as unknown)
       );
+      setSearchResults(mergedResults);
+
+      const normalizedQuery = String(query || '').replace(/\D/g, '');
+      const exactMatches = mergedResults.filter((candidate) => {
+        const candidateIdentity = String(candidate.taxNumber || candidate.tcNumber || '').replace(/\D/g, '');
+        return candidateIdentity !== '' && candidateIdentity === normalizedQuery;
+      });
+
+      if (normalizedQuery.length >= 10 && exactMatches.length === 1) {
+        applyCandidateSelection(exactMatches[0]);
+      }
     } catch (error) {
       console.error('Alıcı arama hatası:', error);
       setSearchResults([]);
     } finally {
       setIsSearching(false);
     }
-  }, []);
+  }, [applyCandidateSelection]);
 
   // Ad ile hasta arama
   const handleNameSearch = useCallback(async (name: string) => {
@@ -236,47 +456,8 @@ export function CustomerSectionCompact({
 
   // Alıcı seçimi
   const handleSearchSelect = useCallback((candidate: SearchCandidate) => {
-    setShowResults(false);
-    setShowSuccessMessage(true);
-
-    onChange('customerId', candidate.kind === 'supplier' ? `supplier:${candidate.id}` : candidate.id);
-    onChange('customerFirstName', candidate.firstName);
-    onChange('customerLastName', candidate.lastName);
-    const normalizedIdentity = normalizeCustomerTaxIdFields({
-      customerTaxId: candidate.taxNumber || candidate.tcNumber || '',
-    });
-    onChange('customerTaxId', normalizedIdentity.customerTaxId);
-    onChange('customerTcNumber', normalizedIdentity.customerTcNumber);
-    onChange('customerTaxNumber', normalizedIdentity.customerTaxNumber);
-
-    let addressText = candidate.address || '';
-    const cityValue = candidate.city || '';
-    const districtValue = candidate.district || '';
-
-    if (!addressText) {
-      const parts: string[] = [];
-      if (districtValue) parts.push(districtValue);
-      if (cityValue) parts.push(cityValue);
-      addressText = parts.join(' - ');
-    }
-
-    onChange('customerAddress', addressText);
-    onChange('customerCity', cityValue);
-    onChange('customerDistrict', districtValue);
-    onChange('taxOffice', candidate.taxOffice || '');
-
-    if (cityValue) {
-      const cityData = citiesData.cities.find(c => c.name === cityValue);
-      if (cityData) {
-        setDistricts(cityData.districts);
-      }
-    }
-
-    // Mesajı 3 saniye sonra gizle
-    setTimeout(() => {
-      setShowSuccessMessage(false);
-    }, 3000);
-  }, [onChange]);
+    applyCandidateSelection(candidate);
+  }, [applyCandidateSelection]);
 
   // İl değiştiğinde ilçeleri yükle
   const handleCityChange = useCallback((city: string) => {
@@ -310,16 +491,25 @@ export function CustomerSectionCompact({
   const handleClearCustomer = useCallback(() => {
     // Removed setSelectedParty - not needed
     setShowSuccessMessage(false);
+    setSearchResults([]);
+    setShowResults(false);
+    setActiveSearchField(null);
     onChange('customerId', '');
+    onChange('customerName', '');
     onChange('customerFirstName', '');
     onChange('customerLastName', '');
+    onChange('customerName', '');
     onChange('customerTaxId', '');
-    onChange('customerTcNumber', '');
-    onChange('customerTaxNumber', '');
     onChange('customerAddress', '');
     onChange('customerCity', '');
     onChange('customerDistrict', '');
+    onChange('taxOffice', '');
+    onChange('receiverTag', '');
+    onChange('customerLabel', null);
     setDistricts([]);
+    setRecipientLookup(null);
+    setSelectedReceiverTag('');
+    lastLookupKeyRef.current = '';
   }, [onChange]);
 
   // SGK modu
@@ -376,7 +566,7 @@ export function CustomerSectionCompact({
             <User className="text-gray-600" size={16} />
             <h3 className="text-sm font-bold text-gray-900">Fatura Alıcısı</h3>
           </div>
-          {(customerFirstName || customerLastName || customerTcNumber || customerTaxNumber) && (
+          {(customerName || customerFirstName || customerLastName || resolvedCustomerTaxId) && (
             <Button
               type="button"
               onClick={handleClearCustomer}
@@ -399,19 +589,26 @@ export function CustomerSectionCompact({
               <Input
                 data-testid="invoice-customer-tax-input"
                 type="text"
-                value={resolveCustomerTaxId({ customerTaxId, customerTcNumber, customerTaxNumber })}
+                value={resolvedCustomerTaxId}
                 onChange={(e) => {
                   const value = e.target.value;
                   const normalizedIdentity = normalizeCustomerTaxIdFields({ customerTaxId: value });
                   handleManualEdit('customerTaxId', normalizedIdentity.customerTaxId);
-                  handleManualEdit('customerTaxNumber', normalizedIdentity.customerTaxNumber);
-                  handleManualEdit('customerTcNumber', normalizedIdentity.customerTcNumber);
+                  const nextType = inferIdentityType(normalizedIdentity.customerTaxId, customerName, customerFirstName, customerLastName);
+                  if (nextType === 'company') {
+                    onChange('customerFirstName', '');
+                    onChange('customerLastName', '');
+                  }
+                  if (nextType === 'person') {
+                    onChange('customerName', '');
+                  }
                   handleIdentifierSearch(value);
+                  scheduleRecipientLookup(normalizedIdentity.customerTaxId, true);
                 }}
                 placeholder="TC Kimlik (11 haneli) veya Vergi No"
                 className="w-full text-sm"
               />
-              {isSearching && (
+              {(isSearching || recipientLookupLoading) && (
                 <div className="absolute right-2 top-2.5">
                   <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
                 </div>
@@ -448,53 +645,130 @@ export function CustomerSectionCompact({
                 ))}
               </div>
             )}
+
+            {recipientLookup && (
+              <div className={`mt-2 rounded-xl border px-3 py-2 text-xs ${
+                recipientLookup.isEfaturaUser
+                  ? 'border-blue-200 bg-blue-50 text-blue-800'
+                  : 'border-amber-200 bg-amber-50 text-amber-800'
+              }`}>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-medium">
+                    {recipientLookup.isEfaturaUser ? 'E-Fatura kullanicisi' : 'E-Fatura etiketi bulunamadi'}
+                  </span>
+                  {recipientLookup.matchesFound > 0 && (
+                    <span>{recipientLookup.matchesFound} etiket</span>
+                  )}
+                </div>
+                {recipientLookup.message && (
+                  <div className="mt-1 opacity-80">{recipientLookup.message}</div>
+                )}
+              </div>
+            )}
+
+            {recipientLookup?.receiverTags?.length ? (
+              <div className="mt-2">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Alici Etiketi
+                </label>
+                <Select
+                  value={selectedReceiverTag}
+                  onChange={(e) => {
+                    const nextValue = e.target.value;
+                    setSelectedReceiverTag(nextValue);
+                    onChange('receiverTag', nextValue);
+                    const selectedTag = recipientLookup.receiverTags.find((tag) => tag.value === nextValue);
+                    onChange('customerLabel', {
+                      labelId: nextValue,
+                      labelName: selectedTag?.label || nextValue,
+                      color: '#2563EB',
+                    });
+                  }}
+                  options={[
+                    { value: '', label: 'Alici etiketi seciniz' },
+                    ...recipientLookup.receiverTags.map((tag) => ({
+                      value: tag.value,
+                      label: `${tag.label}${tag.type ? ` (${tag.type})` : ''}`,
+                    })),
+                  ]}
+                  className="w-full text-sm"
+                />
+              </div>
+            ) : null}
           </div>
 
-          {/* Ad ve Soyad - Yan Yana - Arama ile */}
-          <div className="grid grid-cols-2 gap-2">
+          {identityType === 'company' ? (
             <div className="relative">
               <label className="block text-xs font-medium text-gray-700 mb-1">
-                Ad <span className="text-red-500">*</span>
+                Unvan <span className="text-red-500">*</span>
               </label>
               <Input
-                data-testid="invoice-customer-first-name-input"
+                data-testid="invoice-customer-company-name-input"
                 type="text"
-                value={customerFirstName || ''}
+                value={customerName || ''}
                 onChange={(e) => {
                   const value = e.target.value;
-                  handleManualEdit('customerFirstName', value);
+                  handleManualEdit('customerName', value);
+                  onChange('customerFirstName', '');
+                  onChange('customerLastName', '');
                   if (value.length >= 2) {
                     handleNameSearch(value);
                   } else {
                     setShowResults(false);
                   }
                 }}
-                placeholder="Ad (hasta ara)"
+                placeholder="Unvan (tedarikçi ara)"
                 className="w-full text-sm"
               />
             </div>
-            <div className="relative">
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                Soyad <span className="text-red-500">*</span>
-              </label>
-              <Input
-                data-testid="invoice-customer-last-name-input"
-                type="text"
-                value={customerLastName || ''}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  handleManualEdit('customerLastName', value);
-                  if (value.length >= 2) {
-                    handleNameSearch(value);
-                  } else {
-                    setShowResults(false);
-                  }
-                }}
-                placeholder="Soyad (hasta ara)"
-                className="w-full text-sm"
-              />
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              <div className="relative">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Ad <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  data-testid="invoice-customer-first-name-input"
+                  type="text"
+                  value={customerFirstName || ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    handleManualEdit('customerFirstName', value);
+                    onChange('customerName', '');
+                    if (value.length >= 2) {
+                      handleNameSearch(value);
+                    } else {
+                      setShowResults(false);
+                    }
+                  }}
+                  placeholder="Ad (hasta ara)"
+                  className="w-full text-sm"
+                />
+              </div>
+              <div className="relative">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Soyad <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  data-testid="invoice-customer-last-name-input"
+                  type="text"
+                  value={customerLastName || ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    handleManualEdit('customerLastName', value);
+                    onChange('customerName', '');
+                    if (value.length >= 2) {
+                      handleNameSearch(value);
+                    } else {
+                      setShowResults(false);
+                    }
+                  }}
+                  placeholder="Soyad (hasta ara)"
+                  className="w-full text-sm"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Ad/Soyad ile arama tetiklendiğinde dropdown TC bloğunda gösterilir (activeSearchField='name')
                - Eğer TC araması yoksa, ad bloğu altında göster */}

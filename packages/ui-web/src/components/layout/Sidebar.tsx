@@ -264,13 +264,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div
           data-testid={`sidebar-menu-${item.id}`}
           className={`
-            flex items-center px-3 py-2 text-sm font-medium rounded-xl cursor-pointer transition-colors
-            ${level > 0 ? 'ml-6' : ''}
+            flex items-center text-sm font-medium rounded-xl cursor-pointer transition-all
+            ${level > 0 ? (isCollapsed && !isMobile ? 'ml-0 justify-center' : 'ml-6') : ''}
             ${active
-              ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200'
-              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              ? 'bg-blue-100/60 text-blue-700 dark:bg-blue-900/60 dark:text-blue-200'
+              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-700/50'
             }
-            ${!showLabel ? 'justify-center' : ''}
+            ${!showLabel ? 'justify-center w-10 h-10 mx-auto p-0 mb-1' : 'px-3 py-2 w-full'}
           `}
           onClick={() => {
             if (hasChildren) {
@@ -280,8 +280,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }
           }}
         >
-          <div className={`flex items-center ${showLabel ? 'flex-1 min-w-0' : ''}`} data-testid={`sidebar-menu-item-${item.id}`}>
-            <div className="flex-shrink-0" data-testid={`sidebar-icon-${item.id}`}>
+          <div className={`flex items-center ${showLabel ? 'flex-1 min-w-0' : 'justify-center w-full'}`} data-testid={`sidebar-menu-item-${item.id}`}>
+            <div className={`flex-shrink-0 flex items-center justify-center ${!showLabel ? 'w-full h-full' : ''}`} data-testid={`sidebar-icon-${item.id}`}>
               {item.icon}
             </div>
             {showLabel && (
@@ -332,8 +332,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div
           data-testid="sidebar-container"
           className={`
-            fixed inset-y-0 left-0 z-50 w-[280px] flex flex-col bg-white dark:bg-gray-800 
-            border-r border-gray-200 dark:border-gray-700 transition-transform duration-300 ease-in-out
+            fixed inset-y-0 left-0 z-50 w-[280px] flex flex-col bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl 
+            border-r border-gray-200/50 dark:border-gray-700/50 transition-transform duration-300 ease-in-out
             ${isOpen ? 'translate-x-0' : '-translate-x-full'}
           `}
         >
@@ -380,7 +380,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return (
       <div
         data-testid="sidebar-container"
-        className="fixed inset-y-0 left-0 z-40 w-16 flex flex-col bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700"
+        className="fixed inset-y-0 left-0 z-40 w-16 flex flex-col bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-700/50"
       >
         {/* Header */}
         <div className="flex items-center justify-center h-16 border-b border-gray-200 dark:border-gray-700" data-testid="sidebar-header">
@@ -402,8 +402,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <div
       data-testid="sidebar-container"
       className={`
-        fixed inset-y-0 left-0 z-40 flex flex-col bg-white dark:bg-gray-800 
-        border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out
+        fixed inset-y-0 left-0 z-40 flex flex-col bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl 
+        border-r border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 ease-in-out
         ${isCollapsed ? 'w-16' : 'w-64'}
       `}
     >

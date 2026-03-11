@@ -40,6 +40,8 @@ import {
   Loader2,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 
 // =============================================================================
 // Constants
@@ -749,6 +751,99 @@ export function AIAuditViewer({ initialFilters = {}, className = '' }: AIAuditVi
     setSelectedEntry(null);
   }, []);
 
+  const auditColumns: Column<AuditLogEntry>[] = [
+    {
+      key: 'timestamp',
+      title: 'Tarih',
+      render: (_, entry) => (
+        <div className="flex items-center text-sm text-gray-500 whitespace-nowrap">
+          <Clock size={12} className="mr-1 text-gray-400" />
+          {formatDate(entry.timestamp)}
+        </div>
+      ),
+    },
+    {
+      key: 'event_type',
+      title: 'Event Tipi',
+      render: (_, entry) => {
+        const eventConfig = EVENT_TYPE_CONFIG[entry.event_type] || {
+          label: entry.event_type,
+          color: 'text-gray-700',
+          bgColor: 'bg-gray-50',
+        };
+
+        return (
+          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${eventConfig.bgColor} ${eventConfig.color}`}>
+            {eventConfig.label}
+          </span>
+        );
+      },
+    },
+    {
+      key: 'tenant_id',
+      title: 'Tenant',
+      render: (_, entry) => (
+        <div className="truncate max-w-[120px] text-sm text-gray-600" title={entry.tenant_id}>
+          {entry.tenant_id}
+        </div>
+      ),
+    },
+    {
+      key: 'user_id',
+      title: 'Kullanıcı',
+      render: (_, entry) => (
+        <div className="text-sm text-gray-600">
+          <div className="truncate max-w-[120px]" title={entry.user_id}>{entry.user_id}</div>
+          {entry.user_email && (
+            <div className="text-xs text-gray-400 truncate max-w-[120px]" title={entry.user_email}>
+              {entry.user_email}
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'risk_level',
+      title: 'Risk',
+      render: (_, entry) => {
+        const riskConfig = entry.risk_level ? RISK_LEVEL_CONFIG[entry.risk_level] : null;
+        return riskConfig ? (
+          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${riskConfig.bgColor} ${riskConfig.color}`}>
+            {riskConfig.label}
+          </span>
+        ) : (
+          <span className="text-gray-400 text-xs">-</span>
+        );
+      },
+    },
+    {
+      key: 'outcome',
+      title: 'Sonuç',
+      render: (_, entry) => {
+        const outcomeConfig = OUTCOME_CONFIG[entry.outcome] || OUTCOME_CONFIG.success;
+        return (
+          <span className={`inline-flex items-center text-xs font-medium ${outcomeConfig.color}`}>
+            {outcomeConfig.icon}
+            <span className="ml-1">{outcomeConfig.label}</span>
+          </span>
+        );
+      },
+    },
+    {
+      key: '_action',
+      title: 'İşlem',
+      render: (_, entry) => (
+        <button
+          onClick={() => handleViewDetails(entry)}
+          className="inline-flex items-center px-2 py-1 text-xs font-medium text-primary-600 hover:text-primary-800 hover:bg-primary-50 rounded"
+        >
+          <Eye size={14} className="mr-1" />
+          Detay
+        </button>
+      ),
+    },
+  ];
+
   // Error state
   if (isError) {
     return (
@@ -832,44 +927,12 @@ export function AIAuditViewer({ initialFilters = {}, className = '' }: AIAuditVi
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tarih
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Event Tipi
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tenant
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Kullanıcı
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Risk
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Sonuç
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      İşlem
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {entries.map((entry) => (
-                    <AuditLogRow
-                      key={entry.log_id}
-                      entry={entry}
-                      onViewDetails={handleViewDetails}
-                    />
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <DataTable<AuditLogEntry>
+              data={entries}
+              columns={auditColumns}
+              rowKey="log_id"
+              emptyText="Kayıt bulunamadı"
+            />
 
             {/* Load More / Infinite Scroll Trigger */}
             <div ref={loadMoreRef} className="p-4 text-center border-t border-gray-100">

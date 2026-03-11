@@ -242,6 +242,26 @@ class InvoiceServiceNew:
                 except KeyError:
                     inv_status = InvoiceStatus.SENT
             
+            # Determine e-document status from BirFatura raw data
+            birfatura_status = raw.get('Status')
+            edoc_status = None
+            has_pdf = False
+            if birfatura_status is not None:
+                status_map = {
+                    1200: 'queued',      # Kuyruğa Alındı
+                    1210: 'processing',  # İşleniyor
+                    1230: 'packaging',   # Zarflanıyor
+                    1300: 'delivered',   # GİB'e İletildi
+                    1310: 'waiting',     # GİB Onay Bekleniyor
+                    1320: 'approved',    # Kabul Edildi
+                    1330: 'rejected',    # Reddedildi
+                    1340: 'returned',    # İade Edildi
+                }
+                edoc_status = status_map.get(int(birfatura_status), f'unknown-{birfatura_status}')
+                has_pdf = int(birfatura_status) >= 1300
+            elif status_val == 'DRAFT':
+                edoc_status = 'draft'
+
             invoice_responses.append(OutgoingInvoiceResponse(
                 invoice_id=str(invoice.id),
                 party_id="",
@@ -259,6 +279,8 @@ class InvoiceServiceNew:
                 profile_id=meta["profile_id"] or None,
                 system_type_code=meta["system_type_code"] or None,
                 can_create_proforma=False,
+                edocument_status=edoc_status,
+                has_gib_pdf=has_pdf,
                 created_at=invoice.created_at
             ))
         

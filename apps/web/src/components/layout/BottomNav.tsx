@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Link, useLocation, useNavigate } from '@tanstack/react-router';
+import { Button } from '@x-ear/ui-web';
 import {
     BarChart3,
     Users,
@@ -34,7 +35,7 @@ function useNewButtonConfig(pathname: string) {
         return { label: 'Yeni Ürün', action: () => fireNewAction() };
     }
     if (pathname.startsWith('/sales')) {
-        return { label: 'Yeni Satış', action: () => navigate({ to: '/pos/' }) };
+        return { label: 'Yeni Satış', action: () => navigate({ to: '/pos' }) };
     }
     if (pathname.startsWith('/purchases')) {
         return { label: 'Yeni Alış', action: () => navigate({ to: '/invoices/new' }) };
@@ -42,7 +43,7 @@ function useNewButtonConfig(pathname: string) {
     if (pathname.startsWith('/cashflow')) {
         return { label: 'Yeni Kayıt', action: () => fireNewAction() };
     }
-    return { label: 'Yeni', action: () => navigate({ to: '/pos/' }) };
+    return { label: 'Yeni', action: () => navigate({ to: '/pos' }) };
 }
 
 export const BottomNav: React.FC = () => {
@@ -67,11 +68,12 @@ export const BottomNav: React.FC = () => {
 
                     if (item.isCenter) {
                         return (
-                            <button
+                            <Button
                                 key={idx}
                                 type="button"
+                                variant="ghost"
                                 onClick={item.onClick}
-                                className="flex flex-col items-center justify-center -translate-y-4"
+                                className="flex h-auto flex-col items-center justify-center -translate-y-4 !bg-transparent !p-0 hover:!bg-transparent"
                             >
                                 <div className="w-14 h-14 rounded-full bg-blue-600 shadow-lg shadow-blue-500/40 flex items-center justify-center text-white active:scale-95 transition-transform">
                                     <item.icon size={28} />
@@ -79,7 +81,7 @@ export const BottomNav: React.FC = () => {
                                 <span className="text-[10px] mt-1 font-medium text-blue-600 dark:text-blue-400">
                                     {item.label}
                                 </span>
-                            </button>
+                            </Button>
                         );
                     }
 

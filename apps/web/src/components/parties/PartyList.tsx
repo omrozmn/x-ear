@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { Button, Loading, Badge, Checkbox, Modal } from '@x-ear/ui-web';
+import { Button, Loading, Badge, Checkbox, Modal, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import {
   User,
   Phone,
@@ -49,36 +50,6 @@ interface PartyListProps {
   className?: string;
 }
 
-interface SortableHeaderProps {
-  field: string;
-  label: string;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
-  onSort?: (field: string) => void;
-}
-
-function SortableHeader({ field, label, sortBy, sortOrder, onSort }: SortableHeaderProps) {
-  const isActive = sortBy === field;
-
-  return (
-    <Button
-      variant="ghost"
-      onClick={() => onSort?.(field)}
-      className={`!p-0 !h-auto flex items-center space-x-1 text-left font-medium transition-colors ${isActive
-          ? 'text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300'
-          : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
-        }`}
-    >
-      <span>{label}</span>
-      {isActive && (
-        <span className="text-xs ml-1">
-          {sortOrder === 'asc' ? '↑' : '↓'}
-        </span>
-      )}
-    </Button>
-  );
-}
-
 /**
  * PartyList Component
  * Displays a list of parties with various view modes and actions
@@ -96,8 +67,6 @@ export function PartyList({
   showSelection = false,
   showActions = true,
   viewMode = 'list',
-  sortBy,
-  sortOrder,
   onSort,
   pagination,
   className = ''
@@ -123,27 +92,6 @@ export function PartyList({
     return '-';
   }, [branches]);
 
-  const isAllSelected = useMemo(() => {
-    return parties.length > 0 && parties.every(p => p.id && selectedParties.includes(p.id));
-  }, [parties, selectedParties]);
-
-  const isPartiallySelected = useMemo(() => {
-    return selectedParties.length > 0 && !isAllSelected;
-  }, [selectedParties, isAllSelected]);
-
-  const handleSelectAll = useCallback(() => {
-    if (isAllSelected) {
-      // Deselect all
-      parties.forEach(p => p.id && onPartySelect?.(p.id));
-    } else {
-      // Select all
-      parties.forEach(p => {
-        if (p.id && !selectedParties.includes(p.id)) {
-          onPartySelect?.(p.id);
-        }
-      });
-    }
-  }, [parties, selectedParties, isAllSelected, onPartySelect]);
 
   if (loading) {
     return (
@@ -249,348 +197,174 @@ export function PartyList({
   }
 
   // List view (default)
+  const partyColumns: Column<Party>[] = [
+    ...(showSelection ? [{
+      key: '_selection',
+      title: '',
+      render: (_: unknown, party: Party) => (
+        <Checkbox
+          checked={party.id ? selectedParties.includes(party.id) : false}
+          onChange={() => party.id && onPartySelect?.(party.id)}
+          onClick={(e: React.MouseEvent) => e.stopPropagation()}
+        />
+      ),
+    }] : []),
+    {
+      key: 'name',
+      title: t('list.columns.name'),
+      sortable: true,
+      render: (_, party) => (
+        <div className="flex items-center">
+          <div className="flex-shrink-0 h-10 w-10">
+            {(() => {
+              const g = String(party.gender || '').toLowerCase();
+              const isFemale = ['f', 'female', 'kadın', 'k', 'woman', 'w'].includes(g) || g.includes('kad');
+              return (
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${isFemale ? 'bg-pink-100 dark:bg-pink-900/30' : 'bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30'}`}>
+                  <User className={`h-5 w-5 ${isFemale ? 'text-pink-600 dark:text-pink-400' : 'text-blue-600 dark:text-blue-400'}`} />
+                </div>
+              );
+            })()}
+          </div>
+          <div className="ml-4">
+            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              {party.firstName} {party.lastName}
+            </div>
+            {party.email && (
+              <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[180px]">{party.email}</div>
+            )}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'tcNumber',
+      title: t('list.columns.tc'),
+      render: (_, party) => (
+        <span className="text-sm text-gray-900 dark:text-gray-100 font-mono">{party.tcNumber || '-'}</span>
+      ),
+    },
+    {
+      key: 'phone',
+      title: t('list.columns.phone'),
+      render: (_, party) => (
+        <span className="text-sm text-gray-900 dark:text-gray-100">{formatPhone(party.phone || undefined)}</span>
+      ),
+    },
+    {
+      key: 'segment',
+      title: t('list.columns.segment'),
+      sortable: true,
+      render: (_, party) => (
+        <div
+          className="cursor-pointer"
+          onClick={(e: React.MouseEvent) => { e.stopPropagation(); onTagClick?.(party); }}
+          title={t('list.update_tag_tooltip')}
+        >
+          <SegmentBadge segment={party.segment || undefined} />
+        </div>
+      ),
+    },
+    {
+      key: 'acquisitionType',
+      title: t('list.columns.acquisition'),
+      sortable: true,
+      render: (_, party) => (
+        <div
+          className="cursor-pointer"
+          onClick={(e: React.MouseEvent) => { e.stopPropagation(); onTagClick?.(party); }}
+          title={t('list.update_tag_tooltip')}
+        >
+          <AcquisitionStatusBadge acquisitionType={party.acquisitionType || undefined} />
+        </div>
+      ),
+    },
+    {
+      key: 'branchId',
+      title: t('list.columns.branch'),
+      sortable: true,
+      render: (_, party) => (
+        <div
+          className="cursor-pointer"
+          onClick={(e: React.MouseEvent) => { e.stopPropagation(); onTagClick?.(party); }}
+          title={t('list.update_tag_tooltip')}
+        >
+          <Badge variant="default" size="sm">{getBranchName(party)}</Badge>
+        </div>
+      ),
+    },
+    {
+      key: 'status',
+      title: t('list.columns.status'),
+      sortable: true,
+      render: (_, party) => (
+        <div
+          className="cursor-pointer"
+          onClick={(e: React.MouseEvent) => { e.stopPropagation(); onTagClick?.(party); }}
+          title={t('list.update_tag_tooltip')}
+        >
+          <StatusBadge status={party.status || undefined} />
+        </div>
+      ),
+    },
+    {
+      key: 'createdAt',
+      title: t('list.columns.created_at'),
+      sortable: true,
+      render: (_, party) => (
+        <span className="text-sm text-gray-500 dark:text-gray-400">{formatDate(party.createdAt || undefined)}</span>
+      ),
+    },
+    ...(showActions ? [{
+      key: '_actions',
+      title: t('list.columns.actions'),
+      align: 'right' as const,
+      render: (_: unknown, party: Party) => (
+        <div className="flex items-center justify-end space-x-2">
+          <Button
+            variant="ghost"
+            onClick={(e: React.MouseEvent) => { e.stopPropagation(); setCommunicationParty(party); }}
+            className="h-11 w-11 !p-0 inline-flex items-center justify-center rounded-xl hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 text-gray-400 dark:text-gray-500 transition-colors"
+            title={t('nav.communication', { ns: 'layout' })}
+          >
+            <MessageSquare className="h-6 w-6" />
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={(e: React.MouseEvent) => { e.stopPropagation(); onDelete?.(party); }}
+            className="h-11 w-11 !p-0 inline-flex items-center justify-center rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 text-gray-400 dark:text-gray-500 transition-colors"
+            title={t('delete', { ns: 'common' })}
+          >
+            <Trash2 className="h-6 w-6" />
+          </Button>
+        </div>
+      ),
+    }] : []),
+  ];
+
   return (
     <>
-      <div className={`bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden ${className}`}>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-700">
-              <tr>
-                {showSelection && (
-                  <th className="px-4 py-3 text-left w-12">
-                    <Checkbox
-                      checked={isAllSelected}
-                      indeterminate={isPartiallySelected}
-                      onChange={handleSelectAll}
-                    />
-                  </th>
-                )}
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[200px]">
-                  <SortableHeader
-                    field="name"
-                    label={t('list.columns.name')}
-                    sortBy={sortBy}
-                    sortOrder={sortOrder}
-                    onSort={onSort}
-                  />
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px]">
-                  {t('list.columns.tc')}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[140px]">
-                  {t('list.columns.phone')}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[100px]">
-                  <SortableHeader
-                    field="segment"
-                    label={t('list.columns.segment')}
-                    sortBy={sortBy}
-                    sortOrder={sortOrder}
-                    onSort={onSort}
-                  />
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px]">
-                  <SortableHeader
-                    field="acquisitionType"
-                    label={t('list.columns.acquisition')}
-                    sortBy={sortBy}
-                    sortOrder={sortOrder}
-                    onSort={onSort}
-                  />
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px]">
-                  <SortableHeader
-                    field="branchId"
-                    label={t('list.columns.branch')}
-                    sortBy={sortBy}
-                    sortOrder={sortOrder}
-                    onSort={onSort}
-                  />
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[100px]">
-                  <SortableHeader
-                    field="status"
-                    label={t('list.columns.status')}
-                    sortBy={sortBy}
-                    sortOrder={sortOrder}
-                    onSort={onSort}
-                  />
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[120px]">
-                  <SortableHeader
-                    field="createdAt"
-                    label={t('list.columns.created_at')}
-                    sortBy={sortBy}
-                    sortOrder={sortOrder}
-                    onSort={onSort}
-                  />
-                </th>
-                {showActions && (
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider min-w-[160px]">
-                    {t('list.columns.actions')}
-                  </th>
-                )}
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {parties.map((party) => (
-                <tr
-                  key={party.id}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors duration-150"
-                  onClick={() => {
-                    console.log('=== TABLE ROW CLICK ===', party);
-                    console.log('onPartyClick:', onPartyClick);
-                    console.log('onView:', onView);
-                    const handler = onView || onPartyClick;
-                    console.log('Handler to call:', handler);
-                    if (handler) {
-                      handler(party);
-                    } else {
-                      console.error('No click handler available!');
-                    }
-                  }}
-                  onMouseEnter={() => setHoveredParty(party.id || null)}
-                  onMouseLeave={() => setHoveredParty(null)}
-                >
-                  {showSelection && (
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <Checkbox
-                        checked={party.id ? selectedParties.includes(party.id) : false}
-                        onChange={() => party.id && onPartySelect?.(party.id)}
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    </td>
-                  )}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10">
-                        {(() => {
-                          const g = String(party.gender || '').toLowerCase();
-                          const isFemale = ['f', 'female', 'kadın', 'k', 'woman', 'w'].includes(g) || g.includes('kad');
-                          return (
-                            <div className={`h-10 w-10 rounded-full flex items-center justify-center ${isFemale ? 'bg-pink-100 dark:bg-pink-900/30' : 'bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30'}`}>
-                              <User className={`h-5 w-5 ${isFemale ? 'text-pink-600 dark:text-pink-400' : 'text-blue-600 dark:text-blue-400'}`} />
-                            </div>
-                          );
-                        })()}
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                          {party.firstName} {party.lastName}
-                        </div>
-                        {party.email && (
-                          <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[180px]">{party.email}</div>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-mono">
-                    {party.tcNumber || '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                    {formatPhone(party.phone || undefined)}
-                  </td>
-                  <td
-                    className="px-6 py-4 whitespace-nowrap cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onTagClick?.(party);
-                    }}
-                    title={t('list.update_tag_tooltip')}
-                  >
-                    <SegmentBadge segment={party.segment || undefined} />
-                  </td>
-                  <td
-                    className="px-6 py-4 whitespace-nowrap cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onTagClick?.(party);
-                    }}
-                    title={t('list.update_tag_tooltip')}
-                  >
-                    <AcquisitionStatusBadge acquisitionType={party.acquisitionType || undefined} />
-                  </td>
-                  <td
-                    className="px-6 py-4 whitespace-nowrap cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onTagClick?.(party);
-                    }}
-                    title={t('list.update_tag_tooltip')}
-                  >
-                    <Badge variant="default" size="sm">{getBranchName(party)}</Badge>
-                  </td>
-                  <td
-                    className="px-6 py-4 whitespace-nowrap cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onTagClick?.(party);
-                    }}
-                    title={t('list.update_tag_tooltip')}
-                  >
-                    <StatusBadge status={party.status || undefined} />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {formatDate(party.createdAt || undefined)}
-                  </td>
-                  {showActions && (
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
-                        <Button
-                          variant="ghost"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setCommunicationParty(party);
-                          }}
-                          className="h-11 w-11 !p-0 inline-flex items-center justify-center rounded-xl hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 text-gray-400 dark:text-gray-500 transition-colors"
-                          title={t('nav.communication', { ns: 'layout' })}
-                        >
-                          <MessageSquare className="h-6 w-6" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onDelete?.(party);
-                          }}
-                          className="h-11 w-11 !p-0 inline-flex items-center justify-center rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 text-gray-400 dark:text-gray-500 transition-colors"
-                          title={t('delete', { ns: 'common' })}
-                        >
-                          <Trash2 className="h-6 w-6" />
-                        </Button>
-                      </div>
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        {pagination && (
-          <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex items-center text-sm text-gray-700 dark:text-gray-300">
-              <span>
-                {pagination.total > 0 
-                  ? `${(pagination.current - 1) * pagination.pageSize + 1}-${Math.min(pagination.current * pagination.pageSize, pagination.total)}` 
-                  : '0'} / {pagination.total} kayıt gösteriliyor
-              </span>
-              {pagination.showSizeChanger && (
-                <select
-                  value={pagination.pageSize}
-                  onChange={(e) => pagination.onChange(1, Number(e.target.value))}
-                  className="ml-4 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {(pagination.pageSizeOptions || [10, 20, 50, 100]).map(size => (
-                    <option key={size} value={size}>{size} / sayfa</option>
-                  ))}
-                </select>
-              )}
-            </div>
-
-            <div className="flex items-center space-x-1">
-              {/* First page button */}
-              <button
-                onClick={() => pagination.onChange(1, pagination.pageSize)}
-                disabled={pagination.current <= 1}
-                className="px-2 py-1 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                title="İlk sayfa"
-              >
-                İlk
-              </button>
-
-              {/* Previous page button */}
-              <button
-                onClick={() => pagination.onChange(pagination.current - 1, pagination.pageSize)}
-                disabled={pagination.current <= 1}
-                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Önceki sayfa"
-              >
-                ←
-              </button>
-
-              {/* Page numbers */}
-              <div className="flex items-center space-x-1">
-                {(() => {
-                  const totalPages = Math.ceil(pagination.total / pagination.pageSize);
-                  const maxVisible = 5;
-                  const pages: number[] = [];
-
-                  if (totalPages <= maxVisible) {
-                    for (let i = 1; i <= totalPages; i++) {
-                      pages.push(i);
-                    }
-                  } else {
-                    const start = Math.max(1, pagination.current - Math.floor(maxVisible / 2));
-                    const end = Math.min(totalPages, start + maxVisible - 1);
-
-                    for (let i = start; i <= end; i++) {
-                      pages.push(i);
-                    }
-
-                    if (start > 1) {
-                      pages.unshift(-1);
-                      pages.unshift(1);
-                    }
-                    if (end < totalPages) {
-                      pages.push(-2);
-                      pages.push(totalPages);
-                    }
-                  }
-
-                  return pages.map((page, index) => {
-                    if (page === -1 || page === -2) {
-                      return (
-                        <span key={`ellipsis-${index}`} className="px-2 py-1 text-gray-400">
-                          ...
-                        </span>
-                      );
-                    }
-
-                    return (
-                      <button
-                        key={page}
-                        onClick={() => pagination.onChange(page, pagination.pageSize)}
-                        className={`
-                          px-3 py-1 text-sm rounded-xl transition-colors
-                          ${page === pagination.current
-                            ? 'bg-blue-600 text-white'
-                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                          }
-                        `}
-                      >
-                        {page}
-                      </button>
-                    );
-                  });
-                })()}
-              </div>
-
-              {/* Next page button */}
-              <button
-                onClick={() => pagination.onChange(pagination.current + 1, pagination.pageSize)}
-                disabled={pagination.current >= Math.ceil(pagination.total / pagination.pageSize)}
-                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Sonraki sayfa"
-              >
-                →
-              </button>
-
-              {/* Last page button */}
-              <button
-                onClick={() => pagination.onChange(Math.ceil(pagination.total / pagination.pageSize), pagination.pageSize)}
-                disabled={pagination.current >= Math.ceil(pagination.total / pagination.pageSize)}
-                className="px-2 py-1 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Son sayfa"
-              >
-                Son
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
+      <DataTable<Party>
+        data={parties}
+        columns={partyColumns}
+        rowKey="id"
+        onRowClick={(party) => {
+          console.log('=== TABLE ROW CLICK ===', party);
+          const handler = onView || onPartyClick;
+          if (handler) handler(party);
+        }}
+        rowSelection={showSelection && onPartySelect ? {
+          selectedRowKeys: selectedParties,
+          onChange: (keys) => {
+            const newSet = new Set(keys.map(String));
+            const currentSet = new Set(selectedParties);
+            newSet.forEach(k => { if (!currentSet.has(k)) onPartySelect!(k); });
+            currentSet.forEach(k => { if (!newSet.has(k)) onPartySelect!(k); });
+          },
+        } : undefined}
+        onSort={(key) => onSort?.(key)}
+        pagination={pagination}
+      />
       {/* Communication Modal */}
       {communicationParty && (
         <Modal
