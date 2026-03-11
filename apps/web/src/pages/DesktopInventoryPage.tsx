@@ -12,6 +12,7 @@ import { InventoryItem } from '../types/inventory';
 
 import { listInventory, deleteInventory } from '@/api/client/inventory.client';
 import { unwrapArray } from '../utils/response-unwrap';
+import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 
 
 
@@ -207,35 +208,35 @@ export const DesktopInventoryPage: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Envanter Yönetimi</h1>
-          <p className="text-gray-600 dark:text-gray-400">İşitme cihazları ve aksesuarlarını yönetin</p>
-        </div>
-        <div className="flex items-center space-x-3">
-          <Button
-            variant="outline"
-            onClick={exportInventory}
-            icon={<Download className="w-4 h-4" />}
-          >
-            Dışa Aktar
-          </Button>
-          <Button
-            variant="outline"
-            onClick={importInventory}
-            icon={<Upload className="w-4 h-4" />}
-          >
-            İçe Aktar
-          </Button>
-          {/* Inventory import button removed per request; importer is available from page header elsewhere if needed */}
-          <Button
-            onClick={() => setIsAddModalOpen(true)}
-            icon={<Plus className="w-4 h-4" />}
-          >
-            Yeni Ürün
-          </Button>
-        </div>
-      </div>
+      <DesktopPageHeader
+        title="Envanter Yönetimi"
+        description="İşitme cihazları ve aksesuarlarını yönetin"
+        eyebrow="Inventory"
+        actions={(
+          <>
+            <Button
+              variant="outline"
+              onClick={exportInventory}
+              icon={<Download className="w-4 h-4" />}
+            >
+              Dışa Aktar
+            </Button>
+            <Button
+              variant="outline"
+              onClick={importInventory}
+              icon={<Upload className="w-4 h-4" />}
+            >
+              İçe Aktar
+            </Button>
+            <Button
+              onClick={() => setIsAddModalOpen(true)}
+              icon={<Plus className="w-4 h-4" />}
+            >
+              Yeni Ürün
+            </Button>
+          </>
+        )}
+      />
 
       {/* Stats */}
       <InventoryStats />

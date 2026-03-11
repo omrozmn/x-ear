@@ -134,9 +134,25 @@ def list_supplier_invoice_items(
             PurchaseInvoice.sender_name.ilike(f"%{supplier_name}%")
         ).all()
 
+        # Build a set of inventory product names for quick lookup
+        from core.models.inventory import InventoryItem
+        inv_by_name = {}
+        inv_items = db.query(InventoryItem.id, InventoryItem.name).filter(
+            InventoryItem.tenant_id == tenant_id
+        ).all()
+        for inv in inv_items:
+            inv_by_name[inv.name.lower().strip()] = inv.id
+
         items = []
         for invoice in invoices:
             for item in (invoice.items or []):
+                # Resolve inventory_id: use direct link or match by name
+                resolved_inv_id = item.inventory_id
+                if not resolved_inv_id and item.product_name:
+                    resolved_inv_id = inv_by_name.get(item.product_name.lower().strip())
+                    if resolved_inv_id and not item.inventory_id:
+                        item.inventory_id = resolved_inv_id
+
                 items.append(SupplierInvoiceItemResponse(
                     id=item.id,
                     purchase_invoice_id=invoice.id,
@@ -151,8 +167,14 @@ def list_supplier_invoice_items(
                     tax_rate=item.tax_rate or 18,
                     tax_amount=item.tax_amount,
                     line_total=item.line_total,
-                    inventory_id=item.inventory_id,
+                    inventory_id=resolved_inv_id,
                 ))
+
+        # Persist any newly resolved inventory_id links
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
 
         return ResponseEnvelope(
             success=True,
@@ -395,10 +417,29 @@ def _normalize_invoice_type_code(value: object) -> str:
 
 
 def _get_provider_pdf_link_for_invoice(invoice: "PurchaseInvoice", tenant_id: str, db: Session, raw_data: dict[str, object] | None = None) -> str | None:
+    def _extract_http_link(candidate: object) -> str | None:
+        if isinstance(candidate, str):
+            value = candidate.strip()
+            if value.startswith("http://") or value.startswith("https://"):
+                return value
+            return None
+        if isinstance(candidate, dict):
+            for key in ("pdfLink", "url", "link", "downloadUrl", "downloadURL"):
+                extracted = _extract_http_link(candidate.get(key))
+                if extracted:
+                    return extracted
+            return None
+        if isinstance(candidate, list):
+            for item in candidate:
+                extracted = _extract_http_link(item)
+                if extracted:
+                    return extracted
+        return None
+
     raw_data = raw_data or {}
     provider_response = raw_data.get("_provider_response") if isinstance(raw_data, dict) else None
     if isinstance(provider_response, dict):
-        cached_link = str(provider_response.get("pdfLink") or "").strip()
+        cached_link = _extract_http_link(provider_response.get("pdfLink"))
         if cached_link:
             return cached_link
 
@@ -418,9 +459,7 @@ def _get_provider_pdf_link_for_invoice(invoice: "PurchaseInvoice", tenant_id: st
     })
     if not pdf_link_resp.get("Success"):
         return None
-    pdf_links = pdf_link_resp.get("Result") or []
-    first_link = str(pdf_links[0]).strip() if pdf_links else ""
-    return first_link or None
+    return _extract_http_link(pdf_link_resp.get("Result"))
 
 
 def _render_minimal_pdf(invoice: "PurchaseInvoice") -> bytes:

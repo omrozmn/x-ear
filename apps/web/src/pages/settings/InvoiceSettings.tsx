@@ -453,7 +453,7 @@ export function InvoiceSettings() {
                             Varsayılan Gönderici Etiketi
                         </h4>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            BirFatura hesabınızda birden fazla GB etiketi varsa varsayılanı seçebilirsiniz.
+                            E-Fatura hesabınızda birden fazla GB etiketi varsa varsayılanı seçebilirsiniz.
                         </p>
                     </div>
                     <Select

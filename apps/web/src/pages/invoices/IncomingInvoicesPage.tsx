@@ -20,11 +20,6 @@ async function fetchInvoiceDocument(invoiceId: number | string, format: 'pdf' | 
   return { data: resp.data, contentType };
 }
 
-async function fetchInvoiceDocumentUrl(invoiceId: number | string): Promise<string | null> {
-  const resp = await apiClient.get<{ data?: { pdfUrl?: string | null } }>(`/api/invoices/${invoiceId}/document-url`);
-  return resp.data?.data?.pdfUrl || null;
-}
-
 async function postInvoiceAction(invoiceId: number | string, action: 'accept' | 'reject' | 'cancel', body?: object): Promise<void> {
   await apiClient.post(`/api/invoices/${invoiceId}/${action}`, body ?? {});
 }
@@ -170,12 +165,6 @@ export function IncomingInvoicesPage() {
     const toastId = toast.loading('Fatura yükleniyor...');
     try {
       void markInvoiceRead(invoice.invoiceId).catch(() => undefined);
-      const directUrl = await fetchInvoiceDocumentUrl(invoice.invoiceId);
-      if (directUrl) {
-        window.open(directUrl, '_blank', 'noopener,noreferrer');
-        toast.dismiss(toastId);
-        return;
-      }
       const { data: buf, contentType } = await fetchInvoiceDocument(invoice.invoiceId, 'pdf');
       const isPdf = contentType.includes('application/pdf');
       const mimeType = isPdf ? 'application/pdf' : 'text/html';
@@ -429,7 +418,7 @@ export function IncomingInvoicesPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Gelen Faturalar</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            BirFatura'dan gelen faturalar
+            GİB'den gelen faturalar
           </p>
         </div>
         <div className="flex gap-3">

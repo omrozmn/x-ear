@@ -155,12 +155,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       />
 
       {/* Main Content */}
-      <div className={cn(
-        "flex-1 flex flex-col transition-[margin] duration-300 min-w-0",
-        isMobile ? "ml-0" : (
-          isTablet ? "ml-16" : (sidebarOpen ? "ml-0 md:ml-64" : "ml-0 md:ml-16")
-        )
-      )}>
+       <div className={cn(
+         "flex-1 flex flex-col transition-[margin] duration-300 min-w-0",
+         isMobile ? "ml-0" : (
+           isTablet ? "ml-24" : (sidebarOpen ? "ml-0 md:ml-72" : "ml-0 md:ml-24")
+         )
+       )}>
         {/* Header - Modern Floating Glassmorphism Pill */}
         {!hideGlobalHeader && (
         <header className="sticky top-2 md:top-4 z-40 mx-2 md:mx-6 mb-2 md:mb-4 px-3 sm:px-4 md:px-6 py-2 md:py-3 bg-white/70 dark:bg-gray-800/70 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50 shadow-sm rounded-xl md:rounded-2xl transition-all">

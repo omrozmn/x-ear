@@ -49,11 +49,6 @@ async function fetchInvoiceDocument(invoiceId: string | number, format: 'pdf' | 
   return { data: resp.data, contentType };
 }
 
-async function fetchInvoiceDocumentUrl(invoiceId: string | number): Promise<string | null> {
-  const resp = await apiClient.get<{ data?: { pdfUrl?: string | null } }>(`/api/invoices/${invoiceId}/document-url`);
-  return resp.data?.data?.pdfUrl || null;
-}
-
 async function postInvoiceAction(invoiceId: string | number, action: 'accept' | 'reject' | 'cancel', body?: object): Promise<void> {
   await apiClient.post(`/api/invoices/${invoiceId}/${action}`, body ?? {});
 }
@@ -98,7 +93,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
   // Clear selection on page/filter change
   useEffect(() => { setSelectedIds(new Set()); }, [currentPage, statusFilter]);
 
-  // Fetch BirFatura document logs and live provider status when status modal opens
+  // Fetch GİB document logs and live provider status when status modal opens
   useEffect(() => {
     if (!statusModal) {
       setStatusLogs([]);
@@ -183,7 +178,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     let label = '';
     let icon = <AlertCircle className="w-3 h-3 mr-1" />;
 
-    // Use edocumentStatus (BirFatura real status) when available
+    // Use edocumentStatus (GİB real status) when available
     if (edoc) {
       if (edoc === 'approved') {
         style = 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
@@ -266,12 +261,6 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     setActiveMenu(null);
     const toastId = toast.loading('Fatura yükleniyor...');
     try {
-      const directUrl = await fetchInvoiceDocumentUrl(invoice.invoiceId);
-      if (directUrl) {
-        window.open(directUrl, '_blank', 'noopener,noreferrer');
-        toast.dismiss(toastId);
-        return;
-      }
       const { data: buf, contentType } = await fetchInvoiceDocument(invoice.invoiceId, 'pdf');
       const isPdf = contentType.includes('application/pdf');
       const mimeType = isPdf ? 'application/pdf' : 'text/html';
@@ -589,7 +578,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Giden Faturalar</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm">
-            BirFatura üzerinden gönderilen faturalar
+            GİB üzerinden gönderilen faturalar
           </p>
         </div>
         <div className="hidden md:flex gap-2 flex-wrap">
@@ -678,7 +667,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 flex items-center gap-3">
           <Send className="text-blue-600 dark:text-blue-400 flex-shrink-0" size={20} />
           <p className="text-sm text-blue-800 dark:text-blue-300 flex-1">
-            Bu sayfada BirFatura üzerinden gönderilmiş e-fatura ve e-irsaliyeleriniz listelenmektedir.
+            Bu sayfada GİB üzerinden gönderilmiş e-fatura ve e-irsaliyeleriniz listelenmektedir.
           </p>
           <Button
             variant="ghost"
@@ -883,7 +872,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
         </div>
       )}
 
-      {/* Status Modal with BirFatura Log History */}
+      {/* Status Modal with GİB Log History */}
       {statusModal && (
         <div
           className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4"
@@ -920,7 +909,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
                 <div className="flex items-center justify-between gap-3">
                   <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                     <RefreshCw className="w-4 h-4 text-gray-500" />
-                    GIB / BirFatura Durumu
+                    GİB Durumu
                   </h3>
                   <div className="flex items-center gap-2">
                     <Button variant="outline" onClick={handleRefreshProviderStatus} disabled={providerStatusLoading} className="text-xs">
@@ -962,7 +951,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
                 )}
               </div>
 
-              {/* BirFatura Log History */}
+              {/* GİB Log History */}
               <div>
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                   <Clock className="w-4 h-4 text-gray-500" />

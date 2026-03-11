@@ -89,7 +89,7 @@ export function AutomationSettings() {
       key: 'autoAddSuppliers',
       icon: Users,
       title: 'Önerilen Tedarikçileri Otomatik Ekle',
-      description: 'BirFatura üzerinden gelen faturalardaki tedarikçiler otomatik olarak "Tedarikçilerim" listesine eklenir.',
+      description: 'GİB üzerinden gelen faturalardaki tedarikçiler otomatik olarak "Tedarikçilerim" listesine eklenir.',
       color: 'indigo',
     },
     {

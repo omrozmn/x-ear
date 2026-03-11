@@ -24,11 +24,6 @@ async function fetchInvoiceDocument(invoiceId: string | number, format: 'pdf' | 
     return { data: resp.data, contentType };
 }
 
-async function fetchInvoiceDocumentUrl(invoiceId: string | number): Promise<string | null> {
-    const resp = await apiClient.get<{ data?: { pdfUrl?: string | null } }>(`/api/invoices/${invoiceId}/document-url`);
-    return resp.data?.data?.pdfUrl || null;
-}
-
 export const MobileInvoicesPage: React.FC = () => {
     const navigate = useNavigate();
     const [invoices, setInvoices] = useState<OutgoingInvoiceResponse[]>([]);
@@ -40,6 +35,8 @@ export const MobileInvoicesPage: React.FC = () => {
     const [searchValue, setSearchValue] = useState('');
     const { triggerSelection } = useHaptic();
     const debouncedSearch = useDebounce(searchValue, 300);
+
+    const [pdfModal, setPdfModal] = useState<{ open: boolean; blobUrl: string; title: string; fileName: string } | null>(null);
 
     // Selection State
     const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -158,22 +155,22 @@ export const MobileInvoicesPage: React.FC = () => {
             return;
         }
 
+        const toastId = toast.loading('Fatura yükleniyor...');
         try {
-            const invoiceId = invoice.invoiceId;
-            const directUrl = await fetchInvoiceDocumentUrl(invoiceId);
-            if (directUrl) {
-                window.open(directUrl, '_blank', 'noopener,noreferrer');
-                return;
-            }
-            const { data, contentType } = await fetchInvoiceDocument(invoiceId, 'pdf');
+            const { data, contentType } = await fetchInvoiceDocument(invoice.invoiceId, 'pdf');
             const isPdf = contentType.includes('application/pdf');
-            const blob = new Blob([data], { type: isPdf ? 'application/pdf' : 'text/html' });
-            const url = URL.createObjectURL(blob);
-            window.open(isPdf ? `${url}#pagemode=none&toolbar=1` : url, '_blank', 'noopener,noreferrer');
+            const mimeType = isPdf ? 'application/pdf' : 'text/html';
+            const blob = new Blob([data], { type: mimeType });
+            const baseUrl = URL.createObjectURL(blob);
+            const url = isPdf ? `${baseUrl}#pagemode=none&toolbar=1` : baseUrl;
+            if (pdfModal?.blobUrl) URL.revokeObjectURL(pdfModal.blobUrl.split('#')[0]);
+            toast.dismiss(toastId);
+            const fileName = `${invoice.invoiceNumber || invoice.invoiceId}${isPdf ? '.pdf' : '.html'}`;
+            setPdfModal({ open: true, blobUrl: url, title: `${invoice.invoiceNumber} — ${`${invoice.partyFirstName || ''} ${invoice.partyLastName || ''}`.trim()}`, fileName });
         } catch {
-            toast.error('Fatura önizlemesi açılamadı');
+            toast.error('Fatura önizlemesi açılamadı', { id: toastId });
         }
-    }, [navigate]);
+    }, [navigate, pdfModal]);
 
     const handleDownloadInvoice = useCallback(async (invoice: OutgoingInvoiceResponse) => {
         try {
@@ -232,6 +229,7 @@ export const MobileInvoicesPage: React.FC = () => {
     const draftCount = invoices.filter((invoice) => (invoice.status || '').toLowerCase() === 'draft').length;
 
     return (
+        <>
         <MobileLayout>
             <>
                 <MobileHeader
@@ -296,7 +294,7 @@ export const MobileInvoicesPage: React.FC = () => {
                         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 flex items-center gap-3">
                             <CreditCard className="text-blue-600 dark:text-blue-400 flex-shrink-0" size={20} />
                             <p className="text-sm text-blue-800 dark:text-blue-300 flex-1">
-                                Bu sayfada BirFatura üzerinden gönderilmiş e-fatura ve e-irsaliyeleriniz listelenir.
+                                Bu sayfada GİB üzerinden gönderilmiş e-fatura ve e-irsaliyeleriniz listelenir.
                             </p>
                         </div>
 
@@ -471,5 +469,48 @@ export const MobileInvoicesPage: React.FC = () => {
                 )}
             </>
         </MobileLayout>
+
+        {/* PDF / HTML preview modal */}
+        {pdfModal?.open && (
+            <div
+                className="fixed inset-0 z-50 bg-black bg-opacity-70 flex items-center justify-center p-2"
+                onClick={() => { URL.revokeObjectURL(pdfModal.blobUrl.split('#')[0]); setPdfModal(null); }}
+            >
+                <div
+                    className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-4xl flex flex-col"
+                    style={{ height: '92vh' }}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                        <h2 className="text-base font-semibold text-gray-900 dark:text-white truncate pr-3">{pdfModal.title}</h2>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                            <a
+                                href={pdfModal.blobUrl.split('#')[0]}
+                                download={pdfModal.fileName}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white premium-gradient tactile-press rounded-xl"
+                            >
+                                <Download size={15} />
+                                İndir
+                            </a>
+                            <Button
+                                variant="ghost"
+                                onClick={() => { URL.revokeObjectURL(pdfModal.blobUrl.split('#')[0]); setPdfModal(null); }}
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                            >
+                                <X size={24} />
+                            </Button>
+                        </div>
+                    </div>
+                    <div className="flex-1 overflow-hidden">
+                        <iframe
+                            src={pdfModal.blobUrl}
+                            className="w-full h-full border-0"
+                            title="Fatura PDF"
+                        />
+                    </div>
+                </div>
+            </div>
+        )}
+        </>
     );
 };

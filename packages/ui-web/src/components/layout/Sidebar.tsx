@@ -264,12 +264,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div
           data-testid={`sidebar-menu-${item.id}`}
           className={`
-            flex items-center text-sm font-medium rounded-xl cursor-pointer transition-all
+            flex items-center text-sm font-medium rounded-2xl border border-transparent cursor-pointer transition-all
             ${level > 0 ? (isCollapsed && !isMobile ? 'ml-0 justify-center' : 'ml-6') : ''}
             ${active
-              ? 'bg-blue-100/60 text-blue-700 dark:bg-blue-900/60 dark:text-blue-200'
-              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-700/50'
-            }
+              ? 'border-blue-200/70 bg-gradient-to-r from-blue-500/15 via-cyan-500/10 to-transparent text-blue-700 shadow-sm shadow-blue-500/10 dark:border-blue-500/20 dark:text-blue-200'
+              : 'text-slate-700 dark:text-slate-200 hover:border-white/70 hover:bg-white/70 dark:hover:border-white/10 dark:hover:bg-white/5'
+             }
             ${!showLabel ? 'justify-center w-10 h-10 mx-auto p-0 mb-1' : 'px-3 py-2 w-full'}
           `}
           onClick={() => {
@@ -378,15 +378,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
   // Tablet: Icon-only sidebar (64px)
   if (isTablet) {
     return (
-      <div
-        data-testid="sidebar-container"
-        className="fixed inset-y-0 left-0 z-40 w-16 flex flex-col bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-700/50"
-      >
-        {/* Header */}
-        <div className="flex items-center justify-center h-16 border-b border-gray-200 dark:border-gray-700" data-testid="sidebar-header">
-          <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold text-lg">X</span>
-          </div>
+        <div
+          data-testid="sidebar-container"
+          className="fixed bottom-4 left-4 top-4 z-40 w-16 overflow-hidden rounded-[28px] border border-white/60 bg-white/75 shadow-[0_24px_80px_-32px_rgba(15,23,42,0.4)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/70"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-center h-16 border-b border-slate-200/70 dark:border-white/10" data-testid="sidebar-header">
+            <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center">
+              <span className="text-white font-bold text-lg">X</span>
+            </div>
         </div>
 
         {/* Navigation */}
@@ -399,19 +399,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   // Desktop: Collapsible sidebar (256px or 64px)
   return (
-    <div
-      data-testid="sidebar-container"
-      className={`
-        fixed inset-y-0 left-0 z-40 flex flex-col bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl 
-        border-r border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 ease-in-out
-        ${isCollapsed ? 'w-16' : 'w-64'}
-      `}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700" data-testid="sidebar-header">
-        {!isCollapsed && (
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
+      <div
+        data-testid="sidebar-container"
+        className={`
+         fixed bottom-4 left-4 top-4 z-40 flex flex-col overflow-hidden rounded-[28px] bg-white/75 backdrop-blur-xl 
+         border border-white/60 shadow-[0_24px_80px_-32px_rgba(15,23,42,0.4)] transition-all duration-300 ease-in-out dark:border-white/10 dark:bg-slate-900/70
+         ${isCollapsed ? 'w-16' : 'w-64'}
+       `}
+     >
+       {/* Header */}
+       <div className="flex items-center justify-between h-16 px-4 border-b border-slate-200/70 dark:border-white/10" data-testid="sidebar-header">
+         {!isCollapsed && (
+           <div className="flex items-center">
+             <div className="flex-shrink-0">
               <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center">
                 <span className="text-white font-bold text-lg">X</span>
               </div>
@@ -431,26 +431,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
         )}
 
         {/* Desktop collapse button */}
-        {!isCollapsed && (
-          <button
-            onClick={onToggle}
-            className="p-1 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
-            data-testid="sidebar-collapse-button"
-          >
-            <ChevronRight className="w-4 h-4 transition-transform rotate-180" />
+         {!isCollapsed && (
+           <button
+             onClick={onToggle}
+             className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-white/80 dark:hover:bg-white/10"
+             data-testid="sidebar-collapse-button"
+           >
+             <ChevronRight className="w-4 h-4 transition-transform rotate-180" />
           </button>
         )}
       </div>
 
       {/* Expand button when collapsed */}
-      {isCollapsed && (
-        <div className="flex justify-center py-2 border-b border-gray-200 dark:border-gray-700">
-          <button
-            onClick={onToggle}
-            className="p-1 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
-            data-testid="sidebar-expand-button"
-          >
-            <ChevronRight className="w-4 h-4" />
+       {isCollapsed && (
+         <div className="flex justify-center py-2 border-b border-slate-200/70 dark:border-white/10">
+           <button
+             onClick={onToggle}
+             className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-white/80 dark:hover:bg-white/10"
+             data-testid="sidebar-expand-button"
+           >
+             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       )}
@@ -461,12 +461,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </nav>
 
       {/* Footer */}
-      {!isCollapsed && (
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-          <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
-            X-Ear v1.0.0
-          </div>
-        </div>
+       {!isCollapsed && (
+         <div className="p-4 border-t border-slate-200/70 dark:border-white/10">
+           <div className="text-xs text-slate-500 dark:text-slate-400 text-center">
+             X-Ear v1.0.0
+           </div>
+         </div>
       )}
     </div>
   );

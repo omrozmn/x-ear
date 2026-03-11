@@ -1,8 +1,8 @@
 /**
- * BirFatura API Service
+ * GİB E-Fatura API Service
  * 
- * BirFatura aracı entegratör sistemi ile iletişim için servis.
- * NOT: Faturalar GİB'e direkt gönderilmez, BirFatura üzerinden gönderilir.
+ * GİB e-fatura entegratör sistemi ile iletişim için servis.
+ * NOT: Faturalar GİB'e entegratör üzerinden gönderilir.
  */
 
 import { InvoiceFormData } from '../types/invoice';
@@ -29,7 +29,7 @@ interface WindowWithDecompression extends Window {
   DecompressionStream: new (format: string) => DecompressionStream;
 }
 
-// BirFatura API response types
+// GİB E-Fatura API response types
 interface BirFaturaAPIResponse {
   Success?: boolean;
   Message?: string;
@@ -285,7 +285,7 @@ class BirFaturaService {
   // ============================================
 
   /**
-   * Fatura oluştur ve BirFatura'ya gönder
+   * Fatura oluştur ve GİB'e gönder
    */
   async createAndSend(invoiceData: InvoiceFormData): Promise<BirFaturaResponse> {
     try {
@@ -318,7 +318,7 @@ class BirFaturaService {
   }
 
   /**
-   * Mevcut faturayı BirFatura'ya gönder
+   * Mevcut faturayı GİB'e gönder
    */
   async send(invoiceId: string): Promise<BirFaturaResponse> {
     try {

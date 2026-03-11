@@ -678,6 +678,8 @@ class InvoiceSyncService:
     def _auto_process_inventory(self, tenant_id: str, auto_add: bool, auto_update: bool):
         """Auto-add invoice products to inventory and/or update stock"""
         from core.models.inventory import InventoryItem
+        from datetime import datetime as dt, timezone as tz
+        from uuid import uuid4
 
         # Get invoice items that are not yet linked to inventory
         unlinked_items = self.db.query(PurchaseInvoiceItem).filter(
@@ -685,56 +687,77 @@ class InvoiceSyncService:
             PurchaseInvoiceItem.inventory_id.is_(None),
         ).all()
 
+        # Build lookup caches to avoid repeated queries
+        all_inv = self.db.query(InventoryItem).filter(
+            InventoryItem.tenant_id == tenant_id
+        ).all()
+        name_to_inv = {}
+        stock_code_set = set()
+        for inv in all_inv:
+            name_to_inv[inv.name] = inv
+            if inv.stock_code:
+                stock_code_set.add(inv.stock_code)
+
         added = 0
         updated = 0
+        skipped = 0
 
         for item in unlinked_items:
             if not item.product_name:
                 continue
 
-            # Try to find matching inventory item by name + supplier
-            invoice = self.db.query(PurchaseInvoice).filter_by(id=item.purchase_invoice_id).first()
-            supplier_name = invoice.sender_name if invoice else None
+            try:
+                existing_inv = name_to_inv.get(item.product_name)
 
-            existing_inv = self.db.query(InventoryItem).filter(
-                InventoryItem.tenant_id == tenant_id,
-                InventoryItem.name == item.product_name,
-            ).first()
+                if existing_inv:
+                    if auto_update:
+                        existing_inv.available_inventory = (existing_inv.available_inventory or 0) + int(item.quantity or 1)
+                        existing_inv.total_inventory = (existing_inv.total_inventory or 0) + int(item.quantity or 1)
+                        item.inventory_id = existing_inv.id
+                        updated += 1
+                    else:
+                        item.inventory_id = existing_inv.id
+                elif auto_add:
+                    brand, model = self._parse_brand_model(item.product_name)
+                    invoice = self.db.query(PurchaseInvoice).filter_by(id=item.purchase_invoice_id).first()
+                    supplier_name = invoice.sender_name if invoice else None
 
-            if existing_inv:
-                if auto_update:
-                    existing_inv.available_inventory = (existing_inv.available_inventory or 0) + int(item.quantity or 1)
-                    existing_inv.total_inventory = (existing_inv.total_inventory or 0) + int(item.quantity or 1)
-                    item.inventory_id = existing_inv.id
-                    updated += 1
-            elif auto_add:
-                # Parse brand/model from product name
-                brand, model = self._parse_brand_model(item.product_name)
-                from datetime import datetime as dt, timezone as tz
-                from uuid import uuid4
-                new_inv = InventoryItem(
-                    id=f"item_{dt.now(tz.utc).strftime('%d%m%Y%H%M%S')}_{uuid4().hex[:6]}",
-                    tenant_id=tenant_id,
-                    name=item.product_name,
-                    brand=brand,
-                    model=model,
-                    category='hearing_aid',
-                    supplier=supplier_name,
-                    unit=item.unit or 'Adet',
-                    price=float(item.unit_price or 0),
-                    cost=float(item.unit_price or 0),
-                    kdv_rate=float(item.tax_rate or 18),
-                    available_inventory=int(item.quantity or 1),
-                    total_inventory=int(item.quantity or 1),
-                    reorder_level=1,
-                    stock_code=item.product_code or None,
-                )
-                self.db.add(new_inv)
-                self.db.flush()
-                item.inventory_id = new_inv.id
-                added += 1
+                    # Avoid stock_code unique constraint violation
+                    sc = item.product_code or None
+                    if sc and sc in stock_code_set:
+                        sc = None
 
-        logger.info(f"Auto-inventory for tenant {tenant_id}: added={added}, updated={updated}")
+                    new_inv = InventoryItem(
+                        id=f"item_{dt.now(tz.utc).strftime('%d%m%Y%H%M%S')}_{uuid4().hex[:6]}",
+                        tenant_id=tenant_id,
+                        name=item.product_name,
+                        brand=brand,
+                        model=model,
+                        category='hearing_aid',
+                        supplier=supplier_name,
+                        unit=item.unit or 'Adet',
+                        price=float(item.unit_price or 0),
+                        cost=float(item.unit_price or 0),
+                        kdv_rate=float(item.tax_rate or 18),
+                        available_inventory=int(item.quantity or 1),
+                        total_inventory=int(item.quantity or 1),
+                        reorder_level=1,
+                        stock_code=sc,
+                    )
+                    self.db.add(new_inv)
+                    self.db.flush()
+                    item.inventory_id = new_inv.id
+                    # Update caches for subsequent items with same name/code
+                    name_to_inv[item.product_name] = new_inv
+                    if sc:
+                        stock_code_set.add(sc)
+                    added += 1
+            except Exception as e:
+                logger.warning(f"Auto-inventory item error for '{item.product_name}': {e}")
+                self.db.rollback()
+                skipped += 1
+
+        logger.info(f"Auto-inventory for tenant {tenant_id}: added={added}, updated={updated}, skipped={skipped}")
 
     KNOWN_BRANDS = [
         'Phonak', 'Signia', 'Oticon', 'ReSound', 'Resound', 'Widex', 'Starkey',

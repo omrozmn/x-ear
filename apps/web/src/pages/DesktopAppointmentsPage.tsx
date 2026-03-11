@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { AppointmentList, AppointmentCalendar, AppointmentModal } from '../components/appointments';
 import { useAppointments } from '../hooks/useAppointments';
 import { useTranslation } from 'react-i18next';
+import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 
 
 type ViewMode = 'list' | 'calendar';
@@ -109,17 +110,15 @@ export function DesktopAppointmentsPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
-        <div className="mb-8 relative">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('page_title')}</h1>
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                {t('page_subtitle')}
-              </p>
-            </div>
+        <DesktopPageHeader
+          className="mb-8"
+          title={t('page_title')}
+          description={t('page_subtitle')}
+          eyebrow="Appointments"
+          actions={(
             <Button
               onClick={handleCreateAppointment}
-              className="absolute right-6 top-4 z-50 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm focus:outline-none"
+              className="inline-flex items-center rounded-xl px-4 py-2 text-sm font-medium shadow-sm focus:outline-none"
               style={{ backgroundColor: '#2563EB', color: '#FFFFFF' }}
               variant='default'>
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -127,8 +126,8 @@ export function DesktopAppointmentsPage() {
               </svg>
               {t('new_appointment')}
             </Button>
-          </div>
-        </div>
+          )}
+        />
 
         {/* Error State */}
         {error && (

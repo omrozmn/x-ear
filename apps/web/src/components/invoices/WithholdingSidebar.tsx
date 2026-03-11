@@ -171,7 +171,7 @@ export function WithholdingSidebar({
                     <p className="font-medium mb-1">Dikkat:</p>
                     <p>
                       Tevkifat iade bilgileri fatura satırına kaydedilecektir. 
-                      Bu bilgiler BirFatura üzerinden GİB'e gönderilecektir.
+                      Bu bilgiler GİB'e gönderilecektir.
                     </p>
                   </div>
                 </div>

@@ -20,6 +20,7 @@ import partiesSchema from '../components/importer/schemas/parties';
 import { PartyFilters as PartyFiltersType } from '../types/party/party-search.types';
 import { PartyStatus, PartySegment, PartyLabel } from '../types/party/party-base.types';
 import { PartyTagUpdateModal } from '../components/parties/PartyTagUpdateModal';
+import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 
 
 
@@ -310,36 +311,39 @@ export function DesktopPartiesPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Hastalar</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Hasta kayıtlarını yönetin</p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handleRefresh}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Yenile
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                navigate({ to: '/settings/parties' });
-              }}
-            >
-              <Settings className="h-4 w-4 mr-2" />
-              Hasta Ayarları
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setShowCSVModal(true)}>
-              <Upload className="h-4 w-4 mr-2" />
-              Toplu Yükle
-            </Button>
-            <Button onClick={handleNewParty}>
-              <Plus className="h-4 w-4 mr-2" />
-              Yeni Hasta
-            </Button>
-          </div>
-        </div>
+        <DesktopPageHeader
+          className="mb-4"
+          title="Hastalar"
+          description="Hasta kayıtlarını yönetin"
+          icon={<Users className="h-6 w-6" />}
+          eyebrow="Patient Hub"
+          actions={(
+            <>
+              <Button variant="outline" size="sm" onClick={handleRefresh}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Yenile
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  navigate({ to: '/settings/parties' });
+                }}
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Hasta Ayarları
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setShowCSVModal(true)}>
+                <Upload className="h-4 w-4 mr-2" />
+                Toplu Yükle
+              </Button>
+              <Button onClick={handleNewParty}>
+                <Plus className="h-4 w-4 mr-2" />
+                Yeni Hasta
+              </Button>
+            </>
+          )}
+        />
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

@@ -25,6 +25,7 @@ import { PosMovementsTab } from './reports/tabs/PosMovementsTab';
 import { ActivityTab } from './reports/tabs/ActivityTab';
 import { NoPermission } from './reports/components/NoPermission';
 import { FilterState, TabId } from './reports/types';
+import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 
 export function DesktopReportsPage() {
   const { hasPermission, isLoading: permissionsLoading } = usePermissions();
@@ -113,39 +114,31 @@ export function DesktopReportsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="md:flex md:items-center md:justify-between">
-            <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <PieChart className="w-7 h-7 text-blue-600" />
-                Raporlar ve Analizler
-              </h1>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Satış performansı, hasta analizleri ve işlem dökümleri
-              </p>
-            </div>
-            {canExportReports && (
-              <div className="mt-4 flex md:mt-0 md:ml-4 space-x-3">
-                <Button
-                  onClick={() => handleExport('pdf')}
-                  variant="outline"
-                  icon={<Download className="w-4 h-4" />}
-                >
-                  PDF İndir
-                </Button>
-                <Button
-                  onClick={() => handleExport('excel')}
-                  variant="outline"
-                  icon={<Download className="w-4 h-4" />}
-                >
-                  Excel İndir
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <DesktopPageHeader
+          title="Raporlar ve Analizler"
+          description="Satış performansı, hasta analizleri ve işlem dökümleri"
+          icon={<PieChart className="w-6 h-6" />}
+          eyebrow="Insights"
+          actions={canExportReports ? (
+            <>
+              <Button
+                onClick={() => handleExport('pdf')}
+                variant="outline"
+                icon={<Download className="w-4 h-4" />}
+              >
+                PDF İndir
+              </Button>
+              <Button
+                onClick={() => handleExport('excel')}
+                variant="outline"
+                icon={<Download className="w-4 h-4" />}
+              >
+                Excel İndir
+              </Button>
+            </>
+          ) : null}
+        />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

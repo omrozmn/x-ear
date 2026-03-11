@@ -16,6 +16,7 @@ import { SupplierFilters } from '../components/suppliers/SupplierFilters';
 import { SupplierList } from '../components/suppliers/SupplierList';
 import { SuggestedSuppliersList } from '../components/suppliers/SuggestedSuppliersList';
 import { SupplierFilters as SupplierFiltersType, SupplierExtended } from '../components/suppliers/supplier-search.types';
+import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 
 
 export function DesktopSuppliersPage() {
@@ -214,22 +215,24 @@ export function DesktopSuppliersPage() {
     <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900 p-6">
       <div className="max-w-full mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Tedarikçiler</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Tedarikçi kayıtlarını yönetin ve takip edin</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button variant="outline" onClick={handleRefresh} className="bg-white">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Yenile
-            </Button>
-            <Button onClick={handleNewSupplier} className="premium-gradient tactile-press text-white shadow-sm">
-              <Plus className="h-4 w-4 mr-2" />
-              Yeni Tedarikçi
-            </Button>
-          </div>
-        </div>
+        <DesktopPageHeader
+          title="Tedarikçiler"
+          description="Tedarikçi kayıtlarını yönetin ve takip edin"
+          icon={<Users className="h-6 w-6" />}
+          eyebrow="Vendor Desk"
+          actions={(
+            <>
+              <Button variant="outline" onClick={handleRefresh} className="bg-white/80 dark:bg-white/10">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Yenile
+              </Button>
+              <Button onClick={handleNewSupplier} className="premium-gradient tactile-press text-white shadow-sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Yeni Tedarikçi
+              </Button>
+            </>
+          )}
+        />
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
