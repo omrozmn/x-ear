@@ -5,16 +5,21 @@ import {
     applyAiEdit,
     createPreview,
     createSiteFromAi,
+    connectSiteDomain,
+    listDomainProviders,
     loadSiteWorkspace,
     loadWebsiteGeneratorSnapshot,
     proposeAiEdit,
     publishSite,
     revertAiEdit,
     rollbackSite,
+    searchSiteDomain,
     updateSiteTheme,
     type AIDiscoveryResponse,
     type AIDraftAnswers,
     type AIEditProposalResponse,
+    type DomainAvailabilityResponse,
+    type DomainProviderCatalogResponse,
     type SiteWorkspace,
     type ThemeSettings,
     type WebsiteGeneratorSnapshot,
@@ -96,6 +101,19 @@ const themeOptions: Array<{ key: string; label: string; detail: string; settings
 ];
 
 const suggestedCommands = ['Hero basligini degistir', 'Blog ekle', 'E-ticareti ac', 'Footera Instagram ekle'];
+const adminMenuToTabKey: Record<string, TabKey> = {
+    'Icerik Yonetimi': 'content',
+    'Gorunum Yonetimi': 'appearance',
+    'Sayfa ve Menu Yonetimi': 'pages',
+    Yayinlama: 'publishing',
+    'Blog Yonetimi': 'blog',
+    'Urun Yonetimi': 'products',
+    Siparisler: 'orders',
+    'Kargo / Odeme Ayarlari': 'commerce',
+    'Randevu ve Formlar': 'appointments',
+    'AI Chatbot': 'chatbot',
+    'Pazaryeri Entegrasyonlari': 'marketplace',
+};
 
 function TabButton({
     active,
@@ -148,6 +166,11 @@ const WebManagementPage: React.FC = () => {
     const [proposal, setProposal] = useState<AIEditProposalResponse | null>(null);
     const [busyKey, setBusyKey] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [domainProviders, setDomainProviders] = useState<DomainProviderCatalogResponse | null>(null);
+    const [domainSearch, setDomainSearch] = useState<DomainAvailabilityResponse | null>(null);
+    const [domainQuery, setDomainQuery] = useState('xear-clinic.com.tr');
+    const [selectedDomainProvider, setSelectedDomainProvider] = useState('metunic');
+    const [previewReviewTarget, setPreviewReviewTarget] = useState<string>('');
 
     const loadWorkspace = async (siteId: string) => {
         setBusyKey('load-workspace');
@@ -170,6 +193,12 @@ const WebManagementPage: React.FC = () => {
         loadWebsiteGeneratorSnapshot().then((data) => {
             if (!cancelled) {
                 setSnapshot(data);
+            }
+        });
+
+        listDomainProviders().then((data) => {
+            if (!cancelled) {
+                setDomainProviders(data);
             }
         });
 
@@ -206,6 +235,11 @@ const WebManagementPage: React.FC = () => {
     }, [workspace]);
 
     const visibleTabs = useMemo(() => {
+        if (workspace?.adminMenu.visible_items.length) {
+            return workspace.adminMenu.visible_items
+                .map((item) => ({ key: adminMenuToTabKey[item.label], label: item.label }))
+                .filter((item): item is { key: TabKey; label: string } => Boolean(item.key));
+        }
         const featureFlags = workspace?.site.feature_flags ?? discovery?.inferred_features;
         return [
             { key: 'content' as const, label: 'Icerik Yonetimi' },
@@ -219,7 +253,7 @@ const WebManagementPage: React.FC = () => {
             ...(featureFlags?.ai_chatbot ? [{ key: 'chatbot' as const, label: 'AI Chatbot' }] : []),
             ...(featureFlags?.marketplace_links ? [{ key: 'marketplace' as const, label: 'Pazaryeri Entegrasyonlari' }] : []),
         ];
-    }, [discovery?.inferred_features, workspace?.site.feature_flags]);
+    }, [discovery?.inferred_features, workspace?.adminMenu.visible_items, workspace?.site.feature_flags]);
 
     useEffect(() => {
         if (!visibleTabs.some((tab) => tab.key === activeTab)) {
@@ -244,6 +278,12 @@ const WebManagementPage: React.FC = () => {
     const pages = workspace?.site.pages ?? [];
     const menuItems = workspace?.site.menu_items ?? [];
     const previewChecks = workspace?.previewStatus.checks ?? [];
+    const previewTargets = pages.flatMap((page) =>
+        page.sections.map((section) => ({
+            key: `${page.slug}::${section.type}`,
+            label: `${page.title} / ${section.type}`,
+        })),
+    );
 
     const handleCreateDraft = async () => {
         setBusyKey('create-draft');
@@ -394,6 +434,50 @@ const WebManagementPage: React.FC = () => {
         }
     };
 
+    const handleDomainSearch = async () => {
+        if (!workspace) {
+            setError('Domain aramak icin once aktif bir site olusturulmasi gerekiyor.');
+            return;
+        }
+        setBusyKey('domain-search');
+        setError(null);
+        try {
+            const result = await searchSiteDomain(workspace.site.id, domainQuery);
+            setDomainSearch(result);
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'Domain arama yapilamadi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
+    const handleConnectDomain = async (domain: string) => {
+        if (!workspace) {
+            setError('Domain baglamak icin once aktif bir site olusturulmasi gerekiyor.');
+            return;
+        }
+        setBusyKey('connect-domain');
+        setError(null);
+        try {
+            await connectSiteDomain(workspace.site.id, {
+                domain,
+                provider_key: selectedDomainProvider,
+                activate_on_publish: true,
+            });
+            await loadWorkspace(workspace.site.id);
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'Domain baglama istegi olusturulamadi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
+    const handlePreviewTargetFeedback = (target: string) => {
+        setPreviewReviewTarget(target);
+        setChatCommand(`${target} kartini daha modern hale getir ve icerigi guclendir`);
+        setActiveTab('content');
+    };
+
     const tabContent: Record<TabKey, React.ReactNode> = {
         content: (
             <div className="grid gap-4 lg:grid-cols-2">
@@ -528,32 +612,269 @@ const WebManagementPage: React.FC = () => {
                         <div>Preview URL: {workspace?.publishStatus.preview_url ?? '-'}</div>
                         <div>Published URL: {workspace?.publishStatus.published_url ?? '-'}</div>
                         <div>Release ID: {workspace?.publishStatus.active_release_id ?? '-'}</div>
+                        <div>Workspace domain: {workspace?.domainSetup.workspace_domain ?? '-'}</div>
+                        <div>Primary domain: {workspace?.domainSetup.current_primary_domain ?? '-'}</div>
                     </div>
                 </div>
                 <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
                     <h3 className="text-lg font-semibold text-gray-900">Preview Shell</h3>
-                    <div className="mt-4 rounded-[2rem] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-4">
-                        <div className="rounded-[1.5rem] bg-white/95 p-4">
-                            <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Desktop Preview</div>
-                            <div className="mt-3 rounded-[1.5rem] bg-gray-100 p-4">
-                                <div className="h-24 rounded-2xl bg-gradient-to-r from-cyan-100 to-emerald-100" />
-                                <div className="mt-3 grid gap-3 md:grid-cols-2">
-                                    <div className="h-20 rounded-2xl bg-white" />
-                                    <div className="h-20 rounded-2xl bg-white" />
+                    <div className="mt-4 grid gap-4">
+                        <div className="rounded-[2rem] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-4">
+                            <div className="rounded-[1.5rem] bg-white/95 p-4">
+                                <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Preview Review Mode</div>
+                                <div className="mt-3 rounded-[1.5rem] bg-gray-100 p-4">
+                                    <div className="h-24 rounded-2xl bg-gradient-to-r from-cyan-100 to-emerald-100" />
+                                    <div className="mt-3 grid gap-3 md:grid-cols-2">
+                                        <div className="h-20 rounded-2xl bg-white" />
+                                        <div className="h-20 rounded-2xl bg-white" />
+                                    </div>
                                 </div>
+                            </div>
+                        </div>
+                        <div className="rounded-3xl bg-gray-50 p-4">
+                            <div className="text-sm font-semibold text-gray-900">Preview icinden AI geri bildirim</div>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                                {previewTargets.length > 0 ? (
+                                    previewTargets.map((target) => (
+                                        <button
+                                            key={target.key}
+                                            onClick={() => handlePreviewTargetFeedback(target.label)}
+                                            className={`rounded-full px-3 py-1 text-xs font-medium ${
+                                                previewReviewTarget === target.label ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 ring-1 ring-gray-200'
+                                            }`}
+                                        >
+                                            {target.label}
+                                        </button>
+                                    ))
+                                ) : (
+                                    <span className="text-sm text-gray-500">Review hedefi olusmasi icin section iceren bir draft gerekiyor.</span>
+                                )}
+                            </div>
+                            <div className="mt-3 text-xs text-gray-500">
+                                Bir hedef secip chat komutunu otomatik doldurabilir, sonra AI&apos;a karti veya icerigi degistir diyebilirsin.
+                            </div>
+                        </div>
+                        <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
+                            <div className="flex items-center justify-between gap-3">
+                                <div>
+                                    <h4 className="text-base font-semibold text-gray-900">Domain ve Yayin Domaini</h4>
+                                    <p className="mt-1 text-sm text-gray-500">Site ilk olarak workspace domain ile olusur, sonra custom domain baglanir.</p>
+                                </div>
+                            </div>
+                            <div className="mt-4 grid gap-3 md:grid-cols-2">
+                                <div className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                                    <div className="text-xs uppercase tracking-wide text-gray-500">Workspace</div>
+                                    <div className="mt-1 font-medium">{workspace?.domainSetup.workspace_domain ?? '-'}</div>
+                                </div>
+                                <div className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                                    <div className="text-xs uppercase tracking-wide text-gray-500">Custom Domain</div>
+                                    <div className="mt-1 font-medium">{workspace?.domainSetup.custom_domain ?? 'Baglanmadi'}</div>
+                                </div>
+                            </div>
+                            <div className="mt-4 grid gap-3 md:grid-cols-[1fr_220px_160px]">
+                                <input value={domainQuery} onChange={(event) => setDomainQuery(event.target.value)} className="rounded-2xl border border-gray-200 px-3 py-2 text-sm outline-none" placeholder="ornek: markaniz.com.tr" />
+                                <select value={selectedDomainProvider} onChange={(event) => setSelectedDomainProvider(event.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none">
+                                    {(domainProviders?.providers ?? []).map((provider) => (
+                                        <option key={provider.key} value={provider.key}>
+                                            {provider.label}
+                                        </option>
+                                    ))}
+                                </select>
+                                <button onClick={handleDomainSearch} disabled={!workspace || busyKey === 'domain-search'} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+                                    {busyKey === 'domain-search' ? 'Araniyor...' : 'Domain Ara'}
+                                </button>
+                            </div>
+                            <div className="mt-4 space-y-3">
+                                {(domainSearch?.results ?? []).map((result) => (
+                                    <div key={`${result.provider_key}-${result.domain}`} className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                                        <div className="flex items-center justify-between gap-3">
+                                            <div>
+                                                <div className="font-medium">{result.domain}</div>
+                                                <div className="mt-1 text-xs text-gray-500">{result.provider_key} - {result.price_note}</div>
+                                            </div>
+                                            <button
+                                                onClick={() => handleConnectDomain(result.domain)}
+                                                disabled={!result.available || busyKey === 'connect-domain'}
+                                                className="rounded-2xl bg-emerald-500 px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+                                            >
+                                                {result.available ? 'Bagla' : 'Dolu'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         ),
-        blog: <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200 text-sm text-gray-600">Blog tabi aktif. Iceriklerin gercek yonetimi servis modullerine baglanacak.</div>,
-        products: <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200 text-sm text-gray-600">Urun tabi aktif. Katalog ve SKU yonetimi ayni host altindan acildi.</div>,
-        orders: <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200 text-sm text-gray-600">Siparisler sekmesi e-ticaret aktifken gorunur.</div>,
-        commerce: <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200 text-sm text-gray-600">Kargo ve odeme ayarlari commerce flag ile acilir.</div>,
-        appointments: <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200 text-sm text-gray-600">Randevu ve lead toplama sekmesi aktif site feature state ile bagli.</div>,
-        chatbot: <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200 text-sm text-gray-600">AI chatbot modu, handoff ve message limiti servis uzerinden yonetilir.</div>,
-        marketplace: <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200 text-sm text-gray-600">Pazaryeri linkleri ve CTA kartlari feature state ile acilir.</div>,
+        blog: (
+            <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+                <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900">Blog Ayarlari</h3>
+                    <div className="mt-4 space-y-2 text-sm text-gray-600">
+                        <div>Mod: {workspace?.site.blog_settings?.mode ?? '-'}</div>
+                        <div>Sayfa basi yazi: {workspace?.site.blog_settings?.posts_per_page ?? 0}</div>
+                        <div>One cikan yazi: {workspace?.site.blog_settings?.featured_post_slug ?? '-'}</div>
+                    </div>
+                </div>
+                <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900">Yazi Listesi</h3>
+                    <div className="mt-4 space-y-3">
+                        {(workspace?.site.blog_posts ?? []).length > 0 ? (
+                            workspace?.site.blog_posts?.map((post) => (
+                                <div key={post.slug} className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                                    <div className="font-medium">{post.title}</div>
+                                    <div className="mt-1 text-xs text-gray-500">{post.slug} - {post.status}</div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-600">Blog aktif ama henuz yazi yok.</div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        ),
+        products: (
+            <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+                <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900">Katalog Ayarlari</h3>
+                    <div className="mt-4 space-y-2 text-sm text-gray-600">
+                        <div>Gorunum modu: {workspace?.site.product_catalog_settings?.display_mode ?? '-'}</div>
+                        <div>One cikan SKU sayisi: {workspace?.site.product_catalog_settings?.featured_skus.length ?? 0}</div>
+                    </div>
+                </div>
+                <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900">Urunler</h3>
+                    <div className="mt-4 space-y-3">
+                        {(workspace?.site.products ?? []).length > 0 ? (
+                            workspace?.site.products?.map((product) => (
+                                <div key={product.sku} className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                                    <div className="font-medium">{product.name}</div>
+                                    <div className="mt-1 text-xs text-gray-500">{product.sku} - {product.price} {product.currency}</div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-600">Katalog aktif ama henuz urun eklenmemis.</div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        ),
+        orders: (
+            <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900">Siparisler</h3>
+                <div className="mt-4 space-y-3">
+                    {(workspace?.site.orders ?? []).length > 0 ? (
+                        workspace?.site.orders?.map((order) => (
+                            <div key={order.id} className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                                <div className="font-medium">{order.id}</div>
+                                <div className="mt-1 text-xs text-gray-500">{order.customer_name} - {order.status} - {order.total_amount} {order.currency}</div>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-600">Siparis bulunmuyor.</div>
+                    )}
+                </div>
+            </div>
+        ),
+        commerce: (
+            <div className="grid gap-4 md:grid-cols-2">
+                <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900">Kargo ve Odeme Ayarlari</h3>
+                    <div className="mt-4 space-y-2 text-sm text-gray-600">
+                        <div>Currency: {workspace?.site.commerce_settings?.currency ?? '-'}</div>
+                        <div>Checkout: {workspace?.site.commerce_settings?.checkout_mode ?? '-'}</div>
+                        <div>Kargo aktif: {workspace?.site.commerce_settings?.shipping_enabled ? 'Evet' : 'Hayir'}</div>
+                    </div>
+                </div>
+                <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900">Odeme Metotlari</h3>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                        {(workspace?.site.commerce_settings?.payment_methods ?? []).map((method) => (
+                            <span key={method} className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
+                                {method}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        ),
+        appointments: (
+            <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+                <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900">Randevu Ayarlari</h3>
+                    <div className="mt-4 space-y-2 text-sm text-gray-600">
+                        <div>Mod: {workspace?.site.appointment_settings?.booking_mode ?? '-'}</div>
+                        <div>Telefon topla: {workspace?.site.appointment_settings?.collect_phone ? 'Evet' : 'Hayir'}</div>
+                        <div>Bildirim email: {workspace?.site.appointment_settings?.notification_email ?? '-'}</div>
+                    </div>
+                </div>
+                <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900">Lead Listesi</h3>
+                    <div className="mt-4 space-y-3">
+                        {(workspace?.site.leads ?? []).length > 0 ? (
+                            workspace?.site.leads?.map((lead) => (
+                                <div key={lead.id} className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                                    <div className="font-medium">{lead.name}</div>
+                                    <div className="mt-1 text-xs text-gray-500">{lead.source} - {lead.status}</div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-600">Lead bulunmuyor.</div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        ),
+        chatbot: (
+            <div className="grid gap-4 md:grid-cols-2">
+                <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900">AI Chatbot Ayarlari</h3>
+                    <div className="mt-4 space-y-2 text-sm text-gray-600">
+                        <div>Mode: {workspace?.site.chatbot_settings?.mode ?? '-'}</div>
+                        <div>Mesaj limiti: {workspace?.site.chatbot_settings?.monthly_message_limit ?? 0}</div>
+                        <div>Handoff: {workspace?.site.chatbot_settings?.handoff_channel ?? '-'}</div>
+                    </div>
+                </div>
+                <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900">Yetkinlikler</h3>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                        {(workspace?.site.chatbot_settings?.enabled_capabilities ?? []).map((capability) => (
+                            <span key={capability} className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
+                                {capability}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        ),
+        marketplace: (
+            <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+                <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900">Pazaryeri Ayarlari</h3>
+                    <div className="mt-4 space-y-2 text-sm text-gray-600">
+                        <div>Gorunum: {workspace?.site.marketplace_settings?.display_mode ?? '-'}</div>
+                        <div>WhatsApp CTA: {workspace?.site.whatsapp_settings?.enabled ? 'Destekli' : 'Kapali'}</div>
+                    </div>
+                </div>
+                <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900">Bagli Kanallar</h3>
+                    <div className="mt-4 space-y-3">
+                        {(workspace?.site.marketplace_links_data ?? []).length > 0 ? (
+                            workspace?.site.marketplace_links_data?.map((item) => (
+                                <div key={item.id} className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                                    <div className="font-medium">{item.label}</div>
+                                    <div className="mt-1 text-xs text-gray-500">{item.provider} - {item.url}</div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-600">Bagli pazaryeri linki yok.</div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        ),
     };
 
     return (

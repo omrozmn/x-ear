@@ -48,6 +48,76 @@ export type SiteResponse = {
     feature_flags: FeatureFlags;
     pages: PageDocument[];
     menu_items: MenuItem[];
+    blog_settings?: {
+        mode: 'informational' | 'campaigns' | 'info_and_campaigns';
+        posts_per_page: number;
+        featured_post_slug?: string | null;
+    } | null;
+    blog_posts?: Array<{
+        slug: string;
+        title: string;
+        excerpt: string;
+        status: 'draft' | 'published';
+        categories: string[];
+    }>;
+    product_catalog_settings?: {
+        display_mode: 'grid' | 'carousel' | 'mixed';
+        featured_skus: string[];
+    } | null;
+    commerce_settings?: {
+        currency: string;
+        checkout_mode: 'inquiry' | 'direct_checkout';
+        shipping_enabled: boolean;
+        payment_methods: string[];
+    } | null;
+    products?: Array<{
+        sku: string;
+        slug: string;
+        name: string;
+        price: number;
+        currency: string;
+        status: 'draft' | 'published';
+        in_stock: boolean;
+    }>;
+    orders?: Array<{
+        id: string;
+        customer_name: string;
+        status: 'pending' | 'processing' | 'completed' | 'cancelled';
+        payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
+        fulfillment_status: 'unfulfilled' | 'packed' | 'shipped' | 'delivered';
+        total_amount: number;
+        currency: string;
+    }>;
+    appointment_settings?: {
+        enabled: boolean;
+        booking_mode: 'request_only' | 'timeslot_selection';
+        notification_email?: string | null;
+        collect_phone: boolean;
+    } | null;
+    leads?: Array<{
+        id: string;
+        name: string;
+        email: string;
+        source: 'appointment_form' | 'contact_form' | 'whatsapp';
+        status: 'new' | 'contacted' | 'qualified' | 'closed';
+        message: string;
+    }>;
+    whatsapp_settings?: {
+        enabled: boolean;
+        phone_number: string;
+        default_message: string;
+    } | null;
+    marketplace_settings?: {
+        enabled: boolean;
+        display_mode: 'icon_links' | 'cta_cards';
+    } | null;
+    marketplace_links_data?: Array<{
+        id: string;
+        provider: string;
+        label: string;
+        url: string;
+        visible: boolean;
+    }>;
     chatbot_settings?: {
         mode: 'bring_your_own_api' | 'platform_managed';
         enabled_capabilities: string[];
@@ -194,6 +264,46 @@ export type SiteWorkspace = {
     previewStatus: PreviewStatusResponse;
     publishStatus: PublishStatusResponse;
     auditTrail: SiteAuditTrailResponse;
+    domainSetup: SiteDomainSetupResponse;
+};
+
+export type DomainProviderDefinition = {
+    key: string;
+    label: string;
+    local_provider: boolean;
+    supports_tr_domains: boolean;
+    supports_bulk_registration: boolean;
+    integration_mode: 'official_api' | 'partner_program' | 'manual_review';
+    supported_tlds: string[];
+    official_site: string;
+    notes: string;
+};
+
+export type DomainProviderCatalogResponse = {
+    providers: DomainProviderDefinition[];
+};
+
+export type DomainAvailabilityResponse = {
+    site_id: string;
+    query: string;
+    results: Array<{
+        domain: string;
+        provider_key: string;
+        available: boolean;
+        price_note: string;
+    }>;
+};
+
+export type SiteDomainSetupResponse = {
+    site_id: string;
+    workspace_domain: string;
+    current_primary_domain: string;
+    custom_domain?: string | null;
+    status: 'workspace_ready' | 'custom_domain_pending' | 'custom_domain_live';
+    provider_key?: string | null;
+    dns_target: string;
+    nameservers: string[];
+    notes: string[];
 };
 
 const DEFAULT_BASE_URL = (import.meta.env.VITE_WEBSITE_GENERATOR_API_URL as string | undefined) ?? 'http://127.0.0.1:8000';
@@ -278,16 +388,17 @@ export async function createSiteFromAi(
 }
 
 export async function loadSiteWorkspace(siteId: string, baseUrl: string = DEFAULT_BASE_URL): Promise<SiteWorkspace> {
-    const [site, adminMenu, builderShell, previewStatus, publishStatus, auditTrail] = await Promise.all([
+    const [site, adminMenu, builderShell, previewStatus, publishStatus, auditTrail, domainSetup] = await Promise.all([
         requestJson<SiteResponse>(baseUrl, `/api/v1/sites/${siteId}`),
         requestJson<SiteAdminMenuResponse>(baseUrl, `/api/v1/sites/${siteId}/admin-menu`),
         requestJson<BuilderShellResponse>(baseUrl, `/api/v1/sites/${siteId}/builder-shell`),
         requestJson<PreviewStatusResponse>(baseUrl, `/api/v1/sites/${siteId}/preview-status`),
         requestJson<PublishStatusResponse>(baseUrl, `/api/v1/sites/${siteId}/publish-status`),
         requestJson<SiteAuditTrailResponse>(baseUrl, `/api/v1/sites/${siteId}/audit-trail`),
+        requestJson<SiteDomainSetupResponse>(baseUrl, `/api/v1/sites/${siteId}/domain-setup`),
     ]);
 
-    return { site, adminMenu, builderShell, previewStatus, publishStatus, auditTrail };
+    return { site, adminMenu, builderShell, previewStatus, publishStatus, auditTrail, domainSetup };
 }
 
 export async function proposeAiEdit(siteId: string, command: string, baseUrl: string = DEFAULT_BASE_URL): Promise<AIEditProposalResponse> {
@@ -335,5 +446,31 @@ export async function publishSite(siteId: string, baseUrl: string = DEFAULT_BASE
 export async function rollbackSite(siteId: string, baseUrl: string = DEFAULT_BASE_URL): Promise<PublishStatusResponse> {
     return requestJson(baseUrl, `/api/v1/sites/${siteId}/rollback`, {
         method: 'POST',
+    });
+}
+
+export async function listDomainProviders(baseUrl: string = DEFAULT_BASE_URL): Promise<DomainProviderCatalogResponse> {
+    return requestJson(baseUrl, '/api/v1/domains/providers');
+}
+
+export async function searchSiteDomain(
+    siteId: string,
+    query: string,
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<DomainAvailabilityResponse> {
+    return requestJson(baseUrl, `/api/v1/sites/${siteId}/domain-search`, {
+        method: 'POST',
+        body: { query },
+    });
+}
+
+export async function connectSiteDomain(
+    siteId: string,
+    payload: { domain: string; provider_key: string; activate_on_publish: boolean },
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<SiteDomainSetupResponse> {
+    return requestJson(baseUrl, `/api/v1/sites/${siteId}/domains/connect`, {
+        method: 'POST',
+        body: payload,
     });
 }
