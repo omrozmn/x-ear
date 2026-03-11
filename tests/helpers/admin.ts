@@ -35,13 +35,31 @@ export async function loginAsSuperAdmin(
 ): Promise<void> {
   const defaultCreds = {
     // Default to admin account used by auth setup unless overridden
-    identifier: process.env.SUPER_ADMIN_EMAIL || process.env.ADMIN_EMAIL || 'admin@xear.com',
-    password: process.env.SUPER_ADMIN_PASSWORD || process.env.ADMIN_PASSWORD || 'Admin123!'
+    identifier: process.env.SUPER_ADMIN_EMAIL || process.env.ADMIN_EMAIL || 'admin@x-ear.com',
+    password: process.env.SUPER_ADMIN_PASSWORD || process.env.ADMIN_PASSWORD || 'admin123'
   };
   
   const creds = credentials || defaultCreds;
 
   // If already logged in as super admin, return
+  try {
+    await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
+    const loggedInSelectors = [
+      'text=Super Admin Panel',
+      'text=Aboneler',
+      'text=Dashboard',
+      '[data-testid="sidebar"]'
+    ];
+    for (const selector of loggedInSelectors) {
+      if (await page.locator(selector).first().isVisible().catch(() => false)) {
+        return;
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+
   try {
     const superMenu = page.locator('[data-testid="super-admin-menu"]');
     if (await superMenu.isVisible().catch(() => false)) {
@@ -62,24 +80,44 @@ export async function loginAsSuperAdmin(
     if (response.ok()) {
       const json = await response.json();
       const token = json.data?.accessToken || json.data?.token;
+      const refreshToken = json.data?.refreshToken || json.data?.refresh_token || token;
+      const user = json.data?.user || {};
       if (token) {
-        await page.goto('/admin');
-              // Set token in localStorage (TokenManager keys may differ per app)
-        await page.evaluate((t, email) => {
-          localStorage.setItem('x-ear.auth.auth-storage-persist@v1', JSON.stringify({
-            state: { accessToken: t, refreshToken: t, isAuthenticated: true, user: { email }, expiresAt: Date.now() + 3600000 },
-            version: 0
+        await page.goto('/');
+        await page.evaluate(([authToken, authRefreshToken, authUser]) => {
+          localStorage.setItem('admin_token', authToken as string);
+          localStorage.setItem('admin_refresh_token', authRefreshToken as string);
+          localStorage.setItem('admin-auth-storage', JSON.stringify({
+            state: {
+              user: authUser,
+              token: authToken,
+              isAuthenticated: true,
+              _hasHydrated: true,
+            },
+            version: 0,
           }));
-        }, token, creds.identifier);
-        await page.goto('/admin/dashboard');
+        }, [token, refreshToken, {
+          id: user.id || 'super-admin',
+          email: user.email || creds.identifier,
+          role: user.role || 'super_admin',
+          is_active: user.is_active ?? user.isActive ?? true,
+          created_at: user.created_at || user.createdAt || new Date().toISOString(),
+          first_name: user.first_name || user.firstName,
+          last_name: user.last_name || user.lastName,
+          name: user.name || [user.first_name || user.firstName, user.last_name || user.lastName].filter(Boolean).join(' ') || 'Super Admin',
+          tenant_id: user.tenant_id || user.tenantId || 'system',
+        }]);
+        await page.goto('/dashboard');
         await page.waitForLoadState('networkidle');
         
         // Accept several possible post-login indicators (super-admin-menu, user-menu, tenant link, dashboard text)
         const postLoginSelectors = [
           '[data-testid="super-admin-menu"]',
           '[data-testid="user-menu"]',
-          'a[href*="/admin/tenants"]',
+          'a[href*="/tenants"]',
           'text=Tenants',
+          'text=Aboneler',
+          'text=Super Admin Panel',
           'text=Dashboard',
           '[data-testid="admin-dashboard"]'
         ];
@@ -99,17 +137,17 @@ export async function loginAsSuperAdmin(
   }
 
   // Fallback: navigate to admin login UI and attempt login
-  await page.goto('/admin/login');
+  await page.goto('/login');
   // Fill login form if present
   const idInput = page.locator('[data-testid="login-identifier-input"]');
   if (await idInput.isVisible().catch(() => false)) {
     await idInput.fill(creds.identifier);
     await page.locator('[data-testid="login-password-input"]').fill(creds.password);
     await page.locator('[data-testid="login-submit-button"]').click();
-    await page.waitForURL('/admin/dashboard', { timeout: 10000 });
+    await page.waitForURL('**/dashboard', { timeout: 10000 });
   }
 
-  await expect(page.locator('[data-testid="super-admin-menu"]')).toBeVisible({ timeout: 5000 });
+  await expect(page.locator('text=Dashboard').first()).toBeVisible({ timeout: 5000 });
 }
 
 /**
@@ -164,7 +202,7 @@ export async function createTenant(
   page: Page,
   data: TenantData
 ): Promise<string> {
-  await page.goto('/admin/tenants');
+  await page.goto('/tenants');
   await page.locator('[data-testid="tenant-create-button"]').click();
   
   await waitForModalOpen(page, 'tenant-form-modal');
@@ -200,7 +238,7 @@ export async function updateTenant(
   tenantId: string,
   data: Partial<TenantData>
 ): Promise<void> {
-  await page.goto(`/admin/tenants/${tenantId}`);
+  await page.goto(`/tenants/${tenantId}`);
   await page.locator('[data-testid="tenant-edit-button"]').click();
   
   await waitForModalOpen(page, 'tenant-form-modal');
@@ -234,7 +272,7 @@ export async function createAdminUser(
   page: Page,
   data: AdminUserData
 ): Promise<string> {
-  await page.goto('/admin/users');
+  await page.goto('/users');
   await page.locator('[data-testid="user-create-button"]').click();
   
   await waitForModalOpen(page, 'user-form-modal');
@@ -274,7 +312,7 @@ export async function assignUserRole(
   userId: string,
   roleCode: string
 ): Promise<void> {
-  await page.goto(`/admin/users/${userId}`);
+  await page.goto(`/users/${userId}`);
   await page.locator('[data-testid="user-assign-role-button"]').click();
   
   await waitForModalOpen(page, 'role-assignment-modal');
@@ -301,7 +339,7 @@ export async function manageRolePermissions(
   roleCode: string,
   permissions: string[]
 ): Promise<void> {
-  await page.goto(`/admin/roles/${roleCode}`);
+  await page.goto(`/roles/${roleCode}`);
   await page.locator('[data-testid="role-edit-permissions-button"]').click();
   
   await waitForModalOpen(page, 'permissions-modal');
@@ -332,7 +370,7 @@ export async function viewAuditLog(
     endDate?: string;
   }
 ): Promise<void> {
-  await page.goto('/admin/audit-log');
+  await page.goto('/activity-logs');
   
   // Apply filters if provided
   if (filters) {
@@ -356,7 +394,7 @@ export async function viewAuditLog(
     await page.locator('[data-testid="audit-filter-apply-button"]').click();
   }
   
-  await waitForApiCall(page, '/admin/audit-log', 'GET');
+  await waitForApiCall(page, '/activity-logs', 'GET');
 }
 
 /**
@@ -369,7 +407,7 @@ export async function updateSystemSettings(
   page: Page,
   settings: Record<string, string | number | boolean>
 ): Promise<void> {
-  await page.goto('/admin/settings');
+  await page.goto('/settings');
   
   // Update each setting
   for (const [key, value] of Object.entries(settings)) {

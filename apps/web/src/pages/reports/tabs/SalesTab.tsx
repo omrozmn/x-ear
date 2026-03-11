@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
     AlertTriangle,
     RefreshCw,
     Loader2
 } from 'lucide-react';
-import { Button } from '@x-ear/ui-web';
+import { Button, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import { unwrapObject } from '../../../utils/response-unwrap';
 import {
     useListReportFinancial,
@@ -29,6 +30,31 @@ export function SalesTab({ filters }: SalesTabProps) {
             minimumFractionDigits: 0
         }).format(amount);
     };
+
+    type SaleRow = { brand: string; sales: number; revenue: number };
+
+    const salesRows = useMemo<SaleRow[]>(() => {
+        if (!financial?.product_sales) return [];
+        return Object.entries(financial.product_sales).map(([brand, data]) => ({
+            brand,
+            sales: (data as { sales?: number; revenue?: number }).sales || 0,
+            revenue: (data as { sales?: number; revenue?: number }).revenue || 0,
+        }));
+    }, [financial]);
+
+    const salesColumns: Column<SaleRow>[] = [
+        { key: 'brand', title: 'Marka', sortable: true },
+        { key: 'sales', title: 'Satış Adedi', sortable: true, align: 'right' },
+        {
+            key: 'revenue',
+            title: 'Gelir',
+            sortable: true,
+            align: 'right',
+            render: (value: number) => (
+                <span className="font-medium text-green-600">{formatCurrency(value)}</span>
+            )
+        },
+    ];
 
     if (isLoading) {
         return (
@@ -82,32 +108,15 @@ export function SalesTab({ filters }: SalesTabProps) {
             {/* Product Sales */}
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
                 <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Marka Bazlı Satışlar</h4>
-                {financial?.product_sales && Object.keys(financial.product_sales).length > 0 ? (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm">
-                            <thead className="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                                <tr>
-                                    <th className="px-4 py-3 font-medium">Marka</th>
-                                    <th className="px-4 py-3 font-medium text-right">Satış Adedi</th>
-                                    <th className="px-4 py-3 font-medium text-right">Gelir</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                {Object.entries(financial.product_sales).map(([brand, data]) => (
-                                    <tr key={brand} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-300">
-                                        <td className="px-4 py-3 font-medium">{brand}</td>
-                                        <td className="px-4 py-3 text-right">{data.sales || 0}</td>
-                                        <td className="px-4 py-3 text-right font-medium text-green-600">
-                                            {formatCurrency(data.revenue || 0)}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                ) : (
-                    <p className="text-gray-400 text-center py-8">Veri bulunamadı</p>
-                )}
+                <DataTable<SaleRow>
+                    data={salesRows}
+                    columns={salesColumns}
+                    rowKey="brand"
+                    emptyText="Veri bulunamadı"
+                    striped
+                    hoverable
+                    size="medium"
+                />
             </div>
         </div>
     );

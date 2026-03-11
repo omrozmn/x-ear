@@ -207,12 +207,13 @@ def _get_birfatura_client(tenant_id: str, db: Session) -> BirfaturaClient:
         integration_cfg = db.query(IntegrationConfig).filter_by(
             integration_type="birfatura", config_key="integration_key"
         ).first()
-    global_key = integration_cfg.config_value if integration_cfg else None
-    use_test_creds = bool(
-        os.getenv("BIRFATURA_TEST_API_KEY")
-        and os.getenv("BIRFATURA_TEST_SECRET_KEY")
-        and os.getenv("BIRFATURA_TEST_INTEGRATION_KEY")
+    global_key = integration_cfg.config_value if integration_cfg else (
+        os.getenv("BIRFATURA_INTEGRATION_KEY")
+        or os.getenv("BIRFATURA_X_INTEGRATION_KEY")
     )
+    # Test credentials must be explicitly enabled; merely defining test env vars
+    # should not override tenant credentials for normal runtime.
+    use_test_creds = os.getenv("BIRFATURA_USE_TEST_CREDS", "0") == "1"
     if use_test_creds:
         tenant_api_key = os.getenv("BIRFATURA_TEST_API_KEY") or tenant_api_key
         tenant_secret_key = os.getenv("BIRFATURA_TEST_SECRET_KEY") or tenant_secret_key
@@ -324,38 +325,85 @@ def _render_invoice_pdf(invoice: "PurchaseInvoice", tenant_id: str = None) -> by
         except Exception:
             raw = {}
 
-    inv_type = raw.get("InvoiceTypeCode") or invoice.invoice_type or "SATIS"
+    inv_type = (
+        raw.get("InvoiceTypeCode")
+        or raw.get("invoiceTypeCode")
+        or raw.get("invoiceType")
+        or raw.get("invoice_type_code")
+        or raw.get("invoice_type")
+        or invoice.invoice_type
+        or "SATIS"
+    )
+    profile_id = raw.get("ProfileId") or raw.get("profileId") or raw.get("profile_id") or ""
+    document_type = raw.get("DocumentType") or raw.get("documentType") or raw.get("document_type") or ""
+    document_title = (
+        raw.get("DocumentTitle")
+        or raw.get("documentTitle")
+        or raw.get("invoiceTitle")
+        or raw.get("document_title")
+        or (
+            "e-İrsaliye" if (document_type == "EIRSALIYE" or profile_id == "TEMELIRSALIYE") else
+            "e-Müstahsil Makbuzu" if document_type == "EMM" or str(inv_type).upper() == "MUSTAHSILMAKBUZ" else
+            "e-Serbest Meslek Makbuzu" if document_type == "ESMM" or str(inv_type).upper() == "SERBESTMESLEKMAKBUZ" else
+            "e-Fatura"
+        )
+    )
 
-    supplier_name = raw.get("SenderName") or invoice.sender_name or ""
-    supplier_vkn = raw.get("SenderKN") or invoice.sender_tax_number or ""
+    supplier = raw.get("supplier") if isinstance(raw.get("supplier"), dict) else {}
+    customer = raw.get("customer") if isinstance(raw.get("customer"), dict) else {}
+
+    supplier_name = raw.get("SenderName") or supplier.get("name") or invoice.sender_name or ""
+    supplier_vkn = raw.get("SenderKN") or supplier.get("tax_id") or invoice.sender_tax_number or ""
     supplier_tax_office = invoice.sender_tax_office or ""
-    supplier_addr_parts = [invoice.sender_address or "", invoice.sender_city or ""]
+
+    supplier_address = supplier.get("address") or invoice.sender_address or ""
+    if isinstance(supplier_address, dict):
+        supplier_address = ", ".join(
+            str(part).strip()
+            for part in (
+                supplier_address.get("street"),
+                supplier_address.get("district"),
+                supplier_address.get("city"),
+                supplier_address.get("postalZone"),
+                supplier_address.get("country"),
+            )
+            if part
+        )
+
+    supplier_addr_parts = [supplier_address, invoice.sender_city or ""]
     supplier_addr = ", ".join(p for p in supplier_addr_parts if p)
 
     source_form = raw.get("_source_form_data") if isinstance(raw.get("_source_form_data"), dict) else {}
     customer_name = (
         raw.get("ReceiverName")
-        or (raw.get("customer") or {}).get("name")
+        or customer.get("name")
         or source_form.get("customerName")
         or " ".join(filter(None, [source_form.get("customerFirstName"), source_form.get("customerLastName")])).strip()
     )
     customer_vkn = (
         raw.get("ReceiverKN")
-        or (raw.get("customer") or {}).get("tax_id")
+        or customer.get("tax_id")
         or source_form.get("customerTaxId")
         or source_form.get("customerTaxNumber")
         or source_form.get("customerTcNumber")
         or ""
     )
 
-    subtotal = float(raw.get("LineExtensionAmount") or invoice.subtotal or 0)
-    tax_inclusive = float(raw.get("TaxInclusiveAmount") or 0)
-    tax_exclusive = float(raw.get("TaxExclusiveAmount") or 0)
+    subtotal = float(raw.get("LineExtensionAmount") or raw.get("lineExtensionAmount") or raw.get("subtotal") or invoice.subtotal or 0)
+    tax_inclusive = float(raw.get("TaxInclusiveAmount") or raw.get("taxInclusiveAmount") or 0)
+    tax_exclusive = float(raw.get("TaxExclusiveAmount") or raw.get("taxExclusiveAmount") or 0)
     tax_total = (tax_inclusive - tax_exclusive) if tax_inclusive else float(invoice.tax_amount or 0)
-    payable = float(raw.get("PayableAmount") or invoice.total_amount or 0)
-    currency = raw.get("DocumentCurrencyCode") or invoice.currency or "TRY"
+    if not tax_total:
+        tax_total = float(raw.get("TaxAmount") or raw.get("taxAmount") or 0)
+    payable = float(raw.get("PayableAmount") or raw.get("payableAmount") or raw.get("totalAmount") or invoice.total_amount or 0)
+    currency = raw.get("DocumentCurrencyCode") or raw.get("currency") or invoice.currency or "TRY"
 
-    raw_lines = raw.get("lines") if isinstance(raw.get("lines"), list) else (source_form.get("items") or [])
+    raw_lines = (
+        raw.get("lines") if isinstance(raw.get("lines"), list)
+        else raw.get("invoiceLines") if isinstance(raw.get("invoiceLines"), list)
+        else raw.get("InvoiceLines") if isinstance(raw.get("InvoiceLines"), list)
+        else (source_form.get("items") or [])
+    )
     normalized_lines = []
     for line in raw_lines:
         if not isinstance(line, dict):
@@ -378,11 +426,17 @@ def _render_invoice_pdf(invoice: "PurchaseInvoice", tenant_id: str = None) -> by
         })
 
     invoice_data = {
-        "invoice_id": raw.get("InvoiceNo") or invoice.invoice_number or "",
-        "uuid": invoice.birfatura_uuid or "",
-        "issue_date": (raw.get("IssueDate") or str(invoice.invoice_date or ""))[:10],
+        "invoice_id": raw.get("InvoiceNo") or raw.get("invoiceNumber") or invoice.invoice_number or "",
+        "uuid": raw.get("uuid") or invoice.birfatura_uuid or "",
+        "issue_date": (raw.get("IssueDate") or raw.get("issueDate") or str(invoice.invoice_date or ""))[:10],
         "invoice_type": inv_type,
-        "document_title": "E-FATURA",
+        "invoiceType": inv_type,
+        "invoiceTypeCode": inv_type,
+        "profile_id": profile_id,
+        "profileId": profile_id,
+        "document_type": document_type,
+        "documentType": document_type,
+        "document_title": document_title,
         "currency": currency,
         "supplier": {
             "name": supplier_name,
@@ -398,9 +452,17 @@ def _render_invoice_pdf(invoice: "PurchaseInvoice", tenant_id: str = None) -> by
         "line_extension_amount": subtotal,
         "tax_total": tax_total,
         "payable_amount": payable,
-        "note": raw.get("Note") or raw.get("notes") or "",
+        "notes": raw.get("Note") or raw.get("notes") or "",
     }
-    return render_invoice_to_pdf(invoice_data, tenant_id=tenant_id)
+    try:
+        return render_invoice_to_pdf(invoice_data, tenant_id=tenant_id)
+    except Exception as e:
+        logger.warning(
+            "Local invoice PDF renderer failed for invoice %s: %s. Falling back to minimal PDF.",
+            invoice.id,
+            e,
+        )
+        return _render_minimal_pdf(invoice)
 
 
 def _render_invoice_html(invoice: "PurchaseInvoice") -> bytes:
@@ -544,6 +606,7 @@ def _render_invoice_html(invoice: "PurchaseInvoice") -> bytes:
 def get_invoice_document(
     invoice_id: int,
     format: Literal["pdf", "html", "xml"] = Query("pdf", description="Document format"),
+    render_mode: Literal["auto", "local", "remote"] = Query("auto", description="PDF rendering mode"),
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access("invoices.view"))
 ):
@@ -580,9 +643,82 @@ def get_invoice_document(
                         headers={"Content-Disposition": f'inline; filename="{filename}"'})
 
     if format == "pdf":
+        if render_mode == "local":
+            try:
+                content = _render_invoice_pdf(invoice, tenant_id)
+            except Exception as e:
+                logger.warning(
+                    "Local PDF route failed for invoice %s: %s. Falling back to minimal PDF.",
+                    invoice_id,
+                    e,
+                )
+                content = _render_minimal_pdf(invoice)
+            filename = f"{invoice.invoice_number or invoice_id}.pdf"
+            return Response(content=content, media_type="application/pdf",
+                            headers={"Content-Disposition": f'inline; filename="{filename}"'})
+
         # 2-step: Download XML from BirFatura then convert to PDF via PreviewDocumentReturnPDF
         pdf_bytes = None
-        if invoice.birfatura_uuid:
+        _is_real_birfatura_uuid = (
+            invoice.birfatura_uuid
+            and not str(invoice.birfatura_uuid).startswith("local-")
+            and not str(invoice.birfatura_uuid).startswith("draft-")
+        )
+
+        # -- Step A: For local/draft invoices, use stored XML + PreviewDocumentReturnPDF --
+        if not _is_real_birfatura_uuid and local_xml:
+            try:
+                client = _get_birfatura_client(tenant_id, db)
+                xml_b64 = base64.b64encode(local_xml.encode("utf-8")).decode("utf-8")
+                preview_resp = client.preview_document_pdf({
+                    "documentBytes": xml_b64,
+                    "systemTypeCodes": "EFATURA"
+                })
+                if preview_resp.get("Success") and preview_resp.get("Result", {}).get("zipped"):
+                    pdf_raw = base64.b64decode(preview_resp["Result"]["zipped"])
+                    if pdf_raw[:4] == b'%PDF':
+                        pdf_bytes = pdf_raw
+                    elif pdf_raw[:2] == b'PK':
+                        zf = zipfile.ZipFile(io.BytesIO(pdf_raw))
+                        names = zf.namelist()
+                        if names:
+                            pdf_bytes = zf.read(names[0])
+                else:
+                    logger.warning(f"PreviewDocumentReturnPDF (local XML) failed for invoice {invoice_id}: {preview_resp.get('Message')}")
+            except Exception as e:
+                logger.warning(f"BirFatura preview from local XML failed for invoice {invoice_id}: {e}")
+
+            # If PreviewDocumentReturnPDF failed, try outbox XML file on disk
+            if not pdf_bytes:
+                outbox_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "instance", "efatura_outbox"))
+                draft_id = invoice.draft_id if hasattr(invoice, "draft_id") else invoice.id
+                import glob as _glob
+                pattern = os.path.join(outbox_dir, f"DRAFT_{draft_id}_*.xml")
+                matches = sorted(_glob.glob(pattern), reverse=True)
+                if matches:
+                    try:
+                        with open(matches[0], "rb") as f:
+                            outbox_xml = f.read()
+                        client = _get_birfatura_client(tenant_id, db)
+                        xml_b64 = base64.b64encode(outbox_xml).decode("utf-8")
+                        preview_resp = client.preview_document_pdf({
+                            "documentBytes": xml_b64,
+                            "systemTypeCodes": "EFATURA"
+                        })
+                        if preview_resp.get("Success") and preview_resp.get("Result", {}).get("zipped"):
+                            pdf_raw = base64.b64decode(preview_resp["Result"]["zipped"])
+                            if pdf_raw[:4] == b'%PDF':
+                                pdf_bytes = pdf_raw
+                            elif pdf_raw[:2] == b'PK':
+                                zf = zipfile.ZipFile(io.BytesIO(pdf_raw))
+                                names = zf.namelist()
+                                if names:
+                                    pdf_bytes = zf.read(names[0])
+                    except Exception as e:
+                        logger.warning(f"BirFatura preview from outbox XML failed for invoice {invoice_id}: {e}")
+
+        # -- Step B: For real BirFatura invoices, download XML then convert --
+        if _is_real_birfatura_uuid:
             try:
                 client = _get_birfatura_client(tenant_id, db)
                 xml_resp = client.document_download_by_uuid({
@@ -612,6 +748,27 @@ def get_invoice_document(
                     logger.warning(f"XML download failed for invoice {invoice_id}: {xml_resp.get('Message')}")
             except Exception as e:
                 logger.warning(f"BirFatura PDF generation failed for invoice {invoice_id}: {e}")
+
+            # Step B fallback: if BirFatura API failed but we have local XML, try that
+            if not pdf_bytes and local_xml:
+                try:
+                    client = _get_birfatura_client(tenant_id, db)
+                    xml_b64 = base64.b64encode(local_xml.encode("utf-8")).decode("utf-8")
+                    preview_resp = client.preview_document_pdf({
+                        "documentBytes": xml_b64,
+                        "systemTypeCodes": "EFATURA"
+                    })
+                    if preview_resp.get("Success") and preview_resp.get("Result", {}).get("zipped"):
+                        pdf_raw = base64.b64decode(preview_resp["Result"]["zipped"])
+                        if pdf_raw[:4] == b'%PDF':
+                            pdf_bytes = pdf_raw
+                        elif pdf_raw[:2] == b'PK':
+                            zf = zipfile.ZipFile(io.BytesIO(pdf_raw))
+                            names = zf.namelist()
+                            if names:
+                                pdf_bytes = zf.read(names[0])
+                except Exception as e:
+                    logger.warning(f"BirFatura preview from local XML (fallback) failed for invoice {invoice_id}: {e}")
 
         if pdf_bytes:
             filename = f"{invoice.invoice_number or invoice_id}.pdf"

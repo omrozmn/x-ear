@@ -1,6 +1,6 @@
 import { Button, Card, Input, Select, DatePicker } from '@x-ear/ui-web';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { FileText, Download, Filter, Search, CheckCircle, AlertCircle, Send, ChevronLeft, ChevronRight, Eye, X, Plus, MoreVertical, ChevronUp, ChevronDown as ChevronDownIcon, Copy, XCircle, Clock, Ban, CreditCard } from 'lucide-react';
+import { FileText, Download, Filter, Search, CheckCircle, AlertCircle, Send, ChevronLeft, ChevronRight, Eye, X, Plus, MoreVertical, ChevronUp, ChevronDown as ChevronDownIcon, Copy, XCircle, Clock, Ban, CreditCard, CheckSquare, Square } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { useListOutgoingInvoices } from '@/api/client/invoices.client';
 import type { OutgoingInvoiceResponse, SchemasInvoicesNewInvoiceStatus } from '@/api/client/invoices.client';
@@ -28,8 +28,8 @@ interface InvoiceManagementPageProps {
   className?: string;
 }
 
-async function fetchInvoiceDocument(invoiceId: string | number, format: 'pdf' | 'html' | 'xml'): Promise<{ data: ArrayBuffer; contentType: string }> {
-  const resp = await apiClient.get<ArrayBuffer>(`/api/invoices/${invoiceId}/document?format=${format}`, {
+async function fetchInvoiceDocument(invoiceId: string | number, format: 'pdf' | 'html' | 'xml', renderMode: 'auto' | 'local' | 'remote' = 'auto'): Promise<{ data: ArrayBuffer; contentType: string }> {
+  const resp = await apiClient.get<ArrayBuffer>(`/api/invoices/${invoiceId}/document?format=${format}&render_mode=${renderMode}`, {
     responseType: 'arraybuffer',
   });
   const contentType = (resp.headers?.['content-type'] as string) || (format === 'pdf' ? 'application/pdf' : 'text/html');
@@ -47,7 +47,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const [perPage] = useState(25);
+  const [perPage, setPerPage] = useState(25);
   const [dateFrom, setDateFrom] = useState<Date | null>(null);
   const [dateTo, setDateTo] = useState<Date | null>(null);
   const [showBanner, setShowBanner] = useState(() => {
@@ -62,6 +62,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
   const [logsLoading, setLogsLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isMobileSelectionMode, setIsMobileSelectionMode] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const debouncedSearch = useDebounce(searchTerm, 300);
@@ -209,7 +210,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     setActiveMenu(null);
     const toastId = toast.loading('Fatura yükleniyor...');
     try {
-      const { data: buf, contentType } = await fetchInvoiceDocument(invoice.invoiceId, 'pdf');
+      const { data: buf, contentType } = await fetchInvoiceDocument(invoice.invoiceId, 'pdf', 'local');
       const isPdf = contentType.includes('application/pdf');
       const mimeType = isPdf ? 'application/pdf' : 'text/html';
       const blob = new Blob([buf], { type: mimeType });
@@ -353,12 +354,12 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Giden Faturalar</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Giden Faturalar</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm">
             BirFatura üzerinden gönderilen faturalar
           </p>
         </div>
-        <div className="flex gap-2 flex-wrap">
+        <div className="hidden md:flex gap-2 flex-wrap">
           <Button variant="outline" className="flex items-center gap-2" onClick={() => refetch()}>
             <Download size={16} />
             <span className="hidden sm:inline">Yenile</span>
@@ -374,6 +375,24 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
           <Button className="flex items-center gap-2 premium-gradient tactile-press text-white" onClick={() => navigate({ to: '/invoices/new' })}>
             <Plus size={16} />
             <span className="hidden sm:inline">Yeni Fatura</span>
+          </Button>
+        </div>
+        <div className="grid grid-cols-2 gap-2 w-full md:hidden">
+          <Button variant="outline" className="flex items-center justify-center gap-2" onClick={() => refetch()}>
+            <Download size={16} />
+            Yenile
+          </Button>
+          <Button className="flex items-center justify-center gap-2 premium-gradient tactile-press text-white" onClick={() => navigate({ to: '/invoices/new' })}>
+            <Plus size={16} />
+            Yeni Fatura
+          </Button>
+          <Button variant="outline" className="flex items-center justify-center gap-2" onClick={() => navigate({ to: '/invoices/new', search: { type: 'proforma' } as { type?: string; draftId?: number } })}>
+            <FileText size={16} />
+            Proforma
+          </Button>
+          <Button variant="outline" className="flex items-center justify-center gap-2" onClick={() => navigate({ to: '/invoices/new', search: { documentKind: 'despatch' } as { type?: string; draftId?: number; documentKind?: 'invoice' | 'despatch' } })}>
+            <Send size={16} />
+            E-İrsaliye
           </Button>
         </div>
       </div>
@@ -489,23 +508,56 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
       </Card>
 
       {/* Mobile Card View (< md) */}
-      <div className="block md:hidden space-y-3">
+      <div className="md:hidden flex items-center justify-between mt-4">
+        {isMobileSelectionMode ? (
+          <>
+            <Button variant="ghost" size="sm" onClick={() => { setIsMobileSelectionMode(false); setSelectedIds(new Set()); }} className="text-gray-600">
+              <X className="w-4 h-4 mr-1" /> Kapat
+            </Button>
+            <Button variant="ghost" size="sm" onClick={toggleSelectAll} className="text-blue-600 font-medium">
+              {selectedIds.size === filteredInvoices.length && filteredInvoices.length > 0 ? 'Hiçbiri' : 'Tümünü Seç'}
+            </Button>
+          </>
+        ) : (
+          <div className="flex-1" />
+        )}
+        {!isMobileSelectionMode && (
+          <Button variant="ghost" size="sm" onClick={() => setIsMobileSelectionMode(true)} className="text-blue-600 font-medium ml-auto">
+            <CheckSquare className="w-4 h-4 mr-1" /> Seç
+          </Button>
+        )}
+      </div>
+
+      <div className="block md:hidden space-y-3 mt-3">
         {filteredInvoices.length === 0 ? (
-          <div className="text-center py-12">
-            <FileText className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Giden fatura bulunamadı</h3>
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-full shadow-sm mb-4">
+              <FileText className="h-8 w-8 text-gray-300 dark:text-gray-500" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Giden fatura bulunamadı</h3>
+            <p className="text-gray-500 text-sm mt-1">Kriterlere uygun giden fatura yok.</p>
           </div>
         ) : filteredInvoices.map((invoice: OutgoingInvoiceResponse) => (
           <InvoiceMobileCard
             key={invoice.invoiceId}
             invoice={invoice}
-            onView={() => handleViewPdf(invoice)}
+            onView={() => {
+              if ((invoice.status || '').toUpperCase() === 'DRAFT') {
+                navigate({ to: '/invoices/new', search: { draftId: Number(invoice.invoiceId) } as { type?: string; draftId?: number } });
+              } else {
+                handleViewPdf(invoice);
+              }
+            }}
             onDownload={() => handleDownloadPdf(invoice)}
             onCopy={() => handleCopy(invoice)}
             onCopyAndCancel={() => handleCopyAndCancel(invoice)}
             onCancel={() => handleCancel(invoice)}
             getStatusBadge={getStatusBadge}
+            renderDocumentBadges={renderDocumentBadges}
             actionLoading={actionLoading}
+            isSelectionMode={isMobileSelectionMode}
+            isSelected={selectedIds.has(invoice.invoiceId)}
+            onToggleSelect={() => toggleSelect(invoice.invoiceId)}
           />
         ))}
       </div>
@@ -648,44 +700,26 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              Toplam {totalCount} fatura, Sayfa {currentPage} / {totalPages}
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-600 dark:text-gray-400">Toplam {totalCount} fatura</span>
+              <select
+                data-allow-raw="true"
+                value={perPage}
+                onChange={(e) => { setPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                className="text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              >
+                <option value={10}>10 / sayfa</option>
+                <option value={20}>20 / sayfa</option>
+                <option value={50}>50 / sayfa</option>
+                <option value={100}>100 / sayfa</option>
+              </select>
             </div>
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage <= 1}
-              >
-                <ChevronLeft size={16} />
-                Önceki
-              </Button>
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const start = Math.max(1, Math.min(currentPage - 2, totalPages - 4));
-                const page = start + i;
-                if (page > totalPages) return null;
-                return (
-                  <Button
-                    key={page}
-                    variant={page === currentPage ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setCurrentPage(page)}
-                    className={page === currentPage ? 'bg-blue-600 text-white' : ''}
-                  >
-                    {page}
-                  </Button>
-                );
-              })}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                disabled={currentPage >= totalPages}
-              >
-                Sonraki
-                <ChevronRight size={16} />
-              </Button>
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(1)} disabled={currentPage <= 1}>İlk</Button>
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage <= 1}><ChevronLeft size={16} />Önceki</Button>
+              <span className="text-sm text-gray-600 dark:text-gray-400 px-2">Sayfa {currentPage} / {totalPages}</span>
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage >= totalPages}>Sonraki<ChevronRight size={16} /></Button>
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(totalPages)} disabled={currentPage >= totalPages}>Son</Button>
             </div>
           </div>
         )}
@@ -693,7 +727,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
 
       {/* Bulk Action Bar */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl px-6 py-3 flex items-center gap-4">
+        <div className="fixed bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl px-4 md:px-6 py-3 flex items-center gap-3 md:gap-4 w-[90%] md:w-auto overflow-x-auto whitespace-nowrap">
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{selectedIds.size} fatura seçildi</span>
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
           <Button variant="ghost" onClick={handleBulkCancel} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl transition-colors h-auto">
@@ -833,10 +867,14 @@ interface InvoiceMobileCardProps {
   onCopyAndCancel: () => void;
   onCancel: () => void;
   getStatusBadge: (status: string, invoice?: OutgoingInvoiceResponse) => React.ReactNode;
+  renderDocumentBadges: (invoice: OutgoingInvoiceResponse) => React.ReactNode;
   actionLoading: string | null;
+  isSelectionMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: () => void;
 }
 
-function InvoiceMobileCard({ invoice, onView, onDownload, onCopy, onCopyAndCancel, onCancel, getStatusBadge, actionLoading }: InvoiceMobileCardProps) {
+function InvoiceMobileCard({ invoice, onView, onDownload, onCopy, onCopyAndCancel, onCancel, getStatusBadge, renderDocumentBadges, actionLoading, isSelectionMode, isSelected, onToggleSelect }: InvoiceMobileCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -850,21 +888,34 @@ function InvoiceMobileCard({ invoice, onView, onDownload, onCopy, onCopyAndCance
   }, [menuOpen]);
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-visible">
+    <div className={`rounded-xl border shadow-sm overflow-visible relative transition-all ${isSelected ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 dark:border-blue-500' : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700'}`}>
+      {isSelectionMode && (
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+          {isSelected ? (
+            <CheckSquare className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+          ) : (
+            <Square className="w-6 h-6 text-gray-300 dark:text-gray-600" />
+          )}
+        </div>
+      )}
       {/* Tappable card body */}
       <div
-        className="p-4 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800 transition-colors"
-        onClick={onView}
+        className={`p-4 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800 transition-colors ${isSelectionMode ? 'pr-12' : ''}`}
+        onClick={() => {
+          if (isSelectionMode && onToggleSelect) onToggleSelect();
+          else onView();
+        }}
       >
-        <div className="flex items-start justify-between mb-2">
+        <div className="flex items-start justify-between mb-3 gap-3">
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{invoice.invoiceNumber}</p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
               {invoice.partyFirstName} {invoice.partyLastName}
             </p>
+            <div className="mt-1">{renderDocumentBadges(invoice)}</div>
           </div>
           <div className="flex items-center gap-2 ml-2 flex-shrink-0">
-            {getStatusBadge(invoice.status)}
+            {getStatusBadge(invoice.status, invoice)}
             {/* Actions ⋮ button */}
             <div className="relative" ref={menuRef}>
               <Button
@@ -898,13 +949,26 @@ function InvoiceMobileCard({ invoice, onView, onDownload, onCopy, onCopyAndCance
             </div>
           </div>
         </div>
-        <div className="flex items-center justify-between mt-2">
-          <span className="text-sm font-semibold text-gray-900 dark:text-white">
-            {formatCurrency(Number(invoice.totalAmount), 'TRY')}
-          </span>
-          <span className="text-xs text-gray-500 dark:text-gray-400">
-            {formatDate(invoice.invoiceDate)}
-          </span>
+        <div className="border-t border-gray-100 dark:border-gray-800 pt-3">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <p className="text-xs text-gray-400">Tarih</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {formatDate(invoice.invoiceDate)}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-gray-400">Tutar</p>
+              <p className="text-lg font-bold text-gray-900 dark:text-white">
+                {formatCurrency(Number(invoice.totalAmount), 'TRY')}
+              </p>
+            </div>
+          </div>
+          {(invoice.status || '').toUpperCase() === 'DRAFT' && (
+            <div className="mt-3 inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-medium text-amber-700 dark:bg-amber-900/20 dark:text-amber-300">
+              Taslak: dokununca düzenleme açılır
+            </div>
+          )}
         </div>
       </div>
     </div>

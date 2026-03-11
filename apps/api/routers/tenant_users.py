@@ -495,7 +495,8 @@ def update_tenant_company(
             )
         
         # Get current company_info or initialize empty dict
-        company_info = tenant.company_info or {}
+        from sqlalchemy.orm.attributes import flag_modified
+        company_info = dict(tenant.company_info or {})
         
         # Update company_info with new data (using snake_case keys)
         data = company_in.model_dump(exclude_unset=True, by_alias=False)
@@ -503,6 +504,7 @@ def update_tenant_company(
         
         # Save back to tenant
         tenant.company_info = company_info
+        flag_modified(tenant, 'company_info')
         
         db_session.commit()
         db_session.refresh(tenant)
@@ -563,9 +565,11 @@ async def upload_company_asset(
         url = f"/api/tenant/company/assets/{asset_type}{file_ext}"
         
         # Update tenant company_info
-        company_info = tenant.company_info or {}
+        from sqlalchemy.orm.attributes import flag_modified
+        company_info = dict(tenant.company_info or {})
         company_info[f"{asset_type}Url"] = url
         tenant.company_info = company_info
+        flag_modified(tenant, 'company_info')
         
         db_session.commit()
         
@@ -607,10 +611,12 @@ def delete_company_asset(
             )
         
         # Remove from company_info
-        company_info = tenant.company_info or {}
+        from sqlalchemy.orm.attributes import flag_modified
+        company_info = dict(tenant.company_info or {})
         if f"{asset_type}Url" in company_info:
             del company_info[f"{asset_type}Url"]
             tenant.company_info = company_info
+            flag_modified(tenant, 'company_info')
             db_session.commit()
         
         # Delete file if exists

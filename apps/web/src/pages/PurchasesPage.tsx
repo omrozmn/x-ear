@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
-import { Card, Button, DatePicker } from '@x-ear/ui-web';
-import { ShoppingCart, Download, Filter, Search, FileText, ArrowRight, ChevronLeft, ChevronRight, X, ChevronUp, ChevronDown as ChevronDownIcon } from 'lucide-react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { Card, Button, DatePicker, Input, Select } from '@x-ear/ui-web';
+import { ShoppingCart, Download, Search, FileText, ChevronLeft, ChevronRight, X, ChevronUp, ChevronDown as ChevronDownIcon, RefreshCw, Filter, CheckSquare, Square, CreditCard } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { useNavigate } from '@tanstack/react-router';
 import { useListIncomingInvoices } from '@/api/client/invoices.client';
@@ -9,6 +9,7 @@ import { ONBOARDING_PURCHASES_DISMISSED } from '@/constants/storage-keys';
 import { useDebounce } from '@/hooks/useDebounce';
 import toast from 'react-hot-toast';
 import { useIsMobile } from '@/hooks/useBreakpoint';
+import { cn } from '@/lib/utils';
 
 export function PurchasesPage() {
   const navigate = useNavigate();
@@ -16,7 +17,8 @@ export function PurchasesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const [perPage] = useState(25);
+  const [perPage, setPerPage] = useState(25);
+  const [mobileVisibleCount, setMobileVisibleCount] = useState(25);
   const [dateFrom, setDateFrom] = useState<Date | null>(null);
   const [dateTo, setDateTo] = useState<Date | null>(null);
   const [showBanner, setShowBanner] = useState(() => !localStorage.getItem(ONBOARDING_PURCHASES_DISMISSED));
@@ -24,11 +26,14 @@ export function PurchasesPage() {
   const [sortField, setSortField] = useState<string>('');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isMobileSelectionMode, setIsMobileSelectionMode] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const debouncedSearch = useDebounce(searchTerm, 300);
 
   const handleSort = (field: string) => {
-    if (sortField === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    if (sortField === field) setSortDir((value) => value === 'asc' ? 'desc' : 'asc');
     else { setSortField(field); setSortDir('asc'); }
   };
 
@@ -37,9 +42,9 @@ export function PurchasesPage() {
     return sortDir === 'asc' ? <ChevronUp className="inline w-3 h-3 ml-1" /> : <ChevronDownIcon className="inline w-3 h-3 ml-1" />;
   };
 
-  const { data, isLoading, refetch } = useListIncomingInvoices({
-    page: currentPage,
-    per_page: perPage,
+  const { data, isLoading, isFetching, refetch } = useListIncomingInvoices({
+    page: isMobile ? 1 : currentPage,
+    per_page: isMobile ? mobileVisibleCount : perPage,
     status: statusFilter !== 'all' ? statusFilter as SchemasInvoicesNewInvoiceStatus : undefined,
     supplier_name: debouncedSearch || undefined,
     date_from: dateFrom ? dateFrom.toISOString().split('T')[0] : undefined,
@@ -50,27 +55,61 @@ export function PurchasesPage() {
   const pagination = data?.data?.pagination;
   const totalCount = pagination?.total ?? invoiceList.length;
   const totalPages = pagination?.totalPages ?? 1;
+  const hasMoreMobile = isMobile && invoiceList.length < totalCount;
 
-  const totalPurchases = useMemo(() =>
-    invoiceList.reduce((sum: number, inv: IncomingInvoiceResponse) => sum + Number(inv.totalAmount || 0), 0),
+  useEffect(() => {
+    if (!isMobile) return;
+    setMobileVisibleCount(25);
+    setSelectedIds(new Set());
+    setIsMobileSelectionMode(false);
+  }, [isMobile, debouncedSearch, statusFilter, dateFrom, dateTo]);
+
+  useEffect(() => {
+    if (!isMobile || !hasMoreMobile || !loadMoreRef.current || isLoading || isFetching) return;
+
+    const node = loadMoreRef.current;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry?.isIntersecting) {
+          setMobileVisibleCount((prev) => Math.min(prev + 25, totalCount));
+        }
+      },
+      { rootMargin: '200px' }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [isMobile, hasMoreMobile, isLoading, isFetching, totalCount]);
+
+  const totalPurchases = useMemo(
+    () => invoiceList.reduce((sum: number, invoice: IncomingInvoiceResponse) => sum + Number(invoice.totalAmount || 0), 0),
+    [invoiceList]
+  );
+
+  const supplierCount = useMemo(
+    () => new Set(invoiceList.map((invoice: IncomingInvoiceResponse) => invoice.supplierTaxNumber).filter(Boolean)).size,
     [invoiceList]
   );
 
   const sortedInvoices = useMemo(() => {
     const list = [...invoiceList];
     if (!sortField) return list;
+
     list.sort((a: IncomingInvoiceResponse, b: IncomingInvoiceResponse) => {
-      let av: string | number, bv: string | number;
+      let av: string | number = '';
+      let bv: string | number = '';
       if (sortField === 'supplierName') { av = a.supplierName || ''; bv = b.supplierName || ''; }
       else if (sortField === 'invoiceNumber') { av = a.invoiceNumber || ''; bv = b.invoiceNumber || ''; }
       else if (sortField === 'invoiceDate') { av = a.invoiceDate || ''; bv = b.invoiceDate || ''; }
       else if (sortField === 'totalAmount') { av = Number(a.totalAmount || 0); bv = Number(b.totalAmount || 0); }
       else if (sortField === 'status') { av = a.status || ''; bv = b.status || ''; }
-      else { av = ''; bv = ''; }
+
       if (av < bv) return sortDir === 'asc' ? -1 : 1;
       if (av > bv) return sortDir === 'asc' ? 1 : -1;
       return 0;
     });
+
     return list;
   }, [invoiceList, sortField, sortDir]);
 
@@ -85,95 +124,103 @@ export function PurchasesPage() {
       PROCESSED: 'İşlendi',
       PAID: 'Ödendi',
     };
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${styles[status] || 'bg-gray-100 text-gray-800'}`}>
-        {labels[status] || status}
-      </span>
-    );
+    return <span className={`px-2 py-1 rounded-full text-xs font-medium ${styles[status] || 'bg-gray-100 text-gray-800'}`}>{labels[status] || status}</span>;
   };
 
   const toggleSelect = (id: string) => {
-    setSelectedIds(prev => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   };
+
   const toggleSelectAll = () => {
     if (selectedIds.size === sortedInvoices.length) setSelectedIds(new Set());
-    else setSelectedIds(new Set(sortedInvoices.map((inv: IncomingInvoiceResponse) => String(inv.invoiceId))));
+    else setSelectedIds(new Set(sortedInvoices.map((invoice: IncomingInvoiceResponse) => String(invoice.invoiceId))));
   };
-  const handleBulkExportCsv = () => {
-    const selected = sortedInvoices.filter((inv: IncomingInvoiceResponse) => selectedIds.has(String(inv.invoiceId)));
+
+  const handleBulkExportCsv = useCallback(() => {
+    const selected = selectedIds.size > 0
+      ? sortedInvoices.filter((invoice: IncomingInvoiceResponse) => selectedIds.has(String(invoice.invoiceId)))
+      : sortedInvoices;
     const headers = ['Fatura No', 'Tedarikçi', 'VKN', 'Tutar', 'Tarih', 'Durum'];
-    const rows = selected.map((inv: IncomingInvoiceResponse) => [
-      inv.invoiceNumber || '', inv.supplierName || '', inv.supplierTaxNumber || '',
-      String(inv.totalAmount || 0), inv.invoiceDate || '', inv.status || '',
-    ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
+    const rows = selected.map((invoice: IncomingInvoiceResponse) => [
+      invoice.invoiceNumber || '', invoice.supplierName || '', invoice.supplierTaxNumber || '',
+      String(invoice.totalAmount || 0), invoice.invoiceDate || '', invoice.status || '',
+    ].map((value) => `"${String(value).replace(/"/g, '""')}"`).join(','));
     const csv = [headers.join(','), ...rows].join('\n');
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url;
-    a.download = `alislar_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click(); URL.revokeObjectURL(url);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `alislar_${new Date().toISOString().slice(0, 10)}.csv`;
+    anchor.click();
+    URL.revokeObjectURL(url);
     toast.success('CSV dışa aktarıldı');
     setSelectedIds(new Set());
+  }, [selectedIds, sortedInvoices]);
+
+  const clearFilters = () => {
+    setDateFrom(null);
+    setDateTo(null);
+    setStatusFilter('all');
+    setSearchTerm('');
+    setCurrentPage(1);
   };
 
-  const renderPurchaseCards = () => (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between px-1">
-        <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-          <input
-            data-allow-raw="true"
-            type="checkbox"
-            checked={sortedInvoices.length > 0 && selectedIds.size === sortedInvoices.length}
-            onChange={toggleSelectAll}
-            className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 accent-blue-600"
-          />
-          Tümünü seç
-        </label>
-        <span className="text-xs text-gray-500 dark:text-gray-400">
-          {selectedIds.size > 0 ? `${selectedIds.size} seçili` : `${sortedInvoices.length} kayıt`}
-        </span>
-      </div>
-      {sortedInvoices.map((invoice: IncomingInvoiceResponse) => (
-        <Card
+  const handleRefresh = useCallback(async () => {
+    await refetch();
+  }, [refetch]);
+
+  const renderMobileCards = () => (
+    <div className="block md:hidden space-y-3 mt-3">
+      {sortedInvoices.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-full shadow-sm mb-4">
+            <ShoppingCart className="h-8 w-8 text-gray-300 dark:text-gray-500" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Alış kaydı bulunamadı</h3>
+          <p className="text-gray-500 text-sm mt-1">Henüz gelen faturadan oluşturulmuş alış kaydı yok.</p>
+        </div>
+      ) : sortedInvoices.map((invoice: IncomingInvoiceResponse) => (
+        <div
           key={invoice.invoiceId}
-          className={`p-4 border ${selectedIds.has(String(invoice.invoiceId)) ? 'border-blue-200 bg-blue-50/60 dark:border-blue-900/40 dark:bg-blue-900/10' : 'border-gray-200 dark:border-gray-700'}`}
+          onClick={() => {
+            if (isMobileSelectionMode) toggleSelect(String(invoice.invoiceId));
+            else setSelectedInvoice(invoice);
+          }}
+          className={cn(
+            'bg-white dark:bg-gray-900 rounded-xl border shadow-sm overflow-visible relative transition-all',
+            selectedIds.has(String(invoice.invoiceId)) ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 dark:border-blue-500' : 'border-gray-200 dark:border-gray-700'
+          )}
         >
-          <div className="flex items-start gap-3">
-            <input
-              data-allow-raw="true"
-              type="checkbox"
-              checked={selectedIds.has(String(invoice.invoiceId))}
-              onChange={() => toggleSelect(String(invoice.invoiceId))}
-              className="mt-1 h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 accent-blue-600"
-            />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                    {invoice.supplierName || '—'}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                    {invoice.invoiceNumber || 'Fatura No Yok'}
-                  </p>
-                </div>
-                <div className="shrink-0">{getStatusBadge(invoice.status)}</div>
+          {isMobileSelectionMode && (
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+              {selectedIds.has(String(invoice.invoiceId)) ? <CheckSquare className="w-6 h-6 text-blue-600 dark:text-blue-400" /> : <Square className="w-6 h-6 text-gray-300 dark:text-gray-600" />}
+            </div>
+          )}
+          <div className={cn('p-4 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800 transition-colors', isMobileSelectionMode && 'pr-12')}>
+            <div className="flex items-start justify-between mb-3 gap-3">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{invoice.supplierName || '—'}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">{invoice.invoiceNumber || 'Fatura No Yok'}</p>
               </div>
-              <div className="flex items-center justify-between mt-2">
-                <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                  {formatCurrency(Number(invoice.totalAmount || 0), invoice.currency || 'TRY')}
-                </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {formatDate(invoice.invoiceDate)}
-                </span>
+              <div className="shrink-0">{getStatusBadge(invoice.status)}</div>
+            </div>
+            <div className="border-t border-gray-100 dark:border-gray-800 pt-3 flex items-end justify-between gap-3">
+              <div>
+                <p className="text-xs text-gray-400">Tarih</p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{formatDate(invoice.invoiceDate)}</p>
               </div>
-              <div className="mt-2 flex justify-end">
-                <Button variant="outline" size="sm" onClick={() => setSelectedInvoice(invoice)}>
-                  Detay
-                </Button>
+              <div className="text-right">
+                <p className="text-xs text-gray-400">Tutar</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-white">{formatCurrency(Number(invoice.totalAmount || 0), invoice.currency || 'TRY')}</p>
               </div>
             </div>
           </div>
-        </Card>
+        </div>
       ))}
     </div>
   );
@@ -189,150 +236,124 @@ export function PurchasesPage() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Alış Kayıtları</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Alışlar</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">Gelen faturalardan oluşturulan alış kayıtları</p>
         </div>
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
-            className="flex items-center gap-2"
-            onClick={() => navigate({ to: '/invoices/incoming' })}
-          >
-            <ArrowRight size={18} />
+        <div className="hidden md:flex gap-3">
+          <Button variant="outline" className="flex items-center gap-2" onClick={() => navigate({ to: '/invoices/incoming' })}>
+            <FileText size={18} />
             Gelen Faturalar
           </Button>
-          <Button variant="outline" className="flex items-center gap-2">
+          <Button variant="outline" className="flex items-center gap-2" onClick={handleBulkExportCsv}>
             <Download size={18} />
             Dışa Aktar
           </Button>
+          <Button variant="outline" className="flex items-center gap-2" onClick={handleRefresh}>
+            <RefreshCw size={18} />
+            Yenile
+          </Button>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="p-6">
+      <div className="grid grid-cols-3 gap-3 md:gap-6">
+        <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Toplam Alış</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-                {formatCurrency(totalPurchases, 'TRY')}
-              </p>
+              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Toplam Alış</p>
+              <p className="text-lg md:text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{formatCurrency(totalPurchases, 'TRY')}</p>
             </div>
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-2xl">
-              <ShoppingCart className="text-blue-600 dark:text-blue-400" size={24} />
+            <div className="p-2 md:p-3 bg-blue-100 dark:bg-blue-900/20 rounded-2xl">
+              <ShoppingCart className="text-blue-600 dark:text-blue-400 w-4 h-4 md:w-6 md:h-6" />
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Toplam Fatura</p>
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{totalCount}</p>
+              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Toplam Fatura</p>
+              <p className="text-lg md:text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">{totalCount}</p>
             </div>
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-2xl">
-              <FileText className="text-blue-600 dark:text-blue-400" size={24} />
+            <div className="p-2 md:p-3 bg-purple-100 dark:bg-purple-900/20 rounded-2xl">
+              <FileText className="text-purple-600 dark:text-purple-400 w-4 h-4 md:w-6 md:h-6" />
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Tedarikçi Sayısı</p>
-              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">
-                {new Set(invoiceList.map((inv: IncomingInvoiceResponse) => inv.supplierTaxNumber).filter(Boolean)).size}
-              </p>
+              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Tedarikçi</p>
+              <p className="text-lg md:text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{supplierCount}</p>
             </div>
-            <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-2xl">
-              <FileText className="text-purple-600 dark:text-purple-400" size={24} />
+            <div className="p-2 md:p-3 bg-green-100 dark:bg-green-900/20 rounded-2xl">
+              <CreditCard className="text-green-600 dark:text-green-400 w-4 h-4 md:w-6 md:h-6" />
             </div>
           </div>
         </Card>
       </div>
 
-      {/* Info Card */}
       {showBanner && (
-        <Card className="p-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-          <div className="flex items-start gap-3">
-            <FileText className="text-blue-600 dark:text-blue-400 mt-1 flex-shrink-0" size={20} />
-            <div className="flex-1">
-              <h3 className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                Alış Kayıtları Hakkında
-              </h3>
-              <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-                Bu sayfada BirFatura üzerinden gelen faturalardan oluşturulan alış kayıtları listelenmektedir.
-                Detaylı fatura görüntüleme için <strong>Gelen Faturalar</strong> sayfasına gidin.
-              </p>
-            </div>
-            <button
-              data-allow-raw="true"
-              onClick={() => {
-                setShowBanner(false);
-                localStorage.setItem(ONBOARDING_PURCHASES_DISMISSED, '1');
-              }}
-              className="text-blue-400 hover:text-blue-600 dark:hover:text-blue-200 flex-shrink-0"
-            >
-              <X size={18} />
-            </button>
-          </div>
-        </Card>
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 flex items-center gap-3">
+          <FileText className="text-blue-600 dark:text-blue-400 flex-shrink-0" size={20} />
+          <p className="text-sm text-blue-800 dark:text-blue-300 flex-1">
+            Bu sayfada gelen faturalardan oluşan alış kayıtları listelenir. Fatura önizleme için Gelen Faturalar sayfasını kullanın.
+          </p>
+          <Button variant="ghost" size="sm" onClick={() => { setShowBanner(false); localStorage.setItem(ONBOARDING_PURCHASES_DISMISSED, '1'); }} className="text-blue-400 hover:text-blue-600 dark:hover:text-blue-200 flex-shrink-0">
+            <X size={18} />
+          </Button>
+        </div>
       )}
 
-      {/* Filters */}
-      <Card className="p-4">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-            <input
-              data-allow-raw="true"
-              type="text"
-              placeholder="Tedarikçi ara..."
-              value={searchTerm}
-              onChange={(e) => { setSearchTerm(e.target.value); }}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div className="flex flex-wrap gap-2 items-end">
-            <DatePicker
-              placeholder="Başlangıç"
-              value={dateFrom}
-              onChange={(date) => { setDateFrom(date); setCurrentPage(1); }}
-              className="w-[140px]"
-            />
-            <DatePicker
-              placeholder="Bitiş"
-              value={dateTo}
-              onChange={(date) => { setDateTo(date); setCurrentPage(1); }}
-              className="w-[140px]"
-            />
-            <select
-              data-allow-raw="true"
-              value={statusFilter}
-              onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">Tüm Durumlar</option>
-              <option value="RECEIVED">Alındı</option>
-              <option value="PROCESSED">İşlendi</option>
-              <option value="PAID">Ödendi</option>
-            </select>
-            <Button onClick={() => refetch()} className="flex items-center gap-2">
+      <Card className="p-3 md:p-4">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <Input
+                type="text"
+                placeholder="Tedarikçi ara..."
+                value={searchTerm}
+                onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                className="w-full pl-10 pr-4"
+                fullWidth
+              />
+            </div>
+            <Button variant="outline" onClick={() => setShowFilters((value) => !value)} className="shrink-0 flex items-center gap-2">
               <Filter size={18} />
-              Filtrele
+              Filtreler
+            </Button>
+            <Button variant="outline" onClick={() => setIsMobileSelectionMode((value) => !value)} className="shrink-0 flex items-center gap-2 md:hidden">
+              <CheckSquare size={18} />
+              {isMobileSelectionMode ? 'Kapat' : 'Seç'}
             </Button>
           </div>
+
+          {showFilters && (
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_180px_auto_auto] gap-3">
+              <DatePicker placeholder="Başlangıç" value={dateFrom} onChange={(date) => { setDateFrom(date); setCurrentPage(1); }} />
+              <DatePicker placeholder="Bitiş" value={dateTo} onChange={(date) => { setDateTo(date); setCurrentPage(1); }} />
+              <Select
+                value={statusFilter}
+                onChange={(event) => { setStatusFilter(event.target.value); setCurrentPage(1); }}
+                options={[
+                  { value: 'all', label: 'Tüm Durumlar' },
+                  { value: 'RECEIVED', label: 'Alındı' },
+                  { value: 'PROCESSED', label: 'İşlendi' },
+                  { value: 'PAID', label: 'Ödendi' },
+                ]}
+              />
+              <Button variant="outline" onClick={clearFilters}>Temizle</Button>
+              <Button onClick={handleRefresh} className="flex items-center gap-2"><RefreshCw size={18} />Ara</Button>
+            </div>
+          )}
         </div>
       </Card>
 
-      {/* Purchases Table */}
-      <Card>
-        {isMobile ? (
-          renderPurchaseCards()
-        ) : (
+      {isMobile ? renderMobileCards() : (
+        <Card>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
@@ -354,125 +375,85 @@ export function PurchasesPage() {
                     <td className="px-3 py-4">
                       <input data-allow-raw="true" type="checkbox" checked={selectedIds.has(String(invoice.invoiceId))} onChange={() => toggleSelect(String(invoice.invoiceId))} className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 accent-blue-600" />
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                      {invoice.invoiceNumber}
-                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{invoice.invoiceNumber}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900 dark:text-white">{invoice.supplierName}</div>
-                      {invoice.supplierTaxNumber && (
-                        <div className="text-xs text-gray-500 dark:text-gray-400">VKN: {invoice.supplierTaxNumber}</div>
-                      )}
+                      {invoice.supplierTaxNumber && <div className="text-xs text-gray-500 dark:text-gray-400">VKN: {invoice.supplierTaxNumber}</div>}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-white">
-                      {formatCurrency(Number(invoice.totalAmount), invoice.currency || 'TRY')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
-                      {formatDate(invoice.invoiceDate)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getStatusBadge(invoice.status)}
-                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-white">{formatCurrency(Number(invoice.totalAmount), invoice.currency || 'TRY')}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">{formatDate(invoice.invoiceDate)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(invoice.status)}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <Button variant="ghost" size="sm" onClick={() => setSelectedInvoice(invoice)}>
-                        Detay
-                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setSelectedInvoice(invoice)}>Detay</Button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        )}
 
-        {invoiceList.length === 0 && (
-          <div className="text-center py-12">
-            <ShoppingCart className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Alış kaydı bulunamadı</h3>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Henüz gelen faturadan oluşturulmuş alış kaydı bulunmuyor.
-            </p>
-          </div>
-        )}
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              Toplam {totalCount} kayıt, Sayfa {currentPage} / {totalPages}
+          {invoiceList.length === 0 && (
+            <div className="text-center py-12">
+              <ShoppingCart className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Alış kaydı bulunamadı</h3>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Henüz gelen faturadan oluşturulmuş alış kaydı bulunmuyor.</p>
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage <= 1}
-              >
-                <ChevronLeft size={16} />
-                Önceki
-              </Button>
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const start = Math.max(1, Math.min(currentPage - 2, totalPages - 4));
-                const page = start + i;
-                if (page > totalPages) return null;
-                return (
-                  <Button
-                    key={page}
-                    variant={page === currentPage ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setCurrentPage(page)}
-                    className={page === currentPage ? 'bg-blue-600 text-white' : ''}
-                  >
-                    {page}
-                  </Button>
-                );
-              })}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                disabled={currentPage >= totalPages}
-              >
-                Sonraki
-                <ChevronRight size={16} />
-              </Button>
-            </div>
-          </div>
-        )}
-      </Card>
+          )}
 
-      {/* Bulk Action Bar */}
-      {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl px-6 py-3 flex items-center gap-4">
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{selectedIds.size} kayıt seçildi</span>
-          <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
-          <button data-allow-raw="true" onClick={handleBulkExportCsv} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-2xl transition-colors">
-            <Download className="w-4 h-4" /> CSV Dışa Aktar
-          </button>
-          <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
-          <button data-allow-raw="true" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors">
-            <X className="w-4 h-4" /> Seçimi Kaldır
-          </button>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Toplam {totalCount} kayıt</span>
+                <select
+                  data-allow-raw="true"
+                  value={perPage}
+                  onChange={(e) => { setPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                  className="text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                >
+                  <option value={10}>10 / sayfa</option>
+                  <option value={20}>20 / sayfa</option>
+                  <option value={50}>50 / sayfa</option>
+                  <option value={100}>100 / sayfa</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => setCurrentPage(1)} disabled={currentPage <= 1}>İlk</Button>
+                <Button variant="outline" size="sm" onClick={() => setCurrentPage((page) => Math.max(1, page - 1))} disabled={currentPage <= 1}><ChevronLeft size={16} />Önceki</Button>
+                <span className="text-sm text-gray-600 dark:text-gray-400 px-2">Sayfa {currentPage} / {totalPages}</span>
+                <Button variant="outline" size="sm" onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))} disabled={currentPage >= totalPages}>Sonraki<ChevronRight size={16} /></Button>
+                <Button variant="outline" size="sm" onClick={() => setCurrentPage(totalPages)} disabled={currentPage >= totalPages}>Son</Button>
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {isMobile && hasMoreMobile && <div ref={loadMoreRef} className="h-10 w-full" aria-hidden="true" />}
+      {isMobile && isFetching && !isLoading && (
+        <div className="flex justify-center pb-8">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
         </div>
       )}
 
-      {/* Detail Modal */}
+      {selectedIds.size > 0 && (
+        <div className={`fixed ${isMobile ? 'bottom-24' : 'bottom-6'} left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl px-4 md:px-6 py-3 flex items-center gap-3 md:gap-4 w-[90%] md:w-auto overflow-x-auto whitespace-nowrap`}>
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{selectedIds.size} kayıt seçildi</span>
+          <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
+          <Button variant="ghost" onClick={handleBulkExportCsv} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-colors h-auto"><Download className="w-4 h-4" /> CSV Dışa Aktar</Button>
+          <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
+          <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors h-auto"><X className="w-4 h-4" /> Seçimi Kaldır</Button>
+        </div>
+      )}
+
       {selectedInvoice && (
-        <div
-          className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4"
-          onClick={() => setSelectedInvoice(null)}
-        >
-          <div
-            className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4" onClick={() => setSelectedInvoice(null)}>
+          <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col" onClick={(event) => event.stopPropagation()}>
             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Alış Detayı</h2>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{selectedInvoice.invoiceNumber}</p>
               </div>
-              <button data-allow-raw="true" onClick={() => setSelectedInvoice(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-                <X size={24} />
-              </button>
+              <Button variant="ghost" onClick={() => setSelectedInvoice(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><X size={24} /></Button>
             </div>
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -488,9 +469,7 @@ export function PurchasesPage() {
                 )}
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Tutar</p>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                    {formatCurrency(Number(selectedInvoice.totalAmount), selectedInvoice.currency || 'TRY')}
-                  </p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{formatCurrency(Number(selectedInvoice.totalAmount), selectedInvoice.currency || 'TRY')}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Tarih</p>

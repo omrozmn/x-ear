@@ -38,6 +38,14 @@ interface PartyListProps {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   onSort?: (field: string) => void;
+  pagination?: {
+    current: number;
+    pageSize: number;
+    total: number;
+    showSizeChanger?: boolean;
+    pageSizeOptions?: number[];
+    onChange: (page: number, pageSize: number) => void;
+  };
   className?: string;
 }
 
@@ -91,6 +99,7 @@ export function PartyList({
   sortBy,
   sortOrder,
   onSort,
+  pagination,
   className = ''
 }: PartyListProps) {
   const { t } = useTranslation(['patients', 'common']);
@@ -457,6 +466,129 @@ export function PartyList({
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {pagination && (
+          <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center text-sm text-gray-700 dark:text-gray-300">
+              <span>
+                {pagination.total > 0 
+                  ? `${(pagination.current - 1) * pagination.pageSize + 1}-${Math.min(pagination.current * pagination.pageSize, pagination.total)}` 
+                  : '0'} / {pagination.total} kayıt gösteriliyor
+              </span>
+              {pagination.showSizeChanger && (
+                <select
+                  value={pagination.pageSize}
+                  onChange={(e) => pagination.onChange(1, Number(e.target.value))}
+                  className="ml-4 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  {(pagination.pageSizeOptions || [10, 20, 50, 100]).map(size => (
+                    <option key={size} value={size}>{size} / sayfa</option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            <div className="flex items-center space-x-1">
+              {/* First page button */}
+              <button
+                onClick={() => pagination.onChange(1, pagination.pageSize)}
+                disabled={pagination.current <= 1}
+                className="px-2 py-1 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="İlk sayfa"
+              >
+                İlk
+              </button>
+
+              {/* Previous page button */}
+              <button
+                onClick={() => pagination.onChange(pagination.current - 1, pagination.pageSize)}
+                disabled={pagination.current <= 1}
+                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Önceki sayfa"
+              >
+                ←
+              </button>
+
+              {/* Page numbers */}
+              <div className="flex items-center space-x-1">
+                {(() => {
+                  const totalPages = Math.ceil(pagination.total / pagination.pageSize);
+                  const maxVisible = 5;
+                  const pages: number[] = [];
+
+                  if (totalPages <= maxVisible) {
+                    for (let i = 1; i <= totalPages; i++) {
+                      pages.push(i);
+                    }
+                  } else {
+                    const start = Math.max(1, pagination.current - Math.floor(maxVisible / 2));
+                    const end = Math.min(totalPages, start + maxVisible - 1);
+
+                    for (let i = start; i <= end; i++) {
+                      pages.push(i);
+                    }
+
+                    if (start > 1) {
+                      pages.unshift(-1);
+                      pages.unshift(1);
+                    }
+                    if (end < totalPages) {
+                      pages.push(-2);
+                      pages.push(totalPages);
+                    }
+                  }
+
+                  return pages.map((page, index) => {
+                    if (page === -1 || page === -2) {
+                      return (
+                        <span key={`ellipsis-${index}`} className="px-2 py-1 text-gray-400">
+                          ...
+                        </span>
+                      );
+                    }
+
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => pagination.onChange(page, pagination.pageSize)}
+                        className={`
+                          px-3 py-1 text-sm rounded-xl transition-colors
+                          ${page === pagination.current
+                            ? 'bg-blue-600 text-white'
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                          }
+                        `}
+                      >
+                        {page}
+                      </button>
+                    );
+                  });
+                })()}
+              </div>
+
+              {/* Next page button */}
+              <button
+                onClick={() => pagination.onChange(pagination.current + 1, pagination.pageSize)}
+                disabled={pagination.current >= Math.ceil(pagination.total / pagination.pageSize)}
+                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Sonraki sayfa"
+              >
+                →
+              </button>
+
+              {/* Last page button */}
+              <button
+                onClick={() => pagination.onChange(Math.ceil(pagination.total / pagination.pageSize), pagination.pageSize)}
+                disabled={pagination.current >= Math.ceil(pagination.total / pagination.pageSize)}
+                className="px-2 py-1 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Son sayfa"
+              >
+                Son
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Communication Modal */}

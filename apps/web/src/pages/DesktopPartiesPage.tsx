@@ -5,7 +5,7 @@
  */
 
 import React, { useState } from 'react';
-import { Button, Input, Modal, Pagination } from '@x-ear/ui-web';
+import { Button, Input, Modal } from '@x-ear/ui-web';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { useParties, useCreateParty, useDeleteParty, useUpdateParty } from '../hooks/useParties';
 import { Party } from '../types/party';
@@ -461,20 +461,18 @@ export function DesktopPartiesPage() {
               onTagClick={setTagUpdateParty}
               showSelection={true}
               showActions={true}
+              pagination={{
+                current: currentPage,
+                pageSize: itemsPerPage,
+                total: sortedParties.length,
+                showSizeChanger: true,
+                pageSizeOptions: [10, 20, 50, 100],
+                onChange: (page, newPageSize) => {
+                  setCurrentPage(page);
+                  setItemsPerPage(newPageSize);
+                }
+              }}
             />
-            <div className="border-t border-gray-200 p-4">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={Math.ceil(sortedParties.length / itemsPerPage)}
-                onPageChange={setCurrentPage}
-                itemsPerPage={itemsPerPage}
-                onItemsPerPageChange={(newSize) => {
-                  setItemsPerPage(newSize);
-                  setCurrentPage(1);
-                }}
-                totalItems={sortedParties.length}
-              />
-            </div>
           </>
         )}
       </div>

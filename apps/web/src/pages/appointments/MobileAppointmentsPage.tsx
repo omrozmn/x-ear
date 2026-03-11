@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, User } from 'lucide-react';
 import { MobileLayout } from '@/components/mobile/MobileLayout';
 import { MobileHeader } from '@/components/mobile/MobileHeader';
@@ -9,6 +9,7 @@ import { format, addDays, subDays, isSameDay } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { useHaptic } from '@/hooks/useHaptic';
+import { useNewActionStore } from '@/stores/newActionStore';
 
 import { Appointment } from '@/types/appointment';
 
@@ -17,6 +18,15 @@ export const MobileAppointmentsPage: React.FC = () => {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const { appointments, loading } = useAppointments();
     const { triggerSelection } = useHaptic();
+
+    const { triggered, resetNewAction } = useNewActionStore();
+
+    useEffect(() => {
+        if (triggered) {
+            setShowCreateModal(true);
+            resetNewAction();
+        }
+    }, [triggered, resetNewAction]);
 
     // Filter appointments for selected date
     const dailyAppointments = (appointments as Appointment[] || []).filter((apt) =>

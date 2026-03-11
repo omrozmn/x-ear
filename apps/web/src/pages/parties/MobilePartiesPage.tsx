@@ -1,25 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Search, Filter, X, Download, Tags } from 'lucide-react';
 import { MobileLayout } from '@/components/mobile/MobileLayout';
 import { MobileHeader } from '@/components/mobile/MobileHeader';
 import { PartyCard } from '@/components/mobile/PartyCard';
 import { FloatingActionButton } from '@/components/mobile/FloatingActionButton';
-import { useParties } from '@/hooks/useParties';
+import { useParties, useCreateParty } from '@/hooks/useParties';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import type { PartyRead } from '@/api/generated';
 import { useHaptic } from '@/hooks/useHaptic';
 import { Input, Button } from '@x-ear/ui-web';
+import { PartyFormModal } from '@/components/parties/PartyFormModal';
+import { useNewActionStore } from '@/stores/newActionStore';
+import type { Party } from '@/api/generated';
 
 export const MobilePartiesPage: React.FC = () => {
     const navigate = useNavigate();
     const [searchValue, setSearchValue] = useState('');
-    const { data, isLoading } = useParties();
+    const { data, isLoading, refetch } = useParties();
     const parties = data?.parties || [];
     const { triggerSelection } = useHaptic();
+    const createPartyMutation = useCreateParty();
 
     const [isSelectionMode, setIsSelectionMode] = useState(false);
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+    const [showNewPartyModal, setShowNewPartyModal] = useState(false);
+
+    const { triggered, resetNewAction } = useNewActionStore();
+
+    useEffect(() => {
+        if (triggered) {
+            setShowNewPartyModal(true);
+            resetNewAction();
+        }
+    }, [triggered, resetNewAction]);
 
     const toggleSelect = (id: number) => {
         const newSet = new Set(selectedIds);
@@ -165,11 +179,24 @@ export const MobilePartiesPage: React.FC = () => {
 
             {!isSelectionMode && (
                 <FloatingActionButton
-                    onClick={() => {
-                        console.log("Open New Party Modal");
-                    }}
+                    onClick={() => setShowNewPartyModal(true)}
                 />
             )}
+
+            <PartyFormModal
+                isOpen={showNewPartyModal}
+                onClose={() => setShowNewPartyModal(false)}
+                onSubmit={async (formData) => {
+                    try {
+                        await createPartyMutation.mutateAsync(formData as unknown as Omit<Party, 'id' | 'createdAt' | 'updatedAt'>);
+                        setShowNewPartyModal(false);
+                        refetch();
+                    } catch {
+                        // error handled by mutation
+                    }
+                }}
+                isLoading={createPartyMutation.isPending}
+            />
         </MobileLayout>
     );
 };

@@ -3,7 +3,7 @@ import { Link, useLocation } from '@tanstack/react-router';
 import {
   Home, Building2, Users, User, Calendar, Box, Truck, Megaphone,
   Package, ShoppingBag, Bell, Key, Shield, CreditCard, PlusCircle,
-  MessageSquare, Bot, BarChart3, Activity, FileText, Settings, X,
+  MessageSquare, Bot, BarChart3, Activity, FileText, Settings, X, Globe2,
   ChevronDown, ChevronRight
 } from 'lucide-react';
 import { useAdminResponsive } from '../../hooks/useAdminResponsive';
@@ -69,6 +69,7 @@ const navigationGroups: NavGroup[] = [
     name: 'AI & Gelişmiş',
     items: [
       { name: 'AI Yönetimi', href: '/ai', icon: Bot },
+      { name: 'Web Yonetim', href: '/web-management', icon: Globe2 },
       { name: 'Aktivite Logları', href: '/activity-logs', icon: Activity },
       { name: 'Dosyalar', href: '/files', icon: FileText },
     ],

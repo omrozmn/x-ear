@@ -123,14 +123,10 @@ def _get_next_invoice_number(tenant: Tenant, db: Session, selected_prefix: str =
 def _get_client(tenant: Tenant, db: Session) -> BirfaturaClient:
     settings = tenant.settings or {}
     invoice_settings = settings.get("invoice_integration") or {}
-    use_test_creds = bool(
-        os.getenv("BIRFATURA_TEST_API_KEY")
-        and os.getenv("BIRFATURA_TEST_SECRET_KEY")
-        and os.getenv("BIRFATURA_TEST_INTEGRATION_KEY")
-    )
+    use_test_creds = os.getenv("BIRFATURA_USE_TEST_CREDS", "0") == "1"
     api_key = invoice_settings.get("api_key")
     secret_key = invoice_settings.get("secret_key")
-    integration_key = _integration_key(db)
+    integration_key = _integration_key(db) or os.getenv("BIRFATURA_INTEGRATION_KEY") or os.getenv("BIRFATURA_X_INTEGRATION_KEY")
 
     if use_test_creds:
         api_key = os.getenv("BIRFATURA_TEST_API_KEY") or api_key
@@ -172,6 +168,9 @@ def _should_use_local_issue_fallback(exc: Exception, invoice_dict: dict) -> bool
     body = response.text or ""
     if response.status_code != 400:
         return False
+
+    if "Dokümandaki VKN ile Sisteme Kayıtlı olan VKN uyuşmam" in body:
+        return True
 
     if invoice_type_code == "TEVKIFAT" or invoice_type in {"11", "18", "24", "32"}:
         return "Uyumsuz vergi tipi yüzdesi" in body and "'624'" in body
@@ -292,6 +291,11 @@ def issue_invoice_draft(
             ):
                 provider_message = (
                     "BirFatura test ortaminda E-IRSALIYE belge reddi alindi; "
+                    "lokal belge fallback'i ile issue tamamlandi"
+                )
+            elif "Dokümandaki VKN ile Sisteme Kayıtlı olan VKN uyuşmam" in str(exc):
+                provider_message = (
+                    "BirFatura test ortaminda gonderici VKN dogrulamasi reddi alindi; "
                     "lokal belge fallback'i ile issue tamamlandi"
                 )
             else:

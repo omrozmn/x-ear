@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { DatePicker } from '@x-ear/ui-web';
+import React, { useState, useMemo } from 'react';
+import { DatePicker, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import { useListInventoryMovements, getListInventoryMovementsQueryKey } from '@/api/client/inventory.client';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { ArrowUpRight, ArrowDownLeft, Calendar, User } from 'lucide-react';
-
 interface StockMovement {
     id: string;
     movementType?: string;
@@ -37,17 +37,9 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
         }
     );
 
-    // DEBUG: Log movements data to diagnose empty table issue
-    console.log('🔍 [InventoryMovementsTable] inventoryId:', inventoryId);
-    console.log('🔍 [InventoryMovementsTable] isLoading:', isLoading);
-    console.log('🔍 [InventoryMovementsTable] error:', error);
-    console.log('🔍 [InventoryMovementsTable] movementsResponseRaw:', JSON.stringify(movementsResponseRaw, null, 2));
-
     // Cast to expected paginated response structure
     const movementsResponse = movementsResponseRaw as { data: StockMovement[]; meta: { total: number } } | undefined;
     const movements = movementsResponse?.data || [];
-    console.log('🔍 [InventoryMovementsTable] movements array:', movements, 'length:', movements.length);
-
 
     const getMovementIcon = (type: string, quantity: number) => {
         if (quantity > 0) return <ArrowDownLeft className="w-4 h-4 text-green-600" />;
@@ -112,6 +104,65 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
         );
     }
 
+    const columns: Column<StockMovement>[] = [
+        {
+            key: 'createdAt',
+            title: 'Tarih',
+            render: (_: unknown, record: StockMovement) => (
+                <div className="flex items-center gap-2 text-sm text-gray-500 whitespace-nowrap">
+                    <Calendar className="w-4 h-4 text-gray-400" />
+                    {record.createdAt ? formatDate(record.createdAt) : '-'}
+                </div>
+            )
+        },
+        {
+            key: 'movementType',
+            title: 'İşlem',
+            render: (_: unknown, record: StockMovement) => (
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap
+                    ${(record.quantity ?? 0) > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    {getMovementLabel(record.movementType ?? 'unknown')}
+                </span>
+            )
+        },
+        {
+            key: 'quantity',
+            title: 'Miktar',
+            render: (_: unknown, record: StockMovement) => (
+                <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
+                    {getMovementIcon(record.movementType ?? 'unknown', record.quantity ?? 0)}
+                    <span className={(record.quantity ?? 0) > 0 ? 'text-green-600' : 'text-red-600'}>
+                        {(record.quantity ?? 0) > 0 ? '+' : ''}{record.quantity ?? 0}
+                    </span>
+                </div>
+            )
+        },
+        {
+            key: 'serialNumber',
+            title: 'Seri No',
+            render: (_: unknown, record: StockMovement) => (
+                <span className="text-sm text-gray-500 font-mono">{record.serialNumber || '-'}</span>
+            )
+        },
+        {
+            key: 'partyName',
+            title: 'Açıklama',
+            render: (_: unknown, record: StockMovement) => (
+                <span className="text-sm text-gray-600">{getMovementDescription(record)}</span>
+            )
+        },
+        {
+            key: 'createdBy',
+            title: 'Kullanıcı',
+            render: (_: unknown, record: StockMovement) => (
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <User className="w-4 h-4 text-gray-400" />
+                    {record.createdBy || 'System'}
+                </div>
+            )
+        },
+    ];
+
     return (
         <div className="space-y-4">
             {/* Filters */}
@@ -166,125 +217,21 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
                 )}
             </div>
 
-            <div className="overflow-x-auto rounded-2xl border border-gray-200">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İşlem</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Miktar</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Seri No</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Açıklama</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kullanıcı</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {movements.map((movement) => (
-                            <tr key={movement.id} className="hover:bg-gray-50">
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <div className="flex items-center gap-2">
-                                        <Calendar className="w-4 h-4 text-gray-400" />
-                                        {movement.createdAt ? formatDate(movement.createdAt) : '-'}
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap
-                    ${(movement.quantity ?? 0) > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                        {getMovementLabel(movement.movementType ?? 'unknown')}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
-                                        {getMovementIcon(movement.movementType ?? 'unknown', movement.quantity ?? 0)}
-                                        <span className={(movement.quantity ?? 0) > 0 ? 'text-green-600' : 'text-red-600'}>
-                                            {(movement.quantity ?? 0) > 0 ? '+' : ''}{movement.quantity ?? 0}
-                                        </span>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
-                                    {movement.serialNumber || '-'}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    {getMovementDescription(movement)}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <div className="flex items-center gap-2">
-                                        <User className="w-4 h-4 text-gray-400" />
-                                        {movement.createdBy || 'System'}
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-
-            {/* Pagination Controls */}
-            {movementsResponse?.meta && (
-                <div className="flex items-center justify-between px-4 py-3 bg-white border border-gray-200 rounded-2xl sm:px-6">
-                    <div className="flex items-center justify-between w-full sm:hidden">
-                        <button data-allow-raw="true"
-                            onClick={() => setPage((p) => Math.max(1, p - 1))}
-                            disabled={page === 1}
-                            className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl ${page === 1
-                                ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
-                                : 'text-gray-700 bg-white hover:bg-gray-50 border border-gray-300'
-                                }`}
-                        >
-                            Önceki
-                        </button>
-                        <button data-allow-raw="true"
-                            onClick={() => setPage((p) => p + 1)}
-                            disabled={page * 20 >= (movementsResponse?.meta?.total || 0)}
-                            className={`relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium rounded-xl ${page * 20 >= (movementsResponse?.meta?.total || 0)
-                                ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
-                                : 'text-gray-700 bg-white hover:bg-gray-50 border border-gray-300'
-                                }`}
-                        >
-                            Sonraki
-                        </button>
-                    </div>
-                    <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                        <div>
-                            <p className="text-sm text-gray-700">
-                                Toplam <span className="font-medium">{movementsResponse?.meta?.total}</span> sonuçtan{' '}
-                                <span className="font-medium">{(page - 1) * 20 + 1}</span> -{' '}
-                                <span className="font-medium">
-                                    {Math.min(page * 20, movementsResponse?.meta?.total || 0)}
-                                </span>{' '}
-                                arası gösteriliyor
-                            </p>
-                        </div>
-                        <div>
-                            <nav className="inline-flex -space-x-px rounded-xl shadow-sm" aria-label="Pagination">
-                                <button data-allow-raw="true"
-                                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                                    disabled={page === 1}
-                                    className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${page === 1
-                                        ? 'text-gray-300 cursor-not-allowed'
-                                        : 'text-gray-500 hover:bg-gray-50'
-                                        }`}
-                                >
-                                    <span className="sr-only">Önceki</span>
-                                    {/* ChevronLeft equivalent */}
-                                    &larr; Önceki
-                                </button>
-                                <button data-allow-raw="true"
-                                    onClick={() => setPage((p) => p + 1)}
-                                    disabled={page * 20 >= (movementsResponse?.meta?.total || 0)}
-                                    className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${page * 20 >= (movementsResponse?.meta?.total || 0)
-                                        ? 'text-gray-300 cursor-not-allowed'
-                                        : 'text-gray-500 hover:bg-gray-50'
-                                        }`}
-                                >
-                                    Sonraki &rarr;
-                                    <span className="sr-only">Sonraki</span>
-                                </button>
-                            </nav>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <DataTable<StockMovement>
+                    data={movements}
+                    columns={columns}
+                    rowKey="id"
+                    emptyText="Stok hareketi bulunamadı"
+                    striped
+                    hoverable
+                    size="medium"
+                    pagination={movementsResponse?.meta?.total ? {
+                        current: page,
+                        pageSize: 20,
+                        total: movementsResponse.meta.total,
+                        onChange: (p: number) => setPage(p)
+                    } : undefined}
+                />
         </div>
     );
 };

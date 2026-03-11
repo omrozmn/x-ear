@@ -109,6 +109,21 @@ export const companyService = {
   },
 
   /**
+   * Fetch company asset through authenticated request and return a temporary object URL.
+   */
+  getAssetObjectUrl: async (path: string | undefined): Promise<string | undefined> => {
+    if (!path) return undefined;
+
+    const response = await customInstance<Blob>({
+      url: path,
+      method: 'GET',
+      responseType: 'blob',
+    });
+
+    return URL.createObjectURL(response.data);
+  },
+
+  /**
    * Get full URL for an asset
    */
   getAssetUrl: (path: string | undefined): string | undefined => {

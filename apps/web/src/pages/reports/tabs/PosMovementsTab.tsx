@@ -12,6 +12,7 @@ import {
 } from '@/api/client/reports.client';
 import { FilterState } from '../types';
 import type { PosMovementItem, ResponseMeta } from '@/api/generated/schemas';
+import { PosMovementsList } from '@/components/reports/PosMovementsList';
 
 interface PosMovementsTabProps {
     filters: FilterState;
@@ -94,94 +95,18 @@ export function PosMovementsTab({ filters }: PosMovementsTabProps) {
             </div>
 
             {/* Movements Table */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                {data.length > 0 ? (
-                    <>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm">
-                                <thead className="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
-                                    <tr>
-                                        <th className="px-4 py-3 font-medium">Tarih</th>
-                                        <th className="px-4 py-3 font-medium">İşlem ID</th>
-                                        <th className="px-4 py-3 font-medium">Hasta</th>
-                                        <th className="px-4 py-3 font-medium">Tutar</th>
-                                        <th className="px-4 py-3 font-medium">Taksit</th>
-                                        <th className="px-4 py-3 font-medium">Durum</th>
-                                        <th className="px-4 py-3 font-medium">Satış Ref</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                    {data.map((item: PosMovementItem) => (
-                                        <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-gray-300">
-                                            <td className="px-4 py-3 whitespace-nowrap">
-                                                {new Date(item.date).toLocaleString('tr-TR')}
-                                            </td>
-                                            <td className="px-4 py-3 font-mono text-xs">
-                                                {item.posTransactionId || '-'}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                {item.patientName || '-'}
-                                            </td>
-                                            <td className="px-4 py-3 font-medium">
-                                                {formatCurrency(item.amount)}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                {item.installment && item.installment > 1 ? `${item.installment} Taksit` : 'Tek Çekim'}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${item.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                                    }`}>
-                                                    {item.status === 'paid' ? 'Başarılı' : 'Başarısız'}
-                                                </span>
-                                                {item.errorMessage && (
-                                                    <p className="text-xs text-red-500 mt-1 max-w-[200px] truncate" title={item.errorMessage}>
-                                                        {item.errorMessage}
-                                                    </p>
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-3 font-mono text-xs">
-                                                {item.saleId || '-'}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {/* Pagination */}
-                        {typedPosMeta && typedPosMeta.totalPages && typedPosMeta.totalPages > 1 && (
-                            <div className="px-4 py-3 border-t bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                                <span className="text-sm text-gray-500 dark:text-gray-400">
-                                    Toplam {typedPosMeta.total || 0} işlem
-                                </span>
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        onClick={() => setPage(p => Math.max(1, p - 1))}
-                                        disabled={page === 1}
-                                        variant="outline"
-                                        className="px-3 py-1.5 text-sm disabled:opacity-50 !w-auto !h-auto"
-                                    >
-                                        Önceki
-                                    </Button>
-                                    <span className="text-sm text-gray-600 dark:text-gray-300">{page} / {typedPosMeta.totalPages}</span>
-                                    <Button
-                                        onClick={() => setPage(p => Math.min(Number(typedPosMeta.totalPages || 1), p + 1))}
-                                        disabled={page >= Number(typedPosMeta.totalPages || 1)}
-                                        variant="outline"
-                                        className="px-3 py-1.5 text-sm disabled:opacity-50 !w-auto !h-auto"
-                                    >
-                                        Sonraki
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-                    </>
-                ) : (
-                    <div className="p-8 text-center text-gray-500">
-                        <p>Bu tarih aralığında POS işlemi bulunamadı</p>
-                    </div>
-                )}
-            </div>
+            <PosMovementsList
+                movements={data}
+                isLoading={isLoading}
+                pagination={{
+                    current: page,
+                    pageSize: 20,
+                    total: typedPosMeta?.total || 0,
+                    showSizeChanger: true,
+                    pageSizeOptions: [10, 20, 50, 100],
+                    onChange: (newPage) => setPage(newPage)
+                }}
+            />
         </div>
     );
 }

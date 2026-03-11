@@ -19,8 +19,8 @@ import { defineConfig, devices } from '@playwright/test';
  */
 
 // Storage state paths for authentication reuse
-const webStorageState = 'test-results/.auth-web.json';
-const adminStorageState = 'test-results/.auth-admin.json';
+const webStorageState = 'storage/.auth-web.json';
+const adminStorageState = 'storage/.auth-admin.json';
 
 export default defineConfig({
   // Root test directory
@@ -116,8 +116,8 @@ export default defineConfig({
       use: {
         baseURL: process.env.ADMIN_BASE_URL || 'http://localhost:8082',
         ...devices['Desktop Chrome'],
-        /* Do not preload storage state here; auth setup will login programmatically when needed */
-        storageState: undefined,
+        /* Reuse auth state from admin-auth-setup */
+        storageState: adminStorageState,
       },
       dependencies: ['admin-auth-setup'],
     },

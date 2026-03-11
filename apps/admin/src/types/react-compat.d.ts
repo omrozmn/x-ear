@@ -118,9 +118,40 @@ declare module '@x-ear/ui-web' {
   // Additional exports
   export interface Column<T = unknown> {
     key: string;
-    header: string;
-    render?: (item: T) => React.ReactNode;
+    title: string | React.ReactNode;
+    sortable?: boolean;
+    filterable?: boolean;
+    render?: (value: unknown, record: T, index: number) => React.ReactNode;
+    width?: string | number;
+    align?: 'left' | 'center' | 'right';
+    fixed?: 'left' | 'right';
   }
+
+  export interface DataTableProps<T = unknown> {
+    data: T[];
+    columns: Column<T>[];
+    loading?: boolean;
+    pagination?: {
+      current: number;
+      pageSize: number;
+      total: number;
+      showSizeChanger?: boolean;
+      pageSizeOptions?: number[];
+      onChange: (page: number, pageSize: number) => void;
+    };
+    rowKey?: string | ((record: T) => string | number);
+    emptyText?: string;
+    size?: 'small' | 'medium' | 'large';
+    bordered?: boolean;
+    striped?: boolean;
+    hoverable?: boolean;
+    className?: string;
+    onRowClick?: (record: T) => void;
+    responsive?: boolean;
+    sortable?: boolean;
+    onSort?: (key: string, direction: 'asc' | 'desc' | null) => void;
+  }
+  export const DataTable: <T extends Record<string, unknown>>(props: DataTableProps<T>) => React.ReactElement | null;
 
   export interface LabelProps {
     htmlFor?: string;

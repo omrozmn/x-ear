@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
     AlertTriangle,
-    Loader2,
     Calendar,
-    Eye,
-    FileText
+    Eye
 } from 'lucide-react';
-import { Button, Input, Select } from '@x-ear/ui-web';
+import { Button, Input, Select, DataTable } from '@x-ear/ui-web';
+import type { Column } from '@x-ear/ui-web';
 import { unwrapObject, unwrapPaginated } from '../../../utils/response-unwrap';
 import {
     useListActivityLogs,
@@ -39,6 +38,83 @@ export function ActivityTab() {
     const { data: logs, pagination } = unwrapPaginated<ActivityLogRead>(logsResponse);
     const typedPagination = pagination as ResponseMeta | undefined;
     const options = unwrapObject<{ actions?: string[]; users?: Array<{ id: string; name: string }> }>(filterOptions);
+
+    const columns = useMemo<Column<ActivityLogRead>[]>(() => [
+        {
+            key: 'isCritical',
+            title: '',
+            width: 40,
+            align: 'center',
+            render: (_: unknown, record: ActivityLogRead) =>
+                record.isCritical ? (
+                    <span title="Kritik İşlem">
+                        <AlertTriangle className="w-4 h-4 text-red-500" />
+                    </span>
+                ) : null
+        },
+        {
+            key: 'createdAt',
+            title: 'Tarih',
+            sortable: true,
+            render: (_: unknown, record: ActivityLogRead) => (
+                <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                    <Calendar className="w-3 h-3" />
+                    {record.createdAt && new Date(record.createdAt).toLocaleString('tr-TR')}
+                </div>
+            )
+        },
+        {
+            key: 'userName',
+            title: 'Kullanıcı',
+            render: (_: unknown, record: ActivityLogRead) => (
+                <>
+                    <p className="font-medium text-gray-900 dark:text-white truncate max-w-[150px]">
+                        {record.userName || '-'}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
+                        {record.userEmail}
+                    </p>
+                </>
+            )
+        },
+        {
+            key: 'action',
+            title: 'Aksiyon',
+            render: (_: unknown, record: ActivityLogRead) => (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
+                    {record.action}
+                </span>
+            )
+        },
+        {
+            key: 'message',
+            title: 'Mesaj',
+            render: (_: unknown, record: ActivityLogRead) => (
+                <span
+                    className="text-gray-600 dark:text-gray-300 max-w-[250px] truncate block"
+                    title={record.message || undefined}
+                >
+                    {record.message || '-'}
+                </span>
+            )
+        },
+        {
+            key: 'id',
+            title: '',
+            width: 48,
+            align: 'center',
+            render: (_: unknown, record: ActivityLogRead) => (
+                <Button
+                    onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedLog(record); }}
+                    variant="ghost"
+                    className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors !w-auto !h-auto"
+                    title="Detay"
+                >
+                    <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                </Button>
+            )
+        }
+    ], []);
 
     return (
         <div className="space-y-6">
@@ -84,121 +160,27 @@ export function ActivityTab() {
 
             {/* Activity Table */}
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                {isLoading ? (
-                    <div className="p-8 flex justify-center">
-                        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-                    </div>
-                ) : (
-                    <>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm">
-                                <thead className="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
-                                    <tr>
-                                        <th className="px-4 py-3 font-medium w-10"></th>
-                                        <th className="px-4 py-3 font-medium">Tarih</th>
-                                        <th className="px-4 py-3 font-medium">Kullanıcı</th>
-                                        <th className="px-4 py-3 font-medium">Aksiyon</th>
-                                        <th className="px-4 py-3 font-medium">Mesaj</th>
-                                        <th className="px-4 py-3 font-medium w-10"></th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                    {logs.map((log) => (
-                                        <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                                            <td className="px-4 py-3">
-                                                {log.isCritical && (
-                                                    <span title="Kritik İşlem">
-                                                        <AlertTriangle className="w-4 h-4 text-red-500" />
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-3 text-gray-500 dark:text-gray-400 whitespace-nowrap text-xs">
-                                                <div className="flex items-center gap-1">
-                                                    <Calendar className="w-3 h-3" />
-                                                    {log.createdAt && new Date(log.createdAt).toLocaleString('tr-TR')}
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <p className="font-medium text-gray-900 dark:text-white truncate max-w-[150px]">
-                                                    {log.userName || '-'}
-                                                </p>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
-                                                    {log.userEmail}
-                                                </p>
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
-                                                    {log.action}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-3 text-gray-600 dark:text-gray-300 max-w-[250px] truncate" title={log.message || undefined}>
-                                                {log.message || '-'}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <Button
-                                                    onClick={() => setSelectedLog(log)}
-                                                    variant="ghost"
-                                                    className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors !w-auto !h-auto"
-                                                    title="Detay"
-                                                >
-                                                    <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                                                </Button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    {logs.length === 0 && (
-                                        <tr>
-                                            <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                                                <FileText className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-                                                <p>Kayit bulunamadi.</p>
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {/* Pagination */}
-                        {typedPagination && typedPagination.total && typedPagination.total > 0 && (
-                            <div className="px-4 py-3 border-t bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                                <div className="text-sm text-gray-500 dark:text-gray-400">
-                                    Toplam {typedPagination.total} kayit, Sayfa {page}/{typedPagination.totalPages || 1}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        onClick={() => setPage(p => Math.max(1, p - 1))}
-                                        disabled={page === 1}
-                                        variant="outline"
-                                        className="px-3 py-1.5 text-sm disabled:opacity-50 !w-auto !h-auto"
-                                    >
-                                        Onceki
-                                    </Button>
-                                    <Select
-                                        value={String(perPage)}
-                                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                                            setPerPage(Number(e.target.value));
-                                            setPage(1);
-                                        }}
-                                        className="px-2 py-1.5 text-sm"
-                                        options={[
-                                            { value: "10", label: "10" },
-                                            { value: "20", label: "20" },
-                                            { value: "50", label: "50" }
-                                        ]}
-                                    />
-                                    <Button
-                                        onClick={() => setPage(p => Math.min(Number(typedPagination.totalPages || 1), p + 1))}
-                                        disabled={page >= Number(typedPagination.totalPages || 1)}
-                                        variant="outline"
-                                        className="px-3 py-1.5 text-sm disabled:opacity-50 !w-auto !h-auto"
-                                    >
-                                        Sonraki
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-                    </>
-                )}
+                <DataTable<ActivityLogRead>
+                    data={logs}
+                    columns={columns}
+                    loading={isLoading}
+                    rowKey="id"
+                    emptyText="Kayıt bulunamadı"
+                    striped
+                    hoverable
+                    size="medium"
+                    pagination={typedPagination?.total ? {
+                        current: page,
+                        pageSize: perPage,
+                        total: typedPagination.total,
+                        showSizeChanger: true,
+                        pageSizeOptions: [10, 20, 50],
+                        onChange: (p: number, size: number) => {
+                            setPage(p);
+                            if (size !== perPage) { setPerPage(size); setPage(1); }
+                        }
+                    } : undefined}
+                />
             </div>
 
             {/* Detail Modal */}

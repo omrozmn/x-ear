@@ -44,14 +44,14 @@ export const testUsers: Record<string, TestUser> = {
   
   // Admin Panel Users
   superAdmin: {
-    email: 'superadmin@xear.com',
-    password: 'SuperAdmin123!',
+    email: 'admin@x-ear.com',
+    password: 'admin123',
     name: 'Super Admin',
     role: 'super_admin',
   },
   adminUser: {
-    email: 'admin@xear.com',
-    password: 'Admin123!',
+    email: 'admin@x-ear.com',
+    password: 'admin123',
     name: 'Admin',
     role: 'admin',
   },

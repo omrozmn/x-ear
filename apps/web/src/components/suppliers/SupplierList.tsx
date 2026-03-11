@@ -27,6 +27,8 @@ interface SupplierListProps {
     current: number;
     pageSize: number;
     total: number;
+    showSizeChanger?: boolean;
+    pageSizeOptions?: number[];
     onChange: (page: number, pageSize: number) => void;
   };
 }
@@ -181,7 +183,11 @@ export function SupplierList({
         onRowClick={onSupplierClick}
         rowKey="id"
         emptyText="Tedarikçi bulunamadı"
-        pagination={pagination}
+        pagination={pagination ? {
+          ...pagination,
+          showSizeChanger: true,
+          pageSizeOptions: [10, 20, 50, 100]
+        } : undefined}
       />
 
       {/* Importer moved to page header (SuppliersPage) */}

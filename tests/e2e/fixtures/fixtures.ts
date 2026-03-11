@@ -123,9 +123,27 @@ export const test = base.extend<TestFixtures & TestOptions>({
             return;
         }
 
-        // Login as admin
-        const tokens = await loginApi(request, process.env.ADMIN_USER_EMAIL || 'admin@x-ear.com', process.env.ADMIN_USER_PASSWORD || 'Admin123!');
-        // NOTE: Admin uses email/password. Login helper handles "identifier" which accepts email.
+        // Login as admin using the admin auth endpoint
+        const loginResponse = await request.post(`${process.env.API_BASE_URL || 'http://127.0.0.1:5003'}/api/admin/auth/login`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Idempotency-Key': `admin-fixture-${Date.now()}`
+            },
+            data: {
+                email: process.env.ADMIN_USER_EMAIL || 'admin@x-ear.com',
+                password: process.env.ADMIN_USER_PASSWORD || 'admin123'
+            }
+        });
+        if (!loginResponse.ok()) {
+            throw new Error(`Admin fixture login failed with ${loginResponse.status()}`);
+        }
+        const loginJson = await loginResponse.json();
+        const loginData = loginJson?.data || {};
+        const tokens = {
+            user: loginData.user || { email: 'admin@x-ear.com', role: 'super_admin' },
+            accessToken: loginData.accessToken || loginData.token,
+            refreshToken: loginData.refreshToken || loginData.refresh_token || ''
+        };
 
         // If admin is on a different port (8082), we should probably respect that in setupAuthenticatedPage or manually do it.
         // For now, let's assume we can set localStorage on the admin origin.

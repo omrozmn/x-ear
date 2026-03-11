@@ -96,6 +96,17 @@ test.describe('Login Flow', () => {
       const token = loginData.accessToken || loginData.token;
       const refreshToken = loginData.refreshToken || loginData.refresh_token || token;
       const user = loginData.user || {};
+      const normalizedUser = {
+        id: user.id || 'super-admin',
+        email: user.email || credentials.email,
+        role: user.role || 'super_admin',
+        is_active: user.is_active ?? user.isActive ?? true,
+        created_at: user.created_at || user.createdAt || new Date().toISOString(),
+        first_name: user.first_name || user.firstName,
+        last_name: user.last_name || user.lastName,
+        name: user.name || [user.first_name || user.firstName, user.last_name || user.lastName].filter(Boolean).join(' ') || credentials.name,
+        tenant_id: user.tenant_id || user.tenantId || 'system',
+      };
 
       expect(token).toBeTruthy();
 
@@ -111,17 +122,7 @@ test.describe('Login Flow', () => {
           },
           version: 0,
         }));
-      }, [token, refreshToken, {
-        id: user.id || 'super-admin',
-        email: user.email || credentials.email,
-        role: user.role || 'SUPER_ADMIN',
-        is_active: user.is_active ?? true,
-        created_at: user.created_at || new Date().toISOString(),
-        first_name: user.first_name,
-        last_name: user.last_name,
-        name: user.name || credentials.name,
-        tenant_id: user.tenant_id,
-      }]);
+      }, [token, refreshToken, normalizedUser]);
 
       await page.goto('/dashboard');
       await page.waitForLoadState('networkidle');

@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { Card, Button, Input, Select, DatePicker } from '@x-ear/ui-web';
-import { FileText, Download, Filter, Search, AlertCircle, CheckCircle, ShoppingCart, X, ChevronLeft, ChevronRight, Eye, MoreVertical, ChevronUp, ChevronDown as ChevronDownIcon, Copy, XCircle, CheckSquare, Square } from 'lucide-react';
+import { FileText, Download, Filter, Search, AlertCircle, CheckCircle, ShoppingCart, X, ChevronLeft, ChevronRight, Eye, MoreVertical, ChevronUp, ChevronDown as ChevronDownIcon, Copy, XCircle, CheckSquare, Square, RefreshCw } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { cn } from '@/lib/utils';
 import { useListIncomingInvoices } from '@/api/client/invoices.client';
@@ -9,9 +9,10 @@ import toast from 'react-hot-toast';
 import { ONBOARDING_INCOMING_INVOICES_DISMISSED } from '@/constants/storage-keys';
 import { useDebounce } from '@/hooks/useDebounce';
 import { apiClient } from '@/api/orval-mutator';
+import { useIsMobile } from '@/hooks/useBreakpoint';
 
-async function fetchInvoiceDocument(invoiceId: number | string, format: 'pdf' | 'html' | 'xml'): Promise<{ data: ArrayBuffer; contentType: string }> {
-  const resp = await apiClient.get<ArrayBuffer>(`/api/invoices/${invoiceId}/document?format=${format}`, {
+async function fetchInvoiceDocument(invoiceId: number | string, format: 'pdf' | 'html' | 'xml', renderMode: 'auto' | 'local' | 'remote' = 'auto'): Promise<{ data: ArrayBuffer; contentType: string }> {
+  const resp = await apiClient.get<ArrayBuffer>(`/api/invoices/${invoiceId}/document?format=${format}&render_mode=${renderMode}`, {
     responseType: 'arraybuffer',
   });
   const contentType = (resp.headers?.['content-type'] as string) || (format === 'pdf' ? 'application/pdf' : 'text/html');
@@ -23,10 +24,12 @@ async function postInvoiceAction(invoiceId: number | string, action: 'accept' | 
 }
 
 export function IncomingInvoicesPage() {
+  const isMobile = useIsMobile();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage] = useState(25);
+  const [mobileVisibleCount, setMobileVisibleCount] = useState(25);
   const [dateFrom, setDateFrom] = useState<Date | null>(null);
   const [dateTo, setDateTo] = useState<Date | null>(null);
   const [showBanner, setShowBanner] = useState(() => !localStorage.getItem(ONBOARDING_INCOMING_INVOICES_DISMISSED));
@@ -39,6 +42,8 @@ export function IncomingInvoicesPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isMobileSelectionMode, setIsMobileSelectionMode] = useState(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const mobileLoadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const debouncedSearch = useDebounce(searchTerm, 300);
 
@@ -53,6 +58,12 @@ export function IncomingInvoicesPage() {
   // Clear selection on page/filter change
   useEffect(() => { setSelectedIds(new Set()); }, [currentPage, statusFilter]);
 
+  useEffect(() => {
+    if (!isMobile) return;
+    setMobileVisibleCount(25);
+    setSelectedIds(new Set());
+  }, [isMobile, debouncedSearch, statusFilter, dateFrom, dateTo]);
+
   const handleSort = (field: string) => {
     if (sortField === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
     else { setSortField(field); setSortDir('asc'); }
@@ -63,9 +74,9 @@ export function IncomingInvoicesPage() {
     return sortDir === 'asc' ? <ChevronUp className="inline w-3 h-3 ml-1" /> : <ChevronDownIcon className="inline w-3 h-3 ml-1" />;
   };
 
-  const { data, isLoading, refetch } = useListIncomingInvoices({
-    page: currentPage,
-    per_page: perPage,
+  const { data, isLoading, isFetching, refetch } = useListIncomingInvoices({
+    page: isMobile ? 1 : currentPage,
+    per_page: isMobile ? mobileVisibleCount : perPage,
     status: statusFilter !== 'all' ? statusFilter as SchemasInvoicesNewInvoiceStatus : undefined,
     supplier_name: debouncedSearch || undefined,
     date_from: dateFrom ? dateFrom.toISOString().split('T')[0] : undefined,
@@ -78,6 +89,25 @@ export function IncomingInvoicesPage() {
   const totalPages = pagination?.totalPages ?? 1;
   const pendingCount = data?.data?.pendingCount ?? 0;
   const processedCount = data?.data?.processedCount ?? 0;
+  const hasMoreMobile = isMobile && invoiceList.length < totalCount;
+
+  useEffect(() => {
+    if (!isMobile || !hasMoreMobile || !mobileLoadMoreRef.current) return;
+
+    const node = mobileLoadMoreRef.current;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry?.isIntersecting && !isFetching) {
+          setMobileVisibleCount((prev) => Math.min(prev + 25, totalCount));
+        }
+      },
+      { rootMargin: '200px' }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [isMobile, hasMoreMobile, isFetching, totalCount]);
 
   const renderDocumentBadges = (invoice: IncomingInvoiceResponse) => {
     const inv = invoice as any;
@@ -139,7 +169,7 @@ export function IncomingInvoicesPage() {
     setActiveMenu(null);
     const toastId = toast.loading('Fatura yükleniyor...');
     try {
-      const { data: buf, contentType } = await fetchInvoiceDocument(invoice.invoiceId, 'pdf');
+      const { data: buf, contentType } = await fetchInvoiceDocument(invoice.invoiceId, 'pdf', 'local');
       const isPdf = contentType.includes('application/pdf');
       const mimeType = isPdf ? 'application/pdf' : 'text/html';
       const blob = new Blob([buf], { type: mimeType });
@@ -352,8 +382,65 @@ export function IncomingInvoicesPage() {
         </div>
       )}
 
+      <Card className="p-3 md:hidden">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <Input
+                type="text"
+                placeholder="Tedarikçi adı veya fatura no ara..."
+                value={searchTerm}
+                onChange={(e) => { setSearchTerm(e.target.value); }}
+                className="w-full pl-10 pr-4"
+                fullWidth
+              />
+            </div>
+            <Button variant="outline" onClick={() => setShowMobileFilters((value) => !value)} className="shrink-0 flex items-center gap-2">
+              <Filter size={18} />
+              Filtreler
+            </Button>
+            <Button variant="outline" onClick={() => setIsMobileSelectionMode((value) => !value)} className="shrink-0 flex items-center gap-2">
+              <CheckSquare size={18} />
+              {isMobileSelectionMode ? 'Kapat' : 'Seç'}
+            </Button>
+          </div>
+
+          {showMobileFilters && (
+            <div className="grid grid-cols-1 gap-3">
+              <DatePicker
+                placeholder="Başlangıç"
+                value={dateFrom}
+                onChange={(date) => { setDateFrom(date); setCurrentPage(1); }}
+              />
+              <DatePicker
+                placeholder="Bitiş"
+                value={dateTo}
+                onChange={(date) => { setDateTo(date); setCurrentPage(1); }}
+              />
+              <Select
+                value={statusFilter}
+                onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+                options={[
+                  { value: 'all', label: 'Tüm Durumlar' },
+                  { value: 'RECEIVED', label: 'İşlenen' },
+                  { value: 'rejected', label: 'Reddedilen' }
+                ]}
+              />
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => { setDateFrom(null); setDateTo(null); setStatusFilter('all'); setSearchTerm(''); setCurrentPage(1); }}>Temizle</Button>
+                <Button onClick={() => refetch()} className="flex items-center gap-2">
+                  <RefreshCw size={18} />
+                  Ara
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </Card>
+
       {/* Filters */}
-      <Card className="p-4">
+      <Card className="hidden md:block p-4">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -390,7 +477,7 @@ export function IncomingInvoicesPage() {
               ]}
             />
             <Button onClick={() => refetch()} className="flex items-center gap-2">
-              <Filter size={18} />
+              <RefreshCw size={18} />
               Ara
             </Button>
           </div>
@@ -398,25 +485,16 @@ export function IncomingInvoicesPage() {
       </Card>
 
       {/* Mobile Selection Action Bar (< md) */}
-      <div className="md:hidden flex items-center justify-between mt-4">
-        {isMobileSelectionMode ? (
-          <>
-            <Button variant="ghost" size="sm" onClick={() => setIsMobileSelectionMode(false)} className="text-gray-600">
-              <X className="w-4 h-4 mr-1" /> Kapat
-            </Button>
-            <Button variant="ghost" size="sm" onClick={toggleSelectAll} className="text-blue-600 font-medium">
-              {selectedIds.size === filteredInvoices.length && filteredInvoices.length > 0 ? 'Hiçbiri' : 'Tümünü Seç'}
-            </Button>
-          </>
-        ) : (
-          <div className="flex-1" />
-        )}
-        {!isMobileSelectionMode && (
-          <Button variant="ghost" size="sm" onClick={() => setIsMobileSelectionMode(true)} className="text-blue-600 font-medium ml-auto">
-            <CheckSquare className="w-4 h-4 mr-1" /> Seç
+      {isMobileSelectionMode && (
+        <div className="md:hidden flex items-center justify-between mt-4">
+          <Button variant="ghost" size="sm" onClick={() => setIsMobileSelectionMode(false)} className="text-gray-600">
+            <X className="w-4 h-4 mr-1" /> Kapat
           </Button>
-        )}
-      </div>
+          <Button variant="ghost" size="sm" onClick={toggleSelectAll} className="text-blue-600 font-medium">
+            {selectedIds.size === filteredInvoices.length && filteredInvoices.length > 0 ? 'Hiçbiri' : 'Tümünü Seç'}
+          </Button>
+        </div>
+      )}
 
       {/* Mobile Card View (< md) */}
       <div className="block md:hidden space-y-3 mt-3">
@@ -555,7 +633,7 @@ export function IncomingInvoicesPage() {
         )}
 
         {/* Pagination */}
-        {totalPages > 1 && (
+        {!isMobile && totalPages > 1 && (
           <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-gray-700">
             <div className="text-sm text-gray-600 dark:text-gray-400">
               Toplam {totalCount} fatura, Sayfa {currentPage} / {totalPages}
@@ -602,22 +680,61 @@ export function IncomingInvoicesPage() {
 
       {/* Bulk Action Bar */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl px-6 py-3 flex items-center gap-4 w-[90%] md:w-auto overflow-x-auto whitespace-nowrap">
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{selectedIds.size} fatura seçildi</span>
-          <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
-          <Button variant="ghost" onClick={handleBulkAccept} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-2xl transition-colors h-auto">
-            <CheckCircle className="w-4 h-4" /> Toplu Kabul
-          </Button>
-          <Button variant="ghost" onClick={handleBulkReject} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl transition-colors h-auto">
-            <XCircle className="w-4 h-4" /> Toplu Reddet
-          </Button>
-          <Button variant="ghost" onClick={handleBulkExportCsv} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-colors h-auto">
-            <Download className="w-4 h-4" /> CSV Dışa Aktar
-          </Button>
-          <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
-          <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors h-auto">
-            <X className="w-4 h-4" /> Seçimi Kaldır
-          </Button>
+        <div className="fixed bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-24px)] max-w-3xl md:w-auto">
+          <div className="rounded-2xl border border-gray-200 bg-white/95 shadow-2xl backdrop-blur dark:border-gray-700 dark:bg-gray-800/95">
+            <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-100 dark:border-gray-700 md:hidden">
+              <div>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">{selectedIds.size} fatura seçildi</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Toplu işlem seçerek devam edebilirsin</p>
+              </div>
+              <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="h-9 rounded-xl px-3 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 p-3 md:hidden">
+              <Button variant="ghost" onClick={handleBulkAccept} className="flex items-center justify-center gap-2 rounded-xl bg-green-50 px-3 py-3 text-sm font-semibold text-green-700 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-300 dark:hover:bg-green-900/30 h-auto">
+                <CheckCircle className="w-4 h-4" /> Kabul Et
+              </Button>
+              <Button variant="ghost" onClick={handleBulkReject} className="flex items-center justify-center gap-2 rounded-xl bg-red-50 px-3 py-3 text-sm font-semibold text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/30 h-auto">
+                <XCircle className="w-4 h-4" /> Reddet
+              </Button>
+              <Button variant="ghost" onClick={handleBulkExportCsv} className="flex items-center justify-center gap-2 rounded-xl bg-blue-50 px-3 py-3 text-sm font-semibold text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/30 h-auto">
+                <Download className="w-4 h-4" /> CSV Aktar
+              </Button>
+              <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center justify-center gap-2 rounded-xl bg-gray-100 px-3 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 h-auto">
+                <X className="w-4 h-4" /> Temizle
+              </Button>
+            </div>
+
+            <div className="hidden md:flex items-center gap-4 px-6 py-3 whitespace-nowrap">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{selectedIds.size} fatura seçildi</span>
+              <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
+              <Button variant="ghost" onClick={handleBulkAccept} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-2xl transition-colors h-auto">
+                <CheckCircle className="w-4 h-4" /> Toplu Kabul
+              </Button>
+              <Button variant="ghost" onClick={handleBulkReject} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl transition-colors h-auto">
+                <XCircle className="w-4 h-4" /> Toplu Reddet
+              </Button>
+              <Button variant="ghost" onClick={handleBulkExportCsv} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-colors h-auto">
+                <Download className="w-4 h-4" /> CSV Dışa Aktar
+              </Button>
+              <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
+              <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors h-auto">
+                <X className="w-4 h-4" /> Seçimi Kaldır
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isMobile && hasMoreMobile && (
+        <div ref={mobileLoadMoreRef} className="h-10 w-full" aria-hidden="true" />
+      )}
+
+      {isMobile && isFetching && !isLoading && (
+        <div className="flex justify-center pb-8">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
         </div>
       )}
 

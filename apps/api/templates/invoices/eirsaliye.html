@@ -61,8 +61,8 @@
         </td>
         <td class="right">{{ line.quantity }}</td>
         <td>{{ line.unit_code or 'Adet' }}</td>
-        <td class="right">{{ "%.2f"|format(line.unit_price|float) }} TL</td>
-        <td class="right">{{ "%.2f"|format((line.line_extension_amount or (line.quantity|float * line.unit_price|float))|float) }} TL</td>
+        <td class="right">{{ "%.2f"|format((line.unit_price or line.unitPrice or line.price or 0)|float) }} TL</td>
+        <td class="right">{{ "%.2f"|format((line.line_extension_amount or (line.quantity|float * (line.unit_price or line.unitPrice or line.price or 0)|float))|float) }} TL</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -83,11 +83,11 @@
       {% endif %}
       <tr>
         <td>Hesaplanan KDV (%{{ invoice.tax_percent or 0 }})</td>
-        <td>{{ "%.2f"|format((invoice.tax_total or 0)|float) }} TL</td>
+        <td>{{ "%.2f"|format((invoice.tax_total or invoice.taxAmount or 0)|float) }} TL</td>
       </tr>
       <tr class="grand-total">
         <td>Toplam Tutar</td>
-        <td>{{ "%.2f"|format((invoice.payable_amount or 0)|float) }} TL</td>
+        <td>{{ "%.2f"|format((invoice.payable_amount or invoice.totalAmount or 0)|float) }} TL</td>
       </tr>
     </table>
   </div>

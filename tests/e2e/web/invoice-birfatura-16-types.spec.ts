@@ -394,15 +394,27 @@ test.describe.serial('BirFatura 16 Invoice Types', () => {
       if (tenantResponse.ok()) {
         const tenantData = await tenantResponse.json();
         const currentSettings = tenantData.data?.settings || {};
+        const currentCompanyInfo = tenantData.data?.companyInfo || tenantData.data?.company_info || {};
         const invoiceIntegration = currentSettings.invoice_integration || currentSettings.invoiceIntegration || {};
         
-        // Add unique prefix to available prefixes and set as default
+        // Align tenant company + invoice integration with the BirFatura sandbox sender identity.
+        // Backend-only invoice matrix tests use controlled tenant data; FE E2E needs the same baseline.
         const updatedSettings = {
           ...currentSettings,
+          company: {
+            ...(currentSettings.company || {}),
+            name: currentCompanyInfo.companyName || currentCompanyInfo.name || 'X-Ear Test Isitme Merkezi',
+            address: currentCompanyInfo.address || 'Test Sokak No:1',
+            city: currentCompanyInfo.city || 'Ankara',
+            district: currentCompanyInfo.district || 'Cankaya',
+            taxOffice: currentCompanyInfo.taxOffice || currentCompanyInfo.tax_office || 'ANKARA',
+          },
           invoice_integration: {
             ...invoiceIntegration,
             invoice_prefix: uniquePrefix,
             invoice_prefixes: [uniquePrefix, ...(invoiceIntegration.invoice_prefixes || [])],
+            vkn: '1234567801',
+            tax_office: invoiceIntegration.tax_office || currentCompanyInfo.taxOffice || currentCompanyInfo.tax_office || 'ANKARA',
           },
         };
 
@@ -411,10 +423,24 @@ test.describe.serial('BirFatura 16 Invoice Types', () => {
             'Content-Type': 'application/json',
             'Idempotency-Key': `test-prefix-${timestamp}`,
           },
-          data: { settings: updatedSettings },
+          data: {
+            settings: updatedSettings,
+            companyInfo: {
+              ...currentCompanyInfo,
+              companyName: currentCompanyInfo.companyName || currentCompanyInfo.name || 'X-Ear Test Isitme Merkezi',
+              taxNumber: '1234567801',
+              taxOffice: currentCompanyInfo.taxOffice || currentCompanyInfo.tax_office || 'ANKARA',
+              address: currentCompanyInfo.address || 'Test Sokak No:1',
+              city: currentCompanyInfo.city || 'Ankara',
+              district: currentCompanyInfo.district || 'Cankaya',
+              country: currentCompanyInfo.country || 'Turkiye',
+              email: currentCompanyInfo.email || 'test@example.com',
+              phone: currentCompanyInfo.phone || '03120000000',
+            },
+          },
         });
         
-        console.log(`✅ Tenant settings updated with unique prefix: ${uniquePrefix}`);
+        console.log(`✅ Tenant settings updated with unique prefix and sandbox VKN: ${uniquePrefix}`);
       }
     } catch (error) {
       console.error('⚠️ Failed to update tenant settings:', error);

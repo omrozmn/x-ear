@@ -11,6 +11,7 @@ import { useHaptic } from '@/hooks/useHaptic';
 import { toast } from 'react-hot-toast';
 import { Modal, Button } from '@x-ear/ui-web';
 import { InventoryForm } from '@/components/inventory/InventoryForm';
+import { useNewActionStore } from '@/stores/newActionStore';
 
 interface InventoryItem {
     id: string;
@@ -55,6 +56,16 @@ export const MobileInventoryPage: React.FC = () => {
         triggerSelection();
     };
     const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+    const { triggered, resetNewAction } = useNewActionStore();
+
+    useEffect(() => {
+        if (triggered) {
+            setIsAddModalOpen(true);
+            resetNewAction();
+        }
+    }, [triggered, resetNewAction]);
 
     const loadInventory = useCallback(async () => {
         try {
@@ -264,9 +275,24 @@ export const MobileInventoryPage: React.FC = () => {
 
             {!isSelectionMode && (
                 <FloatingActionButton
-                    onClick={() => toast('Yeni ürün ekleme masaüstünde yapılmalıdır', { icon: '💻' })}
+                    onClick={() => setIsAddModalOpen(true)}
                 />
             )}
+
+            <Modal
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
+                title="Yeni Ürün Ekle"
+                size="xl"
+            >
+                <InventoryForm
+                    onSave={() => {
+                        setIsAddModalOpen(false);
+                        handleRefresh();
+                    }}
+                    onCancel={() => setIsAddModalOpen(false)}
+                />
+            </Modal>
 
             <Modal
                 isOpen={!!selectedItem}

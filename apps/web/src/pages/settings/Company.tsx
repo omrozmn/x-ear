@@ -51,11 +51,40 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (currentUrl) {
-      setPreview(companyService.getAssetUrl(currentUrl) || null);
-    } else {
-      setPreview(null);
-    }
+    let revokedUrl: string | null = null;
+    let isCancelled = false;
+
+    const loadPreview = async () => {
+      if (!currentUrl) {
+        setPreview(null);
+        return;
+      }
+
+      try {
+        const objectUrl = await companyService.getAssetObjectUrl(currentUrl);
+        if (isCancelled) {
+          if (objectUrl) URL.revokeObjectURL(objectUrl);
+          return;
+        }
+
+        revokedUrl = objectUrl || null;
+        setPreview(objectUrl || null);
+      } catch (error) {
+        console.error(`Failed to load asset preview for ${label}:`, error);
+        if (!isCancelled) {
+          setPreview(null);
+        }
+      }
+    };
+
+    void loadPreview();
+
+    return () => {
+      isCancelled = true;
+      if (revokedUrl) {
+        URL.revokeObjectURL(revokedUrl);
+      }
+    };
   }, [currentUrl]);
 
   const handleFileSelect = async (file: File) => {

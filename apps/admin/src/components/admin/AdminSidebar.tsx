@@ -25,6 +25,7 @@ import {
     Megaphone,
     Wallet,
     Bot,
+    Globe2,
 } from 'lucide-react'
 import { useAdminResponsive } from '../../hooks/useAdminResponsive'
 
@@ -50,6 +51,7 @@ const navigation = [
     { name: 'SMS Başlıkları', href: '/sms/headers', icon: MessageSquare },
     { name: 'SMS Paketleri', href: '/sms/packages', icon: Package },
     { name: 'AI Yönetimi', href: '/ai', icon: Bot },
+    { name: 'Web Yonetim', href: '/web-management', icon: Globe2 },
     { name: 'Aktivite Logları', href: '/activity-logs', icon: Activity },
     { name: 'Dosyalar', href: '/files', icon: Folder },
     { name: 'OCR Kuyruğu', href: '/ocr-queue', icon: FileText },

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Link, useLocation } from '@tanstack/react-router';
+import { Link, useLocation, useNavigate } from '@tanstack/react-router';
 import {
     BarChart3,
     Users,
@@ -10,20 +10,51 @@ import {
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useLayoutStore } from '../../stores/layoutStore';
+import { useNewActionStore } from '../../stores/newActionStore';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
     return twMerge(clsx(inputs));
+}
+
+/** Returns label + action for the center "Yeni" button based on current path */
+function useNewButtonConfig(pathname: string) {
+    const { fireNewAction } = useNewActionStore();
+    const navigate = useNavigate();
+
+    if (pathname.startsWith('/parties')) {
+        return { label: 'Yeni Hasta', action: () => fireNewAction() };
+    }
+    if (pathname.startsWith('/appointments')) {
+        return { label: 'Randevu', action: () => fireNewAction() };
+    }
+    if (pathname.startsWith('/invoices')) {
+        return { label: 'Yeni Fatura', action: () => navigate({ to: '/invoices/new' }) };
+    }
+    if (pathname.startsWith('/inventory')) {
+        return { label: 'Yeni Ürün', action: () => fireNewAction() };
+    }
+    if (pathname.startsWith('/sales')) {
+        return { label: 'Yeni Satış', action: () => navigate({ to: '/pos/' }) };
+    }
+    if (pathname.startsWith('/purchases')) {
+        return { label: 'Yeni Alış', action: () => navigate({ to: '/invoices/new' }) };
+    }
+    if (pathname.startsWith('/cashflow')) {
+        return { label: 'Yeni Kayıt', action: () => fireNewAction() };
+    }
+    return { label: 'Yeni', action: () => navigate({ to: '/pos/' }) };
 }
 
 export const BottomNav: React.FC = () => {
     const location = useLocation();
     const pathname = location.pathname;
     const { toggleAiInbox } = useLayoutStore();
+    const { label: centerLabel, action: centerAction } = useNewButtonConfig(pathname);
 
     const navItems = [
         { label: 'Dashboard', icon: BarChart3, href: '/' },
         { label: 'Hastalar', icon: Users, href: '/parties' },
-        { label: 'Yeni', icon: PlusCircle, href: '/pos', isCenter: true },
+        { label: centerLabel, icon: PlusCircle, isCenter: true, onClick: centerAction },
         { label: 'AI', icon: Sparkles, onClick: toggleAiInbox, isSpecial: true },
         { label: 'Randevu', icon: Calendar, href: '/appointments' },
     ];
@@ -36,9 +67,10 @@ export const BottomNav: React.FC = () => {
 
                     if (item.isCenter) {
                         return (
-                            <Link
+                            <button
                                 key={idx}
-                                to={item.href as string}
+                                type="button"
+                                onClick={item.onClick}
                                 className="flex flex-col items-center justify-center -translate-y-4"
                             >
                                 <div className="w-14 h-14 rounded-full bg-blue-600 shadow-lg shadow-blue-500/40 flex items-center justify-center text-white active:scale-95 transition-transform">
@@ -47,7 +79,7 @@ export const BottomNav: React.FC = () => {
                                 <span className="text-[10px] mt-1 font-medium text-blue-600 dark:text-blue-400">
                                     {item.label}
                                 </span>
-                            </Link>
+                            </button>
                         );
                     }
 
