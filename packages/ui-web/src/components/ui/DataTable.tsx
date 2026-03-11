@@ -65,7 +65,7 @@ export interface DataTableProps<T = any> {
   responsive?: boolean;
 }
 
-export const DataTable = <T extends Record<string, any>>({
+export const DataTable = <T extends object>({
   data,
   columns,
   loading = false,
@@ -91,6 +91,9 @@ export const DataTable = <T extends Record<string, any>>({
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [isMobileInternal, setIsMobileInternal] = useState(false);
+  const getRecordValue = useCallback((record: T, key: string): unknown => {
+    return (record as Record<string, unknown>)[key];
+  }, []);
 
   const isActionColumn = useCallback((column: Column<T>) => /^_actions?$/i.test(column.key), []);
 
@@ -117,8 +120,9 @@ export const DataTable = <T extends Record<string, any>>({
     if (typeof rowKey === 'function') {
       return rowKey(record);
     }
-    return record[rowKey] || index;
-  }, [rowKey]);
+    const keyValue = getRecordValue(record, rowKey);
+    return typeof keyValue === 'string' || typeof keyValue === 'number' ? keyValue : index;
+  }, [getRecordValue, rowKey]);
 
   const selectedRecords = useMemo(() => {
     if (!rowSelection) return [];
@@ -131,7 +135,9 @@ export const DataTable = <T extends Record<string, any>>({
     if (node == null || typeof node === 'boolean') return '';
     if (typeof node === 'string' || typeof node === 'number') return String(node);
     if (Array.isArray(node)) return node.map(extractSortableText).join(' ');
-    if (React.isValidElement(node)) return extractSortableText(node.props.children);
+    if (React.isValidElement<{ children?: React.ReactNode }>(node)) {
+      return extractSortableText(node.props.children);
+    }
     return '';
   }, []);
 
@@ -142,7 +148,7 @@ export const DataTable = <T extends Record<string, any>>({
       return column.sortAccessor(record);
     }
 
-    const rawValue = record[column.key];
+    const rawValue = getRecordValue(record, column.key);
     if (rawValue !== undefined && rawValue !== null && rawValue !== '') {
       return rawValue;
     }
@@ -152,7 +158,7 @@ export const DataTable = <T extends Record<string, any>>({
     }
 
     return rawValue;
-  }, [extractSortableText]);
+  }, [extractSortableText, getRecordValue]);
 
   const normalizeSortValue = useCallback((value: unknown) => {
     if (value == null) return '';
@@ -262,14 +268,14 @@ export const DataTable = <T extends Record<string, any>>({
 
   const isIndeterminate = rowSelection && rowSelection.selectedRowKeys.length > 0 && !isAllSelected;
 
-  const renderCell = (column: Column<T>, record: T, index: number) => {
-    const value = record[column.key];
+  const renderCell = (column: Column<T>, record: T, index: number): React.ReactNode => {
+    const value = getRecordValue(record, column.key);
 
     if (column.render) {
       return column.render(value, record, index);
     }
 
-    return value;
+    return value as React.ReactNode;
   };
 
   const renderActions = (record: T) => {

@@ -343,7 +343,7 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                                         render: (_: unknown, ref: Referral) => formatDate(ref.created_at),
                                     },
                                 ] as Column<Referral>[]}
-                                rowKey={(ref, idx) => ref.tenant_id || String(idx)}
+                                rowKey={(ref: Referral) => ref.tenant_id || ref.created_at}
                                 emptyText="Henüz yönlendirme yok"
                                 striped
                                 hoverable

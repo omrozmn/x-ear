@@ -78,7 +78,6 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
     const totalItems = users.length;
-    const totalPages = Math.max(1, Math.ceil(totalItems / limit));
     const paginatedUsers = users.slice((page - 1) * limit, page * limit);
 
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);

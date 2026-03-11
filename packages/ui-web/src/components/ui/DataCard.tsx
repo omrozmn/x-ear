@@ -15,24 +15,28 @@ interface DataCardProps<T> {
     rowKey: string | number;
 }
 
-export const DataCard = <T extends Record<string, any>>({
+export const DataCard = <T extends object>({
     record,
     columns,
     onRowClick,
     renderActions,
     rowKey
 }: DataCardProps<T>) => {
+    const getRecordValue = (data: T, key: string): unknown => {
+        return (data as Record<string, unknown>)[key];
+    };
+
     // Use the first 2 columns as "Primary" (Title/Subtitle)
     // Others as details
     const primaryCols = columns.slice(0, 2);
     const detailCols = columns.slice(2);
 
     const renderValue = (col: Column<T>, data: T) => {
-        const value = data[col.key];
+        const value = getRecordValue(data, col.key);
         if (col.render) {
             return col.render(value, data, 0);
         }
-        return value;
+        return value as React.ReactNode;
     };
 
     return (

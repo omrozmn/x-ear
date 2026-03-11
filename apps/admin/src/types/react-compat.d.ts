@@ -151,7 +151,7 @@ declare module '@x-ear/ui-web' {
     sortable?: boolean;
     onSort?: (key: string, direction: 'asc' | 'desc' | null) => void;
   }
-  export const DataTable: <T extends Record<string, unknown>>(props: DataTableProps<T>) => React.ReactElement | null;
+  export const DataTable: <T extends object>(props: DataTableProps<T>) => React.ReactElement | null;
 
   export interface LabelProps {
     htmlFor?: string;

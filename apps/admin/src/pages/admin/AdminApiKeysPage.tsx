@@ -256,7 +256,7 @@ const AdminApiKeysPage: React.FC = () => {
                 </button>
             </div>
 
-	            <div className="bg-white dark:bg-gray-800 shadow rounded-2xl overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 shadow rounded-2xl overflow-hidden">
                 <div className="border-b border-gray-200 dark:border-gray-700 p-4">
                     <div className="relative max-w-md">
                         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">

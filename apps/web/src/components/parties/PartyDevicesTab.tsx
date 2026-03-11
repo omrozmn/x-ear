@@ -58,6 +58,34 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const wait = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
+
+  const syncDevicesAfterMutation = useCallback(async (
+    eventName: 'device:assigned' | 'device:updated' | 'device:removed',
+    expectedAssignmentIds: string[] = [],
+  ) => {
+    const maxAttempts = expectedAssignmentIds.length > 0 ? 4 : 2;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+      const latestDevices = await refetchDevices();
+      const allAssignmentsVisible = expectedAssignmentIds.length === 0
+        || expectedAssignmentIds.every((assignmentId) => latestDevices.some(
+          (device) => device.id === assignmentId || device.assignmentId === assignmentId,
+        ));
+
+      if (allAssignmentsVisible) {
+        break;
+      }
+
+      if (attempt < maxAttempts - 1) {
+        await wait(350 * (attempt + 1));
+      }
+    }
+
+    window.dispatchEvent(new CustomEvent(eventName));
+    window.dispatchEvent(new CustomEvent('xEar:dataChanged'));
+  }, [refetchDevices]);
+
   const loadInventoryItems = useCallback(async () => {
     try {
       // const params: ListInventoryParams = {
@@ -137,13 +165,13 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
       const assignmentItem = {
         inventoryId: data.inventoryId as string,
         ear: data.ear as string || 'both',
-        reason: data.reason as string || 'Assignment',
+        reason: data.reason as string || 'other',
         basePrice: (data.basePrice as number) || (data.listPrice as number),
         discountType: data.discountType as string,
         discountValue: data.discountValue as number,
         salePrice: data.salePrice as number,
-        partyPayment: data.partyPayment as number,
-        sgkSupport: data.sgkSupport as number,
+        patientPayment: data.partyPayment as number,
+        sgkSupport: (data.sgkSupport as number) ?? (data.sgkReduction as number),
         sgkScheme: data.sgkScheme as string,
         serialNumber: data.serialNumber as string,
         serialNumberLeft: data.serialNumberLeft as string,
@@ -179,10 +207,11 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
       // Debug logging disabled to reduce console noise
       // console.log('🚀 [handleAssignDevice] Payload:', JSON.stringify(payload, null, 2));
 
-      await createPartyDeviceAssignments(party.id!, payload);
-      showSuccess('Başarılı', 'Cihaz başarıyla atandı');
+      const response = await createPartyDeviceAssignments(party.id!, payload);
+      const assignmentIds = response?.data?.assignmentIds ?? [];
 
-      await refetchDevices();
+      await syncDevicesAfterMutation('device:assigned', assignmentIds);
+      showSuccess('Başarılı', 'Cihaz başarıyla atandı');
       setShowDeviceForm(false);
       setError(null);
 
@@ -198,7 +227,7 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
   const handleRemoveDevice = async (deviceId: string) => {
     try {
       await deleteDevice(deviceId);
-      await refetchDevices();
+      await syncDevicesAfterMutation('device:removed');
     } catch (err) {
       console.error('Error removing device:', err);
       setError('Cihaz kaldırılırken hata oluştu');
@@ -273,11 +302,7 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
         data: transformedUpdates
       });
 
-      // Refresh devices
-      await refetchDevices();
-
-      // Dispatch custom event to notify other tabs (e.g., Sales)
-      window.dispatchEvent(new CustomEvent('xEar:dataChanged'));
+      await syncDevicesAfterMutation('device:updated');
 
       // If modal was open, handle closing/resetting
       if (showEditModal) {
@@ -519,37 +544,91 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
             return dateB - dateA; // Descending - newest first
           });
 
-          // Group devices: bilateral devices should be in same row, single-ear devices get their own row
-          const bilateralDevices = sortedDevices.filter((d) => {
-            const ear = (d.ear || d.side || '').toLowerCase();
-            return ear === 'bilateral' || ear === 'b' || ear === 'both';
-          });
-
-          const rightOnlyDevices = sortedDevices.filter((d) => {
+          // Build rows by grouping devices that share the same saleId into one row,
+          // then sort all rows by newest device date. This keeps bilateral, right+left
+          // pairs, and single-ear devices in proper chronological order.
+          const isRight = (d: PartyDevice) => {
             const ear = (d.ear || d.side || '').toLowerCase();
             return ear === 'right' || ear === 'r' || ear === 'sağ';
-          });
-
-          const leftOnlyDevices = sortedDevices.filter((d) => {
+          };
+          const isLeft = (d: PartyDevice) => {
             const ear = (d.ear || d.side || '').toLowerCase();
             return ear === 'left' || ear === 'l' || ear === 'sol';
-          });
+          };
+          const isBilateral = (d: PartyDevice) => {
+            const ear = (d.ear || d.side || '').toLowerCase();
+            return ear === 'bilateral' || ear === 'b' || ear === 'both';
+          };
 
-          const rows: Array<{ right: PartyDevice | null; left: PartyDevice | null }> = [];
+          const rows: Array<{ right: PartyDevice | null; left: PartyDevice | null; newestDate: number }> = [];
+          const usedIds = new Set<string>();
+          const getSaleId = (device: PartyDevice): string | undefined => {
+            return (device as unknown as { saleId?: string }).saleId;
+          };
 
-          // Add bilateral devices (same device appears in both columns)
-          bilateralDevices.forEach((device) => {
-            rows.push({ right: device, left: device });
-          });
-
-          // Add single-ear devices
-          const maxSingleEar = Math.max(rightOnlyDevices.length, leftOnlyDevices.length);
-          for (let i = 0; i < maxSingleEar; i++) {
-            rows.push({
-              right: rightOnlyDevices[i] || null,
-              left: leftOnlyDevices[i] || null
-            });
+          // First pass: group devices that share the same saleId
+          const bySaleId = new Map<string, PartyDevice[]>();
+          for (const d of sortedDevices) {
+            const sid = getSaleId(d);
+            if (sid) {
+              if (!bySaleId.has(sid)) bySaleId.set(sid, []);
+              bySaleId.get(sid)!.push(d);
+            }
           }
+
+          for (const [, group] of bySaleId) {
+            const rightDev = group.find((d) => isRight(d));
+            const leftDev = group.find((d) => isLeft(d));
+            const bilateralDev = group.find((d) => isBilateral(d));
+
+            if (bilateralDev) {
+              rows.push({
+                right: bilateralDev, left: bilateralDev,
+                newestDate: new Date(bilateralDev.createdAt || 0).getTime()
+              });
+              usedIds.add(bilateralDev.id);
+            } else if (rightDev && leftDev) {
+              // Paired right+left from the same sale
+              rows.push({
+                right: rightDev, left: leftDev,
+                newestDate: Math.max(
+                  new Date(rightDev.createdAt || 0).getTime(),
+                  new Date(leftDev.createdAt || 0).getTime()
+                )
+              });
+              usedIds.add(rightDev.id);
+              usedIds.add(leftDev.id);
+            } else if (rightDev) {
+              rows.push({
+                right: rightDev, left: null,
+                newestDate: new Date(rightDev.createdAt || 0).getTime()
+              });
+              usedIds.add(rightDev.id);
+            } else if (leftDev) {
+              rows.push({
+                right: null, left: leftDev,
+                newestDate: new Date(leftDev.createdAt || 0).getTime()
+              });
+              usedIds.add(leftDev.id);
+            }
+          }
+
+          // Second pass: remaining devices not yet placed
+          const remaining = sortedDevices.filter((d) => !usedIds.has(d.id));
+          for (const d of remaining) {
+            if (isBilateral(d)) {
+              rows.push({ right: d, left: d, newestDate: new Date(d.createdAt || 0).getTime() });
+            } else if (isRight(d)) {
+              rows.push({ right: d, left: null, newestDate: new Date(d.createdAt || 0).getTime() });
+            } else if (isLeft(d)) {
+              rows.push({ right: null, left: d, newestDate: new Date(d.createdAt || 0).getTime() });
+            } else {
+              rows.push({ right: d, left: null, newestDate: new Date(d.createdAt || 0).getTime() });
+            }
+          }
+
+          // Sort rows by newest date descending
+          rows.sort((a, b) => b.newestDate - a.newestDate);
 
           if (rows.length === 0) {
             return (

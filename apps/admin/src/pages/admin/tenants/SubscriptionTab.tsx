@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { CreditCard, MessageSquare, PlusCircle, Plus, Settings, Trash2, AlertTriangle } from 'lucide-react';
 import { DataTable } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
