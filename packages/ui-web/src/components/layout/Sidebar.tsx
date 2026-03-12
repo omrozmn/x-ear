@@ -18,6 +18,7 @@ import {
   CreditCard,
   PlusCircle,
   PanelTop,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { useBreakpoints } from '../../hooks/useMediaQuery';
 
@@ -89,7 +90,7 @@ const menuItems: MenuItem[] = [
     id: 'payments',
     label: 'Ödemeler',
     icon: <DollarSign className="w-5 h-5" />,
-    href: '/payments',
+    href: '/invoices/payments',
   },
   {
     id: 'campaigns',
@@ -119,6 +120,12 @@ const menuItems: MenuItem[] = [
         label: 'Gelen Faturalar',
         icon: <FileText className="w-4 h-4" />,
         href: '/invoices/incoming',
+      },
+      {
+        id: 'proformas',
+        label: 'Proformalar',
+        icon: <FileText className="w-4 h-4" />,
+        href: '/invoices?tab=proformas',
       },
       {
         id: 'invoice-summary',
@@ -158,6 +165,12 @@ const menuItems: MenuItem[] = [
     label: 'Raporlar',
     icon: <BarChart3 className="w-5 h-5" />,
     href: '/reports',
+  },
+  {
+    id: 'invoice-normalizer',
+    label: 'Muhasebe',
+    icon: <FileSpreadsheet className="w-5 h-5" />,
+    href: '/invoice-normalizer',
   },
   {
     id: 'settings',
