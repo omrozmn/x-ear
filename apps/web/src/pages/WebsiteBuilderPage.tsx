@@ -1189,44 +1189,192 @@ const WebsiteBuilderPage: React.FC = () => {
         ),
     };
 
+    const draftProgressLabel = workspace
+        ? workspace.publishStatus.status === 'published'
+            ? 'Canlida'
+            : workspace.publishStatus.preview_url
+              ? 'Preview hazir'
+              : 'Taslak asamasinda'
+        : 'Baslangic asamasinda';
+
+    const nextActionCards = [
+        {
+            title: 'AI ile basla',
+            detail: '1-3 kritik soruyla ilk taslagi uret, bos ekranla baslama.',
+            cta: busyKey === 'create-draft' ? 'Taslak olusturuluyor...' : 'AI taslak olustur',
+            onClick: handleCreateDraft,
+            disabled: busyKey === 'create-draft',
+            tone: 'primary',
+        },
+        {
+            title: 'Sayfalari duzenle',
+            detail: 'Ana sayfa, menu ve section yapisini kontrollu varyantlarla yonet.',
+            cta: 'Sayfa studyo',
+            onClick: () => setActiveTab('pages'),
+            disabled: false,
+            tone: 'neutral',
+        },
+        {
+            title: 'Onizle ve canliya al',
+            detail: 'Preview, domain baglama ve publish akisini tek yerden yonet.',
+            cta: 'Yayin sekmesi',
+            onClick: () => setActiveTab('publishing'),
+            disabled: false,
+            tone: 'neutral',
+        },
+    ] as const;
+
     return (
         <div className={isMobile ? 'mx-auto max-w-7xl p-4 pb-safe' : 'mx-auto max-w-7xl p-6'}>
-            <div className="rounded-[2rem] bg-gradient-to-br from-gray-950 via-slate-900 to-slate-800 p-6 text-white shadow-xl">
-                <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-                    <div className="max-w-3xl">
-                        <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium tracking-wide text-slate-100">
+            <div className="rounded-[2rem] bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.24),_transparent_30%),linear-gradient(135deg,#020617_0%,#0f172a_52%,#111827_100%)] p-6 text-white shadow-xl">
+                <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+                    <div>
+                        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-medium tracking-[0.18em] text-slate-100">
                             <Globe2 className="h-4 w-4" />
-                            Web Yonetim
+                            Website Builder
                         </div>
-                        <h1 className="mt-4 text-3xl font-semibold tracking-tight">AI ve panel ile website olusturma ve yonetme</h1>
-                        <p className="mt-3 text-sm leading-6 text-slate-300">
-                            Kullanici ister panelden hazir sablonla, ister AI ile site olusturur. Sonra ayni drafti sekmeler altindan duzenler, preview eder ve publish eder.
+                        <h1 className="mt-4 max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl">
+                            Bos ekranla degil, yonlendirilmis bir taslakla basla
+                        </h1>
+                        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
+                            AI ile ilk surumu olustur, sonra sayfalar, gorunum, icerik ve yayin sekmelerinden kontrollu olarak duzenle.
+                            Tum alanlar safe layout guard altinda kalir.
                         </p>
+                        <div className="mt-5 flex flex-wrap gap-2">
+                            {['1. Ihtiyaci cikar', '2. Taslagi olustur', '3. Preview ve publish'].map((step) => (
+                                <span key={step} className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200">
+                                    {step}
+                                </span>
+                            ))}
+                        </div>
+                        <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                            <div className="rounded-[1.5rem] border border-white/10 bg-white/5 px-4 py-4 backdrop-blur">
+                                <div className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Aktif site</div>
+                                <div className="mt-2 text-base font-semibold text-white">{workspace?.site.name ?? 'Henuz taslak yok'}</div>
+                                <div className="mt-1 text-xs text-slate-400">{workspace?.site.slug ?? 'AI veya sablon ile basla'}</div>
+                            </div>
+                            <div className="rounded-[1.5rem] border border-white/10 bg-white/5 px-4 py-4 backdrop-blur">
+                                <div className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Durum</div>
+                                <div className="mt-2 text-base font-semibold text-white">{draftProgressLabel}</div>
+                                <div className="mt-1 text-xs text-slate-400">{workspace?.publishStatus.status ?? 'hazirlik'}</div>
+                            </div>
+                            <div className="rounded-[1.5rem] border border-white/10 bg-white/5 px-4 py-4 backdrop-blur">
+                                <div className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Moduller</div>
+                                <div className="mt-2 text-base font-semibold text-white">{activeFeatureCount}</div>
+                                <div className="mt-1 text-xs text-slate-400">{visibleTabs.length} calisma sekmesi gorunuyor</div>
+                            </div>
+                        </div>
                     </div>
-                    <div className="flex flex-wrap gap-3">
-                        <button
-                            onClick={() => setEntryMode('template')}
-                            className={`inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${entryMode === 'template' ? 'bg-white text-gray-950' : 'bg-white/10 text-white hover:bg-white/15'}`}
-                        >
-                            <LayoutTemplate className="h-4 w-4" />
-                            Hazir Sablonla Olustur
-                        </button>
-                        <button
-                            onClick={() => setEntryMode('ai')}
-                            className={`inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${entryMode === 'ai' ? 'bg-emerald-300 text-gray-950' : 'bg-emerald-400/20 text-emerald-100 hover:bg-emerald-400/30'}`}
-                        >
-                            <Sparkles className="h-4 w-4" />
-                            Yapay Zeka ile Olustur
-                        </button>
+
+                    <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 backdrop-blur">
+                        <div className="flex items-center justify-between gap-3">
+                            <div>
+                                <div className="text-sm font-semibold text-white">Baslangic yontemi</div>
+                                <div className="mt-1 text-xs text-slate-300">AI hizli baslangic, sablon kontrollu kurulum icin.</div>
+                            </div>
+                            <div className="rounded-full bg-emerald-400/15 px-3 py-1 text-xs font-semibold text-emerald-200">
+                                {workspace ? 'Devam ediyor' : 'Ilk kurulum'}
+                            </div>
+                        </div>
+                        <div className="mt-4 flex flex-wrap gap-3">
+                            <button
+                                onClick={() => setEntryMode('template')}
+                                className={`inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${entryMode === 'template' ? 'bg-white text-gray-950' : 'bg-white/10 text-white hover:bg-white/15'}`}
+                            >
+                                <LayoutTemplate className="h-4 w-4" />
+                                Hazir sablon
+                            </button>
+                            <button
+                                onClick={() => setEntryMode('ai')}
+                                className={`inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${entryMode === 'ai' ? 'bg-emerald-300 text-gray-950' : 'bg-emerald-400/20 text-emerald-100 hover:bg-emerald-400/30'}`}
+                            >
+                                <Sparkles className="h-4 w-4" />
+                                Yapay zeka
+                            </button>
+                        </div>
+                        <div className="mt-5 space-y-3">
+                            {nextActionCards.map((card) => (
+                                <button
+                                    key={card.title}
+                                    onClick={card.onClick}
+                                    disabled={card.disabled}
+                                    className={`w-full rounded-[1.5rem] px-4 py-4 text-left transition-all ${
+                                        card.tone === 'primary'
+                                            ? 'bg-emerald-300 text-slate-950 shadow-[0_24px_60px_-32px_rgba(110,231,183,0.85)]'
+                                            : 'bg-white/5 text-white ring-1 ring-white/10 hover:bg-white/10'
+                                    } disabled:cursor-not-allowed disabled:opacity-60`}
+                                >
+                                    <div className="text-sm font-semibold">{card.title}</div>
+                                    <div className={`mt-1 text-xs ${card.tone === 'primary' ? 'text-slate-700' : 'text-slate-300'}`}>{card.detail}</div>
+                                    <div className={`mt-3 text-xs font-semibold ${card.tone === 'primary' ? 'text-slate-900' : 'text-emerald-200'}`}>{card.cta}</div>
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
 
             {error ? (
-                <div className="mt-6 rounded-3xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-                    {error}
+                <div className="mt-6 rounded-[1.5rem] border border-rose-200 bg-rose-50/95 px-4 py-4 text-sm text-rose-800 shadow-sm">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <div className="font-semibold">Baglanti veya islem hatasi</div>
+                            <div className="mt-1 text-xs text-rose-700">{error}</div>
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setError(null)}
+                                className="rounded-2xl bg-white px-3 py-2 text-xs font-semibold text-rose-700 ring-1 ring-rose-200"
+                            >
+                                Kapat
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (workspace?.site.id) {
+                                        void loadWorkspace(workspace.site.id);
+                                    } else {
+                                        window.location.reload();
+                                    }
+                                }}
+                                className="rounded-2xl bg-rose-600 px-3 py-2 text-xs font-semibold text-white"
+                            >
+                                Tekrar dene
+                            </button>
+                        </div>
+                    </div>
                 </div>
             ) : null}
+
+            <div className="mt-6 grid gap-4 xl:grid-cols-4">
+                {[
+                    {
+                        title: 'Sonraki adim',
+                        value: workspace ? 'Icerik ve gorunum' : 'Taslak olustur',
+                        detail: workspace ? 'Sayfa veya gorunum sekmesine gecerek devam et.' : 'AI veya sablonla ilk siteyi baslat.',
+                    },
+                    {
+                        title: 'Preview',
+                        value: workspace?.publishStatus.preview_url ? 'Hazir' : 'Bekliyor',
+                        detail: workspace?.publishStatus.preview_url ?? 'Canli onizleme olusunca burada gorunur',
+                    },
+                    {
+                        title: 'Domain',
+                        value: workspace?.domainSetup.custom_domain ?? workspace?.domainSetup.workspace_domain ?? 'Bekleniyor',
+                        detail: workspace?.domainSetup.status ?? 'workspace_ready',
+                    },
+                    {
+                        title: 'Safe layout',
+                        value: snapshot?.safeLayoutPolicy?.enforce_safe_area ? 'Zorunlu' : 'Belirsiz',
+                        detail: `${snapshot?.safeLayoutPolicy?.max_content_width_px ?? '-'}px max width`,
+                    },
+                ].map((item) => (
+                    <div key={item.title} className="rounded-[1.75rem] bg-white p-5 ring-1 ring-gray-200 shadow-sm">
+                        <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">{item.title}</div>
+                        <div className="mt-3 text-lg font-semibold text-gray-900">{item.value}</div>
+                        <div className="mt-2 text-sm leading-6 text-gray-500">{item.detail}</div>
+                    </div>
+                ))}
+            </div>
 
             <div className="mt-6 grid gap-6 xl:grid-cols-[1.3fr_0.9fr]">
                 <div className="rounded-[2rem] bg-white p-6 ring-1 ring-gray-200">
