@@ -762,68 +762,97 @@ const WebsiteBuilderPage: React.FC = () => {
             </div>
         ),
         appearance: (
-            <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-                <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
-                    <h3 className="text-base font-semibold text-gray-900">Secilen Sayfanin Gorunumu</h3>
-                    <div className="mt-4 rounded-3xl bg-gray-50 p-4">
-                        <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Sayfa Secici</div>
-                        <select value={selectedPage?.slug ?? ''} onChange={(event) => setSelectedPageSlug(event.target.value)} className="mt-3 w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none">
-                            {pages.map((page) => (
-                                <option key={page.slug} value={page.slug}>
-                                    {page.title} ({page.slug})
-                                </option>
-                            ))}
-                        </select>
+            <div className="grid gap-4 xl:grid-cols-[1.08fr_0.92fr]">
+                <div className="rounded-[2rem] bg-white p-6 ring-1 ring-gray-200 shadow-sm">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-900">Sayfa gorunum stüdyosu</h3>
+                            <p className="mt-1 text-sm text-gray-500">Hangi sayfayi tasarladigini sec, sonra tema ve section ritmini kontrollu presetlerle ayarla.</p>
+                        </div>
+                        <div className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">
+                            {selectedPage?.title ?? 'Sayfa secilmedi'}
+                        </div>
                     </div>
-                    <div className="mt-4 space-y-3">
-                        {themeOptions.map((theme) => (
+                    <div className="mt-5 grid gap-4 lg:grid-cols-[0.78fr_1.22fr]">
+                        <div className="rounded-[1.5rem] bg-gray-50 p-4">
+                            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">Sayfa secici</div>
+                            <select value={selectedPage?.slug ?? ''} onChange={(event) => setSelectedPageSlug(event.target.value)} className="mt-3 w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none">
+                                {pages.map((page) => (
+                                    <option key={page.slug} value={page.slug}>
+                                        {page.title} ({page.slug})
+                                    </option>
+                                ))}
+                            </select>
+                            <div className="mt-4 space-y-2">
+                                {[
+                                    `Header: controlled`,
+                                    `Section sayisi: ${selectedPage?.sections.length ?? 0}`,
+                                    `Footer: controlled`,
+                                ].map((item) => (
+                                    <div key={item} className="rounded-2xl bg-white px-4 py-3 text-sm text-gray-700 ring-1 ring-gray-200">
+                                        {item}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div>
+                            <div className="grid gap-3">
+                                {themeOptions.map((theme) => (
+                                    <button
+                                        key={theme.key}
+                                        onClick={() => setSelectedTheme(theme.key)}
+                                        className={`w-full rounded-[1.5rem] px-4 py-4 text-left ring-1 transition-all ${
+                                            selectedTheme === theme.key
+                                                ? 'bg-gray-950 text-white ring-gray-950 shadow-[0_24px_50px_-36px_rgba(15,23,42,0.8)]'
+                                                : 'bg-gray-50 text-gray-900 ring-gray-200 hover:bg-white'
+                                        }`}
+                                    >
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div>
+                                                <div className="text-sm font-semibold">{theme.label}</div>
+                                                <div className={`mt-1 text-xs ${selectedTheme === theme.key ? 'text-gray-300' : 'text-gray-500'}`}>{theme.detail}</div>
+                                            </div>
+                                            <div className={`rounded-full px-2 py-1 text-[11px] font-semibold ${selectedTheme === theme.key ? 'bg-white/10 text-white' : 'bg-white text-gray-600 ring-1 ring-gray-200'}`}>
+                                                {selectedTheme === theme.key ? 'Secili' : 'Preset'}
+                                            </div>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
                             <button
-                                key={theme.key}
-                                onClick={() => setSelectedTheme(theme.key)}
-                                className={`w-full rounded-3xl px-4 py-4 text-left ring-1 transition-colors ${
-                                    selectedTheme === theme.key ? 'bg-gray-900 text-white ring-gray-900' : 'bg-gray-50 text-gray-900 ring-gray-200'
-                                }`}
+                                onClick={handleApplyTheme}
+                                disabled={!workspace || busyKey === 'apply-theme'}
+                                className="mt-4 rounded-2xl bg-gray-900 px-4 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
                             >
-                                <div className="text-sm font-semibold">{theme.label}</div>
-                                <div className={`mt-1 text-xs ${selectedTheme === theme.key ? 'text-gray-300' : 'text-gray-500'}`}>{theme.detail}</div>
+                                {busyKey === 'apply-theme' ? 'Tema uygulanıyor...' : 'Secili temayi uygula'}
                             </button>
-                        ))}
-                    </div>
-                    <button
-                        onClick={handleApplyTheme}
-                        disabled={!workspace || busyKey === 'apply-theme'}
-                        className="mt-4 rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                        {busyKey === 'apply-theme' ? 'Uygulaniyor...' : 'Temayi Uygula'}
-                    </button>
-                    <div className="mt-4 rounded-3xl bg-gray-50 p-4">
-                        <div className="text-sm font-semibold text-gray-900">Header / Footer ve Section Composer</div>
-                        <div className="mt-3 grid gap-3 md:grid-cols-3">
-                            <div className="rounded-2xl bg-white px-4 py-3 text-sm text-gray-700 ring-1 ring-gray-200">Header varyanti: controlled</div>
-                            <div className="rounded-2xl bg-white px-4 py-3 text-sm text-gray-700 ring-1 ring-gray-200">Section sayisi: {selectedPage?.sections.length ?? 0}</div>
-                            <div className="rounded-2xl bg-white px-4 py-3 text-sm text-gray-700 ring-1 ring-gray-200">Footer varyanti: controlled</div>
                         </div>
                     </div>
                 </div>
                 <div className="grid gap-4">
-                    {[
-                        { title: 'Motion', detail: 'sticky-story + snap-sections' },
-                        { title: 'WebGL', detail: 'ambient fallback-ready preset' },
-                        { title: 'Aktif Tema', detail: selectedTheme },
-                    ].map((item) => (
-                        <div key={item.title} className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
-                            <h3 className="text-base font-semibold text-gray-900">{item.title}</h3>
-                            <p className="mt-2 text-sm text-gray-500">{item.detail}</p>
+                    <div className="rounded-[2rem] bg-white p-6 ring-1 ring-gray-200 shadow-sm">
+                        <h3 className="text-base font-semibold text-gray-900">Deneyim stacki</h3>
+                        <div className="mt-4 grid gap-3">
+                            {[
+                                { title: 'Motion dili', detail: 'sticky story, snap sections, kontrollu scroll ritmi' },
+                                { title: 'WebGL fallback', detail: 'agir sahnelerde degrade olabilen modern arka plan presetleri' },
+                                { title: 'Aktif preset', detail: selectedTheme },
+                            ].map((item) => (
+                                <div key={item.title} className="rounded-[1.5rem] bg-gray-50 px-4 py-4 ring-1 ring-gray-200">
+                                    <div className="text-sm font-semibold text-gray-900">{item.title}</div>
+                                    <div className="mt-1 text-sm text-gray-500">{item.detail}</div>
+                                </div>
+                            ))}
                         </div>
-                    ))}
-                    <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
-                        <h3 className="text-base font-semibold text-gray-900">Safe Layout Guard</h3>
+                    </div>
+                    <div className="rounded-[2rem] bg-white p-6 ring-1 ring-gray-200 shadow-sm">
+                        <h3 className="text-base font-semibold text-gray-900">Safe layout guard</h3>
                         <div className="mt-3 text-sm text-gray-600">
-                            Max content width: {snapshot?.safeLayoutPolicy?.max_content_width_px ?? '-'}px
+                            Maksimum icerik genisligi: {snapshot?.safeLayoutPolicy?.max_content_width_px ?? '-'}px
                         </div>
-                        <div className="mt-3 space-y-2">
+                        <div className="mt-4 space-y-2">
                             {(snapshot?.safeLayoutPolicy?.guard_rules ?? []).map((rule) => (
-                                <div key={rule} className="rounded-2xl bg-gray-50 px-4 py-3 text-xs text-gray-700">
+                                <div key={rule} className="rounded-2xl bg-gray-50 px-4 py-3 text-xs text-gray-700 ring-1 ring-gray-200">
                                     {rule}
                                 </div>
                             ))}
@@ -833,188 +862,221 @@ const WebsiteBuilderPage: React.FC = () => {
             </div>
         ),
         pages: (
-            <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-                <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-900">Sayfa Yapisi</h3>
-                    <div className="mt-4 space-y-3">
+            <div className="grid gap-4 xl:grid-cols-[0.92fr_1.08fr]">
+                <div className="rounded-[2rem] bg-white p-6 ring-1 ring-gray-200 shadow-sm">
+                    <div className="flex items-start justify-between gap-3">
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-900">Sayfa yapisi stüdyosu</h3>
+                            <p className="mt-1 text-sm text-gray-500">Sayfalari olustur, sec, yeniden adlandir ve menu baglamini buradan yonet.</p>
+                        </div>
+                        <div className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">
+                            {pages.length} sayfa
+                        </div>
+                    </div>
+                    <div className="mt-5 space-y-3">
                         {pages.map((page) => (
                             <button
                                 key={page.slug}
                                 onClick={() => setSelectedPageSlug(page.slug)}
-                                className={`w-full rounded-2xl px-4 py-3 text-left text-sm ${
-                                    selectedPage?.slug === page.slug ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-700'
+                                className={`w-full rounded-[1.5rem] px-4 py-4 text-left transition-all ${
+                                    selectedPage?.slug === page.slug
+                                        ? 'bg-gray-950 text-white shadow-[0_24px_50px_-36px_rgba(15,23,42,0.8)]'
+                                        : 'bg-gray-50 text-gray-700 ring-1 ring-gray-200 hover:bg-white'
                                 }`}
                             >
-                                <div className="font-medium">{page.title}</div>
-                                <div className={`mt-1 text-xs ${selectedPage?.slug === page.slug ? 'text-gray-300' : 'text-gray-500'}`}>{page.slug}</div>
+                                <div className="flex items-start justify-between gap-3">
+                                    <div>
+                                        <div className="font-semibold">{page.title}</div>
+                                        <div className={`mt-1 text-xs ${selectedPage?.slug === page.slug ? 'text-gray-300' : 'text-gray-500'}`}>{page.slug}</div>
+                                    </div>
+                                    <div className={`rounded-full px-2 py-1 text-[11px] font-semibold ${selectedPage?.slug === page.slug ? 'bg-white/10 text-white' : 'bg-white text-gray-600 ring-1 ring-gray-200'}`}>
+                                        {page.sections.length} section
+                                    </div>
+                                </div>
                             </button>
                         ))}
                     </div>
-                    <div className="mt-4 rounded-3xl bg-gray-50 p-4">
-                        <div className="text-sm font-semibold text-gray-900">Yeni Sayfa</div>
+                    <div className="mt-5 rounded-[1.5rem] bg-gray-50 p-4">
+                        <div className="text-sm font-semibold text-gray-900">Yeni sayfa ekle</div>
                         <div className="mt-3 grid gap-3">
                             <input value={newPageTitle} onChange={(event) => setNewPageTitle(event.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="Sayfa basligi" />
                             <input value={newPageSlug} onChange={(event) => setNewPageSlug(event.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="/ornek-sayfa" />
-                            <button onClick={handleCreatePage} disabled={!workspace || busyKey === 'create-page'} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
-                                {busyKey === 'create-page' ? 'Ekleniyor...' : 'Sayfa Ekle'}
-                            </button>
-                        </div>
-                    </div>
-                    <div className="mt-4 rounded-3xl bg-white p-4 ring-1 ring-gray-200">
-                        <div className="text-sm font-semibold text-gray-900">Secilen Sayfa Bilgileri</div>
-                        <div className="mt-3 grid gap-3">
-                            <input value={pageTitleDraft} onChange={(event) => setPageTitleDraft(event.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" />
-                            <input value={pageSlugDraft} onChange={(event) => setPageSlugDraft(event.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" />
-                            <button onClick={handleSavePageMeta} disabled={!selectedPage || busyKey === 'save-page'} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
-                                {busyKey === 'save-page' ? 'Kaydediliyor...' : 'Sayfa Bilgilerini Kaydet'}
+                            <button onClick={handleCreatePage} disabled={!workspace || busyKey === 'create-page'} className="rounded-2xl bg-gray-900 px-4 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+                                {busyKey === 'create-page' ? 'Sayfa ekleniyor...' : 'Yeni sayfayi olustur'}
                             </button>
                         </div>
                     </div>
                 </div>
-                <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-900">Menu ve Yayin Baglami</h3>
-                    <div className="mt-4 grid gap-3 md:grid-cols-2">
-                        {menuItems.length > 0 ? (
-                            menuItems.map((item) => (
-                                <div key={`${item.page_slug}-${item.position}`} className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
-                                    {item.position}. {item.label} ({item.page_slug})
-                                </div>
-                            ))
-                        ) : (
-                            <div className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-600">Menu item henuz yok.</div>
-                        )}
+                <div className="grid gap-4">
+                    <div className="rounded-[2rem] bg-white p-6 ring-1 ring-gray-200 shadow-sm">
+                        <h3 className="text-base font-semibold text-gray-900">Secilen sayfa metasi</h3>
+                        <div className="mt-4 grid gap-3">
+                            <input value={pageTitleDraft} onChange={(event) => setPageTitleDraft(event.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" />
+                            <input value={pageSlugDraft} onChange={(event) => setPageSlugDraft(event.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" />
+                            <button onClick={handleSavePageMeta} disabled={!selectedPage || busyKey === 'save-page'} className="rounded-2xl bg-gray-900 px-4 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+                                {busyKey === 'save-page' ? 'Kaydediliyor...' : 'Sayfa bilgilerini kaydet'}
+                            </button>
+                        </div>
                     </div>
-                    <div className="mt-4 rounded-3xl bg-gray-50 p-4">
-                        <div className="text-sm font-semibold text-gray-900">Yayin Durumu</div>
-                        <div className="mt-2 text-sm text-gray-600">Preview: {workspace?.previewStatus.preview_state ?? '-'}</div>
-                        <div className="mt-1 text-sm text-gray-600">Publish: {workspace?.publishStatus.status ?? '-'}</div>
+                    <div className="rounded-[2rem] bg-white p-6 ring-1 ring-gray-200 shadow-sm">
+                        <h3 className="text-base font-semibold text-gray-900">Menu ve yayin baglami</h3>
+                        <div className="mt-4 grid gap-3 md:grid-cols-2">
+                            {menuItems.length > 0 ? (
+                                menuItems.map((item) => (
+                                    <div key={`${item.page_slug}-${item.position}`} className="rounded-[1.5rem] bg-gray-50 px-4 py-4 ring-1 ring-gray-200">
+                                        <div className="text-sm font-semibold text-gray-900">{item.position}. {item.label}</div>
+                                        <div className="mt-1 text-xs text-gray-500">{item.page_slug}</div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="rounded-[1.5rem] bg-gray-50 px-4 py-4 text-sm text-gray-600 ring-1 ring-gray-200">Menu item henuz yok.</div>
+                            )}
+                        </div>
+                        <div className="mt-4 grid gap-3 md:grid-cols-2">
+                            <div className="rounded-[1.5rem] bg-gray-50 px-4 py-4 ring-1 ring-gray-200">
+                                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">Preview state</div>
+                                <div className="mt-2 text-sm font-semibold text-gray-900">{workspace?.previewStatus.preview_state ?? '-'}</div>
+                            </div>
+                            <div className="rounded-[1.5rem] bg-gray-50 px-4 py-4 ring-1 ring-gray-200">
+                                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">Publish state</div>
+                                <div className="mt-2 text-sm font-semibold text-gray-900">{workspace?.publishStatus.status ?? '-'}</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         ),
         publishing: (
-            <div className="grid gap-4 xl:grid-cols-[1fr_0.9fr]">
-                <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-900">Draft ve Readiness Durumu</h3>
-                    <ul className="mt-4 space-y-2 text-sm text-gray-600">
-                        <li>Preview state: {workspace?.previewStatus.preview_state ?? 'bekleniyor'}</li>
-                        <li>Publish state: {workspace?.previewStatus.publish_state ?? 'bekleniyor'}</li>
-                        <li>Release status: {workspace?.publishStatus.status ?? 'draft'}</li>
-                    </ul>
-                    <div className="mt-4 space-y-2">
-                        {previewChecks.map((check) => (
-                            <div key={check.key} className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
-                                <div className="font-medium">{check.label}</div>
-                                <div className="mt-1 text-xs text-gray-500">{check.status} - {check.detail}</div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-                <div className="rounded-3xl bg-gray-900 p-6 text-white">
-                    <h3 className="text-lg font-semibold">Canliya Alma</h3>
-                    <p className="mt-2 text-sm text-gray-300">Preview, publish ve rollback akislari bu sekmeden yonetilir.</p>
-                    <div className="mt-4 flex flex-wrap gap-3">
-                        <button onClick={handlePreview} disabled={!workspace || busyKey === 'preview'} className="rounded-2xl bg-white px-4 py-2 text-sm font-medium text-gray-900 disabled:cursor-not-allowed disabled:opacity-60">
-                            {busyKey === 'preview' ? 'Hazirlaniyor...' : 'Preview Ac'}
-                        </button>
-                        <button onClick={handlePublish} disabled={!workspace || busyKey === 'publish'} className="rounded-2xl bg-emerald-400 px-4 py-2 text-sm font-medium text-gray-950 disabled:cursor-not-allowed disabled:opacity-60">
-                            {busyKey === 'publish' ? 'Publish...' : 'Publish Et'}
-                        </button>
-                        <button onClick={handleRollback} disabled={!workspace || busyKey === 'rollback'} className="rounded-2xl bg-white/10 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
-                            {busyKey === 'rollback' ? 'Rollback...' : 'Rollback'}
-                        </button>
-                    </div>
-                    <div className="mt-4 space-y-2 text-xs text-gray-300">
-                        <div>Preview URL: {workspace?.publishStatus.preview_url ?? '-'}</div>
-                        <div>Published URL: {workspace?.publishStatus.published_url ?? '-'}</div>
-                        <div>Release ID: {workspace?.publishStatus.active_release_id ?? '-'}</div>
-                        <div>Workspace domain: {workspace?.domainSetup.workspace_domain ?? '-'}</div>
-                        <div>Primary domain: {workspace?.domainSetup.current_primary_domain ?? '-'}</div>
-                    </div>
-                </div>
-                <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-900">Preview Shell</h3>
-                    <div className="mt-4 grid gap-4">
-                        {workspace ? <WebsitePreviewCanvas site={workspace.site} pageSlug={selectedPageSlug} selectedTargetKey={previewReviewTarget?.key} onSelectTarget={handlePreviewTargetFeedback} /> : (
-                            <div className="rounded-[2rem] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-8 text-sm text-slate-200">
-                                Preview icin once aktif bir site gerekiyor.
-                            </div>
-                        )}
-                        <div className="rounded-3xl bg-gray-50 p-4">
-                            <div className="text-sm font-semibold text-gray-900">Preview icinden AI geri bildirim</div>
-                            <div className="mt-3 flex flex-wrap gap-2">
-                                {previewTargets.length > 0 ? (
-                                    previewTargets.map((target) => (
-                                        <button
-                                            key={target.key}
-                                            onClick={() => handlePreviewTargetFeedback(target)}
-                                            className={`rounded-full px-3 py-1 text-xs font-medium ${
-                                                previewReviewTarget?.key === target.key ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 ring-1 ring-gray-200'
-                                            }`}
-                                        >
-                                            {target.label}
-                                        </button>
-                                    ))
-                                ) : (
-                                    <span className="text-sm text-gray-500">Review hedefi olusmasi icin section iceren bir draft gerekiyor.</span>
-                                )}
-                            </div>
-                            <div className="mt-3 text-xs text-gray-500">
-                                Bir hedef secip chat komutunu otomatik doldurabilir, sonra AI&apos;a karti veya icerigi degistir diyebilirsin.
-                            </div>
-                            <a href="/web-management-preview" className="mt-4 inline-flex rounded-2xl bg-gray-900 px-4 py-2 text-xs font-semibold text-white">
-                                Ayrı preview sayfasinda ac
-                            </a>
+            <div className="grid gap-4 xl:grid-cols-[0.92fr_1.08fr]">
+                <div className="space-y-4">
+                    <div className="rounded-[2rem] bg-gray-950 p-6 text-white shadow-sm">
+                        <h3 className="text-lg font-semibold">Canliya alma merkezi</h3>
+                        <p className="mt-2 text-sm text-gray-300">Preview, domain baglama ve publish akisini tek karar panelinden yonet.</p>
+                        <div className="mt-5 flex flex-wrap gap-3">
+                            <button onClick={handlePreview} disabled={!workspace || busyKey === 'preview'} className="rounded-2xl bg-white px-4 py-3 text-sm font-medium text-gray-950 disabled:cursor-not-allowed disabled:opacity-60">
+                                {busyKey === 'preview' ? 'Preview hazirlaniyor...' : 'Preview olustur'}
+                            </button>
+                            <button onClick={handlePublish} disabled={!workspace || busyKey === 'publish'} className="rounded-2xl bg-emerald-300 px-4 py-3 text-sm font-medium text-gray-950 disabled:cursor-not-allowed disabled:opacity-60">
+                                {busyKey === 'publish' ? 'Canliya aliniyor...' : 'Canliya al'}
+                            </button>
+                            <button onClick={handleRollback} disabled={!workspace || busyKey === 'rollback'} className="rounded-2xl bg-white/10 px-4 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+                                {busyKey === 'rollback' ? 'Geri aliniyor...' : 'Rollback'}
+                            </button>
                         </div>
-                        <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
-                            <div className="flex items-center justify-between gap-3">
-                                <div>
-                                    <h4 className="text-base font-semibold text-gray-900">Domain ve Yayin Domaini</h4>
-                                    <p className="mt-1 text-sm text-gray-500">Site ilk olarak workspace domain ile olusur, sonra custom domain baglanir.</p>
+                        <div className="mt-5 grid gap-3 md:grid-cols-2">
+                            {[
+                                { label: 'Preview URL', value: workspace?.publishStatus.preview_url ?? '-' },
+                                { label: 'Published URL', value: workspace?.publishStatus.published_url ?? '-' },
+                                { label: 'Release ID', value: workspace?.publishStatus.active_release_id ?? '-' },
+                                { label: 'Primary domain', value: workspace?.domainSetup.current_primary_domain ?? '-' },
+                            ].map((item) => (
+                                <div key={item.label} className="rounded-[1.5rem] bg-white/5 px-4 py-4 ring-1 ring-white/10">
+                                    <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">{item.label}</div>
+                                    <div className="mt-2 text-sm font-semibold text-white break-all">{item.value}</div>
                                 </div>
-                            </div>
-                            <div className="mt-4 grid gap-3 md:grid-cols-2">
-                                <div className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
-                                    <div className="text-xs uppercase tracking-wide text-gray-500">Workspace</div>
-                                    <div className="mt-1 font-medium">{workspace?.domainSetup.workspace_domain ?? '-'}</div>
-                                </div>
-                                <div className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
-                                    <div className="text-xs uppercase tracking-wide text-gray-500">Custom Domain</div>
-                                    <div className="mt-1 font-medium">{workspace?.domainSetup.custom_domain ?? 'Baglanmadi'}</div>
-                                </div>
-                            </div>
-                            <div className="mt-4 grid gap-3 md:grid-cols-[1fr_220px_160px]">
-                                <input value={domainQuery} onChange={(event) => setDomainQuery(event.target.value)} className="rounded-2xl border border-gray-200 px-3 py-2 text-sm outline-none" placeholder="ornek: markaniz.com.tr" />
-                                <select value={selectedDomainProvider} onChange={(event) => setSelectedDomainProvider(event.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none">
-                                    {(domainProviders?.providers ?? []).map((provider) => (
-                                        <option key={provider.key} value={provider.key}>
-                                            {provider.label}
-                                        </option>
-                                    ))}
-                                </select>
-                                <button onClick={handleDomainSearch} disabled={!workspace || busyKey === 'domain-search'} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
-                                    {busyKey === 'domain-search' ? 'Araniyor...' : 'Domain Ara'}
-                                </button>
-                            </div>
-                            <div className="mt-4 space-y-3">
-                                {(domainSearch?.results ?? []).map((result) => (
-                                    <div key={`${result.provider_key}-${result.domain}`} className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
-                                        <div className="flex items-center justify-between gap-3">
-                                            <div>
-                                                <div className="font-medium">{result.domain}</div>
-                                                <div className="mt-1 text-xs text-gray-500">{result.provider_key} - {result.price_note}</div>
-                                            </div>
-                                            <button
-                                                onClick={() => handleConnectDomain(result.domain)}
-                                                disabled={!result.available || busyKey === 'connect-domain'}
-                                                className="rounded-2xl bg-emerald-500 px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
-                                            >
-                                                {result.available ? 'Bagla' : 'Dolu'}
-                                            </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="rounded-[2rem] bg-white p-6 ring-1 ring-gray-200 shadow-sm">
+                        <h3 className="text-base font-semibold text-gray-900">Readiness checklist</h3>
+                        <div className="mt-4 space-y-2">
+                            {previewChecks.map((check) => (
+                                <div key={check.key} className="rounded-[1.5rem] bg-gray-50 px-4 py-4 ring-1 ring-gray-200">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div className="text-sm font-semibold text-gray-900">{check.label}</div>
+                                        <div className={`rounded-full px-2 py-1 text-[11px] font-semibold ${
+                                            check.status === 'pass'
+                                                ? 'bg-emerald-100 text-emerald-700'
+                                                : check.status === 'warning'
+                                                  ? 'bg-amber-100 text-amber-700'
+                                                  : 'bg-rose-100 text-rose-700'
+                                        }`}>
+                                            {check.status}
                                         </div>
                                     </div>
-                                ))}
+                                    <div className="mt-2 text-xs text-gray-500">{check.detail}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+                <div className="space-y-4">
+                    <div className="rounded-[2rem] bg-white p-6 ring-1 ring-gray-200 shadow-sm">
+                        <h3 className="text-base font-semibold text-gray-900">Canli preview</h3>
+                        <div className="mt-4 grid gap-4">
+                            {workspace ? <WebsitePreviewCanvas site={workspace.site} pageSlug={selectedPageSlug} selectedTargetKey={previewReviewTarget?.key} onSelectTarget={handlePreviewTargetFeedback} /> : (
+                                <div className="rounded-[2rem] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-8 text-sm text-slate-200">
+                                    Preview icin once aktif bir site gerekiyor.
+                                </div>
+                            )}
+                            <div className="rounded-[1.5rem] bg-gray-50 p-4 ring-1 ring-gray-200">
+                                <div className="text-sm font-semibold text-gray-900">Preview uzerinden AI duzenleme</div>
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                    {previewTargets.length > 0 ? (
+                                        previewTargets.map((target) => (
+                                            <button
+                                                key={target.key}
+                                                onClick={() => handlePreviewTargetFeedback(target)}
+                                                className={`rounded-full px-3 py-1 text-xs font-medium ${
+                                                    previewReviewTarget?.key === target.key ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 ring-1 ring-gray-200'
+                                                }`}
+                                            >
+                                                {target.label}
+                                            </button>
+                                        ))
+                                    ) : (
+                                        <span className="text-sm text-gray-500">Section hedefleri draft olustuktan sonra gorunur.</span>
+                                    )}
+                                </div>
+                                <a href="/web-management-preview" className="mt-4 inline-flex rounded-2xl bg-gray-900 px-4 py-2 text-xs font-semibold text-white">
+                                    Ayrı preview sayfasinda ac
+                                </a>
                             </div>
+                        </div>
+                    </div>
+                    <div className="rounded-[2rem] bg-white p-6 ring-1 ring-gray-200 shadow-sm">
+                        <h3 className="text-base font-semibold text-gray-900">Domain baglama</h3>
+                        <div className="mt-4 grid gap-3 md:grid-cols-2">
+                            <div className="rounded-[1.5rem] bg-gray-50 px-4 py-4 ring-1 ring-gray-200">
+                                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">Workspace</div>
+                                <div className="mt-2 text-sm font-semibold text-gray-900">{workspace?.domainSetup.workspace_domain ?? '-'}</div>
+                            </div>
+                            <div className="rounded-[1.5rem] bg-gray-50 px-4 py-4 ring-1 ring-gray-200">
+                                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">Custom domain</div>
+                                <div className="mt-2 text-sm font-semibold text-gray-900">{workspace?.domainSetup.custom_domain ?? 'Baglanmadi'}</div>
+                            </div>
+                        </div>
+                        <div className="mt-4 grid gap-3 md:grid-cols-[1fr_220px_170px]">
+                            <input value={domainQuery} onChange={(event) => setDomainQuery(event.target.value)} className="rounded-2xl border border-gray-200 px-3 py-2 text-sm outline-none" placeholder="ornek: markaniz.com.tr" />
+                            <select value={selectedDomainProvider} onChange={(event) => setSelectedDomainProvider(event.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none">
+                                {(domainProviders?.providers ?? []).map((provider) => (
+                                    <option key={provider.key} value={provider.key}>
+                                        {provider.label}
+                                    </option>
+                                ))}
+                            </select>
+                            <button onClick={handleDomainSearch} disabled={!workspace || busyKey === 'domain-search'} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+                                {busyKey === 'domain-search' ? 'Araniyor...' : 'Domain ara'}
+                            </button>
+                        </div>
+                        <div className="mt-4 space-y-3">
+                            {(domainSearch?.results ?? []).map((result) => (
+                                <div key={`${result.provider_key}-${result.domain}`} className="rounded-[1.5rem] bg-gray-50 px-4 py-4 ring-1 ring-gray-200">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div>
+                                            <div className="font-semibold text-gray-900">{result.domain}</div>
+                                            <div className="mt-1 text-xs text-gray-500">{result.provider_key} - {result.price_note}</div>
+                                        </div>
+                                        <button
+                                            onClick={() => handleConnectDomain(result.domain)}
+                                            disabled={!result.available || busyKey === 'connect-domain'}
+                                            className="rounded-2xl bg-emerald-500 px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+                                        >
+                                            {result.available ? 'Bagla' : 'Dolu'}
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
