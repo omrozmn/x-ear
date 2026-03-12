@@ -1,16 +1,17 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Card, Button, DatePicker, Input, Select, DataTable } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
-import { ShoppingCart, Download, Search, FileText, X, RefreshCw, Filter, CheckSquare, CreditCard, Square } from 'lucide-react';
+import { ShoppingCart, Search, FileText, X, RefreshCw, Filter, CheckSquare, CreditCard, Square } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { useNavigate } from '@tanstack/react-router';
 import { useListIncomingInvoices } from '@/api/client/invoices.client';
 import type { IncomingInvoiceResponse, SchemasInvoicesNewInvoiceStatus } from '@/api/generated/schemas';
 import { ONBOARDING_PURCHASES_DISMISSED } from '@/constants/storage-keys';
 import { useDebounce } from '@/hooks/useDebounce';
-import toast from 'react-hot-toast';
 import { useIsMobile } from '@/hooks/useBreakpoint';
 import { cn } from '@/lib/utils';
+import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
+import { ExportDropdown } from '@/components/common/ExportDropdown';
 
 export function PurchasesPage() {
   const navigate = useNavigate();
@@ -126,25 +127,16 @@ export function PurchasesPage() {
     });
   };
 
-  const handleBulkExportCsv = useCallback(() => {
+  const purchaseExportHeaders = useMemo(() => ['Fatura No', 'Tedarikçi', 'VKN', 'Tutar', 'Tarih', 'Durum'], []);
+
+  const getPurchaseExportRows = useCallback(() => {
     const selected = selectedIds.size > 0
       ? sortedInvoices.filter((invoice: IncomingInvoiceResponse) => selectedIds.has(String(invoice.invoiceId)))
       : sortedInvoices;
-    const headers = ['Fatura No', 'Tedarikçi', 'VKN', 'Tutar', 'Tarih', 'Durum'];
-    const rows = selected.map((invoice: IncomingInvoiceResponse) => [
+    return selected.map((invoice: IncomingInvoiceResponse) => [
       invoice.invoiceNumber || '', invoice.supplierName || '', invoice.supplierTaxNumber || '',
       String(invoice.totalAmount || 0), invoice.invoiceDate || '', invoice.status || '',
-    ].map((value) => `"${String(value).replace(/"/g, '""')}"`).join(','));
-    const csv = [headers.join(','), ...rows].join('\n');
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = `alislar_${new Date().toISOString().slice(0, 10)}.csv`;
-    anchor.click();
-    URL.revokeObjectURL(url);
-    toast.success('CSV dışa aktarıldı');
-    setSelectedIds(new Set());
+    ]);
   }, [selectedIds, sortedInvoices]);
 
   const clearFilters = () => {
@@ -221,26 +213,29 @@ export function PurchasesPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Alışlar</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">Gelen faturalardan oluşturulan alış kayıtları</p>
-        </div>
-        <div className="hidden md:flex gap-3">
-          <Button variant="outline" className="flex items-center gap-2" onClick={() => navigate({ to: '/invoices/incoming' })}>
-            <FileText size={18} />
-            Gelen Faturalar
-          </Button>
-          <Button variant="outline" className="flex items-center gap-2" onClick={handleBulkExportCsv}>
-            <Download size={18} />
-            Dışa Aktar
-          </Button>
-          <Button variant="outline" className="flex items-center gap-2" onClick={handleRefresh}>
-            <RefreshCw size={18} />
-            Yenile
-          </Button>
-        </div>
-      </div>
+      <DesktopPageHeader
+        title="Alışlar"
+        description="Gelen faturalardan oluşturulan alış kayıtları"
+        icon={<ShoppingCart className="h-6 w-6" />}
+        eyebrow={{ tr: 'Satın Alma', en: 'Purchasing' }}
+        actions={(
+          <>
+            <Button variant="outline" className="flex items-center gap-2" onClick={() => navigate({ to: '/invoices/incoming' })}>
+              <FileText size={18} />
+              Gelen Faturalar
+            </Button>
+            <ExportDropdown
+              headers={purchaseExportHeaders}
+              getRows={getPurchaseExportRows}
+              filename="alislar"
+            />
+            <Button variant="outline" className="flex items-center gap-2" onClick={handleRefresh}>
+              <RefreshCw size={18} />
+              Yenile
+            </Button>
+          </>
+        )}
+      />
 
       <div className="grid grid-cols-3 gap-3 md:gap-6">
         <Card className="p-3 md:p-6">
@@ -424,7 +419,16 @@ export function PurchasesPage() {
         <div className={`fixed ${isMobile ? 'bottom-24' : 'bottom-6'} left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl px-4 md:px-6 py-3 flex items-center gap-3 md:gap-4 w-[90%] md:w-auto overflow-x-auto whitespace-nowrap`}>
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{selectedIds.size} kayıt seçildi</span>
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
-          <Button variant="ghost" onClick={handleBulkExportCsv} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-colors h-auto"><Download className="w-4 h-4" /> CSV Dışa Aktar</Button>
+          <ExportDropdown
+            headers={purchaseExportHeaders}
+            getRows={getPurchaseExportRows}
+            filename="alislar"
+            variant="ghost"
+            label="Dışa Aktar"
+            compact
+            iconClassName="text-blue-600"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-colors h-auto"
+          />
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
           <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors h-auto"><X className="w-4 h-4" /> Seçimi Kaldır</Button>
         </div>

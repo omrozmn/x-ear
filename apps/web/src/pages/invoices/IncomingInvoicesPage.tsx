@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Card, Button, Input, Select, DatePicker, DataTable } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
 import { FileText, Download, Filter, Search, AlertCircle, CheckCircle, ShoppingCart, X, Eye, MoreVertical, Copy, XCircle, CheckSquare, Square, RefreshCw } from 'lucide-react';
@@ -11,6 +11,8 @@ import { ONBOARDING_INCOMING_INVOICES_DISMISSED } from '@/constants/storage-keys
 import { useDebounce } from '@/hooks/useDebounce';
 import { apiClient } from '@/api/orval-mutator';
 import { useIsMobile } from '@/hooks/useBreakpoint';
+import { DesktopPageHeader } from '../../components/layout/DesktopPageHeader';
+import { ExportDropdown } from '@/components/common/ExportDropdown';
 
 async function fetchInvoiceDocument(invoiceId: number | string, format: 'pdf' | 'html' | 'xml', renderMode: 'auto' | 'local' | 'remote' = 'auto'): Promise<{ data: ArrayBuffer; contentType: string }> {
   const resp = await apiClient.get<ArrayBuffer>(`/api/invoices/${invoiceId}/document?format=${format}&render_mode=${renderMode}`, {
@@ -39,8 +41,8 @@ export function IncomingInvoicesPage() {
   const [dateTo, setDateTo] = useState<Date | null>(null);
   const [showBanner, setShowBanner] = useState(() => !localStorage.getItem(ONBOARDING_INCOMING_INVOICES_DISMISSED));
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
-  const [sortField, setSortField] = useState<string>('');
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [sortField, setSortField] = useState<string>('invoiceDate');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const menuRef = useRef<HTMLDivElement>(null);
   // Invoice viewer modal
   const [pdfModal, setPdfModal] = useState<{ open: boolean; blobUrl: string; title: string; fileName: string } | null>(null);
@@ -77,6 +79,8 @@ export function IncomingInvoicesPage() {
     supplier_name: debouncedSearch || undefined,
     date_from: dateFrom ? dateFrom.toISOString().split('T')[0] : undefined,
     date_to: dateTo ? dateTo.toISOString().split('T')[0] : undefined,
+    sort_field: sortField || undefined,
+    sort_dir: sortField ? sortDir : undefined,
   });
 
   const invoiceList = useMemo(() => data?.data?.invoices ?? [], [data?.data?.invoices]);
@@ -141,24 +145,7 @@ export function IncomingInvoicesPage() {
     );
   };
 
-  const filteredInvoices = useMemo(() => {
-    const list = [...invoiceList];
-    if (sortField) {
-      list.sort((a: IncomingInvoiceResponse, b: IncomingInvoiceResponse) => {
-        let av: string | number = '', bv: string | number = '';
-        if (sortField === 'supplierName') { av = a.supplierName || ''; bv = b.supplierName || ''; }
-        else if (sortField === 'invoiceNumber') { av = a.invoiceNumber || ''; bv = b.invoiceNumber || ''; }
-        else if (sortField === 'invoiceDate') { av = a.invoiceDate || ''; bv = b.invoiceDate || ''; }
-        else if (sortField === 'totalAmount') { av = Number(a.totalAmount || 0); bv = Number(b.totalAmount || 0); }
-        else if (sortField === 'status') { av = a.status || ''; bv = b.status || ''; }
-
-        if (av < bv) return sortDir === 'asc' ? -1 : 1;
-        if (av > bv) return sortDir === 'asc' ? 1 : -1;
-        return 0;
-      });
-    }
-    return list;
-  }, [invoiceList, sortField, sortDir]);
+  const filteredInvoices = invoiceList;
 
   const handleViewPdf = async (invoice: IncomingInvoiceResponse) => {
     setActiveMenu(null);
@@ -276,22 +263,17 @@ export function IncomingInvoicesPage() {
       setSelectedIds(new Set()); refetch();
     } catch { toast.error('Toplu reddetme işlemi başarısız', { id: toastId }); }
   };
-  const handleBulkExportCsv = () => {
-    const selected = filteredInvoices.filter((inv: IncomingInvoiceResponse) => selectedIds.has(String(inv.invoiceId)));
-    const headers = ['Fatura No', 'Tedarikçi', 'VKN', 'Tutar', 'Tarih', 'Durum'];
-    const rows = selected.map((inv: IncomingInvoiceResponse) => [
+  const incomingExportHeaders = useMemo(() => ['Fatura No', 'Tedarikçi', 'VKN', 'Tutar', 'Tarih', 'Durum'], []);
+
+  const getIncomingExportRows = useCallback(() => {
+    const selected = selectedIds.size > 0
+      ? filteredInvoices.filter((inv: IncomingInvoiceResponse) => selectedIds.has(String(inv.invoiceId)))
+      : filteredInvoices;
+    return selected.map((inv: IncomingInvoiceResponse) => [
       inv.invoiceNumber || '', inv.supplierName || '', inv.supplierTaxNumber || '',
       String(inv.totalAmount || 0), inv.invoiceDate || '', inv.status || '',
-    ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
-    const csv = [headers.join(','), ...rows].join('\n');
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url;
-    a.download = `gelen_faturalar_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click(); URL.revokeObjectURL(url);
-    toast.success('CSV dışa aktarıldı');
-    setSelectedIds(new Set());
-  };
+    ]);
+  }, [selectedIds, filteredInvoices]);
 
   if (isLoading) {
     return (
@@ -414,20 +396,18 @@ export function IncomingInvoicesPage() {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Gelen Faturalar</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            GİB'den gelen faturalar
-          </p>
-        </div>
-        <div className="flex gap-3">
+      <DesktopPageHeader
+        title="Gelen Faturalar"
+        description="GİB'den gelen faturalar"
+        icon={<ShoppingCart className="h-6 w-6" />}
+        eyebrow={{ tr: 'Gelen Kuyruğu', en: 'Incoming Queue' }}
+        actions={(
           <Button variant="outline" className="flex items-center gap-2" onClick={() => refetch()}>
             <Download size={18} />
             Yenile
           </Button>
-        </div>
-      </div>
+        )}
+      />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-3 md:gap-6">
@@ -673,9 +653,15 @@ export function IncomingInvoicesPage() {
               <Button variant="ghost" onClick={handleBulkReject} className="flex items-center justify-center gap-2 rounded-xl bg-red-50 px-3 py-3 text-sm font-semibold text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/30 h-auto">
                 <XCircle className="w-4 h-4" /> Reddet
               </Button>
-              <Button variant="ghost" onClick={handleBulkExportCsv} className="flex items-center justify-center gap-2 rounded-xl bg-blue-50 px-3 py-3 text-sm font-semibold text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/30 h-auto">
-                <Download className="w-4 h-4" /> CSV Aktar
-              </Button>
+              <ExportDropdown
+                headers={incomingExportHeaders}
+                getRows={getIncomingExportRows}
+                filename="gelen_faturalar"
+                variant="ghost"
+                label="Dışa Aktar"
+                compact
+                className="flex items-center justify-center gap-2 rounded-xl bg-blue-50 px-3 py-3 text-sm font-semibold text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/30 h-auto"
+              />
               <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center justify-center gap-2 rounded-xl bg-gray-100 px-3 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 h-auto">
                 <X className="w-4 h-4" /> Temizle
               </Button>
@@ -690,9 +676,16 @@ export function IncomingInvoicesPage() {
               <Button variant="ghost" onClick={handleBulkReject} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl transition-colors h-auto">
                 <XCircle className="w-4 h-4" /> Toplu Reddet
               </Button>
-              <Button variant="ghost" onClick={handleBulkExportCsv} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-colors h-auto">
-                <Download className="w-4 h-4" /> CSV Dışa Aktar
-              </Button>
+              <ExportDropdown
+                headers={incomingExportHeaders}
+                getRows={getIncomingExportRows}
+                filename="gelen_faturalar"
+                variant="ghost"
+                label="Dışa Aktar"
+                compact
+                iconClassName="text-blue-600"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-colors h-auto"
+              />
               <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
               <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors h-auto">
                 <X className="w-4 h-4" /> Seçimi Kaldır

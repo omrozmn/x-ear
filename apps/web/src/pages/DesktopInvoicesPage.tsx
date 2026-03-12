@@ -1,7 +1,7 @@
 import { Button, Card, Input, Select, DatePicker, DataTable } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
-import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { FileText, Download, Filter, Search, CheckCircle, AlertCircle, Send, Eye, X, Plus, MoreVertical, Copy, XCircle, Clock, Ban, CreditCard, CheckSquare, Square, RefreshCw } from 'lucide-react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { FileText, Download, Filter, Search, CheckCircle, AlertCircle, Send, Eye, X, Plus, MoreVertical, Copy, XCircle, Clock, Ban, CreditCard, CheckSquare, Square, RefreshCw, Receipt } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { useListOutgoingInvoices } from '@/api/client/invoices.client';
 import type { OutgoingInvoiceResponse, SchemasInvoicesNewInvoiceStatus } from '@/api/client/invoices.client';
@@ -10,6 +10,8 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { apiClient } from '@/api/orval-mutator';
 import toast from 'react-hot-toast';
 import { useNavigate } from '@tanstack/react-router';
+import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
+import { ExportDropdown } from '@/components/common/ExportDropdown';
 interface InvoiceLog {
   id?: string;
   status?: string;
@@ -67,8 +69,8 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     try { return !localStorage.getItem(ONBOARDING_OUTGOING_INVOICES_DISMISSED ?? 'outgoing_invoices_dismissed'); } catch { return true; }
   });
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
-  const [sortField, setSortField] = useState<string>('');
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [sortField, setSortField] = useState<string>('invoiceDate');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [pdfModal, setPdfModal] = useState<{ open: boolean; blobUrl: string; title: string; fileName: string } | null>(null);
   const [statusModal, setStatusModal] = useState<OutgoingInvoiceResponse | null>(null);
   const [statusLogs, setStatusLogs] = useState<InvoiceLog[]>([]);
@@ -124,6 +126,8 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     party_name: debouncedSearch || undefined,
     date_from: dateFrom ? dateFrom.toISOString().split('T')[0] : undefined,
     date_to: dateTo ? dateTo.toISOString().split('T')[0] : undefined,
+    sort_field: sortField || undefined,
+    sort_dir: sortField ? sortDir : undefined,
   });
 
   const invoiceList = useMemo(() => data?.data?.invoices ?? [], [data?.data?.invoices]);
@@ -131,24 +135,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
   const paidAmount = Number(data?.data?.paidAmount ?? 0);
   const pagination = data?.data?.pagination;
   const totalCount = pagination?.total ?? invoiceList.length;
-  const filteredInvoices = useMemo(() => {
-    const list = [...invoiceList];
-    if (sortField) {
-      list.sort((a: OutgoingInvoiceResponse, b: OutgoingInvoiceResponse) => {
-        let av: string | number = '', bv: string | number = '';
-        if (sortField === 'party') { av = `${a.partyFirstName} ${a.partyLastName}`; bv = `${b.partyFirstName} ${b.partyLastName}`; }
-        else if (sortField === 'invoiceNumber') { av = a.invoiceNumber || ''; bv = b.invoiceNumber || ''; }
-        else if (sortField === 'invoiceDate') { av = a.invoiceDate || ''; bv = b.invoiceDate || ''; }
-        else if (sortField === 'totalAmount') { av = Number(a.totalAmount || 0); bv = Number(b.totalAmount || 0); }
-        else if (sortField === 'status') { av = a.status || ''; bv = b.status || ''; }
-
-        if (av < bv) return sortDir === 'asc' ? -1 : 1;
-        if (av > bv) return sortDir === 'asc' ? 1 : -1;
-        return 0;
-      });
-    }
-    return list;
-  }, [invoiceList, sortField, sortDir]);
+  const filteredInvoices = invoiceList;
 
   const renderDocumentBadges = (inv: OutgoingInvoiceResponse) => {
     const invoice = inv as InvoiceDocumentInfo;
@@ -425,22 +412,17 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
       setSelectedIds(new Set()); refetch();
     } catch { toast.error('Toplu iptal işlemi başarısız', { id: toastId }); }
   };
-  const handleBulkExportCsv = () => {
-    const selected = filteredInvoices.filter((inv: OutgoingInvoiceResponse) => selectedIds.has(inv.invoiceId));
-    const headers = ['Fatura No', 'Alıcı', 'Tutar', 'Tarih', 'Durum'];
-    const rows = selected.map((inv: OutgoingInvoiceResponse) => [
+  const outgoingExportHeaders = useMemo(() => ['Fatura No', 'Alıcı', 'Tutar', 'Tarih', 'Durum'], []);
+
+  const getOutgoingExportRows = useCallback(() => {
+    const selected = selectedIds.size > 0
+      ? filteredInvoices.filter((inv: OutgoingInvoiceResponse) => selectedIds.has(inv.invoiceId))
+      : filteredInvoices;
+    return selected.map((inv: OutgoingInvoiceResponse) => [
       inv.invoiceNumber || '', `${inv.partyFirstName || ''} ${inv.partyLastName || ''}`.trim(),
       String(inv.totalAmount || 0), inv.invoiceDate || '', inv.status || '',
-    ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
-    const csv = [headers.join(','), ...rows].join('\n');
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url;
-    a.download = `giden_faturalar_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click(); URL.revokeObjectURL(url);
-    toast.success('CSV dışa aktarıldı');
-    setSelectedIds(new Set());
-  };
+    ]);
+  }, [selectedIds, filteredInvoices]);
 
   if (isLoading) {
     return (
@@ -574,50 +556,36 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
   return (
     <div className={`p-6 space-y-6 ${className}`}>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Giden Faturalar</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm">
-            GİB üzerinden gönderilen faturalar
-          </p>
-        </div>
-        <div className="hidden md:flex gap-2 flex-wrap">
-          <Button variant="outline" className="flex items-center gap-2" onClick={() => refetch()}>
-            <Download size={16} />
-            <span className="hidden sm:inline">Yenile</span>
-          </Button>
-          <Button variant="outline" className="flex items-center gap-2" onClick={() => navigate({ to: '/invoices/new', search: { type: 'proforma' } as { type?: string; draftId?: number } })}>
-            <FileText size={16} />
-            <span className="hidden sm:inline">Proforma</span>
-          </Button>
-          <Button variant="outline" className="flex items-center gap-2" onClick={() => navigate({ to: '/invoices/new', search: { documentKind: 'despatch' } as { type?: string; draftId?: number; documentKind?: 'invoice' | 'despatch' } })}>
-            <Send size={16} />
-            <span className="hidden sm:inline">Yeni E-İrsaliye</span>
-          </Button>
-          <Button className="flex items-center gap-2 premium-gradient tactile-press text-white" onClick={() => navigate({ to: '/invoices/new' })}>
-            <Plus size={16} />
-            <span className="hidden sm:inline">Yeni Fatura</span>
-          </Button>
-        </div>
-        <div className="grid grid-cols-2 gap-2 w-full md:hidden">
-          <Button variant="outline" className="flex items-center justify-center gap-2" onClick={() => refetch()}>
-            <Download size={16} />
-            Yenile
-          </Button>
-          <Button className="flex items-center justify-center gap-2 premium-gradient tactile-press text-white" onClick={() => navigate({ to: '/invoices/new' })}>
-            <Plus size={16} />
-            Yeni Fatura
-          </Button>
-          <Button variant="outline" className="flex items-center justify-center gap-2" onClick={() => navigate({ to: '/invoices/new', search: { type: 'proforma' } as { type?: string; draftId?: number } })}>
-            <FileText size={16} />
-            Proforma
-          </Button>
-          <Button variant="outline" className="flex items-center justify-center gap-2" onClick={() => navigate({ to: '/invoices/new', search: { documentKind: 'despatch' } as { type?: string; draftId?: number; documentKind?: 'invoice' | 'despatch' } })}>
-            <Send size={16} />
-            E-İrsaliye
-          </Button>
-        </div>
-      </div>
+      <DesktopPageHeader
+        title="Giden Faturalar"
+        description="GİB üzerinden gönderilen faturalar"
+        icon={<FileText className="h-6 w-6" />}
+        eyebrow={{ tr: 'E-Faturalama', en: 'E-Invoicing' }}
+        actions={(
+          <>
+            <Button variant="outline" className="flex items-center gap-2" onClick={() => refetch()}>
+              <Download size={16} />
+              <span className="hidden sm:inline">Yenile</span>
+            </Button>
+            <Button variant="outline" className="flex items-center gap-2" onClick={() => navigate({ to: '/invoices/new', search: { type: 'proforma' } as { type?: string; draftId?: number } })}>
+              <FileText size={16} />
+              <span className="hidden sm:inline">Proforma</span>
+            </Button>
+            <Button variant="outline" className="flex items-center gap-2" onClick={() => navigate({ to: '/invoices', search: { tab: 'proformas' } as { tab?: string } })}>
+              <Receipt size={16} />
+              <span className="hidden sm:inline">Proformalar</span>
+            </Button>
+            <Button variant="outline" className="flex items-center gap-2" onClick={() => navigate({ to: '/invoices/new', search: { documentKind: 'despatch' } as { type?: string; draftId?: number; documentKind?: 'invoice' | 'despatch' } })}>
+              <Send size={16} />
+              <span className="hidden sm:inline">Yeni E-İrsaliye</span>
+            </Button>
+            <Button className="flex items-center gap-2 premium-gradient tactile-press text-white" onClick={() => navigate({ to: '/invoices/new' })}>
+              <Plus size={16} />
+              <span className="hidden sm:inline">Yeni Fatura</span>
+            </Button>
+          </>
+        )}
+      />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-3 md:gap-6">
@@ -823,9 +791,16 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
           <Button variant="ghost" onClick={handleBulkCancel} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl transition-colors h-auto">
             <Ban className="w-4 h-4" /> Toplu İptal
           </Button>
-          <Button variant="ghost" onClick={handleBulkExportCsv} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-2xl transition-colors h-auto">
-            <Download className="w-4 h-4" /> CSV Dışa Aktar
-          </Button>
+          <ExportDropdown
+            headers={outgoingExportHeaders}
+            getRows={getOutgoingExportRows}
+            filename="giden_faturalar"
+            variant="ghost"
+            label="Dışa Aktar"
+            compact
+            iconClassName="text-green-600"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-2xl transition-colors h-auto"
+          />
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
           <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors h-auto">
             <X className="w-4 h-4" /> Seçimi Kaldır
