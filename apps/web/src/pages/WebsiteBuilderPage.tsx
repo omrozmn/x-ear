@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-syntax */
 import React, { useEffect, useMemo, useState } from 'react';
-import { Bot, Paintbrush2, FileStack, Globe2, LayoutTemplate, MessageCircle, Package, Plus, Rocket, Settings, Sparkles, Store, Trash2 } from 'lucide-react';
+import { Bot, Paintbrush2, Globe2, LayoutTemplate, MessageCircle, Package, Plus, Settings, Sparkles, Store, Trash2 } from 'lucide-react';
 import { useBreakpoints } from '@/hooks/useMediaQuery';
 import {
     addSitePageSection,
@@ -29,18 +29,12 @@ import {
     revertAiEdit,
     rollbackSite,
     searchSiteDomain,
-    updateBlogSettings,
     updatePlatformSettings,
     deletePlatformSetting,
     updateSitePage,
     updateSitePageSection,
     updateSiteTheme,
     updateSiteFeatureFlags,
-    updateWhatsAppSettings,
-    updateAppointmentSettings,
-    updateCommerceSettings,
-    updateMarketplaceSettings,
-    updateChatbotSettings,
     type AIDiscoveryResponse,
     type AIDraftAnswers,
     type AIEditProposalResponse,

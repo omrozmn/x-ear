@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Bot, Paintbrush2, FileStack, Globe2, LayoutTemplate, MessageCircle, Package, Plus, Rocket, Settings, Sparkles, Store, Trash2 } from 'lucide-react';
+import { Bot, Paintbrush2, Globe2, LayoutTemplate, MessageCircle, Package, Plus, Settings, Sparkles, Store, Trash2 } from 'lucide-react';
 import { useAdminResponsive } from '@/hooks';
 import {
     addSitePageSection,
@@ -28,18 +28,12 @@ import {
     revertAiEdit,
     rollbackSite,
     searchSiteDomain,
-    updateBlogSettings,
     updatePlatformSettings,
     deletePlatformSetting,
     updateSitePage,
     updateSitePageSection,
     updateSiteTheme,
     updateSiteFeatureFlags,
-    updateWhatsAppSettings,
-    updateAppointmentSettings,
-    updateCommerceSettings,
-    updateMarketplaceSettings,
-    updateChatbotSettings,
     type AIDiscoveryResponse,
     type AIDraftAnswers,
     type AIEditProposalResponse,
