@@ -1,16 +1,26 @@
 /* eslint-disable no-restricted-syntax */
 import React, { useEffect, useMemo, useState } from 'react';
-import { Bot, Paintbrush2, FileStack, Globe2, LayoutTemplate, MessageCircle, Package, Rocket, Sparkles, Store } from 'lucide-react';
+import { Bot, Paintbrush2, FileStack, Globe2, LayoutTemplate, MessageCircle, Package, Plus, Rocket, Settings, Sparkles, Store, Trash2 } from 'lucide-react';
 import { useBreakpoints } from '@/hooks/useMediaQuery';
 import {
     addSitePageSection,
     applyAiEdit,
+    createBlogPost,
+    createMarketplaceLink,
+    createProduct,
     createSitePage,
     createPreview,
     createSiteFromAi,
+    createSiteFromWizard,
     connectSiteDomain,
+    deleteBlogPost,
+    deleteMarketplaceLink,
+    deleteProduct,
+    deleteSitePage,
     deleteSitePageSection,
+    getPlatformSettings,
     listDomainProviders,
+    listWizardTemplates,
     loadSiteWorkspace,
     loadWebsiteGeneratorSnapshot,
     proposeAiEdit,
@@ -19,18 +29,30 @@ import {
     revertAiEdit,
     rollbackSite,
     searchSiteDomain,
+    updateBlogSettings,
+    updatePlatformSettings,
+    deletePlatformSetting,
     updateSitePage,
     updateSitePageSection,
     updateSiteTheme,
+    updateSiteFeatureFlags,
+    updateWhatsAppSettings,
+    updateAppointmentSettings,
+    updateCommerceSettings,
+    updateMarketplaceSettings,
+    updateChatbotSettings,
     type AIDiscoveryResponse,
     type AIDraftAnswers,
     type AIEditProposalResponse,
     type BuilderSectionRegistryResponse,
     type DomainAvailabilityResponse,
     type DomainProviderCatalogResponse,
+    type EditableFieldDefinition,
+    type PlatformSettingsResponse,
     type SiteWorkspace,
     type ThemeSettings,
     type WebsiteGeneratorSnapshot,
+    type WizardTemplate,
 } from '@/lib/website-generator-client';
 import { WebsitePreviewCanvas } from '@/components/website-builder/WebsitePreviewCanvas';
 
@@ -45,7 +67,8 @@ type TabKey =
     | 'commerce'
     | 'appointments'
     | 'chatbot'
-    | 'marketplace';
+    | 'marketplace'
+    | 'settings';
 
 type DiscoveryAnswerKey = Exclude<keyof AIDraftAnswers, 'chatbot_mode'>;
 
@@ -123,6 +146,7 @@ const adminMenuToTabKey: Record<string, TabKey> = {
     'Randevu ve Formlar': 'appointments',
     'AI Chatbot': 'chatbot',
     'Pazaryeri Entegrasyonlari': 'marketplace',
+    'Platform Ayarlari': 'settings',
 };
 
 function TabButton({
@@ -187,9 +211,25 @@ const WebsiteBuilderPage: React.FC = () => {
     const [newSectionType, setNewSectionType] = useState('hero');
     const [newSectionVariant, setNewSectionVariant] = useState('hero-clinic-a');
     const [editingSectionIndex, setEditingSectionIndex] = useState<number | null>(null);
-    const [sectionTitleDraft, setSectionTitleDraft] = useState('');
+    const [sectionFieldsDraft, setSectionFieldsDraft] = useState<Record<string, unknown>>({});
     const [pageTitleDraft, setPageTitleDraft] = useState('Ana Sayfa');
     const [pageSlugDraft, setPageSlugDraft] = useState('/');
+    const [wizardTemplates, setWizardTemplates] = useState<WizardTemplate[]>([]);
+    const [selectedTemplateKey, setSelectedTemplateKey] = useState<string | null>(null);
+    const [wizardSiteName, setWizardSiteName] = useState('');
+    const [wizardPhone, setWizardPhone] = useState('');
+    const [wizardEmail, setWizardEmail] = useState('');
+    const [platformSettings, setPlatformSettings] = useState<PlatformSettingsResponse | null>(null);
+    const [platformSettingsDraft, setPlatformSettingsDraft] = useState<Record<string, string>>({});
+    const [newBlogTitle, setNewBlogTitle] = useState('');
+    const [newBlogSlug, setNewBlogSlug] = useState('');
+    const [newBlogExcerpt, setNewBlogExcerpt] = useState('');
+    const [newProductName, setNewProductName] = useState('');
+    const [newProductSku, setNewProductSku] = useState('');
+    const [newProductPrice, setNewProductPrice] = useState('');
+    const [newMarketplaceProvider, setNewMarketplaceProvider] = useState('trendyol');
+    const [newMarketplaceLabel, setNewMarketplaceLabel] = useState('');
+    const [newMarketplaceUrl, setNewMarketplaceUrl] = useState('');
 
     const loadWorkspace = async (siteId: string) => {
         setBusyKey('load-workspace');
@@ -226,6 +266,21 @@ const WebsiteBuilderPage: React.FC = () => {
                 setDomainProviders(data);
             }
         });
+
+        listWizardTemplates().then((data) => {
+            if (!cancelled) {
+                setWizardTemplates(data.templates);
+                if (data.templates.length > 0) {
+                    setSelectedTemplateKey(data.templates[0].key);
+                }
+            }
+        }).catch(() => {});
+
+        getPlatformSettings().then((data) => {
+            if (!cancelled) {
+                setPlatformSettings(data);
+            }
+        }).catch(() => {});
 
         if (activeSiteId) {
             loadSiteWorkspace(activeSiteId)
@@ -277,6 +332,7 @@ const WebsiteBuilderPage: React.FC = () => {
             ...(featureFlags?.appointment_forms ? [{ key: 'appointments' as const, label: 'Randevu ve Formlar' }] : []),
             ...(featureFlags?.ai_chatbot ? [{ key: 'chatbot' as const, label: 'AI Chatbot' }] : []),
             ...(featureFlags?.marketplace_links ? [{ key: 'marketplace' as const, label: 'Pazaryeri Entegrasyonlari' }] : []),
+            { key: 'settings' as const, label: 'Platform Ayarlari' },
         ];
     }, [discovery?.inferred_features, workspace?.adminMenu.visible_items, workspace?.site.feature_flags]);
 
@@ -338,6 +394,12 @@ const WebsiteBuilderPage: React.FC = () => {
             setPageSlugDraft(selectedPage.slug);
         }
     }, [selectedPage]);
+
+    const getEditableFields = (sectionType: string, variantKey: string): EditableFieldDefinition[] => {
+        const sectionDef = sectionRegistry?.sections.find((s) => s.type === sectionType);
+        const variantDef = sectionDef?.variants.find((v) => v.key === variantKey);
+        return variantDef?.editable_fields ?? [];
+    };
 
     const handleCreateDraft = async () => {
         setBusyKey('create-draft');
@@ -587,7 +649,7 @@ const WebsiteBuilderPage: React.FC = () => {
             await addSitePageSection(workspace.site.id, selectedPage.slug, {
                 type: newSectionType,
                 variant: newSectionVariant,
-                fields: { title: `${selectedSectionDefinition?.label ?? newSectionType} basligi` },
+                fields: {},
             });
             await loadWorkspace(workspace.site.id);
         } catch (nextError) {
@@ -606,11 +668,11 @@ const WebsiteBuilderPage: React.FC = () => {
         try {
             await updateSitePageSection(workspace.site.id, selectedPage.slug, sectionIndex, {
                 variant: currentVariant,
-                fields: { title: sectionTitleDraft },
+                fields: sectionFieldsDraft,
             });
             await loadWorkspace(workspace.site.id);
             setEditingSectionIndex(null);
-            setSectionTitleDraft('');
+            setSectionFieldsDraft({});
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'Section icerigi guncellenemedi.');
         } finally {
@@ -656,6 +718,281 @@ const WebsiteBuilderPage: React.FC = () => {
         }
     };
 
+    const handleCreateFromWizard = async () => {
+        if (!selectedTemplateKey || !wizardSiteName.trim()) {
+            setError('Lutfen bir sablon secin ve site adi girin.');
+            return;
+        }
+        setBusyKey('create-wizard');
+        setError(null);
+        try {
+            const result = await createSiteFromWizard({
+                template_key: selectedTemplateKey,
+                site_name: wizardSiteName,
+                phone_number: wizardPhone || undefined,
+                email: wizardEmail || undefined,
+            });
+            await loadWorkspace(result.site.id);
+            setChatMessages((current) => [...current, `Sablon ile olusturuldu: ${result.message}`]);
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'Sablondan site olusturulamadi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
+    const handleAddBlogPost = async () => {
+        if (!workspace || !newBlogTitle.trim()) return;
+        setBusyKey('add-blog');
+        setError(null);
+        try {
+            const slug = newBlogSlug || newBlogTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            await createBlogPost(workspace.site.id, {
+                slug,
+                title: newBlogTitle,
+                excerpt: newBlogExcerpt || newBlogTitle,
+                body: '',
+                status: 'draft',
+                categories: [],
+            });
+            await loadWorkspace(workspace.site.id);
+            setNewBlogTitle('');
+            setNewBlogSlug('');
+            setNewBlogExcerpt('');
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'Blog yazisi eklenemedi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
+    const handleDeleteBlogPost = async (postSlug: string) => {
+        if (!workspace) return;
+        setBusyKey('delete-blog');
+        setError(null);
+        try {
+            await deleteBlogPost(workspace.site.id, postSlug);
+            await loadWorkspace(workspace.site.id);
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'Blog yazisi silinemedi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
+    const handleAddProduct = async () => {
+        if (!workspace || !newProductName.trim()) return;
+        setBusyKey('add-product');
+        setError(null);
+        try {
+            const sku = newProductSku || `SKU-${Date.now()}`;
+            const slug = newProductName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            await createProduct(workspace.site.id, {
+                sku,
+                slug,
+                name: newProductName,
+                description: '',
+                price: Number(newProductPrice) || 0,
+                currency: 'TRY',
+                status: 'draft',
+                in_stock: true,
+            });
+            await loadWorkspace(workspace.site.id);
+            setNewProductName('');
+            setNewProductSku('');
+            setNewProductPrice('');
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'Urun eklenemedi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
+    const handleDeleteProduct = async (productSku: string) => {
+        if (!workspace) return;
+        setBusyKey('delete-product');
+        setError(null);
+        try {
+            await deleteProduct(workspace.site.id, productSku);
+            await loadWorkspace(workspace.site.id);
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'Urun silinemedi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
+    const handleAddMarketplaceLink = async () => {
+        if (!workspace || !newMarketplaceLabel.trim() || !newMarketplaceUrl.trim()) return;
+        setBusyKey('add-marketplace');
+        setError(null);
+        try {
+            await createMarketplaceLink(workspace.site.id, {
+                provider: newMarketplaceProvider,
+                label: newMarketplaceLabel,
+                url: newMarketplaceUrl,
+                visible: true,
+            });
+            await loadWorkspace(workspace.site.id);
+            setNewMarketplaceLabel('');
+            setNewMarketplaceUrl('');
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'Pazaryeri linki eklenemedi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
+    const handleDeleteMarketplaceLink = async (linkId: string) => {
+        if (!workspace) return;
+        setBusyKey('delete-marketplace');
+        setError(null);
+        try {
+            await deleteMarketplaceLink(workspace.site.id, linkId);
+            await loadWorkspace(workspace.site.id);
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'Pazaryeri linki silinemedi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
+    const handleDeletePage = async (pageSlug: string) => {
+        if (!workspace) return;
+        setBusyKey('delete-page');
+        setError(null);
+        try {
+            await deleteSitePage(workspace.site.id, pageSlug);
+            await loadWorkspace(workspace.site.id);
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'Sayfa silinemedi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
+    const handleSavePlatformSettings = async () => {
+        setBusyKey('save-settings');
+        setError(null);
+        try {
+            const cleanPayload: Record<string, string> = {};
+            for (const [key, value] of Object.entries(platformSettingsDraft)) {
+                if (value && !value.includes('****')) {
+                    cleanPayload[key] = value;
+                }
+            }
+            const updated = await updatePlatformSettings(cleanPayload);
+            setPlatformSettings(updated);
+            setPlatformSettingsDraft({});
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'Platform ayarlari guncellenemedi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
+    const handleDeletePlatformSetting = async (key: string) => {
+        setBusyKey('delete-setting');
+        setError(null);
+        try {
+            const updated = await deletePlatformSetting(key);
+            setPlatformSettings(updated);
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'Ayar silinemedi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
+    const handleToggleFeature = async (featureKey: string, enabled: boolean) => {
+        if (!workspace) return;
+        setBusyKey('toggle-feature');
+        setError(null);
+        try {
+            await updateSiteFeatureFlags(workspace.site.id, { [featureKey]: enabled });
+            await loadWorkspace(workspace.site.id);
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : 'Ozellik guncellenemedi.');
+        } finally {
+            setBusyKey(null);
+        }
+    };
+
+    const renderFieldInput = (field: EditableFieldDefinition, value: unknown, onChange: (val: unknown) => void) => {
+        switch (field.field_type) {
+            case 'textarea':
+            case 'rich_text':
+                return (
+                    <textarea
+                        value={String(value ?? '')}
+                        onChange={(e) => onChange(e.target.value)}
+                        placeholder={field.placeholder ?? ''}
+                        rows={3}
+                        className="w-full rounded-2xl border border-gray-200 px-3 py-2 text-sm outline-none"
+                    />
+                );
+            case 'boolean':
+                return (
+                    <button
+                        onClick={() => onChange(!value)}
+                        className={`rounded-2xl px-3 py-2 text-xs font-medium ${value ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+                    >
+                        {value ? 'Aktif' : 'Pasif'}
+                    </button>
+                );
+            case 'number':
+                return (
+                    <input
+                        type="number"
+                        value={String(value ?? '')}
+                        onChange={(e) => onChange(Number(e.target.value))}
+                        placeholder={field.placeholder ?? ''}
+                        className="w-full rounded-2xl border border-gray-200 px-3 py-2 text-sm outline-none"
+                    />
+                );
+            case 'select':
+                return (
+                    <select
+                        value={String(value ?? '')}
+                        onChange={(e) => onChange(e.target.value)}
+                        className="w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none"
+                    >
+                        <option value="">Seciniz</option>
+                        {(field.options ?? []).map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                    </select>
+                );
+            case 'color':
+                return (
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="color"
+                            value={String(value ?? '#000000')}
+                            onChange={(e) => onChange(e.target.value)}
+                            className="h-9 w-12 cursor-pointer rounded-xl border border-gray-200"
+                        />
+                        <input
+                            type="text"
+                            value={String(value ?? '')}
+                            onChange={(e) => onChange(e.target.value)}
+                            className="w-full rounded-2xl border border-gray-200 px-3 py-2 text-sm outline-none"
+                        />
+                    </div>
+                );
+            default:
+                return (
+                    <input
+                        type={field.field_type === 'url' ? 'url' : 'text'}
+                        value={String(value ?? '')}
+                        onChange={(e) => onChange(e.target.value)}
+                        placeholder={field.placeholder ?? ''}
+                        className="w-full rounded-2xl border border-gray-200 px-3 py-2 text-sm outline-none"
+                    />
+                );
+        }
+    };
+
     const tabContent: Record<TabKey, React.ReactNode> = {
         content: (
             <div className="grid gap-4 lg:grid-cols-2">
@@ -691,20 +1028,72 @@ const WebsiteBuilderPage: React.FC = () => {
                                         <div className="text-xs uppercase tracking-wide text-gray-500">Icerik</div>
                                         {editingSectionIndex === index ? (
                                             <div className="mt-3 space-y-3">
-                                                <input value={sectionTitleDraft} onChange={(event) => setSectionTitleDraft(event.target.value)} className="w-full rounded-2xl border border-gray-200 px-3 py-2 text-sm outline-none" placeholder="Section basligi" />
-                                                <button onClick={() => handleSaveSectionContent(index, section.variant)} className="rounded-2xl bg-gray-900 px-3 py-2 text-xs font-semibold text-white">
-                                                    Kaydet
-                                                </button>
+                                                {(() => {
+                                                    const fields = getEditableFields(section.type, section.variant);
+                                                    if (fields.length === 0) {
+                                                        return (
+                                                            <input
+                                                                value={String(sectionFieldsDraft.title ?? '')}
+                                                                onChange={(e) => setSectionFieldsDraft((prev) => ({ ...prev, title: e.target.value }))}
+                                                                className="w-full rounded-2xl border border-gray-200 px-3 py-2 text-sm outline-none"
+                                                                placeholder="Section basligi"
+                                                            />
+                                                        );
+                                                    }
+                                                    return fields.map((field) => (
+                                                        <label key={field.key} className="block">
+                                                            <div className="mb-1 text-xs font-medium text-gray-700">
+                                                                {field.label}
+                                                                {field.required && <span className="ml-1 text-rose-500">*</span>}
+                                                            </div>
+                                                            {renderFieldInput(
+                                                                field,
+                                                                sectionFieldsDraft[field.key],
+                                                                (val) => setSectionFieldsDraft((prev) => ({ ...prev, [field.key]: val })),
+                                                            )}
+                                                        </label>
+                                                    ));
+                                                })()}
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => handleSaveSectionContent(index, section.variant)} className="rounded-2xl bg-gray-900 px-3 py-2 text-xs font-semibold text-white">
+                                                        Kaydet
+                                                    </button>
+                                                    <button onClick={() => { setEditingSectionIndex(null); setSectionFieldsDraft({}); }} className="rounded-2xl bg-gray-100 px-3 py-2 text-xs font-medium text-gray-700">
+                                                        Iptal
+                                                    </button>
+                                                </div>
                                             </div>
                                         ) : (
-                                            <div className="mt-2 flex items-center justify-between gap-3">
-                                                <div className="text-sm text-gray-600">{String(section.fields.title ?? 'Baslik veya icerik girilmemis.')}</div>
+                                            <div className="mt-2">
+                                                {(() => {
+                                                    const fields = getEditableFields(section.type, section.variant);
+                                                    const entries = Object.entries(section.fields).filter(([, v]) => v != null && v !== '');
+                                                    if (entries.length === 0) {
+                                                        return <div className="text-sm text-gray-400">Icerik girilmemis.</div>;
+                                                    }
+                                                    return (
+                                                        <div className="space-y-1">
+                                                            {entries.slice(0, 4).map(([key, val]) => {
+                                                                const fieldDef = fields.find((f) => f.key === key);
+                                                                return (
+                                                                    <div key={key} className="flex items-start gap-2 text-sm">
+                                                                        <span className="font-medium text-gray-500">{fieldDef?.label ?? key}:</span>
+                                                                        <span className="text-gray-700 line-clamp-1">{String(val)}</span>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                            {entries.length > 4 && (
+                                                                <div className="text-xs text-gray-400">+{entries.length - 4} alan daha</div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })()}
                                                 <button
                                                     onClick={() => {
                                                         setEditingSectionIndex(index);
-                                                        setSectionTitleDraft(String(section.fields.title ?? ''));
+                                                        setSectionFieldsDraft({ ...section.fields });
                                                     }}
-                                                    className="rounded-2xl bg-gray-100 px-3 py-2 text-xs font-medium text-gray-700"
+                                                    className="mt-2 rounded-2xl bg-gray-100 px-3 py-2 text-xs font-medium text-gray-700"
                                                 >
                                                     Icerigi Duzenle
                                                 </button>
@@ -913,9 +1302,16 @@ const WebsiteBuilderPage: React.FC = () => {
                         <div className="mt-4 grid gap-3">
                             <input value={pageTitleDraft} onChange={(event) => setPageTitleDraft(event.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" />
                             <input value={pageSlugDraft} onChange={(event) => setPageSlugDraft(event.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" />
-                            <button onClick={handleSavePageMeta} disabled={!selectedPage || busyKey === 'save-page'} className="rounded-2xl bg-gray-900 px-4 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
-                                {busyKey === 'save-page' ? 'Kaydediliyor...' : 'Sayfa bilgilerini kaydet'}
-                            </button>
+                            <div className="flex gap-2">
+                                <button onClick={handleSavePageMeta} disabled={!selectedPage || busyKey === 'save-page'} className="flex-1 rounded-2xl bg-gray-900 px-4 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+                                    {busyKey === 'save-page' ? 'Kaydediliyor...' : 'Sayfa bilgilerini kaydet'}
+                                </button>
+                                {selectedPage && selectedPage.slug !== '/' && (
+                                    <button onClick={() => handleDeletePage(selectedPage.slug)} disabled={busyKey === 'delete-page'} className="rounded-2xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 ring-1 ring-rose-200 disabled:cursor-not-allowed disabled:opacity-60">
+                                        <Trash2 className="inline h-4 w-4" />
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
                     <div className="rounded-[2rem] bg-white p-6 ring-1 ring-gray-200 shadow-sm">
@@ -1098,13 +1494,31 @@ const WebsiteBuilderPage: React.FC = () => {
                         {(workspace?.site.blog_posts ?? []).length > 0 ? (
                             workspace?.site.blog_posts?.map((post) => (
                                 <div key={post.slug} className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
-                                    <div className="font-medium">{post.title}</div>
-                                    <div className="mt-1 text-xs text-gray-500">{post.slug} - {post.status}</div>
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <div className="font-medium">{post.title}</div>
+                                            <div className="mt-1 text-xs text-gray-500">{post.slug} - {post.status}</div>
+                                        </div>
+                                        <button onClick={() => handleDeleteBlogPost(post.slug)} className="rounded-xl bg-white px-2 py-1 text-xs text-rose-600 ring-1 ring-rose-200 hover:bg-rose-50">
+                                            <Trash2 className="inline h-3 w-3" /> Sil
+                                        </button>
+                                    </div>
                                 </div>
                             ))
                         ) : (
                             <div className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-600">Blog aktif ama henuz yazi yok.</div>
                         )}
+                    </div>
+                    <div className="mt-4 rounded-2xl bg-gray-50 p-4">
+                        <div className="text-sm font-semibold text-gray-900">Yeni Yazi Ekle</div>
+                        <div className="mt-3 grid gap-2">
+                            <input value={newBlogTitle} onChange={(e) => setNewBlogTitle(e.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="Yazi basligi" />
+                            <input value={newBlogSlug} onChange={(e) => setNewBlogSlug(e.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="Slug (bos birakilirsa otomatik)" />
+                            <input value={newBlogExcerpt} onChange={(e) => setNewBlogExcerpt(e.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="Kisa aciklama" />
+                            <button onClick={handleAddBlogPost} disabled={!newBlogTitle.trim() || busyKey === 'add-blog'} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+                                <Plus className="mr-1 inline h-4 w-4" />{busyKey === 'add-blog' ? 'Ekleniyor...' : 'Yazi Ekle'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1124,13 +1538,31 @@ const WebsiteBuilderPage: React.FC = () => {
                         {(workspace?.site.products ?? []).length > 0 ? (
                             workspace?.site.products?.map((product) => (
                                 <div key={product.sku} className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
-                                    <div className="font-medium">{product.name}</div>
-                                    <div className="mt-1 text-xs text-gray-500">{product.sku} - {product.price} {product.currency}</div>
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <div className="font-medium">{product.name}</div>
+                                            <div className="mt-1 text-xs text-gray-500">{product.sku} - {product.price} {product.currency}</div>
+                                        </div>
+                                        <button onClick={() => handleDeleteProduct(product.sku)} className="rounded-xl bg-white px-2 py-1 text-xs text-rose-600 ring-1 ring-rose-200 hover:bg-rose-50">
+                                            <Trash2 className="inline h-3 w-3" /> Sil
+                                        </button>
+                                    </div>
                                 </div>
                             ))
                         ) : (
                             <div className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-600">Katalog aktif ama henuz urun eklenmemis.</div>
                         )}
+                    </div>
+                    <div className="mt-4 rounded-2xl bg-gray-50 p-4">
+                        <div className="text-sm font-semibold text-gray-900">Yeni Urun Ekle</div>
+                        <div className="mt-3 grid gap-2">
+                            <input value={newProductName} onChange={(e) => setNewProductName(e.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="Urun adi" />
+                            <input value={newProductSku} onChange={(e) => setNewProductSku(e.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="SKU (bos birakilirsa otomatik)" />
+                            <input type="number" value={newProductPrice} onChange={(e) => setNewProductPrice(e.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="Fiyat (TRY)" />
+                            <button onClick={handleAddProduct} disabled={!newProductName.trim() || busyKey === 'add-product'} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+                                <Plus className="mr-1 inline h-4 w-4" />{busyKey === 'add-product' ? 'Ekleniyor...' : 'Urun Ekle'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1238,14 +1670,115 @@ const WebsiteBuilderPage: React.FC = () => {
                         {(workspace?.site.marketplace_links_data ?? []).length > 0 ? (
                             workspace?.site.marketplace_links_data?.map((item) => (
                                 <div key={item.id} className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-700">
-                                    <div className="font-medium">{item.label}</div>
-                                    <div className="mt-1 text-xs text-gray-500">{item.provider} - {item.url}</div>
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <div className="font-medium">{item.label}</div>
+                                            <div className="mt-1 text-xs text-gray-500">{item.provider} - {item.url}</div>
+                                        </div>
+                                        <button onClick={() => handleDeleteMarketplaceLink(item.id)} className="rounded-xl bg-white px-2 py-1 text-xs text-rose-600 ring-1 ring-rose-200 hover:bg-rose-50">
+                                            <Trash2 className="inline h-3 w-3" /> Sil
+                                        </button>
+                                    </div>
                                 </div>
                             ))
                         ) : (
                             <div className="rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-600">Bagli pazaryeri linki yok.</div>
                         )}
                     </div>
+                    <div className="mt-4 rounded-2xl bg-gray-50 p-4">
+                        <div className="text-sm font-semibold text-gray-900">Yeni Kanal Ekle</div>
+                        <div className="mt-3 grid gap-2">
+                            <select value={newMarketplaceProvider} onChange={(e) => setNewMarketplaceProvider(e.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none">
+                                <option value="trendyol">Trendyol</option>
+                                <option value="hepsiburada">Hepsiburada</option>
+                                <option value="amazon">Amazon</option>
+                                <option value="n11">N11</option>
+                                <option value="ciceksepeti">Ciceksepeti</option>
+                            </select>
+                            <input value={newMarketplaceLabel} onChange={(e) => setNewMarketplaceLabel(e.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="Etiket (orn: Trendyol Magaza)" />
+                            <input value={newMarketplaceUrl} onChange={(e) => setNewMarketplaceUrl(e.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="URL" />
+                            <button onClick={handleAddMarketplaceLink} disabled={!newMarketplaceLabel.trim() || !newMarketplaceUrl.trim() || busyKey === 'add-marketplace'} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+                                <Plus className="mr-1 inline h-4 w-4" />{busyKey === 'add-marketplace' ? 'Ekleniyor...' : 'Kanal Ekle'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        ),
+        settings: (
+            <div className="grid gap-4 lg:grid-cols-2">
+                <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
+                    <div className="flex items-center gap-3">
+                        <Settings className="h-5 w-5 text-gray-700" />
+                        <h3 className="text-lg font-semibold text-gray-900">API Anahtarlari</h3>
+                    </div>
+                    <p className="mt-2 text-sm text-gray-500">Pexels, Unsplash ve sosyal medya API anahtarlarini buradan yonetin.</p>
+                    <div className="mt-4 space-y-3">
+                        {([
+                            { key: 'pexels_api_key', label: 'Pexels API Key' },
+                            { key: 'unsplash_access_key', label: 'Unsplash Access Key' },
+                            { key: 'unsplash_secret_key', label: 'Unsplash Secret Key' },
+                            { key: 'unsplash_app_id', label: 'Unsplash App ID' },
+                        ] as const).map((item) => (
+                            <div key={item.key} className="rounded-2xl bg-gray-50 p-3 ring-1 ring-gray-200">
+                                <div className="text-xs font-medium text-gray-500">{item.label}</div>
+                                <div className="mt-2 flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={platformSettingsDraft[item.key] ?? (platformSettings?.[item.key] as string) ?? ''}
+                                        onChange={(e) => setPlatformSettingsDraft((prev) => ({ ...prev, [item.key]: e.target.value }))}
+                                        className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none"
+                                        placeholder="API anahtarini girin"
+                                    />
+                                    {(platformSettings?.[item.key] as string) && (
+                                        <button onClick={() => handleDeletePlatformSetting(item.key)} className="rounded-xl bg-white px-2 py-1 text-xs text-rose-600 ring-1 ring-rose-200 hover:bg-rose-50">
+                                            <Trash2 className="inline h-3 w-3" />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <div className="rounded-3xl bg-white p-6 ring-1 ring-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900">Sosyal Medya Tokenlari</h3>
+                    <p className="mt-2 text-sm text-gray-500">Facebook, Instagram, Twitter ve LinkedIn entegrasyon ayarlari.</p>
+                    <div className="mt-4 space-y-3">
+                        {([
+                            { key: 'facebook_page_access_token', label: 'Facebook Page Access Token' },
+                            { key: 'instagram_app_token', label: 'Instagram App Token' },
+                            { key: 'meta_app_id', label: 'Meta App ID' },
+                            { key: 'meta_app_secret', label: 'Meta App Secret' },
+                            { key: 'twitter_bearer_token', label: 'Twitter/X Bearer Token' },
+                            { key: 'linkedin_client_id', label: 'LinkedIn Client ID' },
+                            { key: 'linkedin_client_secret', label: 'LinkedIn Client Secret' },
+                        ] as const).map((item) => (
+                            <div key={item.key} className="rounded-2xl bg-gray-50 p-3 ring-1 ring-gray-200">
+                                <div className="text-xs font-medium text-gray-500">{item.label}</div>
+                                <div className="mt-2 flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={platformSettingsDraft[item.key] ?? (platformSettings?.[item.key] as string) ?? ''}
+                                        onChange={(e) => setPlatformSettingsDraft((prev) => ({ ...prev, [item.key]: e.target.value }))}
+                                        className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none"
+                                        placeholder="Token girin"
+                                    />
+                                    {(platformSettings?.[item.key] as string) && (
+                                        <button onClick={() => handleDeletePlatformSetting(item.key)} className="rounded-xl bg-white px-2 py-1 text-xs text-rose-600 ring-1 ring-rose-200 hover:bg-rose-50">
+                                            <Trash2 className="inline h-3 w-3" />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <button
+                        onClick={handleSavePlatformSettings}
+                        disabled={Object.keys(platformSettingsDraft).length === 0 || busyKey === 'save-settings'}
+                        className="mt-4 w-full rounded-2xl bg-gray-900 px-4 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                        {busyKey === 'save-settings' ? 'Kaydediliyor...' : 'Ayarlari Kaydet'}
+                    </button>
                 </div>
             </div>
         ),
@@ -1487,18 +2020,48 @@ const WebsiteBuilderPage: React.FC = () => {
                             </button>
                         </div>
                     ) : (
-                        <div className="mt-5 grid gap-4 md:grid-cols-3">
-                            {[
-                                { icon: LayoutTemplate, title: 'Tema Sec', detail: 'Health, clinic ve commerce presetleri' },
-                                { icon: FileStack, title: 'Sayfa Seti', detail: 'Ana sayfa, hakkimizda, iletisim ve opsiyonel moduller' },
-                                { icon: Rocket, title: 'Draft Baslat', detail: 'Kullanici sonra panel veya chat ile duzenler' },
-                            ].map((item) => (
-                                <div key={item.title} className="rounded-3xl bg-gray-50 p-5">
-                                    <item.icon className="h-5 w-5 text-gray-700" />
-                                    <h3 className="mt-3 text-sm font-semibold text-gray-900">{item.title}</h3>
-                                    <p className="mt-2 text-sm text-gray-500">{item.detail}</p>
-                                </div>
-                            ))}
+                        <div className="mt-5 space-y-4">
+                            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                                {wizardTemplates.map((tmpl) => (
+                                    <button
+                                        key={tmpl.key}
+                                        onClick={() => setSelectedTemplateKey(tmpl.key)}
+                                        className={`w-full rounded-3xl p-5 text-left transition-all ${
+                                            selectedTemplateKey === tmpl.key
+                                                ? 'bg-gray-950 text-white shadow-lg'
+                                                : 'bg-gray-50 text-gray-900 ring-1 ring-gray-200 hover:bg-white'
+                                        }`}
+                                    >
+                                        <div className="text-2xl">{tmpl.icon}</div>
+                                        <h3 className="mt-2 text-sm font-semibold">{tmpl.label}</h3>
+                                        <p className={`mt-1 text-xs ${selectedTemplateKey === tmpl.key ? 'text-gray-300' : 'text-gray-500'}`}>{tmpl.description}</p>
+                                    </button>
+                                ))}
+                                {wizardTemplates.length === 0 && (
+                                    <div className="col-span-full rounded-2xl bg-gray-50 p-4 text-sm text-gray-500">Sablonlar yukleniyor...</div>
+                                )}
+                            </div>
+                            <div className="grid gap-3 md:grid-cols-2">
+                                <label className="rounded-3xl bg-gray-50 p-4 text-sm text-gray-700">
+                                    <div className="font-medium text-gray-900">Site adi *</div>
+                                    <input value={wizardSiteName} onChange={(e) => setWizardSiteName(e.target.value)} className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="Ornek: X-Ear Isitme Merkezi" />
+                                </label>
+                                <label className="rounded-3xl bg-gray-50 p-4 text-sm text-gray-700">
+                                    <div className="font-medium text-gray-900">Telefon (opsiyonel)</div>
+                                    <input value={wizardPhone} onChange={(e) => setWizardPhone(e.target.value)} className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="+90 5xx xxx xx xx" />
+                                </label>
+                                <label className="rounded-3xl bg-gray-50 p-4 text-sm text-gray-700">
+                                    <div className="font-medium text-gray-900">Email (opsiyonel)</div>
+                                    <input value={wizardEmail} onChange={(e) => setWizardEmail(e.target.value)} className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="info@example.com" />
+                                </label>
+                            </div>
+                            <button
+                                onClick={handleCreateFromWizard}
+                                disabled={!selectedTemplateKey || !wizardSiteName.trim() || busyKey === 'create-wizard'}
+                                className="rounded-2xl bg-gray-900 px-4 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                {busyKey === 'create-wizard' ? 'Olusturuluyor...' : 'Sablondan Site Olustur'}
+                            </button>
                         </div>
                     )}
                 </div>
@@ -1509,23 +2072,35 @@ const WebsiteBuilderPage: React.FC = () => {
                         <h2 className="text-lg font-semibold text-gray-900">Modul Aktivasyonlari</h2>
                     </div>
                     <div className="mt-5 space-y-3">
-                        {featureCards.map((item) => (
-                            <button
-                                key={item.key}
-                                onClick={() => setAnswers((current) => ({ ...current, [item.key]: !current[item.key] }))}
-                                className={`flex w-full items-start justify-between rounded-3xl px-4 py-4 text-left ring-1 transition-colors ${
-                                    answers[item.key] ? 'bg-emerald-50 ring-emerald-200' : 'bg-gray-50 ring-gray-200'
-                                }`}
-                            >
-                                <div>
-                                    <div className="text-sm font-semibold text-gray-900">{item.label}</div>
-                                    <div className="mt-1 text-xs text-gray-500">{item.detail}</div>
-                                </div>
-                                <div className={`rounded-full px-2 py-1 text-[11px] font-semibold ${answers[item.key] ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600'}`}>
-                                    {answers[item.key] ? 'Aktif' : 'Pasif'}
-                                </div>
-                            </button>
-                        ))}
+                        {featureCards.map((item) => {
+                            const isActive = workspace
+                                ? workspace.site.feature_flags[item.key as keyof typeof workspace.site.feature_flags]
+                                : answers[item.key];
+                            return (
+                                <button
+                                    key={item.key}
+                                    onClick={() => {
+                                        if (workspace) {
+                                            void handleToggleFeature(item.key, !isActive);
+                                        } else {
+                                            setAnswers((current) => ({ ...current, [item.key]: !current[item.key] }));
+                                        }
+                                    }}
+                                    disabled={busyKey === 'toggle-feature'}
+                                    className={`flex w-full items-start justify-between rounded-3xl px-4 py-4 text-left ring-1 transition-colors disabled:opacity-60 ${
+                                        isActive ? 'bg-emerald-50 ring-emerald-200' : 'bg-gray-50 ring-gray-200'
+                                    }`}
+                                >
+                                    <div>
+                                        <div className="text-sm font-semibold text-gray-900">{item.label}</div>
+                                        <div className="mt-1 text-xs text-gray-500">{item.detail}</div>
+                                    </div>
+                                    <div className={`rounded-full px-2 py-1 text-[11px] font-semibold ${isActive ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600'}`}>
+                                        {isActive ? 'Aktif' : 'Pasif'}
+                                    </div>
+                                </button>
+                            );
+                        })}
                     </div>
                     <div className="mt-4 rounded-3xl bg-gray-50 p-4">
                         <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Chatbot Faturalama Modu</div>

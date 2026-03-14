@@ -259,16 +259,79 @@ export type BuilderShellResponse = {
     recommended_libraries: string[];
 };
 
+export type EditableFieldDefinition = {
+    key: string;
+    label: string;
+    field_type: 'text' | 'textarea' | 'url' | 'image' | 'color' | 'number' | 'boolean' | 'select' | 'rich_text';
+    required: boolean;
+    placeholder?: string | null;
+    default_value?: unknown;
+    options?: string[] | null;
+};
+
+export type SectionVariantDefinition = {
+    key: string;
+    label: string;
+    description: string;
+    editable_fields: EditableFieldDefinition[];
+    default_content: Record<string, unknown>;
+};
+
 export type BuilderSectionRegistryResponse = {
     sections: Array<{
         type: string;
         label: string;
         category: 'core' | 'content' | 'commerce' | 'social' | 'support';
-        variants: Array<{ key: string; label: string; description: string }>;
+        variants: SectionVariantDefinition[];
         safe_style_controls: Array<{ key: string; options: string[] }>;
         responsive_behavior: { mobile: string; tablet: string; desktop: string };
         recommended_for_features: string[];
     }>;
+};
+
+export type WizardTemplate = {
+    key: string;
+    label: string;
+    description: string;
+    icon: string;
+    recommended_features: FeatureFlags;
+};
+
+export type WizardTemplateListResponse = {
+    templates: WizardTemplate[];
+};
+
+export type WizardCreateRequest = {
+    template_key: string;
+    site_name: string;
+    phone_number?: string | null;
+    email?: string | null;
+};
+
+export type WizardCreateResponse = {
+    site: SiteResponse;
+    template_used: string;
+    message: string;
+};
+
+export type PlatformSettingsResponse = {
+    pexels_api_key?: string | null;
+    unsplash_app_id?: string | null;
+    unsplash_access_key?: string | null;
+    unsplash_secret_key?: string | null;
+    facebook_page_access_token?: string | null;
+    instagram_app_token?: string | null;
+    meta_app_id?: string | null;
+    meta_app_secret?: string | null;
+    twitter_bearer_token?: string | null;
+    linkedin_client_id?: string | null;
+    linkedin_client_secret?: string | null;
+};
+
+export type SiteUpdateRequest = {
+    name?: string | null;
+    feature_flags?: Partial<FeatureFlags> | null;
+    theme_settings?: Partial<ThemeSettings> | null;
 };
 
 export type SafeLayoutPolicyResponse = {
@@ -332,7 +395,7 @@ export type SiteDomainSetupResponse = {
 const DEFAULT_BASE_URL = (import.meta.env.VITE_WEBSITE_GENERATOR_API_URL as string | undefined) ?? 'http://127.0.0.1:8000';
 
 type RequestOptions = {
-    method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+    method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
     body?: unknown;
 };
 
@@ -570,5 +633,223 @@ export async function reorderSitePageSections(
     return requestJson(baseUrl, `/api/v1/sites/${siteId}/pages/by-slug/sections/reorder?page_slug=${encodeURIComponent(pageSlug)}`, {
         method: 'PUT',
         body: { section_order: sectionOrder },
+    });
+}
+
+// --- Wizard / Template APIs ---
+
+export async function listWizardTemplates(baseUrl: string = DEFAULT_BASE_URL): Promise<WizardTemplateListResponse> {
+    return requestJson(baseUrl, '/api/v1/wizard/templates');
+}
+
+export async function createSiteFromWizard(
+    payload: WizardCreateRequest,
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<WizardCreateResponse> {
+    return requestJson(baseUrl, '/api/v1/wizard/create-from-template', {
+        method: 'POST',
+        body: payload,
+    });
+}
+
+// --- Site CRUD ---
+
+export async function updateSite(
+    siteId: string,
+    payload: SiteUpdateRequest,
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<SiteResponse> {
+    return requestJson(baseUrl, `/api/v1/sites/${siteId}`, {
+        method: 'PATCH',
+        body: payload,
+    });
+}
+
+export async function deleteSite(siteId: string, baseUrl: string = DEFAULT_BASE_URL): Promise<void> {
+    await requestJson(baseUrl, `/api/v1/sites/${siteId}`, { method: 'DELETE' });
+}
+
+export async function deleteSitePage(
+    siteId: string,
+    pageSlug: string,
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<SiteResponse> {
+    return requestJson(baseUrl, `/api/v1/sites/${siteId}/pages/by-slug?page_slug=${encodeURIComponent(pageSlug)}`, {
+        method: 'DELETE',
+    });
+}
+
+// --- Blog APIs ---
+
+export async function createBlogPost(
+    siteId: string,
+    payload: { slug: string; title: string; excerpt: string; body: string; status: 'draft' | 'published'; categories: string[] },
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<SiteResponse> {
+    return requestJson(baseUrl, `/api/v1/sites/${siteId}/blog/posts`, {
+        method: 'POST',
+        body: payload,
+    });
+}
+
+export async function deleteBlogPost(
+    siteId: string,
+    postSlug: string,
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<SiteResponse> {
+    return requestJson(baseUrl, `/api/v1/sites/${siteId}/blog/posts/${encodeURIComponent(postSlug)}`, {
+        method: 'DELETE',
+    });
+}
+
+export async function updateBlogSettings(
+    siteId: string,
+    payload: { mode?: string; posts_per_page?: number; featured_post_slug?: string | null },
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<SiteResponse> {
+    return requestJson(baseUrl, `/api/v1/sites/${siteId}/blog/settings`, {
+        method: 'PUT',
+        body: payload,
+    });
+}
+
+// --- Product APIs ---
+
+export async function createProduct(
+    siteId: string,
+    payload: { sku: string; slug: string; name: string; description: string; price: number; currency: string; status: 'draft' | 'published'; in_stock: boolean },
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<SiteResponse> {
+    return requestJson(baseUrl, `/api/v1/sites/${siteId}/products`, {
+        method: 'POST',
+        body: payload,
+    });
+}
+
+export async function deleteProduct(
+    siteId: string,
+    productSku: string,
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<SiteResponse> {
+    return requestJson(baseUrl, `/api/v1/sites/${siteId}/products/${encodeURIComponent(productSku)}`, {
+        method: 'DELETE',
+    });
+}
+
+// --- Marketplace APIs ---
+
+export async function createMarketplaceLink(
+    siteId: string,
+    payload: { provider: string; label: string; url: string; visible: boolean },
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<SiteResponse> {
+    return requestJson(baseUrl, `/api/v1/sites/${siteId}/marketplace/links`, {
+        method: 'POST',
+        body: payload,
+    });
+}
+
+export async function deleteMarketplaceLink(
+    siteId: string,
+    linkId: string,
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<SiteResponse> {
+    return requestJson(baseUrl, `/api/v1/sites/${siteId}/marketplace/links/${encodeURIComponent(linkId)}`, {
+        method: 'DELETE',
+    });
+}
+
+// --- Settings Update APIs ---
+
+export async function updateWhatsAppSettings(
+    siteId: string,
+    payload: { enabled?: boolean; phone_number?: string; default_message?: string },
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<SiteResponse> {
+    return requestJson(baseUrl, `/api/v1/sites/${siteId}/whatsapp/settings`, {
+        method: 'PUT',
+        body: payload,
+    });
+}
+
+export async function updateAppointmentSettings(
+    siteId: string,
+    payload: { enabled?: boolean; booking_mode?: string; notification_email?: string | null; collect_phone?: boolean },
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<SiteResponse> {
+    return requestJson(baseUrl, `/api/v1/sites/${siteId}/appointments/settings`, {
+        method: 'PUT',
+        body: payload,
+    });
+}
+
+export async function updateCommerceSettings(
+    siteId: string,
+    payload: { currency?: string; checkout_mode?: string; shipping_enabled?: boolean; payment_methods?: string[] },
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<SiteResponse> {
+    return requestJson(baseUrl, `/api/v1/sites/${siteId}/commerce/settings`, {
+        method: 'PUT',
+        body: payload,
+    });
+}
+
+export async function updateMarketplaceSettings(
+    siteId: string,
+    payload: { enabled?: boolean; display_mode?: string },
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<SiteResponse> {
+    return requestJson(baseUrl, `/api/v1/sites/${siteId}/marketplace/settings`, {
+        method: 'PUT',
+        body: payload,
+    });
+}
+
+export async function updateChatbotSettings(
+    siteId: string,
+    payload: Partial<NonNullable<SiteResponse['chatbot_settings']>>,
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<SiteResponse> {
+    return requestJson(baseUrl, `/api/v1/sites/${siteId}/chatbot/settings`, {
+        method: 'PUT',
+        body: payload,
+    });
+}
+
+// --- Platform Admin Settings ---
+
+export async function getPlatformSettings(baseUrl: string = DEFAULT_BASE_URL): Promise<PlatformSettingsResponse> {
+    return requestJson(baseUrl, '/api/v1/admin/settings');
+}
+
+export async function updatePlatformSettings(
+    payload: Partial<PlatformSettingsResponse>,
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<PlatformSettingsResponse> {
+    return requestJson(baseUrl, '/api/v1/admin/settings', {
+        method: 'PUT',
+        body: payload,
+    });
+}
+
+export async function deletePlatformSetting(
+    settingKey: string,
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<PlatformSettingsResponse> {
+    return requestJson(baseUrl, `/api/v1/admin/settings/${encodeURIComponent(settingKey)}`, {
+        method: 'DELETE',
+    });
+}
+
+// --- Feature Flag Update ---
+
+export async function updateSiteFeatureFlags(
+    siteId: string,
+    featureFlags: Partial<FeatureFlags>,
+    baseUrl: string = DEFAULT_BASE_URL,
+): Promise<SiteResponse> {
+    return requestJson(baseUrl, `/api/v1/sites/${siteId}`, {
+        method: 'PATCH',
+        body: { feature_flags: featureFlags },
     });
 }
