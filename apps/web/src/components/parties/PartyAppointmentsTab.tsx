@@ -9,6 +9,7 @@ import {
   createAppointmentCancel,
   createAppointmentComplete
 } from '@/api/client/appointments.client';
+import { formatDateForInput } from '@/utils/date';
 import type {
   AppointmentRead,
   AppointmentCreate,
@@ -84,6 +85,10 @@ export const PartyAppointmentsTab: React.FC<PartyAppointmentsTabProps> = ({ part
       };
       await createAppointment(createBody);
       await loadAppointments();
+      window.dispatchEvent(new CustomEvent('dashboard:refresh'));
+      window.dispatchEvent(new CustomEvent('party-timeline:refresh', {
+        detail: { partyId: party.id }
+      }));
       setShowBookingForm(false);
     } catch (err) {
       console.error('Error creating appointment:', err);
@@ -199,7 +204,7 @@ export const PartyAppointmentsTab: React.FC<PartyAppointmentsTabProps> = ({ part
             <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Tarih</label>
             <DatePicker
               value={filters.dateRange === 'all' ? null : new Date(filters.dateRange)}
-              onChange={(date) => setFilters(prev => ({ ...prev, dateRange: date ? date.toISOString().split('T')[0] : 'all' }))}
+              onChange={(date) => setFilters(prev => ({ ...prev, dateRange: date ? formatDateForInput(date) : 'all' }))}
               placeholder="Tarih"
             />
           </div>
@@ -323,7 +328,7 @@ export const PartyAppointmentsTab: React.FC<PartyAppointmentsTabProps> = ({ part
               const formData = new FormData(e.currentTarget);
               const appointmentData: AppointmentCreate = {
                 partyId: party.id || '',
-                date: newAppointmentDate ? newAppointmentDate.toISOString().split('T')[0] : '',
+                date: newAppointmentDate ? formatDateForInput(newAppointmentDate) : '',
                 time: formData.get('time') as string,
                 duration: parseInt(formData.get('duration') as string) || 30,
                 // appointmentType: (formData.get('type') as any) || 'General',

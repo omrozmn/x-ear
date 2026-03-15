@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useListDashboard } from '@/api/client/dashboard.client';
+import type { DashboardData as DashboardApiData, DashboardDataRecentActivityItem } from '@/api/generated/schemas';
 
 interface DashboardStats {
   totalParties: number;
@@ -23,7 +24,7 @@ interface LastCalculation {
 }
 
 // Activity item structure from API
-interface ActivityItem {
+interface ActivityItem extends DashboardDataRecentActivityItem {
   id?: string;
   type?: string;
   message?: string;
@@ -40,68 +41,41 @@ interface DashboardData {
   error: string | null;
 }
 
-// Type for API response payload
-interface DashboardPayload {
-  data?: {
-    kpis?: Record<string, number>;
-    recentActivity?: ActivityItem[];
-    activity?: ActivityItem[];
-  } & Record<string, unknown>;
-  kpis?: Record<string, number>;
-  recentActivity?: ActivityItem[];
-  activity?: ActivityItem[];
-  [key: string]: unknown;
-}
-
 export const useDashboardData = (): DashboardData => {
-  const [data, setData] = useState<DashboardData>({
-    stats: {
-      totalParties: 0,
-      todayAppointments: 0,
-      monthlyRevenue: 0,
-      activeTrials: 0,
-      activeParties: 0,
-      dailyRevenue: 0,
-      pendingAppointments: 0,
-      endingTrials: 0,
-    },
-    loading: true,
-    error: null,
-  });
-
   const query = useListDashboard();
+  const { refetch } = query;
 
   useEffect(() => {
-    // Map query result into local shape and handle missing fields gracefully
-    if (query.isLoading) return;
-    if (query.isError) {
-      const errorMessage = query.error instanceof Error ? query.error.message : 'Veri yüklenirken hata oluştu';
-      setData(prev => ({ ...prev, loading: false, error: errorMessage }));
-      return;
-    }
-
-    // Response structure: { totalParties, totalDevices, ... }
-    const responseBody = (query.data || {}) as DashboardPayload;
-    // Check if the body has a 'data' property (our API envelope), otherwise use body directly
-    const payload = responseBody?.data || responseBody || {};
-    const kpis = payload?.kpis || payload || {};
-
-    const mappedStats: DashboardStats = {
-      totalParties: Number(kpis.totalParties || kpis.totalPartiesCount || 0),
-      todayAppointments: Number(kpis.todayAppointments || kpis.todaysAppointments || 0),
-      monthlyRevenue: Number(kpis.estimatedRevenue || kpis.monthlyRevenue || 0),
-      activeTrials: Number(kpis.activeTrials || 0),
-      activeParties: Number(kpis.activeParties || kpis.totalParties || 0),
-      dailyRevenue: Number(kpis.dailyRevenue || 0),
-      pendingAppointments: Number(kpis.pendingAppointments || 0),
-      endingTrials: Number(kpis.endingTrials || 0),
+    const handleRefresh = () => {
+      void refetch();
     };
 
-    const recentActivity = payload?.recentActivity || payload?.activity || [];
+    window.addEventListener('dashboard:refresh', handleRefresh);
+    return () => window.removeEventListener('dashboard:refresh', handleRefresh);
+  }, [refetch]);
 
-    setData({ stats: mappedStats, recentActivity, loading: false, error: null });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query.isLoading, query.isError, query.data]); // query.error is only used when isError is true
+  return useMemo(() => {
+    const payload = (query.data?.data ?? null) as DashboardApiData | null;
+    const kpis = payload?.kpis;
 
-  return data;
+    const stats: DashboardStats = {
+      totalParties: Number(kpis?.totalPatients ?? 0),
+      todayAppointments: Number(kpis?.todayAppointments ?? kpis?.todaysAppointments ?? 0),
+      monthlyRevenue: Number(kpis?.monthlyRevenue ?? kpis?.estimatedRevenue ?? 0),
+      activeTrials: Number(kpis?.activeTrials ?? 0),
+      activeParties: Number(kpis?.activePatients ?? kpis?.totalPatients ?? 0),
+      dailyRevenue: Number(kpis?.dailyRevenue ?? 0),
+      pendingAppointments: Number(kpis?.pendingAppointments ?? 0),
+      endingTrials: Number(kpis?.endingTrials ?? 0),
+    };
+
+    return {
+      stats,
+      recentActivity: (payload?.recentActivity ?? []) as ActivityItem[],
+      loading: query.isLoading,
+      error: query.isError
+        ? (query.error instanceof Error ? query.error.message : 'Veri yüklenirken hata oluştu')
+        : null,
+    };
+  }, [query.data, query.error, query.isError, query.isLoading]);
 };

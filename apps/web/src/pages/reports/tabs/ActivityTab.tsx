@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     AlertTriangle,
     Calendar,
@@ -12,32 +12,47 @@ import {
     useListActivityLogFilterOptions
 } from '@/api/client/reports.client';
 import { ActivityLogDetailModal } from '../components/ActivityLogDetailModal';
+import { TabExportButton } from '../components/TabExportButton';
 import type { ActivityLogRead, ResponseMeta } from '@/api/generated/schemas';
+import type { FilterState } from '../types';
+import { translateActivityAction, translateActivityMessage } from '../utils/activityLogPresentation';
 
-export function ActivityTab() {
+interface ActivityTabProps {
+    filters: FilterState;
+}
+
+export function ActivityTab({ filters }: ActivityTabProps) {
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(20);
     const [selectedLog, setSelectedLog] = useState<ActivityLogRead | null>(null);
     const [activityFilters, setActivityFilters] = useState({
+        branch_id: filters.branch || '',
         action: '',
         user_id: '',
         search: ''
     });
 
+    useEffect(() => {
+        setActivityFilters((current) => ({ ...current, branch_id: filters.branch || '' }));
+    }, [filters.branch]);
+
     const { data: logsResponse, isLoading } = useListActivityLogs({
+        branch_id: activityFilters.branch_id || undefined,
         action: activityFilters.action || undefined,
         user_id: activityFilters.user_id || undefined,
         search: activityFilters.search || undefined,
+        date_from: filters.dateRange.start || undefined,
+        date_to: filters.dateRange.end || undefined,
         page,
         limit: perPage
-    });
+    } as never);
 
     // Replace stub with generated hook
     const { data: filterOptions } = useListActivityLogFilterOptions();
 
     const { data: logs, pagination } = unwrapPaginated<ActivityLogRead>(logsResponse);
     const typedPagination = pagination as ResponseMeta | undefined;
-    const options = unwrapObject<{ actions?: string[]; users?: Array<{ id: string; name: string }> }>(filterOptions);
+    const options = unwrapObject<{ actions?: string[]; users?: Array<{ id: string; name: string }>; branches?: Array<{ id: string; name: string }> }>(filterOptions);
 
     const columns = useMemo<Column<ActivityLogRead>[]>(() => [
         {
@@ -72,7 +87,7 @@ export function ActivityTab() {
                         {record.userName || '-'}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
-                        {record.userEmail}
+                        {record.userEmail || ''}
                     </p>
                 </>
             )
@@ -82,7 +97,7 @@ export function ActivityTab() {
             title: 'Aksiyon',
             render: (_: unknown, record: ActivityLogRead) => (
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
-                    {record.action}
+                    {translateActivityAction(record.action)}
                 </span>
             )
         },
@@ -92,9 +107,18 @@ export function ActivityTab() {
             render: (_: unknown, record: ActivityLogRead) => (
                 <span
                     className="text-gray-600 dark:text-gray-300 max-w-[250px] truncate block"
-                    title={record.message || undefined}
+                    title={translateActivityMessage(record)}
                 >
-                    {record.message || '-'}
+                    {translateActivityMessage(record)}
+                </span>
+            )
+        },
+        {
+            key: 'branchName',
+            title: 'Şube',
+            render: (_: unknown, record: ActivityLogRead & { branchName?: string; branchId?: string }) => (
+                <span className="text-sm text-gray-600 dark:text-gray-300">
+                    {record.branchName || record.branchId || '-'}
                 </span>
             )
         },
@@ -118,9 +142,24 @@ export function ActivityTab() {
 
     return (
         <div className="space-y-6">
+            <div className="flex justify-end">
+                <TabExportButton filename="islem-dokumu" rows={logs as unknown as Array<Record<string, unknown>>} />
+            </div>
             {/* Activity Filters */}
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <div>
+                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Şube</label>
+                        <Select
+                            className="w-full text-sm"
+                            value={activityFilters.branch_id}
+                            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setActivityFilters({ ...activityFilters, branch_id: e.target.value })}
+                            options={[
+                                { value: "", label: "Tüm Şubeler" },
+                                ...(options?.branches?.map((branch) => ({ value: branch.id, label: branch.name })) || [])
+                            ]}
+                        />
+                    </div>
                     <div>
                         <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Kullanıcı</label>
                         <Select
@@ -141,7 +180,7 @@ export function ActivityTab() {
                             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setActivityFilters({ ...activityFilters, action: e.target.value })}
                             options={[
                                 { value: "", label: "Tüm Aksiyonlar" },
-                                ...(options?.actions?.map((action: string) => ({ value: action, label: action })) || [])
+                                ...(options?.actions?.map((action: string) => ({ value: action, label: translateActivityAction(action) })) || [])
                             ]}
                         />
                     </div>
@@ -150,7 +189,7 @@ export function ActivityTab() {
                         <Input
                             type="text"
                             className="w-full text-sm"
-                            placeholder="Mesaj veya aksiyon ara..."
+                            placeholder="Kullanıcı, mesaj, işlem türü veya kayıt ara..."
                             value={activityFilters.search}
                             onChange={(e) => setActivityFilters({ ...activityFilters, search: e.target.value })}
                         />

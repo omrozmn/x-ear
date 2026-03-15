@@ -5,6 +5,7 @@ import { useAppointments } from '../../hooks/useAppointments';
 import { useParties } from '../../hooks/useParties';
 import { PartyAutocomplete } from './PartyAutocomplete';
 import { getCurrentUserId } from '@/utils/auth-utils';
+import { formatDateForInput } from '@/utils/date';
 import { Gender } from '../../api/generated/schemas/gender';
 import { PartyStatus } from '../../api/generated/schemas/partyStatus';
 import { useTranslation } from 'react-i18next';
@@ -64,7 +65,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
   const [formData, setFormData] = useState<FormData>({
     partyId: partyId || appointment?.partyId || '',
     partyName: appointment?.partyName || '',
-    date: appointment?.date || initialDate || new Date().toISOString().split('T')[0],
+    date: appointment?.date || initialDate || formatDateForInput(new Date()),
     time: appointment?.time || initialTime || '09:00',
     duration: appointment?.duration || 30,
     type: appointment?.type || 'consultation',
@@ -225,6 +226,11 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
           newAppointment.partyName = formData.partyName;
         }
 
+        window.dispatchEvent(new CustomEvent('dashboard:refresh'));
+        window.dispatchEvent(new CustomEvent('party-timeline:refresh', {
+          detail: { partyId: formData.partyId }
+        }));
+
         showSuccess(t('form.success.create'));
         onSave?.(newAppointment);
       } else if (appointment) {
@@ -304,7 +310,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                   data-testid="appointment-date-input"
                   label={t('form.date')}
                   value={formData.date ? new Date(formData.date) : undefined}
-                  onChange={(date) => handleInputChange('date', date ? date.toISOString().split('T')[0] : '')}
+                  onChange={(date) => handleInputChange('date', date ? formatDateForInput(date) : '')}
                   placeholder={t('form.date_placeholder')}
                   className={`w-full ${errors.date ? 'border-red-300' : ''}`}
                   error={errors.date}

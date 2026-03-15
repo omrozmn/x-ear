@@ -2,6 +2,12 @@ import React from 'react';
 import { Button } from '@x-ear/ui-web';
 import { X } from 'lucide-react';
 import type { ActivityLogRead } from '@/api/generated/schemas';
+import {
+    getActivityDetailEntries,
+    translateActivityAction,
+    translateActivityEntity,
+    translateActivityMessage
+} from '../utils/activityLogPresentation';
 
 interface ActivityLogDetailModalProps {
     log: ActivityLogRead;
@@ -9,11 +15,17 @@ interface ActivityLogDetailModalProps {
 }
 
 export function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalProps) {
+    const actionLabel = translateActivityAction(log.action);
+    const entityLabel = translateActivityEntity(log.entityType);
+    const messageLabel = translateActivityMessage(log);
+    const detailEntries = getActivityDetailEntries(log);
+    const readableDetails = typeof log.details === 'string' ? log.details : JSON.stringify(log.details, null, 2);
+
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 rounded-xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col">
                 <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Aktivite Log Detayı</h2>
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">İşlem Kaydı Detayı</h2>
                     <Button
                         onClick={onClose}
                         variant="ghost"
@@ -33,7 +45,7 @@ export function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalP
                             </div>
                             <div>
                                 <label className="text-xs text-gray-500 dark:text-gray-400">Aksiyon</label>
-                                <p className="font-medium text-gray-900 dark:text-white">{log.action}</p>
+                                <p className="font-medium text-gray-900 dark:text-white">{actionLabel}</p>
                             </div>
                             <div>
                                 <label className="text-xs text-gray-500 dark:text-gray-400">Kullanıcı</label>
@@ -43,7 +55,7 @@ export function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalP
                             <div>
                                 <label className="text-xs text-gray-500 dark:text-gray-400">Varlık</label>
                                 <p className="font-medium text-gray-900 dark:text-white">
-                                    {log.entityType || '-'} {log.entityId ? `- ${log.entityId}` : ''}
+                                    {entityLabel} {log.entityId ? `- ${log.entityId}` : ''}
                                 </p>
                             </div>
                             <div>
@@ -52,19 +64,32 @@ export function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalP
                             </div>
                         </div>
 
-                        {log.message && (
+                        {messageLabel && messageLabel !== '-' && (
                             <div>
                                 <label className="text-xs text-gray-500 dark:text-gray-400">Mesaj</label>
-                                <p className="font-medium text-gray-900 dark:text-white">{log.message}</p>
+                                <p className="font-medium text-gray-900 dark:text-white">{messageLabel}</p>
                             </div>
                         )}
 
                         {log.details && (
                             <div>
-                                <label className="text-xs text-gray-500 dark:text-gray-400">Detaylar</label>
-                                <pre className="bg-gray-100 dark:bg-gray-900/50 p-3 rounded-2xl text-xs overflow-x-auto text-gray-900 dark:text-gray-300">
-                                    {JSON.stringify(log.details, null, 2)}
-                                </pre>
+                                <label className="text-xs text-gray-500 dark:text-gray-400">İşlem Detayları</label>
+                                {detailEntries.length > 0 ? (
+                                    <div className="rounded-2xl bg-gray-100 dark:bg-gray-900/50 p-3 space-y-2">
+                                        {detailEntries.map((entry) => (
+                                            <div key={entry.label} className="flex items-start justify-between gap-4 text-sm">
+                                                <span className="text-gray-500 dark:text-gray-400">{entry.label}</span>
+                                                <span className="font-medium text-right text-gray-900 dark:text-gray-200 whitespace-pre-wrap break-words">
+                                                    {entry.value}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <pre className="bg-gray-100 dark:bg-gray-900/50 p-3 rounded-2xl text-xs overflow-x-auto text-gray-900 dark:text-gray-300">
+                                        {readableDetails}
+                                    </pre>
+                                )}
                             </div>
                         )}
                     </div>

@@ -14,9 +14,8 @@ import toast from 'react-hot-toast';
 
 import { Button, Input, Modal } from '@x-ear/ui-web';
 
-import { createCommunicationMessageSendSms } from '@/api/generated/communications/communications';
-import { createCommunicationMessageSendEmail } from '@/api/generated/communications/communications';
-import { getWhatsAppSessionStatus, createWhatsAppSendMessage } from '@/api/generated/whats-app/whats-app';
+import { createCommunicationMessageSendSms, createCommunicationMessageSendEmail } from '@/api/client/communications.client';
+import { getWhatsAppSessionStatus, createWhatsAppSendMessage } from '@/api/client/whatsapp.client';
 import type { ListSuppliersParams } from '@/api/generated/schemas';
 import { useListSubscriptionCurrent } from '@/api/client/subscriptions.client';
 import { useSuppliers } from '@/hooks/useSuppliers';

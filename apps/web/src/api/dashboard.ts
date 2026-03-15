@@ -1,24 +1,24 @@
-import { useQuery } from '@tanstack/react-query';
+import {
+  useListDashboardChartPatientDistribution,
+} from '@/api/client/dashboard.client';
+import type { BranchDistribution } from '@/api/generated/schemas';
+import type { UseQueryOptions, UseQueryResult } from '@tanstack/react-query';
+import type { ResponseEnvelopeListBranchDistribution } from '@/api/generated/schemas';
 
-import { listDashboardChartPatientDistribution as listDashboardChartPartyDistribution } from '@/api/client/dashboard.client';
-
-import { UseQueryOptions } from '@tanstack/react-query';
-
-// Type is unknown in generated client, so we assume an array of unknown objects
-export async function fetchPartyDistribution(): Promise<unknown[]> {
-  const res = await listDashboardChartPartyDistribution() as unknown as unknown[];
-  return res || [];
-}
-
-export function usePartyDistribution(options?: { query?: UseQueryOptions<unknown[]> }) {
-  // Accept either a raw options object or the generated wrapper shape { query: {...}, axios: ... }
-  const { query } = options ?? {};
-  const queryOptions = {
-    queryKey: ['dashboard', 'party-distribution'],
-    queryFn: fetchPartyDistribution,
-    ...query
-  };
-  return useQuery(queryOptions);
+export function usePartyDistribution(
+  options?: {
+    query?: Omit<
+      Partial<UseQueryOptions<ResponseEnvelopeListBranchDistribution, unknown, BranchDistribution[]>>,
+      'queryKey' | 'queryFn' | 'select'
+    >
+  }
+): UseQueryResult<BranchDistribution[], unknown> {
+  return useListDashboardChartPatientDistribution<BranchDistribution[]>({
+    query: {
+      select: (response: ResponseEnvelopeListBranchDistribution) => response.data ?? [],
+      ...(options?.query ?? {}),
+    },
+  });
 }
 
 export default usePartyDistribution;

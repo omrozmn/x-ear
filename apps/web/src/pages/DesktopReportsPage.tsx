@@ -8,13 +8,16 @@ import {
   CreditCard,
   Activity,
   PieChart,
-  Download,
+  FileText,
   Filter,
   Loader2
 } from 'lucide-react';
-import { Button, Select } from '@x-ear/ui-web';
+import { Button, MultiSelect, Select } from '@x-ear/ui-web';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useListBranches } from '@/api/client/branches.client';
+import { unwrapArray } from '../utils/response-unwrap';
+import type { BranchRead } from '@/api/generated/schemas';
 
 import { OverviewTab } from './reports/tabs/OverviewTab';
 import { SalesTab } from './reports/tabs/SalesTab';
@@ -23,9 +26,44 @@ import { PromissoryNotesTab } from './reports/tabs/PromissoryNotesTab';
 import { RemainingPaymentsTab } from './reports/tabs/RemainingPaymentsTab';
 import { PosMovementsTab } from './reports/tabs/PosMovementsTab';
 import { ActivityTab } from './reports/tabs/ActivityTab';
+import { ReportTrackingTab } from './reports/tabs/ReportTrackingTab';
 import { NoPermission } from './reports/components/NoPermission';
 import { FilterState, TabId } from './reports/types';
 import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
+
+const PRESET_OPTIONS = [
+  { value: 7, label: 'Son 7 Gün' },
+  { value: 30, label: 'Son 30 Gün' },
+  { value: 90, label: 'Son 90 Gün' },
+  { value: 365, label: 'Son 1 Yıl' }
+] as const;
+
+function formatDateInput(date: Date) {
+  return date.toISOString().split('T')[0];
+}
+
+function getPresetRange(days: number) {
+  const end = new Date();
+  const start = new Date();
+  start.setDate(end.getDate() - (days - 1));
+
+  return {
+    start: formatDateInput(start),
+    end: formatDateInput(end)
+  };
+}
+
+function getDayCount(start?: string, end?: string) {
+  if (!start || !end) {
+    return 30;
+  }
+
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+  const diffMs = endDate.getTime() - startDate.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
+  return Math.max(1, diffDays || 30);
+}
 
 export function DesktopReportsPage() {
   const { hasPermission, isLoading: permissionsLoading } = usePermissions();
@@ -34,12 +72,12 @@ export function DesktopReportsPage() {
 
   const [activeTab, setActiveTab] = useState<TabId>(() => (search.tab as TabId) || 'overview');
   const [filters, setFilters] = useState<FilterState>({
-    dateRange: {
-      start: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
-      end: new Date().toISOString().split('T')[0]
-    },
-    days: 30
+    dateRange: getPresetRange(30),
+    days: 30,
+    branches: []
   });
+  const { data: branchesResponse } = useListBranches();
+  const branches = unwrapArray<BranchRead>(branchesResponse);
 
   // Sync URL param with state
   useEffect(() => {
@@ -57,7 +95,6 @@ export function DesktopReportsPage() {
 
   // Permission check
   const canViewReports = hasPermission('reports.view');
-  const canExportReports = hasPermission('reports.export');
   const canViewActivityLogs = hasPermission('activity_logs.view') || hasPermission('reports.view');
 
   // Tab definitions with permissions
@@ -68,6 +105,7 @@ export function DesktopReportsPage() {
     { id: 'promissory' as const, label: 'Senet Raporları', icon: Receipt, permission: 'reports.view' },
     { id: 'remaining' as const, label: 'Kalan Ödemeler', icon: Wallet, permission: 'reports.view' },
     { id: 'pos_movements' as const, label: 'POS Hareketleri', icon: CreditCard, permission: 'reports.view' },
+    { id: 'report_tracking' as const, label: 'Rapor Takibi', icon: FileText, permission: 'reports.view' },
     { id: 'activity' as const, label: 'İşlem Dökümü', icon: Activity, permission: 'activity_logs.view' }
   ], []);
 
@@ -88,10 +126,11 @@ export function DesktopReportsPage() {
     }
   }, [allowedTabs, activeTab]);
 
-  const handleExport = (format: 'pdf' | 'excel') => {
-    console.log(`Exporting report as ${format}`);
-    // TODO: Implement export with proper API call
-  };
+  const selectedPreset = PRESET_OPTIONS.find((option) => option.value === filters.days)
+    && getPresetRange(filters.days).start === filters.dateRange.start
+    && getPresetRange(filters.days).end === filters.dateRange.end
+    ? String(filters.days)
+    : 'custom';
 
   if (permissionsLoading) {
     return (
@@ -120,24 +159,7 @@ export function DesktopReportsPage() {
           description="Satış performansı, hasta analizleri ve işlem dökümleri"
           icon={<PieChart className="w-6 h-6" />}
           eyebrow={{ tr: 'İçgörüler', en: 'Insights' }}
-          actions={canExportReports ? (
-            <>
-              <Button
-                onClick={() => handleExport('pdf')}
-                variant="outline"
-                icon={<Download className="w-4 h-4" />}
-              >
-                PDF İndir
-              </Button>
-              <Button
-                onClick={() => handleExport('excel')}
-                variant="outline"
-                icon={<Download className="w-4 h-4" />}
-              >
-                Excel İndir
-              </Button>
-            </>
-          ) : null}
+          actions={null}
         />
       </div>
 
@@ -153,14 +175,80 @@ export function DesktopReportsPage() {
               <div>
                 <Select
                   className="px-3 py-2 text-sm"
-                  value={String(filters.days)}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilters(prev => ({ ...prev, days: Number(e.target.value) }))}
+                  value={selectedPreset}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                    const nextValue = e.target.value;
+                    if (nextValue === 'custom') {
+                      return;
+                    }
+
+                    const days = Number(nextValue);
+                    setFilters(prev => ({
+                      ...prev,
+                      days,
+                      dateRange: getPresetRange(days)
+                    }));
+                  }}
                   options={[
-                    { value: "7", label: "Son 7 Gun" },
-                    { value: "30", label: "Son 30 Gun" },
-                    { value: "90", label: "Son 90 Gun" },
-                    { value: "365", label: "Son 1 Yil" }
+                    ...PRESET_OPTIONS.map((option) => ({ value: String(option.value), label: option.label })),
+                    { value: 'custom', label: 'Özel Aralık' }
                   ]}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  data-allow-raw="true"
+                  type="date"
+                  value={filters.dateRange.start}
+                  max={filters.dateRange.end || undefined}
+                  onChange={(e) => {
+                    const start = e.target.value;
+                    setFilters((prev) => ({
+                      ...prev,
+                      dateRange: { ...prev.dateRange, start },
+                      days: getDayCount(start, prev.dateRange.end)
+                    }));
+                  }}
+                  className="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                />
+                <span className="text-sm text-gray-400">-</span>
+                <input
+                  data-allow-raw="true"
+                  type="date"
+                  value={filters.dateRange.end}
+                  min={filters.dateRange.start || undefined}
+                  onChange={(e) => {
+                    const end = e.target.value;
+                    setFilters((prev) => ({
+                      ...prev,
+                      dateRange: { ...prev.dateRange, end },
+                      days: getDayCount(prev.dateRange.start, end)
+                    }));
+                  }}
+                  className="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                />
+              </div>
+              <div>
+                <MultiSelect
+                  label="Şube"
+                  placeholder="Tüm şubeler"
+                  selectAll
+                  selectAllText="Tüm Şubeleri Seç"
+                  clearAllText="Temizle"
+                  options={branches.map((branch) => ({
+                    id: branch.id,
+                    value: branch.id,
+                    label: branch.name || 'Şube'
+                  }))}
+                  value={branches
+                    .filter((branch) => filters.branches?.includes(branch.id))
+                    .map((branch) => ({ id: branch.id, value: branch.id, label: branch.name || 'Şube' }))}
+                  onChange={(selected) => setFilters((prev) => ({
+                    ...prev,
+                    branches: selected.map((item) => item.value),
+                    branch: selected.map((item) => item.value).join(',') || undefined
+                  }))}
+                  className="min-w-[280px]"
                 />
               </div>
             </div>
@@ -169,8 +257,8 @@ export function DesktopReportsPage() {
 
         {/* Tabs */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div className="border-b border-gray-200 dark:border-gray-700">
-            <nav className="-mb-px flex space-x-8 px-6 overflow-x-auto">
+          <div className="border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
+            <nav className="-mb-px flex min-w-max gap-2 px-3 sm:gap-4 sm:px-6">
               {allowedTabs.map(tab => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -182,9 +270,9 @@ export function DesktopReportsPage() {
                     className={`${isActive
                       ? 'border-blue-500 text-blue-600 dark:text-blue-400 dark:border-blue-400 rounded-none'
                       : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
-                      } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center transition-colors !w-auto !h-auto rounded-none`}
+                      } shrink-0 whitespace-nowrap py-3 px-2 sm:py-4 sm:px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center transition-colors !w-auto !h-auto rounded-none`}
                   >
-                    <Icon className="w-4 h-4 mr-2" />
+                    <Icon className="w-4 h-4 mr-1.5 sm:mr-2" />
                     {tab.label}
                   </Button>
                 );
@@ -197,10 +285,11 @@ export function DesktopReportsPage() {
             {activeTab === 'overview' && canViewReports && <OverviewTab filters={filters} />}
             {activeTab === 'sales' && canViewReports && <SalesTab filters={filters} />}
             {activeTab === 'parties' && canViewReports && <PartiesTab filters={filters} />}
-            {activeTab === 'promissory' && canViewReports && <PromissoryNotesTab />}
+            {activeTab === 'promissory' && canViewReports && <PromissoryNotesTab filters={filters} />}
             {activeTab === 'remaining' && canViewReports && <RemainingPaymentsTab filters={filters} />}
             {activeTab === 'pos_movements' && canViewReports && <PosMovementsTab filters={filters} />}
-            {activeTab === 'activity' && canViewActivityLogs && <ActivityTab />}
+            {activeTab === 'report_tracking' && canViewReports && <ReportTrackingTab filters={filters} />}
+            {activeTab === 'activity' && canViewActivityLogs && <ActivityTab filters={filters} />}
 
             {/* Show no permission if tab doesn't match permissions */}
             {activeTab === 'overview' && !canViewReports && <NoPermission />}
@@ -209,6 +298,7 @@ export function DesktopReportsPage() {
             {activeTab === 'promissory' && !canViewReports && <NoPermission />}
             {activeTab === 'remaining' && !canViewReports && <NoPermission />}
             {activeTab === 'pos_movements' && !canViewReports && <NoPermission />}
+            {activeTab === 'report_tracking' && !canViewReports && <NoPermission />}
             {activeTab === 'activity' && !canViewActivityLogs && <NoPermission />}
           </div>
         </div>

@@ -190,7 +190,14 @@ def create_appointment(
             action='appointment_created',
             entity_type='party',
             entity_id=data['party_id'],
-            details=json.dumps({"title": "Randevu oluşturuldu", "appointment_id": appointment.id}),
+            details=json.dumps({
+                "title": "Randevu oluşturuldu",
+                "description": f"{appointment.time} saatinde {appointment.appointment_type} randevusu planlandi",
+                "appointment_id": appointment.id,
+                "date": appointment.date.strftime('%Y-%m-%d'),
+                "time": appointment.time,
+                "appointment_type": appointment.appointment_type,
+            }),
             created_at=datetime.now(timezone.utc),
         )
         db_session.add(activity)
@@ -539,5 +546,4 @@ def complete_appointment(
         db_session.rollback()
         logger.error(f"Complete appointment error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
 

@@ -81,23 +81,26 @@ const AudiogramChart: React.FC<AudiogramChartProps> = ({
 }) => {
   const width = compact ? 320 : 600;
   const height = compact ? 220 : 500;
-  const pad = compact
-    ? { top: 20, right: 12, bottom: 20, left: 32 }
-    : { top: 35, right: 30, bottom: 70, left: 50 };
+  const pad = useMemo(
+    () => (compact
+      ? { top: 20, right: 12, bottom: 20, left: 32 }
+      : { top: 35, right: 30, bottom: 70, left: 50 }),
+    [compact],
+  );
   const chartW = width - pad.left - pad.right;
   const chartH = height - pad.top - pad.bottom;
 
   // Logarithmic X (frequency)
-  const freqToX = (freq: number) => {
+  const freqToX = useCallback((freq: number) => {
     const logMin = Math.log10(125);
     const logMax = Math.log10(8000);
     return pad.left + ((Math.log10(freq) - logMin) / (logMax - logMin)) * chartW;
-  };
+  }, [chartW, pad.left]);
 
   // Linear Y (dB HL)
-  const dbToY = (db: number) => {
+  const dbToY = useCallback((db: number) => {
     return pad.top + ((db - DB_MIN) / (DB_MAX - DB_MIN)) * chartH;
-  };
+  }, [chartH, pad.top]);
 
   // Connect threshold points with a line
   const makePath = (thresholds: ThresholdData, color: string, dashed = false) => {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Bot,
   History,
@@ -144,7 +144,7 @@ export default function WhatsAppTab() {
     return chatThreads.find((thread) => thread.chatId === selectedChatId) ?? chatThreads[0];
   }, [chatThreads, selectedChatId]);
 
-  const fetchStatus = async (showError = false) => {
+  const fetchStatus = useCallback(async (showError = false) => {
     try {
       const response = await apiClient.get('/api/whatsapp/session/status');
       setSession(response.data?.data ?? { status: 'idle', connected: false });
@@ -153,23 +153,23 @@ export default function WhatsAppTab() {
         error('WhatsApp durumu alınamadı', err instanceof Error ? err.message : 'Durum bilgisi alınamadı');
       }
     }
-  };
+  }, [error]);
 
-  const fetchConfig = async () => {
+  const fetchConfig = useCallback(async () => {
     const response = await apiClient.get('/api/whatsapp/config');
     setConfig(response.data?.data ?? DEFAULT_CONFIG);
-  };
+  }, []);
 
-  const fetchInbox = async () => {
+  const fetchInbox = useCallback(async () => {
     const response = await apiClient.get('/api/whatsapp/inbox');
     setInboxItems(response.data?.data ?? []);
-  };
+  }, []);
 
   useEffect(() => {
     void fetchStatus();
     void fetchConfig();
     void fetchInbox();
-  }, []);
+  }, [fetchConfig, fetchInbox, fetchStatus]);
 
   useEffect(() => {
     if (chatThreads.length === 0) {
@@ -197,7 +197,7 @@ export default function WhatsAppTab() {
       void fetchInbox();
     }, 3000);
     return () => window.clearInterval(timer);
-  }, [session.status, session.connected]);
+  }, [fetchInbox, fetchStatus, session.status, session.connected]);
 
   const runAction = async (key: string, action: () => Promise<void>) => {
     try {

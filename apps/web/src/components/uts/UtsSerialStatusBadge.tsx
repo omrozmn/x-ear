@@ -1,7 +1,7 @@
 import { ShieldCheck, ShieldAlert, ShieldQuestion, Clock, ShieldOff } from 'lucide-react';
 import type { UtsSerialStatus } from '@/services/uts/uts.service';
 
-export type UtsDisplayStatus = UtsSerialStatus | 'unverified';
+export type UtsDisplayStatus = UtsSerialStatus | 'unverified' | 'unregistered';
 
 const statusMap: Record<UtsDisplayStatus, { label: string; className: string; icon: typeof ShieldCheck }> = {
   owned: {

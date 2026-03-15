@@ -23,7 +23,7 @@ const PartySearch: React.FC<PartySearchProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedParty, setSelectedParty] = useState<Party | null>(null);
   const { data: partiesData, isLoading } = useParties({});
-  const parties = partiesData?.parties || [];
+  const parties = useMemo(() => partiesData?.parties || [], [partiesData?.parties]);
 
   // Auto-suggest based on OCR result
   useEffect(() => {

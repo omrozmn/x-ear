@@ -8,6 +8,9 @@
  *   import { useListReportFinancial } from '@/api/client/reports.client';
  */
 
+import { useQuery } from '@tanstack/react-query';
+import { customInstance } from '@/api/orval-mutator';
+
 export {
   useListReportOverview,
   getListReportOverviewQueryKey,
@@ -27,3 +30,26 @@ export {
 } from '@/api/generated/index';
 
 export type { } from '@/api/generated/schemas';
+
+export interface ListReportTrackingParams {
+  page?: number;
+  per_page?: number;
+  branch_id?: string;
+  report_status?: string;
+  delivery_status?: string;
+  startDate?: string;
+  endDate?: string;
+  search?: string;
+}
+
+export function getListReportTrackingQueryKey(params?: ListReportTrackingParams) {
+  return ['/api/reports/report-tracking', params] as const;
+}
+
+export function useListReportTracking(params?: ListReportTrackingParams, enabled = true) {
+  return useQuery({
+    queryKey: getListReportTrackingQueryKey(params),
+    queryFn: () => customInstance({ url: '/api/reports/report-tracking', method: 'GET', params }),
+    enabled,
+  });
+}

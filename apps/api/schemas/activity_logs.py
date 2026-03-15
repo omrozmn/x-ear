@@ -26,6 +26,12 @@ class ActivityLogRead(ActivityLogBase, IDMixin, TimestampMixin):
     """Schema for reading an activity log"""
     user_id: Optional[str] = Field(None, alias="userId")
     tenant_id: Optional[str] = Field(None, alias="tenantId")
+    branch_id: Optional[str] = Field(None, alias="branchId")
+    branch_name: Optional[str] = Field(None, alias="branchName")
+    role: Optional[str] = None
+    data: Optional[Dict[str, Any] | str] = None
+    ip_address: Optional[str] = Field(None, alias="ipAddress")
+    user_agent: Optional[str] = Field(None, alias="userAgent")
     
     # Enriched fields
     user_name: Optional[str] = Field(None, alias="userName")

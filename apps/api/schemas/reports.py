@@ -26,6 +26,9 @@ class ReportPatientsResponse(AppBaseModel):
     age_distribution: Dict[str, int] = Field(..., alias="ageDistribution")
     status_distribution: Dict[str, int] = Field(..., alias="statusDistribution")
     patient_segments: PatientSegments = Field(..., alias="patientSegments")
+    summary: Optional[Dict[str, int]] = None
+    acquisition_breakdown: Optional[Dict[str, int]] = Field(None, alias="acquisitionBreakdown")
+    segment_breakdown: Optional[Dict[str, int]] = Field(None, alias="segmentBreakdown")
 
 # --- Financial ---
 class ProductSalesData(AppBaseModel):
@@ -95,6 +98,8 @@ class PromissoryNotePatientItem(AppBaseModel):
     total_amount: float = Field(..., alias="totalAmount")
     paid_amount: float = Field(..., alias="paidAmount")
     remaining_amount: float = Field(..., alias="remainingAmount")
+    first_due_date: Optional[str] = Field(None, alias="firstDueDate")
+    last_due_date: Optional[str] = Field(None, alias="lastDueDate")
 
 class ReportPromissoryNotesByPatientResponse(AppBaseModel):
     pass # Returns List[PromissoryNotePatientItem] inside ResponseEnvelope directly? Or wrapper?
@@ -171,3 +176,22 @@ class PosMovementSummary(AppBaseModel):
     fail_count: int = Field(..., alias="failCount")
 
 # Similar issue with meta summary for POS movements.
+
+# --- Report Tracking ---
+class ReportTrackingItem(AppBaseModel):
+    id: str
+    sale_id: Optional[str] = Field(None, alias="saleId")
+    party_id: Optional[str] = Field(None, alias="partyId")
+    party_name: str = Field(..., alias="partyName")
+    branch_id: Optional[str] = Field(None, alias="branchId")
+    branch_name: Optional[str] = Field(None, alias="branchName")
+    brand: Optional[str] = None
+    model: Optional[str] = None
+    device_name: Optional[str] = Field(None, alias="deviceName")
+    serial_number: Optional[str] = Field(None, alias="serialNumber")
+    ear: Optional[str] = None
+    report_status: Optional[str] = Field(None, alias="reportStatus")
+    delivery_status: Optional[str] = Field(None, alias="deliveryStatus")
+    assigned_date: Optional[str] = Field(None, alias="assignedDate")
+    sale_date: Optional[str] = Field(None, alias="saleDate")
+    updated_at: Optional[str] = Field(None, alias="updatedAt")

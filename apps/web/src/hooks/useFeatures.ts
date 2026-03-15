@@ -1,5 +1,27 @@
 import { useListSubscriptionFeatures } from '@/api/generated/index';
 
+type FeatureFlagsResponse = {
+  data?: {
+    features?: Record<string, boolean>;
+    planName?: string | null;
+    isSuperAdmin?: boolean;
+  };
+  features?: Record<string, boolean>;
+  planName?: string | null;
+  isSuperAdmin?: boolean;
+};
+
+type UseFeaturesResult = {
+  data: FeatureFlagsResponse | undefined;
+  isLoading: boolean;
+  isError: boolean;
+  error: unknown;
+  features: Record<string, boolean>;
+  planName: string | null;
+  isSuperAdmin: boolean;
+  isFeatureEnabled: (featureKey: string) => boolean;
+};
+
 /**
  * Convert camelCase key to snake_case for feature flag lookup.
  * hybridCamelize converts API response keys (website_builder → websiteBuilder),
@@ -22,7 +44,7 @@ function buildFeatureMap(raw: Record<string, boolean>): Record<string, boolean> 
   return result;
 }
 
-export function useFeatures() {
+export function useFeatures(): UseFeaturesResult {
   const query = useListSubscriptionFeatures({
     query: {
       staleTime: 5 * 60 * 1000, // 5 min
@@ -30,13 +52,13 @@ export function useFeatures() {
     },
   });
 
-  const raw = query.data as any;
+  const raw = query.data as FeatureFlagsResponse | undefined;
   const featuresData = raw?.data ?? raw;
 
   const rawFeatures: Record<string, boolean> = featuresData?.features ?? {};
   const features = buildFeatureMap(rawFeatures);
-  const planName: string | null = featuresData?.planName ?? featuresData?.plan_name ?? null;
-  const isSuperAdmin: boolean = featuresData?.isSuperAdmin ?? featuresData?.is_super_admin ?? false;
+  const planName: string | null = featuresData?.planName ?? null;
+  const isSuperAdmin: boolean = featuresData?.isSuperAdmin ?? false;
 
   const isFeatureEnabled = (featureKey: string): boolean => {
     if (!featuresData?.features) return true; // allow all while loading
@@ -44,7 +66,10 @@ export function useFeatures() {
   };
 
   return {
-    ...query,
+    data: raw,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error,
     features,
     planName,
     isSuperAdmin,

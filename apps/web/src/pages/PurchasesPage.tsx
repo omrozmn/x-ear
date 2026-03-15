@@ -12,8 +12,25 @@ import { useIsMobile } from '@/hooks/useBreakpoint';
 import { cn } from '@/lib/utils';
 import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 import { ExportDropdown } from '@/components/common/ExportDropdown';
-import { ConvertToPurchaseModal } from '@/components/invoices/ConvertToPurchaseModal';
-import toast from 'react-hot-toast';
+import { CashflowModal } from '@/components/cashflow/CashflowModal';
+import { useCashRecords, useCreateCashRecord } from '@/hooks/useCashflow';
+import type { CashRecord } from '@/types/cashflow';
+import { RECORD_TYPE_LABELS } from '@/types/cashflow';
+
+interface PurchaseTableRow {
+  id: string;
+  source: 'invoice' | 'manual';
+  invoiceNumber: string;
+  supplierName: string;
+  supplierTaxNumber?: string;
+  totalAmount: number;
+  invoiceDate?: string;
+  status: string;
+  currency?: string;
+  description?: string;
+  rawInvoice?: IncomingInvoiceResponse;
+  rawCashRecord?: CashRecord;
+}
 
 export function PurchasesPage() {
   const navigate = useNavigate();
@@ -32,24 +49,46 @@ export function PurchasesPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isMobileSelectionMode, setIsMobileSelectionMode] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [isConvertModalOpen, setIsConvertModalOpen] = useState(false);
+  const [isNewPurchaseModalOpen, setIsNewPurchaseModalOpen] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const debouncedSearch = useDebounce(searchTerm, 300);
 
   const { data, isLoading, isFetching, refetch } = useListIncomingInvoices({
-    page: isMobile ? 1 : currentPage,
-    per_page: isMobile ? mobileVisibleCount : perPage,
+    page: 1,
+    per_page: 500,
     status: statusFilter !== 'all' ? statusFilter as SchemasInvoicesNewInvoiceStatus : undefined,
     supplier_name: debouncedSearch || undefined,
     date_from: dateFrom ? dateFrom.toISOString().split('T')[0] : undefined,
     date_to: dateTo ? dateTo.toISOString().split('T')[0] : undefined,
   });
+  const { data: manualPurchaseRecordsData } = useCashRecords({
+    transactionType: 'expense',
+    startDate: dateFrom ? dateFrom.toISOString() : undefined,
+    endDate: dateTo ? dateTo.toISOString() : undefined,
+  });
+  const createCashRecordMutation = useCreateCashRecord();
 
   const invoiceList = useMemo(() => data?.data?.invoices ?? [], [data?.data?.invoices]);
-  const pagination = data?.data?.pagination;
-  const totalCount = pagination?.total ?? invoiceList.length;
-  const hasMoreMobile = isMobile && invoiceList.length < totalCount;
+  const manualPurchaseRecords = useMemo(() => {
+    const raw = Array.isArray(manualPurchaseRecordsData)
+      ? manualPurchaseRecordsData
+      : ((manualPurchaseRecordsData as unknown as { data?: CashRecord[] })?.data ?? []);
+
+    return raw.filter((record) => {
+      const query = debouncedSearch.trim().toLowerCase();
+      if (!query) return true;
+
+      return [
+        record.partyName,
+        record.inventoryItemName,
+        record.description,
+        RECORD_TYPE_LABELS[record.recordType],
+      ]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(query));
+    });
+  }, [manualPurchaseRecordsData, debouncedSearch]);
 
   useEffect(() => {
     if (!isMobile) return;
@@ -57,6 +96,45 @@ export function PurchasesPage() {
     setSelectedIds(new Set());
     setIsMobileSelectionMode(false);
   }, [isMobile, debouncedSearch, statusFilter, dateFrom, dateTo]);
+
+  const purchaseRows = useMemo<PurchaseTableRow[]>(() => {
+    const invoiceRows = invoiceList.map((invoice): PurchaseTableRow => ({
+      id: `invoice-${invoice.invoiceId}`,
+      source: 'invoice',
+      invoiceNumber: invoice.invoiceNumber || '',
+      supplierName: invoice.supplierName || '—',
+      supplierTaxNumber: invoice.supplierTaxNumber || undefined,
+      totalAmount: Number(invoice.totalAmount || 0),
+      invoiceDate: invoice.invoiceDate || undefined,
+      status: invoice.status || 'RECEIVED',
+      currency: invoice.currency || 'TRY',
+      description: undefined,
+      rawInvoice: invoice,
+    }));
+
+    const manualRows = manualPurchaseRecords.map((record): PurchaseTableRow => ({
+      id: `manual-${record.id}`,
+      source: 'manual',
+      invoiceNumber: 'MANUEL',
+      supplierName: record.partyName || record.inventoryItemName || 'Manuel Alış',
+      supplierTaxNumber: undefined,
+      totalAmount: Math.abs(Number(record.amount || 0)),
+      invoiceDate: record.date,
+      status: 'MANUAL',
+      currency: 'TRY',
+      description: record.description || RECORD_TYPE_LABELS[record.recordType] || 'Manuel alış kaydı',
+      rawCashRecord: record,
+    }));
+
+    return [...invoiceRows, ...manualRows].sort((a, b) => {
+      const aDate = a.invoiceDate || '';
+      const bDate = b.invoiceDate || '';
+      return bDate.localeCompare(aDate);
+    });
+  }, [invoiceList, manualPurchaseRecords]);
+
+  const totalCount = purchaseRows.length;
+  const hasMoreMobile = isMobile && mobileVisibleCount < totalCount;
 
   useEffect(() => {
     if (!isMobile || !hasMoreMobile || !loadMoreRef.current || isLoading || isFetching) return;
@@ -77,20 +155,20 @@ export function PurchasesPage() {
   }, [isMobile, hasMoreMobile, isLoading, isFetching, totalCount]);
 
   const totalPurchases = useMemo(
-    () => invoiceList.reduce((sum: number, invoice: IncomingInvoiceResponse) => sum + Number(invoice.totalAmount || 0), 0),
-    [invoiceList]
+    () => purchaseRows.reduce((sum: number, row: PurchaseTableRow) => sum + Number(row.totalAmount || 0), 0),
+    [purchaseRows]
   );
 
   const supplierCount = useMemo(
-    () => new Set(invoiceList.map((invoice: IncomingInvoiceResponse) => invoice.supplierTaxNumber).filter(Boolean)).size,
-    [invoiceList]
+    () => new Set(purchaseRows.map((row: PurchaseTableRow) => row.supplierName).filter(Boolean)).size,
+    [purchaseRows]
   );
 
   const sortedInvoices = useMemo(() => {
-    const list = [...invoiceList];
+    const list = [...purchaseRows];
     if (!sortField) return list;
 
-    list.sort((a: IncomingInvoiceResponse, b: IncomingInvoiceResponse) => {
+    list.sort((a: PurchaseTableRow, b: PurchaseTableRow) => {
       let av: string | number = '';
       let bv: string | number = '';
       if (sortField === 'supplierName') { av = a.supplierName || ''; bv = b.supplierName || ''; }
@@ -105,18 +183,31 @@ export function PurchasesPage() {
     });
 
     return list;
-  }, [invoiceList, sortField, sortDir]);
+  }, [purchaseRows, sortField, sortDir]);
+
+  const paginatedInvoices = useMemo(() => {
+    const startIndex = (currentPage - 1) * perPage;
+    const endIndex = startIndex + perPage;
+    return sortedInvoices.slice(startIndex, endIndex);
+  }, [currentPage, perPage, sortedInvoices]);
+
+  const mobileVisibleInvoices = useMemo(
+    () => sortedInvoices.slice(0, mobileVisibleCount),
+    [mobileVisibleCount, sortedInvoices]
+  );
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
       RECEIVED: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
       PROCESSED: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
       PAID: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
+      MANUAL: 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400',
     };
     const labels: Record<string, string> = {
       RECEIVED: 'Alındı',
       PROCESSED: 'İşlendi',
       PAID: 'Ödendi',
+      MANUAL: 'Manuel',
     };
     return <span className={`px-2 py-1 rounded-full text-xs font-medium ${styles[status] || 'bg-gray-100 text-gray-800'}`}>{labels[status] || status}</span>;
   };
@@ -134,9 +225,9 @@ export function PurchasesPage() {
 
   const getPurchaseExportRows = useCallback(() => {
     const selected = selectedIds.size > 0
-      ? sortedInvoices.filter((invoice: IncomingInvoiceResponse) => selectedIds.has(String(invoice.invoiceId)))
+      ? sortedInvoices.filter((invoice: PurchaseTableRow) => selectedIds.has(invoice.id))
       : sortedInvoices;
-    return selected.map((invoice: IncomingInvoiceResponse) => [
+    return selected.map((invoice: PurchaseTableRow) => [
       invoice.invoiceNumber || '', invoice.supplierName || '', invoice.supplierTaxNumber || '',
       String(invoice.totalAmount || 0), invoice.invoiceDate || '', invoice.status || '',
     ]);
@@ -154,31 +245,14 @@ export function PurchasesPage() {
     await refetch();
   }, [refetch]);
 
-  const selectedInvoicesForConversion = useMemo(() => {
-    return sortedInvoices
-      .filter((invoice: IncomingInvoiceResponse) => selectedIds.has(String(invoice.invoiceId)))
-      .map((invoice: IncomingInvoiceResponse) => ({
-        invoiceId: String(invoice.invoiceId),
-        supplierName: invoice.supplierName || '',
-        supplierTaxNumber: invoice.supplierTaxNumber || undefined,
-        invoiceNumber: invoice.invoiceNumber || '',
-        totalAmount: Number(invoice.totalAmount || 0),
-        currency: invoice.currency || 'TRY',
-      }));
-  }, [selectedIds, sortedInvoices]);
-
-  const handleOpenConvertModal = useCallback(() => {
-    if (selectedInvoicesForConversion.length === 0) {
-      toast.error('Yeni alış için önce en az bir kayıt seçin.');
-      return;
-    }
-
-    setIsConvertModalOpen(true);
-  }, [selectedInvoicesForConversion.length]);
+  const handleSavePurchaseRecord = useCallback(async (formData: Parameters<typeof createCashRecordMutation.mutateAsync>[0]) => {
+    await createCashRecordMutation.mutateAsync(formData);
+    await refetch();
+  }, [createCashRecordMutation, refetch]);
 
   const renderMobileCards = () => (
     <div className="block md:hidden space-y-3 mt-3">
-      {sortedInvoices.length === 0 ? (
+      {mobileVisibleInvoices.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="bg-white dark:bg-gray-800 p-4 rounded-full shadow-sm mb-4">
             <ShoppingCart className="h-8 w-8 text-gray-300 dark:text-gray-500" />
@@ -186,35 +260,35 @@ export function PurchasesPage() {
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">Alış kaydı bulunamadı</h3>
           <p className="text-gray-500 text-sm mt-1">Henüz gelen faturadan oluşturulmuş alış kaydı yok.</p>
         </div>
-      ) : sortedInvoices.map((invoice: IncomingInvoiceResponse) => (
+      ) : mobileVisibleInvoices.map((invoice: PurchaseTableRow) => (
         <div
-          key={invoice.invoiceId}
+          key={invoice.id}
           onClick={() => {
-            if (isMobileSelectionMode) toggleSelect(String(invoice.invoiceId));
-            else setSelectedInvoice(invoice);
+            if (isMobileSelectionMode) toggleSelect(invoice.id);
+            else if (invoice.rawInvoice) setSelectedInvoice(invoice.rawInvoice);
           }}
           className={cn(
             'bg-white dark:bg-gray-900 rounded-xl border shadow-sm overflow-visible relative transition-all',
-            selectedIds.has(String(invoice.invoiceId)) ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 dark:border-blue-500' : 'border-gray-200 dark:border-gray-700'
+            selectedIds.has(invoice.id) ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 dark:border-blue-500' : 'border-gray-200 dark:border-gray-700'
           )}
         >
           {isMobileSelectionMode && (
             <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
-              {selectedIds.has(String(invoice.invoiceId)) ? <CheckSquare className="w-6 h-6 text-blue-600 dark:text-blue-400" /> : <Square className="w-6 h-6 text-gray-300 dark:text-gray-600" />}
+              {selectedIds.has(invoice.id) ? <CheckSquare className="w-6 h-6 text-blue-600 dark:text-blue-400" /> : <Square className="w-6 h-6 text-gray-300 dark:text-gray-600" />}
             </div>
           )}
           <div className={cn('p-4 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800 transition-colors', isMobileSelectionMode && 'pr-12')}>
             <div className="flex items-start justify-between mb-3 gap-3">
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{invoice.supplierName || '—'}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">{invoice.invoiceNumber || 'Fatura No Yok'}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">{invoice.invoiceNumber || invoice.description || 'Kayıt Yok'}</p>
               </div>
               <div className="shrink-0">{getStatusBadge(invoice.status)}</div>
             </div>
             <div className="border-t border-gray-100 dark:border-gray-800 pt-3 flex items-end justify-between gap-3">
               <div>
                 <p className="text-xs text-gray-400">Tarih</p>
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{formatDate(invoice.invoiceDate)}</p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{invoice.invoiceDate ? formatDate(invoice.invoiceDate) : '-'}</p>
               </div>
               <div className="text-right">
                 <p className="text-xs text-gray-400">Tutar</p>
@@ -259,7 +333,7 @@ export function PurchasesPage() {
               Yenile
             </Button>
             <div className="ml-auto">
-              <Button className="flex items-center gap-2" onClick={handleOpenConvertModal}>
+              <Button className="flex items-center gap-2" onClick={() => setIsNewPurchaseModalOpen(true)}>
                 <Plus size={18} />
                 Yeni Alış
               </Button>
@@ -365,10 +439,10 @@ export function PurchasesPage() {
 
       {isMobile ? renderMobileCards() : (
         <Card>
-          <DataTable<IncomingInvoiceResponse>
-            data={sortedInvoices}
+          <DataTable<PurchaseTableRow>
+            data={paginatedInvoices}
             loading={isLoading}
-            rowKey={(inv) => String(inv.invoiceId)}
+            rowKey={(inv) => inv.id}
             emptyText="Alış kaydı bulunamadı"
             hoverable
             striped
@@ -394,16 +468,20 @@ export function PurchasesPage() {
                 key: 'invoiceNumber',
                 title: 'Fatura No',
                 sortable: true,
-                render: (_: unknown, inv: IncomingInvoiceResponse) => inv.invoiceNumber,
+                render: (_: unknown, inv: PurchaseTableRow) => inv.invoiceNumber || 'MANUEL',
               },
               {
                 key: 'supplierName',
                 title: 'Tedarikçi',
                 sortable: true,
-                render: (_: unknown, inv: IncomingInvoiceResponse) => (
+                render: (_: unknown, inv: PurchaseTableRow) => (
                   <div>
                     <div className="text-sm text-gray-900 dark:text-white">{inv.supplierName}</div>
-                    {inv.supplierTaxNumber && <div className="text-xs text-gray-500 dark:text-gray-400">VKN: {inv.supplierTaxNumber}</div>}
+                    {inv.source === 'manual' ? (
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{inv.description || 'Manuel gider kaydı'}</div>
+                    ) : inv.supplierTaxNumber ? (
+                      <div className="text-xs text-gray-500 dark:text-gray-400">VKN: {inv.supplierTaxNumber}</div>
+                    ) : null}
                   </div>
                 ),
               },
@@ -411,7 +489,7 @@ export function PurchasesPage() {
                 key: 'totalAmount',
                 title: 'Tutar',
                 sortable: true,
-                render: (_: unknown, inv: IncomingInvoiceResponse) => (
+                render: (_: unknown, inv: PurchaseTableRow) => (
                   <span className="font-semibold">{formatCurrency(Number(inv.totalAmount), inv.currency || 'TRY')}</span>
                 ),
               },
@@ -419,22 +497,22 @@ export function PurchasesPage() {
                 key: 'invoiceDate',
                 title: 'Tarih',
                 sortable: true,
-                render: (_: unknown, inv: IncomingInvoiceResponse) => formatDate(inv.invoiceDate),
+                render: (_: unknown, inv: PurchaseTableRow) => inv.invoiceDate ? formatDate(inv.invoiceDate) : '-',
               },
               {
                 key: 'status',
                 title: 'Durum',
                 sortable: true,
-                render: (_: unknown, inv: IncomingInvoiceResponse) => getStatusBadge(inv.status),
+                render: (_: unknown, inv: PurchaseTableRow) => getStatusBadge(inv.status),
               },
               {
                 key: '_actions',
                 title: 'İşlemler',
-                render: (_: unknown, inv: IncomingInvoiceResponse) => (
-                  <Button variant="ghost" size="sm" onClick={() => setSelectedInvoice(inv)}>Detay</Button>
+                render: (_: unknown, inv: PurchaseTableRow) => (
+                  <Button variant="ghost" size="sm" onClick={() => inv.rawInvoice && setSelectedInvoice(inv.rawInvoice)} disabled={inv.source === 'manual'}>Detay</Button>
                 ),
               },
-            ] as Column<IncomingInvoiceResponse>[]}
+            ] as Column<PurchaseTableRow>[]}
           />
         </Card>
       )}
@@ -508,14 +586,14 @@ export function PurchasesPage() {
         </div>
       )}
 
-      <ConvertToPurchaseModal
-        isOpen={isConvertModalOpen}
-        onClose={() => setIsConvertModalOpen(false)}
-        selectedInvoices={selectedInvoicesForConversion}
-        onSuccess={() => {
-          setSelectedIds(new Set());
-          void refetch();
-        }}
+      <CashflowModal
+        isOpen={isNewPurchaseModalOpen}
+        onClose={() => setIsNewPurchaseModalOpen(false)}
+        onSave={handleSavePurchaseRecord}
+        isLoading={createCashRecordMutation.isPending}
+        title="Yeni Alış Kaydı"
+        saveButtonText="Alışı Kaydet"
+        lockedTransactionType="expense"
       />
     </div>
   );

@@ -20,7 +20,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       title: "Toplam Hasta",
       value: stats.totalParties.toString(),
       icon: <Users className="w-6 h-6 text-white" />,
-      color: "bg-gradient-to-br from-sky-500 via-sky-600 to-cyan-600",
+      background: 'linear-gradient(135deg, rgba(14,165,233,0.96) 0%, rgba(2,132,199,0.94) 50%, rgba(8,145,178,0.92) 100%)',
       trend: "+12%",
       key: 'parties'
     },
@@ -28,7 +28,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       title: "Aktif Denemeler",
       value: stats.activeTrials.toString(),
       icon: <Activity className="w-6 h-6 text-white" />,
-      color: "bg-gradient-to-br from-cyan-500 via-sky-500 to-sky-600",
+      background: 'linear-gradient(135deg, rgba(6,182,212,0.96) 0%, rgba(14,165,233,0.94) 52%, rgba(3,105,161,0.92) 100%)',
       trend: "+5%",
       key: 'trials'
     },
@@ -36,7 +36,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       title: "Aylık Ciro",
       value: `₺${stats.monthlyRevenue.toLocaleString()}`,
       icon: <TrendingUp className="w-6 h-6 text-white" />,
-      color: "bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600",
+      background: 'linear-gradient(135deg, rgba(16,185,129,0.96) 0%, rgba(5,150,105,0.94) 50%, rgba(13,148,136,0.92) 100%)',
       trend: "+8%",
       key: 'revenue'
     },
@@ -44,7 +44,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       title: "Bugünkü Randevular",
       value: stats.todayAppointments.toString(),
       icon: <Calendar className="w-6 h-6 text-white" />,
-      color: "bg-gradient-to-br from-slate-600 via-slate-700 to-sky-700",
+      background: 'linear-gradient(135deg, rgba(71,85,105,0.96) 0%, rgba(51,65,85,0.94) 50%, rgba(3,105,161,0.9) 100%)',
       trend: "3 bekleyen",
       key: 'appointments'
     }
@@ -56,18 +56,20 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         <div
           key={card.key}
           onClick={() => onCardClick?.(card.key)}
-          className={`${card.color} bg-opacity-90 dark:bg-opacity-80 backdrop-blur-xl rounded-2xl p-6 shadow-lg shadow-slate-200/60 dark:shadow-none border border-white/20 dark:border-white/10 transform transition-all duration-300 hover:scale-[1.03] hover:shadow-xl cursor-pointer relative overflow-hidden group`}
+          className="relative cursor-pointer overflow-hidden rounded-[28px] border border-white/20 p-6 shadow-[0_20px_56px_-36px_rgba(15,23,42,0.34)] backdrop-blur-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_26px_72px_-40px_rgba(15,23,42,0.4)] group dark:border-white/10 dark:shadow-[0_24px_80px_-44px_rgba(2,6,23,0.85)]"
+          style={{ background: card.background }}
           data-testid={`dashboard-widget-${card.key}`}
         >
-          {/* Decorative background circle */}
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-500"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.28),transparent_34%)] opacity-90" />
+          <div className="absolute inset-x-8 bottom-0 h-20 rounded-full bg-black/10 blur-3xl dark:bg-black/30" />
+          <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/12 blur-2xl group-hover:bg-white/22 transition-all duration-500" />
 
           <div className="flex justify-between items-start mb-4 relative z-10">
-            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm shadow-inner border border-white/10">
+            <div className="rounded-2xl border border-white/20 bg-white/18 p-3 backdrop-blur-md shadow-inner dark:bg-white/10 dark:border-white/15">
               {card.icon}
             </div>
             {card.trend && (
-              <span className="text-xs font-medium text-white/90 bg-white/20 px-2 py-1 rounded-2xl backdrop-blur-md border border-white/10">
+              <span className="rounded-2xl border border-white/15 bg-white/16 px-2 py-1 text-xs font-medium text-white/92 backdrop-blur-md dark:bg-white/10">
                 {card.trend}
               </span>
             )}
@@ -75,7 +77,9 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
 
           <div className="relative z-10">
             <h3 className="text-3xl font-bold text-white mb-1 tracking-tight">{card.value}</h3>
-            <p className="text-white/80 font-medium text-sm tracking-wide bg-white/5 inline-block px-2 py-0.5 rounded-xl">{card.title}</p>
+            <p className="inline-block rounded-xl bg-white/8 px-2 py-0.5 text-sm font-medium tracking-wide text-white/84 dark:bg-white/6">
+              {card.title}
+            </p>
           </div>
         </div>
       ))}

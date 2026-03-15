@@ -207,6 +207,10 @@ class AppointmentService {
       this.appointments.push(appointment);
       this.saveAppointments();
       this.notify();
+      window.dispatchEvent(new CustomEvent('dashboard:refresh'));
+      window.dispatchEvent(new CustomEvent('party-timeline:refresh', {
+        detail: { partyId: appointment.partyId }
+      }));
 
       return appointment;
     } catch (error) {

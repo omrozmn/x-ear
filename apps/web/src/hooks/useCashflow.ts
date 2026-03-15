@@ -5,6 +5,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customInstance } from '../api/orval-mutator';
 import type { CashRecord, CashRecordFormData, CashflowFilters } from '../types/cashflow';
+import { getListDashboardQueryKey } from '@/api/client/dashboard.client';
 
 const CASHFLOW_QUERY_KEY = 'cashflow';
 
@@ -62,6 +63,7 @@ export function useCreateCashRecord() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [CASHFLOW_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: getListDashboardQueryKey() });
     },
   });
 }

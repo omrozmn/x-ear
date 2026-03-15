@@ -3,7 +3,7 @@ import { AlertCircle, CheckCircle2, ChevronDown, ChevronUp, Copy, ExternalLink, 
 
 import { Button, useToastHelpers } from '@x-ear/ui-web';
 
-import { getWhatsAppSessionStatus } from '@/api/generated/whats-app/whats-app';
+import { getWhatsAppSessionStatus } from '@/api/client/whatsapp.client';
 import { useListSubscriptionCurrent } from '@/api/client/subscriptions.client';
 import { useAuthStore } from '@/stores/authStore';
 import { extractErrorMessage } from '@/utils/error-utils';

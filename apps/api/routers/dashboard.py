@@ -53,6 +53,13 @@ def tenant_scoped_query(access: UnifiedAccess, model, session: Session):
     
     return query
 
+
+def normalize_breakdown_key(value: Any, fallback: str = "Bilinmiyor") -> str:
+    if value is None:
+        return fallback
+    text = str(value).strip()
+    return text or fallback
+
 def enrich_activity_logs(logs: List[ActivityLog], session: Session) -> List[Dict[str, Any]]:
     """Enrich activity logs with user, tenant, branch details (replacing to_dict_with_user)"""
     results = []
@@ -88,6 +95,14 @@ def enrich_activity_logs(logs: List[ActivityLog], session: Session) -> List[Dict
         results.append(data)
     return results
 
+
+def sum_sale_amounts(sales: List[Sale]) -> float:
+    return float(sum(float(s.final_amount or s.total_amount or 0) for s in sales))
+
+
+def sum_manual_income(records: List[Any]) -> float:
+    return float(sum(float(r.amount or 0) for r in records if float(r.amount or 0) > 0))
+
 # --- Routes ---
 
 @router.get("/dashboard", operation_id="listDashboard", response_model=ResponseEnvelope[DashboardData])
@@ -97,6 +112,14 @@ def get_dashboard(
 ):
     """Main dashboard endpoint with KPIs and recent activity"""
     try:
+        from core.models.sales import PaymentRecord
+
+        now = datetime.now()
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        today_end = today_start + timedelta(days=1)
+        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        next_month = (month_start + timedelta(days=32)).replace(day=1)
+
         # KPIs
         try:
             total_patients = tenant_scoped_query(access, Party, db_session).count()
@@ -120,16 +143,16 @@ def get_dashboard(
             available_devices = 0
 
         try:
-            base_query = tenant_scoped_query(access, Sale, db_session)
-            estimated_revenue = float(db_session.query(
-                func.coalesce(func.sum(Sale.total_amount), 0)
-            ).filter(Sale.id.in_([s.id for s in base_query.all()])).scalar() or 0.0)
+            total_sales = tenant_scoped_query(access, Sale, db_session).all()
+            manual_income_records = tenant_scoped_query(access, PaymentRecord, db_session).filter(
+                PaymentRecord.sale_id == None,
+                PaymentRecord.amount > 0
+            ).all()
+            estimated_revenue = sum_sale_amounts(total_sales) + sum_manual_income(manual_income_records)
         except Exception:
             estimated_revenue = 0.0
 
         try:
-            today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-            today_end = today_start + timedelta(days=1)
             today_appointments = tenant_scoped_query(access, Appointment, db_session).filter(
                 Appointment.date >= today_start,
                 Appointment.date < today_end
@@ -145,11 +168,34 @@ def get_dashboard(
             active_trials = 0
 
         try:
-            today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-            daily_sales = tenant_scoped_query(access, Sale, db_session).filter(Sale.sale_date >= today_start).all()
-            daily_revenue = float(sum(s.total_amount or 0 for s in daily_sales))
+            daily_sales = tenant_scoped_query(access, Sale, db_session).filter(
+                Sale.sale_date >= today_start,
+                Sale.sale_date < today_end
+            ).all()
+            daily_manual_income = tenant_scoped_query(access, PaymentRecord, db_session).filter(
+                PaymentRecord.sale_id == None,
+                PaymentRecord.amount > 0,
+                PaymentRecord.payment_date >= today_start,
+                PaymentRecord.payment_date < today_end
+            ).all()
+            daily_revenue = sum_sale_amounts(daily_sales) + sum_manual_income(daily_manual_income)
         except Exception:
             daily_revenue = 0.0
+
+        try:
+            monthly_sales = tenant_scoped_query(access, Sale, db_session).filter(
+                Sale.sale_date >= month_start,
+                Sale.sale_date < next_month
+            ).all()
+            monthly_manual_income = tenant_scoped_query(access, PaymentRecord, db_session).filter(
+                PaymentRecord.sale_id == None,
+                PaymentRecord.amount > 0,
+                PaymentRecord.payment_date >= month_start,
+                PaymentRecord.payment_date < next_month
+            ).all()
+            monthly_revenue = sum_sale_amounts(monthly_sales) + sum_manual_income(monthly_manual_income)
+        except Exception:
+            monthly_revenue = 0.0
 
         try:
             pending_appointments = tenant_scoped_query(access, Appointment, db_session).filter(
@@ -195,7 +241,7 @@ def get_dashboard(
                     "endingTrials": ending_trials,
                     "todaysAppointments": today_appointments,
                     "activePatients": total_patients,
-                    "monthlyRevenue": estimated_revenue
+                    "monthlyRevenue": monthly_revenue
                 },
                 "recentActivity": recent_activity
             }
@@ -349,7 +395,7 @@ def patient_distribution(
                     seg_counts = seg_counts.filter(Party.tenant_id == access.tenant_id)
                 
                 seg_counts = seg_counts.group_by(Party.segment).all()
-                seg_map = {s: int(c) for s, c in seg_counts}
+                seg_map = {normalize_breakdown_key(s): int(c) for s, c in seg_counts}
             except Exception:
                 seg_map = {}
 
@@ -362,17 +408,73 @@ def patient_distribution(
                     acq_counts = acq_counts.filter(Party.tenant_id == access.tenant_id)
                 
                 acq_counts = acq_counts.group_by(Party.acquisition_type).all()
-                acq_map = {s: int(c) for s, c in acq_counts}
+                acq_map = {normalize_breakdown_key(s): int(c) for s, c in acq_counts}
             except Exception:
                 acq_map = {}
 
             results.append({
                 'branchId': b_id,
-                'branch': br.name,
+                'branch': br.name or 'Sube',
                 'breakdown': {
                     'status': status_map,
                     'segment': seg_map,
                     'acquisitionType': acq_map
+                }
+            })
+
+        try:
+            unassigned_status_counts = db_session.query(
+                Party.status, func.count(Party.id)
+            ).filter(
+                (Party.branch_id == None) | (Party.branch_id == '')
+            )
+
+            if access.tenant_id:
+                unassigned_status_counts = unassigned_status_counts.filter(Party.tenant_id == access.tenant_id)
+
+            unassigned_status_counts = unassigned_status_counts.group_by(Party.status).all()
+            unassigned_status_map = {s.value if hasattr(s, 'value') else str(s): int(c) for s, c in unassigned_status_counts}
+        except Exception:
+            unassigned_status_map = {}
+
+        try:
+            unassigned_segment_counts = db_session.query(
+                Party.segment, func.count(Party.id)
+            ).filter(
+                (Party.branch_id == None) | (Party.branch_id == '')
+            )
+
+            if access.tenant_id:
+                unassigned_segment_counts = unassigned_segment_counts.filter(Party.tenant_id == access.tenant_id)
+
+            unassigned_segment_counts = unassigned_segment_counts.group_by(Party.segment).all()
+            unassigned_segment_map = {normalize_breakdown_key(s): int(c) for s, c in unassigned_segment_counts}
+        except Exception:
+            unassigned_segment_map = {}
+
+        try:
+            unassigned_acq_counts = db_session.query(
+                Party.acquisition_type, func.count(Party.id)
+            ).filter(
+                (Party.branch_id == None) | (Party.branch_id == '')
+            )
+
+            if access.tenant_id:
+                unassigned_acq_counts = unassigned_acq_counts.filter(Party.tenant_id == access.tenant_id)
+
+            unassigned_acq_counts = unassigned_acq_counts.group_by(Party.acquisition_type).all()
+            unassigned_acq_map = {normalize_breakdown_key(s): int(c) for s, c in unassigned_acq_counts}
+        except Exception:
+            unassigned_acq_map = {}
+
+        if unassigned_status_map or unassigned_segment_map or unassigned_acq_map:
+            results.append({
+                'branchId': 'unassigned',
+                'branch': 'Atanmamis',
+                'breakdown': {
+                    'status': unassigned_status_map,
+                    'segment': unassigned_segment_map,
+                    'acquisitionType': unassigned_acq_map
                 }
             })
 

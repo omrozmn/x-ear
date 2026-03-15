@@ -62,6 +62,24 @@ export function usePartyTimeline(partyId?: string) {
     }
   }, [partyId, fetchTimeline]);
 
+  useEffect(() => {
+    const handleRefresh = (event: Event) => {
+      const customEvent = event as CustomEvent<{ partyId?: string }>;
+      const refreshedPartyId = customEvent.detail?.partyId;
+
+      if (!partyId) {
+        return;
+      }
+
+      if (!refreshedPartyId || refreshedPartyId === partyId) {
+        void fetchTimeline(partyId);
+      }
+    };
+
+    window.addEventListener('party-timeline:refresh', handleRefresh);
+    return () => window.removeEventListener('party-timeline:refresh', handleRefresh);
+  }, [fetchTimeline, partyId]);
+
   // Clear error
   const clearError = useCallback(() => {
     setError(null);

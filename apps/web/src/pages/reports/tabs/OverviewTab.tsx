@@ -17,6 +17,7 @@ import {
     getListReportFinancialQueryKey
 } from '@/api/client/reports.client';
 import { KPICard } from '../components/KPICard';
+import { TabExportButton } from '../components/TabExportButton';
 import { FilterState, ReportOverview, ReportFinancial } from '../types';
 
 interface OverviewTabProps {
@@ -24,14 +25,21 @@ interface OverviewTabProps {
 }
 
 export function OverviewTab({ filters }: OverviewTabProps) {
+    const reportParams = {
+        days: filters.days,
+        branch_id: filters.branch,
+        startDate: filters.dateRange.start || undefined,
+        endDate: filters.dateRange.end || undefined
+    } as never;
+
     const { data: overviewData, isLoading, error, refetch } = useListReportOverview(
-        { days: filters.days },
-        { query: { queryKey: [...getListReportOverviewQueryKey({ days: filters.days })] } }
+        reportParams,
+        { query: { queryKey: [...getListReportOverviewQueryKey(reportParams)] } }
     );
 
     const { data: financialData } = useListReportFinancial(
-        { days: filters.days },
-        { query: { queryKey: [...getListReportFinancialQueryKey({ days: filters.days })] } }
+        reportParams,
+        { query: { queryKey: [...getListReportFinancialQueryKey(reportParams)] } }
     );
 
     const formatCurrency = (amount: number) => {
@@ -64,33 +72,51 @@ export function OverviewTab({ filters }: OverviewTabProps) {
 
     const overview = unwrapObject<ReportOverview>(overviewData);
     const financial = unwrapObject<ReportFinancial>(financialData);
+    const exportRows = [
+        {
+            toplam_ciro: overview?.totalRevenue || 0,
+            toplam_satis: overview?.totalSales || 0,
+            randevu_orani: overview?.appointmentRate || 0,
+            donusum_orani: overview?.conversionRate || 0,
+            toplam_hasta: overview?.totalPatients || 0,
+            yeni_hasta: overview?.newPatients || 0,
+            toplam_randevu: overview?.totalAppointments || 0,
+        },
+        ...Object.entries(financial?.paymentMethods || {}).map(([method, data]) => ({
+            odeme_yontemi: method,
+            tutar: data.amount || 0,
+        }))
+    ];
 
     return (
         <div className="space-y-6">
+            <div className="flex justify-end">
+                <TabExportButton filename="genel-bakis-raporu" rows={exportRows} />
+            </div>
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <KPICard
                     title="Toplam Ciro"
-                    value={formatCurrency(overview?.total_revenue || 0)}
+                    value={formatCurrency(overview?.totalRevenue || 0)}
                     icon={DollarSign}
                     color="green"
-                    subtitle={`${filters.days} günlük`}
+                    subtitle={`${filters.dateRange.start} - ${filters.dateRange.end}`}
                 />
                 <KPICard
                     title="Toplam Satış"
-                    value={overview?.total_sales || 0}
+                    value={overview?.totalSales || 0}
                     icon={FileText}
                     color="blue"
                 />
                 <KPICard
                     title="Randevu Oranı"
-                    value={`%${overview?.appointment_rate || 0}`}
+                    value={`%${overview?.appointmentRate || 0}`}
                     icon={Calendar}
                     color="purple"
                 />
                 <KPICard
                     title="Dönüşüm Oranı"
-                    value={`%${overview?.conversion_rate || 0}`}
+                    value={`%${overview?.conversionRate || 0}`}
                     icon={TrendingUp}
                     color="yellow"
                 />
@@ -103,15 +129,15 @@ export function OverviewTab({ filters }: OverviewTabProps) {
                     <div className="space-y-3">
                         <div className="flex justify-between items-center">
                             <span className="text-gray-600 dark:text-gray-400">Toplam Hasta</span>
-                            <span className="font-semibold text-gray-900 dark:text-white">{overview?.total_parties || 0}</span>
+                            <span className="font-semibold text-gray-900 dark:text-white">{overview?.totalPatients || 0}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                            <span className="text-gray-600 dark:text-gray-400">Yeni Hastalar ({filters.days} gün)</span>
-                            <span className="font-semibold text-green-600 dark:text-green-400">{overview?.new_parties || 0}</span>
+                            <span className="text-gray-600 dark:text-gray-400">Yeni Hastalar</span>
+                            <span className="font-semibold text-green-600 dark:text-green-400">{overview?.newPatients || 0}</span>
                         </div>
                         <div className="flex justify-between items-center">
                             <span className="text-gray-600 dark:text-gray-400">Toplam Randevu</span>
-                            <span className="font-semibold text-gray-900 dark:text-white">{overview?.total_appointments || 0}</span>
+                            <span className="font-semibold text-gray-900 dark:text-white">{overview?.totalAppointments || 0}</span>
                         </div>
                     </div>
                 </div>
@@ -119,13 +145,13 @@ export function OverviewTab({ filters }: OverviewTabProps) {
                 <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Ödeme Yöntemleri</h3>
                     <div className="space-y-3">
-                        {financial?.payment_methods && Object.entries(financial.payment_methods).map(([method, data]) => (
+                        {financial?.paymentMethods && Object.entries(financial.paymentMethods).map(([method, data]) => (
                             <div key={method} className="flex justify-between items-center">
                                 <span className="text-gray-600 dark:text-gray-400 capitalize">{method}</span>
                                 <span className="font-semibold text-gray-900 dark:text-white">{formatCurrency(data.amount || 0)}</span>
                             </div>
                         ))}
-                        {(!financial?.payment_methods || Object.keys(financial.payment_methods).length === 0) && (
+                        {(!financial?.paymentMethods || Object.keys(financial.paymentMethods).length === 0) && (
                             <p className="text-gray-400 text-sm">Veri bulunamadı</p>
                         )}
                     </div>

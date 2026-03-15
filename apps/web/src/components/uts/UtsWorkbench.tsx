@@ -6,7 +6,7 @@ import { Button, Card, DataTable, Input, useToastHelpers } from '@x-ear/ui-web';
 
 import { useIsMobile } from '@/hooks/useBreakpoint';
 import { useAddUtsSerialToInventory, useUtsConfig, useUtsSerialStates } from '@/hooks/uts/useUts';
-import { useSyncUtsAlmaBekleyenler } from '@/api/generated/uts/uts';
+import { useSyncUtsAlmaBekleyenler } from '@/api/client/uts.client';
 import type { UtsSerialState } from '@/services/uts/uts.service';
 import { DesktopPageHeader } from '@/components/layout/DesktopPageHeader';
 
@@ -254,7 +254,7 @@ export function UtsWorkbench() {
         </div>
       ),
     },
-  ], [activeTab, items, selectedKeys]);
+  ], [activeTab, addToInventoryMutation.isPending, items, selectedKeys]);
 
   const renderMobileCards = () => (
     <div className="space-y-3">

@@ -37,13 +37,19 @@ export function RecordTypeSelector({
   const handleAddType = () => {
     if (!newType.trim() || !transactionType) return;
 
+    const trimmedType = newType.trim();
     const category = transactionType as 'income' | 'expense';
-    if (customTypes[category].includes(newType.trim())) return;
+    if (customTypes[category].includes(trimmedType)) {
+      onSelectType(trimmedType as RecordType);
+      setNewType('');
+      return;
+    }
 
     setCustomTypes({
       ...customTypes,
-      [category]: [...customTypes[category], newType.trim()],
+      [category]: [...customTypes[category], trimmedType],
     });
+    onSelectType(trimmedType as RecordType);
     setNewType('');
   };
 

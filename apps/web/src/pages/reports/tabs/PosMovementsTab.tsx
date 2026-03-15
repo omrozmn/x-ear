@@ -6,13 +6,14 @@ import {
     CreditCard
 } from 'lucide-react';
 import { Button } from '@x-ear/ui-web';
-import { unwrapObject, unwrapPaginated } from '../../../utils/response-unwrap';
+import { unwrapPaginated } from '../../../utils/response-unwrap';
 import {
     useListReportPosMovements
 } from '@/api/client/reports.client';
 import { FilterState } from '../types';
 import type { PosMovementItem, ResponseMeta } from '@/api/generated/schemas';
 import { PosMovementsList } from '@/components/reports/PosMovementsList';
+import { TabExportButton } from '../components/TabExportButton';
 
 interface PosMovementsTabProps {
     filters: FilterState;
@@ -20,9 +21,17 @@ interface PosMovementsTabProps {
 
 export function PosMovementsTab({ filters }: PosMovementsTabProps) {
     const [page, setPage] = useState(1);
+    const reportParams = {
+        page,
+        per_page: 20,
+        days: filters.days,
+        branch_id: filters.branch,
+        startDate: filters.dateRange.start || undefined,
+        endDate: filters.dateRange.end || undefined
+    } as never;
     // Using Orval-generated hook for POS movements
     const { data: reportData, isLoading, error, refetch } = useListReportPosMovements(
-        { page, per_page: 20, days: filters.days }
+        reportParams
     );
 
     const formatCurrency = (amount: number) => {
@@ -55,12 +64,14 @@ export function PosMovementsTab({ filters }: PosMovementsTabProps) {
 
     const { data, meta } = unwrapPaginated<PosMovementItem>(reportData);
     const typedPosMeta = meta as ResponseMeta | undefined;
-    const posData_unwrapped = unwrapObject<{ summary?: { totalAmount?: number; successCount?: number; failCount?: number; transactionCount?: number } }>(reportData);
-    const summary = posData_unwrapped?.summary;
+    const summary = meta?.summary as { totalVolume?: number; successCount?: number; failCount?: number } | undefined;
 
     return (
         <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-900">POS Hareketleri</h3>
+            <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">POS Hareketleri</h3>
+                <TabExportButton filename="pos-hareketleri" rows={data as unknown as Array<Record<string, unknown>>} />
+            </div>
 
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -72,7 +83,7 @@ export function PosMovementsTab({ filters }: PosMovementsTabProps) {
                         <div>
                             <p className="text-sm text-green-600 dark:text-green-400">Toplam Başarılı İşlem</p>
                             <p className="text-2xl font-bold text-green-900 dark:text-green-100">
-                                {formatCurrency(summary?.totalAmount || 0)}
+                                {formatCurrency(summary?.totalVolume || 0)}
                             </p>
                             <p className="text-xs text-green-600 dark:text-green-400">{summary?.successCount || 0} işlem</p>
                         </div>

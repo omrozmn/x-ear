@@ -13,4 +13,4 @@ export {
   getGetSgkCredentialsQueryOptions,
   useUpdateSgkCredentials,
   getUpdateSgkCredentialsMutationOptions,
-} from '@/api/generated/sgk-credentials/sgk-credentials';
+} from '@/api/generated/index';

@@ -139,7 +139,7 @@ function InventoryAutocomplete({
       />
 
       {isOpen ? (
-        <div className="absolute z-50 mt-1 max-h-72 w-full overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl">
+        <div className="absolute z-50 mt-2 max-h-72 w-full overflow-y-auto rounded-3xl border border-white/55 bg-white/92 shadow-[0_20px_60px_-24px_rgba(15,23,42,0.45)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/96">
           {loading ? (
             <div className="px-4 py-3 text-sm text-gray-500">Envanter yukleniyor...</div>
           ) : error ? (
@@ -149,6 +149,7 @@ function InventoryAutocomplete({
               const stock = product.availableInventory ?? 0;
               return (
                 <button
+                  data-allow-raw="true"
                   key={product.id}
                   type="button"
                   onClick={() => {
@@ -158,25 +159,25 @@ function InventoryAutocomplete({
                     );
                     setIsOpen(false);
                   }}
-                  className="flex w-full items-start justify-between gap-3 border-b border-gray-100 px-4 py-3 text-left hover:bg-sky-50 last:border-b-0"
+                  className="flex w-full items-start justify-between gap-3 border-b border-slate-100/80 px-4 py-3 text-left transition-colors hover:bg-sky-50/80 last:border-b-0 dark:border-white/10 dark:hover:bg-slate-800/80"
                 >
                   <div className="min-w-0 flex-1">
-                    <div className="truncate font-medium text-gray-900">{product.name}</div>
-                    <div className="truncate text-xs text-gray-500">
+                    <div className="truncate font-medium text-gray-900 dark:text-white">{product.name}</div>
+                    <div className="truncate text-xs text-gray-500 dark:text-slate-400">
                       {[product.brand, product.model, product.category].filter(Boolean).join(' • ')}
                     </div>
                   </div>
                   <div className="shrink-0 text-right">
-                    <div className="text-sm font-semibold text-gray-900">
+                    <div className="text-sm font-semibold text-gray-900 dark:text-white">
                       {Number(product.price || 0).toLocaleString('tr-TR')} TL
                     </div>
-                    <div className="text-xs text-gray-500">Stok: {stock}</div>
+                    <div className="text-xs text-gray-500 dark:text-slate-400">Stok: {stock}</div>
                   </div>
                 </button>
               );
             })
           ) : (
-            <div className="px-4 py-3 text-sm text-gray-500">Sonuc bulunamadi</div>
+            <div className="px-4 py-3 text-sm text-gray-500 dark:text-slate-400">Sonuc bulunamadi</div>
           )}
         </div>
       ) : null}
@@ -300,17 +301,17 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
   const stock = selectedProduct ? selectedProduct.availableInventory ?? 0 : 0;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50">
-      <div className="mx-4 max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-gray-200 p-6">
-          <h2 className="flex items-center text-xl font-semibold text-gray-900">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/55 backdrop-blur-md dark:bg-slate-950/72">
+      <div className="mx-4 max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-[30px] border border-white/45 bg-white/84 shadow-[0_30px_120px_-40px_rgba(15,23,42,0.55)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-900/90 dark:shadow-[0_30px_120px_-48px_rgba(2,6,23,0.92)]">
+        <div className="flex items-center justify-between border-b border-slate-200/80 p-6 dark:border-white/10">
+          <h2 className="flex items-center text-xl font-semibold text-slate-900 dark:text-white">
             <Calculator className="mr-2 h-6 w-6 text-sky-600" />
             Fiyat Hesaplama
           </h2>
           <Button
             type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 hover:text-gray-600 dark:text-slate-400 dark:hover:text-white"
             variant="default"
           >
             <X className="h-6 w-6" />
@@ -321,7 +322,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
           {formError ? <Alert variant="error">{formError}</Alert> : null}
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">Envanterden Cihaz Secimi</label>
+            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300">Envanterden Cihaz Secimi</label>
             <InventoryAutocomplete
               value={searchTerm}
               onValueChange={setSearchTerm}
@@ -331,27 +332,27 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
           </div>
 
           {selectedProduct ? (
-            <div className="rounded-2xl border border-sky-200 bg-sky-50 p-4">
-              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-sky-900">
+            <div className="rounded-3xl border border-sky-200/70 bg-sky-50/78 p-4 backdrop-blur-md dark:border-sky-500/20 dark:bg-sky-950/28">
+              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-sky-900 dark:text-sky-200">
                 <DollarSign className="h-4 w-4" />
                 Secili Urun
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
                 <div>
-                  <div className="text-xs text-sky-700">Marka</div>
-                  <div className="truncate font-medium text-sky-950">{selectedProduct.brand || '-'}</div>
+                  <div className="text-xs text-sky-700 dark:text-sky-300">Marka</div>
+                  <div className="truncate font-medium text-sky-950 dark:text-white">{selectedProduct.brand || '-'}</div>
                 </div>
                 <div>
-                  <div className="text-xs text-sky-700">Model</div>
-                  <div className="truncate font-medium text-sky-950">{selectedProduct.model || selectedProduct.name}</div>
+                  <div className="text-xs text-sky-700 dark:text-sky-300">Model</div>
+                  <div className="truncate font-medium text-sky-950 dark:text-white">{selectedProduct.model || selectedProduct.name}</div>
                 </div>
                 <div>
-                  <div className="text-xs text-sky-700">Liste Fiyati</div>
-                  <div className="font-medium text-sky-950">{Number(selectedProduct.price || 0).toLocaleString('tr-TR')} TL</div>
+                  <div className="text-xs text-sky-700 dark:text-sky-300">Liste Fiyati</div>
+                  <div className="font-medium text-sky-950 dark:text-white">{Number(selectedProduct.price || 0).toLocaleString('tr-TR')} TL</div>
                 </div>
                 <div>
-                  <div className="text-xs text-sky-700">Stok</div>
-                  <div className="font-medium text-sky-950">{stock}</div>
+                  <div className="text-xs text-sky-700 dark:text-sky-300">Stok</div>
+                  <div className="font-medium text-sky-950 dark:text-white">{stock}</div>
                 </div>
               </div>
             </div>
@@ -360,7 +361,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {isHearingAid ? (
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">Kulak Secimi</label>
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300">Kulak Secimi</label>
                 <Select
                   value={ear}
                   onChange={(e) => setEar(e.target.value as 'left' | 'right' | 'both')}
@@ -374,7 +375,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
               </div>
             ) : (
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">Miktar</label>
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300">Miktar</label>
                 <Input
                   type="number"
                   min="1"
@@ -386,7 +387,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
             )}
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300">
                 <DollarSign className="mr-1 inline h-4 w-4" />
                 Birim Fiyat (TL)
               </label>
@@ -404,7 +405,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
           {isHearingAid ? (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">SGK Semasi</label>
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300">SGK Semasi</label>
                 <Select
                   value={sgkScheme}
                   onChange={(e) => setSgkScheme(e.target.value)}
@@ -412,12 +413,12 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
                   options={sgkSupportOptions}
                 />
               </div>
-              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3">
-                <div className="text-xs font-medium text-emerald-700">Tahmini SGK Destegi</div>
-                <div className="mt-1 text-lg font-semibold text-emerald-900">
+              <div className="rounded-3xl border border-emerald-200/70 bg-emerald-50/78 p-3 backdrop-blur-md dark:border-emerald-500/20 dark:bg-emerald-950/24">
+                <div className="text-xs font-medium text-emerald-700 dark:text-emerald-300">Tahmini SGK Destegi</div>
+                <div className="mt-1 text-lg font-semibold text-emerald-900 dark:text-emerald-100">
                   {calculation.sgkAmount.toLocaleString('tr-TR')} TL
                 </div>
-                <div className="mt-1 text-xs text-emerald-700">
+                <div className="mt-1 text-xs text-emerald-700 dark:text-emerald-300">
                   {ear === 'both' ? 'Bilateral hesaplama dahil' : 'Tek kulak hesaplama'}
                 </div>
               </div>
@@ -426,7 +427,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">Indirim Tipi</label>
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300">Indirim Tipi</label>
               <Select
                 value={discountType}
                 onChange={(e) => setDiscountType(e.target.value as 'amount' | 'percentage')}
@@ -438,7 +439,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
               />
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300">
                 <Percent className="mr-1 inline h-4 w-4" />
                 Indirim Degeri
               </label>
@@ -470,38 +471,38 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
             </div>
           </div>
 
-          <div className="rounded-2xl bg-gray-50 p-4">
-            <h3 className="mb-3 flex items-center gap-2 font-medium text-gray-900">
+          <div className="rounded-3xl border border-white/45 bg-white/68 p-4 backdrop-blur-md dark:border-white/10 dark:bg-slate-950/32">
+            <h3 className="mb-3 flex items-center gap-2 font-medium text-gray-900 dark:text-white">
               <Calculator className="h-4 w-4" />
               Hesaplama Sonucu
             </h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600">Ara Toplam</span>
-                <span className="font-medium">{(devicePrice * quantity).toLocaleString('tr-TR')} TL</span>
+                <span className="text-gray-600 dark:text-slate-400">Ara Toplam</span>
+                <span className="font-medium text-slate-900 dark:text-white">{(devicePrice * quantity).toLocaleString('tr-TR')} TL</span>
               </div>
               {isHearingAid && calculation.sgkAmount > 0 ? (
                 <div className="flex justify-between">
-                  <span className="text-gray-600">SGK Dusumu</span>
+                  <span className="text-gray-600 dark:text-slate-400">SGK Dusumu</span>
                   <span className="font-medium text-emerald-600">-{calculation.sgkAmount.toLocaleString('tr-TR')} TL</span>
                 </div>
               ) : null}
               {calculation.discountAmount > 0 ? (
                 <div className="flex justify-between">
-                  <span className="text-gray-600">
+                  <span className="text-gray-600 dark:text-slate-400">
                     Indirim
                     {discountType === 'percentage' ? ` (%${calculation.discountPercent.toFixed(1)})` : ''}
                   </span>
                   <span className="font-medium text-rose-600">-{calculation.discountAmount.toLocaleString('tr-TR')} TL</span>
                 </div>
               ) : null}
-              <div className="border-t border-gray-200 pt-2">
-                <div className="flex justify-between text-lg font-semibold">
+              <div className="border-t border-slate-200 pt-2 dark:border-white/10">
+                <div className="flex justify-between text-lg font-semibold text-slate-900 dark:text-white">
                   <span>Toplam</span>
                   <span className="text-sky-700">{calculation.finalPrice.toLocaleString('tr-TR')} TL</span>
                 </div>
                 {calculation.installmentAmount ? (
-                  <div className="mt-1 flex justify-between text-sm text-gray-600">
+                  <div className="mt-1 flex justify-between text-sm text-gray-600 dark:text-slate-400">
                     <span>Taksit Tutari</span>
                     <span>
                       {calculation.installmentAmount.toLocaleString('tr-TR')} TL x {installments}
@@ -516,7 +517,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
             <Button
               type="button"
               onClick={resetForm}
-              className="border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50"
+              className="border border-slate-300 px-4 py-2 text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:text-slate-200 dark:hover:bg-white/10"
               variant="default"
             >
               Temizle
@@ -524,14 +525,14 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
             <Button
               type="button"
               onClick={onClose}
-              className="border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50"
+              className="border border-slate-300 px-4 py-2 text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:text-slate-200 dark:hover:bg-white/10"
               variant="default"
             >
               Iptal
             </Button>
             <Button
               type="submit"
-              className="flex-1 bg-sky-600 px-4 py-2 text-white hover:bg-sky-700"
+              className="flex-1 bg-sky-600 px-4 py-2 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
               variant="default"
             >
               Hesaplamayi Kaydet

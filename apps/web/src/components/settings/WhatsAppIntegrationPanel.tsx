@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Power, QrCode, RefreshCcw, Settings2 } from 'lucide-react';
 import { Button, Card, useToastHelpers } from '@x-ear/ui-web';
 import {
@@ -7,7 +7,7 @@ import {
   createWhatsAppSessionDisconnect,
   getWhatsAppConfig,
   updateWhatsAppConfig,
-} from '@/api/generated/whats-app/whats-app';
+} from '@/api/client/whatsapp.client';
 
 type WhatsAppStatus = {
   status: string;
@@ -51,7 +51,7 @@ export default function WhatsAppIntegrationPanel() {
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const { success, error } = useToastHelpers();
 
-  const fetchStatus = async (showError = false) => {
+  const fetchStatus = useCallback(async (showError = false) => {
     try {
       const response = await getWhatsAppSessionStatus() as { data?: WhatsAppStatus };
       setSession(response?.data ?? { status: 'idle', connected: false });
@@ -60,17 +60,17 @@ export default function WhatsAppIntegrationPanel() {
         error('WhatsApp durumu alınamadı', err instanceof Error ? err.message : 'Durum bilgisi alınamadı');
       }
     }
-  };
+  }, [error]);
 
-  const fetchConfig = async () => {
+  const fetchConfig = useCallback(async () => {
     const response = await getWhatsAppConfig() as { data?: WhatsAppConfig };
     setConfig(response?.data ?? DEFAULT_CONFIG);
-  };
+  }, []);
 
   useEffect(() => {
     void fetchStatus();
     void fetchConfig();
-  }, []);
+  }, [fetchConfig, fetchStatus]);
 
   useEffect(() => {
     const needsPolling = session.status === 'qr'
@@ -86,7 +86,7 @@ export default function WhatsAppIntegrationPanel() {
       void fetchStatus();
     }, 3000);
     return () => window.clearInterval(timer);
-  }, [session.connected, session.status]);
+  }, [fetchStatus, session.connected, session.status]);
 
   const runAction = async (key: string, action: () => Promise<void>) => {
     try {

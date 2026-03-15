@@ -2,10 +2,15 @@ import React from 'react';
 import {
     AlertTriangle,
     RefreshCw,
-    Loader2
+    Loader2,
+    Users,
+    Calendar,
+    ShoppingBag,
+    Star
 } from 'lucide-react';
 import { Button } from '@x-ear/ui-web';
 import { unwrapObject } from '../../../utils/response-unwrap';
+import { TabExportButton } from '../components/TabExportButton';
 import {
     useListReportPatients as useListReportParties,
     getListReportPatientsQueryKey as getListReportPartiesQueryKey
@@ -16,10 +21,44 @@ interface PartiesTabProps {
     filters: FilterState;
 }
 
+const SEGMENT_LABELS: Record<string, string> = {
+    new: 'Yeni',
+    active: 'Aktif',
+    trial: 'Deneme Sürecinde',
+    inactive: 'Pasif',
+    vip: 'VIP',
+    lost: 'Kaybedilen',
+};
+
+const ACQUISITION_LABELS: Record<string, string> = {
+    referans: 'Referans',
+    referral: 'Referans',
+    reklam: 'Reklam',
+    ads: 'Reklam',
+    social_media: 'Sosyal Medya',
+    sosyal_medya: 'Sosyal Medya',
+    walk_in: 'Doğrudan Başvuru',
+    direct: 'Doğrudan Başvuru',
+    doctor: 'Doktor Yönlendirmesi',
+    doktor: 'Doktor Yönlendirmesi',
+    call_center: 'Çağrı Merkezi',
+};
+
+function humanizeLabel(value: string, labels: Record<string, string>) {
+    return labels[value] || value.replace(/[_-]/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 export function PartiesTab({ filters }: PartiesTabProps) {
+    const reportParams = {
+        days: filters.days,
+        branch_id: filters.branch,
+        startDate: filters.dateRange.start || undefined,
+        endDate: filters.dateRange.end || undefined
+    } as never;
+
     const { data: partiesData, isLoading, error, refetch } = useListReportParties(
-        { days: filters.days },
-        { query: { queryKey: [...getListReportPartiesQueryKey({ days: filters.days })] } }
+        reportParams,
+        { query: { queryKey: [...getListReportPartiesQueryKey(reportParams), filters.branch] } }
     );
 
     if (isLoading) {
@@ -43,79 +82,123 @@ export function PartiesTab({ filters }: PartiesTabProps) {
     }
 
     const parties = unwrapObject<ReportParties>(partiesData);
+    const summary = parties?.summary;
+    const ageDistribution = parties?.ageDistribution || {};
+    const acquisitionBreakdown = parties?.acquisitionBreakdown || {};
+    const statusDistribution = parties?.statusDistribution || {};
+
+    const topAcquisitionSources = Object.entries(acquisitionBreakdown)
+        .sort(([, left], [, right]) => right - left)
+        .slice(0, 5);
+    const segmentBreakdown = parties?.segmentBreakdown || {};
+    const exportRows = [
+        {
+            toplam_hasta: summary?.totalPatients || 0,
+            yeni_hasta: summary?.newPatients || 0,
+            satisa_donen: summary?.patientsWithSales || 0,
+            yaklasan_randevu: summary?.patientsWithUpcomingAppointments || 0,
+            oncelikli_hasta: summary?.highPriorityPatients || 0,
+        },
+        ...Object.entries(segmentBreakdown).map(([segment, count]) => ({ tip: 'segment', ad: segment, adet: count })),
+        ...Object.entries(acquisitionBreakdown).map(([source, count]) => ({ tip: 'kazanım', ad: source, adet: count })),
+    ];
+
+    const appointmentFlow = [
+        { label: 'Tamamlandı', value: statusDistribution.COMPLETED || 0 },
+        { label: 'Planlandı', value: statusDistribution.SCHEDULED || 0 },
+        { label: 'Onaylandı', value: statusDistribution.CONFIRMED || 0 },
+        { label: 'İptal', value: statusDistribution.CANCELLED || 0 },
+        { label: 'Gelmedi', value: statusDistribution.NO_SHOW || 0 },
+    ];
 
     return (
         <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-900">Hasta Analizi</h3>
+            <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">Hasta Performansı</h3>
+                <TabExportButton filename="hasta-raporu" rows={exportRows} />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
+                {[
+                    { label: 'Toplam Hasta', value: summary?.totalPatients || 0, icon: Users, tone: 'blue' },
+                    { label: 'Yeni Hasta', value: summary?.newPatients || 0, icon: Star, tone: 'green' },
+                    { label: 'Satışa Dönen', value: summary?.patientsWithSales || 0, icon: ShoppingBag, tone: 'emerald' },
+                    { label: 'Yaklaşan Randevu', value: summary?.patientsWithUpcomingAppointments || 0, icon: Calendar, tone: 'amber' },
+                    { label: 'Öncelikli Hasta', value: summary?.highPriorityPatients || 0, icon: AlertTriangle, tone: 'rose' },
+                ].map((item) => {
+                    const Icon = item.icon;
+                    return (
+                        <div key={item.label} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5">
+                            <div className="flex items-center justify-between mb-3">
+                                <span className="text-sm text-gray-500 dark:text-gray-400">{item.label}</span>
+                                <Icon className="w-4 h-4 text-gray-400" />
+                            </div>
+                            <p className="text-3xl font-semibold text-gray-900 dark:text-white">{item.value}</p>
+                        </div>
+                    );
+                })}
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Party Segments */}
                 <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Hasta Segmentleri</h4>
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Randevu Sonuçları</h4>
                     <div className="space-y-4">
-                        {parties?.party_segments && (
-                            <>
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-3 h-3 rounded-full bg-green-500" />
-                                        <span className="text-gray-600 dark:text-gray-400">Yeni Hastalar</span>
+                        {appointmentFlow.map((item) => (
+                            <div key={item.label} className="flex items-center justify-between gap-4">
+                                <span className="text-gray-600 dark:text-gray-400">{item.label}</span>
+                                <div className="flex items-center gap-3 w-40">
+                                    <div className="h-2 rounded-full bg-gray-100 dark:bg-gray-700 flex-1 overflow-hidden">
+                                        <div
+                                            className="h-full bg-blue-500 rounded-full"
+                                            style={{ width: `${Math.min(100, item.value === 0 ? 0 : (item.value / Math.max(...appointmentFlow.map((flow) => flow.value), 1)) * 100)}%` }}
+                                        />
                                     </div>
-                                    <span className="font-semibold text-gray-900 dark:text-white">{parties.party_segments.new || 0}</span>
+                                    <span className="font-semibold text-gray-900 dark:text-white min-w-[2rem] text-right">{item.value}</span>
                                 </div>
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-3 h-3 rounded-full bg-blue-500" />
-                                        <span className="text-gray-600 dark:text-gray-400">Aktif Hastalar</span>
-                                    </div>
-                                    <span className="font-semibold text-gray-900 dark:text-white">{parties.party_segments.active || 0}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Hasta Kaynakları</h4>
+                    <div className="space-y-4">
+                        {topAcquisitionSources.length > 0 ? (
+                            topAcquisitionSources.map(([source, count]) => (
+                                <div key={source} className="flex justify-between items-center">
+                                    <span className="text-gray-600 dark:text-gray-400">{humanizeLabel(source, ACQUISITION_LABELS)}</span>
+                                    <span className="font-semibold text-gray-900 dark:text-white">{count}</span>
                                 </div>
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                                        <span className="text-gray-600 dark:text-gray-400">Deneme Aşamasında</span>
-                                    </div>
-                                    <span className="font-semibold text-gray-900 dark:text-white">{parties.party_segments.trial || 0}</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-3 h-3 rounded-full bg-gray-400" />
-                                        <span className="text-gray-600 dark:text-gray-400">Pasif Hastalar</span>
-                                    </div>
-                                    <span className="font-semibold text-gray-900 dark:text-white">{parties.party_segments.inactive || 0}</span>
-                                </div>
-                            </>
-                        )}
-                        {!parties?.party_segments && (
+                            ))
+                        ) : (
                             <p className="text-gray-400 text-sm">Veri bulunamadı</p>
                         )}
                     </div>
                 </div>
 
-                {/* Status Distribution */}
                 <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Randevu Durumu Dağılımı</h4>
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Hasta Segmentleri</h4>
                     <div className="space-y-4">
-                        {parties?.status_distribution && Object.keys(parties.status_distribution).length > 0 ? (
-                            Object.entries(parties.status_distribution).map(([status, count]) => {
-                                const statusLabels: Record<string, string> = {
-                                    'SCHEDULED': 'Planlandı',
-                                    'COMPLETED': 'Tamamlandı',
-                                    'CANCELLED': 'İptal Edildi',
-                                    'NO_SHOW': 'Gelmedi',
-                                    'IN_PROGRESS': 'Devam Ediyor',
-                                    'PENDING': 'Beklemede',
-                                    'CONFIRMED': 'Onaylandı',
-                                };
-                                return (
-                                    <div key={status} className="flex justify-between items-center">
-                                        <span className="text-gray-600 dark:text-gray-400">{statusLabels[status] || status}</span>
-                                        <span className="font-semibold text-gray-900 dark:text-white">{count}</span>
-                                    </div>
-                                );
-                            })
-                        ) : (
+                        {Object.entries(segmentBreakdown).length > 0 ? Object.entries(segmentBreakdown).map(([segment, count]) => (
+                            <div key={segment} className="flex justify-between items-center">
+                                <span className="text-gray-600 dark:text-gray-400">{humanizeLabel(segment, SEGMENT_LABELS)}</span>
+                                <span className="font-semibold text-gray-900 dark:text-white">{count}</span>
+                            </div>
+                        )) : (
                             <p className="text-gray-400 text-sm">Veri bulunamadı</p>
                         )}
+                    </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 lg:col-span-2">
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Yaş Dağılımı</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        {Object.entries(ageDistribution).map(([label, count]) => (
+                            <div key={label} className="rounded-lg bg-gray-50 dark:bg-gray-900/40 p-4 text-center">
+                                <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{label}</p>
+                                <p className="mt-2 text-2xl font-semibold text-gray-900 dark:text-white">{count}</p>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>

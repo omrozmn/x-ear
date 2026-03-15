@@ -25,26 +25,66 @@ import {
     ReportPromissoryNoteListItem
 } from '../types';
 import type { ResponseMeta } from '@/api/generated/schemas';
+import type { FilterState } from '../types';
+import { TabExportButton } from '../components/TabExportButton';
+import PieChartSimple from '@/components/charts/PieChartSimple';
 
-export function PromissoryNotesTab() {
+interface PromissoryNotesTabProps {
+    filters: FilterState;
+}
+
+export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
     const [showListModal, setShowListModal] = useState(false);
-    const [listFilter, setListFilter] = useState<'active' | 'overdue' | 'paid' | 'all'>('active');
+    const [listFilter, setListFilter] = useState<'active' | 'overdue' | 'paid' | 'all'>('all');
     const [listPage, setListPage] = useState(1);
+    const [search, setSearch] = useState('');
+    const [selectedNote, setSelectedNote] = useState<ReportPromissoryNoteListItem | null>(null);
+
+    const reportParams = {
+        days: filters.days,
+        branch_id: filters.branch,
+        startDate: filters.dateRange.start || undefined,
+        endDate: filters.dateRange.end || undefined
+    } as never;
 
     // Using Orval-generated hooks for promissory notes reports
-    const { data: notesData, isLoading, error, refetch } = useListReportPromissoryNotes({
-        days: 365
-    });
+    const { data: notesData, isLoading, error, refetch } = useListReportPromissoryNotes(reportParams);
 
     const { data: byPartyData, isLoading: partyLoading } = useListReportPromissoryNoteByParty({
         status: 'active',
         page: 1,
-        per_page: 10
-    });
+        per_page: 10,
+        branch_id: filters.branch,
+        startDate: filters.dateRange.start || undefined,
+        endDate: filters.dateRange.end || undefined
+    } as never);
 
     const { data: listData, isLoading: listLoading } = useListReportPromissoryNoteList(
-        { status: listFilter, page: listPage, per_page: 20 },
-        { query: { queryKey: [...getListReportPromissoryNoteListQueryKey({ status: listFilter, page: listPage, per_page: 20 })], enabled: showListModal } }
+        {
+            status: listFilter,
+            page: listPage,
+            per_page: 20,
+            search,
+            branch_id: filters.branch,
+            startDate: filters.dateRange.start || undefined,
+            endDate: filters.dateRange.end || undefined
+        } as never,
+        {
+            query: {
+                queryKey: [
+                    ...getListReportPromissoryNoteListQueryKey({
+                        status: listFilter,
+                        page: listPage,
+                        per_page: 20,
+                        search,
+                        startDate: filters.dateRange.start || undefined,
+                        endDate: filters.dateRange.end || undefined
+                    } as never),
+                    filters.branch
+                ],
+                enabled: showListModal
+            }
+        }
     );
 
     const formatCurrency = (amount: number) => {
@@ -58,6 +98,44 @@ export function PromissoryNotesTab() {
     const getMonthName = (month: number) => {
         const months = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
         return months[month - 1] || '';
+    };
+
+    const renderMonthlyDonut = (
+        items: Array<{ month: number; value: number; display: (value: number) => string }>,
+        config: {
+            centerLabel: string;
+            footerLabel: string;
+            totalFormatter?: (value: number) => string;
+            detailFormatter?: (value: number) => string;
+        }
+    ) => {
+        if (!items.length) {
+            return <p className="text-gray-400 text-center py-8">Veri bulunamadı</p>;
+        }
+
+        return (
+            <div className="space-y-4">
+                <PieChartSimple
+                    size={220}
+                    centerLabel={config.centerLabel}
+                    footerLabel={config.footerLabel}
+                    valueFormatter={config.totalFormatter}
+                    detailFormatter={config.detailFormatter}
+                    data={items.map((item) => ({
+                        label: getMonthName(item.month),
+                        value: item.value
+                    }))}
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {items.map((item) => (
+                        <div key={`${item.month}-${item.value}`} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 px-4 py-3">
+                            <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{getMonthName(item.month)}</p>
+                            <p className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{item.display(item.value)}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
     };
 
     const notes = unwrapObject<ReportPromissoryNotes>(notesData);
@@ -81,25 +159,32 @@ export function PromissoryNotesTab() {
             )
         },
         {
-            key: 'activeNotes',
-            title: 'Aktif',
+            key: 'totalNotes',
+            title: 'Toplam Senet',
             align: 'center',
             render: (_: unknown, record: ReportPromissoryNoteByParty) => (
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
-                    {record.activeNotes}
+                    {record.totalNotes}
                 </span>
             )
         },
         {
-            key: 'overdueNotes',
-            title: 'Vadesi Geçmiş',
-            align: 'center',
-            render: (_: unknown, record: ReportPromissoryNoteByParty) =>
-                record.overdueNotes > 0 ? (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300">
-                        {record.overdueNotes}
-                    </span>
-                ) : <span className="text-gray-400">-</span>
+            key: 'firstDueDate',
+            title: 'İlk Vade',
+            render: (_: unknown, record: ReportPromissoryNoteByParty) => (
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                    {record.firstDueDate ? new Date(record.firstDueDate).toLocaleDateString('tr-TR') : '-'}
+                </span>
+            )
+        },
+        {
+            key: 'lastDueDate',
+            title: 'Son Vade',
+            render: (_: unknown, record: ReportPromissoryNoteByParty) => (
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                    {record.lastDueDate ? new Date(record.lastDueDate).toLocaleDateString('tr-TR') : '-'}
+                </span>
+            )
         },
         {
             key: 'totalAmount',
@@ -170,6 +255,19 @@ export function PromissoryNotesTab() {
                 </span>
             )
         },
+        {
+            key: 'id',
+            title: '',
+            render: (_: unknown, record: ReportPromissoryNoteListItem) => (
+                <Button
+                    variant="ghost"
+                    onClick={() => setSelectedNote(record)}
+                    className="!w-auto !h-auto px-2 py-1"
+                >
+                    Detay
+                </Button>
+            )
+        },
     ], []);
 
     if (isLoading) {
@@ -196,13 +294,16 @@ export function PromissoryNotesTab() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900">Senet Raporları</h3>
-                <Button
-                    onClick={() => setShowListModal(true)}
-                    variant="outline"
-                    icon={<FileText className="w-4 h-4" />}
-                >
-                    Tüm Senetleri Görüntüle
-                </Button>
+                <div className="flex items-center gap-2">
+                    <TabExportButton filename="senet-raporu" rows={byParty as unknown as Array<Record<string, unknown>>} />
+                    <Button
+                        onClick={() => setShowListModal(true)}
+                        variant="outline"
+                        icon={<FileText className="w-4 h-4" />}
+                    >
+                        Tüm Senetleri Görüntüle
+                    </Button>
+                </div>
             </div>
 
             {/* Summary Cards */}
@@ -261,54 +362,35 @@ export function PromissoryNotesTab() {
                 {/* Monthly Note Count */}
                 <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
                     <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Aylık Senet Sayısı</h4>
-                    {notes?.monthlyCounts && notes.monthlyCounts.length > 0 ? (
-                        <div className="flex items-end gap-2 h-40">
-                            {notes.monthlyCounts.map((item, idx) => {
-                                const counts = notes.monthlyCounts || [];
-                                const maxCount = Math.max(...counts.map((i) => i.count));
-                                const height = maxCount > 0 ? (item.count / maxCount) * 100 : 0;
-                                return (
-                                    <div key={idx} className="flex-1 flex flex-col items-center">
-                                        <div
-                                            className="w-full bg-blue-500 rounded-t transition-all hover:bg-blue-600"
-                                            style={{ height: `${Math.max(height, 5)}%` }}
-                                            title={`${item.count} senet`}
-                                        />
-                                        <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">{getMonthName(item.month)}</span>
-                                        <span className="text-xs font-medium text-gray-900 dark:text-white">{item.count}</span>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        <p className="text-gray-400 text-center py-8">Veri bulunamadı</p>
+                    {renderMonthlyDonut(
+                        (notes?.monthlyCounts || []).map((item) => ({
+                            month: item.month,
+                            value: item.count,
+                            display: (value) => `${value} senet`,
+                        })),
+                        {
+                            centerLabel: 'Toplam',
+                            footerLabel: 'Senet',
+                            detailFormatter: (value) => `${value} senet`,
+                        }
                     )}
                 </div>
 
                 {/* Monthly Revenue */}
                 <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
                     <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Aylık Senet Tahsilatı</h4>
-                    {notes?.monthlyRevenue && notes.monthlyRevenue.length > 0 ? (
-                        <div className="flex items-end gap-2 h-40">
-                            {notes.monthlyRevenue.map((item, idx) => {
-                                const revenues = notes.monthlyRevenue || [];
-                                const maxRevenue = Math.max(...revenues.map((i) => i.revenue));
-                                const height = maxRevenue > 0 ? (item.revenue / maxRevenue) * 100 : 0;
-                                return (
-                                    <div key={idx} className="flex-1 flex flex-col items-center">
-                                        <div
-                                            className="w-full bg-green-500 rounded-t transition-all hover:bg-green-600"
-                                            style={{ height: `${Math.max(height, 5)}%` }}
-                                            title={formatCurrency(item.revenue)}
-                                        />
-                                        <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">{getMonthName(item.month)}</span>
-                                        <span className="text-xs font-medium text-gray-900 dark:text-white">{formatCurrency(item.revenue)}</span>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        <p className="text-gray-400 text-center py-8">Veri bulunamadı</p>
+                    {renderMonthlyDonut(
+                        (notes?.monthlyRevenue || []).map((item) => ({
+                            month: item.month,
+                            value: item.revenue,
+                            display: (value) => formatCurrency(value),
+                        })),
+                        {
+                            centerLabel: 'Tahsilat',
+                            footerLabel: 'TL',
+                            totalFormatter: formatCurrency,
+                            detailFormatter: formatCurrency,
+                        }
                     )}
                 </div>
             </div>
@@ -378,6 +460,17 @@ export function PromissoryNotesTab() {
                             </div>
                         </div>
 
+                        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                            <input
+                                data-allow-raw="true"
+                                type="text"
+                                value={search}
+                                onChange={(e) => { setSearch(e.target.value); setListPage(1); }}
+                                placeholder="Hasta adı, telefon veya senet no ile ara"
+                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                            />
+                        </div>
+
                         <div className="flex-1 overflow-y-auto p-4">
                             <DataTable<ReportPromissoryNoteListItem>
                                 data={list}
@@ -401,6 +494,65 @@ export function PromissoryNotesTab() {
                             <Button onClick={() => setShowListModal(false)} variant="outline" className="w-full">
                                 Kapat
                             </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {selectedNote && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="w-full max-w-2xl rounded-xl bg-white dark:bg-gray-800 p-6 mx-4">
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Senet Detayı</h4>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    {selectedNote.noteNumber || 'Numarasız senet'}
+                                </p>
+                            </div>
+                            <Button
+                                variant="ghost"
+                                onClick={() => setSelectedNote(null)}
+                                className="!w-auto !h-auto px-2 py-1"
+                            >
+                                Kapat
+                            </Button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <span className="text-gray-500 dark:text-gray-400">Hasta</span>
+                                <p className="font-medium text-gray-900 dark:text-white">{selectedNote.party?.name || '-'}</p>
+                            </div>
+                            <div>
+                                <span className="text-gray-500 dark:text-gray-400">Telefon</span>
+                                <p className="font-medium text-gray-900 dark:text-white">{selectedNote.party?.phone || '-'}</p>
+                            </div>
+                            <div>
+                                <span className="text-gray-500 dark:text-gray-400">Senet Tutarı</span>
+                                <p className="font-medium text-gray-900 dark:text-white">{formatCurrency(selectedNote.amount)}</p>
+                            </div>
+                            <div>
+                                <span className="text-gray-500 dark:text-gray-400">Tahsil Edilen</span>
+                                <p className="font-medium text-gray-900 dark:text-white">{formatCurrency(selectedNote.paidAmount)}</p>
+                            </div>
+                            <div>
+                                <span className="text-gray-500 dark:text-gray-400">Kalan Tutar</span>
+                                <p className="font-medium text-red-600 dark:text-red-400">{formatCurrency(selectedNote.remainingAmount)}</p>
+                            </div>
+                            <div>
+                                <span className="text-gray-500 dark:text-gray-400">Vade Tarihi</span>
+                                <p className="font-medium text-gray-900 dark:text-white">
+                                    {selectedNote.dueDate ? new Date(selectedNote.dueDate).toLocaleDateString('tr-TR') : '-'}
+                                </p>
+                            </div>
+                            <div className="md:col-span-2">
+                                <span className="text-gray-500 dark:text-gray-400">Durum</span>
+                                <p className="font-medium text-gray-900 dark:text-white">
+                                    {selectedNote.status === 'paid' ? 'Ödendi' :
+                                     selectedNote.status === 'overdue' ? 'Vadesi Geçti' :
+                                     selectedNote.status === 'partial' ? 'Kısmi Tahsilat' : 'Aktif'}
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>

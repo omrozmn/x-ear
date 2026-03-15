@@ -163,7 +163,7 @@ export default function NoahImportModal({ open, onClose, onImportComplete }: Noa
         onImportComplete?.();
       }
     }
-  }, [session?.status]);
+  }, [onImportComplete, session]);
 
   useEffect(() => {
     if (!open) {

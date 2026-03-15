@@ -12,15 +12,23 @@ import {
     getListReportFinancialQueryKey
 } from '@/api/client/reports.client';
 import { ReportFinancial, FilterState } from '../types';
+import { TabExportButton } from '../components/TabExportButton';
 
 interface SalesTabProps {
     filters: FilterState;
 }
 
 export function SalesTab({ filters }: SalesTabProps) {
+    const reportParams = {
+        days: filters.days,
+        branch_id: filters.branch,
+        startDate: filters.dateRange.start || undefined,
+        endDate: filters.dateRange.end || undefined
+    } as never;
+
     const { data: financialData, isLoading, error, refetch } = useListReportFinancial(
-        { days: filters.days },
-        { query: { queryKey: [...getListReportFinancialQueryKey({ days: filters.days })] } }
+        reportParams,
+        { query: { queryKey: [...getListReportFinancialQueryKey(reportParams)] } }
     );
 
     const formatCurrency = (amount: number) => {
@@ -33,10 +41,11 @@ export function SalesTab({ filters }: SalesTabProps) {
 
     type SaleRow = { brand: string; sales: number; revenue: number };
     const financial = unwrapObject<ReportFinancial>(financialData);
+    const revenueTrend = financial?.revenueTrend ?? {};
 
     const salesRows = useMemo<SaleRow[]>(() => {
-        if (!financial?.product_sales) return [];
-        return Object.entries(financial.product_sales).map(([brand, data]) => ({
+        if (!financial?.productSales) return [];
+        return Object.entries(financial.productSales).map(([brand, data]) => ({
             brand,
             sales: (data as { sales?: number; revenue?: number }).sales || 0,
             revenue: (data as { sales?: number; revenue?: number }).revenue || 0,
@@ -79,19 +88,22 @@ export function SalesTab({ filters }: SalesTabProps) {
 
     return (
         <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Satış Performansı Analizi</h3>
+            <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Satış Performansı Analizi</h3>
+                <TabExportButton filename="satis-raporu" rows={salesRows} />
+            </div>
 
             {/* Revenue Trend */}
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
                 <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Aylık Gelir Trendi</h4>
-                {financial?.revenue_trend && Object.keys(financial.revenue_trend).length > 0 ? (
+                {Object.keys(revenueTrend).length > 0 ? (
                     <div className="grid grid-cols-6 gap-4">
-                        {Object.entries(financial.revenue_trend).map(([month, amount]) => (
+                        {Object.entries(revenueTrend).map(([month, amount]) => (
                             <div key={month} className="text-center">
                                 <div className="h-24 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-end justify-center mb-2">
                                     <div
                                         className="bg-blue-500 rounded w-full"
-                                        style={{ height: `${Math.min(100, (amount / Math.max(...Object.values(financial.revenue_trend as object).map(Number)) * 100))}%` }}
+                                        style={{ height: `${Math.min(100, (amount / Math.max(...Object.values(revenueTrend).map(Number)) * 100))}%` }}
                                     />
                                 </div>
                                 <p className="text-xs text-gray-500 dark:text-gray-400">{month}. Ay</p>

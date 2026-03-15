@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useFeatures } from '../../hooks/useFeatures';
 import { ShieldOff } from 'lucide-react';
+import { Button } from '@x-ear/ui-web';
 
 interface FeatureGateProps {
   featureKey: string;
@@ -31,12 +32,12 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({ featureKey, children, 
         <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md">
           Bu özellik mevcut abonelik planınızda aktif değil. Erişim için yöneticinizle iletişime geçin.
         </p>
-        <button
+        <Button
           onClick={() => navigate({ to: '/' })}
-          className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+          className="px-4 py-2"
         >
           Ana Sayfaya Dön
-        </button>
+        </Button>
       </div>
     );
   }

@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Card, Button, DatePicker, Input, DataTable } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
-import { ShoppingCart, Search, FileText, X, RefreshCw, Filter, CheckSquare, CreditCard, Square } from 'lucide-react';
+import { ShoppingCart, Search, FileText, X, RefreshCw, Filter, CheckSquare, CreditCard, Square, Plus } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { useListSales } from '@/api/client/sales.client';
 import type { SaleRead } from '@/api/generated/schemas';
@@ -11,6 +11,27 @@ import { useIsMobile } from '@/hooks/useBreakpoint';
 import { cn } from '@/lib/utils';
 import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 import { ExportDropdown } from '@/components/common/ExportDropdown';
+import { CashflowModal } from '@/components/cashflow/CashflowModal';
+import { useCashRecords, useCreateCashRecord } from '@/hooks/useCashflow';
+import type { CashRecord } from '@/types/cashflow';
+import { RECORD_TYPE_LABELS } from '@/types/cashflow';
+
+interface SalesTableRow {
+  id: string;
+  source: 'sale' | 'manual';
+  partyId?: string;
+  patientName?: string | null;
+  productName: string;
+  amount: number;
+  saleDate?: string;
+  status: string;
+  serialNumber?: string;
+  brand?: string;
+  model?: string;
+  description?: string;
+  rawSale?: SaleRead;
+  rawCashRecord?: CashRecord;
+}
 
 export function SalesPage() {
   const navigate = useNavigate();
@@ -26,25 +47,48 @@ export function SalesPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isMobileSelectionMode, setIsMobileSelectionMode] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [isNewSaleModalOpen, setIsNewSaleModalOpen] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const debouncedSearch = useDebounce(searchTerm, 300);
 
 
   const { data, isLoading, isFetching, refetch } = useListSales({
-    page: isMobile ? 1 : currentPage,
-    per_page: isMobile ? mobileVisibleCount : perPage,
+    page: 1,
+    per_page: 500,
     search: debouncedSearch || undefined,
     include_details: true,
   });
+  const { data: manualSalesData } = useCashRecords({
+    transactionType: 'income',
+    startDate: dateFrom ? dateFrom.toISOString() : undefined,
+    endDate: dateTo ? dateTo.toISOString() : undefined,
+  });
+  const createCashRecordMutation = useCreateCashRecord();
 
   const salesList: SaleRead[] = useMemo(() => {
     const payload = data?.data;
     return Array.isArray(payload) ? payload : [];
   }, [data]);
+  const manualSalesRecords = useMemo(() => {
+    const raw = Array.isArray(manualSalesData)
+      ? manualSalesData
+      : ((manualSalesData as unknown as { data?: CashRecord[] })?.data ?? []);
 
-  const totalCount = data?.meta?.total ?? salesList.length;
-  const hasMoreMobile = isMobile && salesList.length < totalCount;
+    return raw.filter((record) => {
+      const query = debouncedSearch.trim().toLowerCase();
+      if (!query) return true;
+
+      return [
+        record.partyName,
+        record.inventoryItemName,
+        record.description,
+        RECORD_TYPE_LABELS[record.recordType],
+      ]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(query));
+    });
+  }, [manualSalesData, debouncedSearch]);
 
   useEffect(() => {
     if (!isMobile) return;
@@ -52,6 +96,45 @@ export function SalesPage() {
     setSelectedIds(new Set());
     setIsMobileSelectionMode(false);
   }, [isMobile, debouncedSearch, dateFrom, dateTo]);
+
+  const salesRows = useMemo<SalesTableRow[]>(() => {
+    const regularRows = salesList.map((sale): SalesTableRow => {
+      const patient = sale.patient as { firstName?: string; lastName?: string } | undefined;
+      return {
+        id: `sale-${sale.id}`,
+        source: 'sale',
+        partyId: sale.partyId || undefined,
+        patientName: (patient?.firstName || patient?.lastName) ? `${patient?.firstName || ''} ${patient?.lastName || ''}`.trim() : null,
+        productName: sale.productName || sale.brand || '-',
+        amount: Number(sale.finalAmount || sale.totalAmount || 0),
+        saleDate: sale.saleDate ? String(sale.saleDate) : undefined,
+        status: String(sale.status || 'draft'),
+        serialNumber: sale.serialNumber || undefined,
+        brand: sale.brand || undefined,
+        model: sale.model || undefined,
+        rawSale: sale,
+      };
+    });
+
+    const manualRows = manualSalesRecords.map((record): SalesTableRow => ({
+      id: `manual-${record.id}`,
+      source: 'manual',
+      partyId: record.partyId || undefined,
+      patientName: record.partyName || null,
+      productName: record.inventoryItemName || record.description || 'Manuel Satış',
+      amount: Number(record.amount || 0),
+      saleDate: record.date,
+      status: 'manual',
+      serialNumber: undefined,
+      description: record.description || RECORD_TYPE_LABELS[record.recordType] || 'Manuel satış kaydı',
+      rawCashRecord: record,
+    }));
+
+    return [...regularRows, ...manualRows];
+  }, [manualSalesRecords, salesList]);
+
+  const totalCount = salesRows.length;
+  const hasMoreMobile = isMobile && mobileVisibleCount < totalCount;
 
   useEffect(() => {
     if (!isMobile || !hasMoreMobile || !loadMoreRef.current || isLoading || isFetching) return;
@@ -72,7 +155,7 @@ export function SalesPage() {
   }, [isMobile, hasMoreMobile, isLoading, isFetching, totalCount]);
 
   const sortedSales = useMemo(() => {
-    let list = [...salesList];
+    let list = [...salesRows];
 
     if (dateFrom) {
       const fromStr = dateFrom.toISOString().split('T')[0];
@@ -84,15 +167,13 @@ export function SalesPage() {
     }
     if (!sortField) return list;
 
-    list.sort((a: SaleRead, b: SaleRead) => {
+    list.sort((a: SalesTableRow, b: SalesTableRow) => {
       let av: string | number = '';
       let bv: string | number = '';
 
       if (sortField === 'patient') {
-        const pa = a.patient as { firstName?: string; lastName?: string } | undefined;
-        const pb = b.patient as { firstName?: string; lastName?: string } | undefined;
-        av = pa ? `${pa.firstName || ''} ${pa.lastName || ''}`.trim() : '';
-        bv = pb ? `${pb.firstName || ''} ${pb.lastName || ''}`.trim() : '';
+        av = a.patientName || '';
+        bv = b.patientName || '';
       } else if (sortField === 'productName') {
         av = a.productName || a.brand || '';
         bv = b.productName || b.brand || '';
@@ -100,8 +181,8 @@ export function SalesPage() {
         av = String(a.saleDate || '');
         bv = String(b.saleDate || '');
       } else if (sortField === 'finalAmount') {
-        av = Number(a.finalAmount || a.totalAmount || 0);
-        bv = Number(b.finalAmount || b.totalAmount || 0);
+        av = Number(a.amount || 0);
+        bv = Number(b.amount || 0);
       } else if (sortField === 'status') {
         av = String(a.status || '');
         bv = String(b.status || '');
@@ -113,10 +194,21 @@ export function SalesPage() {
     });
 
     return list;
-  }, [salesList, sortField, sortDir, dateFrom, dateTo]);
+  }, [salesRows, sortField, sortDir, dateFrom, dateTo]);
+
+  const paginatedSales = useMemo(() => {
+    const startIndex = (currentPage - 1) * perPage;
+    const endIndex = startIndex + perPage;
+    return sortedSales.slice(startIndex, endIndex);
+  }, [currentPage, perPage, sortedSales]);
+
+  const mobileVisibleSales = useMemo(
+    () => sortedSales.slice(0, mobileVisibleCount),
+    [mobileVisibleCount, sortedSales]
+  );
 
   const totalAmount = useMemo(
-    () => sortedSales.reduce((sum: number, sale: SaleRead) => sum + Number(sale.finalAmount || sale.totalAmount || 0), 0),
+    () => sortedSales.reduce((sum: number, sale: SalesTableRow) => sum + Number(sale.amount || 0), 0),
     [sortedSales]
   );
   const averageAmount = sortedSales.length > 0 ? totalAmount / sortedSales.length : 0;
@@ -128,6 +220,7 @@ export function SalesPage() {
       delivered: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400',
       paid: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
       cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
+      manual: 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400',
     };
     const labels: Record<string, string> = {
       draft: 'Taslak',
@@ -135,35 +228,33 @@ export function SalesPage() {
       delivered: 'Teslim Edildi',
       paid: 'Ödendi',
       cancelled: 'İptal Edildi',
+      manual: 'Manuel',
     };
     const value = (status || 'draft').toLowerCase();
     return <span className={`px-2 py-1 rounded-full text-xs font-medium ${styles[value] || styles.draft}`}>{labels[value] || status || 'Taslak'}</span>;
-  };
-
-  const getPatientName = (sale: SaleRead) => {
-    const patient = sale.patient as { firstName?: string; lastName?: string } | undefined;
-    if (patient?.firstName || patient?.lastName) return `${patient.firstName || ''} ${patient.lastName || ''}`.trim();
-    return null;
   };
 
   const handleRefresh = useCallback(async () => {
     await refetch();
   }, [refetch]);
 
+  const handleSaveSaleRecord = useCallback(async (formData: Parameters<typeof createCashRecordMutation.mutateAsync>[0]) => {
+    await createCashRecordMutation.mutateAsync(formData);
+    await refetch();
+  }, [createCashRecordMutation, refetch]);
+
   const salesExportHeaders = useMemo(() => ['Hasta Adı', 'Hasta ID', 'Ürün', 'Marka', 'Model', 'Tutar', 'Tarih', 'Durum', 'Seri No'], []);
 
   const getSalesExportRows = useCallback(() => {
-    const items = selectedIds.size > 0 ? sortedSales.filter((sale) => selectedIds.has(String(sale.id))) : sortedSales;
+    const items = selectedIds.size > 0 ? sortedSales.filter((sale) => selectedIds.has(sale.id)) : sortedSales;
     return items.map((sale) => {
-      const patient = sale.patient as { firstName?: string; lastName?: string } | undefined;
-      const name = (patient?.firstName || patient?.lastName) ? `${patient.firstName || ''} ${patient.lastName || ''}`.trim() : '';
       return [
-        name,
+        sale.patientName || '',
         sale.partyId || '',
         sale.productName || '',
         sale.brand || '',
         sale.model || '',
-        String(sale.finalAmount || sale.totalAmount || 0),
+        String(sale.amount || 0),
         sale.saleDate ? String(sale.saleDate) : '',
         sale.status || '',
         sale.serialNumber || '',
@@ -190,7 +281,7 @@ export function SalesPage() {
 
   const renderMobileCards = () => (
     <div className="block md:hidden space-y-3 mt-3">
-      {sortedSales.length === 0 ? (
+      {mobileVisibleSales.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="bg-white dark:bg-gray-800 p-4 rounded-full shadow-sm mb-4">
             <ShoppingCart className="h-8 w-8 text-gray-300 dark:text-gray-500" />
@@ -198,7 +289,7 @@ export function SalesPage() {
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">Satış kaydı bulunamadı</h3>
           <p className="text-gray-500 text-sm mt-1">Kriterlere uygun satış yok.</p>
         </div>
-      ) : sortedSales.map((sale) => (
+      ) : mobileVisibleSales.map((sale) => (
         <div
           key={sale.id}
           onClick={() => {
@@ -218,8 +309,8 @@ export function SalesPage() {
           <div className={cn('p-4 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800 transition-colors', isMobileSelectionMode && 'pr-12')}>
             <div className="flex items-start justify-between mb-3 gap-3">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{getPatientName(sale) ?? '—'}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">{sale.productName || sale.brand || '-'}</p>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{sale.patientName ?? '—'}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">{sale.productName || sale.brand || sale.description || '-'}</p>
               </div>
               <div className="shrink-0">{getStatusBadge(sale.status as string)}</div>
             </div>
@@ -230,7 +321,7 @@ export function SalesPage() {
               </div>
               <div className="text-right">
                 <p className="text-xs text-gray-400">Tutar</p>
-                <p className="text-lg font-bold text-gray-900 dark:text-white">{formatCurrency(Number(sale.finalAmount || sale.totalAmount || 0), 'TRY')}</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-white">{formatCurrency(Number(sale.amount || 0), 'TRY')}</p>
               </div>
             </div>
           </div>
@@ -266,6 +357,12 @@ export function SalesPage() {
               <RefreshCw size={18} />
               Yenile
             </Button>
+            <div className="ml-auto">
+              <Button className="flex items-center gap-2" onClick={() => setIsNewSaleModalOpen(true)}>
+                <Plus size={18} />
+                Yeni Satış
+              </Button>
+            </div>
           </>
         )}
       />
@@ -356,10 +453,10 @@ export function SalesPage() {
 
       {isMobile ? renderMobileCards() : (
         <Card>
-          <DataTable<SaleRead>
-            data={sortedSales}
+          <DataTable<SalesTableRow>
+            data={paginatedSales}
             loading={isLoading}
-            rowKey={(sale) => String(sale.id)}
+            rowKey={(sale) => sale.id}
             emptyText="Satış kaydı bulunamadı"
             hoverable
             striped
@@ -385,9 +482,9 @@ export function SalesPage() {
                 key: 'patient',
                 title: 'Hasta',
                 sortable: true,
-                render: (_: unknown, sale: SaleRead) => (
+                render: (_: unknown, sale: SalesTableRow) => (
                   <div>
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">{getPatientName(sale) ?? <span className="text-gray-400">—</span>}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">{sale.patientName ?? <span className="text-gray-400">—</span>}</div>
                     {sale.partyId && <div className="text-xs text-gray-400 dark:text-gray-500 font-mono mt-0.5">{sale.partyId.slice(0, 8)}</div>}
                   </div>
                 ),
@@ -396,36 +493,36 @@ export function SalesPage() {
                 key: 'productName',
                 title: 'Ürün',
                 sortable: true,
-                render: (_: unknown, sale: SaleRead) => sale.productName || sale.brand || '-',
+                render: (_: unknown, sale: SalesTableRow) => sale.productName || sale.brand || sale.description || '-',
               },
               {
                 key: 'finalAmount',
                 title: 'Tutar',
                 sortable: true,
-                render: (_: unknown, sale: SaleRead) => (
-                  <span className="text-sm font-semibold">{formatCurrency(Number(sale.finalAmount || sale.totalAmount || 0), 'TRY')}</span>
+                render: (_: unknown, sale: SalesTableRow) => (
+                  <span className="text-sm font-semibold">{formatCurrency(Number(sale.amount || 0), 'TRY')}</span>
                 ),
               },
               {
                 key: 'saleDate',
                 title: 'Tarih',
                 sortable: true,
-                render: (_: unknown, sale: SaleRead) => sale.saleDate ? formatDate(String(sale.saleDate)) : '-',
+                render: (_: unknown, sale: SalesTableRow) => sale.saleDate ? formatDate(String(sale.saleDate)) : '-',
               },
               {
                 key: 'status',
                 title: 'Durum',
                 sortable: true,
-                render: (_: unknown, sale: SaleRead) => getStatusBadge(sale.status as string),
+                render: (_: unknown, sale: SalesTableRow) => getStatusBadge(sale.status as string),
               },
               {
                 key: '_actions',
                 title: 'İşlemler',
-                render: (_: unknown, sale: SaleRead) => (
-                  <Button variant="ghost" size="sm" onClick={() => sale.partyId && navigate({ to: '/parties/$partyId', params: { partyId: sale.partyId } })}>Hasta Detayı</Button>
+                render: (_: unknown, sale: SalesTableRow) => (
+                  <Button variant="ghost" size="sm" onClick={() => sale.partyId && navigate({ to: '/parties/$partyId', params: { partyId: sale.partyId } })} disabled={!sale.partyId}>Hasta Detayı</Button>
                 ),
               },
-            ] as Column<SaleRead>[]}
+            ] as Column<SalesTableRow>[]}
           />
         </Card>
       )}
@@ -455,6 +552,16 @@ export function SalesPage() {
           <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors h-auto"><X className="w-4 h-4" /> Seçimi Kaldır</Button>
         </div>
       )}
+
+      <CashflowModal
+        isOpen={isNewSaleModalOpen}
+        onClose={() => setIsNewSaleModalOpen(false)}
+        onSave={handleSaveSaleRecord}
+        isLoading={createCashRecordMutation.isPending}
+        title="Yeni Satış Kaydı"
+        saveButtonText="Satışı Kaydet"
+        lockedTransactionType="income"
+      />
     </div>
   );
 }

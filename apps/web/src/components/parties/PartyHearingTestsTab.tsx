@@ -104,10 +104,11 @@ function AudiometryCard({ test, isExpanded, onToggle, onFetchRecommendations, on
 
   return (
     <div className="border rounded-2xl overflow-hidden">
-      <button
-        onClick={onToggle}
-        className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors text-left"
-      >
+        <button
+          data-allow-raw="true"
+          onClick={onToggle}
+          className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors text-left"
+        >
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
             <Activity className="w-5 h-5 text-blue-600" />
@@ -508,6 +509,7 @@ function RemPanel({ testId, targets, onSaveRem, onFetchRem, onClose }: RemPanelP
       <div className="flex items-center gap-4 text-xs">
         <label className="flex items-center gap-1.5">
           <input
+            data-allow-raw="true"
             type="checkbox"
             checked={experienced}
             onChange={e => setExperienced(e.target.checked)}
@@ -518,6 +520,7 @@ function RemPanel({ testId, targets, onSaveRem, onFetchRem, onClose }: RemPanelP
         <div className="flex items-center gap-1.5">
           <span className="text-gray-500">Ekipman:</span>
           <input
+            data-allow-raw="true"
             type="text"
             value={equipment}
             onChange={e => setEquipment(e.target.value)}
@@ -565,6 +568,7 @@ function RemPanel({ testId, targets, onSaveRem, onFetchRem, onClose }: RemPanelP
                       return (
                         <td key={f} className="text-center py-1.5 px-0.5">
                           <input
+                            data-allow-raw="true"
                             type="number"
                             value={rightRear[f] ?? ''}
                             onChange={e => setRightRear(prev => ({ ...prev, [f]: e.target.value }))}
@@ -599,6 +603,7 @@ function RemPanel({ testId, targets, onSaveRem, onFetchRem, onClose }: RemPanelP
                       return (
                         <td key={f} className="text-center py-1.5 px-0.5">
                           <input
+                            data-allow-raw="true"
                             type="number"
                             value={leftRear[f] ?? ''}
                             onChange={e => setLeftRear(prev => ({ ...prev, [f]: e.target.value }))}

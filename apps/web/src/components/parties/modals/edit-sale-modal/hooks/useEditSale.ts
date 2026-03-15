@@ -151,7 +151,7 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
       totalAmount,
       remainingAmount
     };
-  }, [formData.listPrice, formData.sgkScheme, formData.sgkCoverage, formData.discountType, formData.discountValue, formData.ear, formData.downPayment, sgkAmounts]);
+  }, [formData.listPrice, formData.sgkScheme, formData.discountType, formData.discountValue, formData.ear, formData.downPayment, sgkAmounts]);
 
   // Calculated values
   const totalPaid = paymentRecords.reduce((sum, payment) => sum + (payment.amount || 0), 0);

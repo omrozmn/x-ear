@@ -16,7 +16,6 @@ import type {
 } from '@/api/generated/schemas';
 import { createSales } from '@/api/client/sales.client';
 import { listInventory } from '@/api/client/inventory.client';
-import { tokenManager } from '../../utils/token-manager';
 import { customInstance } from '@/api/orval-mutator';
 import { buildInvoiceDraftFromProforma } from '@/utils/invoiceDraft';
 import { buildSalesPayloadsFromProforma } from '@/utils/proforma';

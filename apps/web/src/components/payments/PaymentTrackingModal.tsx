@@ -32,8 +32,10 @@ import {
   getListPartyPaymentRecordsQueryKey,
   getListSalePromissoryNotesQueryKey
 } from '@/api/client/payments.client';
+import { getListSalesQueryKey } from '@/api/client/sales.client';
 import type { RoutersPaymentsPaymentRecordCreate } from '@/api/generated/schemas';
 import { unwrapArray } from '../../utils/response-unwrap';
+import { formatDateForInput } from '@/utils/date';
 
 // interface ExtendedSaleRead extends SaleRead {
 //   partyPayment?: number;
@@ -83,13 +85,16 @@ interface PaymentTrackingModalProps {
   onClose: () => void;
   sale: SaleRead;
   onPaymentUpdate: () => void;
+  /** When true, renders as inline content — no backdrop, no header, no footer */
+  embedded?: boolean;
 }
 
 export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
   isOpen,
   onClose,
   sale,
-  onPaymentUpdate
+  onPaymentUpdate,
+  embedded = false,
 }) => {
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
@@ -117,7 +122,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
   const [newPayment, setNewPayment] = useState({
     amount: 0,
     paymentMethod: 'cash',
-    paymentDate: new Date().toISOString().split('T')[0],
+    paymentDate: formatDateForInput(new Date()),
     notes: '',
     referenceNumber: generateReferenceNumber()
   });
@@ -140,8 +145,10 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
   const createPaymentMutation = useCreatePaymentRecords({
     mutation: {
       onSuccess: () => {
-        // Invalidate queries to refresh data
+        // Invalidate payment records for this party
         queryClient.invalidateQueries({ queryKey: getListPartyPaymentRecordsQueryKey(sale.partyId) });
+        // Invalidate sales list so paidAmount column updates immediately in SalesPage
+        queryClient.invalidateQueries({ queryKey: getListSalesQueryKey() });
       }
     }
   });
@@ -243,12 +250,16 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
       await createPaymentMutation.mutateAsync({ data: paymentData });
 
       toast.success('Ödeme başarıyla kaydedildi');
+      window.dispatchEvent(new CustomEvent('dashboard:refresh'));
+      window.dispatchEvent(new CustomEvent('party-timeline:refresh', {
+        detail: { partyId: sale.partyId }
+      }));
 
       // Reset form with new reference number
       setNewPayment({
         amount: 0,
         paymentMethod: 'cash',
-        paymentDate: new Date().toISOString().split('T')[0],
+        paymentDate: formatDateForInput(new Date()),
         notes: '',
         referenceNumber: generateReferenceNumber()
       });
@@ -315,31 +326,32 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]"
+      className={embedded ? '' : 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]'}
       data-testid="payment-tracking-modal"
-      onClick={(e) => {
-        // Prevent clicks inside modal from closing it
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
+      onClick={embedded ? undefined : (e) => {
+        if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
-        className="bg-white rounded-2xl p-6 w-full max-w-6xl max-h-[90vh] overflow-y-auto"
-        onClick={(e) => {
-          // Stop propagation to prevent parent modal from receiving events
-          e.stopPropagation();
-        }}
+        className={embedded ? '' : 'bg-white rounded-2xl p-6 w-full max-w-6xl max-h-[90vh] overflow-y-auto'}
+        onClick={embedded ? undefined : (e) => e.stopPropagation()}
       >
+        {/* Header — hidden when embedded */}
+        {!embedded && (
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-medium text-gray-900 flex items-center">
             <CreditCard className="w-5 h-5 mr-2" />
             Ödeme Takibi - Satış #{sale.id}
           </h3>
-          <Button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600">
+          <Button
+            type="button"
+            onClick={onClose}
+            className="p-1 text-gray-400 hover:text-gray-600 rounded-lg"
+          >
             <X className="w-5 h-5" />
           </Button>
         </div>
+        )}
 
 
 
@@ -412,7 +424,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
                 }}
                 className="space-y-4"
               >
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                   <div>
                     <Label className="text-xs md:text-sm">Tutar *</Label>
                     <Input
@@ -434,7 +446,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
                     <DatePicker
                       data-testid="payment-date-input"
                       value={newPayment.paymentDate ? new Date(newPayment.paymentDate) : null}
-                      onChange={(date) => setNewPayment(prev => ({ ...prev, paymentDate: date ? date.toISOString().split('T')[0] : '' }))}
+                      onChange={(date) => setNewPayment(prev => ({ ...prev, paymentDate: date ? formatDateForInput(date) : '' }))}
                       required
                       fullWidth
                     />
@@ -460,7 +472,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
                       value={newPayment.notes}
                       onChange={(e) => setNewPayment(prev => ({ ...prev, notes: e.target.value }))}
                       placeholder="Ödeme notları"
-                      className="text-sm md:text-base"
+                      className="text-sm md:text-base w-full"
                     />
                   </div>
                 </div>
@@ -553,12 +565,14 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
           </Card>
         </div>
 
-        {/* Footer */}
+        {/* Footer — hidden when embedded */}
+        {!embedded && (
         <div className="flex justify-end space-x-3 mt-6 pt-6 border-t">
           <Button onClick={onClose} variant="outline">
             Kapat
           </Button>
         </div>
+        )}
       </div>
     </div>
   );

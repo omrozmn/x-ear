@@ -18,6 +18,7 @@ import {
 } from '@/api/client/reports.client';
 import { FilterState } from '../types';
 import type { RemainingPaymentItem, ResponseMeta } from '@/api/generated/schemas';
+import { TabExportButton } from '../components/TabExportButton';
 
 interface RemainingPaymentsTabProps {
     filters: FilterState;
@@ -26,14 +27,27 @@ interface RemainingPaymentsTabProps {
 export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
     const [page, setPage] = useState(1);
     const [minAmount, setMinAmount] = useState(0);
+    const reportParams = {
+        page,
+        per_page: 20,
+        min_amount: minAmount,
+        branch_id: filters.branch,
+        startDate: filters.dateRange.start || undefined,
+        endDate: filters.dateRange.end || undefined
+    } as never;
 
     // Using Orval-generated hooks for reports API
     const { data: paymentsData, isLoading, error, refetch } = useListReportRemainingPayments(
-        { page, per_page: 20, min_amount: minAmount }
+        reportParams
     );
 
     const { data: cashflowData } = useListReportCashflowSummary(
-        { days: filters.days }
+        {
+            days: filters.days,
+            branch_id: filters.branch,
+            startDate: filters.dateRange.start || undefined,
+            endDate: filters.dateRange.end || undefined
+        } as never
     );
 
     const formatCurrency = (amount: number) => {
@@ -66,10 +80,8 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
 
     const { data: payments, meta } = unwrapPaginated<RemainingPaymentItem>(paymentsData);
     const typedMeta = meta as ResponseMeta | undefined;
-    const paymentsSummary = unwrapObject<{ summary?: { totalRemaining?: number; totalPaid?: number; totalParties?: number } }>(paymentsData);
-    const summary = paymentsSummary?.summary;
-    const cashflowData_unwrapped = unwrapObject<{ totalIncome?: number; totalExpense?: number; netCashflow?: number }>(cashflowData);
-    const cashflow = cashflowData_unwrapped;
+    const summary = meta?.summary as { totalRemaining?: number; totalPaid?: number; totalParties?: number } | undefined;
+    const cashflow = unwrapObject<{ totalRevenue?: number; totalExpenses?: number; netCash?: number }>(cashflowData);
 
     const remainingPaymentColumns: Column<RemainingPaymentItem>[] = [
         {
@@ -118,7 +130,10 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
 
     return (
         <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-900">Kalan Ödemeler & Kasa Özeti</h3>
+            <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">Kalan Ödemeler & Kasa Özeti</h3>
+                <TabExportButton filename="kalan-odemeler" rows={payments as unknown as Array<Record<string, unknown>>} />
+            </div>
 
             {/* Cashflow Summary */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -130,9 +145,9 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
                         <div>
                             <p className="text-sm text-green-600 dark:text-green-400">Toplam Gelir</p>
                             <p className="text-2xl font-bold text-green-900 dark:text-green-100">
-                                {formatCurrency(cashflow?.totalIncome || 0)}
+                                {formatCurrency(cashflow?.totalRevenue || 0)}
                             </p>
-                            <p className="text-xs text-green-600 dark:text-green-400">Son {filters.days} gün</p>
+                            <p className="text-xs text-green-600 dark:text-green-400">{filters.dateRange.start} - {filters.dateRange.end}</p>
                         </div>
                     </div>
                 </div>
@@ -145,9 +160,9 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
                         <div>
                             <p className="text-sm text-red-600 dark:text-red-400">Toplam Gider</p>
                             <p className="text-2xl font-bold text-red-900 dark:text-red-100">
-                                {formatCurrency(cashflow?.totalExpense || 0)}
+                                {formatCurrency(cashflow?.totalExpenses || 0)}
                             </p>
-                            <p className="text-xs text-red-600 dark:text-red-400">Son {filters.days} gün</p>
+                            <p className="text-xs text-red-600 dark:text-red-400">{filters.dateRange.start} - {filters.dateRange.end}</p>
                         </div>
                     </div>
                 </div>
@@ -159,10 +174,10 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
                         </div>
                         <div>
                             <p className="text-sm text-blue-600 dark:text-blue-400">Net Nakit</p>
-                            <p className={`text-2xl font-bold ${(cashflow?.netCashflow || 0) >= 0 ? 'text-green-900 dark:text-green-100' : 'text-red-900 dark:text-red-100'}`}>
-                                {formatCurrency(cashflow?.netCashflow || 0)}
+                            <p className={`text-2xl font-bold ${(cashflow?.netCash || 0) >= 0 ? 'text-green-900 dark:text-green-100' : 'text-red-900 dark:text-red-100'}`}>
+                                {formatCurrency(cashflow?.netCash || 0)}
                             </p>
-                            <p className="text-xs text-blue-600 dark:text-blue-400">Son {filters.days} gün</p>
+                            <p className="text-xs text-blue-600 dark:text-blue-400">{filters.dateRange.start} - {filters.dateRange.end}</p>
                         </div>
                     </div>
                 </div>

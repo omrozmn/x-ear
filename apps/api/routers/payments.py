@@ -178,7 +178,15 @@ def create_payment_record(
             action='payment_record_created',
             entity_type='party',
             entity_id=payment_in.party_id,
-            details=json.dumps({"title": "Ödeme kaydı oluşturuldu", "amount": float(payment_in.amount), "payment_type": payment_in.payment_type}),
+            details=json.dumps({
+                "title": "Tahsilat kaydedildi",
+                "description": f"{float(payment_in.amount):.2f} TL tahsilat kaydedildi",
+                "amount": float(payment_in.amount),
+                "payment_type": payment_in.payment_type,
+                "payment_method": payment_in.payment_method,
+                "reference_number": payment_in.reference_number,
+                "payment_date": payment_in.payment_date,
+            }),
             created_at=datetime.now(timezone.utc),
         )
         db_session.add(activity)

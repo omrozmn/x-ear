@@ -15,16 +15,17 @@ export const PricingCalculatorCard: React.FC<PricingCalculatorCardProps> = ({
 }) => {
   return (
     <div
-      className="bg-gradient-to-br from-sky-500 via-sky-600 to-cyan-600 rounded-2xl p-8 cursor-pointer shadow-lg shadow-sky-100/80 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl relative overflow-hidden group"
+      className="group relative cursor-pointer overflow-hidden rounded-[28px] border border-white/20 p-8 shadow-[0_20px_56px_-36px_rgba(15,23,42,0.34)] backdrop-blur-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_26px_72px_-40px_rgba(15,23,42,0.4)] dark:border-white/10 dark:shadow-[0_24px_80px_-44px_rgba(2,6,23,0.85)]"
+      style={{ background: 'linear-gradient(135deg, rgba(14,165,233,0.96) 0%, rgba(2,132,199,0.94) 50%, rgba(8,145,178,0.92) 100%)' }}
       onClick={onClick}
     >
-      {/* Decorative */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-white/20 transition-all duration-500"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.28),transparent_34%)] opacity-90" />
+      <div className="absolute top-0 right-0 h-32 w-32 -mr-10 -mt-10 rounded-full bg-white/10 blur-3xl group-hover:bg-white/20 transition-all duration-500" />
 
       <div className="flex items-center justify-between relative z-10">
         <div className="flex-1">
           <div className="flex items-center space-x-5">
-            <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-md shadow-inner border border-white/10">
+            <div className="rounded-2xl border border-white/15 bg-white/18 p-4 backdrop-blur-md shadow-inner dark:bg-white/10">
               <Calculator className="w-8 h-8 text-white" />
             </div>
             <div>

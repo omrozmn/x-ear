@@ -422,71 +422,13 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
       )}
 
       {activeTab === 'payments' && (
-        <div className="w-full">
-          {/* Override modal styles to make it full width and hide close button */}
-          <style>{`
-            .payment-tracking-wrapper .fixed {
-              position: relative !important;
-            }
-            .payment-tracking-wrapper .inset-0 {
-              inset: unset !important;
-            }
-            .payment-tracking-wrapper .bg-black {
-              background: transparent !important;
-            }
-            .payment-tracking-wrapper .bg-opacity-50 {
-              background: transparent !important;
-            }
-            .payment-tracking-wrapper .max-w-4xl {
-              max-width: 100% !important;
-            }
-            .payment-tracking-wrapper .z-50 {
-              z-index: 0 !important;
-            }
-            .payment-tracking-wrapper .z-\\[9999\\] {
-              z-index: 0 !important;
-            }
-            /* Hide all close buttons */
-            .payment-tracking-wrapper button[aria-label="Close"],
-            .payment-tracking-wrapper button[aria-label="close"],
-            .payment-tracking-wrapper .absolute.right-4.top-4,
-            .payment-tracking-wrapper .absolute.top-4.right-4,
-            .payment-tracking-wrapper button.absolute.right-4,
-            .payment-tracking-wrapper button.absolute.top-4 {
-              display: none !important;
-              visibility: hidden !important;
-              opacity: 0 !important;
-              pointer-events: none !important;
-            }
-            /* Hide X icon specifically */
-            .payment-tracking-wrapper svg[class*="lucide-x"],
-            .payment-tracking-wrapper svg[class*="X"] {
-              display: none !important;
-            }
-            /* Remove any backdrop */
-            .payment-tracking-wrapper > div:first-child {
-              background: transparent !important;
-            }
-            /* Hide internal tabs (Ödemeler, Senetler) */
-            .payment-tracking-wrapper [role="tablist"],
-            .payment-tracking-wrapper .flex.border-b,
-            .payment-tracking-wrapper .flex.gap-4.border-b {
-              display: none !important;
-            }
-            /* Show only payment history content */
-            .payment-tracking-wrapper [role="tabpanel"] {
-              display: block !important;
-            }
-          `}</style>
-          <div className="payment-tracking-wrapper">
-            <PaymentTrackingModal
-              isOpen={true}
-              onClose={() => { }}
-              sale={sale}
-              onPaymentUpdate={() => { }}
-            />
-          </div>
-        </div>
+        <PaymentTrackingModal
+          isOpen={true}
+          onClose={() => { }}
+          sale={sale}
+          onPaymentUpdate={() => { }}
+          embedded
+        />
       )}
 
       {activeTab === 'notes' && (

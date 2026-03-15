@@ -38,6 +38,7 @@ import {
   ChevronUp
 } from 'lucide-react';
 import type { SaleRead } from '@/api/client/sales.client';
+import { getListSalesQueryKey } from '@/api/client/sales.client';
 import type { PromissoryNoteRead } from '@/api/generated/schemas';
 import {
   getListSalePromissoryNotesQueryKey,
@@ -46,7 +47,7 @@ import {
   createPromissoryNoteCollect,
   updatePromissoryNote
 } from '@/api/client/payments.client';
-import { createPartyTimeline } from '@/api/generated/timeline/timeline';
+import { createPartyTimeline } from '@/api/client/timeline.client';
 import { companyService } from '@/services/company.service';
 import { useGetParty } from '@/api/client/parties.client';
 
@@ -384,6 +385,10 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
       // Invalidate payment records query to show collected payment in Ödeme Takibi tab
       await queryClient.invalidateQueries({
         queryKey: getListPartyPaymentRecordsQueryKey(sale.partyId)
+      });
+      // Invalidate sales list so paidAmount column updates immediately in SalesPage
+      await queryClient.invalidateQueries({
+        queryKey: getListSalesQueryKey()
       });
 
       // Log to timeline
