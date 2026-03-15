@@ -519,16 +519,21 @@ def debug_switch_tenant(
             )
         
         # Check impersonation consent
+        # Must use unbound_session to bypass global tenant filter —
+        # admin's tenant_id is 'system', so the filter would exclude
+        # all users from the target tenant.
         from core.models.user import User
-        consenting = (
-            db_session.query(User)
-            .filter(
-                User.tenant_id == target_tenant_id,
-                User.allow_impersonation == True,  # noqa: E712
-                User.is_active == True,  # noqa: E712
+        from core.database import unbound_session
+        with unbound_session(reason="admin-impersonation-consent-check"):
+            consenting = (
+                db_session.query(User)
+                .filter(
+                    User.tenant_id == target_tenant_id,
+                    User.allow_impersonation == True,  # noqa: E712
+                    User.is_active == True,  # noqa: E712
+                )
+                .first()
             )
-            .first()
-        )
         if not consenting:
             raise HTTPException(
                 status_code=403,

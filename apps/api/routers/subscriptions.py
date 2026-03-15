@@ -311,19 +311,17 @@ def complete_signup(
 # Super-admin / impersonating always get ALL features.
 
 # Core features always available (no plan restriction)
-CORE_FEATURES = {
-    'dashboard', 'patients', 'appointments', 'inventory',
-    'suppliers', 'sales', 'purchases', 'payments', 'settings',
+ALL_FEATURE_DEFAULTS = {
+    'patients': True, 'appointments': True, 'inventory': True,
+    'suppliers': True, 'sales': True, 'purchases': True,
+    'payments': True, 'campaigns': True, 'website_builder': True,
+    'invoices': True, 'invoices.outgoing': True, 'invoices.incoming': True,
+    'invoices.proformas': True, 'invoices.summary': True, 'invoices.new': True,
+    'sgk': True, 'sgk.upload': True, 'sgk.reports': True,
+    'reports': True, 'invoice_normalizer': True, 'cashflow': True,
+    'pos': True, 'automation': True, 'ai_chat': True, 'uts': True,
+    'integrations_ui': False, 'pricing_ui': False, 'security_ui': False,
 }
-
-# Premium features that require plan activation
-PREMIUM_FEATURES = {
-    'campaigns', 'website_builder', 'invoices', 'sgk',
-    'reports', 'accounting', 'whatsapp', 'uts_integration',
-    'sgk_integration',
-}
-
-ALL_FEATURES = CORE_FEATURES | PREMIUM_FEATURES
 
 
 class FeaturesResponse(BaseModel):
@@ -337,36 +335,69 @@ def get_enabled_features(
     access: UnifiedAccess = Depends(require_access()),
     db: Session = Depends(get_db)
 ):
-    """Return enabled feature flags for the current tenant's plan."""
+    """Return enabled feature flags for the current tenant's plan.
+    
+    Reads admin-configured flags from SystemSetting table (key='features').
+    Each flag has mode='visible' or 'hidden', and optional plan restrictions.
+    """
+    import json
     from models.tenant import Tenant
     from models.plan import Plan
+    from core.models.system_setting import SystemSetting
 
     # Super-admin or impersonating admin → everything enabled
     if access.is_super_admin or (access.is_admin and access.is_impersonating):
         return ResponseEnvelope(data=FeaturesResponse(
-            features={f: True for f in ALL_FEATURES},
+            features={f: True for f in ALL_FEATURE_DEFAULTS},
             plan_name='Super Admin',
             is_super_admin=True,
         ))
 
+    # Read admin-configured feature flags from SystemSetting
+    setting = db.query(SystemSetting).filter_by(key='features').first()
+    admin_flags = {}
+    if setting and setting.value:
+        try:
+            admin_flags = json.loads(setting.value) if isinstance(setting.value, str) else setting.value
+        except Exception:
+            admin_flags = {}
+
+    # Determine tenant's plan
     tenant = db.get(Tenant, access.tenant_id) if access.tenant_id else None
     plan = None
-    if tenant and tenant.current_plan_id:
-        plan = db.get(Plan, tenant.current_plan_id)
+    plan_id = None
+    if tenant:
+        plan_id = getattr(tenant, 'current_plan_id', None)
+        if plan_id:
+            plan = db.get(Plan, plan_id)
 
-    # Build feature map: core features always on
-    features: dict = {f: True for f in CORE_FEATURES}
+    plan_name = plan.name if plan else (getattr(tenant, 'current_plan', None) if tenant else None)
 
-    if plan and plan.features and isinstance(plan.features, dict):
-        # Plan.features JSON stores premium toggles: {"invoices": true, ...}
-        for key in PREMIUM_FEATURES:
-            features[key] = bool(plan.features.get(key, False))
-    else:
-        # No plan → only core features
-        for key in PREMIUM_FEATURES:
-            features[key] = False
+    # Build final feature map
+    features: dict = {}
+    for key, default_val in ALL_FEATURE_DEFAULTS.items():
+        flag = admin_flags.get(key)
+        if flag and isinstance(flag, dict):
+            mode = flag.get('mode', 'visible')
+            if mode == 'hidden':
+                features[key] = False
+                continue
+            # Check plan restriction
+            allowed_plans = flag.get('plans', [])
+            if allowed_plans and plan_id:
+                features[key] = plan_id in allowed_plans
+            elif allowed_plans and not plan_id:
+                features[key] = False
+            else:
+                features[key] = True
+        else:
+            features[key] = default_val
 
-    plan_name = plan.name if plan else (tenant.current_plan if tenant else None)
+    # Parent→child inheritance: if parent hidden, children hidden too
+    for parent_key in ['invoices', 'sgk']:
+        if not features.get(parent_key, True):
+            for child_key in [k for k in features if k.startswith(parent_key + '.')]:
+                features[child_key] = False
 
     return ResponseEnvelope(data=FeaturesResponse(
         features=features,
