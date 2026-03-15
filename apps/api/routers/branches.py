@@ -86,8 +86,8 @@ def get_branches(
             # Non-super admin without tenant_id should see nothing
             return ResponseEnvelope(data=[])
         
-        # Branch filtering for tenant admins
-        if access.is_tenant_admin and access.user and hasattr(access.user, 'branches'):
+        # Branch filtering for users with explicit branch access
+        if not access.is_super_admin and access.user and hasattr(access.user, 'branches'):
             user_branch_ids = [b.id for b in access.user.branches]
             if user_branch_ids:
                 query = query.filter(Branch.id.in_(user_branch_ids))

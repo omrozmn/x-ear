@@ -13,6 +13,7 @@ export {
   getListDashboardQueryKey,
   listDashboardChartPatientDistribution,
   useListDashboardChartPatientDistribution,
+  getListDashboardChartPatientDistributionQueryKey,
 } from '@/api/generated/index';
 
 export type { } from '@/api/generated/schemas';

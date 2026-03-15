@@ -2,13 +2,13 @@
 FastAPI Dashboard Router - Migrated from Flask routes/dashboard.py
 Dashboard KPIs and analytics
 """
-from fastapi import APIRouter, Depends, HTTPException
-from typing import List, Dict, Any
+from fastapi import APIRouter, Depends, HTTPException, Query
+from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
 import logging
 
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, or_
 
 from schemas.base import ResponseEnvelope
 
@@ -59,6 +59,35 @@ def normalize_breakdown_key(value: Any, fallback: str = "Bilinmiyor") -> str:
         return fallback
     text = str(value).strip()
     return text or fallback
+
+
+def get_user_branch_filter(access: UnifiedAccess, request_branch_id: Optional[str] = None) -> Optional[List[str]]:
+    requested_branch_ids = [branch_id.strip() for branch_id in request_branch_id.split(',')] if request_branch_id else []
+    requested_branch_ids = [branch_id for branch_id in requested_branch_ids if branch_id]
+
+    if access.is_super_admin:
+        return requested_branch_ids or None
+
+    user = access.user
+    allowed_branch_ids: List[str] = []
+    if user and hasattr(user, 'branches') and user.branches:
+        allowed_branch_ids = [str(b.id) for b in user.branches]
+
+    if requested_branch_ids:
+        if allowed_branch_ids and any(branch_id not in allowed_branch_ids for branch_id in requested_branch_ids):
+            return ["00000000-0000-0000-0000-000000000000"]
+        return requested_branch_ids
+
+    if allowed_branch_ids:
+        return allowed_branch_ids
+
+    return None
+
+
+def build_branch_filter_condition(column, branch_ids: Optional[List[str]]):
+    if not branch_ids:
+        return None
+    return column.in_(branch_ids)
 
 def enrich_activity_logs(logs: List[ActivityLog], session: Session) -> List[Dict[str, Any]]:
     """Enrich activity logs with user, tenant, branch details (replacing to_dict_with_user)"""
@@ -361,12 +390,16 @@ def recent_activity(
 
 @router.get("/dashboard/charts/patient-distribution", operation_id="listDashboardChartPatientDistribution", response_model=ResponseEnvelope[List[BranchDistribution]])
 def patient_distribution(
+    branch_id: Optional[str] = Query(None, alias="branch_id"),
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Patient distribution by branch"""
     try:
+        branch_ids = get_user_branch_filter(access, branch_id)
         branch_query = tenant_scoped_query(access, Branch, db_session)
+        if branch_ids:
+            branch_query = branch_query.filter(Branch.id.in_(branch_ids))
         branch_objs = branch_query.all()
 
         results = []
@@ -422,61 +455,45 @@ def patient_distribution(
                 }
             })
 
-        try:
-            unassigned_status_counts = db_session.query(
-                Party.status, func.count(Party.id)
-            ).filter(
-                (Party.branch_id == None) | (Party.branch_id == '')
-            )
+        if not results:
+            scoped_parties = tenant_scoped_query(access, Party, db_session)
+            if branch_ids:
+                scoped_parties = scoped_parties.filter(Party.branch_id.in_(branch_ids))
 
-            if access.tenant_id:
-                unassigned_status_counts = unassigned_status_counts.filter(Party.tenant_id == access.tenant_id)
+            try:
+                status_counts = scoped_parties.with_entities(
+                    Party.status, func.count(Party.id)
+                ).group_by(Party.status).all()
+                status_map = {s.value if hasattr(s, 'value') else str(s): int(c) for s, c in status_counts}
+            except Exception:
+                status_map = {}
 
-            unassigned_status_counts = unassigned_status_counts.group_by(Party.status).all()
-            unassigned_status_map = {s.value if hasattr(s, 'value') else str(s): int(c) for s, c in unassigned_status_counts}
-        except Exception:
-            unassigned_status_map = {}
+            try:
+                segment_counts = scoped_parties.with_entities(
+                    Party.segment, func.count(Party.id)
+                ).group_by(Party.segment).all()
+                seg_map = {normalize_breakdown_key(s): int(c) for s, c in segment_counts}
+            except Exception:
+                seg_map = {}
 
-        try:
-            unassigned_segment_counts = db_session.query(
-                Party.segment, func.count(Party.id)
-            ).filter(
-                (Party.branch_id == None) | (Party.branch_id == '')
-            )
+            try:
+                acquisition_counts = scoped_parties.with_entities(
+                    Party.acquisition_type, func.count(Party.id)
+                ).group_by(Party.acquisition_type).all()
+                acq_map = {normalize_breakdown_key(s): int(c) for s, c in acquisition_counts}
+            except Exception:
+                acq_map = {}
 
-            if access.tenant_id:
-                unassigned_segment_counts = unassigned_segment_counts.filter(Party.tenant_id == access.tenant_id)
-
-            unassigned_segment_counts = unassigned_segment_counts.group_by(Party.segment).all()
-            unassigned_segment_map = {normalize_breakdown_key(s): int(c) for s, c in unassigned_segment_counts}
-        except Exception:
-            unassigned_segment_map = {}
-
-        try:
-            unassigned_acq_counts = db_session.query(
-                Party.acquisition_type, func.count(Party.id)
-            ).filter(
-                (Party.branch_id == None) | (Party.branch_id == '')
-            )
-
-            if access.tenant_id:
-                unassigned_acq_counts = unassigned_acq_counts.filter(Party.tenant_id == access.tenant_id)
-
-            unassigned_acq_counts = unassigned_acq_counts.group_by(Party.acquisition_type).all()
-            unassigned_acq_map = {normalize_breakdown_key(s): int(c) for s, c in unassigned_acq_counts}
-        except Exception:
-            unassigned_acq_map = {}
-
-        if unassigned_status_map or unassigned_segment_map or unassigned_acq_map:
-            results.append({
-                'branchId': 'unassigned',
-                'branch': 'Atanmamis',
-                'breakdown': {
-                    'status': unassigned_status_map,
-                    'segment': unassigned_segment_map,
-                    'acquisitionType': unassigned_acq_map
-                }
-            })
+            if status_map or seg_map or acq_map:
+                results.append({
+                    'branchId': branch_ids[0] if branch_ids and len(branch_ids) == 1 else 'scope',
+                    'branch': 'Secili Kapsam',
+                    'breakdown': {
+                        'status': status_map,
+                        'segment': seg_map,
+                        'acquisitionType': acq_map
+                    }
+                })
 
         return ResponseEnvelope(data=results)
     except Exception as e:

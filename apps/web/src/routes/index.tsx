@@ -1,6 +1,6 @@
 import { Button, Select } from '@x-ear/ui-web';
 import { createFileRoute } from '@tanstack/react-router';
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Activity, ChevronRight, PieChart, RefreshCw } from 'lucide-react';
 import { DashboardStats } from '../components/dashboard/DashboardStats';
 import { QuickStatsCard } from '../components/dashboard/QuickStatsCard';
@@ -15,22 +15,25 @@ import { useDashboardData } from '../hooks/useDashboardData';
 import { usePermissions } from '../hooks/usePermissions';
 import PieChartSimple from '../components/charts/PieChartSimple';
 import { usePartyDistribution } from '../api/dashboard';
+import { useListBranches } from '../api/client/branches.client';
 import { formatActivitySentence, formatActivityTimeAgo, formatActivityTimestamp } from '../utils/activity';
+import { loadPartySegmentsFromAPI, type SegmentOption } from '../utils/party-segments';
 import { NoPermissionPlaceholder } from '../components/ui/NoPermissionPlaceholder';
 import { useIsMobile } from '../hooks/useBreakpoint';
 import { MobileDashboard } from '../pages/dashboard/MobileDashboard';
-
-interface Slice {
-  label: string;
-  value: number;
-}
 
 interface BranchDistribution {
   branch?: string;
   branchId?: string;
   breakdown?: {
     status?: Record<string, number>;
+    segment?: Record<string, number>;
   };
+}
+
+interface BranchOption {
+  id?: string | null;
+  name?: string | null;
 }
 
 export const Route = createFileRoute('/')({
@@ -78,6 +81,8 @@ function Dashboard() {
 function DesktopDashboard() {
   const { stats, lastTransaction, lastCalculation, recentActivity, loading, error } = useDashboardData();
   const [dateRange, setDateRange] = useState('week');
+  const [selectedBranchId, setSelectedBranchId] = useState('');
+  const [segmentOptions, setSegmentOptions] = useState<SegmentOption[]>([]);
   const [isCashRegisterModalOpen, setIsCashRegisterModalOpen] = useState(false);
   const [isPricingCalculatorModalOpen, setIsPricingCalculatorModalOpen] = useState(false);
   const createCashRecordMutation = useCreateCashRecord();
@@ -90,6 +95,41 @@ function DesktopDashboard() {
   const canViewSales = isSuperAdmin || hasPermission('sales.view');
   const canViewAnalytics = isSuperAdmin || hasPermission('dashboard.analytics');
   const canViewActivityLogs = isSuperAdmin || hasPermission('activity_logs.view');
+  const canViewBranches = isSuperAdmin || hasPermission('branches.view');
+
+  const { data: branchesResponse } = useListBranches(undefined, {
+    query: {
+      enabled: canViewAnalytics,
+      staleTime: 5 * 60 * 1000,
+      select: (response) => response.data ?? [],
+    },
+  });
+
+  const availableBranches = useMemo(() => (
+    Array.isArray(branchesResponse) ? (branchesResponse as BranchOption[]) : []
+  ), [branchesResponse]);
+
+  useEffect(() => {
+    void loadPartySegmentsFromAPI().then(({ segments }) => {
+      setSegmentOptions(segments);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (availableBranches.length === 1 && availableBranches[0]?.id) {
+      setSelectedBranchId((current) => current || String(availableBranches[0]?.id || ''));
+      return;
+    }
+
+    if (selectedBranchId && availableBranches.length > 0) {
+      const exists = availableBranches.some((branch) => String(branch.id || '') === selectedBranchId);
+      if (!exists) {
+        setSelectedBranchId('');
+      }
+    }
+  }, [availableBranches, selectedBranchId]);
+
+  const showBranchSelector = canViewBranches && availableBranches.length > 1;
 
   const handleCardClick = (cardType: string) => {
     switch (cardType) {
@@ -137,6 +177,20 @@ function DesktopDashboard() {
       <div className="rounded-[28px] border border-slate-200/80 bg-white/90 px-6 py-4 shadow-[0_18px_52px_-36px_rgba(15,23,42,0.22)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/44 dark:shadow-[0_20px_70px_-44px_rgba(2,6,23,0.85)]">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
+            {showBranchSelector ? (
+              <Select
+                value={selectedBranchId}
+                onChange={(e) => setSelectedBranchId(e.target.value)}
+                className="rounded-2xl border border-white/60 bg-white/70 px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-white/10 dark:bg-slate-900/55 dark:text-white"
+                options={[
+                  { value: '', label: 'Tum Erisilebilir Subeler' },
+                  ...availableBranches.map((branch) => ({
+                    value: String(branch.id || ''),
+                    label: branch.name || 'Sube',
+                  })),
+                ]}
+              />
+            ) : null}
             <Select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value)}
@@ -197,18 +251,21 @@ function DesktopDashboard() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {canViewAnalytics ? (
           <GlassPanel
-            title="Hasta Dagilimi"
-            subtitle="Sube bazli hasta yogunlugunu tek bakista gorun"
+            title="Hasta Segmentleri"
+            subtitle="Secili subedeki hasta segment dagilimini tek bakista gorun"
             icon={<PieChart className="h-5 w-5" />}
           >
             <div className="rounded-[26px] border border-slate-200/70 bg-white/78 p-5 backdrop-blur-md dark:border-white/10 dark:bg-slate-950/25">
-              <PartyDistribution />
+              <PartyDistribution
+                selectedBranchId={selectedBranchId || undefined}
+                segmentOptions={segmentOptions}
+              />
             </div>
           </GlassPanel>
         ) : (
           <GlassPanel
-            title="Hasta Dagilimi"
-            subtitle="Sube bazli hasta yogunlugunu tek bakista gorun"
+            title="Hasta Segmentleri"
+            subtitle="Secili subedeki hasta segment dagilimini tek bakista gorun"
             icon={<PieChart className="h-5 w-5" />}
           >
             <NoPermissionPlaceholder />
@@ -275,26 +332,45 @@ function DesktopDashboard() {
   );
 }
 
-function PartyDistribution() {
-  const { data, isLoading, isError } = usePartyDistribution();
+function PartyDistribution({
+  selectedBranchId,
+  segmentOptions,
+}: {
+  selectedBranchId?: string;
+  segmentOptions: SegmentOption[];
+}) {
+  const { data, isLoading, isError } = usePartyDistribution({
+    branchId: selectedBranchId,
+  });
   const list = Array.isArray(data) ? data : [];
+  const segments = new Map<string, number>();
+  const segmentLabelMap = new Map(
+    segmentOptions.map((segment) => [segment.value.trim().toLowerCase(), segment.label])
+  );
 
-  const partyTrends = (list as BranchDistribution[]).map((branch) => {
-    const status = branch?.breakdown?.status || {};
-    const total = Object.values(status).reduce((sum: number, value: number) => sum + Number(value || 0), 0);
-    return { label: branch.branch || branch.branchId || 'Diger', value: total };
+  (list as BranchDistribution[]).forEach((branch) => {
+    const breakdown = branch?.breakdown?.segment || {};
+    Object.entries(breakdown).forEach(([segment, count]) => {
+      segments.set(segment, (segments.get(segment) || 0) + Number(count || 0));
+    });
   });
 
   if (isLoading) return <div className="flex h-64 items-center justify-center text-slate-500">Dagilim yukleniyor...</div>;
   if (isError) return <div className="flex h-64 items-center justify-center text-rose-500">Dagilim verisi alinamadi</div>;
 
-  const slices: Slice[] = partyTrends.filter((item) => Number(item.value) > 0).slice(0, 6);
-  const chartData = slices.length ? slices : partyTrends.slice(0, 6);
+  const chartData = Array.from(segments.entries())
+    .map(([label, value]) => ({
+      label: segmentLabelMap.get(label.trim().toLowerCase()) || label,
+      value,
+    }))
+    .filter((item) => Number(item.value) > 0)
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 6);
 
   if (!chartData.length) {
     return (
       <div className="flex h-64 items-center justify-center rounded-[24px] border border-dashed border-white/45 bg-white/28 text-sm text-slate-500">
-        Gosterilecek hasta dagilimi verisi bulunmuyor
+        Gosterilecek segment verisi bulunmuyor
       </div>
     );
   }

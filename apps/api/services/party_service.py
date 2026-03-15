@@ -359,6 +359,7 @@ class PartyService:
             party.acquisition_type = data['acquisition_type']
         
         if 'branchId' in data: party.branch_id = data['branchId']
+        elif 'branch_id' in data: party.branch_id = data['branch_id']
         if 'tags' in data:
             party.tags_json = data['tags']
         elif 'tags_json' in data:
