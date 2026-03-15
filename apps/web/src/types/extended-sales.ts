@@ -48,6 +48,7 @@ export interface SaleDeviceData {
     patientPayment?: number;
     sgkCoverageAmount?: number;
     patientResponsibleAmount?: number;
+    kdvRate?: number;
 }
 
 /**

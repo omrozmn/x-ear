@@ -17,6 +17,7 @@ import {
 } from '../hooks/useCashflow';
 import { CashRecordDetailModal } from '../components/cashflow/CashRecordDetailModal';
 import type { CashflowFilters as CashflowFiltersType, CashRecord, CashRecordFormData } from '../types/cashflow';
+import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 
 export function CashflowPage() {
   const [filters, setFilters] = useState<CashflowFiltersType>({});
@@ -180,28 +181,28 @@ export function CashflowPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Kasa Yönetimi</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-              Gelir ve gider kayıtlarınızı yönetin
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={handleRefresh}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Yenile
-            </Button>
-            <Button variant="outline" onClick={handleExport}>
-              <Download className="h-4 w-4 mr-2" />
-              Dışa Aktar
-            </Button>
-            <Button onClick={() => setShowNewRecordModal(true)} className="premium-gradient tactile-press">
-              <Plus className="h-4 w-4 mr-2" />
-              Yeni Kayıt
-            </Button>
-          </div>
-        </div>
+        <DesktopPageHeader
+          className="mb-6"
+          title="Kasa Yönetimi"
+          description="Gelir ve gider kayıtlarınızı yönetin"
+          eyebrow={{ tr: 'Nakit Akışı', en: 'Cashflow' }}
+          actions={(
+            <>
+              <Button variant="outline" onClick={handleRefresh}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Yenile
+              </Button>
+              <Button variant="outline" onClick={handleExport}>
+                <Download className="h-4 w-4 mr-2" />
+                Dışa Aktar
+              </Button>
+              <Button onClick={() => setShowNewRecordModal(true)} className="premium-gradient tactile-press">
+                <Plus className="h-4 w-4 mr-2" />
+                Yeni Kayıt
+              </Button>
+            </>
+          )}
+        />
 
         {/* Stats */}
         <CashflowStats stats={stats} />

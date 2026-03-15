@@ -1,13 +1,18 @@
 import os
 from uuid import uuid4
 import random
-
-# Enable idempotency middleware for these tests
-os.environ["ENABLE_IDEMPOTENCY_TESTS"] = "true"
+import pytest
 
 # Assuming standard test fixtures for client and db_session are available
-# Adjust imports based on actual test suite structure
 from fastapi.testclient import TestClient
+
+
+@pytest.fixture(autouse=True)
+def _enable_idempotency():
+    """Enable idempotency middleware only for tests in this module."""
+    os.environ["ENABLE_IDEMPOTENCY_TESTS"] = "true"
+    yield
+    os.environ.pop("ENABLE_IDEMPOTENCY_TESTS", None)
 
 
 def test_idempotent_replay_success(client: TestClient, db_session, auth_headers):

@@ -17,7 +17,7 @@ from typing import Any, Optional, List, Dict
 from datetime import datetime, date
 from decimal import Decimal
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, func, desc
+from sqlalchemy import and_, func, desc, asc
 from fastapi import HTTPException
 
 from core.models.purchase_invoice import PurchaseInvoice
@@ -56,7 +56,15 @@ class InvoiceServiceNew:
         return {}
 
     @staticmethod
+    def _extract_value(field: Any) -> str:
+        """Extract plain string value from a UBL dict like {'Value': 'SATIS', ...} or return str."""
+        if isinstance(field, dict):
+            return str(field.get("Value") or field.get("value") or field.get("name") or field.get("code") or "").strip()
+        return str(field or "").strip()
+
+    @staticmethod
     def _document_metadata(raw: dict[str, Any]) -> dict[str, str]:
+        _ev = InvoiceServiceNew._extract_value
         system_type = str(
             raw.get("systemType")
             or raw.get("systemTypeCode")
@@ -64,8 +72,8 @@ class InvoiceServiceNew:
             or raw.get("document_type")
             or "EFATURA"
         ).strip() or "EFATURA"
-        profile_id = str(raw.get("profileId") or raw.get("ProfileId") or raw.get("profile_id") or "").strip()
-        invoice_type_code = str(raw.get("invoiceTypeCode") or raw.get("InvoiceTypeCode") or raw.get("invoiceType") or "").strip()
+        profile_id = _ev(raw.get("profileId") or raw.get("ProfileId") or raw.get("profile_id") or "")
+        invoice_type_code = _ev(raw.get("invoiceTypeCode") or raw.get("InvoiceTypeCode") or raw.get("invoiceType") or "")
         document_kind = "despatch" if system_type == "EIRSALIYE" or profile_id == "TEMELIRSALIYE" or invoice_type_code == "SEVK" else "invoice"
         return {
             "document_kind": document_kind,
@@ -83,7 +91,9 @@ class InvoiceServiceNew:
         date_from: Optional[date] = None,
         date_to: Optional[date] = None,
         page: int = 1,
-        per_page: int = 50
+        per_page: int = 50,
+        sort_field: Optional[str] = None,
+        sort_dir: Optional[str] = None,
     ) -> IncomingInvoiceListResponse:
         """List incoming invoices with filtering"""
         
@@ -111,9 +121,22 @@ class InvoiceServiceNew:
         # Get total count
         total = query.count()
         
-        # Apply pagination
+        # Apply sorting and pagination
+        _sort_map = {
+            "invoiceDate": PurchaseInvoice.invoice_date,
+            "supplier": PurchaseInvoice.sender_name,
+            "supplierName": PurchaseInvoice.sender_name,
+            "invoiceNumber": PurchaseInvoice.invoice_number,
+            "totalAmount": PurchaseInvoice.total_amount,
+            "status": PurchaseInvoice.status,
+        }
         offset = (page - 1) * per_page
-        invoices = query.order_by(desc(PurchaseInvoice.created_at)).offset(offset).limit(per_page).all()
+        _ofn = asc if sort_dir == "asc" else desc
+        _col = _sort_map.get(sort_field or "")
+        if _col is not None:
+            invoices = query.order_by(_ofn(_col), desc(PurchaseInvoice.created_at)).offset(offset).limit(per_page).all()
+        else:
+            invoices = query.order_by(desc(PurchaseInvoice.invoice_date), desc(PurchaseInvoice.created_at)).offset(offset).limit(per_page).all()
         
         # Convert to response format
         invoice_responses = []
@@ -188,7 +211,9 @@ class InvoiceServiceNew:
         date_from: Optional[date] = None,
         date_to: Optional[date] = None,
         page: int = 1,
-        per_page: int = 50
+        per_page: int = 50,
+        sort_field: Optional[str] = None,
+        sort_dir: Optional[str] = None,
     ) -> OutgoingInvoiceListResponse:
         """List outgoing invoices from purchase_invoices (BirFatura synced)"""
         
@@ -216,9 +241,21 @@ class InvoiceServiceNew:
         # Get total count
         total = query.count()
         
-        # Apply pagination
+        # Apply sorting and pagination
+        _sort_map = {
+            "invoiceDate": PurchaseInvoice.invoice_date,
+            "party": PurchaseInvoice.sender_name,
+            "invoiceNumber": PurchaseInvoice.invoice_number,
+            "totalAmount": PurchaseInvoice.total_amount,
+            "status": PurchaseInvoice.status,
+        }
         offset = (page - 1) * per_page
-        invoices = query.order_by(desc(PurchaseInvoice.created_at)).offset(offset).limit(per_page).all()
+        _ofn = asc if sort_dir == "asc" else desc
+        _col = _sort_map.get(sort_field or "")
+        if _col is not None:
+            invoices = query.order_by(_ofn(_col), desc(PurchaseInvoice.created_at)).offset(offset).limit(per_page).all()
+        else:
+            invoices = query.order_by(desc(PurchaseInvoice.invoice_date), desc(PurchaseInvoice.created_at)).offset(offset).limit(per_page).all()
         
         # Convert to response format
         invoice_responses = []

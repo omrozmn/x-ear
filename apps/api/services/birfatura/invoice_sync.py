@@ -2,6 +2,7 @@
 Invoice Sync Service
 Handles synchronization of invoices from BirFatura API to local database
 """
+import json
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Any, Optional
 
@@ -9,6 +10,7 @@ from sqlalchemy.orm import Session
 from models.purchase_invoice import PurchaseInvoice, PurchaseInvoiceItem, SuggestedSupplier
 from models.suppliers import Supplier
 from core.models.purchase import Purchase
+from core.models.invoice import Invoice
 from core.database import gen_id
 from services.birfatura.service import BirfaturaClient
 from services.birfatura.invoice_parser import (
@@ -49,15 +51,15 @@ class InvoiceSyncService:
             raise ValueError(f"Tenant {tenant_id} not found")
 
         tenant_invoice_settings = (tenant.settings or {}).get('invoice_integration', {})
-        tenant_api_key = tenant_invoice_settings.get('api_key')
-        tenant_secret_key = tenant_invoice_settings.get('secret_key')
+        tenant_api_key = tenant_invoice_settings.get('api_key') or os.getenv('BIRFATURA_API_KEY')
+        tenant_secret_key = tenant_invoice_settings.get('secret_key') or os.getenv('BIRFATURA_SECRET_KEY')
         
         # Get Global Settings (Integration Key)
         integration_key_config = self.db.query(IntegrationConfig).filter_by(
             integration_type='birfatura', 
             config_key='integration_key'
         ).first()
-        global_integration_key = integration_key_config.config_value if integration_key_config else None
+        global_integration_key = (integration_key_config.config_value if integration_key_config else None) or os.getenv('BIRFATURA_INTEGRATION_KEY')
 
         # Check credentials in non-mock env
         mock_env = os.getenv('BIRFATURA_MOCK')
@@ -68,7 +70,7 @@ class InvoiceSyncService:
         else:
             using_mock = os.getenv('ENVIRONMENT', 'production') != 'production'
         if not using_mock and (not tenant_api_key or not tenant_secret_key or not global_integration_key):
-             raise ValueError("Missing BirFatura credentials. Please configure Invoice Integration settings.")
+             raise ValueError("BirFatura kimlik bilgileri eksik. Lütfen Fatura Entegrasyonu ayarlarını yapılandırın.")
              
         self.client = BirfaturaClient(
             api_key=tenant_api_key,
@@ -339,6 +341,68 @@ class InvoiceSyncService:
             self.db.add(item)
         
         return True
+
+    def _process_outgoing_invoice(self, tenant_id: str, invoice_data: Dict[str, Any]) -> bool:
+        """Process a single outgoing invoice from BirFatura API into purchase_invoices (type=OUTGOING)."""
+        birfatura_uuid = invoice_data.get('UUID') or invoice_data.get('uuid')
+        if not birfatura_uuid:
+            logger.warning("Outgoing invoice missing UUID, skipping")
+            return False
+
+        # Check for duplicates by birfatura_uuid
+        existing = self.db.query(PurchaseInvoice).filter_by(
+            tenant_id=tenant_id, birfatura_uuid=birfatura_uuid
+        ).first()
+        if existing:
+            return False
+
+        doc_no = invoice_data.get('DocumentNo', '')
+        issue_date_str = invoice_data.get('IssueDate')
+        issue_date = None
+        if issue_date_str:
+            try:
+                issue_date = datetime.fromisoformat(issue_date_str.replace('Z', '+00:00'))
+            except (ValueError, TypeError):
+                pass
+
+        receiver_name = invoice_data.get('ReceiverName', '')
+        receiver_kn = invoice_data.get('ReceiverKN', '')
+        sender_name = invoice_data.get('SenderName', '')
+        sender_kn = invoice_data.get('SenderKN', '')
+        payable = invoice_data.get('PayableAmount', 0) or 0
+        tax_exclusive = invoice_data.get('TaxExclusiveAmount', 0) or 0
+        currency = invoice_data.get('DocumentCurrencyCode', 'TRY')
+
+        # Map BirFatura status codes
+        status_code = str(invoice_data.get('Status', ''))
+        status_map = {
+            '1300': 'SENT', '1200': 'QUEUED', '1100': 'QUEUED',
+            '1000': 'DRAFT', '1400': 'REJECTED', '1500': 'CANCELLED',
+        }
+        status = status_map.get(status_code, 'SENT')
+
+        purchase_invoice = PurchaseInvoice(
+            tenant_id=tenant_id,
+            birfatura_uuid=birfatura_uuid,
+            invoice_number=doc_no,
+            invoice_date=issue_date,
+            invoice_type='OUTGOING',
+            sender_name=receiver_name,
+            sender_tax_number=receiver_kn,
+            sender_tax_office=None,
+            sender_address=None,
+            sender_city=None,
+            currency=currency,
+            subtotal=tax_exclusive,
+            tax_amount=(payable - tax_exclusive) if payable and tax_exclusive else 0,
+            total_amount=payable,
+            raw_data=invoice_data,
+            status=status,
+        )
+
+        self.db.add(purchase_invoice)
+        self.db.flush()
+        return True
     
     def backfill_invoice_items(self, tenant_id: str, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None) -> Dict[str, int]:
         """Re-fetch invoices with detail to populate missing invoice items."""
@@ -348,14 +412,14 @@ class InvoiceSyncService:
             raise ValueError(f"Tenant {tenant_id} not found")
 
         tenant_invoice_settings = (tenant.settings or {}).get('invoice_integration', {})
-        tenant_api_key = tenant_invoice_settings.get('api_key')
-        tenant_secret_key = tenant_invoice_settings.get('secret_key')
+        tenant_api_key = tenant_invoice_settings.get('api_key') or os.getenv('BIRFATURA_API_KEY')
+        tenant_secret_key = tenant_invoice_settings.get('secret_key') or os.getenv('BIRFATURA_SECRET_KEY')
 
         integration_key_config = self.db.query(IntegrationConfig).filter_by(
             integration_type='birfatura',
             config_key='integration_key'
         ).first()
-        global_integration_key = integration_key_config.config_value if integration_key_config else None
+        global_integration_key = (integration_key_config.config_value if integration_key_config else None) or os.getenv('BIRFATURA_INTEGRATION_KEY')
 
         mock_env = os.getenv('BIRFATURA_MOCK')
         if mock_env == '1':
@@ -365,7 +429,7 @@ class InvoiceSyncService:
         else:
             using_mock = os.getenv('ENVIRONMENT', 'production') != 'production'
         if not using_mock and (not tenant_api_key or not tenant_secret_key or not global_integration_key):
-            raise ValueError("Missing BirFatura credentials.")
+            raise ValueError("BirFatura kimlik bilgileri eksik. Lütfen Fatura Entegrasyonu ayarlarını yapılandırın.")
 
         self.client = BirfaturaClient(
             api_key=tenant_api_key,
@@ -495,8 +559,21 @@ class InvoiceSyncService:
                             )
                             self.db.add(item)
                         
-                        # Update raw_data with detailed version
-                        existing.raw_data = parsed_detail
+                        # Update raw_data with detailed version, preserving _source_form_data
+                        prev_raw = existing.raw_data if isinstance(existing.raw_data, dict) else {}
+                        preserved_keys = {
+                            k: v for k, v in prev_raw.items()
+                            if k.startswith("_")  # _source_form_data, _issued_at, _local_document_xml, _provider_response
+                        }
+                        merged = {**parsed_detail, **preserved_keys}
+                        # Auto-reconstruct _source_form_data if missing
+                        if "_source_form_data" not in merged:
+                            try:
+                                from routers.invoices_new import _build_form_data_from_raw
+                                merged["_source_form_data"] = _build_form_data_from_raw(merged, existing)
+                            except Exception as e:
+                                logger.warning(f"Could not reconstruct _source_form_data for {birfatura_uuid}: {e}")
+                        existing.raw_data = merged
                         stats['updated'] += 1
                         logger.info(f"Backfilled {len(items)} items for invoice {existing.invoice_number}")
                     else:
@@ -513,7 +590,142 @@ class InvoiceSyncService:
         self.db.commit()
         return stats
 
-    def _process_outgoing_invoice(self, tenant_id: str, invoice_data: Dict[str, Any]) -> bool:
+    def backfill_outgoing_detail(self, tenant_id: str, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None) -> Dict[str, int]:
+        """Re-fetch outgoing invoices with detail to populate items and _source_form_data for flat-synced records."""
+        tenant = self.db.get(Tenant, tenant_id)
+        if not tenant:
+            raise ValueError(f"Tenant {tenant_id} not found")
+
+        tenant_invoice_settings = (tenant.settings or {}).get('invoice_integration', {})
+        tenant_api_key = tenant_invoice_settings.get('api_key') or os.getenv('BIRFATURA_API_KEY')
+        tenant_secret_key = tenant_invoice_settings.get('secret_key') or os.getenv('BIRFATURA_SECRET_KEY')
+
+        integration_key_config = self.db.query(IntegrationConfig).filter_by(
+            integration_type='birfatura', config_key='integration_key'
+        ).first()
+        global_integration_key = (integration_key_config.config_value if integration_key_config else None) or os.getenv('BIRFATURA_INTEGRATION_KEY')
+
+        mock_env = os.getenv('BIRFATURA_MOCK')
+        if mock_env == '1':
+            using_mock = True
+        elif mock_env == '0':
+            using_mock = False
+        else:
+            using_mock = os.getenv('ENVIRONMENT', 'production') != 'production'
+        if not using_mock and (not tenant_api_key or not tenant_secret_key or not global_integration_key):
+            raise ValueError("Missing BirFatura credentials.")
+
+        self.client = BirfaturaClient(
+            api_key=tenant_api_key,
+            secret_key=tenant_secret_key,
+            integration_key=global_integration_key
+        )
+
+        if not end_date:
+            end_date = datetime.now(timezone.utc)
+        if not start_date:
+            start_date = end_date - timedelta(days=365)
+
+        stats = {'updated': 0, 'skipped': 0, 'errors': 0}
+        page = 1
+        page_size = 50
+
+        while True:
+            params = {
+                'systemType': 'EFATURA',
+                'startDateTime': start_date.isoformat(),
+                'endDateTime': end_date.isoformat(),
+                'documentType': 'INVOICE',
+                'pageNumber': page,
+                'pageSize': page_size,
+            }
+            try:
+                response = self.client.get_outbox_documents_with_detail(params)
+            except Exception as e:
+                logger.error(f"Outgoing backfill API error page {page}: {e}")
+                stats['errors'] += 1
+                break
+
+            if not response.get('Success'):
+                logger.error(f"Outgoing backfill API Error: {response.get('Message')}")
+                break
+
+            result = response.get('Result', {})
+            outbox_docs = result.get('OutBoxEDocuments') or result.get('OutBoxInvoices') or result.get('InBoxInvoices') or {}
+            invoices = outbox_docs.get('objects', [])
+
+            if not invoices:
+                break
+
+            for raw_obj in invoices:
+                outbox_inv = raw_obj.get('outBoxEDocument') or raw_obj.get('outBoxInvoice') or raw_obj
+                json_data_str = raw_obj.get('jsonData')
+
+                parsed_detail = {}
+                if json_data_str and isinstance(json_data_str, str):
+                    try:
+                        parsed_detail = json.loads(json_data_str)
+                    except json.JSONDecodeError:
+                        pass
+
+                birfatura_uuid = outbox_inv.get('UUID') or outbox_inv.get('uuid')
+                if not birfatura_uuid:
+                    continue
+
+                existing = self.db.query(PurchaseInvoice).filter_by(
+                    birfatura_uuid=birfatura_uuid, tenant_id=tenant_id
+                ).first()
+                if not existing:
+                    stats['skipped'] += 1
+                    continue
+
+                try:
+                    if parsed_detail:
+                        items = extract_invoice_items(parsed_detail)
+                        existing_items = self.db.query(PurchaseInvoiceItem).filter_by(
+                            purchase_invoice_id=existing.id
+                        ).count()
+                        if not existing_items and items:
+                            for item_data in items:
+                                item = PurchaseInvoiceItem(
+                                    tenant_id=tenant_id,
+                                    purchase_invoice_id=existing.id,
+                                    product_code=item_data['product_code'],
+                                    product_name=item_data['product_name'],
+                                    quantity=item_data['quantity'],
+                                    unit=item_data['unit'],
+                                    unit_price=item_data['unit_price'],
+                                    tax_rate=item_data['tax_rate'],
+                                    tax_amount=item_data['tax_amount'],
+                                    line_total=item_data['line_total'],
+                                )
+                                self.db.add(item)
+
+                        prev_raw = existing.raw_data if isinstance(existing.raw_data, dict) else {}
+                        preserved_keys = {k: v for k, v in prev_raw.items() if k.startswith("_")}
+                        merged = {**parsed_detail, **preserved_keys}
+                        if "_source_form_data" not in merged:
+                            try:
+                                from routers.invoices_new import _build_form_data_from_raw
+                                merged["_source_form_data"] = _build_form_data_from_raw(merged, existing)
+                            except Exception as e:
+                                logger.warning(f"Could not reconstruct _source_form_data for outgoing {birfatura_uuid}: {e}")
+                        existing.raw_data = merged
+                        stats['updated'] += 1
+                        logger.info(f"Outgoing backfill detail for invoice {existing.invoice_number}")
+                    else:
+                        stats['skipped'] += 1
+                except Exception as e:
+                    logger.error(f"Outgoing backfill error for {birfatura_uuid}: {e}")
+                    stats['errors'] += 1
+
+            total = outbox_docs.get('total', 0)
+            if page * page_size >= total:
+                break
+            page += 1
+
+        self.db.commit()
+        return stats
         """Process a single outgoing invoice (return/correction to supplier)"""
         # Similar to incoming but with invoice_type='OUTGOING'
         # Extract UUID

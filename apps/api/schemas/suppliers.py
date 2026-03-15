@@ -23,6 +23,7 @@ class SupplierBase(AppBaseModel):
     postal_code: Optional[str] = Field(None, alias="postalCode", description="Postal code")
     tax_number: Optional[str] = Field(None, alias="taxNumber", description="Tax number")
     tax_office: Optional[str] = Field(None, alias="taxOffice", description="Tax office")
+    institution_number: Optional[str] = Field(None, alias="institutionNumber", description="UTS institution number")
     payment_terms: Optional[str] = Field(None, alias="paymentTerms", description="Payment terms")
     currency: Optional[str] = Field("TRY", description="Currency")
     rating: Optional[int] = Field(None, description="Rating 1-5")
@@ -53,6 +54,7 @@ class SupplierCreate(AppBaseModel):
     city: Optional[str] = None
     tax_number: Optional[str] = Field(None, alias="taxNumber")
     tax_office: Optional[str] = Field(None, alias="taxOffice")
+    institution_number: Optional[str] = Field(None, alias="institutionNumber")
     is_active: bool = Field(True, alias="isActive")
     notes: Optional[str] = None
     
@@ -97,6 +99,7 @@ class SupplierUpdate(AppBaseModel):
     postal_code: Optional[str] = Field(None, alias="postalCode")
     tax_number: Optional[str] = Field(None, alias="taxNumber")
     tax_office: Optional[str] = Field(None, alias="taxOffice")
+    institution_number: Optional[str] = Field(None, alias="institutionNumber")
     payment_terms: Optional[str] = Field(None, alias="paymentTerms")
     currency: Optional[str] = None
     rating: Optional[int] = None

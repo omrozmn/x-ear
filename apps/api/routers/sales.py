@@ -14,6 +14,7 @@ from models.sales import Sale, DeviceAssignment, PaymentPlan, PaymentRecord, Pay
 from core.models.party import Party
 from models.inventory import InventoryItem
 from models.invoice import Invoice
+from core.models.purchase_invoice import PurchaseInvoice
 from services.stock_service import create_stock_movement
 from fastapi import BackgroundTasks
 
@@ -94,6 +95,7 @@ def _build_device_info_from_assignment(db: Session, assignment: DeviceAssignment
     serial_number_left = None
     serial_number_right = None
     category = None
+    inventory_kdv_rate = None  # KDV rate from inventory item
     
     # Get down payment from payment records
     down_payment = 0.0
@@ -122,6 +124,7 @@ def _build_device_info_from_assignment(db: Session, assignment: DeviceAssignment
                     device_name = inv_item.name
                     barcode = inv_item.barcode
                     category = inv_item.category
+                    inventory_kdv_rate = inv_item.kdv_rate
     
     # Try inventory lookup if no device
     if not brand and assignment.inventory_id:
@@ -131,6 +134,8 @@ def _build_device_info_from_assignment(db: Session, assignment: DeviceAssignment
             model = inv_item.model
             barcode = inv_item.barcode
             category = inv_item.category
+            if inventory_kdv_rate is None:
+                inventory_kdv_rate = inv_item.kdv_rate
             if not device_name:
                 device_name = inv_item.name
     
@@ -241,6 +246,7 @@ def _build_device_info_from_assignment(db: Session, assignment: DeviceAssignment
         'patientPayment': float(assignment.net_payable) if assignment.net_payable else None,
         'sgkCoverageAmount': float(assignment.sgk_support) if assignment.sgk_support else 0.0,
         'patientResponsibleAmount': float(assignment.net_payable) if assignment.net_payable else None,
+        'kdvRate': float(inventory_kdv_rate) if inventory_kdv_rate is not None else None,
     }
     
     logger.info(f"Built device info: brand={result.get('brand')}, deviceName={result.get('deviceName')}, keys_count={len(result)}")
@@ -293,8 +299,14 @@ def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
     invoice = db.query(Invoice).filter_by(sale_id=sale.id).first()
     invoice_data = None
     if invoice:
+        # Also find the PurchaseInvoice to get its ID for PDF viewing
+        purchase_inv = db.query(PurchaseInvoice).filter(
+            PurchaseInvoice.invoice_number == invoice.invoice_number,
+            PurchaseInvoice.tenant_id == sale.tenant_id,
+        ).first()
         invoice_data = {
             'id': invoice.id,
+            'purchaseInvoiceId': purchase_inv.id if purchase_inv else None,
             'invoiceNumber': invoice.invoice_number,
             'status': invoice.status,
             'invoiceDate': invoice.invoice_date.isoformat() if invoice.invoice_date else None
@@ -330,8 +342,19 @@ def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
     # Note: list_price_total in DB is actually UNIT price, not total
     # For bilateral sales, we need to multiply by device count
     
-    unit_list_price = float(sale.unit_list_price or sale.list_price_total) if (sale.unit_list_price or sale.list_price_total) else 0
+    # Derive unit list price correctly:
+    # 1. Prefer explicit unit_list_price if stored
+    # 2. Use first device assignment's list_price (most accurate for legacy sales)
+    # 3. Fall back to list_price_total (may be total for legacy bilateral sales)
     device_count = len(devices)
+    if sale.unit_list_price:
+        unit_list_price = float(sale.unit_list_price)
+    elif first_device and first_device.get('listPrice'):
+        unit_list_price = float(first_device['listPrice'])
+    elif sale.list_price_total:
+        unit_list_price = float(sale.list_price_total)
+    else:
+        unit_list_price = 0
     actual_list_price_total = unit_list_price * device_count if device_count > 0 else unit_list_price
     
     # ✅ UPDATED: Use stored values from database instead of recalculating
@@ -339,10 +362,14 @@ def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
     discount_type = getattr(sale, 'discount_type', None) or 'none'
     discount_value = float(getattr(sale, 'discount_value', 0)) if hasattr(sale, 'discount_value') else 0.0
     discount_amount = float(sale.discount_amount) if sale.discount_amount else 0.0
-    final_amount = float(sale.final_amount) if sale.final_amount else float(sale.total_amount or 0)
     
-    # Use stored SGK coverage
-    total_sgk_coverage = float(sale.sgk_coverage) if sale.sgk_coverage else 0.0
+    # NOTE: total_sgk_coverage is already correctly calculated above by summing
+    # all device assignments' sgkSupport values (line ~341). Do NOT override with
+    # sale.sgk_coverage here because that field may store per-ear value for bilateral sales.
+    
+    # Recalculate final amount for consistency with enriched SGK total
+    # This handles cases where sale.sgk_coverage stored per-ear value but we need bilateral total
+    final_amount = max(0, actual_list_price_total - discount_amount - total_sgk_coverage)
     
     # Debug logging
     logger.info(f"Building sale data for {sale.id}: devices count={device_count}")
@@ -376,7 +403,8 @@ def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
         'patientPayment': final_amount,  # Patient pays final amount (after SGK and discount)
         'reportStatus': sale.report_status,
         'notes': sale.notes,
-        'kdvRate': float(sale.kdv_rate) if sale.kdv_rate else 20.0,
+        # Prefer inventory KDV rate from first device (most accurate), fallback to sale's stored rate
+        'kdvRate': first_device.get('kdvRate') if first_device.get('kdvRate') is not None else (float(sale.kdv_rate) if sale.kdv_rate else None),
         'kdvAmount': float(sale.kdv_amount) if sale.kdv_amount else 0.0,
         
         # Sale-level product fields (from first device for backwards compatibility)
@@ -868,6 +896,69 @@ def pay_installment(
 
 # ============= WRITE HELPERS =============
 
+def _get_pricing_config() -> dict:
+    """Read pricing formula config from system settings.
+    Returns dict with 'discount_before_sgk' (bool) and 'discount_includes_kdv' (bool).
+    Defaults: discount_before_sgk=False (SGK first), discount_includes_kdv=True.
+    """
+    try:
+        from models.system import Settings
+        rec = Settings.get_system_settings()
+        sgk_cfg = (rec.settings_json if rec else {}).get('sgk', {})
+        return {
+            'discount_before_sgk': bool(sgk_cfg.get('discount_before_sgk', False)),
+            'discount_includes_kdv': bool(sgk_cfg.get('discount_includes_kdv', True)),
+        }
+    except Exception:
+        return {'discount_before_sgk': False, 'discount_includes_kdv': True}
+
+
+def _apply_discount(
+    total_price: float,
+    sgk_total: float,
+    discount_type: str,
+    discount_value: float,
+    kdv_rate_pct: float = 0.0,
+    pricing_cfg: dict | None = None,
+) -> tuple[float, float]:
+    """Calculate discount_amount and final_amount respecting pricing settings.
+
+    Returns (discount_amount, final_amount).
+    """
+    if pricing_cfg is None:
+        pricing_cfg = _get_pricing_config()
+
+    discount_before_sgk = pricing_cfg.get('discount_before_sgk', False)
+    discount_includes_kdv = pricing_cfg.get('discount_includes_kdv', False)
+
+    if discount_before_sgk:
+        # Discount FIRST, then SGK
+        discount_base = total_price
+    else:
+        # SGK FIRST (default), then discount on remainder
+        discount_base = total_price - sgk_total
+
+    # If discount_includes_kdv is False, strip KDV from the base before computing %
+    if not discount_includes_kdv and kdv_rate_pct > 0 and discount_type == 'percentage':
+        kdv_divisor = 1 + (kdv_rate_pct / 100)
+        discount_base_for_pct = discount_base / kdv_divisor
+    else:
+        discount_base_for_pct = discount_base
+
+    discount_amount = 0.0
+    if discount_type == 'percentage' and discount_value > 0:
+        discount_amount = (discount_base_for_pct * discount_value) / 100
+    elif discount_type == 'amount' and discount_value > 0:
+        discount_amount = discount_value
+
+    if discount_before_sgk:
+        final_amount = max(0, total_price - discount_amount - sgk_total)
+    else:
+        final_amount = max(0, (total_price - sgk_total) - discount_amount)
+
+    return discount_amount, final_amount
+
+
 def _calculate_product_pricing(product: InventoryItem, data: SaleCreate, override_price: float = None):
     """Calculate pricing for product sale."""
     base_price = float(product.price or 0)
@@ -992,6 +1083,8 @@ def create_sale(
         list_price_total=base_price,
         total_amount=base_price,
         discount_amount=discount,
+        discount_type=sale_in.discount_type or 'none',
+        discount_value=Decimal(str(sale_in.discount_value)) if sale_in.discount_value else None,
         final_amount=final_price,
         paid_amount=paid_amt,
         payment_method=sale_in.payment_method,
@@ -1085,6 +1178,8 @@ def create_sale(
             sgk_support=sgk_per_ear,  # Per-ear SGK
             sgk_scheme=sgk_scheme,
             net_payable=final_price - sgk_per_ear,  # Full unit price minus SGK per ear
+            discount_type=sale_in.discount_type or 'none',
+            discount_value=Decimal(str(sale_in.discount_value)) if sale_in.discount_value else None,
             payment_method=sale_in.payment_method,
             report_status=sale_in.report_status,
             notes=f"Stoktan satış (Sol): {product.name} - {product.brand or ''} {product.model or ''}",
@@ -1112,6 +1207,8 @@ def create_sale(
             sgk_support=sgk_per_ear,  # Per-ear SGK
             sgk_scheme=sgk_scheme,
             net_payable=final_price - sgk_per_ear,  # Full unit price minus SGK per ear
+            discount_type=sale_in.discount_type or 'none',
+            discount_value=Decimal(str(sale_in.discount_value)) if sale_in.discount_value else None,
             payment_method=sale_in.payment_method,
             report_status=sale_in.report_status,
             notes=f"Stoktan satış (Sağ): {product.name} - {product.brand or ''} {product.model or ''}",
@@ -1127,7 +1224,7 @@ def create_sale(
         # Update sale SGK coverage to total (2 x per-ear)
         total_sgk = sgk_per_ear * 2
         sale.sgk_coverage = Decimal(str(total_sgk))
-        sale.patient_payment = Decimal(str(final_price - total_sgk))
+        sale.patient_payment = Decimal(str(max(0, final_price * 2 - total_sgk)))
         
         logger.info(f"✅ Created bilateral sale: 2 assignments (left + right) for sale {sale.id}, SGK per ear: {sgk_per_ear}, total SGK: {total_sgk}")
     else:
@@ -1146,6 +1243,8 @@ def create_sale(
             sgk_support=sgk_per_ear,  # Single ear SGK
             sgk_scheme=sgk_scheme,
             net_payable=final_price - sgk_per_ear,  # Net payable after SGK
+            discount_type=sale_in.discount_type or 'none',
+            discount_value=Decimal(str(sale_in.discount_value)) if sale_in.discount_value else None,
             payment_method=sale_in.payment_method,
             report_status=sale_in.report_status,
             notes=f"Stoktan satış: {product.name} - {product.brand or ''} {product.model or ''}",
@@ -1297,37 +1396,41 @@ def update_sale(
             sale.list_price_total = new_unit_price if device_count == 1 else new_unit_price
             logger.info(f"💰 Updated sale totals: total_amount={sale.total_amount}, device_count={device_count}")
     
-    # ✅ UPDATED: Recalculate amounts when discount fields change (SGK FIRST, discount SECOND)
+    # ✅ UPDATED: Recalculate amounts when discount fields change (respects pricing settings)
     if sale_in.discount_type is not None or sale_in.discount_value is not None:
         # Get current values
         unit_list_price = float(sale.unit_list_price or sale.list_price_total or 0)
         sgk_coverage = float(sale.sgk_coverage or 0)
         discount_type = sale.discount_type or 'none'
         discount_value = float(sale.discount_value or 0)
+        kdv_rate_pct = float(sale.kdv_rate or 0)
         
         # Count device assignments to calculate total list price
         assignments = db.query(DeviceAssignment).filter_by(sale_id=sale_id).all()
         device_count = len(assignments) if assignments else 1
         actual_list_price_total = unit_list_price * device_count
         
-        # Apply SGK FIRST, discount SECOND formula
-        price_after_sgk = actual_list_price_total - sgk_coverage
-        
-        # Calculate discount amount
-        discount_amount = 0.0
-        if discount_type == 'percentage' and discount_value > 0:
-            discount_amount = (price_after_sgk * discount_value) / 100
-        elif discount_type == 'amount' and discount_value > 0:
-            discount_amount = discount_value
-        
-        # Calculate final amount
-        final_amount = price_after_sgk - discount_amount
+        pricing_cfg = _get_pricing_config()
+        discount_amount, final_amount = _apply_discount(
+            total_price=actual_list_price_total,
+            sgk_total=sgk_coverage,
+            discount_type=discount_type,
+            discount_value=discount_value,
+            kdv_rate_pct=kdv_rate_pct,
+            pricing_cfg=pricing_cfg,
+        )
         
         # Update calculated fields
         sale.discount_amount = Decimal(str(discount_amount))
         sale.total_amount = Decimal(str(actual_list_price_total))
         sale.final_amount = Decimal(str(final_amount))
         sale.patient_payment = Decimal(str(final_amount))
+        
+        # 🔧 DISCOUNT SYNC: Propagate sale-level discount to all device assignments
+        for assignment in assignments:
+            assignment.discount_type = discount_type
+            assignment.discount_value = Decimal(str(discount_value)) if discount_value else None
+            logger.info(f"💰 Synced discount for assignment {assignment.id}: type={discount_type}, value={discount_value}")
         
         logger.info(f"🧮 Recalculated sale {sale_id}: list_price={actual_list_price_total}, sgk={sgk_coverage}, discount={discount_amount}, final={final_amount}")
         
@@ -1389,6 +1492,29 @@ def update_sale(
                     assignment_to_keep.net_payable = Decimal(str(sale_in.final_amount))
                 if sale_in.list_price_total is not None:
                     assignment_to_keep.list_price = Decimal(str(sale_in.list_price_total))
+                
+                # Recalculate sale-level pricing for single ear
+                unit_price = float(sale.unit_list_price or sale.list_price_total or assignment_to_keep.list_price or 0)
+                sgk_per_ear = float(assignment_to_keep.sgk_support or 0)
+                sale.total_amount = Decimal(str(unit_price))
+                sale.sgk_coverage = Decimal(str(sgk_per_ear))
+                
+                d_type = sale.discount_type or 'none'
+                d_value = float(sale.discount_value or 0)
+                kdv_rate_pct = float(sale.kdv_rate or 0)
+                pricing_cfg = _get_pricing_config()
+                new_discount, new_final = _apply_discount(
+                    total_price=unit_price,
+                    sgk_total=sgk_per_ear,
+                    discount_type=d_type,
+                    discount_value=d_value,
+                    kdv_rate_pct=kdv_rate_pct,
+                    pricing_cfg=pricing_cfg,
+                )
+                sale.discount_amount = Decimal(str(new_discount))
+                sale.final_amount = Decimal(str(new_final))
+                sale.patient_payment = Decimal(str(new_final))
+                logger.info(f"💰 Bilateral→Single recalc: total={unit_price}, sgk={sgk_per_ear}, discount={new_discount}, final={new_final}")
                 
                 assignments = [assignment_to_keep]
         
@@ -1456,15 +1582,34 @@ def update_sale(
             db.add(new_assignment)
             logger.info(f"✅ Created new {new_ear} ear assignment {new_assignment.id}")
             
-            # Update pricing for both assignments (split amounts)
-            if sale_in.final_amount is not None:
-                per_ear_amount = Decimal(str(sale_in.final_amount)) / 2
-                existing_assignment.net_payable = per_ear_amount
-                new_assignment.net_payable = per_ear_amount
+            # Update pricing for both assignments — list_price stays as unit price (NOT split)
             if sale_in.list_price_total is not None:
-                per_ear_price = Decimal(str(sale_in.list_price_total)) / 2
-                existing_assignment.list_price = per_ear_price
-                new_assignment.list_price = per_ear_price
+                unit_price = Decimal(str(sale_in.list_price_total))
+                existing_assignment.list_price = unit_price
+                new_assignment.list_price = unit_price
+            
+            # Recalculate sale-level pricing for bilateral
+            unit_price = float(sale.unit_list_price or sale.list_price_total or existing_assignment.list_price or 0)
+            sgk_per_ear = float(existing_assignment.sgk_support or 0)
+            sale.total_amount = Decimal(str(unit_price * 2))
+            sale.sgk_coverage = Decimal(str(sgk_per_ear * 2))
+            
+            d_type = sale.discount_type or 'none'
+            d_value = float(sale.discount_value or 0)
+            kdv_rate_pct = float(sale.kdv_rate or 0)
+            pricing_cfg = _get_pricing_config()
+            new_discount, new_final = _apply_discount(
+                total_price=unit_price * 2,
+                sgk_total=sgk_per_ear * 2,
+                discount_type=d_type,
+                discount_value=d_value,
+                kdv_rate_pct=kdv_rate_pct,
+                pricing_cfg=pricing_cfg,
+            )
+            sale.discount_amount = Decimal(str(new_discount))
+            sale.final_amount = Decimal(str(new_final))
+            sale.patient_payment = Decimal(str(new_final))
+            logger.info(f"💰 Single→Bilateral recalc: total={unit_price*2}, sgk={sgk_per_ear*2}, discount={new_discount}, final={new_final}")
             
             assignments = [existing_assignment, new_assignment]
         
@@ -1531,6 +1676,11 @@ def update_sale(
                 assignment.report_status = sale_in.report_status
             
             logger.info(f"🔄 Updated assignment {assignment.id}: ear={assignment.ear}, sgk_scheme={assignment.sgk_scheme}, sgk_support={assignment.sgk_support}")
+        
+        # Sync sale.sgk_coverage when SGK scheme changes
+        if sale_in.sgk_scheme and sgk_support_per_ear is not None:
+            sale.sgk_coverage = sgk_support_per_ear * num_assignments
+            logger.info(f"💰 Synced sale.sgk_coverage = {sale.sgk_coverage} ({sgk_support_per_ear} × {num_assignments})")
     
     db.commit()
     

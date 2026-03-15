@@ -35,4 +35,12 @@ page?: number;
  * @maximum 500
  */
 per_page?: number;
+/**
+ * Sort field: invoiceDate, supplier, invoiceNumber, totalAmount, status
+ */
+sort_field?: string | null;
+/**
+ * Sort direction: asc or desc
+ */
+sort_dir?: string | null;
 };

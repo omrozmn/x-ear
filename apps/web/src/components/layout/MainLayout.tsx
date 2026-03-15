@@ -33,6 +33,7 @@ import { useTranslation } from 'react-i18next';
 import { useBreakpoints } from '../../hooks/useMediaQuery';
 import { useLayoutStore } from '../../stores/layoutStore';
 import { BottomNav } from './BottomNav';
+import { useFeatures } from '../../hooks/useFeatures';
 import {
   JWT_TOKEN,
   AUTH_TOKEN,
@@ -63,6 +64,7 @@ const getPageKeyFromPath = (pathname: string): { key: string; title: string } | 
     '/team': { key: 'team', title: 'Ekip' },
     '/reports': { key: 'reports', title: 'Raporlar' },
     '/dashboard': { key: 'dashboard', title: 'Dashboard' },
+    '/invoice-normalizer': { key: 'invoice-normalizer', title: 'Muhasebe' },
   };
 
   // Exact match first
@@ -75,6 +77,15 @@ const getPageKeyFromPath = (pathname: string): { key: string; title: string } | 
 
   return null;
 };
+
+const usesStaticHeaderLayout = (pathname: string): boolean => (
+  pathname.startsWith('/parties/')
+  || pathname.startsWith('/inventory/')
+  || pathname.startsWith('/suppliers/')
+  || pathname.startsWith('/invoices/new')
+  || pathname.startsWith('/invoices/summary')
+  || pathname === '/web-management-preview'
+);
 
 interface User {
   id: string;
@@ -107,6 +118,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   // AI Context Sync
   useAIContextSync();
 
+  // Feature flags for sidebar
+  const { features: enabledFeatures } = useFeatures();
+
   // AI Composer Shortcut (Cmd+K)
   const { toggleOpen } = useComposerStore();
   useHotkeys('meta+k', (e) => {
@@ -126,6 +140,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const shouldUseStaticHeader = usesStaticHeaderLayout(location.pathname);
 
   const toggleDarkMode = () => {
     setTheme(isDark ? "light" : "dark");
@@ -154,6 +169,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         onNavigate={(href) => {
           navigate({ to: href as string });
         }}
+        enabledFeatures={enabledFeatures}
       />
 
       {/* Main Content */}
@@ -165,7 +181,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
        )}>
         {/* Header - Modern Floating Glassmorphism Pill */}
         {!hideGlobalHeader && (
-        <header className="sticky top-2 md:top-4 z-40 mx-2 md:mx-6 mb-2 md:mb-4 px-3 sm:px-4 md:px-6 py-2 md:py-3 bg-white/70 dark:bg-gray-800/70 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50 shadow-sm rounded-xl md:rounded-2xl transition-all">
+        <header className={cn(
+          "mx-2 md:mx-6 mb-2 md:mb-4 px-3 sm:px-4 md:px-6 py-2 md:py-3 bg-white/70 dark:bg-gray-800/70 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50 shadow-sm rounded-xl md:rounded-2xl transition-all",
+          shouldUseStaticHeader ? "relative" : "sticky top-2 md:top-4 z-40",
+        )}>
           <div className="flex justify-between items-center gap-2 md:gap-4">
             {/* Mobile Menu Button */}
             {isMobile && (

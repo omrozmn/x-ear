@@ -38,6 +38,7 @@ from .subscription import Subscription
 # Communication
 from .communication import Communication
 from .campaign import Campaign, SmsLog
+from .whatsapp import WhatsAppMessage
 from .notification import Notification
 from .notification_template import NotificationTemplate
 

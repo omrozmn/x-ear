@@ -90,7 +90,7 @@ def test_check_quota_within_limit(db_session, test_tenant):
     result = _check_quota(test_tenant.id, db_session)
     
     # Assert
-    assert result is True
+    assert result[0] is True
 
 
 def test_check_quota_exceeded(db_session, test_tenant):
@@ -115,7 +115,7 @@ def test_check_quota_exceeded(db_session, test_tenant):
     result = _check_quota(test_tenant.id, db_session)
     
     # Assert
-    assert result is False
+    assert result[0] is False
 
 
 def test_check_quota_ignores_old_emails(db_session, test_tenant):
@@ -152,7 +152,7 @@ def test_check_quota_ignores_old_emails(db_session, test_tenant):
     result = _check_quota(test_tenant.id, db_session)
     
     # Assert - Should be within quota (only 10 recent emails count)
-    assert result is True
+    assert result[0] is True
 
 
 def test_check_quota_tenant_isolation(db_session, test_tenant):
@@ -203,7 +203,7 @@ def test_check_quota_tenant_isolation(db_session, test_tenant):
     result = _check_quota(test_tenant.id, db_session)
     
     # Assert - Should be within quota (only test_tenant's 10 emails count)
-    assert result is True
+    assert result[0] is True
 
 
 def test_log_ai_email_request_success():

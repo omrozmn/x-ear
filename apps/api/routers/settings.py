@@ -30,12 +30,12 @@ def _merge_sgk(base, extra):
         if not isinstance(extra, dict):
             return base
         base.setdefault('sgk', {})
-        base['sgk'].setdefault('schemes', {})
         extra_sgk = extra.get('sgk', {})
-        # Merge schemes
-        schemes_extra = extra_sgk.get('schemes', {})
-        if isinstance(schemes_extra, dict):
-            base['sgk']['schemes'] = {**base['sgk'].get('schemes', {}), **schemes_extra}
+        # Only use file schemes as fallback when DB has NO schemes saved
+        if not base['sgk'].get('schemes'):
+            schemes_extra = extra_sgk.get('schemes', {})
+            if isinstance(schemes_extra, dict):
+                base['sgk']['schemes'] = schemes_extra
         # Merge flags/defaults without overwriting explicit DB values
         if 'enabled' in extra_sgk and 'enabled' not in base['sgk']:
             base['sgk']['enabled'] = extra_sgk.get('enabled')
@@ -349,16 +349,22 @@ class AutomationSettingsResponse(BaseModel):
     auto_add_suppliers: bool = False
     auto_add_invoice_products: bool = False
     auto_update_stock: bool = False
+    auto_receive_uts_pending: bool = False
+    auto_accept_uts_transfers: bool = False
 
 class AutomationSettingsUpdate(BaseModel):
     auto_add_suppliers: bool | None = None
     auto_add_invoice_products: bool | None = None
     auto_update_stock: bool | None = None
+    auto_receive_uts_pending: bool | None = None
+    auto_accept_uts_transfers: bool | None = None
 
 AUTOMATION_KEYS = [
     'auto_add_suppliers',
     'auto_add_invoice_products',
     'auto_update_stock',
+    'auto_receive_uts_pending',
+    'auto_accept_uts_transfers',
 ]
 
 @router.get("/settings/automation", operation_id="getAutomationSettings", response_model=ResponseEnvelope[AutomationSettingsResponse])
@@ -426,3 +432,55 @@ def update_automation_settings(
         result[c.config_key] = c.config_value == 'true'
 
     return ResponseEnvelope(data=AutomationSettingsResponse(**result))
+
+
+# ──────────────────────────────────────────────────────────────────────
+# Anamnesis Question Templates (tenant-level)
+# ──────────────────────────────────────────────────────────────────────
+
+@router.get("/settings/anamnesis-questions", operation_id="getAnamnesisQuestions")
+def get_anamnesis_questions(
+    access: UnifiedAccess = Depends(require_access()),
+    db_session: Session = Depends(get_db),
+):
+    """Get tenant-level anamnesis question templates"""
+    try:
+        record = db_session.get(Settings, 'anamnesis_questions')
+        if record and record.settings_data:
+            data = json.loads(record.settings_data) if isinstance(record.settings_data, str) else record.settings_data
+            return ResponseEnvelope(data=data)
+        return ResponseEnvelope(data={"questions": [], "useDefaults": True})
+    except Exception as e:
+        logger.error(f"Get anamnesis questions error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.put("/settings/anamnesis-questions", operation_id="updateAnamnesisQuestions")
+def update_anamnesis_questions(
+    payload: Dict[str, Any] = Body(...),
+    access: UnifiedAccess = Depends(require_access()),
+    db_session: Session = Depends(get_db),
+):
+    """Update tenant-level anamnesis question templates"""
+    try:
+        record = db_session.get(Settings, 'anamnesis_questions')
+        if not record:
+            record = Settings(id='anamnesis_questions', settings_data="{}")
+            db_session.add(record)
+
+        record.settings_data = json.dumps(payload, ensure_ascii=False)
+        db_session.commit()
+        return ResponseEnvelope(data=payload)
+    except Exception as e:
+        db_session.rollback()
+        logger.error(f"Update anamnesis questions error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/settings/anamnesis-questions/defaults", operation_id="getAnamnesisDefaults")
+def get_anamnesis_defaults(
+    access: UnifiedAccess = Depends(require_access()),
+):
+    """Get default anamnesis questions (built-in odyoloji standards)"""
+    from routers.party_subresources import DEFAULT_ANAMNESIS_QUESTIONS
+    return ResponseEnvelope(data={"questions": DEFAULT_ANAMNESIS_QUESTIONS})

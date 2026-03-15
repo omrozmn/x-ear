@@ -108,6 +108,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                                             onClick={() => {
                                                 localStorage.removeItem('admin_token');
                                                 localStorage.removeItem('admin_refresh_token');
+                                                localStorage.removeItem('admin-auth-storage');
                                                 window.location.href = '/login';
                                             }}
                                             className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"

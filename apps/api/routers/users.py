@@ -288,6 +288,49 @@ def update_me(
         detail=ApiError(message="Not found", code="USER_NOT_FOUND").model_dump(mode="json")
     )
 
+
+class ImpersonationConsentUpdate(BaseModel):
+    allow_impersonation: bool = Field(..., alias="allowImpersonation")
+
+    model_config = {"populate_by_name": True}
+
+
+class ImpersonationConsentRead(BaseModel):
+    allow_impersonation: bool = Field(alias="allowImpersonation")
+
+    model_config = {"populate_by_name": True, "from_attributes": True}
+
+
+@router.get("/users/me/impersonation-consent", operation_id="getUserMeImpersonationConsent", response_model=ResponseEnvelope[ImpersonationConsentRead])
+def get_impersonation_consent(
+    access: UnifiedAccess = Depends(require_access()),
+):
+    """Get the current user's impersonation consent setting."""
+    user = access.user
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return ResponseEnvelope(data=ImpersonationConsentRead(
+        allowImpersonation=getattr(user, "allow_impersonation", False),
+    ))
+
+
+@router.put("/users/me/impersonation-consent", operation_id="updateUserMeImpersonationConsent", response_model=ResponseEnvelope[ImpersonationConsentRead])
+def update_impersonation_consent(
+    body: ImpersonationConsentUpdate,
+    access: UnifiedAccess = Depends(require_access()),
+    db_session: Session = Depends(get_db),
+):
+    """Toggle impersonation consent for the current user."""
+    user = access.user
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.allow_impersonation = body.allow_impersonation
+    db_session.commit()
+    logger.info("User %s set allow_impersonation=%s", user.id, body.allow_impersonation)
+    return ResponseEnvelope(data=ImpersonationConsentRead(
+        allowImpersonation=user.allow_impersonation,
+    ))
+
 @router.post("/users/me/password", operation_id="createUserMePassword")
 def change_password(
     password_in: PasswordChange,

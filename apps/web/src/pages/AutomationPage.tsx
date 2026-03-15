@@ -2,6 +2,7 @@ import React from 'react';
 import { Bot, Zap, Clock, ShieldCheck, Activity } from 'lucide-react';
 import { Button } from '@x-ear/ui-web';
 import { useListAutomationStatus, useListAutomationLogs } from '../api/generated/aliases';
+import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 
 interface AutomationLog {
   level: string;
@@ -38,15 +39,13 @@ export function AutomationPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <Bot className="w-8 h-8 text-blue-600" />
-            Otomasyon Merkezi
-          </h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Sisteminizdeki otomatik görevleri, yedeklemeleri ve AI süreçlerini buradan yönetin.
-          </p>
-        </div>
+        <DesktopPageHeader
+          className="mb-8"
+          title="Otomasyon Merkezi"
+          description="Sisteminizdeki otomatik görevleri, yedeklemeleri ve AI süreçlerini buradan yönetin."
+          icon={<Bot className="w-6 h-6" />}
+          eyebrow={{ tr: 'Otomasyon', en: 'Automation' }}
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatusCard 

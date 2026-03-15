@@ -12,12 +12,16 @@ export {
   createPaymentRecords,
   createPromissoryNotes,
   createPromissoryNoteCollect,
+  listPaymentRecords,
+  getListPaymentRecordsQueryKey,
+  useListPaymentRecords,
   getListPartyPaymentRecordsQueryKey,
   getListSalePromissoryNotesQueryKey,
   useCreatePaymentRecords,
   useListPartyPaymentRecords,
   useListSalePromissoryNotes,
   useCreatePromissoryNotes,
+  updatePromissoryNote,
   useUpdatePromissoryNote,
   useCreatePromissoryNoteCollect
 } from '../generated/payments/payments';

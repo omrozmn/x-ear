@@ -263,27 +263,6 @@ apiClient.interceptors.request.use(
         config.headers['X-Effective-Tenant-Id'] = effectiveTenantId;
       }
 
-      // DEBUG LOG - Enhanced for tenant impersonation debugging
-      console.log('[orval-mutator] Request interceptor:', {
-        url: config.url,
-        method: config.method,
-        tokenSource: 'TokenManager',
-        tokenPreview: token.substring(0, 50) + '...',
-        tokenIdentity: tokenManager.getUserId(),
-        tenantId,
-        isAdmin,
-        tokenTTL: tokenManager.getAccessTokenTTL(),
-        isExpired: tokenManager.isAccessTokenExpired(),
-        // CRITICAL: Check if tenant ID is in headers
-        hasXTenantIDHeader: !!config.headers['X-Tenant-ID'],
-        xTenantIDValue: config.headers['X-Tenant-ID'],
-        // CRITICAL: Check effective tenant header for impersonation
-        hasXEffectiveTenantIdHeader: !!config.headers['X-Effective-Tenant-Id'],
-        xEffectiveTenantIdValue: config.headers['X-Effective-Tenant-Id'],
-        isImpersonatingTenant,
-        // CRITICAL: Check token payload
-        tokenPayload: tokenManager.payload
-      });
     } else {
       const isPublicEndpoint = config.url?.includes('/auth/login') ||
         config.url?.includes('/auth/register') ||

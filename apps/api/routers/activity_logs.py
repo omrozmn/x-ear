@@ -198,7 +198,7 @@ def get_activity_log_filter_options(
 
 
 # Alias endpoint for /audit (backward compatibility)
-@router.get("/audit", operation_id="listAudit", response_model=ResponseEnvelope[List[ActivityLogRead]])
+@router.get("/audit", operation_id="listAuditAlias", response_model=ResponseEnvelope[List[ActivityLogRead]])
 def get_audit_logs_alias(
     page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(20, ge=1, le=100, alias="perPage"),

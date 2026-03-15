@@ -6,10 +6,15 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { GetInvoiceDocumentFormat } from './getInvoiceDocumentFormat';
+import type { GetInvoiceDocumentRenderMode } from './getInvoiceDocumentRenderMode';
 
 export type GetInvoiceDocumentParams = {
 /**
  * Document format
  */
 format?: GetInvoiceDocumentFormat;
+/**
+ * PDF rendering mode
+ */
+render_mode?: GetInvoiceDocumentRenderMode;
 };

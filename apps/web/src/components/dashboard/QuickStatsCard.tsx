@@ -25,9 +25,9 @@ export const QuickStatsCard: React.FC<QuickStatsCardProps> = ({ stats }) => {
       label: 'Aktif Hastalar',
       value: stats.activeParties,
       icon: Users,
-      color: 'blue',
-      bgColor: 'bg-blue-50 dark:bg-blue-900/20',
-      textColor: 'text-blue-600 dark:text-blue-400',
+      color: 'sky',
+      bgColor: 'bg-sky-50 dark:bg-sky-900/20',
+      textColor: 'text-sky-600 dark:text-sky-400',
     },
     {
       label: 'Günlük Ciro',
@@ -41,9 +41,9 @@ export const QuickStatsCard: React.FC<QuickStatsCardProps> = ({ stats }) => {
       label: 'Bekleyen Randevular',
       value: stats.pendingAppointments,
       icon: Calendar,
-      color: 'violet',
-      bgColor: 'bg-violet-50 dark:bg-violet-900/20',
-      textColor: 'text-violet-600 dark:text-violet-400',
+      color: 'slate',
+      bgColor: 'bg-slate-100 dark:bg-slate-800/70',
+      textColor: 'text-slate-700 dark:text-slate-300',
     },
     {
       label: 'Biten Denemeler',
@@ -56,10 +56,10 @@ export const QuickStatsCard: React.FC<QuickStatsCardProps> = ({ stats }) => {
   ];
 
   return (
-    <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-2xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 p-6 h-full flex flex-col justify-center transition-all duration-300">
+    <div className="bg-white/80 dark:bg-slate-900/70 backdrop-blur-xl rounded-2xl shadow-sm border border-slate-200/70 dark:border-slate-700/60 p-6 h-full flex flex-col justify-center transition-all duration-300">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Hızlı İstatistikler</h3>
-        <span className="text-xs font-medium text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700 px-2 py-1 rounded-full border border-gray-100 dark:border-gray-600">Bugün</span>
+        <span className="text-xs font-medium text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 px-2 py-1 rounded-full border border-sky-100 dark:border-sky-900/40">Bugün</span>
       </div>
 
       <div className="space-y-3">
@@ -68,7 +68,7 @@ export const QuickStatsCard: React.FC<QuickStatsCardProps> = ({ stats }) => {
           return (
             <div
               key={index}
-              className="group flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200 border border-transparent hover:border-gray-100 dark:hover:border-gray-600 cursor-default"
+              className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-all duration-200 border border-transparent hover:border-slate-100 dark:hover:border-slate-700 cursor-default"
             >
               <div className="flex items-center space-x-4">
                 <div className={`p-2.5 rounded-xl ${stat.bgColor} ${stat.textColor} group-hover:scale-110 transition-transform`}>

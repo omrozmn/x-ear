@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Loader2, Save, Plus, Trash2, AlertCircle, Hash } from 'lucide-react';
+import { Loader2, Save, Plus, Trash2, AlertCircle, Hash, Key, Eye, EyeOff, RefreshCw, CheckCircle, XCircle } from 'lucide-react';
 import { Button, Input, Select, useToastHelpers } from '@x-ear/ui-web';
 import { useAuthStore } from '@/stores/authStore';
 import { useGetCurrentTenant, useUpdateTenantSettings } from '@/api/generated';
@@ -13,11 +13,15 @@ interface InvoiceIntegrationSettings {
     invoicePrefix?: string;
     invoicePrefixes?: string[];
     defaultSenderTag?: string;
+    apiKey?: string;
+    secretKey?: string;
     // Legacy snake_case support
     use_manual_numbering?: boolean;
     invoice_prefix?: string;
     invoice_prefixes?: string[];
     default_sender_tag?: string;
+    api_key?: string;
+    secret_key?: string;
 }
 
 interface TenantSettings {
@@ -47,6 +51,12 @@ export function InvoiceSettings() {
     const [senderTags, setSenderTags] = useState<Array<{ value: string; label: string; type?: string }>>([]);
     const [senderTagsLoading, setSenderTagsLoading] = useState(false);
     const [defaultSenderTag, setDefaultSenderTag] = useState('');
+    const [apiKey, setApiKey] = useState('');
+    const [secretKey, setSecretKey] = useState('');
+    const [showApiKey, setShowApiKey] = useState(false);
+    const [showSecretKey, setShowSecretKey] = useState(false);
+    const [syncing, setSyncing] = useState(false);
+    const [syncResult, setSyncResult] = useState<{ success: boolean; message: string } | null>(null);
     const { success: showSuccessToast, error: showErrorToast } = useToastHelpers();
     const { user } = useAuthStore();
     const queryClient = useQueryClient();
@@ -98,6 +108,8 @@ export function InvoiceSettings() {
             setDefaultPrefix(prefix);
             setDefaultExemptionCode(companyInfo.defaultExemptionCode || '');
             setDefaultSenderTag(invoiceSettings.defaultSenderTag || invoiceSettings.default_sender_tag || '');
+            setApiKey(invoiceSettings.apiKey || invoiceSettings.api_key || '');
+            setSecretKey(invoiceSettings.secretKey || invoiceSettings.secret_key || '');
 
             // Load additional prefixes (excluding default)
             const allPrefixes = invoiceSettings.invoicePrefixes || invoiceSettings.invoice_prefixes || [];
@@ -139,6 +151,33 @@ export function InvoiceSettings() {
             isMounted = false;
         };
     }, []);
+
+    const handleSync = async () => {
+        if (!apiKey || !secretKey) {
+            showErrorToast('Senkronizasyon için API Key ve Secret Key gereklidir');
+            return;
+        }
+        setSyncing(true);
+        setSyncResult(null);
+        try {
+            const res = await apiClient.post<{ data?: { incoming?: number; outgoing?: number; duplicates?: number; synced_count?: number } }>('/api/birfatura/sync-invoices', {});
+            const incoming = res.data?.data?.incoming ?? 0;
+            const outgoing = res.data?.data?.outgoing ?? 0;
+            // Backfill details in background (non-blocking)
+            apiClient.post('/api/birfatura/backfill-invoice-items', {}).catch(() => {});
+            apiClient.post('/api/birfatura/backfill-outgoing-detail', {}).catch(() => {});
+            
+            const total = incoming + outgoing;
+            setSyncResult({ success: true, message: `${total} fatura senkronize edildi (${incoming} gelen, ${outgoing} giden)` });
+            showSuccessToast(`Senkronizasyon tamamlandı: ${total} fatura`);
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : 'Senkronizasyon başarısız';
+            setSyncResult({ success: false, message: msg });
+            showErrorToast(msg);
+        } finally {
+            setSyncing(false);
+        }
+    };
 
     const handleSave = async () => {
         if (!isTenantAdmin) {
@@ -191,6 +230,8 @@ export function InvoiceSettings() {
                         invoice_prefix: defaultPrefix,
                         invoice_prefixes: uniquePrefixes,
                         default_sender_tag: defaultSenderTag || undefined,
+                        api_key: apiKey || undefined,
+                        secret_key: secretKey || undefined,
                     },
                 },
                 companyInfo: {
@@ -214,6 +255,8 @@ export function InvoiceSettings() {
                                 invoicePrefix: defaultPrefix,
                                 invoicePrefixes: uniquePrefixes,
                                 defaultSenderTag: defaultSenderTag || undefined,
+                                apiKey: apiKey || undefined,
+                                secretKey: secretKey || undefined,
                             },
                         },
                         companyInfo: {
@@ -246,6 +289,8 @@ export function InvoiceSettings() {
                     const savedPrefix = savedSettings.invoicePrefix || savedSettings.invoice_prefix || defaultPrefix;
                     setDefaultPrefix(savedPrefix);
                     setDefaultSenderTag(savedSettings.defaultSenderTag || savedSettings.default_sender_tag || '');
+                    setApiKey(savedSettings.apiKey || savedSettings.api_key || '');
+                    setSecretKey(savedSettings.secretKey || savedSettings.secret_key || '');
                     
                     const savedPrefixes = savedSettings.invoicePrefixes || savedSettings.invoice_prefixes || [];
                     const additional = savedPrefixes.filter((p: string) => p !== savedPrefix);
@@ -317,6 +362,138 @@ export function InvoiceSettings() {
                     </p>
                 </div>
             )}
+
+            {/* BirFatura API Bilgileri */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
+                <div className="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                            <Key className="w-5 h-5" />
+                            E-Fatura API Bilgileri
+                        </h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            E-Fatura entegrasyon sağlayıcınızdan aldığınız API ve Secret anahtarlarını girin
+                        </p>
+                    </div>
+                    <Button 
+                        onClick={handleSave} 
+                        disabled={updateMutation.isPending || !isTenantAdmin} 
+                        className="flex items-center gap-2"
+                    >
+                        {updateMutation.isPending ? (
+                            <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                Kaydediliyor...
+                            </>
+                        ) : (
+                            <>
+                                <Save className="w-4 h-4" />
+                                Kaydet
+                            </>
+                        )}
+                    </Button>
+                </div>
+
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            API Key
+                        </label>
+                        <div className="relative max-w-lg">
+                            <Input
+                                type={showApiKey ? 'text' : 'password'}
+                                value={apiKey}
+                                onChange={(e) => setApiKey(e.target.value.trim())}
+                                disabled={!isTenantAdmin}
+                                placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                                className="font-mono pr-10"
+                            />
+                            {/* eslint-disable-next-line no-restricted-syntax */}
+                            <button
+                                type="button"
+                                data-allow-raw="true"
+                                onClick={() => setShowApiKey(!showApiKey)}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
+                            >
+                                {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Secret Key
+                        </label>
+                        <div className="relative max-w-lg">
+                            <Input
+                                type={showSecretKey ? 'text' : 'password'}
+                                value={secretKey}
+                                onChange={(e) => setSecretKey(e.target.value.trim())}
+                                disabled={!isTenantAdmin}
+                                placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                                className="font-mono pr-10"
+                            />
+                            {/* eslint-disable-next-line no-restricted-syntax */}
+                            <button
+                                type="button"
+                                data-allow-raw="true"
+                                onClick={() => setShowSecretKey(!showSecretKey)}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
+                            >
+                                {showSecretKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                        </div>
+                    </div>
+                    {apiKey && secretKey && (
+                        <div className="flex items-center gap-2 text-green-600 dark:text-green-400 text-sm">
+                            <div className="w-2 h-2 bg-green-500 rounded-full" />
+                            API bilgileri tanımlı
+                        </div>
+                    )}
+
+                    {/* Senkronizasyon */}
+                    <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Fatura Senkronizasyonu</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                    Gelen ve giden faturaları entegrasyon sağlayıcıdan çek
+                                </p>
+                            </div>
+                            <Button
+                                onClick={handleSync}
+                                disabled={syncing || !apiKey || !secretKey || !isTenantAdmin}
+                                variant="outline"
+                                className="flex items-center gap-2"
+                            >
+                                {syncing ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        Senkronize ediliyor...
+                                    </>
+                                ) : (
+                                    <>
+                                        <RefreshCw className="w-4 h-4" />
+                                        Senkronizasyonu Başlat
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                        {syncResult && (
+                            <div className={`mt-3 p-3 rounded-lg flex items-start gap-2 text-sm ${
+                                syncResult.success 
+                                    ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' 
+                                    : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
+                            }`}>
+                                {syncResult.success 
+                                    ? <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" /> 
+                                    : <XCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                                }
+                                {syncResult.message}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
 
             {/* Numaralandırma Ayarları */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">

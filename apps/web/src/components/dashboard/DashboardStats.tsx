@@ -20,7 +20,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       title: "Toplam Hasta",
       value: stats.totalParties.toString(),
       icon: <Users className="w-6 h-6 text-white" />,
-      color: "bg-gradient-to-br from-blue-600 to-blue-700", // Medical Trust Blue
+      color: "bg-gradient-to-br from-sky-500 via-sky-600 to-cyan-600",
       trend: "+12%",
       key: 'parties'
     },
@@ -28,7 +28,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       title: "Aktif Denemeler",
       value: stats.activeTrials.toString(),
       icon: <Activity className="w-6 h-6 text-white" />,
-      color: "bg-gradient-to-br from-cyan-500 to-teal-600", // Tech/Innovation Cyan
+      color: "bg-gradient-to-br from-cyan-500 via-sky-500 to-sky-600",
       trend: "+5%",
       key: 'trials'
     },
@@ -36,7 +36,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       title: "Aylık Ciro",
       value: `₺${stats.monthlyRevenue.toLocaleString()}`,
       icon: <TrendingUp className="w-6 h-6 text-white" />,
-      color: "bg-gradient-to-br from-emerald-500 to-emerald-700", // Growth Green
+      color: "bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600",
       trend: "+8%",
       key: 'revenue'
     },
@@ -44,7 +44,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       title: "Bugünkü Randevular",
       value: stats.todayAppointments.toString(),
       icon: <Calendar className="w-6 h-6 text-white" />,
-      color: "bg-gradient-to-br from-violet-500 to-purple-600", // Distinct Schedule Color
+      color: "bg-gradient-to-br from-slate-600 via-slate-700 to-sky-700",
       trend: "3 bekleyen",
       key: 'appointments'
     }
@@ -56,7 +56,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         <div
           key={card.key}
           onClick={() => onCardClick?.(card.key)}
-          className={`${card.color} bg-opacity-90 dark:bg-opacity-80 backdrop-blur-xl rounded-2xl p-6 shadow-lg shadow-gray-200/50 dark:shadow-none border border-white/20 dark:border-white/10 transform transition-all duration-300 hover:scale-[1.03] hover:shadow-xl cursor-pointer relative overflow-hidden group`}
+          className={`${card.color} bg-opacity-90 dark:bg-opacity-80 backdrop-blur-xl rounded-2xl p-6 shadow-lg shadow-slate-200/60 dark:shadow-none border border-white/20 dark:border-white/10 transform transition-all duration-300 hover:scale-[1.03] hover:shadow-xl cursor-pointer relative overflow-hidden group`}
           data-testid={`dashboard-widget-${card.key}`}
         >
           {/* Decorative background circle */}

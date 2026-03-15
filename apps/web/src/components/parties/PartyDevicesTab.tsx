@@ -4,9 +4,8 @@ import { Plus, Settings, XCircle } from 'lucide-react';
 import { Party, PartyDevice } from '../../types/party';
 import { useToastHelpers } from '@x-ear/ui-web';
 import { deleteDevice } from '@/api/client/devices.client';
-import { createPartyDeviceAssignments } from '@/api/client/sales.client';
+import { createPartyDeviceAssignments, updateDeviceAssignment } from '@/api/client/sales.client';
 import { useCreateReplacement } from '@/api/client/replacements.client';
-import { apiClient } from '@/api/orval-mutator';
 import { DeviceAssignmentForm } from '../forms/device-assignment-form/DeviceAssignmentForm';
 import { DeviceAssignment } from '../forms/device-assignment-form/components/AssignmentDetailsForm';
 import { PartyDeviceCard } from '../party/PartyDeviceCard';
@@ -295,12 +294,8 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
         transformedUpdates[backendKey] = value;
       }
 
-      // Use apiClient for manual update - PATCH method
-      await apiClient({
-        url: `/api/device-assignments/${deviceId}`,
-        method: 'PATCH',
-        data: transformedUpdates
-      });
+      // Use Orval-generated function for update — PATCH method
+      await updateDeviceAssignment(deviceId, transformedUpdates as Record<string, unknown> as import('@/api/generated/schemas').DeviceAssignmentUpdate);
 
       await syncDevicesAfterMutation('device:updated');
 

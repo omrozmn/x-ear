@@ -423,6 +423,45 @@ async def backfill_invoice_items(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@router.post("/birfatura/backfill-outgoing-detail", operation_id="createBirfaturaBackfillOutgoingDetail")
+async def backfill_outgoing_detail(
+    data: InvoiceSyncRequest,
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access())
+):
+    """Backfill outgoing invoices with UBL detail for flat-synced records.
+    Populates line items and reconstructs _source_form_data from UBL."""
+    if not access.tenant_id:
+        raise HTTPException(status_code=400, detail="Tenant context required")
+
+    sync_service = InvoiceSyncService(db)
+
+    start_date = None
+    end_date = None
+    if data.start_date:
+        try:
+            start_date = datetime.fromisoformat(data.start_date)
+        except (ValueError, TypeError):
+            pass
+    if data.end_date:
+        try:
+            end_date = datetime.fromisoformat(data.end_date)
+        except (ValueError, TypeError):
+            pass
+
+    try:
+        stats = sync_service.backfill_outgoing_detail(access.tenant_id, start_date, end_date)
+        return ResponseEnvelope(data={
+            "updated": stats.get("updated", 0),
+            "skipped": stats.get("skipped", 0),
+            "errors": stats.get("errors", 0),
+            "message": f"{stats.get('updated', 0)} giden faturanın detayı güncellendi"
+        })
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # --- OutEBelgeV2 Endpoints (Migrated from Flask) ---
 
 @router.post("/OutEBelgeV2/SendDocument", operation_id="createOutebelgev2Senddocument")

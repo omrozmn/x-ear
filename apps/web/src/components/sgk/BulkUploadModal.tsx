@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { Modal, Button, FileUpload } from '@x-ear/ui-web';
 import { useUploadSgkDocuments } from '../../hooks/sgk/useSgkDocuments';
-import { X, FileImage, AlertCircle } from 'lucide-react';
+import { X, FileImage, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 
 interface BulkUploadModalProps {
   isOpen: boolean;
@@ -10,69 +10,76 @@ interface BulkUploadModalProps {
   onUploadComplete: (results: Array<{ success: boolean; filename: string; error?: string }>) => void;
 }
 
+interface FileItem {
+  file: File;
+  id: string;
+  status: 'pending' | 'uploading' | 'success' | 'error';
+  progress: number;
+  error?: string;
+}
+
+const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/tiff', 'image/bmp', 'application/pdf'];
+const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+
 const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
   isOpen,
   onClose,
   onUploadStart,
   onUploadComplete,
 }) => {
-  const [files, setFiles] = useState<File[]>([]);
+  const [fileItems, setFileItems] = useState<FileItem[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadMutation = useUploadSgkDocuments();
 
-  const validateFile = (file: File): boolean => {
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/tiff', 'image/bmp'];
-    const maxSize = 10 * 1024 * 1024; // 10MB
-
-    if (!allowedTypes.includes(file.type)) {
-      setError(`Desteklenmeyen dosya türü: ${file.name}`);
-      return false;
+  const validateFile = (file: File): string | null => {
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return `Desteklenmeyen dosya türü: ${file.name}`;
     }
-
-    if (file.size > maxSize) {
-      setError(`Dosya çok büyük: ${file.name} (Max: 10MB)`);
-      return false;
+    if (file.size > MAX_SIZE) {
+      return `Dosya çok büyük: ${file.name} (Max: 10MB)`;
     }
-
-    return true;
+    return null;
   };
 
   const handleFileSelect = useCallback((selectedFiles: File[]) => {
-    setError(null);
-    const validFiles: File[] = [];
+    const newErrors: string[] = [];
 
     for (const file of selectedFiles) {
-      if (validateFile(file)) {
-        validFiles.push(file);
-      } else {
-        return; // Stop processing if any file is invalid
+      const error = validateFile(file);
+      if (error) {
+        newErrors.push(error);
+        continue; // Skip invalid files, don't stop
       }
+
+      const fileId = `${file.name}-${file.size}-${Date.now()}`;
+      // Use functional state update to avoid stale closure
+      setFileItems(prev => {
+        const isDuplicate = prev.some(
+          item => item.file.name === file.name && item.file.size === file.size
+        );
+        if (isDuplicate) return prev;
+
+        return [...prev, {
+          file,
+          id: fileId,
+          status: 'pending' as const,
+          progress: 0,
+        }];
+      });
     }
 
-    // Remove duplicates based on name and size
-    const uniqueFiles = validFiles.filter(newFile =>
-      !files.some(existingFile =>
-        existingFile.name === newFile.name && existingFile.size === newFile.size
-      )
-    );
-
-    setFiles(prev => [...prev, ...uniqueFiles]);
-  }, [files]);
+    if (newErrors.length > 0) {
+      setErrors(prev => [...prev, ...newErrors]);
+    }
+  }, []);
 
   const handleFileUploadChange = useCallback((uploadedFiles: Array<{ file?: File } | File>) => {
     const fileObjects = uploadedFiles.map(f => (f as { file?: File }).file || (f as File));
     handleFileSelect(fileObjects);
   }, [handleFileSelect]);
-
-  /* 
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = Array.from(e.target.files || []);
-    handleFileSelect(selectedFiles);
-  }, [handleFileSelect]);
-  */
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -90,44 +97,66 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
     e.preventDefault();
     e.stopPropagation();
     setIsDragOver(false);
-
     const droppedFiles = Array.from(e.dataTransfer.files);
     handleFileSelect(droppedFiles);
   }, [handleFileSelect]);
 
-  const removeFile = useCallback((index: number) => {
-    setFiles(prev => prev.filter((_, i) => i !== index));
-    setError(null);
+  const removeFile = useCallback((id: string) => {
+    setFileItems(prev => prev.filter(item => item.id !== id));
+    setErrors([]);
   }, []);
 
   const handleUpload = async () => {
-    if (files.length === 0) return;
+    const pendingItems = fileItems.filter(item => item.status === 'pending');
+    if (pendingItems.length === 0) return;
 
     setIsUploading(true);
-    setError(null);
+    setErrors([]);
     onUploadStart();
 
-    try {
-      const formData = new FormData();
-      files.forEach(file => {
-        formData.append('files', file);
-      });
+    const results: Array<{ success: boolean; filename: string; error?: string }> = [];
 
-      await uploadMutation.mutateAsync(formData);
-      onUploadComplete([]);
-    } catch (error) {
-      console.error('Upload failed:', error);
-      setError('Yükleme sırasında bir hata oluştu. Lütfen tekrar deneyin.');
-      onUploadComplete([]);
-    } finally {
-      setIsUploading(false);
+    // Upload files sequentially for better error isolation
+    for (const item of pendingItems) {
+      // Mark as uploading
+      setFileItems(prev => prev.map(fi =>
+        fi.id === item.id ? { ...fi, status: 'uploading' as const, progress: 30 } : fi
+      ));
+
+      try {
+        const formData = new FormData();
+        formData.append('files', item.file);
+
+        await uploadMutation.mutateAsync(formData);
+
+        // Mark as success
+        setFileItems(prev => prev.map(fi =>
+          fi.id === item.id ? { ...fi, status: 'success' as const, progress: 100 } : fi
+        ));
+        results.push({ success: true, filename: item.file.name });
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : 'Yükleme başarısız';
+        setFileItems(prev => prev.map(fi =>
+          fi.id === item.id ? { ...fi, status: 'error' as const, progress: 0, error: errorMsg } : fi
+        ));
+        results.push({ success: false, filename: item.file.name, error: errorMsg });
+      }
     }
+
+    setIsUploading(false);
+    onUploadComplete(results);
   };
+
+  const retryFailed = useCallback(() => {
+    setFileItems(prev => prev.map(item =>
+      item.status === 'error' ? { ...item, status: 'pending' as const, progress: 0, error: undefined } : item
+    ));
+  }, []);
 
   const handleClose = () => {
     if (!isUploading) {
-      setFiles([]);
-      setError(null);
+      setFileItems([]);
+      setErrors([]);
       setIsDragOver(false);
       onClose();
     }
@@ -136,6 +165,10 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
   const openFileDialog = () => {
     fileInputRef.current?.click();
   };
+
+  const pendingCount = fileItems.filter(i => i.status === 'pending').length;
+  const successCount = fileItems.filter(i => i.status === 'success').length;
+  const errorCount = fileItems.filter(i => i.status === 'error').length;
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="SGK Dokümanlarını Yükle" size="lg">
@@ -157,51 +190,89 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
         >
           <FileUpload
             multiple
-            accept="image/*"
+            accept="image/*,.pdf"
             onChange={handleFileUploadChange}
             disabled={isUploading}
             className="w-full"
-            description="JPEG, PNG, TIFF, BMP formatlarında, maksimum 10MB boyutunda dosyalar"
+            description="JPEG, PNG, TIFF, BMP, PDF formatlarında, maksimum 10MB boyutunda dosyalar"
           />
         </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl">
-            <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
-            <p className="text-sm text-red-700">{error}</p>
+        {/* Error Messages */}
+        {errors.length > 0 && (
+          <div className="space-y-1">
+            {errors.map((error, i) => (
+              <div key={i} className="flex items-center gap-2 p-2 bg-red-50 border border-red-200 rounded-xl text-sm">
+                <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
+                <p className="text-red-700">{error}</p>
+              </div>
+            ))}
           </div>
         )}
 
-        {/* Selected Files */}
-        {files.length > 0 && (
+        {/* Selected Files with Progress */}
+        {fileItems.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium mb-3">
-              Seçilen Dosyalar ({files.length})
-            </h4>
-            <div className="max-h-48 overflow-y-auto space-y-2">
-              {files.map((file, index) => (
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-medium">
+                Dosyalar ({fileItems.length})
+                {successCount > 0 && <span className="text-green-600 ml-2">✓ {successCount}</span>}
+                {errorCount > 0 && <span className="text-red-600 ml-2">✗ {errorCount}</span>}
+              </h4>
+              {errorCount > 0 && !isUploading && (
+                <button data-allow-raw="true" onClick={retryFailed} className="text-xs text-blue-600 hover:underline">
+                  Başarısızları tekrar dene
+                </button>
+              )}
+            </div>
+            <div className="max-h-60 overflow-y-auto space-y-2">
+              {fileItems.map(item => (
                 <div
-                  key={`${file.name}-${index}`}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-xl"
+                  key={item.id}
+                  className={`flex items-center justify-between p-3 rounded-xl transition-colors ${
+                    item.status === 'success' ? 'bg-green-50' :
+                    item.status === 'error' ? 'bg-red-50' :
+                    item.status === 'uploading' ? 'bg-blue-50' :
+                    'bg-gray-50'
+                  }`}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <FileImage className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                    {item.status === 'success' ? (
+                      <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                    ) : item.status === 'error' ? (
+                      <XCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
+                    ) : (
+                      <FileImage className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                    )}
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-gray-900 truncate">
-                        {file.name}
+                        {item.file.name}
                       </p>
-                      <p className="text-xs text-gray-500">
-                        {(file.size / 1024 / 1024).toFixed(2)} MB
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs text-gray-500">
+                          {(item.file.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                        {item.error && (
+                          <p className="text-xs text-red-500 truncate">{item.error}</p>
+                        )}
+                      </div>
+                      {/* Progress bar */}
+                      {item.status === 'uploading' && (
+                        <div className="mt-1 w-full bg-gray-200 rounded-full h-1.5">
+                          <div
+                            className="bg-blue-500 h-1.5 rounded-full transition-all duration-300 animate-pulse"
+                            style={{ width: `${item.progress}%` }}
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
-                  {!isUploading && (
+                  {!isUploading && item.status !== 'uploading' && (
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={() => removeFile(index)}
+                      onClick={() => removeFile(item.id)}
                       className="text-gray-400 hover:text-red-500 p-1"
                     >
                       <X className="h-4 w-4" />
@@ -225,7 +296,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
           </Button>
           <Button
             onClick={handleUpload}
-            disabled={files.length === 0 || isUploading}
+            disabled={pendingCount === 0 || isUploading}
             className="min-w-[120px]"
           >
             {isUploading ? (
@@ -234,7 +305,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                 Yükleniyor...
               </div>
             ) : (
-              `Yükle (${files.length} dosya)`
+              `Yükle (${pendingCount} dosya)`
             )}
           </Button>
         </div>

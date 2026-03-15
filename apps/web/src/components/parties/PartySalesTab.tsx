@@ -31,9 +31,17 @@ import EditSaleModal from './modals/EditSaleModal';
 import ProformaModal from './modals/ProformaModal';
 import DocumentViewer from '../sgk/DocumentViewer';
 import type { SGKDocument } from '../../types/sgk';
+import { InvoiceModal } from '../modals/InvoiceModal';
 import { SalesSummaryCards } from './SalesSummaryCards';
 import { SalesFilters } from './SalesFilters';
 import { SalesTableView } from './party/SalesTableView';
+import { PartySale } from '@/hooks/party/usePartySales';
+import { apiClient } from '@/api/orval-mutator';
+import toast from 'react-hot-toast';
+import { buildInvoiceDraftFromSales } from '@/utils/invoiceDraft';
+import type { Invoice } from '@/types/invoice';
+import { listInventory } from '@/api/client/inventory.client';
+import { unwrapArray } from '@/utils/response-unwrap';
 
 import { listPartySales } from '@/api/client/parties.client';
 import { PARTY_SALES_DATA } from '../../constants/storage-keys';
@@ -56,6 +64,12 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
   const [showProformaPdfViewer, setShowProformaPdfViewer] = useState(false);
   const [proformaPdfDocument, setProformaPdfDocument] = useState<SGKDocument | null>(null);
 
+  // Invoice PDF viewer state
+  const [showInvoicePdfViewer, setShowInvoicePdfViewer] = useState(false);
+  const [invoicePdfDocument, setInvoicePdfDocument] = useState<SGKDocument | null>(null);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [invoiceModalInitialData, setInvoiceModalInitialData] = useState<Invoice | null>(null);
+
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('all');
@@ -65,8 +79,10 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
   const [amountRangeMax, setAmountRangeMax] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'amount' | 'status'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [selectedSales] = useState<string[]>([]);
+  const [selectedSales, setSelectedSales] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // SGK states
   // const [sgkPartyInfo, setSgkPartyInfo] = useState<{
@@ -306,14 +322,46 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
     return filtered;
   }, [sales, searchTerm, statusFilter, paymentMethodFilter, amountRangeMin, amountRangeMax, sortBy, sortOrder]);
 
-  const tableSales = useMemo(
+  const tableSales = useMemo<PartySale[]>(
     () =>
-      filteredSales.map((sale) => ({
-        ...sale,
-        saleDate: sale.saleDate ?? sale.createdAt ?? '',
-      })),
+      filteredSales.map((sale) => {
+        const normalizedSale = sale as Partial<PartySale>;
+        return {
+          ...sale,
+          saleDate: sale.saleDate ?? sale.createdAt ?? '',
+          actualListPriceTotal: sale.actualListPriceTotal ?? undefined,
+          totalAmount: sale.totalAmount ?? 0,
+          discountAmount: sale.discountAmount ?? 0,
+          finalAmount: sale.finalAmount ?? sale.totalAmount ?? 0,
+          paidAmount: sale.paidAmount ?? 0,
+          paymentStatus: (sale.paymentStatus ?? 'pending') as PartySale['paymentStatus'],
+          paymentMethod: sale.paymentMethod ?? undefined,
+          soldBy: normalizedSale.soldBy ?? undefined,
+          sgkScheme: sale.sgkScheme ?? undefined,
+          sgkGroup: normalizedSale.sgkGroup ?? undefined,
+          rightEarAssignmentId: sale.rightEarAssignmentId ?? undefined,
+          leftEarAssignmentId: sale.leftEarAssignmentId ?? undefined,
+          status: (sale.status ?? 'pending') as PartySale['status'],
+          notes: sale.notes ?? undefined,
+          createdAt: sale.createdAt ?? '',
+          updatedAt: sale.updatedAt ?? sale.createdAt ?? '',
+        } as PartySale;
+      }),
     [filteredSales]
   );
+
+  const paginatedSales = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return tableSales.slice(start, start + pageSize);
+  }, [currentPage, pageSize, tableSales]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, paymentMethodFilter, amountRangeMin, amountRangeMax, sortBy, sortOrder]);
+
+  useEffect(() => {
+    setSelectedSales((prev) => prev.filter((saleId) => tableSales.some((sale) => sale.id === saleId)));
+  }, [tableSales]);
 
   // Event handlers with proper typing
   /*
@@ -355,11 +403,87 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
     setEditSaleInitialTab('notes'); // Open notes tab directly
     setShowEditSaleModal(true); // Open EditSaleModal instead of PromissoryNoteModal
   };
-  /*
-  const handleQueryPartyRights = async () => {
-    await loadSGKPartyInfo();
+
+  const handleCreateInvoice = (sale: PartySale) => {
+    void handleOpenInvoiceModal([sale]);
   };
-  */
+
+  const handleOpenInvoiceModal = async (salesToInvoice: PartySale[]) => {
+    let enrichedSales = salesToInvoice;
+
+    const hasProductLink = salesToInvoice.some((sale) => sale.productId);
+
+    if (hasProductLink) {
+      try {
+        const inventoryResponse = await listInventory();
+        const inventoryItems = unwrapArray<Record<string, unknown>>(inventoryResponse);
+        const inventoryVatById = new Map(
+          inventoryItems.map((item) => [String(item.id || ''), Number(item.vatRate ?? item.kdv ?? 20)]),
+        );
+
+        enrichedSales = salesToInvoice.map((sale) => ({
+          ...sale,
+          currentInventoryVatRate:
+            sale.productId && inventoryVatById.has(String(sale.productId))
+              ? inventoryVatById.get(String(sale.productId))
+              : undefined,
+        }));
+      } catch (inventoryError) {
+        console.error('Inventory VAT fallback load failed:', inventoryError);
+      }
+    }
+
+    const invoiceDraft = buildInvoiceDraftFromSales({
+      sales: enrichedSales,
+      party,
+    });
+    setInvoiceModalInitialData(invoiceDraft as unknown as Invoice);
+    setShowInvoiceModal(true);
+  };
+
+  const handleCreateBulkInvoice = () => {
+    const selectedRows = tableSales.filter((sale) => selectedSales.includes(sale.id));
+    if (selectedRows.length === 0) {
+      toast.error('Fatura oluşturmak için en az bir satış seçin.');
+      return;
+    }
+    void handleOpenInvoiceModal(selectedRows);
+  };
+
+  const handleViewInvoice = async (sale: PartySale) => {
+    if (!sale.invoice) return;
+    const pInvId = sale.invoice.purchaseInvoiceId;
+    if (!pInvId) {
+      toast.error('Fatura PDF verisi bulunamadı');
+      return;
+    }
+    try {
+      const pdfRes = await apiClient.get(`/api/invoices/${pInvId}/pdf?render_mode=auto`, {
+        responseType: 'blob'
+      }) as { data: Blob };
+      
+      const blob = pdfRes.data;
+      const url = URL.createObjectURL(blob);
+      setInvoicePdfDocument({
+        id: String(pInvId),
+        partyId: party.id || '',
+        filename: `Fatura - ${sale.invoice.invoiceNumber}.pdf`,
+        documentType: 'fatura',
+        fileUrl: url,
+        fileSize: blob.size,
+        mimeType: 'application/pdf',
+        processingStatus: 'completed',
+        uploadedBy: 'system',
+        uploadedAt: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      setShowInvoicePdfViewer(true);
+    } catch (err) {
+      console.error('Error viewing invoice:', err);
+      toast.error('Fatura görüntülenemedi');
+    }
+  };
 
   // Function to safely open modals that require a sale
   // const handleSaleAction = () => {
@@ -447,14 +571,22 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
             setSortOrder={setSortOrder}
             showAdvancedFilters={showAdvancedFilters}
             setShowAdvancedFilters={setShowAdvancedFilters}
-            selectedSales={selectedSales}
             onExportSales={() => handleExportSales(filteredSales as unknown as SaleRead[])}
             onPrintSales={() => handlePrintSales(filteredSales as unknown as SaleRead[])}
-            onBulkCollection={() => setShowCollectionModal(true)}
-            onBulkPromissoryNote={() => setShowPromissoryNoteModal(true)}
           />
         </CardHeader>
         <CardContent>
+          {selectedSales.length > 0 && (
+            <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-900 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-100">
+              <span>{selectedSales.length} satış seçildi</span>
+              <Button onClick={handleCreateBulkInvoice} size="sm" className="premium-gradient tactile-press">
+                Tek Fatura Oluştur
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setSelectedSales([])}>
+                Seçimi Temizle
+              </Button>
+            </div>
+          )}
           {/* Sales Display */}
           {salesLoading ? (
             <div className="text-center py-8">
@@ -480,11 +612,26 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
             // viewMode === 'table' ? (
             // console.log('📋 Rendering table view, sales count:', filteredSales.length),
             <SalesTableView
-              sales={tableSales as never}
+              sales={paginatedSales as never}
               partyId={party.id || ''}
               onSaleClick={(sale) => handleEditSaleClick(sale as SaleRead)}
               onEditSale={(sale) => handleEditSaleClick(sale as SaleRead)}
+              onCreateInvoice={handleCreateInvoice}
+              onViewInvoice={handleViewInvoice}
               onManagePromissoryNotes={(sale) => handlePromissoryNoteClick(sale as SaleRead)}
+              selectedSaleIds={selectedSales}
+              onSelectionChange={setSelectedSales}
+              pagination={{
+                current: currentPage,
+                pageSize,
+                total: tableSales.length,
+                showSizeChanger: true,
+                pageSizeOptions: [10, 20, 50, 100],
+                onChange: (page, nextPageSize) => {
+                  setCurrentPage(page);
+                  setPageSize(nextPageSize);
+                },
+              }}
             />
           )}
         </CardContent>
@@ -634,6 +781,52 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
           }}
         />
       )}
+
+      {/* Invoice PDF Viewer */}
+      {invoicePdfDocument && (
+        <DocumentViewer
+          document={invoicePdfDocument}
+          isOpen={showInvoicePdfViewer}
+          onClose={() => {
+            if (invoicePdfDocument.fileUrl?.startsWith('blob:')) {
+              URL.revokeObjectURL(invoicePdfDocument.fileUrl);
+            }
+            setShowInvoicePdfViewer(false);
+            setInvoicePdfDocument(null);
+          }}
+          onDownload={(doc) => {
+            const url = doc.fileUrl;
+            if (url) {
+              const link = window.document.createElement('a');
+              link.href = url;
+              link.download = doc.filename || 'fatura-invoice.pdf';
+              window.document.body.appendChild(link);
+              link.click();
+              window.document.body.removeChild(link);
+            }
+          }}
+        />
+      )}
+
+      <InvoiceModal
+        isOpen={showInvoiceModal}
+        onClose={() => {
+          setShowInvoiceModal(false);
+          setInvoiceModalInitialData(null);
+        }}
+        initialData={invoiceModalInitialData}
+        partyId={party.id || undefined}
+        mode="create"
+        onSuccess={() => {
+          setShowInvoiceModal(false);
+          setInvoiceModalInitialData(null);
+          setSelectedSales([]);
+          window.dispatchEvent(new CustomEvent('xEar:dataChanged'));
+        }}
+        onError={(message) => {
+          toast.error(message);
+        }}
+      />
 
       {/* Device Replacement Modal */}
       {showDeviceReplacementModal && (

@@ -1,8 +1,9 @@
 /* eslint-disable no-restricted-syntax */
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { loadSiteWorkspace, type SiteWorkspace } from '@/lib/website-generator-client';
 import { WebsitePreviewCanvas } from '@/components/website-builder/WebsitePreviewCanvas';
+import { HeaderBackButton } from '@/components/layout/HeaderBackButton';
 
 const ACTIVE_SITE_STORAGE_KEY = 'xear.websiteGenerator.activeSiteId';
 const PENDING_PREVIEW_COMMAND_STORAGE_KEY = 'xear.websiteGenerator.pendingPreviewCommand';
@@ -37,14 +38,19 @@ const WebsiteBuilderPreviewPage: React.FC = () => {
         window.location.href = '/web-management';
     };
 
+    const handleBack = () => {
+        window.location.href = '/web-management';
+    };
+
     return (
         <div className="min-h-screen bg-slate-950 p-4 text-white sm:p-6">
             <div className="mx-auto flex max-w-7xl flex-col gap-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                    <a href="/web-management" className="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-sm font-medium text-white hover:bg-white/15">
-                        <ArrowLeft className="h-4 w-4" />
-                        Web Yonetim paneline don
-                    </a>
+                    <HeaderBackButton
+                        label="Web Yonetim paneline don"
+                        onClick={handleBack}
+                        className="text-white hover:text-cyan-200 dark:text-white dark:hover:text-cyan-200"
+                    />
                     <div className="rounded-full bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-200">
                         True Preview Review
                     </div>

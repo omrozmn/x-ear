@@ -122,7 +122,7 @@ class EmailService:
         
         # Check rate limits
         rate_limit_service = get_rate_limit_service(self.db)
-        can_send, reason = rate_limit_service.check_rate_limit(tenant_id)
+        can_send, reason, _retry_after = rate_limit_service.check_rate_limit(tenant_id, scenario)
         if not can_send:
             logger.warning(
                 "Email rejected: rate limit exceeded",

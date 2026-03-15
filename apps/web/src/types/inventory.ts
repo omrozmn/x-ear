@@ -65,6 +65,12 @@ export interface InventoryItem {
   // Hearing aid specific
   ear?: EarDirection;
   direction?: EarDirection;
+
+  // Technical specifications for recommendation engine
+  maxOutputSpl?: number;
+  maxGain?: number;
+  fittingRangeMin?: number;
+  fittingRangeMax?: number;
   
   // SGK and tracking
   sgkCode?: string;
@@ -79,6 +85,8 @@ export interface InventoryItem {
   gtipCode?: string; // GTİP kodu (ihracat için)
   priceIncludesKdv?: boolean;
   costIncludesKdv?: boolean;
+  utsStatusLabel?: string;
+  utsStatusTone?: 'success' | 'warning' | 'danger' | 'secondary';
   
   // Status and metadata
   status?: InventoryStatus;

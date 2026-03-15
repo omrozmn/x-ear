@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WebManagementPreviewRouteImport } from './routes/web-management-preview'
+import { Route as WebManagementRouteImport } from './routes/web-management'
 import { Route as UtsRouteImport } from './routes/uts'
 import { Route as TestRouteImport } from './routes/test'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -23,8 +25,6 @@ import { Route as CashflowRouteImport } from './routes/cashflow'
 import { Route as CampaignsRouteImport } from './routes/campaigns'
 import { Route as AutomationRouteImport } from './routes/automation'
 import { Route as AppointmentsRouteImport } from './routes/appointments'
-import { Route as WebManagementPreviewRouteImport } from './routes/web-management-preview'
-import { Route as WebManagementRouteImport } from './routes/web-management'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SuppliersIndexRouteImport } from './routes/suppliers/index'
 import { Route as SgkIndexRouteImport } from './routes/sgk/index'
@@ -33,6 +33,7 @@ import { Route as ReportsIndexRouteImport } from './routes/reports/index'
 import { Route as PosIndexRouteImport } from './routes/pos/index'
 import { Route as PartiesIndexRouteImport } from './routes/parties/index'
 import { Route as InvoicesIndexRouteImport } from './routes/invoices/index'
+import { Route as InvoiceNormalizerIndexRouteImport } from './routes/invoice-normalizer/index'
 import { Route as InventoryIndexRouteImport } from './routes/inventory/index'
 import { Route as CashflowIndexRouteImport } from './routes/cashflow/index'
 import { Route as SuppliersSupplierIdRouteImport } from './routes/suppliers/$supplierId'
@@ -56,6 +57,16 @@ import { Route as InvoicesIncomingRouteImport } from './routes/invoices/incoming
 import { Route as InventoryIdRouteImport } from './routes/inventory/$id'
 import { Route as CashflowIdRouteImport } from './routes/cashflow/$id'
 
+const WebManagementPreviewRoute = WebManagementPreviewRouteImport.update({
+  id: '/web-management-preview',
+  path: '/web-management-preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WebManagementRoute = WebManagementRouteImport.update({
+  id: '/web-management',
+  path: '/web-management',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UtsRoute = UtsRouteImport.update({
   id: '/uts',
   path: '/uts',
@@ -126,16 +137,6 @@ const AppointmentsRoute = AppointmentsRouteImport.update({
   path: '/appointments',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WebManagementPreviewRoute = WebManagementPreviewRouteImport.update({
-  id: '/web-management-preview',
-  path: '/web-management-preview',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const WebManagementRoute = WebManagementRouteImport.update({
-  id: '/web-management',
-  path: '/web-management',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -175,6 +176,11 @@ const InvoicesIndexRoute = InvoicesIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => InvoicesRoute,
+} as any)
+const InvoiceNormalizerIndexRoute = InvoiceNormalizerIndexRouteImport.update({
+  id: '/invoice-normalizer/',
+  path: '/invoice-normalizer/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const InventoryIndexRoute = InventoryIndexRouteImport.update({
   id: '/',
@@ -290,8 +296,6 @@ const CashflowIdRoute = CashflowIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
-  '/web-management': typeof WebManagementRoute
-  '/web-management-preview': typeof WebManagementPreviewRoute
   '/automation': typeof AutomationRoute
   '/campaigns': typeof CampaignsRoute
   '/cashflow': typeof CashflowRouteWithChildren
@@ -305,6 +309,8 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRouteWithChildren
   '/test': typeof TestRoute
   '/uts': typeof UtsRoute
+  '/web-management': typeof WebManagementRoute
+  '/web-management-preview': typeof WebManagementPreviewRoute
   '/cashflow/$id': typeof CashflowIdRoute
   '/inventory/$id': typeof InventoryIdRoute
   '/invoices/incoming': typeof InvoicesIncomingRoute
@@ -327,6 +333,7 @@ export interface FileRoutesByFullPath {
   '/suppliers/$supplierId': typeof SuppliersSupplierIdRoute
   '/cashflow/': typeof CashflowIndexRoute
   '/inventory/': typeof InventoryIndexRoute
+  '/invoice-normalizer/': typeof InvoiceNormalizerIndexRoute
   '/invoices/': typeof InvoicesIndexRoute
   '/parties/': typeof PartiesIndexRoute
   '/pos/': typeof PosIndexRoute
@@ -338,8 +345,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
-  '/web-management': typeof WebManagementRoute
-  '/web-management-preview': typeof WebManagementPreviewRoute
   '/automation': typeof AutomationRoute
   '/campaigns': typeof CampaignsRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -349,6 +354,8 @@ export interface FileRoutesByTo {
   '/sales': typeof SalesRoute
   '/test': typeof TestRoute
   '/uts': typeof UtsRoute
+  '/web-management': typeof WebManagementRoute
+  '/web-management-preview': typeof WebManagementPreviewRoute
   '/cashflow/$id': typeof CashflowIdRoute
   '/inventory/$id': typeof InventoryIdRoute
   '/invoices/incoming': typeof InvoicesIncomingRoute
@@ -371,6 +378,7 @@ export interface FileRoutesByTo {
   '/suppliers/$supplierId': typeof SuppliersSupplierIdRoute
   '/cashflow': typeof CashflowIndexRoute
   '/inventory': typeof InventoryIndexRoute
+  '/invoice-normalizer': typeof InvoiceNormalizerIndexRoute
   '/invoices': typeof InvoicesIndexRoute
   '/parties': typeof PartiesIndexRoute
   '/pos': typeof PosIndexRoute
@@ -383,8 +391,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
-  '/web-management': typeof WebManagementRoute
-  '/web-management-preview': typeof WebManagementPreviewRoute
   '/automation': typeof AutomationRoute
   '/campaigns': typeof CampaignsRoute
   '/cashflow': typeof CashflowRouteWithChildren
@@ -398,6 +404,8 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRouteWithChildren
   '/test': typeof TestRoute
   '/uts': typeof UtsRoute
+  '/web-management': typeof WebManagementRoute
+  '/web-management-preview': typeof WebManagementPreviewRoute
   '/cashflow/$id': typeof CashflowIdRoute
   '/inventory/$id': typeof InventoryIdRoute
   '/invoices/incoming': typeof InvoicesIncomingRoute
@@ -420,6 +428,7 @@ export interface FileRoutesById {
   '/suppliers/$supplierId': typeof SuppliersSupplierIdRoute
   '/cashflow/': typeof CashflowIndexRoute
   '/inventory/': typeof InventoryIndexRoute
+  '/invoice-normalizer/': typeof InvoiceNormalizerIndexRoute
   '/invoices/': typeof InvoicesIndexRoute
   '/parties/': typeof PartiesIndexRoute
   '/pos/': typeof PosIndexRoute
@@ -433,8 +442,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/appointments'
-    | '/web-management'
-    | '/web-management-preview'
     | '/automation'
     | '/campaigns'
     | '/cashflow'
@@ -448,6 +455,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/test'
     | '/uts'
+    | '/web-management'
+    | '/web-management-preview'
     | '/cashflow/$id'
     | '/inventory/$id'
     | '/invoices/incoming'
@@ -470,6 +479,7 @@ export interface FileRouteTypes {
     | '/suppliers/$supplierId'
     | '/cashflow/'
     | '/inventory/'
+    | '/invoice-normalizer/'
     | '/invoices/'
     | '/parties/'
     | '/pos/'
@@ -481,8 +491,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/appointments'
-    | '/web-management'
-    | '/web-management-preview'
     | '/automation'
     | '/campaigns'
     | '/forgot-password'
@@ -492,6 +500,8 @@ export interface FileRouteTypes {
     | '/sales'
     | '/test'
     | '/uts'
+    | '/web-management'
+    | '/web-management-preview'
     | '/cashflow/$id'
     | '/inventory/$id'
     | '/invoices/incoming'
@@ -514,6 +524,7 @@ export interface FileRouteTypes {
     | '/suppliers/$supplierId'
     | '/cashflow'
     | '/inventory'
+    | '/invoice-normalizer'
     | '/invoices'
     | '/parties'
     | '/pos'
@@ -525,8 +536,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/appointments'
-    | '/web-management'
-    | '/web-management-preview'
     | '/automation'
     | '/campaigns'
     | '/cashflow'
@@ -540,6 +549,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/test'
     | '/uts'
+    | '/web-management'
+    | '/web-management-preview'
     | '/cashflow/$id'
     | '/inventory/$id'
     | '/invoices/incoming'
@@ -562,6 +573,7 @@ export interface FileRouteTypes {
     | '/suppliers/$supplierId'
     | '/cashflow/'
     | '/inventory/'
+    | '/invoice-normalizer/'
     | '/invoices/'
     | '/parties/'
     | '/pos/'
@@ -574,8 +586,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppointmentsRoute: typeof AppointmentsRoute
-  WebManagementPreviewRoute: typeof WebManagementPreviewRoute
-  WebManagementRoute: typeof WebManagementRoute
   AutomationRoute: typeof AutomationRoute
   CampaignsRoute: typeof CampaignsRoute
   CashflowRoute: typeof CashflowRouteWithChildren
@@ -589,12 +599,15 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRouteWithChildren
   TestRoute: typeof TestRoute
   UtsRoute: typeof UtsRoute
+  WebManagementRoute: typeof WebManagementRoute
+  WebManagementPreviewRoute: typeof WebManagementPreviewRoute
   PartiesPartyIdRoute: typeof PartiesPartyIdRoute
   PosFailRoute: typeof PosFailRoute
   PosSuccessRoute: typeof PosSuccessRoute
   ReportsActivityRoute: typeof ReportsActivityRoute
   SgkDownloadsRoute: typeof SgkDownloadsRoute
   SuppliersSupplierIdRoute: typeof SuppliersSupplierIdRoute
+  InvoiceNormalizerIndexRoute: typeof InvoiceNormalizerIndexRoute
   PartiesIndexRoute: typeof PartiesIndexRoute
   PosIndexRoute: typeof PosIndexRoute
   ReportsIndexRoute: typeof ReportsIndexRoute
@@ -604,6 +617,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/web-management-preview': {
+      id: '/web-management-preview'
+      path: '/web-management-preview'
+      fullPath: '/web-management-preview'
+      preLoaderRoute: typeof WebManagementPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/web-management': {
+      id: '/web-management'
+      path: '/web-management'
+      fullPath: '/web-management'
+      preLoaderRoute: typeof WebManagementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/uts': {
       id: '/uts'
       path: '/uts'
@@ -702,20 +729,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppointmentsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/web-management-preview': {
-      id: '/web-management-preview'
-      path: '/web-management-preview'
-      fullPath: '/web-management-preview'
-      preLoaderRoute: typeof WebManagementPreviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/web-management': {
-      id: '/web-management'
-      path: '/web-management'
-      fullPath: '/web-management'
-      preLoaderRoute: typeof WebManagementRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -771,6 +784,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/invoices/'
       preLoaderRoute: typeof InvoicesIndexRouteImport
       parentRoute: typeof InvoicesRoute
+    }
+    '/invoice-normalizer/': {
+      id: '/invoice-normalizer/'
+      path: '/invoice-normalizer'
+      fullPath: '/invoice-normalizer/'
+      preLoaderRoute: typeof InvoiceNormalizerIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/inventory/': {
       id: '/inventory/'
@@ -1008,8 +1028,6 @@ const SettingsRouteWithChildren = SettingsRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppointmentsRoute: AppointmentsRoute,
-  WebManagementPreviewRoute: WebManagementPreviewRoute,
-  WebManagementRoute: WebManagementRoute,
   AutomationRoute: AutomationRoute,
   CampaignsRoute: CampaignsRoute,
   CashflowRoute: CashflowRouteWithChildren,
@@ -1023,12 +1041,15 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRouteWithChildren,
   TestRoute: TestRoute,
   UtsRoute: UtsRoute,
+  WebManagementRoute: WebManagementRoute,
+  WebManagementPreviewRoute: WebManagementPreviewRoute,
   PartiesPartyIdRoute: PartiesPartyIdRoute,
   PosFailRoute: PosFailRoute,
   PosSuccessRoute: PosSuccessRoute,
   ReportsActivityRoute: ReportsActivityRoute,
   SgkDownloadsRoute: SgkDownloadsRoute,
   SuppliersSupplierIdRoute: SuppliersSupplierIdRoute,
+  InvoiceNormalizerIndexRoute: InvoiceNormalizerIndexRoute,
   PartiesIndexRoute: PartiesIndexRoute,
   PosIndexRoute: PosIndexRoute,
   ReportsIndexRoute: ReportsIndexRoute,

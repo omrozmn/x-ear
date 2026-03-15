@@ -18,6 +18,7 @@ IMPORTANT: These tests use REAL database operations (no mocks) as per X-Ear CRM 
 """
 
 import pytest
+pytestmark = pytest.mark.real_bounce  # Use real bounce handler, not the autouse mock
 from hypothesis import given, strategies as st, settings, HealthCheck
 from datetime import datetime, timezone
 from sqlalchemy import create_engine
@@ -37,6 +38,8 @@ TEST_DATABASE_URL = "sqlite:///:memory:"
 @pytest.fixture
 def db_session():
     """Create a test database session."""
+    from core.database import _skip_tenant_filter
+    _skip_tenant_filter.set(True)
     engine = create_engine(TEST_DATABASE_URL)
     Base.metadata.create_all(engine)
     SessionLocal = sessionmaker(bind=engine)
@@ -64,6 +67,7 @@ def db_session():
     
     session.close()
     Base.metadata.drop_all(engine)
+    _skip_tenant_filter.set(False)
 
 
 # Strategies for generating test data

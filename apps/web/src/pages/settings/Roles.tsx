@@ -8,6 +8,7 @@ import {
     useDeleteRole
 } from '../../api/generated/roles/roles';
 import { unwrapArray } from '../../utils/response-unwrap';
+import { SettingsSectionHeader } from '../../components/layout/SettingsSectionHeader';
 
 interface Role {
     id: string;
@@ -121,18 +122,20 @@ export default function RolesSettings() {
 
     return (
         <div className="p-6 max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Rol Yönetimi</h1>
-                    <p className="text-gray-500 dark:text-gray-400">Rolleri ve yetkilerini yönetin</p>
-                </div>
-                <Button
-                    onClick={() => setIsCreateModalOpen(true)}
-                    icon={<Plus className="w-5 h-5" />}
-                >
-                    Yeni Rol Oluştur
-                </Button>
-            </div>
+            <SettingsSectionHeader
+                className="mb-8"
+                title="Rol Yönetimi"
+                description="Rolleri ve yetkilerini yönetin"
+                icon={<Shield className="w-6 h-6" />}
+                actions={(
+                    <Button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        icon={<Plus className="w-5 h-5" />}
+                    >
+                        Yeni Rol Oluştur
+                    </Button>
+                )}
+            />
 
             {/* Search Bar */}
             <div className="mb-6">

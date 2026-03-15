@@ -18,6 +18,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Modal } from '@/components/ui/Modal';
 import { Button, Input, Checkbox } from '@x-ear/ui-web';
 import { AxiosError } from '@/api/orval-mutator';
+import { SettingsSectionHeader } from '../../components/layout/SettingsSectionHeader';
 
 // Permission categories with icons
 const CATEGORY_CONFIG: Record<string, { label: string; icon: React.ReactNode }> = {
@@ -405,13 +406,13 @@ export function RolePermissionsTab() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Rol Izinleri</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Her rol icin izinleri yapilandirin</p>
-        </div>
-        {hasChanges && (
-          <div className="flex items-center space-x-3">
+      <SettingsSectionHeader
+        className="mb-6"
+        title="Rol İzinleri"
+        description="Her rol için izinleri yapılandırın"
+        icon={<Shield className="w-6 h-6" />}
+        actions={hasChanges ? (
+          <>
             <Button
               variant="outline"
               onClick={handleReset}
@@ -427,9 +428,9 @@ export function RolePermissionsTab() {
             >
               Kaydet
             </Button>
-          </div>
-        )}
-      </div>
+          </>
+        ) : null}
+      />
 
       {/* Role Selector */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">

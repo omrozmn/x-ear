@@ -4,6 +4,7 @@ import { branchService, Branch } from '../../services/branch.service';
 import { Button, Input, Textarea, DataTable } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
 import toast from 'react-hot-toast';
+import { SettingsSectionHeader } from '../../components/layout/SettingsSectionHeader';
 
 interface ConfirmationModal {
     isOpen: boolean;
@@ -194,18 +195,20 @@ export function BranchesTab() {
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-6">
-                <div>
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Subeler</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Organizasyonunuza ait subeleri yonetin</p>
-                </div>
-                <Button
-                    onClick={openCreateModal}
-                    icon={<Plus className="w-5 h-5" />}
-                >
-                    Yeni Şube Ekle
-                </Button>
-            </div>
+            <SettingsSectionHeader
+                className="mb-6"
+                title="Şubeler"
+                description="Organizasyonunuza ait şubeleri yönetin"
+                icon={<Building2 className="w-6 h-6" />}
+                actions={(
+                    <Button
+                        onClick={openCreateModal}
+                        icon={<Plus className="w-5 h-5" />}
+                    >
+                        Yeni Şube Ekle
+                    </Button>
+                )}
+            />
 
             {error && (
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl flex items-center">

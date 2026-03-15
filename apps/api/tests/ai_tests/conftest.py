@@ -13,60 +13,75 @@ if str(_api_dir) not in sys.path:
 
 # Also add to PYTHONPATH for subprocess calls
 import os
-os.environ.setdefault("PYTHONPATH", str(_api_dir))
-
-# Set environment variables before importing app
 os.environ.setdefault("AI_ENABLED", "true")
 os.environ.setdefault("AI_PHASE", "C")  # Enable execution for testing
-os.environ.setdefault("JWT_SECRET_KEY", "test-secret-key-for-testing")
-os.environ.setdefault("SECRET_KEY", "test-secret-key-for-testing")
+os.environ.setdefault("JWT_SECRET_KEY", "test-secret")
+os.environ.setdefault("SECRET_KEY", "test-secret")
 os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
 
 import pytest
 from fastapi import Request
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import Session
+from datetime import datetime
 
 # Import AI models to ensure their tables are created
 from ai.models import AIRequest, AIAction, AIAuditLog, AIUsage
 
 
 # =============================================================================
-# Database Fixtures
+# Database Fixtures — Use the root conftest's db_session (in-memory)
+# =============================================================================
+# NOTE: We do NOT redefine db_session here. The root conftest.py already
+# provides an in-memory SQLite db_session that creates ALL tables (including
+# AI tables) via Base.metadata.create_all(). Redefining it here with a real
+# DB path causes test isolation issues.
+
+
+# =============================================================================
+# Auto-create test users needed by AI integration tests
 # =============================================================================
 
-@pytest.fixture(scope="function")
-def db_session() -> Session:
+@pytest.fixture(autouse=True)
+def _ensure_test_users(db_session):
+    """Create test users and tenants needed by AI integration tests.
+
+    Many AI tests create JWT tokens with specific user/tenant IDs.
+    The ``require_access()`` dependency validates users against the DB,
+    so the referenced users and tenants must exist in the in-memory test DB.
     """
-    Provide test database session.
-    
-    Uses the real SQLite database (not in-memory) to ensure AI tables exist.
-    Automatically rolls back changes after each test for isolation.
-    """
-    # Use real database path (same as production)
-    db_path = Path(__file__).resolve().parent.parent.parent / "instance" / "xear_crm.db"
-    
-    # Create engine pointing to real database
-    engine = create_engine(
-        f"sqlite:///{db_path}",
-        connect_args={"check_same_thread": False},
-        echo=False,
-    )
-    
-    # Create session
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    session = SessionLocal()
-    
-    # Start a transaction
-    session.begin()
-    
-    try:
-        yield session
-    finally:
-        # Rollback to undo any changes made during the test
-        session.rollback()
-        session.close()
-        engine.dispose()
+    from core.models.tenant import Tenant
+    from core.models.user import User
+
+    test_tenants = [
+        ("test-tenant", "Test Tenant"),
+        ("test-tenant-456", "Test Tenant 456"),
+        ("tenant-1", "Tenant 1"),
+        ("tenant-2", "Tenant 2"),
+    ]
+    for tid, name in test_tenants:
+        if not db_session.query(Tenant).filter_by(id=tid).first():
+            db_session.add(Tenant(
+                id=tid, name=name, slug=tid,
+                owner_email=f"{tid}@test.com",
+                billing_email=f"billing-{tid}@test.com",
+                is_active=True, created_at=datetime.utcnow(),
+            ))
+
+    test_users = [
+        ("test-user", "test-tenant", "tenant_admin"),
+        ("test-user-123", "test-tenant-456", "tenant_admin"),
+        ("test-admin", "test-tenant", "admin"),
+    ]
+    for uid, tid, role in test_users:
+        if not db_session.query(User).filter_by(id=uid).first():
+            u = User(
+                id=uid, username=uid, email=f"{uid}@test.com",
+                role=role, tenant_id=tid, is_active=True,
+            )
+            u.set_password("test123")
+            db_session.add(u)
+
+    db_session.commit()
 
 
 # =============================================================================
@@ -75,12 +90,7 @@ def db_session() -> Session:
 
 @pytest.fixture
 def auth_context():
-    """
-    Provide authentication context for tests.
-    
-    Returns a dictionary with tenant_id, user_id, and permissions
-    that will be injected into request.state by the mock auth middleware.
-    """
+    """Provide authentication context for tests."""
     return {
         "tenant_id": "test-tenant",
         "user_id": "test-user",
@@ -90,27 +100,13 @@ def auth_context():
 
 @pytest.fixture
 def mock_auth_middleware(auth_context):
-    """
-    Provide mock authentication middleware for tests.
-    
-    This middleware bypasses JWT authentication and injects
-    test authentication context into request.state.
-    
-    Usage in test app:
-        @app.middleware("http")
-        async def auth_middleware(request: Request, call_next):
-            return await mock_auth_middleware(request, call_next)
-    """
+    """Provide mock authentication middleware for tests."""
     async def middleware(request: Request, call_next):
-        # Inject authentication context into request.state
         request.state.tenant_id = auth_context["tenant_id"]
         request.state.user_id = auth_context["user_id"]
         request.state.user_permissions = auth_context["permissions"]
-        
-        # Call the next middleware/endpoint
         response = await call_next(request)
         return response
-    
     return middleware
 
 

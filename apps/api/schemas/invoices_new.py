@@ -252,3 +252,18 @@ class SupplierInvoiceItemsListResponse(AppBaseModel):
     items: List[SupplierInvoiceItemResponse] = Field(default_factory=list, description="List of invoice items")
     total: int = Field(default=0, description="Total items count")
     supplier_name: str = Field(..., description="Supplier name")
+
+
+class SupplierSuggestionItem(AppBaseModel):
+    """A single supplier match suggestion."""
+    supplier_id: str = Field(..., alias="supplierId", description="Matched supplier ID")
+    company_name: str = Field(..., alias="companyName", description="Supplier company name")
+    tax_number: Optional[str] = Field(None, alias="taxNumber", description="Supplier tax number")
+    score: float = Field(..., description="Match confidence score 0-1")
+    match_reason: str = Field("", alias="matchReason", description="Why this supplier matched")
+
+
+class SupplierSuggestionResponse(AppBaseModel):
+    """Response schema for supplier suggestion endpoint."""
+    suggestions: List[SupplierSuggestionItem] = Field(default_factory=list, description="Ranked supplier suggestions")
+    query: str = Field(..., description="Original query string")

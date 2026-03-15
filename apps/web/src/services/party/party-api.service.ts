@@ -1,4 +1,5 @@
 // Party API Service - Simplified Version
+import { customInstance } from '../../api/orval-mutator';
 import {
   ResponseMeta,
   PartyRead,
@@ -361,8 +362,11 @@ export class PartyApiService {
     try {
       const response = await listPartyTimeline(partyId);
       const payload = unwrapObject<Record<string, unknown>>(response);
+      // Backend returns {data: {events: [...]}} via TimelineListResponse
+      const events = (payload as Record<string, unknown>)?.events;
+      const data = Array.isArray(events) ? events : unwrapArray<unknown>(response);
       return {
-        data: unwrapArray<unknown>(response),
+        data,
         success: true,
         meta: payload?.meta as ResponseMeta
       };
@@ -419,13 +423,19 @@ export class PartyApiService {
   }
 
   async getHearingTests(partyId: string): Promise<ApiEnvelope<unknown[]>> {
-    // Endpoint removed/renamed in backend - returning empty array
-    console.warn(`getHearingTests called for party ${partyId} but endpoint is not available`);
-    return {
-      data: [],
-      success: true,
-      message: 'Hearing tests endpoint not available'
-    };
+    try {
+      const response = await customInstance<{ success: boolean; data: unknown[] }>({
+        url: `/api/parties/${partyId}/hearing-tests`,
+        method: 'GET',
+      });
+      return {
+        data: (response as unknown as { data: unknown[] })?.data ?? response as unknown as unknown[],
+        success: true,
+      };
+    } catch (err) {
+      console.error(`getHearingTests failed for party ${partyId}:`, err);
+      return { data: [], success: false, message: String(err) };
+    }
   }
 
   async getNotes(partyId: string): Promise<ApiEnvelope<unknown[]>> {

@@ -86,9 +86,13 @@ const getTenants = (value: unknown): TenantOption[] => {
     ? value.data
     : isRecord(value.data) && Array.isArray(value.data.tenants)
       ? value.data.tenants
-      : Array.isArray(value.tenants)
-        ? value.tenants
-        : [];
+      : isRecord(value.data) && Array.isArray(value.data.items)
+        ? value.data.items
+        : Array.isArray(value.tenants)
+          ? value.tenants
+          : Array.isArray(value.items)
+            ? value.items
+            : [];
 
   return candidate
     .filter(isRecord)

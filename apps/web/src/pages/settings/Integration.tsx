@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Loader2, CheckCircle, AlertCircle, X, FileText, Upload, Trash2, Eye, CreditCard, ExternalLink, MessageSquare, Download, Receipt, Zap } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle, X, FileText, Upload, Trash2, Eye, CreditCard, ExternalLink, MessageSquare, Download, Receipt, Zap, ShieldCheck, MessageCircleMore, Shield } from 'lucide-react';
 import {
     useListSmConfig,
     useListSmHeaders,
@@ -21,7 +21,13 @@ import { customInstance } from '@/api/orval-mutator';
 import { PosSettings } from './PosSettings';
 import { InvoiceSettings } from './InvoiceSettings';
 import { AutomationSettings } from './AutomationSettings';
+import UtsSettingsPanel from '@/components/uts/UtsSettingsPanel';
+import NoahConnectorSettings from './NoahConnector';
 import { extractErrorMessage } from '@/utils/error-utils';
+import { SettingsSectionHeader } from '../../components/layout/SettingsSectionHeader';
+import WhatsAppIntegrationPanel from '@/components/settings/WhatsAppIntegrationPanel';
+import { Activity } from 'lucide-react';
+import SgkCredentialsSettings from './SgkCredentialsSettings';
 
 interface SmsDocument {
     type: string;
@@ -233,6 +239,9 @@ export default function IntegrationSettings() {
                     <Tabs.Trigger value="sms" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'sms' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
                         <div className="flex items-center gap-2"><MessageSquare className="w-4 h-4" />SMS Entegrasyonu</div>
                     </Tabs.Trigger>
+                    <Tabs.Trigger value="whatsapp" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'whatsapp' ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                        <div className="flex items-center gap-2"><MessageCircleMore className="w-4 h-4" />WhatsApp Entegrasyonu</div>
+                    </Tabs.Trigger>
                     <Tabs.Trigger value="invoice" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'invoice' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
                         <div className="flex items-center gap-2"><Receipt className="w-4 h-4" />E-Fatura Ayarları</div>
                     </Tabs.Trigger>
@@ -241,6 +250,15 @@ export default function IntegrationSettings() {
                     </Tabs.Trigger>
                     <Tabs.Trigger value="automation" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'automation' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
                         <div className="flex items-center gap-2"><Zap className="w-4 h-4" />Otomasyon</div>
+                    </Tabs.Trigger>
+                    <Tabs.Trigger value="uts" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'uts' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                        <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4" />UTS</div>
+                    </Tabs.Trigger>
+                    <Tabs.Trigger value="noah" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'noah' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                        <div className="flex items-center gap-2"><Activity className="w-4 h-4" />Noah</div>
+                    </Tabs.Trigger>
+                    <Tabs.Trigger value="sgk-login" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'sgk-login' ? 'border-red-600 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                        <div className="flex items-center gap-2"><Shield className="w-4 h-4" />SGK Giriş</div>
                     </Tabs.Trigger>
                 </Tabs.List>
                 <Tabs.Content value="sms" className="space-y-6">
@@ -291,8 +309,12 @@ export default function IntegrationSettings() {
                             {smsSubTab === 'docs' && (
                                 <div className="space-y-4">
                                     <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
-                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">SMS Başvuru Belgeleri</h3>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">SMS hizmeti kullanabilmek için aşağıdaki belgeleri yüklemeniz gerekmektedir.</p>
+                                        <SettingsSectionHeader
+                                            className="mb-6"
+                                            title="SMS Başvuru Belgeleri"
+                                            description="SMS hizmeti kullanabilmek için aşağıdaki belgeleri yüklemeniz gerekmektedir."
+                                            icon={<MessageSquare className="w-6 h-6" />}
+                                        />
                                         
                                         {/* Example Contract Section */}
                                         <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-200 dark:border-blue-800">
@@ -386,32 +408,29 @@ export default function IntegrationSettings() {
                                                                     const isRecentlyUploadedThis = recentlyUploaded[doc.id];
                                                                     
                                                                     return (
-                                                                        <Button
-                                                                            variant="primary"
-                                                                            size="sm"
-                                                                            disabled={isUploadingThis || isDisabled}
-                                                                            className="relative overflow-hidden"
-                                                                        >
-                                                                            {isUploadingThis ? (
-                                                                                <>
-                                                                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                                                                    Yükleniyor...
-                                                                                </>
-                                                                            ) : isRecentlyUploadedThis ? (
-                                                                                <>
-                                                                                    <CheckCircle className="w-4 h-4 mr-2" />
-                                                                                    Yüklendi
-                                                                                </>
-                                                                            ) : (
-                                                                                <>
-                                                                                    <Upload className="w-4 h-4 mr-2" />
-                                                                                    {uploaded ? 'Değiştir' : 'Yükle'}
-                                                                                </>
-                                                                            )}
+                                                                        <label className="relative cursor-pointer inline-flex">
+                                                                            <span className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl text-white premium-gradient shadow-md transition-all ${(isUploadingThis || isDisabled) ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg active:scale-95'}`}>
+                                                                                {isUploadingThis ? (
+                                                                                    <>
+                                                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                                                        Yükleniyor...
+                                                                                    </>
+                                                                                ) : isRecentlyUploadedThis ? (
+                                                                                    <>
+                                                                                        <CheckCircle className="w-4 h-4" />
+                                                                                        Yüklendi
+                                                                                    </>
+                                                                                ) : (
+                                                                                    <>
+                                                                                        <Upload className="w-4 h-4" />
+                                                                                        {uploaded ? 'Değiştir' : 'Yükle'}
+                                                                                    </>
+                                                                                )}
+                                                                            </span>
                                                                             <input
                                                                                 data-allow-raw="true"
                                                                                 type="file"
-                                                                                className="absolute inset-0 opacity-0 cursor-pointer"
+                                                                                className="sr-only"
                                                                                 accept=".pdf,.jpg,.jpeg,.png"
                                                                                 disabled={isUploadingThis || isDisabled}
                                                                                 ref={(el) => { uploadInputsRef.current[doc.id] = el; }}
@@ -421,7 +440,7 @@ export default function IntegrationSettings() {
                                                                                     e.target.value = '';
                                                                                 }}
                                                                             />
-                                                                        </Button>
+                                                                        </label>
                                                                     );
                                                                 })()
                                                             ) : null}
@@ -481,7 +500,12 @@ export default function IntegrationSettings() {
                             {smsSubTab === 'headers' && allDocumentsApproved && (
                                 <div className="space-y-4">
                                     <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
-                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">SMS Başlıkları</h3>
+                                        <SettingsSectionHeader
+                                            className="mb-4"
+                                            title="SMS Başlıkları"
+                                            description="Gönderim başlıklarını görüntüleyin ve yeni başlık talebi oluşturun."
+                                            icon={<MessageSquare className="w-6 h-6" />}
+                                        />
                                         <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-2xl">
                                             <h4 className="font-medium text-gray-900 dark:text-white mb-3">Yeni Başlık Talebi</h4>
                                             <div className="flex gap-3">
@@ -534,9 +558,15 @@ export default function IntegrationSettings() {
                         </>
                     )}
                 </Tabs.Content>
+                <Tabs.Content value="whatsapp" className="space-y-6">
+                    <WhatsAppIntegrationPanel />
+                </Tabs.Content>
                 <Tabs.Content value="invoice"><InvoiceSettings /></Tabs.Content>
                 <Tabs.Content value="pos"><PosSettings /></Tabs.Content>
                 <Tabs.Content value="automation"><AutomationSettings /></Tabs.Content>
+                <Tabs.Content value="uts"><UtsSettingsPanel /></Tabs.Content>
+                <Tabs.Content value="noah"><NoahConnectorSettings /></Tabs.Content>
+                <Tabs.Content value="sgk-login"><SgkCredentialsSettings /></Tabs.Content>
             </Tabs.Root>
 
             <Dialog.Root open={!!previewDoc} onOpenChange={() => setPreviewDoc(null)}>

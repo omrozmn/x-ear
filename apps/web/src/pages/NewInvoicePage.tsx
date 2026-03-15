@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, useSearch } from '@tanstack/react-router';
 import { Button, Input, DatePicker, Textarea, ConfirmModal } from '@x-ear/ui-web';
-import { ArrowLeft, CheckCircle, ChevronDown, Pill } from 'lucide-react';
+import { CheckCircle, ChevronDown, Pill } from 'lucide-react';
 import { InvoiceFormExtended } from '../components/invoices/InvoiceFormExtended';
 import ExportDetailsCard from '../components/invoices/ExportDetailsCard';
 import { SGKInvoiceSection } from '../components/invoices/SGKInvoiceSection';
@@ -20,6 +20,8 @@ import toast from 'react-hot-toast';
 import { ErrorMessage } from '../components/ErrorMessage';
 import { useGetTenantCompany } from '@/api/client/tenant-users.client';
 import { normalizeCustomerTaxIdFields, normalizeCustomerTaxIdChange } from '../utils/customerTaxId';
+import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
+import { HeaderBackButton } from '../components/layout/HeaderBackButton';
 
 interface InvoiceFormData {
   invoiceType: string;
@@ -176,6 +178,25 @@ const buildLinkedDocumentPayload = (source: Record<string, unknown>, documentKin
   };
 };
 
+const normalizeDraftItems = (items: unknown): Record<string, unknown>[] => {
+  if (!Array.isArray(items)) return [];
+  return items.map((item, index) => {
+    const line = item && typeof item === 'object' ? { ...(item as Record<string, unknown>) } : {};
+    if (!line.id) {
+      line.id = `draft-line-${index + 1}`;
+    }
+    if (!line.unit) {
+      line.unit = 'Adet';
+    }
+    return line;
+  });
+};
+
+const normalizeDraftPayload = (draft: Record<string, unknown>) => ({
+  ...draft,
+  items: normalizeDraftItems(draft.items),
+});
+
 export function NewInvoicePage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -256,17 +277,37 @@ export function NewInvoicePage() {
   }, [searchDraftId]);
 
   // Fallback: Pre-fill form data from a copied invoice stored in sessionStorage
-  useEffect(() => {
-    if (searchDraftId) return; // API-based draft takes precedence
+  // Read outside useEffect to survive React StrictMode double-mount (which would
+  // remove the sessionStorage item on first mount and find nothing on second mount)
+  const sessionDraftRef = useRef<Record<string, unknown> | false | null>(null);
+  if (sessionDraftRef.current === null) {
     try {
       const raw = sessionStorage.getItem('invoice_copy_draft');
       if (raw) {
-        const draft = JSON.parse(raw);
+        sessionDraftRef.current = JSON.parse(raw);
         sessionStorage.removeItem('invoice_copy_draft');
-        setFormData(prev => ({ ...prev, ...draft, ...normalizeCustomerTaxIdFields(draft) }));
+      } else {
+        sessionDraftRef.current = false; // Mark as checked, nothing found
       }
     } catch {
-      // Ignore JSON parse errors
+      sessionDraftRef.current = false;
+    }
+  }
+
+  useEffect(() => {
+    if (searchDraftId) return; // API-based draft takes precedence
+    const draft = sessionDraftRef.current;
+    if (draft && typeof draft === 'object') {
+      const normalizedDraft = normalizeDraftPayload(draft);
+      console.log('[NewInvoicePage] Loading draft from sessionStorage:', {
+        items: (normalizedDraft.items as unknown[])?.length,
+      });
+      setFormData(prev => ({
+        ...prev,
+        ...normalizedDraft,
+        ...normalizeCustomerTaxIdFields(normalizedDraft as Record<string, unknown> & { customerTaxId?: string; customerTaxNumber?: string; customerTcNumber?: string }),
+      }));
+      sessionDraftRef.current = false; // Consumed
     }
   }, [searchDraftId]);
 
@@ -528,7 +569,7 @@ function InvoiceSidebar({
   const _showReturnSection = !!showReturnSection;
   const _showSpecialBaseSection = !!showSpecialBaseSection;
   return (
-    <div className="sticky top-[148px] space-y-4 z-10">
+    <div className="space-y-4">
       {/* Fatura Alıcı - En Üstte */}
       <CustomerSectionCompact
         isSGK={showSGKSection}
@@ -1109,57 +1150,46 @@ function NewInvoicePageContent({
 
   return (
     <div className="new-invoice-page min-h-screen bg-gray-50 dark:bg-gray-900 w-full pb-8">
-      {/* Sticky Header with Progress */}
-      <div className="sticky top-[64px] z-20 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                onClick={handleCancel}
-                variant="ghost"
-                className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300 flex items-center gap-2"
-              >
-                <ArrowLeft size={20} />
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{`Yeni ${getDocumentKindText(documentKind)}`}</h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Fatura bilgilerini doldurun
-                </p>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex items-center gap-3">
-              <Button
-                onClick={handleCancel}
-                variant="outline"
-                disabled={isSaving}
-                className="px-4 py-2"
-              >
-                İptal
-              </Button>
-              <Button
-                data-testid="invoice-save-draft-button"
-                onClick={handleSaveDraft}
-                variant="outline"
-                disabled={isSaving}
-                className="px-4 py-2 border-blue-300 text-blue-600 hover:bg-blue-50"
-              >
-                Taslak Kaydet
-              </Button>
-              <Button
-                data-testid="invoice-submit-button"
-                type="button"
-                onClick={() => handleSubmit(formData)}
-                disabled={isSaving}
-                style={{ backgroundColor: '#2563eb', color: 'white' }}
-                className="px-6 py-2 premium-gradient tactile-press text-white shadow-sm"
-              >
-                {isSaving ? 'Kaydediliyor...' : 'Fatura Oluştur'}
-              </Button>
-            </div>
-          </div>
+      <div className="px-4 pt-3 sm:px-6 lg:px-8">
+        <div className="w-full max-w-[1600px] mx-auto">
+          <DesktopPageHeader
+            leading={<HeaderBackButton label="Faturalara Dön" onClick={handleCancel} />}
+            title={`Yeni ${getDocumentKindText(documentKind)}`}
+            description="Fatura bilgilerini doldurun"
+            icon={<Pill className="h-6 w-6" />}
+            eyebrow={{ tr: 'Belge Oluşturma', en: 'Document Creation' }}
+            actions={(
+              <>
+                <Button
+                  onClick={handleCancel}
+                  variant="outline"
+                  disabled={isSaving}
+                  className="px-4 py-2"
+                >
+                  İptal
+                </Button>
+                <Button
+                  data-testid="invoice-save-draft-button"
+                  onClick={handleSaveDraft}
+                  variant="outline"
+                  disabled={isSaving}
+                  className="px-4 py-2 border-blue-300 text-blue-600 hover:bg-blue-50"
+                >
+                  Taslak Kaydet
+                </Button>
+                <Button
+                  data-testid="invoice-submit-button"
+                  type="button"
+                  onClick={() => handleSubmit(formData)}
+                  disabled={isSaving}
+                  style={{ backgroundColor: '#2563eb', color: 'white' }}
+                  className="px-6 py-2 premium-gradient tactile-press text-white shadow-sm"
+                >
+                  {isSaving ? 'Kaydediliyor...' : 'Fatura Oluştur'}
+                </Button>
+              </>
+            )}
+          />
         </div>
       </div>
 

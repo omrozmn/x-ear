@@ -87,6 +87,7 @@ export interface PartySale {
   }>;
   invoice?: {
     id: string;
+    purchaseInvoiceId?: number;
     invoiceNumber: string;
     invoiceDate: string;
     status: string;

@@ -181,6 +181,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
 
         price: priceNum, // Mandatory
         cost: parseFloat(String(item.cost || 0)) || 0,
+        taxRate: kdvVal,
 
         vatIncludedPrice: vatIncluded || 0,
         totalValue: (item.availableInventory || 0) * priceNum || 0,
@@ -442,7 +443,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
       key: 'kdv',
       title: 'KDV Oranı',
       sortable: true,
-      render: (value: number) => `${value}%`
+      render: (_value: number, record: FrontendInventoryItem) => `${record.taxRate ?? 0}%`
     },
     {
       key: 'vatIncludedPrice',

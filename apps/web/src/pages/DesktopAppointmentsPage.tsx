@@ -114,7 +114,7 @@ export function DesktopAppointmentsPage() {
           className="mb-8"
           title={t('page_title')}
           description={t('page_subtitle')}
-          eyebrow="Appointments"
+          eyebrow={{ tr: 'Randevular', en: 'Appointments' }}
           actions={(
             <Button
               onClick={handleCreateAppointment}

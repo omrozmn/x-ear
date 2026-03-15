@@ -85,6 +85,8 @@ from . import communications
 from . import sms_integration
 # Email integration routers
 from . import smtp_config
+# Noah Import / Agent routers
+from . import noah_imports
 
 __all__ = [
     "sms",

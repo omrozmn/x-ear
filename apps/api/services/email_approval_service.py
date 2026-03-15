@@ -43,11 +43,15 @@ class EmailApprovalService:
         Returns:
             Tuple of (requires_approval, risk_level, risk_reasons)
         """
-        # Check AI safety risk
-        risk_result = self.ai_safety.classify_risk_level(subject, body_text, body_html)
-        risk_level = risk_result["risk_level"]
-        risk_reasons = risk_result["reasons"]
-        
+        # Check AI safety risk — combine subject + body as content
+        combined_content = f"{subject}\n{body_text}"
+        if body_html:
+            combined_content += f"\n{body_html}"
+        risk_level = self.ai_safety.classify_risk_level(combined_content, scenario)
+        risk_reasons = []
+        blocked = self.ai_safety.check_blocked_patterns(combined_content)
+        if blocked:
+            risk_reasons = [f"Blocked pattern: {p}" for p in blocked]
         # HIGH and CRITICAL risk emails require approval
         requires_approval = risk_level in ["HIGH", "CRITICAL"]
         

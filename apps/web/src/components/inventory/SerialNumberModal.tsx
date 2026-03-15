@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, Search, Trash2 } from 'lucide-react';
+import { X, Search, Trash2, ShieldCheck, Loader2 } from 'lucide-react';
 import { Button, Input, Modal } from '@x-ear/ui-web';
+import { UtsSerialStatusBadge, type UtsDisplayStatus } from '../uts/UtsSerialStatusBadge';
 
 interface SerialNumberModalProps {
   isOpen: boolean;
@@ -9,6 +10,10 @@ interface SerialNumberModalProps {
   availableCount: number;
   existingSerials?: string[];
   onSave: (serials: string[]) => void;
+  serialBadges?: Record<string, { label: string; tone: 'success' | 'secondary' | 'danger'; status: UtsDisplayStatus }>;
+  onBadgeClick?: (serial: string) => void;
+  onQuerySerial?: (serial: string) => void;
+  queryingSerial?: string | null;
 }
 
 export const SerialNumberModal: React.FC<SerialNumberModalProps> = ({
@@ -17,7 +22,11 @@ export const SerialNumberModal: React.FC<SerialNumberModalProps> = ({
   productName,
   availableCount,
   existingSerials = [],
-  onSave
+  onSave,
+  serialBadges = {},
+  onBadgeClick,
+  onQuerySerial,
+  queryingSerial
 }) => {
   const [serials, setSerials] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -101,9 +110,35 @@ export const SerialNumberModal: React.FC<SerialNumberModalProps> = ({
               matches && (
                 <div key={index} className="flex items-center gap-2">
                   <div className="flex-1">
-                    <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
-                      Seri #{index + 1}
-                    </label>
+                    <div className="mb-1 flex items-center justify-between gap-2">
+                      <label className="block text-xs text-gray-600 dark:text-gray-400">
+                        Seri #{index + 1}
+                      </label>
+                      <div className="flex items-center gap-2">
+                        {serial && serialBadges[serial] ? (
+                          <UtsSerialStatusBadge
+                            status={serialBadges[serial].status}
+                            onClick={() => onBadgeClick?.(serial)}
+                          />
+                        ) : null}
+                        {serial && onQuerySerial ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-full px-2.5 py-1 text-[11px]"
+                            onClick={() => onQuerySerial(serial)}
+                            disabled={queryingSerial === serial}
+                          >
+                            {queryingSerial === serial ? (
+                              <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <ShieldCheck className="mr-1 h-3.5 w-3.5" />
+                            )}
+                            {queryingSerial === serial ? 'Sorgulaniyor' : 'UTS Sorgula'}
+                          </Button>
+                        ) : null}
+                      </div>
+                    </div>
                     <Input
                       type="text"
                       value={serial}

@@ -183,13 +183,17 @@ def test_capability_schema_validation():
 async def test_chat_endpoint_capability_inquiry():
     """Test capability inquiry through the chat endpoint."""
     from ai.api.chat import chat, ChatRequest
+    from middleware.unified_access import UnifiedAccess
     
-    # Mock user context
-    user_context = {
-        "user_id": "test_user",
-        "tenant_id": "test_tenant",
-        "permissions": ["parties.view", "sales.view"],
-    }
+    # Create a proper UnifiedAccess object (not a dict)
+    user_context = UnifiedAccess(
+        user_id="test_user",
+        tenant_id="test_tenant",
+        permissions={"parties.view", "sales.view"},
+        is_authenticated=True,
+        user_type="tenant",
+        role="tenant_admin",
+    )
     
     # Create request
     request = ChatRequest(
@@ -210,6 +214,7 @@ async def test_chat_endpoint_capability_inquiry():
         
         mock_memory_instance = Mock()
         mock_memory_instance.get_history.return_value = []
+        mock_memory_instance.get_accumulated_entities.return_value = {}
         mock_memory_instance.add_turn = Mock()
         mock_memory.return_value = mock_memory_instance
         
@@ -221,8 +226,9 @@ async def test_chat_endpoint_capability_inquiry():
         mock_logger.update_request_status = Mock()
         mock_request_logger.return_value = mock_logger
         
-        # Call endpoint
-        response = await chat(request, user_context)
+        # Call endpoint with UnifiedAccess object and mock db
+        mock_db = Mock()
+        response = await chat(request, user_context, mock_db)
         
         # Verify response
         assert response.status == "success"

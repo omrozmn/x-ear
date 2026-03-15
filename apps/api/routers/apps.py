@@ -8,6 +8,7 @@ import logging
 from schemas.apps import AppRead, AppCreate, AppUpdate
 from models.user import User
 from models.user_app_role import UserAppRole
+from models.role import Role
 from models.app import App
 from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
@@ -126,20 +127,25 @@ async def assign_user_to_app(
     if not app:
         raise HTTPException(status_code=404, detail="App not found")
     
-    user = db.get(User, data.user_id)
+    user = db.get(User, data.userId)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
+    # Resolve role name to role_id
+    role_obj = db.query(Role).filter_by(name=data.role).first()
+    if not role_obj:
+        raise HTTPException(status_code=404, detail=f"Role '{data.role}' not found")
+    
     # Check if assignment already exists
     existing = db.query(UserAppRole).filter(
-        UserAppRole.user_id == data.user_id,
+        UserAppRole.user_id == data.userId,
         UserAppRole.app_id == app_id
     ).first()
     
     if existing:
-        existing.role = data.role
+        existing.role_id = role_obj.id
     else:
-        assignment = UserAppRole(user_id=data.user_id, app_id=app_id, role=data.role)
+        assignment = UserAppRole(user_id=data.userId, app_id=app_id, role_id=role_obj.id)
         db.add(assignment)
     
     db.commit()

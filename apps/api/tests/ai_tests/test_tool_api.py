@@ -699,7 +699,7 @@ class TestAllowlistIntegration:
         expected_tools = [
             "feature_flag_toggle",
             "tenant_config_update",
-            "report_generate",
+            "generateReport",
             "tenant_info_get",
             "feature_flags_list",
         ]
@@ -729,7 +729,7 @@ class TestAllowlistIntegration:
         test_params = {
             "feature_flag_toggle": {"flag_name": "test", "enabled": True, "tenant_id": "t1"},
             "tenant_config_update": {"config_key": "key", "config_value": "val", "tenant_id": "t1"},
-            "report_generate": {"report_type": "sales", "date_from": "2024-01-01", "date_to": "2024-01-31", "tenant_id": "t1"},
+            "generateReport": {"report_type": "sales", "date_from": "2024-01-01", "date_to": "2024-01-31", "tenant_id": "t1"},
             "tenant_info_get": {"tenant_id": "t1"},
             "feature_flags_list": {"tenant_id": "t1"},
             "tenant_plan_upgrade": {"tenant_id": "t1", "new_plan": "professional"},

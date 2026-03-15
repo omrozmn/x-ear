@@ -126,24 +126,45 @@ function getSelectedInvoice(data: InvoiceDetailResponse | undefined): AdminInvoi
 }
 
 function getPlans(data: PlanListResponse | undefined): PlanRead[] {
+  // Try unwrapped envelope first
   const responseData = unwrapData<Record<string, unknown>>(data);
-  if (!responseData || typeof responseData !== 'object' || !('plans' in responseData) || !Array.isArray(responseData.plans)) {
-    return [];
+  if (responseData && typeof responseData === 'object') {
+    if ('items' in responseData && Array.isArray(responseData.items)) {
+      return responseData.items.filter((plan): plan is PlanRead => isRecord(plan) && typeof plan.id === 'string' && typeof plan.name === 'string');
+    }
+    if ('plans' in responseData && Array.isArray(responseData.plans)) {
+      return responseData.plans.filter((plan): plan is PlanRead => isRecord(plan) && typeof plan.id === 'string' && typeof plan.name === 'string');
+    }
   }
 
-  return responseData.plans.filter((plan): plan is PlanRead => isRecord(plan) && typeof plan.id === 'string' && typeof plan.name === 'string');
+  // Orval may have unwrapped directly
+  const raw = data as unknown as Record<string, unknown> | undefined;
+  if (raw && typeof raw === 'object') {
+    if ('items' in raw && Array.isArray(raw.items)) {
+      return raw.items.filter((plan): plan is PlanRead => isRecord(plan) && typeof plan.id === 'string' && typeof plan.name === 'string');
+    }
+  }
+
+  return [];
 }
 
 function getTenants(data: unknown): TenantOption[] {
   if (isRecord(data)) {
-    const directTenants = data.tenants;
-    if (Array.isArray(directTenants)) {
-      return directTenants.filter((tenant): tenant is TenantOption => isRecord(tenant) && typeof tenant.id === 'string' && typeof tenant.name === 'string');
+    if (Array.isArray(data.tenants)) {
+      return data.tenants.filter((tenant): tenant is TenantOption => isRecord(tenant) && typeof tenant.id === 'string' && typeof tenant.name === 'string');
+    }
+    if (Array.isArray(data.items)) {
+      return data.items.filter((tenant): tenant is TenantOption => isRecord(tenant) && typeof tenant.id === 'string' && typeof tenant.name === 'string');
     }
 
     const nestedData = isEnvelopeRecord(data) ? unwrapData<Record<string, unknown>>(data) : undefined;
-    if (isRecord(nestedData) && Array.isArray(nestedData.tenants)) {
-      return nestedData.tenants.filter((tenant): tenant is TenantOption => isRecord(tenant) && typeof tenant.id === 'string' && typeof tenant.name === 'string');
+    if (isRecord(nestedData)) {
+      if (Array.isArray(nestedData.tenants)) {
+        return nestedData.tenants.filter((tenant): tenant is TenantOption => isRecord(tenant) && typeof tenant.id === 'string' && typeof tenant.name === 'string');
+      }
+      if (Array.isArray(nestedData.items)) {
+        return nestedData.items.filter((tenant): tenant is TenantOption => isRecord(tenant) && typeof tenant.id === 'string' && typeof tenant.name === 'string');
+      }
     }
   }
 

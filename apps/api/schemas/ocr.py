@@ -95,3 +95,24 @@ class OcrDebugResponse(AppBaseModel):
     result: Dict[str, Any]
     timestamp: str
 
+
+class AudiogramDetectionDetails(AppBaseModel):
+    red_points_found: int = Field(0, alias="redPointsFound")
+    blue_points_found: int = Field(0, alias="bluePointsFound")
+    frequencies_detected_right: int = Field(0, alias="frequenciesDetectedRight")
+    frequencies_detected_left: int = Field(0, alias="frequenciesDetectedLeft")
+    fallback: Optional[bool] = None
+
+
+class AudiogramThresholdResponse(AppBaseModel):
+    """Response from audiogram OCR extraction."""
+    right_ear: Dict[str, int] = Field(default_factory=dict, alias="rightEar")
+    left_ear: Dict[str, int] = Field(default_factory=dict, alias="leftEar")
+    confidence: float = 0.0
+    frequencies: List[int] = Field(
+        default_factory=lambda: [125, 250, 500, 1000, 2000, 3000, 4000, 6000, 8000]
+    )
+    detection_details: AudiogramDetectionDetails = Field(
+        default_factory=AudiogramDetectionDetails, alias="detectionDetails"
+    )
+

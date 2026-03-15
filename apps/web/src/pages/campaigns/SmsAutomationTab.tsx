@@ -250,9 +250,10 @@ const SAMPLE_RULES: AutomationRule[] = [
 interface SmsAutomationTabProps {
     creditBalance: number;
     creditLoading: boolean;
+    channel?: 'sms' | 'whatsapp' | 'email';
 }
 
-export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = () => {
+export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ channel = 'sms' }) => {
     const [rules, setRules] = useState<AutomationRule[]>(SAMPLE_RULES);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [editingRule, setEditingRule] = useState<AutomationRule | null>(null);
@@ -262,12 +263,12 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = () => {
     const { success: showSuccessToast, error: showErrorToast } = useToastHelpers();
     const { token } = useAuthStore();
 
-    // Get SMS headers for sender selection
+    // Sender/header selection is currently SMS-specific.
     const { data: headersData, isLoading: headersLoading, isError: headersError } = useListSmHeaders({
         query: { queryKey: getListSmHeadersQueryKey(), refetchOnWindowFocus: false, enabled: !!token }
     });
 
-    // Parse SMS headers and filter only approved ones
+    // Approved sender headers are only relevant for SMS channel.
     const headerOptions = useMemo(() => {
         const headersRaw = unwrapArray<SmsHeaderRequestRead>(headersData);
         // Only return approved headers
@@ -312,6 +313,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = () => {
     });
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const channelLabel = channel === 'email' ? 'E-posta' : channel === 'whatsapp' ? 'WhatsApp' : 'SMS';
 
     const groupedRules = useMemo(() => {
         const grouped: Record<string, AutomationRule[]> = {};
@@ -498,7 +500,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = () => {
                         }}
                     >
                         <Plus className="w-5 h-5" />
-                        Yeni Otomasyon
+                        Yeni {channelLabel} Otomasyonu
                     </Button>
                 </Card>
             </div>
@@ -703,7 +705,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = () => {
                                     />
                                 </div>
 
-                                {/* SMS Header Selection */}
+                                {/* Sender Header Selection */}
                                 <div>
                                     <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Gönderici Başlığı</label>
                                     <Select
@@ -808,7 +810,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = () => {
                                     />
                                     <div className="flex items-center justify-between mt-1 text-xs text-gray-500 dark:text-gray-400">
                                         <span>
-                                            SMS Sayısı: {Math.max(1, Math.ceil(formData.templateContent.length / SMS_SEGMENT_LENGTH))}
+                                            {channelLabel} Sayısı: {Math.max(1, Math.ceil(formData.templateContent.length / SMS_SEGMENT_LENGTH))}
                                         </span>
                                         <Button
                                             variant="outline"
@@ -851,7 +853,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = () => {
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
                         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full mx-4 overflow-hidden">
                             <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">SMS Önizleme</h3>
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{channelLabel} Önizleme</h3>
                                 <button
                                     data-allow-raw="true"
                                     onClick={() => setShowPreview(false)}
@@ -869,7 +871,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = () => {
                                 </div>
                                 <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
                                     <p>Karakter sayısı: {previewContent.length}</p>
-                                    <p>SMS sayısı: {Math.max(1, Math.ceil(previewContent.length / SMS_SEGMENT_LENGTH))}</p>
+                                    <p>{channelLabel} segment sayısı: {Math.max(1, Math.ceil(previewContent.length / SMS_SEGMENT_LENGTH))}</p>
                                 </div>
                             </div>
                             <div className="p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">

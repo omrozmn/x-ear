@@ -2,6 +2,7 @@ import { Card } from '@x-ear/ui-web';
 import { FileText, TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
 import { formatCurrency } from '@/utils/format';
 import { useGetInvoiceSummary } from '@/api/client/invoices.client';
+import { DesktopPageHeader } from '../../components/layout/DesktopPageHeader';
 
 export function InvoiceSummaryPage() {
   const { data, isLoading } = useGetInvoiceSummary();
@@ -27,10 +28,12 @@ export function InvoiceSummaryPage() {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Fatura Özeti</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">Gelen ve giden faturaların genel durumu</p>
-      </div>
+      <DesktopPageHeader
+        title="Fatura Özeti"
+        description="Gelen ve giden faturaların genel durumu"
+        icon={<FileText className="h-6 w-6" />}
+        eyebrow={{ tr: 'Finans Özeti', en: 'Invoice Summary' }}
+      />
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

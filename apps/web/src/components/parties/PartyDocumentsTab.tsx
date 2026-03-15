@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button, Input, Select, Badge } from '@x-ear/ui-web';
 import { Card, CardContent } from '@x-ear/ui-web';
 import { useToastHelpers } from '@x-ear/ui-web';
-import { Upload, Eye, Download, Trash2, FileText, X, AlertCircle, CheckCircle, Clock, Search } from 'lucide-react';
+import { Upload, Eye, Download, Trash2, FileText, X, AlertCircle, CheckCircle, Clock, Search, Receipt } from 'lucide-react';
 
 // API imports
 import {
@@ -14,7 +14,15 @@ import type {
   ResponseEnvelopeListDocumentRead,
   DocumentRead
 } from '@/api/generated/schemas';
+import { createSales } from '@/api/client/sales.client';
+import { listInventory } from '@/api/client/inventory.client';
 import { tokenManager } from '../../utils/token-manager';
+import { customInstance } from '@/api/orval-mutator';
+import { buildInvoiceDraftFromProforma } from '@/utils/invoiceDraft';
+import { buildSalesPayloadsFromProforma } from '@/utils/proforma';
+import { unwrapArray } from '@/utils/response-unwrap';
+import { InvoiceModal } from '../modals/InvoiceModal';
+import type { Invoice } from '@/types/invoice';
 
 // PDF Viewer Modal
 import DocumentViewer from '../sgk/DocumentViewer';
@@ -34,18 +42,36 @@ function getHttpLikeError(error: unknown): HttpLikeError {
 interface Document {
   id: string;
   name: string;
-  type: 'sgk' | 'medical' | 'invoice' | 'other';
+  type: 'sgk' | 'medical' | 'invoice' | 'proforma' | 'other';
   uploadDate: string;
   size: string;
   status: 'processing' | 'completed' | 'error';
   url?: string;
+  metadata?: Record<string, unknown>;
 }
 
 interface PartyDocumentsTabProps {
   partyId: string;
+  party?: {
+    id: string;
+    firstName?: string;
+    lastName?: string;
+    first_name?: string;
+    last_name?: string;
+    tcNumber?: string;
+    tc_number?: string;
+    taxNumber?: string;
+    tax_number?: string;
+    addressFull?: string;
+    address_full?: string;
+    addressCity?: string;
+    address_city?: string;
+    addressDistrict?: string;
+    address_district?: string;
+  };
 }
 
-export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId }) => {
+export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId, party }) => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDocumentType, setSelectedDocumentType] = useState<string>('all');
@@ -68,6 +94,8 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
   // Delete confirmation state
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [invoiceModalInitialData, setInvoiceModalInitialData] = useState<Invoice | null>(null);
 
 
   // API functions
@@ -93,7 +121,8 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
         size: doc.size ? `${(doc.size / 1024 / 1024).toFixed(2)} MB` : 'Unknown',
         status: (doc.status || 'completed') as Document['status'],
         // Construct proper API URL for document access
-        url: doc.id ? `/api/parties/${partyId}/documents/${doc.id}` : undefined
+        url: doc.id ? `/api/parties/${partyId}/documents/${doc.id}` : undefined,
+        metadata: (doc as unknown as { metadata?: Record<string, unknown> }).metadata || undefined,
       }));
 
       setDocuments(apiDocuments);
@@ -244,30 +273,12 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
   };
 
   const fetchDocumentBlob = async (documentUrl: string): Promise<Blob> => {
-    const token = tokenManager.accessToken;
-    const response = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5003'}${documentUrl}`,
-      {
-        method: 'GET',
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      }
-    );
-
-    if (!response.ok) {
-      let body: unknown;
-      try {
-        body = await response.clone().json();
-      } catch {
-        body = await response.text();
-      }
-      throw {
-        message: `HTTP ${response.status}`,
-        status: response.status,
-        body,
-      } satisfies HttpLikeError;
-    }
-
-    return response.blob();
+    const response = await customInstance<Blob>({
+      url: documentUrl,
+      method: 'GET',
+      responseType: 'blob',
+    });
+    return response instanceof Blob ? response : new Blob([JSON.stringify(response)]);
   };
 
   const handleViewDocument = async (documentId: string) => {
@@ -407,6 +418,59 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
   const confirmDelete = (documentId: string) => {
     setDocumentToDelete(documentId);
     setDeleteConfirmOpen(true);
+  };
+
+  const handleCreateInvoiceFromProforma = (doc: Document) => {
+    const invoiceDraft = buildInvoiceDraftFromProforma({
+      document: doc,
+      party,
+      partyId,
+    });
+    setInvoiceModalInitialData(invoiceDraft as unknown as Invoice);
+    setShowInvoiceModal(true);
+  };
+
+  const handleConvertProformaToSale = async (doc: Document) => {
+    const meta = doc.metadata || {};
+    const proformaItems = Array.isArray(meta.items) ? meta.items : [];
+
+    if (proformaItems.length === 0) {
+      error('Proforma kalemi bulunamadı.');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const inventoryResponse = await listInventory();
+      const inventoryItems = unwrapArray<Record<string, unknown>>(inventoryResponse);
+      const { payloads, missingItems } = buildSalesPayloadsFromProforma({
+        partyId,
+        items: proformaItems as Array<Record<string, unknown>>,
+        inventory: inventoryItems,
+        notes: typeof meta.notes === 'string' ? meta.notes : `Proforma dönüşümü: ${doc.name}`,
+      });
+
+      if (payloads.length === 0) {
+        error(`Uygun ürün eşleşmedi: ${missingItems.join(', ')}`);
+        return;
+      }
+
+      for (const payload of payloads) {
+        await createSales(payload);
+      }
+
+      window.dispatchEvent(new CustomEvent('xEar:dataChanged'));
+      success(
+        missingItems.length > 0
+          ? `${payloads.length} kalem satışa dönüştürüldü. Eşleşmeyenler: ${missingItems.join(', ')}`
+          : `${payloads.length} kalem satışa dönüştürüldü.`,
+      );
+    } catch (conversionError) {
+      console.error('Error converting proforma to sale:', conversionError);
+      error('Proforma satışa dönüştürülürken bir hata oluştu.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getStatusIcon = (status: string) => {
@@ -713,6 +777,29 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
                   >
                     <Download className="w-4 h-4" />
                   </Button>
+                  {doc.type === 'proforma' && (
+                    <Button
+                      onClick={() => void handleConvertProformaToSale(doc)}
+                      variant="outline"
+                      size="sm"
+                      className="text-emerald-600 hover:text-emerald-800"
+                      title="Proformayı Satışa Dönüştür"
+                    >
+                      Satışa Dönüştür
+                    </Button>
+                  )}
+                  {doc.type === 'proforma' && (
+                    <Button
+                      onClick={() => handleCreateInvoiceFromProforma(doc)}
+                      variant="default"
+                      size="sm"
+                      className="bg-blue-600 text-white hover:bg-blue-700"
+                      title="Proformadan Fatura Kes"
+                    >
+                      <Receipt className="w-4 h-4 mr-1" />
+                      Fatura Kes
+                    </Button>
+                  )}
                   <Button
                     onClick={() => confirmDelete(doc.id)}
                     variant="outline"
@@ -819,6 +906,17 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId })
           }}
         />
       )}
+
+      <InvoiceModal
+        isOpen={showInvoiceModal}
+        onClose={() => {
+          setShowInvoiceModal(false);
+          setInvoiceModalInitialData(null);
+        }}
+        initialData={invoiceModalInitialData}
+        partyId={partyId}
+        mode="create"
+      />
     </div>
   );
 };

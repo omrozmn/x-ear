@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
-import axios from 'axios';
+import { isAxiosError } from 'axios';
 import type {
   CreateActionRequest,
   ApproveActionRequest,
@@ -158,7 +158,7 @@ interface AIBackendError {
  */
 function parseErrorResponse(error: unknown): AIError {
   // Check if it's an axios error with response
-  if (axios.isAxiosError(error)) {
+  if (isAxiosError(error)) {
     const data = (error.response?.data as AIBackendError) || {};
 
     // Backend returns error in { code, message, ... } format

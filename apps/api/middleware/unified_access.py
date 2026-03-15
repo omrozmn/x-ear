@@ -189,12 +189,10 @@ def _build_access_from_token(
         elif payload.get('role_permissions'):
             permissions = set(payload.get('role_permissions', []))
         
-        # Handle tenant impersonation
-        effective_tenant_id = None
+        # Handle tenant context — always read from JWT, impersonation takes priority
+        effective_tenant_id = payload.get('effective_tenant_id') or payload.get('tenant_id')
         if is_impersonating_tenant:
-            effective_tenant_id = payload.get('effective_tenant_id') or payload.get('tenant_id')
             logger.info(f"🔑 [TENANT IMPERSONATION] Detected tenant_id in JWT: {effective_tenant_id}")
-            # NOTE: Don't set_current_tenant_id() here - will be set in access_dependency
             if not effective_tenant_id:
                 logger.error(f"🔴 [TENANT IMPERSONATION] is_impersonating_tenant=True but no tenant_id in JWT! Payload: {payload}")
         
@@ -203,12 +201,6 @@ def _build_access_from_token(
         if is_impersonating:
             effective_role = payload.get('effective_role', admin.role)
             permissions = set(payload.get('role_permissions', []))
-            # Also check for tenant_id in role impersonation
-            if not effective_tenant_id:
-                effective_tenant_id = payload.get('tenant_id') or payload.get('effective_tenant_id')
-                if effective_tenant_id:
-                    logger.info(f"🔑 [ROLE IMPERSONATION] Detected tenant_id in JWT: {effective_tenant_id}")
-                    # NOTE: Don't set_current_tenant_id() here - will be set in access_dependency
         
         return UnifiedAccess(
             user=admin,
@@ -400,9 +392,10 @@ def require_access(
         
         # Tenant context check (skip for admin_only endpoints unless explicitly required)
         if tenant_required:
-            # Super admins need tenant context (either from user.tenant_id or impersonation)
-            if access.is_super_admin:
-                # Super admin can use their own tenant_id OR impersonate
+            # Super admins with 'system' tenant_id have platform-wide access
+            if access.is_super_admin and access.tenant_id == 'system':
+                pass  # Allow through — dashboard/etc. will show aggregated data
+            elif access.is_super_admin:
                 if not access.tenant_id and not access.effective_tenant_id:
                     raise HTTPException(
                         status_code=status.HTTP_401_UNAUTHORIZED,

@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/birfatura.py
+# hypothesis_version: 6.151.9
+
+[100, 'CodeType', 'EFATURA', 'IN', 'INVOICE', 'ISO 8601 string', 'OUT', 'PK', 'Tax identity number', 'createdAt', 'documentBytes', 'documentType', 'edocumentStatus', 'endDate', 'envelopeID', 'inOutCode', 'incoming', 'invoiceNumber', 'pageNumber', 'pageSize', 'pkGbTypeCode', 'startDate', 'systemType', 'systemTypeCodes', 'totalAmount', 'totalIncoming', 'totalOutgoing', 'userId', 'userName']

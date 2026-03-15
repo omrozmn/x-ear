@@ -809,6 +809,59 @@ FINANCE_AND_CASH_CAPABILITIES = [
             )
         ]
     ),
+    Capability(
+        name="Record Expense",
+        display_name_tr="Masraf kaydet",
+        display_name_en="Record expense",
+        description_tr="Belge veya fatura yükleyerek masraf/gider kaydı oluşturun",
+        description_en="Record an expense entry from uploaded document or invoice",
+        description="Record an expense entry from uploaded document or invoice",
+        category="Finance",
+        example_phrases=[
+            "Bu faturayı masraf olarak kaydet",
+            "Masraf kaydet",
+            "Bu belgeyi gider olarak ekle",
+            "Harcama kaydet",
+            "Bu fişi masrafa ekle",
+        ],
+        required_permissions=["cash_records.create"],
+        tool_operations=["create_cash_record"],
+        limitations=[
+            "Requires cash_records.create permission",
+            "Amount must be manually confirmed if OCR extraction uncertain",
+        ],
+        slots=[
+            SlotConfig(
+                name="amount",
+                prompt_tr="Tutar ne kadar?",
+                prompt_en="What is the amount?",
+                ui_type="number",
+                validation_rules={"required": True, "min": 0.01}
+            ),
+            SlotConfig(
+                name="description",
+                prompt_tr="Açıklama nedir?",
+                prompt_en="What is the description?",
+                ui_type="text",
+                validation_rules={"required": True}
+            ),
+            SlotConfig(
+                name="category",
+                prompt_tr="Masraf kategorisi nedir?",
+                prompt_en="What is the expense category?",
+                ui_type="enum",
+                enum_options=["Genel Gider", "Kira", "Fatura", "Malzeme", "Ulaşım", "Yemek", "Diğer"],
+                validation_rules={"required": False}
+            ),
+            SlotConfig(
+                name="date",
+                prompt_tr="Masraf tarihi?",
+                prompt_en="Expense date?",
+                ui_type="date",
+                validation_rules={"required": False}
+            ),
+        ]
+    ),
 ]
 
 SGK_CAPABILITIES = [

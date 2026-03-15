@@ -7,13 +7,17 @@ interface AutomationSettings {
   autoAddSuppliers: boolean;
   autoAddInvoiceProducts: boolean;
   autoUpdateStock: boolean;
+  autoReceiveUtsPending: boolean;
+  autoAcceptUtsTransfers: boolean;
 }
 
 export function AutomationSettings() {
   const [settings, setSettings] = useState<AutomationSettings>({
-    autoAddSuppliers: false,
-    autoAddInvoiceProducts: false,
-    autoUpdateStock: false,
+      autoAddSuppliers: false,
+      autoAddInvoiceProducts: false,
+      autoUpdateStock: false,
+      autoReceiveUtsPending: false,
+      autoAcceptUtsTransfers: false,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -34,6 +38,8 @@ export function AutomationSettings() {
           autoAddSuppliers: d.autoAddSuppliers ?? d.auto_add_suppliers ?? false,
           autoAddInvoiceProducts: d.autoAddInvoiceProducts ?? d.auto_add_invoice_products ?? false,
           autoUpdateStock: d.autoUpdateStock ?? d.auto_update_stock ?? false,
+          autoReceiveUtsPending: d.autoReceiveUtsPending ?? d.auto_receive_uts_pending ?? false,
+          autoAcceptUtsTransfers: d.autoAcceptUtsTransfers ?? d.auto_accept_uts_transfers ?? false,
         });
       }
     } catch {
@@ -53,6 +59,8 @@ export function AutomationSettings() {
       autoAddSuppliers: 'auto_add_suppliers',
       autoAddInvoiceProducts: 'auto_add_invoice_products',
       autoUpdateStock: 'auto_update_stock',
+      autoReceiveUtsPending: 'auto_receive_uts_pending',
+      autoAcceptUtsTransfers: 'auto_accept_uts_transfers',
     };
 
     try {
@@ -106,6 +114,20 @@ export function AutomationSettings() {
       description: 'Gelen faturalardaki ürünler envanterde zaten mevcutsa, stok miktarı faturadaki miktar kadar otomatik artırılır.',
       color: 'amber',
     },
+    {
+      key: 'autoReceiveUtsPending',
+      icon: Package,
+      title: 'Alma Bekleyenleri Otomatik Al',
+      description: 'UTS alma bekleyenler listesine dusen seri no kayitlari icin alma bildirimi otomatik tetiklenir.',
+      color: 'sky',
+    },
+    {
+      key: 'autoAcceptUtsTransfers',
+      icon: Zap,
+      title: 'Gelen Verme Taleplerini Otomatik Onayla',
+      description: 'UTS transfer taleplerinde kullanici yerine otomatik kabul / onay akisini hazirlar.',
+      color: 'violet',
+    },
   ];
 
   return (
@@ -133,6 +155,7 @@ export function AutomationSettings() {
               <div className="flex items-center justify-between gap-4">
                 <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">{title}</h4>
                 <button
+                  data-allow-raw="true"
                   type="button"
                   role="switch"
                   aria-checked={settings[key]}

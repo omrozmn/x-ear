@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from '@tanstack/react-router';
 import {
-  ArrowLeft,
   Calendar,
   Activity,
   CreditCard,
@@ -13,6 +12,7 @@ import { usePartyDevices } from '../hooks/party/usePartyDevices';
 import { usePartySales } from '../hooks/party/usePartySales';
 import { usePartyTimeline } from '../hooks/party/usePartyTimeline';
 import { usePartyDocuments } from '../hooks/party/usePartyDocuments';
+import { usePartyHearingTests } from '../hooks/party/usePartyHearingTests';
 import { PartyHeader } from '../components/parties/PartyHeader';
 import { PartyTabs, type PartyTab } from '../components/parties/PartyTabs';
 import { PartyTabContent } from '../components/parties/PartyTabContent';
@@ -27,9 +27,9 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useGlobalError } from '../hooks/useGlobalError';
 import { PARTY_DETAILS_TAB_LEGACY } from '../constants/storage-keys';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
-import { Button } from '@x-ear/ui-web';
 import { useDeleteParty, useUpdateParty } from '@/api/client/parties.client';
 import { partyApiService } from '../services/party/party-api.service';
+import { HeaderBackButton } from '../components/layout/HeaderBackButton';
 // import type { Party } from '../types/party'; // Type inferred from useParty hook
 
 
@@ -74,6 +74,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
   const { sales } = usePartySales(partyId);
   const { timeline } = usePartyTimeline(partyId);
   const { documents } = usePartyDocuments(partyId);
+  const { hearingTests } = usePartyHearingTests(partyId);
 
   const tabCounts = {
     devices: devices.length,
@@ -81,6 +82,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
     timeline: timeline.length,
     documents: documents.length,
     notes: party?.notes?.length ?? 0,
+    'hearing-tests': hearingTests.length,
   };
 
   // Utility functions
@@ -123,15 +125,13 @@ export const DesktopPartyDetailsPage: React.FC = () => {
       trial: 'Deneme Aşamasında',
       control: 'Kontrol Hastası',
       existing: 'Mevcut Hasta',
-      NEW: 'Yeni',
-      TRIAL: 'Deneme',
-      PURCHASED: 'Satın Almış',
-      CONTROL: 'Kontrol',
-      RENEWAL: 'Yenileme',
-      EXISTING: 'Mevcut',
-      VIP: 'VIP'
+      new: 'Yeni',
+      purchased: 'Satın Almış',
+      renewal: 'Yenileme',
+      vip: 'VIP',
     };
-    return segmentMap[segment || ''] || segment || 'Belirtilmemiş';
+    const key = (segment || '').toLowerCase();
+    return segmentMap[key] || segment || 'Belirtilmemiş';
   };
 
   const getAcquisitionTypeText = (type?: string) => {
@@ -325,16 +325,8 @@ export const DesktopPartyDetailsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header with back button */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
-        <Button
-          onClick={handleGoBack}
-          variant="ghost"
-          className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Hasta Listesine Dön
-        </Button>
+      <div className="px-6 pt-5">
+        <HeaderBackButton label="Hasta Listesine Dön" onClick={handleGoBack} />
       </div>
       {renderContent()}
 

@@ -4,9 +4,11 @@ Device CRUD, categories, brands, stock management
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional, List, Union
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 import random
+import json
+import uuid
 
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
@@ -34,6 +36,7 @@ from models.tenant import Tenant
 from constants import CANONICAL_CATEGORY_HEARING_AID
 from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
+from models.user import ActivityLog
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Devices"])
@@ -297,6 +300,19 @@ def create_device(
             device.warranty_terms = warranty.get('terms')
         
         db_session.add(device)
+
+        activity = ActivityLog(
+            id=str(uuid.uuid4()),
+            tenant_id=tenant_id,
+            user_id=access.user_id,
+            action='device_created',
+            entity_type='device',
+            entity_id=device_id,
+            details=json.dumps({"title": "Cihaz eklendi"}),
+            created_at=datetime.now(timezone.utc),
+        )
+        db_session.add(activity)
+
         db_session.commit()
         
         logger.info(f"Device created: {device.id}")
@@ -572,6 +588,18 @@ def update_device(
                 device.warranty_end_date = datetime.fromisoformat(warranty['end_date'])
             device.warranty_terms = warranty.get('terms')
         
+        activity = ActivityLog(
+            id=str(uuid.uuid4()),
+            tenant_id=device.tenant_id,
+            user_id=access.user_id,
+            action='device_updated',
+            entity_type='device',
+            entity_id=device_id,
+            details=json.dumps({"title": "Cihaz güncellendi"}),
+            created_at=datetime.now(timezone.utc),
+        )
+        db_session.add(activity)
+
         db_session.commit()
         return ResponseEnvelope(data=DeviceRead.model_validate(device))
     except HTTPException:
@@ -597,6 +625,19 @@ def delete_device(
                     detail=ApiError(message="Device not found", code="DEVICE_NOT_FOUND").model_dump(mode="json")
                 )
             db_session.delete(device)
+
+            activity = ActivityLog(
+                id=str(uuid.uuid4()),
+                tenant_id=device.tenant_id,
+                user_id=access.user_id,
+                action='device_deleted',
+                entity_type='device',
+                entity_id=device_id,
+                details=json.dumps({"title": "Cihaz silindi"}),
+                created_at=datetime.now(timezone.utc),
+            )
+            db_session.add(activity)
+
             db_session.commit()
             return ResponseEnvelope(message="Device deleted successfully")
         
@@ -623,6 +664,19 @@ def delete_device(
                     loaner_inv.update_inventory(1)
             
             db_session.delete(assignment)
+
+            activity = ActivityLog(
+                id=str(uuid.uuid4()),
+                tenant_id=assignment.tenant_id,
+                user_id=access.user_id,
+                action='device_deleted',
+                entity_type='device',
+                entity_id=device_id,
+                details=json.dumps({"title": "Cihaz silindi"}),
+                created_at=datetime.now(timezone.utc),
+            )
+            db_session.add(activity)
+
             db_session.commit()
             return ResponseEnvelope(message="Device assignment deleted and stock restored")
         
@@ -652,6 +706,19 @@ def update_device_stock(
             device.notes = (device.notes or '') + f"\n[stock-update] {stock_update.operation} x{stock_update.quantity}: {stock_update.notes}"
         
         db_session.add(device)
+
+        activity = ActivityLog(
+            id=str(uuid.uuid4()),
+            tenant_id=device.tenant_id,
+            user_id=access.user_id,
+            action='device_stock_updated',
+            entity_type='device',
+            entity_id=device_id,
+            details=json.dumps({"title": "Stok güncellendi"}),
+            created_at=datetime.now(timezone.utc),
+        )
+        db_session.add(activity)
+
         db_session.commit()
         
         return ResponseEnvelope(message="Stock update applied")

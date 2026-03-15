@@ -86,6 +86,74 @@ def get_party_timeline(
     db: Session = Depends(get_db)
 ):
     """Get timeline events for a patient"""
+    ACTION_TITLES_TR = {
+        'party_created': 'Hasta Oluşturuldu',
+        'party_updated': 'Hasta Bilgileri Güncellendi',
+        'party_deleted': 'Hasta Silindi',
+        'sale': 'Satış',
+        'sale_created': 'Satış Oluşturuldu',
+        'sale_updated': 'Satış Güncellendi',
+        'payment_received': 'Ödeme Alındı',
+        'payment_record_created': 'Ödeme Kaydı Oluşturuldu',
+        'promissory_notes_created': 'Senet Oluşturuldu',
+        'promissory_note_collected': 'Senet Tahsil Edildi',
+        'device_assigned': 'Cihaz Atandı',
+        'device_assignment': 'Cihaz Atandı',
+        'device_created': 'Cihaz Eklendi',
+        'device_updated': 'Cihaz Güncellendi',
+        'device_deleted': 'Cihaz Silindi',
+        'device_stock_updated': 'Stok Güncellendi',
+        'hearing_test_created': 'İşitme Testi Eklendi',
+        'hearing_test_updated': 'İşitme Testi Güncellendi',
+        'document_upload': 'Belge Yüklendi',
+        'note_created': 'Not Eklendi',
+        'note_updated': 'Not Güncellendi',
+        'note_deleted': 'Not Silindi',
+        'note_added': 'Not Eklendi',
+        'appointment_created': 'Randevu Oluşturuldu',
+        'appointment_updated': 'Randevu Güncellendi',
+        'appointment_deleted': 'Randevu Silindi',
+        'appointment_rescheduled': 'Randevu Yeniden Planlandı',
+        'appointment_cancelled': 'Randevu İptal Edildi',
+        'appointment_completed': 'Randevu Tamamlandı',
+        'anamnesis_updated': 'Anamnez Güncellendi',
+        'rem_saved': 'REM Doğrulaması Kaydedildi',
+    }
+
+    CATEGORY_MAP = {
+        'party_created': 'hasta',
+        'party_updated': 'hasta',
+        'party_deleted': 'hasta',
+        'sale': 'satis',
+        'sale_created': 'satis',
+        'sale_updated': 'satis',
+        'payment_received': 'odeme',
+        'payment_record_created': 'odeme',
+        'promissory_notes_created': 'odeme',
+        'promissory_note_collected': 'odeme',
+        'device_assigned': 'cihaz',
+        'device_assignment': 'cihaz',
+        'device_created': 'cihaz',
+        'device_updated': 'cihaz',
+        'device_deleted': 'cihaz',
+        'device_stock_updated': 'cihaz',
+        'hearing_test_created': 'isitme_testi',
+        'hearing_test_updated': 'isitme_testi',
+        'document_upload': 'belge',
+        'note_created': 'not',
+        'note_updated': 'not',
+        'note_deleted': 'not',
+        'note_added': 'not',
+        'appointment_created': 'randevu',
+        'appointment_updated': 'randevu',
+        'appointment_deleted': 'randevu',
+        'appointment_rescheduled': 'randevu',
+        'appointment_cancelled': 'randevu',
+        'appointment_completed': 'randevu',
+        'anamnesis_updated': 'anamnez',
+        'rem_saved': 'isitme_testi',
+    }
+
     try:
         from core.models.party import Party
         from models.user import ActivityLog
@@ -108,10 +176,27 @@ def get_party_timeline(
         
         # Also get from ActivityLog table
         try:
-            activity_logs = db.query(ActivityLog).filter_by(
-                entity_type='patient',
-                entity_id=party_id
+            activity_logs = db.query(ActivityLog).filter(
+                ActivityLog.entity_id == party_id,
+                ActivityLog.entity_type.in_(['patient', 'party'])
             ).order_by(ActivityLog.created_at.desc()).limit(100).all()
+
+            # Resolve user display names
+            user_ids = {log.user_id for log in activity_logs if log.user_id and log.user_id not in ('system', 'Sistem')}
+            user_names = {}
+            if user_ids:
+                try:
+                    from core.models.user import User
+                    users = db.query(User).filter(User.id.in_(user_ids)).all()
+                    for u in users:
+                        name_parts = []
+                        if getattr(u, 'first_name', None):
+                            name_parts.append(u.first_name)
+                        if getattr(u, 'last_name', None):
+                            name_parts.append(u.last_name)
+                        user_names[u.id] = ' '.join(name_parts) if name_parts else (u.email or u.id)
+                except Exception:
+                    pass
             
             for log in activity_logs:
                 details = {}
@@ -122,16 +207,64 @@ def get_party_timeline(
                         details = json.loads(log.details) if isinstance(log.details, str) else log.details
                     except (json.JSONDecodeError, TypeError):
                         details = {}
+
+                action = log.action or ''
+                # Use detail-level title if present, otherwise translate action
+                title = ''
+                if details and details.get('title'):
+                    title = details['title']
+                else:
+                    title = ACTION_TITLES_TR.get(action, action.replace('_', ' ').title())
+
+                user_display = 'Sistem'
+                uid = log.user_id or ''
+                if uid and uid not in ('system', 'Sistem'):
+                    user_display = user_names.get(uid, uid)
                 
+                # Build clean metadata from details (exclude internal/redundant keys)
+                metadata = {}
+                if details:
+                    skip_keys = {'title', 'action', 'party_id'}
+                    # Flatten nested 'details' dict if present
+                    nested = details.get('details', {})
+                    flat = {**details}
+                    if isinstance(nested, dict):
+                        flat.update(nested)
+                    flat.pop('details', None)
+                    for k, v in flat.items():
+                        if k not in skip_keys and v is not None and v != '':
+                            metadata[k] = v
+
+                # Resolve product_id to product name
+                if 'product_id' in metadata:
+                    pid = metadata.pop('product_id')
+                    if 'product_name' not in metadata:
+                        try:
+                            from core.models.inventory import InventoryItem
+                            item = db.query(InventoryItem).filter(InventoryItem.id == pid).first()
+                            if item:
+                                parts = []
+                                if getattr(item, 'brand', None):
+                                    parts.append(item.brand)
+                                if getattr(item, 'model', None):
+                                    parts.append(item.model)
+                                metadata['product_name'] = ' '.join(parts) if parts else (getattr(item, 'name', None) or pid)
+                        except Exception:
+                            metadata['product_name'] = pid
+
                 timeline.append({
                     'id': log.id,
                     'partyId': party_id,
-                    'type': log.action,
-                    'title': log.action.replace('_', ' ').title() if log.action else '',
+                    'type': action,
+                    'eventType': CATEGORY_MAP.get(action, 'general'),
+                    'title': title,
                     'description': details.get('description', '') if details else '',
                     'timestamp': log.created_at.isoformat() if log.created_at else datetime.now(timezone.utc).isoformat(),
-                    'user': log.user_id or 'system',
-                    'source': 'activity_log'
+                    'user': user_display,
+                    'source': 'activity_log',
+                    'category': CATEGORY_MAP.get(action, 'genel'),
+                    'priority': details.get('priority', 'normal') if details else 'normal',
+                    'details': metadata if metadata else None,
                 })
         except Exception as e:
             logger.warning(f"Could not load activity logs: {e}")

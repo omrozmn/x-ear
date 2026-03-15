@@ -56,6 +56,40 @@ def init_db(
             for setting in defaults:
                 db.add(setting)
             db.commit()
+
+        # Ensure features row exists
+        features_row = db.get(SystemSetting, 'features')
+        if not features_row:
+            import json
+            default_features = {
+                "patients": {"mode": "visible", "plans": []},
+                "appointments": {"mode": "visible", "plans": []},
+                "inventory": {"mode": "visible", "plans": []},
+                "suppliers": {"mode": "visible", "plans": []},
+                "sales": {"mode": "visible", "plans": []},
+                "purchases": {"mode": "visible", "plans": []},
+                "payments": {"mode": "visible", "plans": []},
+                "campaigns": {"mode": "visible", "plans": []},
+                "website_builder": {"mode": "visible", "plans": []},
+                "invoices": {"mode": "visible", "plans": []},
+                "sgk": {"mode": "visible", "plans": []},
+                "reports": {"mode": "visible", "plans": []},
+                "invoice_normalizer": {"mode": "visible", "plans": []},
+                "cashflow": {"mode": "visible", "plans": []},
+                "pos": {"mode": "visible", "plans": []},
+                "automation": {"mode": "visible", "plans": []},
+                "ai_chat": {"mode": "visible", "plans": []},
+                "integrations_ui": {"mode": "hidden", "plans": []},
+                "pricing_ui": {"mode": "hidden", "plans": []},
+                "security_ui": {"mode": "hidden", "plans": []},
+            }
+            db.add(SystemSetting(
+                key='features',
+                value=json.dumps(default_features),
+                category='general',
+                is_public=False
+            ))
+            db.commit()
         
         return ResponseEnvelope(message='System Settings table initialized')
         
@@ -73,8 +107,47 @@ def get_settings(
     """Get all system settings"""
     try:
         from models.system_setting import SystemSetting
+        import json
         
         settings = db.query(SystemSetting).all()
+        
+        # Auto-seed features row if missing
+        has_features = any(s.key == 'features' for s in settings)
+        if not has_features:
+            default_features = {
+                "patients": {"mode": "visible", "plans": []},
+                "appointments": {"mode": "visible", "plans": []},
+                "inventory": {"mode": "visible", "plans": []},
+                "suppliers": {"mode": "visible", "plans": []},
+                "sales": {"mode": "visible", "plans": []},
+                "purchases": {"mode": "visible", "plans": []},
+                "payments": {"mode": "visible", "plans": []},
+                "campaigns": {"mode": "visible", "plans": []},
+                "website_builder": {"mode": "visible", "plans": []},
+                "invoices": {"mode": "visible", "plans": []},
+                "sgk": {"mode": "visible", "plans": []},
+                "reports": {"mode": "visible", "plans": []},
+                "invoice_normalizer": {"mode": "visible", "plans": []},
+                "cashflow": {"mode": "visible", "plans": []},
+                "pos": {"mode": "visible", "plans": []},
+                "automation": {"mode": "visible", "plans": []},
+                "ai_chat": {"mode": "visible", "plans": []},
+                "integrations_ui": {"mode": "hidden", "plans": []},
+                "pricing_ui": {"mode": "hidden", "plans": []},
+                "security_ui": {"mode": "hidden", "plans": []},
+            }
+            features_row = SystemSetting(
+                key='features',
+                value=json.dumps(default_features),
+                category='general',
+                is_public=False
+            )
+            try:
+                db.add(features_row)
+                db.commit()
+                settings.append(features_row)
+            except Exception:
+                db.rollback()
         
         return ResponseEnvelope(data=[
             SystemSettingRead.model_validate(s)

@@ -9,7 +9,7 @@ import { Button, Input, Modal } from '@x-ear/ui-web';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { useParties, useCreateParty, useDeleteParty, useUpdateParty } from '../hooks/useParties';
 import { Party } from '../types/party';
-import { Users, CheckCircle, Flame, Filter, Search, Plus, RefreshCw, Upload, Trash2, Settings } from 'lucide-react';
+import { Users, CheckCircle, Flame, Filter, Search, Plus, RefreshCw, Upload, Trash2, Settings, Download } from 'lucide-react';
 import { PartyFormModal } from '../components/parties/PartyFormModal';
 import { PartyFilters } from '../components/parties/PartyFilters';
 import { PartyList } from '../components/parties/PartyList';
@@ -20,6 +20,7 @@ import partiesSchema from '../components/importer/schemas/parties';
 import { PartyFilters as PartyFiltersType } from '../types/party/party-search.types';
 import { PartyStatus, PartySegment, PartyLabel } from '../types/party/party-base.types';
 import { PartyTagUpdateModal } from '../components/parties/PartyTagUpdateModal';
+import NoahImportModal from '../components/noah/NoahImportModal';
 import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 
 
@@ -42,6 +43,7 @@ export function DesktopPartiesPage() {
   const [sortBy, setSortBy] = useState<string>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [tagUpdateParty, setTagUpdateParty] = useState<Party | null>(null);
+  const [showNoahImport, setShowNoahImport] = useState(false);
 
   // Hooks
   const { data, isLoading, error, refetch } = useParties();
@@ -316,7 +318,7 @@ export function DesktopPartiesPage() {
           title="Hastalar"
           description="Hasta kayıtlarını yönetin"
           icon={<Users className="h-6 w-6" />}
-          eyebrow="Patient Hub"
+          eyebrow={{ tr: 'Hasta Yönetimi', en: 'Patient Hub' }}
           actions={(
             <>
               <Button variant="outline" size="sm" onClick={handleRefresh}>
@@ -336,6 +338,10 @@ export function DesktopPartiesPage() {
               <Button variant="outline" size="sm" onClick={() => setShowCSVModal(true)}>
                 <Upload className="h-4 w-4 mr-2" />
                 Toplu Yükle
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setShowNoahImport(true)}>
+                <Download className="h-4 w-4 mr-2" />
+                Noah'tan İçe Aktar
               </Button>
               <Button onClick={handleNewParty}>
                 <Plus className="h-4 w-4 mr-2" />
@@ -589,6 +595,13 @@ export function DesktopPartiesPage() {
           </div>
         </div>
       </Modal>
+
+      {/* Noah Import Modal */}
+      <NoahImportModal
+        open={showNoahImport}
+        onClose={() => setShowNoahImport(false)}
+        onImportComplete={handleRefresh}
+      />
     </div>
   );
 }

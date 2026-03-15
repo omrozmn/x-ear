@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/main.py
+# hypothesis_version: 6.151.9
+
+[307, 422, 500, 1024, 5003, '*', '/api', '/api/ai', '/api/documents', '/api/notes', '/api/parties', '/api/patients', '/api/payments', '/api/tasks', '/health', '/openapi.json', '/readiness', '0.0.0.0', '1.0.0', '127.0.0.1', '1; mode=block', '2.0.0', 'DENY', 'HTTP_ERROR', 'Health', 'INTERNAL_ERROR', 'Idempotency-Key', 'Legacy', 'Permissions-Policy', 'Referrer-Policy', 'Request failed', 'SELECT 1', 'VALIDATION_ERROR', 'Validation error', 'X-Frame-Options', 'X-Request-Id', 'X-Response-Time', 'X-XSS-Protection', '__main__', 'checks', 'code', 'connected', 'database', 'detail', 'details', 'exception', 'healthy', 'http', 'level', 'localhost', 'logger', 'main:app', 'message', 'nosniff', 'not_ready', 'ready', 'requestId', 'request_id', 'server.log', 'state', 'status', 'tenantId', 'tenant_id', 'timestamp', 'utf-8', 'version', 'x-ear', 'x-ear API']

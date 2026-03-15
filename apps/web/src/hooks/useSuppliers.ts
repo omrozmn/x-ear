@@ -41,6 +41,7 @@ export interface SupplierFormData {
   companyCode?: string;
   taxNumber?: string;
   taxOffice?: string;
+  institutionNumber?: string;
   contactPerson?: string;
   email?: string;
   phone?: string;
@@ -70,7 +71,8 @@ const mapFormDataToApiSchema = (formData: SupplierFormData): SupplierCreate => (
   address: formData.address,
   city: formData.city,
   notes: formData.notes,
-});
+  ...(formData.institutionNumber ? { institutionNumber: formData.institutionNumber } : {}),
+} as SupplierCreate);
 
 export const useCreateSupplier = () => {
   const queryClient = useQueryClient();
@@ -89,7 +91,7 @@ export const useUpdateSupplier = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ supplierId, updates }: { supplierId: string; updates: SupplierFormData }) => {
-      const apiData: SupplierUpdate = {
+      const apiData = {
         name: updates.companyName,
         code: updates.companyCode,
         taxNumber: updates.taxNumber,
@@ -101,7 +103,8 @@ export const useUpdateSupplier = () => {
         city: updates.city,
         notes: updates.notes,
         isActive: updates.isActive,
-      };
+        ...(updates.institutionNumber ? { institutionNumber: updates.institutionNumber } : {}),
+      } as SupplierUpdate;
       return updateSupplier(Number(supplierId), apiData);
     },
     onSuccess: () => {

@@ -80,14 +80,27 @@ function getTenants(data: unknown): TenantRow[] {
         return [];
     }
 
+    // Direct: { tenants: [...] } (Orval unwrapped)
     const directTenants = data.tenants;
     if (Array.isArray(directTenants)) {
         return directTenants.filter(isRecord).map(toTenantRow).filter((tenant): tenant is TenantRow => tenant !== null);
     }
 
+    // Direct: { items: [...] } (alternative format)
+    const directItems = data.items;
+    if (Array.isArray(directItems)) {
+        return directItems.filter(isRecord).map(toTenantRow).filter((tenant): tenant is TenantRow => tenant !== null);
+    }
+
+    // Wrapped: { data: { tenants: [...] } }
     const envelope = data.data;
-    if (isRecord(envelope) && Array.isArray(envelope.tenants)) {
-        return envelope.tenants.filter(isRecord).map(toTenantRow).filter((tenant): tenant is TenantRow => tenant !== null);
+    if (isRecord(envelope)) {
+        if (Array.isArray(envelope.tenants)) {
+            return envelope.tenants.filter(isRecord).map(toTenantRow).filter((tenant): tenant is TenantRow => tenant !== null);
+        }
+        if (Array.isArray(envelope.items)) {
+            return envelope.items.filter(isRecord).map(toTenantRow).filter((tenant): tenant is TenantRow => tenant !== null);
+        }
     }
 
     return [];

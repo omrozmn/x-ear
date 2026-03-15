@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   MessageSquare,
+  MessageCircle,
   Mail,
   Send,
   Users,
@@ -17,7 +18,7 @@ import {
   WifiOff,
   RefreshCw
 } from 'lucide-react';
-import { Button, Modal, useModal, Card, Badge, Input, Select, Tabs, useToastHelpers } from '@x-ear/ui-web';
+import { Button, Modal, useModal, Card, Badge, Input, Select, Tabs, Textarea, useToastHelpers } from '@x-ear/ui-web';
 import { Party } from '../../types/party';
 import CommunicationTemplates from './CommunicationTemplates';
 import CommunicationAnalytics from './CommunicationAnalytics';
@@ -30,7 +31,7 @@ interface CommunicationCenterProps {
 
 interface CommunicationMessage {
   id: string;
-  type: 'sms' | 'email';
+  type: 'sms' | 'email' | 'whatsapp';
   recipient: string;
   recipientName?: string;
   partyId?: string;
@@ -46,6 +47,16 @@ interface CommunicationMessage {
   messageType: 'manual' | 'appointment_reminder' | 'campaign' | 'automated';
   createdAt: string;
   updatedAt?: string;
+}
+
+interface CommunicationThread {
+  key: string;
+  type: 'sms' | 'email' | 'whatsapp';
+  recipient: string;
+  recipientName?: string;
+  partyId?: string;
+  latestMessage: CommunicationMessage;
+  messages: CommunicationMessage[];
 }
 
 
@@ -67,7 +78,7 @@ interface CommunicationCampaign {
 }
 */
 
-export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
+export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ parties }) => {
   // Offline sync hook
   const {
     syncStatus,
@@ -82,9 +93,16 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
   // const [templates, setTemplates] = useState<CommunicationTemplate[]>([]);
   // const [campaigns, setCampaigns] = useState<CommunicationCampaign[]>([]);
   const [selectedMessage, setSelectedMessage] = useState<CommunicationMessage | null>(null);
+  const [composeType, setComposeType] = useState<'sms' | 'email' | 'whatsapp'>('sms');
+  const [composePartyId, setComposePartyId] = useState<string>('');
+  const [composeRecipient, setComposeRecipient] = useState('');
+  const [composeRecipientName, setComposeRecipientName] = useState('');
+  const [composeSubject, setComposeSubject] = useState('');
+  const [composeContent, setComposeContent] = useState('');
+  const [composeMode, setComposeMode] = useState<'new' | 'reply'>('new');
 
   // Filters
-  const [filterType, setFilterType] = useState<'all' | 'sms' | 'email'>('all');
+  const [filterType, setFilterType] = useState<'all' | 'sms' | 'email' | 'whatsapp'>('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'draft' | 'scheduled' | 'sent' | 'delivered' | 'failed'>('all');
   const [filterMessageType, setFilterMessageType] = useState<'all' | 'manual' | 'appointment_reminder' | 'campaign' | 'automated'>('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -101,6 +119,15 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
   const settingsModal = useModal();
 
   const { success, error } = useToastHelpers();
+
+  const partyOptions = useMemo(() => parties.map((party) => ({
+    value: party.id || '',
+    label: `${party.firstName || ''} ${party.lastName || ''}`.trim() || party.email || party.phone || 'İsimsiz Kayıt'
+  })), [parties]);
+
+  const getThreadKey = useCallback((message: CommunicationMessage) => (
+    `${message.type}:${message.partyId || message.recipient}`
+  ), []);
 
   // Filtrelenmiş mesajlar
   const filteredMessages = useMemo(() => {
@@ -132,6 +159,53 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
       return true;
     });
   }, [messages, filterType, filterStatus, filterMessageType, searchTerm, dateRange]);
+
+  const filteredThreads = useMemo(() => {
+    const threadMap = new Map<string, CommunicationThread>();
+
+    filteredMessages.forEach((message) => {
+      const key = getThreadKey(message);
+      const existing = threadMap.get(key);
+      if (!existing) {
+        threadMap.set(key, {
+          key,
+          type: message.type,
+          recipient: message.recipient,
+          recipientName: message.recipientName,
+          partyId: message.partyId,
+          latestMessage: message,
+          messages: [message],
+        });
+        return;
+      }
+
+      existing.messages.push(message);
+      const existingDate = new Date(existing.latestMessage.createdAt).getTime();
+      const messageDate = new Date(message.createdAt).getTime();
+      if (messageDate > existingDate) {
+        existing.latestMessage = message;
+        existing.recipient = message.recipient;
+        existing.recipientName = message.recipientName;
+      }
+    });
+
+    return Array.from(threadMap.values())
+      .map((thread) => ({
+        ...thread,
+        messages: [...thread.messages].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()),
+      }))
+      .sort((a, b) => new Date(b.latestMessage.createdAt).getTime() - new Date(a.latestMessage.createdAt).getTime());
+  }, [filteredMessages, getThreadKey]);
+
+  const selectedThreadMessages = useMemo(() => {
+    if (!selectedMessage) {
+      return [];
+    }
+    const targetKey = getThreadKey(selectedMessage);
+    return messages
+      .filter((message) => getThreadKey(message) === targetKey)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  }, [getThreadKey, messages, selectedMessage]);
 
   // Durum ikonları
   const getStatusIcon = (status: string) => {
@@ -303,6 +377,12 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
       setMessages(prev => [newMessage, ...prev]);
       success('Mesaj başarıyla gönderildi');
       composeModal.closeModal();
+      setComposePartyId('');
+      setComposeRecipient('');
+      setComposeRecipientName('');
+      setComposeSubject('');
+      setComposeContent('');
+      setComposeType('sms');
 
     } catch (err) {
       error('Mesaj gönderme sırasında hata oluştu');
@@ -310,6 +390,65 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
       setIsSending(false);
     }
   }, [success, error, composeModal, saveMessage]);
+
+  const handleComposePartyChange = useCallback((partyId: string) => {
+    setComposePartyId(partyId);
+    const selectedParty = parties.find((party) => party.id === partyId);
+    if (!selectedParty) {
+      return;
+    }
+    const recipient = composeType === 'email' ? (selectedParty.email || '') : (selectedParty.phone || '');
+    setComposeRecipient(recipient);
+    setComposeRecipientName(`${selectedParty.firstName || ''} ${selectedParty.lastName || ''}`.trim());
+  }, [composeType, parties]);
+
+  const handleSubmitCompose = useCallback(async () => {
+    if (!composeRecipient.trim()) {
+      error('Alıcı bilgisi zorunlu');
+      return;
+    }
+    if (!composeContent.trim()) {
+      error('Mesaj içeriği zorunlu');
+      return;
+    }
+    if (composeType === 'email' && !composeSubject.trim()) {
+      error('E-posta için konu zorunlu');
+      return;
+    }
+
+    await sendMessage({
+      type: composeType,
+      recipient: composeRecipient,
+      recipientName: composeRecipientName || undefined,
+      partyId: composePartyId || undefined,
+      subject: composeType === 'email' ? composeSubject : undefined,
+      content: composeContent,
+      messageType: 'manual',
+    });
+  }, [composeContent, composePartyId, composeRecipient, composeRecipientName, composeSubject, composeType, error, sendMessage]);
+
+  const openComposeModal = useCallback(() => {
+    setComposeMode('new');
+    setComposeType('sms');
+    setComposePartyId('');
+    setComposeRecipient('');
+    setComposeRecipientName('');
+    setComposeSubject('');
+    setComposeContent('');
+    composeModal.openModal();
+  }, [composeModal]);
+
+  const openReplyModal = useCallback((message: CommunicationMessage) => {
+    setComposeMode('reply');
+    setComposeType(message.type);
+    setComposePartyId(message.partyId || '');
+    setComposeRecipient(message.recipient || '');
+    setComposeRecipientName(message.recipientName || '');
+    setComposeSubject(message.type === 'email' ? `Re: ${message.subject || ''}`.trim() : '');
+    setComposeContent('');
+    detailModal.closeModal();
+    composeModal.openModal();
+  }, [composeModal, detailModal]);
 
   console.log('sendMessage defined:', !!sendMessage); // Use sendMessage to avoid unused var error
 
@@ -321,7 +460,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
           <div>
             <h2 className="text-xl font-semibold text-gray-900">İletişim Merkezi</h2>
             <p className="text-sm text-gray-600 mt-1">
-              SMS ve e-posta iletişimlerini yönetin
+              SMS, WhatsApp ve e-posta iletişimlerini yönetin
             </p>
           </div>
 
@@ -381,7 +520,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
           </Button>
 
           <Button
-            onClick={() => composeModal.openModal()}
+            onClick={openComposeModal}
           >
             <Plus className="w-4 h-4 mr-2" />
             Yeni Mesaj
@@ -512,10 +651,11 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
                   </label>
                   <Select
                     value={filterType}
-                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterType(e.target.value as 'all' | 'sms' | 'email')}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterType(e.target.value as 'all' | 'sms' | 'email' | 'whatsapp')}
                     options={[
                       { value: 'all', label: 'Tümü' },
                       { value: 'sms', label: 'SMS' },
+                      { value: 'whatsapp', label: 'WhatsApp' },
                       { value: 'email', label: 'E-posta' }
                     ]}
                   />
@@ -579,16 +719,20 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
             </Card>
 
             {/* Mesaj Listesi */}
-            {filteredMessages.length > 0 ? (
+            {filteredThreads.length > 0 ? (
               <div className="space-y-3">
-                {filteredMessages.map(message => (
-                  <Card key={message.id} className="p-4 hover:shadow-md transition-shadow">
+                {filteredThreads.map(thread => {
+                  const message = thread.latestMessage;
+                  return (
+                  <Card key={thread.key} className="p-4 hover:shadow-md transition-shadow">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-3 mb-2">
                           <div className="flex items-center space-x-2">
                             {message.type === 'sms' ? (
                               <MessageSquare className="w-4 h-4 text-blue-500" />
+                            ) : message.type === 'whatsapp' ? (
+                              <MessageCircle className="w-4 h-4 text-emerald-500" />
                             ) : (
                               <Mail className="w-4 h-4 text-green-500" />
                             )}
@@ -609,13 +753,17 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
 
                         <div className="space-y-1">
                           <div className="flex items-center space-x-2">
-                            <span className="text-sm text-gray-600">Alıcı:</span>
+                            <span className="text-sm text-gray-600">Konuşma:</span>
                             <span className="font-medium">
                               {message.recipientName || message.recipient}
                             </span>
                             {message.recipientName && (
                               <span className="text-sm text-gray-500">({message.recipient})</span>
                             )}
+                          </div>
+
+                          <div className="text-xs text-gray-500">
+                            {thread.messages.length} mesaj
                           </div>
 
                           {message.subject && (
@@ -650,7 +798,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
                             detailModal.openModal();
                           }}
                         >
-                          Detay
+                          Sohbeti Aç
                         </Button>
 
                         {message.status === 'failed' && (
@@ -667,7 +815,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
                       </div>
                     </div>
                   </Card>
-                ))}
+                )})}
               </div>
             ) : (
               <Card className="p-8 text-center">
@@ -678,7 +826,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
                 <p className="text-gray-600 mb-4">
                   Henüz gönderilmiş mesaj yok veya filtre kriterlerine uygun mesaj bulunamadı.
                 </p>
-                <Button onClick={() => composeModal.openModal()}>
+                <Button onClick={openComposeModal}>
                   <Plus className="w-4 h-4 mr-2" />
                   İlk Mesajı Gönder
                 </Button>
@@ -734,13 +882,83 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
       <Modal
         isOpen={composeModal.isOpen}
         onClose={composeModal.closeModal}
-        title="Yeni Mesaj Oluştur"
+        title={composeMode === 'reply' ? 'Hızlı Yanıt' : 'Yeni Mesaj Oluştur'}
         size="lg"
       >
         <div className="space-y-4">
-          <p className="text-gray-600">
-            Mesaj oluşturma formu yakında eklenecek.
-          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Kanal</label>
+              <Select
+                value={composeType}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                  const nextType = e.target.value as 'sms' | 'email' | 'whatsapp';
+                  setComposeType(nextType);
+                  if (composePartyId) {
+                    const selectedParty = parties.find((party) => party.id === composePartyId);
+                    if (selectedParty) {
+                      setComposeRecipient(nextType === 'email' ? (selectedParty.email || '') : (selectedParty.phone || ''));
+                    }
+                  }
+                }}
+                options={[
+                  { value: 'sms', label: 'SMS' },
+                  { value: 'whatsapp', label: 'WhatsApp' },
+                  { value: 'email', label: 'E-posta' }
+                ]}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Hasta Seç</label>
+              <Select
+                value={composePartyId}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleComposePartyChange(e.target.value)}
+                options={[{ value: '', label: 'Manuel alıcı' }, ...partyOptions]}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {composeType === 'email' ? 'E-posta Adresi' : 'Telefon / WhatsApp Numarası'}
+              </label>
+              <Input
+                value={composeRecipient}
+                onChange={(e) => setComposeRecipient(e.target.value)}
+                placeholder={composeType === 'email' ? 'ornek@site.com' : '905xxxxxxxxx'}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Alıcı Adı</label>
+              <Input
+                value={composeRecipientName}
+                onChange={(e) => setComposeRecipientName(e.target.value)}
+                placeholder="Alıcı adı"
+              />
+            </div>
+          </div>
+
+          {composeType === 'email' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Konu</label>
+              <Input
+                value={composeSubject}
+                onChange={(e) => setComposeSubject(e.target.value)}
+                placeholder="E-posta konusu"
+              />
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Mesaj</label>
+            <Textarea
+              value={composeContent}
+              onChange={(e) => setComposeContent(e.target.value)}
+              placeholder={composeType === 'email' ? 'E-posta içeriği' : composeType === 'whatsapp' ? 'WhatsApp mesajı' : 'SMS içeriği'}
+              rows={composeType === 'email' ? 8 : 5}
+            />
+          </div>
 
           <div className="flex justify-end space-x-3">
             <Button
@@ -750,7 +968,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
               İptal
             </Button>
             <Button
-              onClick={() => composeModal.closeModal()}
+              onClick={() => void handleSubmitCompose()}
               loading={isSending}
             >
               Gönder
@@ -763,7 +981,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
       <Modal
         isOpen={detailModal.isOpen}
         onClose={detailModal.closeModal}
-        title="Mesaj Detayları"
+        title="Konuşma Akışı"
         size="lg"
       >
         {selectedMessage && (
@@ -798,6 +1016,39 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = () => {
               {selectedMessage.errorMessage && (
                 <div className="col-span-2"><strong>Hata:</strong> {selectedMessage.errorMessage}</div>
               )}
+            </div>
+
+            <div className="rounded-2xl border bg-gray-50 p-4 max-h-[420px] overflow-y-auto space-y-3">
+              {selectedThreadMessages.map((message) => {
+                const isOutbound = message.messageType !== 'automated';
+                return (
+                  <div
+                    key={message.id}
+                    className={`flex ${isOutbound ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                        isOutbound
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-white text-gray-900 border'
+                      }`}
+                    >
+                      <div className="text-xs opacity-80 mb-1">
+                        {isOutbound ? 'Giden' : 'Gelen'} • {new Date(message.createdAt).toLocaleString('tr-TR')}
+                      </div>
+                      {message.subject ? <div className="text-sm font-medium mb-1">{message.subject}</div> : null}
+                      <div className="whitespace-pre-wrap text-sm">{message.content}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex justify-end">
+              <Button onClick={() => openReplyModal(selectedMessage)}>
+                <Send className="w-4 h-4 mr-2" />
+                Hızlı Yanıtla
+              </Button>
             </div>
           </div>
         )}

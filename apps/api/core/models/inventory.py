@@ -120,6 +120,12 @@ class InventoryItem(BaseModel, TenantScopedMixin):
     # Hearing aid specific fields
     direction = Column(String(10))  # left, right, both (for hearing aids)
     ear = Column(String(10))  # Alias for direction (backward compatibility)
+
+    # Technical specifications for hearing aid recommendation engine
+    max_output_spl = Column(Integer, nullable=True)  # Maximum output in dB SPL
+    max_gain = Column(Integer, nullable=True)  # Maximum gain in dB
+    fitting_range_min = Column(Integer, nullable=True)  # Minimum hearing loss in dB HL
+    fitting_range_max = Column(Integer, nullable=True)  # Maximum hearing loss in dB HL
     
     # Warranty
     warranty = Column(Integer, default=0)  # warranty in months
@@ -185,6 +191,10 @@ class InventoryItem(BaseModel, TenantScopedMixin):
             'cost': self.cost,
             'direction': self.direction or self.ear,
             'ear': self.ear or self.direction,
+            'maxOutputSpl': self.max_output_spl,
+            'maxGain': self.max_gain,
+            'fittingRangeMin': self.fitting_range_min,
+            'fittingRangeMax': self.fitting_range_max,
             'warranty': self.warranty,
             'createdAt': self.created_at.isoformat() if self.created_at else None,
             'updatedAt': self.updated_at.isoformat() if self.updated_at else None
@@ -266,6 +276,16 @@ class InventoryItem(BaseModel, TenantScopedMixin):
         # Direction/ear
         inventory.direction = data.get('direction') or data.get('ear')
         inventory.ear = data.get('ear') or data.get('direction')
+
+        # Technical specs
+        if 'maxOutputSpl' in data:
+            inventory.max_output_spl = data.get('maxOutputSpl')
+        if 'maxGain' in data:
+            inventory.max_gain = data.get('maxGain')
+        if 'fittingRangeMin' in data:
+            inventory.fitting_range_min = data.get('fittingRangeMin')
+        if 'fittingRangeMax' in data:
+            inventory.fitting_range_max = data.get('fittingRangeMax')
         
         # Warranty
         inventory.warranty = data.get('warranty', 0)

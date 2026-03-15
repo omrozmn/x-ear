@@ -19,6 +19,16 @@ interface SalesTableViewProps {
   onViewInvoice?: (sale: PartySale) => void;
   onManagePromissoryNotes?: (sale: PartySale) => void;
   onCancelSale?: (sale: PartySale) => void;
+  selectedSaleIds?: string[];
+  onSelectionChange?: (saleIds: string[]) => void;
+  pagination?: {
+    current: number;
+    pageSize: number;
+    total: number;
+    showSizeChanger?: boolean;
+    pageSizeOptions?: number[];
+    onChange: (page: number, pageSize: number) => void;
+  };
 }
 
 export const SalesTableView: React.FC<SalesTableViewProps> = ({
@@ -27,7 +37,10 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
   onCreateInvoice,
   onViewInvoice,
   onManagePromissoryNotes,
-  onCancelSale
+  onCancelSale,
+  selectedSaleIds = [],
+  onSelectionChange,
+  pagination,
 }) => {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
@@ -329,12 +342,12 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
       render: (_, sale) => (
         <div className="relative" onClick={(e: React.MouseEvent) => e.stopPropagation()}>
           <Button
-            variant="ghost"
-            className="w-9 h-9 p-0"
+            variant="outline"
+            className="w-9 h-9 p-0 rounded-lg"
             onClick={(e: React.MouseEvent) => toggleOverflowMenu(e, sale.id)}
             aria-label="Aksiyonlar"
           >
-            <MoreVertical className="w-4 h-4" />
+            <MoreVertical className="w-5 h-5" />
           </Button>
           {openMenuId === sale.id && (
             <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
@@ -345,7 +358,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                   className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   <FileText className="w-4 h-4 mr-2" />
-                  Fatura kes
+                  {sale.invoice ? 'Fatura Görüntüle' : 'Fatura Kes'}
                 </button>
                 <button
                   data-allow-raw="true"
@@ -400,11 +413,11 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
             {/* Overflow Menu */}
             <div className="relative" onClick={(e) => e.stopPropagation()}>
               <Button
-                variant="ghost"
-                className="w-8 h-8 p-0"
+                variant="outline"
+                className="w-8 h-8 p-0 rounded-lg"
                 onClick={(e) => toggleOverflowMenu(e, sale.id)}
               >
-                <MoreVertical className="w-4 h-4 text-gray-500" />
+                <MoreVertical className="w-5 h-5" />
               </Button>
               {openMenuId === sale.id && (
                 <div className="absolute right-0 mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
@@ -423,7 +436,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                       className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       <FileText className="w-4 h-4 mr-2" />
-                      Fatura kes
+                      {hasInvoice ? 'Fatura Görüntüle' : 'Fatura Kes'}
                     </Button>
                     <Button
                       type="button"
@@ -557,6 +570,11 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
           columns={salesTableColumns}
           rowKey={(sale) => sale.id}
           onRowClick={(sale) => onSaleClick?.(sale)}
+          rowSelection={onSelectionChange ? {
+            selectedRowKeys: selectedSaleIds,
+            onChange: (keys) => onSelectionChange(keys.map(String)),
+          } : undefined}
+          pagination={pagination}
           responsive={false}
         />
       </div>

@@ -1,0 +1,538 @@
+import { useEffect, useMemo, useState } from 'react';
+import {
+  Bot,
+  History,
+  MessageCircle,
+  RefreshCcw,
+  Send,
+  Users,
+} from 'lucide-react';
+import { Button, Card, useToastHelpers } from '@x-ear/ui-web';
+import { apiClient } from '@/api/orval-mutator';
+import { useListParties } from '@/api/client/branches.client';
+import type { PartyRead } from '@/api/generated/schemas';
+import { unwrapArray } from '@/utils/response-unwrap';
+import SmsAutomationTab from './SmsAutomationTab';
+
+type WhatsAppStatus = {
+  status: string;
+  connected: boolean;
+  qrCode?: string | null;
+  lastError?: string | null;
+  bridgePid?: number | null;
+  lastSyncAt?: number | null;
+  syncInProgress?: boolean;
+};
+
+type WhatsAppConfig = {
+  aiTargetPhone: string;
+  defaultCountryCode: string;
+  autoReplyEnabled: boolean;
+  autoReplyPrompt: string;
+};
+
+type WhatsAppInboxMessage = {
+  id: string;
+  partyId?: string | null;
+  direction: string;
+  status: string;
+  chatId: string;
+  chatTitle?: string | null;
+  phoneNumber?: string | null;
+  messageText: string;
+  createdAt?: string | null;
+};
+
+type WhatsAppSubTab = 'single' | 'bulk' | 'automation' | 'inbox';
+
+const DEFAULT_CONFIG: WhatsAppConfig = {
+  aiTargetPhone: '',
+  defaultCountryCode: '90',
+  autoReplyEnabled: false,
+  autoReplyPrompt: '',
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  idle: 'Hazır Değil',
+  starting: 'Başlatılıyor',
+  loading: 'Yükleniyor',
+  qr: 'QR Hazır',
+  awaiting_qr: 'QR Hazırlanıyor',
+  connected: 'Bağlı',
+  disconnected: 'Bağlantı Kesildi',
+  stopped: 'Durduruldu',
+  error: 'Hata',
+};
+
+function parsePhoneList(raw: string): string[] {
+  return raw
+    .split(/[\n,;]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+export default function WhatsAppTab() {
+  const [activeTab, setActiveTab] = useState<WhatsAppSubTab>('single');
+  const [session, setSession] = useState<WhatsAppStatus>({ status: 'idle', connected: false });
+  const [config, setConfig] = useState<WhatsAppConfig>(DEFAULT_CONFIG);
+  const [singlePhone, setSinglePhone] = useState('');
+  const [singleMessage, setSingleMessage] = useState('');
+  const [bulkMessage, setBulkMessage] = useState('');
+  const [bulkStatus, setBulkStatus] = useState('');
+  const [bulkSegment, setBulkSegment] = useState('');
+  const [bulkNumbers, setBulkNumbers] = useState('');
+  const [partySearch, setPartySearch] = useState('');
+  const [selectedPartyIds, setSelectedPartyIds] = useState<string[]>([]);
+  const [inboxItems, setInboxItems] = useState<WhatsAppInboxMessage[]>([]);
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
+  const { success, error, warning } = useToastHelpers();
+
+  const { data: partiesData } = useListParties({ page: 1, per_page: 25, search: partySearch || undefined });
+  const parties = useMemo(() => unwrapArray<PartyRead>(partiesData), [partiesData]);
+  const numbersCount = useMemo(() => parsePhoneList(bulkNumbers).length, [bulkNumbers]);
+  const statusLabel = session.connected ? 'Bağlı' : (STATUS_LABELS[session.status] ?? session.status);
+  const chatThreads = useMemo(() => {
+    const grouped = new Map<string, {
+      chatId: string;
+      chatTitle: string;
+      phoneNumber?: string | null;
+      lastMessageAt?: string | null;
+      unreadCount: number;
+      messages: WhatsAppInboxMessage[];
+    }>();
+
+    for (const item of inboxItems) {
+      const key = item.chatId || item.phoneNumber || item.id;
+      const existing = grouped.get(key);
+      if (existing) {
+        existing.messages.push(item);
+        existing.lastMessageAt = item.createdAt || existing.lastMessageAt;
+        existing.unreadCount += item.direction === 'inbound' ? 1 : 0;
+      } else {
+        grouped.set(key, {
+          chatId: key,
+          chatTitle: item.chatTitle || item.phoneNumber || key,
+          phoneNumber: item.phoneNumber,
+          lastMessageAt: item.createdAt,
+          unreadCount: item.direction === 'inbound' ? 1 : 0,
+          messages: [item],
+        });
+      }
+    }
+
+    return Array.from(grouped.values())
+      .map((thread) => ({
+        ...thread,
+        messages: [...thread.messages].sort((a, b) => {
+          const aTs = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const bTs = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return aTs - bTs;
+        }),
+      }))
+      .sort((a, b) => {
+        const aTs = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
+        const bTs = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
+        return bTs - aTs;
+      });
+  }, [inboxItems]);
+  const selectedThread = useMemo(() => {
+    if (chatThreads.length === 0) {
+      return null;
+    }
+    return chatThreads.find((thread) => thread.chatId === selectedChatId) ?? chatThreads[0];
+  }, [chatThreads, selectedChatId]);
+
+  const fetchStatus = async (showError = false) => {
+    try {
+      const response = await apiClient.get('/api/whatsapp/session/status');
+      setSession(response.data?.data ?? { status: 'idle', connected: false });
+    } catch (err) {
+      if (showError) {
+        error('WhatsApp durumu alınamadı', err instanceof Error ? err.message : 'Durum bilgisi alınamadı');
+      }
+    }
+  };
+
+  const fetchConfig = async () => {
+    const response = await apiClient.get('/api/whatsapp/config');
+    setConfig(response.data?.data ?? DEFAULT_CONFIG);
+  };
+
+  const fetchInbox = async () => {
+    const response = await apiClient.get('/api/whatsapp/inbox');
+    setInboxItems(response.data?.data ?? []);
+  };
+
+  useEffect(() => {
+    void fetchStatus();
+    void fetchConfig();
+    void fetchInbox();
+  }, []);
+
+  useEffect(() => {
+    if (chatThreads.length === 0) {
+      setSelectedChatId(null);
+      return;
+    }
+    setSelectedChatId((prev) => (
+      prev && chatThreads.some((thread) => thread.chatId === prev)
+        ? prev
+        : chatThreads[0].chatId
+    ));
+  }, [chatThreads]);
+
+  useEffect(() => {
+    const needsPolling = session.status === 'qr'
+      || session.status === 'starting'
+      || session.status === 'loading'
+      || session.status === 'awaiting_qr'
+      || session.connected;
+    if (!needsPolling) {
+      return;
+    }
+    const timer = window.setInterval(() => {
+      void fetchStatus();
+      void fetchInbox();
+    }, 3000);
+    return () => window.clearInterval(timer);
+  }, [session.status, session.connected]);
+
+  const runAction = async (key: string, action: () => Promise<void>) => {
+    try {
+      setLoadingAction(key);
+      await action();
+    } catch (err) {
+      error('WhatsApp hatası', err instanceof Error ? err.message : 'İşlem başarısız oldu');
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const toggleParty = (partyId: string) => {
+    setSelectedPartyIds((prev) => (
+      prev.includes(partyId) ? prev.filter((item) => item !== partyId) : [...prev, partyId]
+    ));
+  };
+
+  const handleSendSingle = () => runAction('single', async () => {
+    if (!singlePhone.trim() || !singleMessage.trim()) {
+      warning('Eksik alan', 'Telefon ve mesaj zorunlu.');
+      return;
+    }
+    await apiClient.post('/api/whatsapp/messages/send', {
+      phoneNumber: singlePhone,
+      message: singleMessage,
+    });
+    await fetchInbox();
+    success('Mesaj gönderildi', 'WhatsApp tekli mesaj gönderildi.');
+    setSingleMessage('');
+  });
+
+  const handleSendBulk = () => runAction('bulk', async () => {
+    if (!bulkMessage.trim()) {
+      warning('Eksik alan', 'Toplu gönderim mesajı zorunlu.');
+      return;
+    }
+    const phoneNumbers = parsePhoneList(bulkNumbers);
+    if (phoneNumbers.length === 0 && selectedPartyIds.length === 0 && !bulkStatus && !bulkSegment) {
+      warning('Hedef seçilmedi', 'Numara listesi, hasta seçimi veya filtre vermelisiniz.');
+      return;
+    }
+    await apiClient.post('/api/whatsapp/messages/send-bulk', {
+      message: bulkMessage,
+      phoneNumbers: phoneNumbers.length > 0 ? phoneNumbers : undefined,
+      partyIds: selectedPartyIds.length > 0 ? selectedPartyIds : undefined,
+      filters: bulkStatus || bulkSegment
+        ? { status: bulkStatus || undefined, segment: bulkSegment || undefined }
+        : undefined,
+    });
+    await fetchInbox();
+    success('Toplu gönderim tamamlandı', 'WhatsApp toplu mesaj işlemi başlatıldı.');
+  });
+
+  const handleSendAi = () => runAction('ai', async () => {
+    if (!aiPrompt.trim()) {
+      warning('Eksik alan', 'AI talep metni zorunlu.');
+      return;
+    }
+    await apiClient.post('/api/whatsapp/messages/send-ai', {
+      prompt: aiPrompt,
+      phoneNumber: config.aiTargetPhone || undefined,
+    });
+    await fetchInbox();
+    success('AI talebi gönderildi', 'AI chatbot talebi WhatsApp üzerinden iletildi.');
+    setAiPrompt('');
+  });
+
+  return (
+    <div className="space-y-6">
+      <Card className="p-1 dark:bg-gray-800 dark:border-gray-700">
+        <nav className="flex flex-wrap gap-1">
+          {([
+            { id: 'single', label: 'Tekil', icon: <Send className="h-4 w-4" /> },
+            { id: 'bulk', label: 'Toplu', icon: <Users className="h-4 w-4" /> },
+            { id: 'automation', label: 'Otomasyon', icon: <Bot className="h-4 w-4" /> },
+            { id: 'inbox', label: 'Sohbetler', icon: <History className="h-4 w-4" /> },
+          ] as const).map((tab) => (
+            <button
+              data-allow-raw="true"
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-1 rounded-2xl px-4 py-3 text-sm font-medium transition-all ${
+                activeTab === tab.id
+                  ? 'bg-emerald-600 text-white dark:bg-emerald-500'
+                  : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
+              }`}
+            >
+              <span className="inline-flex items-center gap-2">
+                {tab.icon}
+                {tab.label}
+              </span>
+            </button>
+          ))}
+        </nav>
+      </Card>
+
+      <Card className="p-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <MessageCircle className="h-5 w-5 text-emerald-600" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">WhatsApp Kanal Durumu</h3>
+            </div>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              QR ile bağlama ve otomatik cevap ayarları artık `Ayarlar &gt; Entegrasyon &gt; WhatsApp Entegrasyonu` altında yönetiliyor.
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
+              <span className={`rounded-full px-3 py-1 font-medium ${
+                session.connected
+                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300'
+                  : 'bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300'
+              }`}>
+                {statusLabel}
+              </span>
+              {session.bridgePid ? <span className="text-gray-500">PID: {session.bridgePid}</span> : null}
+              {session.syncInProgress ? <span className="text-sky-600 dark:text-sky-400">Senkronize ediliyor</span> : null}
+              {session.lastSyncAt ? <span className="text-gray-500">Son sync: {new Date(session.lastSyncAt * 1000).toLocaleTimeString('tr-TR')}</span> : null}
+              {session.lastError ? <span className="text-red-600 dark:text-red-400">{session.lastError}</span> : null}
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => { void fetchStatus(); void fetchInbox(); }} disabled={loadingAction !== null}>
+              <RefreshCcw className="mr-2 h-4 w-4" />
+              Yenile
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      {activeTab === 'single' ? (
+        <div className="grid gap-6 xl:grid-cols-2">
+          <Card className="p-6">
+            <div className="mb-4 flex items-center gap-2">
+              <MessageCircle className="h-5 w-5 text-indigo-600" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Tekil WhatsApp Mesajı</h3>
+            </div>
+            {!session.connected ? (
+              <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-200">
+                WhatsApp henüz bağlı değil. `Ayarlar &gt; Entegrasyon &gt; WhatsApp Entegrasyonu` altından QR taratın.
+                Mevcut durum: <span className="font-semibold">{statusLabel}</span>
+              </div>
+            ) : null}
+            <div className="space-y-4">
+              <input data-allow-raw="true" value={singlePhone} onChange={(event) => setSinglePhone(event.target.value)} className="w-full rounded-2xl border px-4 py-3" placeholder="Telefon numarası" />
+              <textarea data-allow-raw="true" value={singleMessage} onChange={(event) => setSingleMessage(event.target.value)} className="min-h-[140px] w-full rounded-2xl border px-4 py-3" placeholder="Mesajınız" />
+              <Button onClick={handleSendSingle} disabled={!session.connected || loadingAction !== null}>
+                <Send className="mr-2 h-4 w-4" />
+                Tekli Mesaj Gönder
+              </Button>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="mb-4 flex items-center gap-2">
+              <Bot className="h-5 w-5 text-fuchsia-600" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">AI Chatbot Talebi</h3>
+            </div>
+            {!session.connected ? (
+              <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-200">
+                AI talebi göndermek için önce WhatsApp bağlantısı aktif olmalı. Mevcut durum: <span className="font-semibold">{statusLabel}</span>
+              </div>
+            ) : null}
+            <div className="space-y-4">
+              <textarea data-allow-raw="true" value={aiPrompt} onChange={(event) => setAiPrompt(event.target.value)} className="min-h-[180px] w-full rounded-2xl border px-4 py-3" placeholder="AI chatbot'a gidecek talep veya komut" />
+              <Button onClick={handleSendAi} disabled={!session.connected || loadingAction !== null}>
+                <Bot className="mr-2 h-4 w-4" />
+                AI Talebi Gönder
+              </Button>
+            </div>
+          </Card>
+        </div>
+      ) : null}
+
+      {activeTab === 'bulk' ? (
+        <Card className="p-6">
+          <div className="mb-4 flex items-center gap-2">
+            <Users className="h-5 w-5 text-emerald-600" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Toplu WhatsApp Gönderimi</h3>
+          </div>
+          {!session.connected ? (
+            <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-200">
+              Toplu gönderim için aktif WhatsApp oturumu gerekli. Mevcut durum: <span className="font-semibold">{statusLabel}</span>
+            </div>
+          ) : null}
+          <div className="grid gap-4 lg:grid-cols-[1.2fr,0.8fr]">
+            <div className="space-y-4">
+              <textarea data-allow-raw="true" value={bulkNumbers} onChange={(event) => setBulkNumbers(event.target.value)} className="min-h-[120px] w-full rounded-2xl border px-4 py-3" placeholder="Numaraları satır satır, virgül veya noktalı virgülle girin" />
+              <input data-allow-raw="true" value={partySearch} onChange={(event) => setPartySearch(event.target.value)} className="w-full rounded-2xl border px-4 py-3" placeholder="Hasta ara" />
+              <div className="max-h-56 space-y-2 overflow-auto rounded-2xl border p-3">
+                {parties.map((party) => (
+                  <label key={party.id} className="flex items-center justify-between rounded-xl border px-3 py-2">
+                    <span className="text-sm">{party.firstName} {party.lastName} • {party.phone}</span>
+                    <input data-allow-raw="true" type="checkbox" checked={selectedPartyIds.includes(party.id || '')} onChange={() => party.id && toggleParty(party.id)} />
+                  </label>
+                ))}
+              </div>
+              <textarea data-allow-raw="true" value={bulkMessage} onChange={(event) => setBulkMessage(event.target.value)} className="min-h-[140px] w-full rounded-2xl border px-4 py-3" placeholder="Toplu WhatsApp mesajınız" />
+            </div>
+            <div className="space-y-4 rounded-3xl border border-gray-200 bg-gray-50/70 p-4 dark:border-gray-800 dark:bg-gray-900/40">
+              <div>
+                <label className="mb-2 block text-sm font-medium">Hasta durumu</label>
+                <select data-allow-raw="true" value={bulkStatus} onChange={(event) => setBulkStatus(event.target.value)} className="w-full rounded-2xl border px-4 py-3">
+                  <option value="">Tüm durumlar</option>
+                  <option value="active">Aktif</option>
+                  <option value="inactive">Pasif</option>
+                </select>
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium">Segment</label>
+                <select data-allow-raw="true" value={bulkSegment} onChange={(event) => setBulkSegment(event.target.value)} className="w-full rounded-2xl border px-4 py-3">
+                  <option value="">Tüm segmentler</option>
+                  <option value="lead">Lead</option>
+                  <option value="new">Yeni</option>
+                  <option value="trial">Deneme</option>
+                  <option value="existing">Mevcut</option>
+                  <option value="vip">VIP</option>
+                </select>
+              </div>
+              <div className="text-sm text-gray-500">Manuel numara listesi: {numbersCount} kayıt</div>
+              <div className="text-sm text-gray-500">Seçili hasta: {selectedPartyIds.length}</div>
+              <Button onClick={handleSendBulk} disabled={!session.connected || loadingAction !== null} className="w-full">
+                <Users className="mr-2 h-4 w-4" />
+                Toplu WhatsApp Gönder
+              </Button>
+            </div>
+          </div>
+        </Card>
+      ) : null}
+
+      {activeTab === 'automation' ? (
+        <SmsAutomationTab creditBalance={0} creditLoading={false} channel="whatsapp" />
+      ) : null}
+
+      {activeTab === 'inbox' ? (
+        <Card className="p-6">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <History className="h-5 w-5 text-emerald-600" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">WhatsApp Sohbetleri ve Geçmiş</h3>
+            </div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              Gelen mesajlar arka planda otomatik senkronize edilir.
+            </div>
+          </div>
+          {chatThreads.length === 0 ? (
+            <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-gray-500">
+                Henüz WhatsApp mesaj geçmişi yok.
+            </div>
+          ) : (
+            <div className="grid gap-4 lg:grid-cols-[320px,minmax(0,1fr)]">
+              <div className="space-y-2 rounded-3xl border border-gray-200 bg-gray-50/70 p-3 dark:border-gray-800 dark:bg-gray-900/40">
+                {chatThreads.map((thread) => {
+                  const lastMessage = thread.messages[thread.messages.length - 1];
+                  const isActive = selectedThread?.chatId === thread.chatId;
+                  return (
+                    <button
+                      data-allow-raw="true"
+                      key={thread.chatId}
+                      type="button"
+                      onClick={() => setSelectedChatId(thread.chatId)}
+                      className={`w-full rounded-2xl border px-4 py-3 text-left transition-all ${
+                        isActive
+                          ? 'border-emerald-200 bg-white shadow-sm dark:border-emerald-800 dark:bg-gray-950'
+                          : 'border-transparent bg-transparent hover:border-gray-200 hover:bg-white dark:hover:border-gray-700 dark:hover:bg-gray-950/60'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="truncate font-medium text-gray-900 dark:text-white">
+                            {thread.chatTitle}
+                          </div>
+                          <div className="truncate text-xs text-gray-500">
+                            {thread.phoneNumber || thread.chatId}
+                          </div>
+                        </div>
+                        {thread.unreadCount > 0 ? (
+                          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                            {thread.unreadCount}
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="mt-2 truncate text-sm text-gray-600 dark:text-gray-300">
+                        {lastMessage?.messageText || 'Mesaj yok'}
+                      </div>
+                      <div className="mt-2 text-xs text-gray-400">
+                        {thread.lastMessageAt ? new Date(thread.lastMessageAt).toLocaleString('tr-TR') : '-'}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="rounded-3xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+                {selectedThread ? (
+                  <>
+                    <div className="border-b border-gray-200 px-5 py-4 dark:border-gray-800">
+                      <div className="text-base font-semibold text-gray-900 dark:text-white">
+                        {selectedThread.chatTitle}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {selectedThread.phoneNumber || selectedThread.chatId}
+                      </div>
+                    </div>
+                    <div className="space-y-3 p-4">
+                      {selectedThread.messages.map((item) => (
+                        <div
+                          key={item.id}
+                          className={`flex ${item.direction === 'inbound' ? 'justify-start' : 'justify-end'}`}
+                        >
+                          <div
+                            className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-sm ${
+                              item.direction === 'inbound'
+                                ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100'
+                                : 'bg-emerald-600 text-white'
+                            }`}
+                          >
+                            <div className="whitespace-pre-wrap text-sm">{item.messageText}</div>
+                            <div className={`mt-2 text-[11px] ${
+                              item.direction === 'inbound' ? 'text-gray-500 dark:text-gray-400' : 'text-emerald-100'
+                            }`}>
+                              {item.createdAt ? new Date(item.createdAt).toLocaleString('tr-TR') : '-'}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : null}
+              </div>
+            </div>
+          )}
+        </Card>
+      ) : null}
+    </div>
+  );
+}

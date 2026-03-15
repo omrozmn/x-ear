@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/sgk_credentials.py
+# hypothesis_version: 6.151.9
+
+['Mesul müdür şifresi', 'SGK tesis kodu', 'SGK tesis şifresi', 'hasMesulMudurSifresi', 'hasTesisSifresi', 'mesulMudurSifresi', 'mesulMudurTc', 'tesisKodu', 'tesisSifresi']

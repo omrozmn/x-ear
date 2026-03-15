@@ -148,6 +148,7 @@ export function DesktopSuppliersPage() {
           companyCode: supplierData.companyCode,
           taxNumber: supplierData.taxNumber,
           taxOffice: supplierData.taxOffice,
+          institutionNumber: supplierData.institutionNumber,
           contactPerson: supplierData.contactPerson,
           email: supplierData.email,
           phone: supplierData.phone,
@@ -219,7 +220,7 @@ export function DesktopSuppliersPage() {
           title="Tedarikçiler"
           description="Tedarikçi kayıtlarını yönetin ve takip edin"
           icon={<Users className="h-6 w-6" />}
-          eyebrow="Vendor Desk"
+          eyebrow={{ tr: 'Tedarikçi Masası', en: 'Vendor Desk' }}
           actions={(
             <>
               <Button variant="outline" onClick={handleRefresh} className="bg-white/80 dark:bg-white/10">

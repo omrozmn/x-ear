@@ -1,13 +1,15 @@
 import { Button } from '@x-ear/ui-web';
 import React from 'react';
 import { Party } from '../../types/party';
+import { useTranslation } from 'react-i18next';
 import {
   User,
   Headphones,
   CreditCard,
   FileText,
   Clock,
-  StickyNote
+  StickyNote,
+  Stethoscope,
 } from 'lucide-react';
 
 // Geçici olarak kendi Tabs bileşenini tanımlıyorum
@@ -113,6 +115,7 @@ interface PartyTabsProps {
     timeline?: number;
     documents?: number;
     notes?: number;
+    'hearing-tests'?: number;
   };
 }
 
@@ -122,33 +125,32 @@ export const PartyTabs: React.FC<PartyTabsProps> = ({
   onTabChange,
   tabCounts,
 }) => {
+  const { t } = useTranslation('patients');
   const tabs = [
     {
       id: 'general',
-      label: 'Genel Bilgiler',
+      label: t('tabs.overview', 'Genel Bilgiler'),
       icon: <User className="w-4 h-4" />,
       count: null,
       disabled: false,
       hidden: false,
     },
     {
+      id: 'hearing-tests',
+      label: t('tabs.hearing_tests', 'İşitme Testleri'),
+      icon: <Stethoscope className="w-4 h-4" />,
+      count: tabCounts?.['hearing-tests'] ?? 0,
+      disabled: false,
+      hidden: false,
+    },
+    {
       id: 'devices',
-      label: 'Cihazlar',
+      label: t('tabs.devices', 'Cihazlar'),
       icon: <Headphones className="w-4 h-4" />,
       count: tabCounts?.devices ?? party.devices?.length ?? 0,
       disabled: false,
       hidden: false,
     },
-    /* İşitme Testleri Tab - Geçici olarak devre dışı
-    {
-      id: 'hearing-tests',
-      label: 'İşitme Testleri',
-      icon: <Stethoscope className="w-4 h-4" />,
-      count: 0,
-      disabled: false,
-      hidden: !party.hearingProfile && !party.hearing_profile // Hide if no hearing profile
-    },
-    */
     {
       id: 'sales',
       label: 'Satışlar',
@@ -157,19 +159,9 @@ export const PartyTabs: React.FC<PartyTabsProps> = ({
       disabled: false,
       hidden: false,
     },
-    /* SGK Tab - v1'de aktif edilecek
-    {
-      id: 'sgk',
-      label: 'SGK İşlemleri',
-      icon: <Shield className="w-4 h-4" />,
-      count: null,
-      disabled: false,
-      hidden: false,
-    },
-    */
     {
       id: 'documents',
-      label: 'Belgeler',
+      label: t('tabs.documents', 'Belgeler'),
       icon: <FileText className="w-4 h-4" />,
       count: tabCounts?.documents ?? party.reports?.length ?? 0,
       disabled: false,
@@ -177,7 +169,7 @@ export const PartyTabs: React.FC<PartyTabsProps> = ({
     },
     {
       id: 'timeline',
-      label: 'Zaman Çizelgesi',
+      label: t('tabs.timeline', 'Zaman Çizelgesi'),
       icon: <Clock className="w-4 h-4" />,
       count: tabCounts?.timeline ?? null,
       disabled: false,
@@ -195,10 +187,10 @@ export const PartyTabs: React.FC<PartyTabsProps> = ({
 
   return (
     <Tabs value={activeTab} onValueChange={(value) => {
-      const allowed: PartyTab[] = ['general', 'devices', 'sales', 'sgk', 'documents', 'timeline', 'notes', 'appointments'];
+      const allowed: PartyTab[] = ['general', 'devices', 'hearing-tests', 'sales', 'sgk', 'documents', 'timeline', 'notes', 'appointments'];
       if (allowed.includes(value as PartyTab)) onTabChange(value as PartyTab);
     }} className="w-full">
-      <Tabs.List className="grid w-full grid-cols-4 lg:grid-cols-8">
+      <Tabs.List className="grid w-full grid-cols-4 lg:grid-cols-9">
         {tabs.filter(t => !t.hidden).map((tab) => (
           <Tabs.Trigger
             key={tab.id}

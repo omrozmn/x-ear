@@ -9,6 +9,7 @@ import logging
 from database import get_db
 from models.communication import EmailLog, CommunicationTemplate, CommunicationHistory
 from models.campaign import SmsLog as SMSLog
+from models.whatsapp import WhatsAppMessage
 from core.models.party import Party
 from middleware.unified_access import UnifiedAccess, require_access
 from schemas.base import ResponseEnvelope
@@ -48,9 +49,12 @@ async def list_messages(
     """List all communication messages (SMS and Email)"""
     try:
         messages = []
+        tenant_id = access.tenant_id
         
         if not type or type == "sms":
             sms_query = db.query(SMSLog)
+            if tenant_id:
+                sms_query = sms_query.filter(SMSLog.tenant_id == tenant_id)
             if status:
                 sms_query = sms_query.filter(SMSLog.status == status)
             if party_id:
@@ -75,6 +79,8 @@ async def list_messages(
         
         if not type or type == "email":
             email_query = db.query(EmailLog)
+            if tenant_id:
+                email_query = email_query.filter(EmailLog.tenant_id == tenant_id)
             if status:
                 email_query = email_query.filter(EmailLog.status == status)
             if party_id:
@@ -97,6 +103,40 @@ async def list_messages(
                 msg_dict = EmailLogRead.from_orm_with_json(email).model_dump(by_alias=True)
                 msg_dict["messageType"] = "email"
                 messages.append(msg_dict)
+
+        if not type or type == "whatsapp":
+            whatsapp_query = db.query(WhatsAppMessage)
+            if tenant_id:
+                whatsapp_query = whatsapp_query.filter(WhatsAppMessage.tenant_id == tenant_id)
+            if status:
+                whatsapp_query = whatsapp_query.filter(WhatsAppMessage.status == status)
+            if party_id:
+                whatsapp_query = whatsapp_query.filter(WhatsAppMessage.party_id == party_id)
+            if date_from:
+                whatsapp_query = whatsapp_query.filter(WhatsAppMessage.created_at >= datetime.fromisoformat(date_from))
+            if date_to:
+                whatsapp_query = whatsapp_query.filter(WhatsAppMessage.created_at <= datetime.fromisoformat(date_to))
+            if search:
+                whatsapp_query = whatsapp_query.filter(or_(
+                    WhatsAppMessage.message_text.ilike(f"%{search}%"),
+                    WhatsAppMessage.phone_number.ilike(f"%{search}%"),
+                    WhatsAppMessage.chat_title.ilike(f"%{search}%")
+                ))
+
+            for item in whatsapp_query.order_by(desc(WhatsAppMessage.created_at)).all():
+                messages.append({
+                    "id": item.id,
+                    "partyId": item.party_id,
+                    "phoneNumber": item.phone_number,
+                    "message": item.message_text,
+                    "status": item.status,
+                    "direction": item.direction,
+                    "chatId": item.chat_id,
+                    "chatTitle": item.chat_title,
+                    "createdAt": item.created_at.isoformat() if item.created_at else None,
+                    "updatedAt": item.updated_at.isoformat() if item.updated_at else None,
+                    "messageType": "whatsapp",
+                })
         
         messages.sort(key=lambda x: x.get("createdAt", ""), reverse=True)
         start = (page - 1) * per_page
@@ -368,6 +408,8 @@ async def list_communication_history(
     """List communication history"""
     try:
         query = db.query(CommunicationHistory)
+        if access.tenant_id:
+            query = query.filter(CommunicationHistory.tenant_id == access.tenant_id)
         
         if party_id:
             query = query.filter(CommunicationHistory.party_id == party_id)
@@ -447,21 +489,38 @@ async def communication_stats(
     """Get communication statistics"""
     try:
         date_from = now_utc() - timedelta(days=days)
+        tenant_id = access.tenant_id
         
-        sms_total = db.query(SMSLog).filter(SMSLog.created_at >= date_from).count()
-        sms_sent = db.query(SMSLog).filter(and_(SMSLog.created_at >= date_from, SMSLog.status == "sent")).count()
-        sms_failed = db.query(SMSLog).filter(and_(SMSLog.created_at >= date_from, SMSLog.status == "failed")).count()
+        sms_base = db.query(SMSLog).filter(SMSLog.created_at >= date_from)
+        email_base = db.query(EmailLog).filter(EmailLog.created_at >= date_from)
+        whatsapp_base = db.query(WhatsAppMessage).filter(WhatsAppMessage.created_at >= date_from)
+        history_base = db.query(CommunicationHistory).filter(CommunicationHistory.created_at >= date_from)
+        template_base = db.query(CommunicationTemplate).filter(CommunicationTemplate.is_active == True)
+        if tenant_id:
+            sms_base = sms_base.filter(SMSLog.tenant_id == tenant_id)
+            email_base = email_base.filter(EmailLog.tenant_id == tenant_id)
+            whatsapp_base = whatsapp_base.filter(WhatsAppMessage.tenant_id == tenant_id)
+            history_base = history_base.filter(CommunicationHistory.tenant_id == tenant_id)
+            template_base = template_base.filter(CommunicationTemplate.tenant_id == tenant_id)
+
+        sms_total = sms_base.count()
+        sms_sent = sms_base.filter(SMSLog.status == "sent").count()
+        sms_failed = sms_base.filter(SMSLog.status == "failed").count()
         
-        email_total = db.query(EmailLog).filter(EmailLog.created_at >= date_from).count()
-        email_sent = db.query(EmailLog).filter(and_(EmailLog.created_at >= date_from, EmailLog.status == "sent")).count()
-        email_failed = db.query(EmailLog).filter(and_(EmailLog.created_at >= date_from, EmailLog.status == "failed")).count()
+        email_total = email_base.count()
+        email_sent = email_base.filter(EmailLog.status == "sent").count()
+        email_failed = email_base.filter(EmailLog.status == "failed").count()
+        whatsapp_total = whatsapp_base.count()
+        whatsapp_sent = whatsapp_base.filter(WhatsAppMessage.direction == "outbound").count()
+        whatsapp_failed = whatsapp_base.filter(WhatsAppMessage.status == "failed").count()
         
-        template_count = db.query(CommunicationTemplate).filter(CommunicationTemplate.is_active == True).count()
-        history_total = db.query(CommunicationHistory).filter(CommunicationHistory.created_at >= date_from).count()
+        template_count = template_base.count()
+        history_total = history_base.count()
         
         stats = {
             "sms": {"total": sms_total, "sent": sms_sent, "failed": sms_failed, "successRate": (sms_sent / sms_total * 100) if sms_total > 0 else 0},
             "email": {"total": email_total, "sent": email_sent, "failed": email_failed, "successRate": (email_sent / email_total * 100) if email_total > 0 else 0},
+            "whatsapp": {"total": whatsapp_total, "sent": whatsapp_sent, "failed": whatsapp_failed, "successRate": (whatsapp_sent / whatsapp_total * 100) if whatsapp_total > 0 else 0},
             "templates": {"active": template_count},
             "history": {"total": history_total},
             "period": {"days": days, "from": date_from.isoformat(), "to": now_utc().isoformat()}

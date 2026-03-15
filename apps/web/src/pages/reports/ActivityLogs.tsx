@@ -15,6 +15,7 @@ import { useExecuteToolApiAiComposerExecutePost } from '@/api/client/ai-composer
 import type { ActivityLogRead, ExecuteResponse, ListActivityLogsParams } from '@/api/generated/schemas';
 import { Button, Input, Select, DataTable } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
+import { DesktopPageHeader } from '../../components/layout/DesktopPageHeader';
 
 // Extended interface to cover properties present in API response but missing from current schema
 interface ExtendedActivityLogRead extends ActivityLogRead {
@@ -285,15 +286,13 @@ export default function ActivityLogsPage() {
 
     return (
         <div className="p-6 max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                        <FileText className="w-7 h-7 text-blue-600" />
-                        Aktivite Logları
-                    </h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1">Sistemdeki tüm kullanıcı hareketlerini görüntüleyin</p>
-                </div>
-            </div>
+            <DesktopPageHeader
+                className="mb-8"
+                title="Aktivite Logları"
+                description="Sistemdeki tüm kullanıcı hareketlerini görüntüleyin"
+                icon={<FileText className="w-6 h-6" />}
+                eyebrow={{ tr: 'Sistem Kayıtları', en: 'Activity Logs' }}
+            />
 
             {/* Filters */}
             <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6">

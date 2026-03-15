@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/services/whatsapp_session_service.py
+# hypothesis_version: 6.151.9
+
+[1.0, 15.0, 20.0, 25.0, 30.0, 120.0, 180.0, 240.0, 600.0, 'action', 'bridgePid', 'chatId', 'connected', 'data', 'disconnect', 'disconnected', 'error', 'idle', 'lastError', 'lastEventAt', 'lastSyncAt', 'limit', 'loading', 'log', 'message', 'messages', 'never', 'node', 'ok', 'payload', 'phoneNumber', 'profilePath', 'qr', 'qrCode', 'qrUpdatedAt', 'requestId', 'response', 'scripts', 'send_bulk', 'send_message', 'send_reply_to_chat', 'starting', 'state', 'status', 'stopped', 'storage', 'syncInProgress', 'sync_recent', 'type', 'whatsapp_bridge.mjs', 'whatsapp_sessions']

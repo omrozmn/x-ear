@@ -7,21 +7,26 @@ import {
   createInventorySerials,
   InventoryItemUpdate
 } from '@/api/client/inventory.client';
-import { ArrowLeft, Edit, X, Trash2, Package, Save, AlertTriangle } from 'lucide-react';
-import { Button, Modal } from '@x-ear/ui-web';
+import { Edit, X, Trash2, Package, Save, AlertTriangle } from 'lucide-react';
+import { Button, Modal, useToastHelpers } from '@x-ear/ui-web';
 import { InventoryItem, InventoryCategory } from '../types/inventory';
 import { SerialNumberModal } from '../components/inventory/SerialNumberModal';
+import { UtsSerialStatusModal } from '../components/uts/UtsSerialStatusModal';
 import { ProductInfoSection } from './inventory/components/ProductInfoSection';
 import { StockInfoSection } from './inventory/components/StockInfoSection';
 import { PricingInfoSection } from './inventory/components/PricingInfoSection';
 import { WarrantyInfoSection } from './inventory/components/WarrantyInfoSection';
 import { InventoryMovementsTable } from '../components/party/InventoryMovementsTable';
+import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
+import { HeaderBackButton } from '../components/layout/HeaderBackButton';
 
 import {
   INVENTORY_KDV_RATE,
   INVENTORY_PRICE_KDV_INCLUDED,
   INVENTORY_COST_KDV_INCLUDED
 } from '../constants/storage-keys';
+import { useQueryUtsTekilUrun, useUpsertUtsSerialState, useUtsConfig, useUtsSerialStates } from '@/hooks/uts/useUts';
+import type { UtsSerialState } from '@/services/uts/uts.service';
 
 interface InventoryDetailPageProps {
   id: string;
@@ -29,6 +34,7 @@ interface InventoryDetailPageProps {
 
 export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) => {
   const navigate = useNavigate();
+  const toast = useToastHelpers();
   const [item, setItem] = useState<InventoryItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,9 +57,16 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
 
   // Serial modal state
   const [isSerialModalOpen, setIsSerialModalOpen] = useState(false);
+  const [selectedSerialState, setSelectedSerialState] = useState<UtsSerialState | null>(null);
+  const [isUtsModalOpen, setIsUtsModalOpen] = useState(false);
+  const [queryingSerial, setQueryingSerial] = useState<string | null>(null);
 
   // Delete confirmation modal state
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const { data: utsConfig } = useUtsConfig();
+  const { data: utsSerialStates } = useUtsSerialStates({ inventoryId: id });
+  const queryTekilUrun = useQueryUtsTekilUrun();
+  const upsertUtsState = useUpsertUtsSerialState();
 
   // Save KDV preferences to localStorage
   useEffect(() => {
@@ -256,19 +269,12 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
     if (!item) return;
 
     try {
-      console.log('💾 SAVING SERIALS:', {
-        itemId: id,
-        serials,
-        count: serials.length
-      });
-
       await createInventorySerials(id, { serials });
-
-      // If inventoryAddSerialNumbers returns void, remove the success check and just reload
       await loadItem();
+      toast.success('Seri numaraları başarıyla kaydedildi');
     } catch (err) {
       console.error('Save serials failed:', err);
-      alert('Seri numaraları kaydetme işlemi başarısız oldu');
+      toast.error('Seri numaraları kaydetme işlemi başarısız oldu');
     }
   };
 
@@ -321,63 +327,113 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
     );
   }
 
+  const serialBadgeMap = Object.fromEntries(
+    (utsConfig?.enabled && utsConfig?.tokenConfigured ? (utsSerialStates?.items || []) : []).flatMap((state) => {
+      if (!state.serialNumber) return [];
+      const isVerified = state.lastMovementType === 'query' || state.lastMovementType === 'alma' || state.lastMovementType === 'verme' || state.lastMovementType === 'sync';
+      const displayStatus = isVerified ? state.status : 'unverified';
+      return [[state.serialNumber, {
+        label: displayStatus === 'owned' ? 'UTS Bizde' : displayStatus === 'pending_receipt' ? 'UTS Alma Bekliyor' : displayStatus === 'not_owned' ? 'UTS Bizde Degil' : 'UTS Sorgulanmadi',
+        tone: (displayStatus === 'owned' ? 'success' : displayStatus === 'pending_receipt' ? 'secondary' : 'danger') as 'success' | 'secondary' | 'danger',
+        status: displayStatus,
+      }]];
+    }),
+  ) as Record<string, { label: string; tone: 'success' | 'secondary' | 'danger'; status: import('../components/uts/UtsSerialStatusBadge').UtsDisplayStatus }>;
+
+  const serialStateBySerial = new Map((utsSerialStates?.items || []).map((state) => [state.serialNumber || '', state]));
+
+  const handleQuerySerial = async (serial: string) => {
+    if (!item?.barcode) {
+      toast.error('UTS sorgusu icin barkod gerekli');
+      return;
+    }
+    setQueryingSerial(serial);
+    try {
+      const response = await queryTekilUrun.mutateAsync({
+        productNumber: item.barcode,
+        serialNumber: serial,
+      });
+      const firstMatch = response.items?.[0];
+      // Only set "owned" if UTS explicitly returns the item AND the owner institution matches ours
+      // Otherwise set to "not_owned" since UTS couldn't confirm ownership
+      let nextStatus: 'owned' | 'not_owned' | 'pending_receipt' = 'not_owned';
+      if (response.success && response.items?.length && firstMatch) {
+        // If ownerInstitutionNumber is returned and matches our member number, it's truly owned
+        // If UTS returned the item, it exists in the system
+        nextStatus = firstMatch.ownerInstitutionNumber ? 'owned' : 'not_owned';
+      }
+      const nextState = await upsertUtsState.mutateAsync({
+        status: nextStatus,
+        inventoryId: item.id,
+        inventoryName: item.name,
+        productName: `${item.brand} ${item.model}`.trim() || item.name,
+        productNumber: item.barcode,
+        serialNumber: serial,
+        supplierName: item.supplier || undefined,
+        institutionNumber: firstMatch?.ownerInstitutionNumber || undefined,
+        lastMessage: response.message || (nextStatus === 'owned' ? 'UTS kaydi dogrulandi - ustumuzde' : 'UTS kaydi bulunamadi veya ustumuzde degil'),
+        lastMovementType: 'query',
+        rawResponse: JSON.stringify(response.rawResponse || {}),
+      });
+      setSelectedSerialState(nextState);
+      setIsUtsModalOpen(true);
+      toast.success(nextStatus === 'owned' ? 'UTS dogrulandi - cihaz ustumuzde' : 'UTS kaydi bulunamadi veya ustumuzde degil');
+    } catch (error) {
+      console.error(error);
+      toast.error('UTS sorgusu basarisiz');
+    } finally {
+      setQueryingSerial(null);
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            onClick={() => navigate({ to: '/inventory' })}
-            icon={<ArrowLeft className="w-4 h-4" />}
-          >
-            Geri
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
-              <Package className="w-6 h-6 mr-2" />
-              {item.name}
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400">{item.brand} - {item.model}</p>
-          </div>
-        </div>
-        <div className="flex items-center space-x-3">
-          {!isEditMode ? (
+        <DesktopPageHeader
+          leading={<HeaderBackButton label="Stoğa Dön" onClick={() => navigate({ to: '/inventory' })} />}
+          title={item.name}
+          description={`${item.brand} - ${item.model}`}
+          icon={<Package className="w-6 h-6" />}
+          eyebrow={{ tr: 'Ürün Detayı', en: 'Inventory Detail' }}
+          actions={(
             <>
-              <Button
-                variant="outline"
-                onClick={handleEdit}
-                icon={<Edit className="w-4 h-4" />}
-              >
-                Düzenle
-              </Button>
-              <Button
-                variant="danger"
-                onClick={handleDelete}
-                icon={<Trash2 className="w-4 h-4" />}
-              >
-                Sil
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                variant="outline"
-                onClick={handleCancelEdit}
-                icon={<X className="w-4 h-4" />}
-              >
-                İptal
-              </Button>
-              <Button
-                onClick={handleSave}
-                icon={<Save className="w-4 h-4" />}
-              >
-                Kaydet
-              </Button>
+              {!isEditMode ? (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={handleEdit}
+                    icon={<Edit className="w-4 h-4" />}
+                  >
+                    Düzenle
+                  </Button>
+                  <Button
+                    variant="danger"
+                    onClick={handleDelete}
+                    icon={<Trash2 className="w-4 h-4" />}
+                  >
+                    Sil
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={handleCancelEdit}
+                    icon={<X className="w-4 h-4" />}
+                  >
+                    İptal
+                  </Button>
+                  <Button
+                    onClick={handleSave}
+                    icon={<Save className="w-4 h-4" />}
+                  >
+                    Kaydet
+                  </Button>
+                </>
+              )}
             </>
           )}
-        </div>
-      </div>
+        />
 
       {/* Content - 2 Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -433,6 +489,21 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
         availableCount={item.availableInventory}
         existingSerials={item.availableSerials || []}
         onSave={handleSaveSerials}
+        serialBadges={serialBadgeMap}
+        onQuerySerial={handleQuerySerial}
+        queryingSerial={queryingSerial}
+        onBadgeClick={(serial) => {
+          const state = serialStateBySerial.get(serial);
+          if (!state) return;
+          setSelectedSerialState(state);
+          setIsUtsModalOpen(true);
+        }}
+      />
+
+      <UtsSerialStatusModal
+        isOpen={isUtsModalOpen}
+        onClose={() => setIsUtsModalOpen(false)}
+        serialState={selectedSerialState}
       />
 
       {/* Delete Confirmation Modal */}

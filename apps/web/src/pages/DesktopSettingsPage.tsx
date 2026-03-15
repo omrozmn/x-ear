@@ -8,6 +8,7 @@ import TeamSettings from './settings/Team';
 import PartySegmentsSettings from './settings/PartySegmentsSettings';
 import SgkSettings from './settings/SgkSettings';
 import SubscriptionSettings from './settings/Subscription';
+import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 
 type TabId = 'company' | 'integration' | 'team' | 'parties' | 'sgk' | 'subscription';
 
@@ -50,7 +51,7 @@ export function DesktopSettingsPage() {
       case 'parties':
         return 'Hasta Ayarları';
       case 'sgk':
-        return 'SGK Ayarları';
+        return 'SGK & Satış Ayarları';
       case 'subscription':
         return 'Abonelik';
       default:
@@ -60,21 +61,13 @@ export function DesktopSettingsPage() {
 
   return (
     <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="md:flex md:items-center md:justify-between">
-            <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <SettingsIcon className="w-7 h-7 text-blue-600" />
-                {getPageTitle()}
-              </h1>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Sistem ayarlarını yönetin ve yapılandırın
-              </p>
-            </div>
-          </div>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <DesktopPageHeader
+          title={getPageTitle()}
+          description="Sistem ayarlarını yönetin ve yapılandırın"
+          icon={<SettingsIcon className="w-6 h-6" />}
+          eyebrow={{ tr: 'Çalışma Alanı Ayarları', en: 'Workspace Settings' }}
+        />
       </div>
 
       {/* Content */}

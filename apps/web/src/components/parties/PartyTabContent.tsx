@@ -13,6 +13,7 @@ import { PartyAppointmentsTab } from './PartyAppointmentsTab';
 
 import { PartyNotesTab } from './PartyNotesTab';
 import { PartySGKTab } from './PartySGKTab';
+import { PartyHearingTestsTab } from './PartyHearingTestsTab';
 import { Clock } from 'lucide-react';
 
 interface PartyTabContentProps {
@@ -63,6 +64,7 @@ export const PartyTabContent: React.FC<PartyTabContentProps> = ({
   // _formatDate function removed - not used
 
   switch (activeTab) {
+    case 'general':
     case 'overview':
       return (
         <ErrorBoundary>
@@ -94,7 +96,7 @@ export const PartyTabContent: React.FC<PartyTabContentProps> = ({
     case 'documents':
       return (
         <ErrorBoundary>
-          <PartyDocumentsTab partyId={party?.id || ''} />
+          <PartyDocumentsTab partyId={party?.id || ''} party={party} />
         </ErrorBoundary>
       );
     case 'appointments':
@@ -103,14 +105,12 @@ export const PartyTabContent: React.FC<PartyTabContentProps> = ({
           <PartyAppointmentsTab party={party} onPartyUpdate={onPartyUpdate || (() => { })} />
         </ErrorBoundary>
       );
-    /* İşitme Testleri Tab - Geçici olarak devre dışı
     case 'hearing-tests':
       return (
         <ErrorBoundary>
-          <PartyHearingTestsTab />
+          <PartyHearingTestsTab partyId={party?.id || ''} />
         </ErrorBoundary>
       );
-    */
     case 'sgk':
       return (
         <ErrorBoundary>

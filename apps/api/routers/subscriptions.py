@@ -304,6 +304,76 @@ def complete_signup(
         token=request_data.token
     ))
 
+# ── Feature-flag definitions ──────────────────────────────────────
+# Every sidebar menu item maps to a feature key.  Plan.features JSON
+# stores the enabled keys: {"invoices": true, "sgk": true, ...}
+# Features NOT listed in a plan are disabled by default.
+# Super-admin / impersonating always get ALL features.
+
+# Core features always available (no plan restriction)
+CORE_FEATURES = {
+    'dashboard', 'patients', 'appointments', 'inventory',
+    'suppliers', 'sales', 'purchases', 'payments', 'settings',
+}
+
+# Premium features that require plan activation
+PREMIUM_FEATURES = {
+    'campaigns', 'website_builder', 'invoices', 'sgk',
+    'reports', 'accounting', 'whatsapp', 'uts_integration',
+    'sgk_integration',
+}
+
+ALL_FEATURES = CORE_FEATURES | PREMIUM_FEATURES
+
+
+class FeaturesResponse(BaseModel):
+    features: dict  # {feature_key: bool}
+    plan_name: Optional[str] = None
+    is_super_admin: bool = False
+
+
+@router.get("/features", operation_id="listSubscriptionFeatures", response_model=ResponseEnvelope[FeaturesResponse])
+def get_enabled_features(
+    access: UnifiedAccess = Depends(require_access()),
+    db: Session = Depends(get_db)
+):
+    """Return enabled feature flags for the current tenant's plan."""
+    from models.tenant import Tenant
+    from models.plan import Plan
+
+    # Super-admin or impersonating admin → everything enabled
+    if access.is_super_admin or (access.is_admin and access.is_impersonating):
+        return ResponseEnvelope(data=FeaturesResponse(
+            features={f: True for f in ALL_FEATURES},
+            plan_name='Super Admin',
+            is_super_admin=True,
+        ))
+
+    tenant = db.get(Tenant, access.tenant_id) if access.tenant_id else None
+    plan = None
+    if tenant and tenant.current_plan_id:
+        plan = db.get(Plan, tenant.current_plan_id)
+
+    # Build feature map: core features always on
+    features: dict = {f: True for f in CORE_FEATURES}
+
+    if plan and plan.features and isinstance(plan.features, dict):
+        # Plan.features JSON stores premium toggles: {"invoices": true, ...}
+        for key in PREMIUM_FEATURES:
+            features[key] = bool(plan.features.get(key, False))
+    else:
+        # No plan → only core features
+        for key in PREMIUM_FEATURES:
+            features[key] = False
+
+    plan_name = plan.name if plan else (tenant.current_plan if tenant else None)
+
+    return ResponseEnvelope(data=FeaturesResponse(
+        features=features,
+        plan_name=plan_name,
+        is_super_admin=False,
+    ))
+
 @router.get("/current", operation_id="listSubscriptionCurrent", response_model=ResponseEnvelope[CurrentSubscriptionResponse])
 def get_current(
     access: UnifiedAccess = Depends(require_access()),

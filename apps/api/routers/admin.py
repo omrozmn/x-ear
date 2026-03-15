@@ -14,6 +14,7 @@ from jose import jwt
 from core.database import get_db
 from middleware.unified_access import UnifiedAccess, require_admin
 from schemas.base import ResponseEnvelope
+from schemas.sales import SaleRead
 from schemas.users import UserCreate, UserRead
 from core.models.user import User
 from core.models.party import Party
@@ -421,10 +422,31 @@ def impersonate_tenant(
         if not tenant or tenant.deleted_at:
             raise HTTPException(status_code=404, detail={"message": "Tenant not found", "code": "NOT_FOUND"})
         
+        # Check impersonation consent: at least one tenant user must allow it
+        from core.models.user import User
+        consenting_user = (
+            db_session.query(User)
+            .filter(
+                User.tenant_id == request_data.tenant_id,
+                User.allow_impersonation == True,  # noqa: E712
+                User.is_active == True,  # noqa: E712
+            )
+            .first()
+        )
+        if not consenting_user:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "message": "Impersonation not allowed — no tenant user has granted consent",
+                    "code": "IMPERSONATION_NOT_ALLOWED",
+                },
+            )
+        
         # Create impersonation token with tenant context
         admin_id = access.user.id if access.user else 'system'
+        admin_identity = normalize_admin_identity(admin_id)
         impersonation_token = create_access_token(
-            admin_id,
+            admin_identity,
             {
                 'role': 'TENANT_ADMIN',
                 'user_type': 'impersonated',
@@ -496,14 +518,35 @@ def debug_switch_tenant(
                 detail={"message": "Tenant not found", "code": "TENANT_NOT_FOUND"}
             )
         
+        # Check impersonation consent
+        from core.models.user import User
+        consenting = (
+            db_session.query(User)
+            .filter(
+                User.tenant_id == target_tenant_id,
+                User.allow_impersonation == True,  # noqa: E712
+                User.is_active == True,  # noqa: E712
+            )
+            .first()
+        )
+        if not consenting:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "message": "Impersonation not allowed — no tenant user has granted consent",
+                    "code": "IMPERSONATION_NOT_ALLOWED",
+                },
+            )
+        
         # Get admin user
         admin_id = access.user_id
+        admin_identity = normalize_admin_identity(admin_id)
         admin_email = access.user.email if access.user else 'unknown'
         
         # Create new token with tenant impersonation
         # CRITICAL: Set tenant_id to target tenant for proper isolation
         access_token = create_access_token(
-            admin_id,
+            admin_identity,
             {
                 'tenant_id': target_tenant_id,  # Set to target tenant for isolation
                 'effective_tenant_id': target_tenant_id,  # Backward compatibility
@@ -517,7 +560,7 @@ def debug_switch_tenant(
         )
         
         refresh_token = create_refresh_token(
-            admin_id,
+            admin_identity,
             {
                 'tenant_id': target_tenant_id,  # Set to target tenant for isolation
                 'effective_tenant_id': target_tenant_id,  # Backward compatibility
@@ -585,7 +628,7 @@ def debug_exit_impersonation(
 
 # --- Sales Management (Cross-tenant) ---
 
-@router.get("/sales/{sale_id}", operation_id="getAdminSale")
+@router.get("/sales/{sale_id}", operation_id="getAdminSale", response_model=ResponseEnvelope[SaleRead])
 def get_admin_sale(
     sale_id: str,
     db_session: Session = Depends(get_db),
@@ -594,10 +637,16 @@ def get_admin_sale(
     """Get sale details (admin operation - cross-tenant)"""
     from schemas.sales import SaleRead
     from core.database import unbound_session
+    from routers.sales import _build_full_sale_data
     
     with unbound_session(reason="admin-get-sale"):
         sale = db_session.get(Sale, sale_id)
         if not sale:
             raise HTTPException(status_code=404, detail={"message": "Sale not found", "code": "NOT_FOUND"})
         
-        return ResponseEnvelope(data=SaleRead.model_validate(sale).model_dump(by_alias=True))
+        try:
+            sale_data = _build_full_sale_data(db_session, sale)
+        except Exception as e:
+            logger.warning(f"Failed to build full sale data for {sale_id}: {e}")
+            sale_data = SaleRead.model_validate(sale).model_dump(by_alias=True)
+        return ResponseEnvelope(data=sale_data)

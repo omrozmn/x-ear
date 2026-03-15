@@ -14,6 +14,7 @@ import { SGKWorkflow } from '../components/SGKWorkflow';
 import { SGKUpload } from '../components/SGKUpload';
 import { SGKDownloadsPage } from './sgk/SGKDownloadsPage';
 import { Button } from '@x-ear/ui-web';
+import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 
 type TabType = 'documents' | 'upload' | 'downloads' | 'stats' | 'workflow';
 
@@ -129,40 +130,32 @@ export const SGKPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">SGK Yönetimi</h1>
-              <p className="mt-1 text-sm text-gray-500">
-                Belge yönetimi, iş akışı ve e-reçete işlemleri
-              </p>
-            </div>
-
-            {/* Quick Stats */}
-            {stats && (
-              <div className="flex space-x-6">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">{stats.totalDocuments}</div>
-                  <div className="text-xs text-gray-500">Toplam Belge</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-yellow-600">{stats.pendingApprovals}</div>
-                  <div className="text-xs text-gray-500">Bekleyen Onay</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">{formatCurrency(stats.totalValue)}</div>
-                  <div className="text-xs text-gray-500">Toplam Değer</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-600">{Math.round(stats.approvalRate)}%</div>
-                  <div className="text-xs text-gray-500">Onay Oranı</div>
-                </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <DesktopPageHeader
+          title="SGK Yönetimi"
+          description="Belge yönetimi, iş akışı ve e-reçete işlemleri"
+          eyebrow={{ tr: 'Sağlık Operasyonları', en: 'Healthcare Ops' }}
+          actions={stats ? (
+            <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+              <div className="rounded-2xl border border-white/60 bg-white/70 px-4 py-3 text-center dark:border-white/10 dark:bg-white/5">
+                <div className="text-2xl font-bold text-blue-600 dark:text-blue-300">{stats.totalDocuments}</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">Toplam Belge</div>
               </div>
-            )}
-          </div>
-        </div>
+              <div className="rounded-2xl border border-white/60 bg-white/70 px-4 py-3 text-center dark:border-white/10 dark:bg-white/5">
+                <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-300">{stats.pendingApprovals}</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">Bekleyen Onay</div>
+              </div>
+              <div className="rounded-2xl border border-white/60 bg-white/70 px-4 py-3 text-center dark:border-white/10 dark:bg-white/5">
+                <div className="text-2xl font-bold text-green-600 dark:text-green-300">{formatCurrency(stats.totalValue)}</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">Toplam Değer</div>
+              </div>
+              <div className="rounded-2xl border border-white/60 bg-white/70 px-4 py-3 text-center dark:border-white/10 dark:bg-white/5">
+                <div className="text-2xl font-bold text-purple-600 dark:text-purple-300">{Math.round(stats.approvalRate)}%</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">Onay Oranı</div>
+              </div>
+            </div>
+          ) : null}
+        />
       </div>
       {/* Error Banner */}
       {error && (

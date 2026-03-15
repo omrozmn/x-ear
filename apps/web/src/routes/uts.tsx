@@ -1,8 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router';
-import UTSPage from '@/pages/uts/UTSPage';
+import { UtsWorkbench } from '@/components/uts/UtsWorkbench';
+import { FeatureGate } from '../components/common/FeatureGate';
+
+function GatedUTSPage() {
+  return (
+    <FeatureGate featureKey="uts_integration">
+      <UtsWorkbench />
+    </FeatureGate>
+  );
+}
 
 export const Route = createFileRoute('/uts')({
-  component: UTSPage,
+  component: GatedUTSPage,
 });
-
-export default Route;

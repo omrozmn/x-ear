@@ -17,8 +17,6 @@ from datetime import datetime, timedelta, timezone
 from jose import jwt
 from unittest.mock import Mock, patch
 
-from fastapi.testclient import TestClient
-
 # Set test environment
 os.environ.setdefault("JWT_SECRET_KEY", "test-secret-key-for-testing")
 os.environ.setdefault("AI_ENABLED", "true")
@@ -26,12 +24,10 @@ os.environ.setdefault("AI_PHASE", "B")
 os.environ.setdefault("AI_RETENTION_DAYS", "90")
 
 # Import after setting environment
-from main import app as main_app
-from core.database import get_db
 from ai.models.ai_request import AIRequest, RequestStatus
 from ai.services.data_retention import DataRetentionService
 
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "test-secret-key-for-testing")
+SECRET_KEY = "test-secret"
 ALGORITHM = "HS256"
 
 
@@ -44,67 +40,6 @@ def create_valid_token(user_id="test-user", tenant_id="test-tenant"):
         "exp": datetime.now(timezone.utc) + timedelta(hours=1),
     }
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-
-
-@pytest.fixture
-def db_session(request):
-    """
-    Create a test database session using the real database.
-    
-    Uses transaction rollback for test isolation.
-    """
-    from pathlib import Path
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import sessionmaker
-    
-    # Use real database path
-    db_path = Path(__file__).resolve().parent.parent.parent / "instance" / "xear_crm.db"
-    
-    # Create engine
-    engine = create_engine(
-        f"sqlite:///{db_path}",
-        connect_args={"check_same_thread": False},
-        echo=False,
-    )
-    
-    # Create session
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    session = SessionLocal()
-    
-    # Start transaction
-    session.begin()
-    
-    try:
-        yield session
-    finally:
-        # Rollback to undo changes
-        session.rollback()
-        session.close()
-        engine.dispose()
-
-
-@pytest.fixture
-def app(db_session):
-    """Create test app with database dependency override."""
-    # Override get_db to use test session
-    def override_get_db():
-        try:
-            yield db_session
-        finally:
-            pass  # Managed by fixture
-    
-    main_app.dependency_overrides[get_db] = override_get_db
-    
-    yield main_app
-    
-    # Clean up
-    main_app.dependency_overrides.clear()
-
-
-@pytest.fixture
-def client(app):
-    """Create a test client."""
-    return TestClient(app)
 
 
 class TestJWTAuthToChatToAuditTrail:
@@ -243,7 +178,7 @@ class TestCancellationFlowEndToEnd:
         data = response2.json()
         
         assert data["status"] == "success"
-        assert data["response"] == "Operation cancelled"
+        assert data["response"] in ["Operation cancelled", "İşlem iptal edildi."]
         assert data["intent"]["intent_type"] in ["cancel", "cancellation"]
         
         # Verify conversation context was cleared

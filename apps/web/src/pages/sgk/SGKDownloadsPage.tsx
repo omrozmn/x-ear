@@ -4,6 +4,7 @@ import { Download, Eye, FileText, Filter, CheckCircle, Clock, AlertCircle, Loade
 import { useToastHelpers } from '@x-ear/ui-web';
 import { useListSgkEReceiptDelivered } from '../../api/generated/sgk/sgk.ts';
 import { unwrapArray } from '../../utils/response-unwrap';
+import { DesktopPageHeader } from '../../components/layout/DesktopPageHeader';
 
 interface DeliveredEReceipt {
   id: string;
@@ -265,15 +266,14 @@ export const SGKDownloadsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">SGK Belge İndir</h1>
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Bu ay kaydedilen e-reçeteler için belgelerinizi indirin</p>
-            </div>
-            <div className="flex items-center space-x-3">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <DesktopPageHeader
+          title="SGK Belge İndir"
+          description="Bu ay kaydedilen e-reçeteler için belgelerinizi indirin"
+          icon={<FileText className="w-6 h-6" />}
+          eyebrow={{ tr: 'Belge İndirme', en: 'Document Downloads' }}
+          actions={(
+            <>
               <div className="flex items-center space-x-2">
                 <Filter className="w-4 h-4 text-gray-500" />
                 <Select
@@ -297,9 +297,9 @@ export const SGKDownloadsPage: React.FC = () => {
                 <Download className="w-4 h-4 mr-2" />
                 Toplu İndir ({selectedParties.size})
               </Button>
-            </div>
-          </div>
-        </div>
+            </>
+          )}
+        />
       </div>
 
       {/* Bulk Download Panel */}

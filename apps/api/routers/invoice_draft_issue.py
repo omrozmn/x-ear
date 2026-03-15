@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from core.database import get_db, unbound_session
 from core.models.integration_config import IntegrationConfig
+from core.models.invoice import Invoice
 from core.models.purchase_invoice import PurchaseInvoice
 from core.models.tenant import Tenant
 from middleware.unified_access import UnifiedAccess, require_access
@@ -376,6 +377,37 @@ def issue_invoice_draft(
             },
         }
         db.commit()
+
+        # If this invoice was created from a sale, create an Invoice record to link them
+        sale_id = form_data.get("saleId") or form_data.get("sale_id")
+        if sale_id and draft.invoice_number:
+            try:
+                existing_link = db.query(Invoice).filter_by(sale_id=sale_id).first()
+                if not existing_link:
+                    from core.models.sales import Sale
+                    sale = db.query(Sale).filter_by(id=sale_id).first()
+                    inv_record = Invoice(
+                        invoice_number=draft.invoice_number,
+                        sale_id=sale_id,
+                        party_id=sale.party_id if sale else form_data.get("customerId"),
+                        tenant_id=tenant_id,
+                        device_name=form_data.get("items", [{}])[0].get("name") if isinstance(form_data.get("items"), list) and form_data.get("items") else None,
+                        device_price=draft.total_amount or 0,
+                        patient_name=f"{form_data.get('customerFirstName', '')} {form_data.get('customerLastName', '')}".strip(),
+                        patient_tc=form_data.get("customerTcNumber") or form_data.get("customerTaxId") or "",
+                        status="active",
+                        sent_to_gib=True,
+                        sent_to_gib_at=datetime.utcnow(),
+                        issue_date=datetime.utcnow(),
+                        edocument_status="approved",
+                        ettn=draft.birfatura_uuid,
+                    )
+                    db.add(inv_record)
+                    db.commit()
+                    logger.info("Created Invoice record linking sale %s to invoice %s", sale_id, draft.invoice_number)
+            except Exception as link_err:
+                logger.warning("Failed to create Invoice-Sale link: %s", link_err)
+                db.rollback()
     except HTTPException:
         db.rollback()
         raise

@@ -262,7 +262,7 @@ from routers import payments, tenant_users, suppliers, settings
 # Admin routers
 from routers import admin, admin_tenants, admin_dashboard, admin_plans, admin_addons, admin_analytics, admin_example_documents
 # Additional routers
-from routers import invoices, sgk
+from routers import invoices, sgk, sgk_credentials
 # Newly migrated routers
 from routers import activity_logs, permissions, ocr
 from routers import upload, documents
@@ -330,6 +330,7 @@ app.include_router(invoices_new.router, prefix="/api")
 app.include_router(invoice_draft_issue.router, prefix="/api")
 app.include_router(invoices.router, prefix="/api")
 app.include_router(sgk.router, prefix="/api")
+app.include_router(sgk_credentials.router, prefix="/api")
 
 # Public routers (no auth required)
 app.include_router(unsubscribe.router, prefix="/api")
@@ -362,9 +363,9 @@ app.include_router(ocr.router, prefix="/api")
 app.include_router(upload.router, prefix="/api")
 app.include_router(documents.router, prefix="/api")
 # Party subresources router (devices, notes, hearing tests, ereceipts, appointments)
-from routers import party_subresources, hearing_profiles
+from routers import party_subresources
 app.include_router(party_subresources.router, prefix="/api")
-app.include_router(hearing_profiles.router, prefix="/api")
+# hearing_profiles already included above (line 297)
 app.include_router(cash_records.router, prefix="/api")
 app.include_router(unified_cash.router, prefix="/api")
 app.include_router(payment_integrations.router, prefix="/api")
@@ -426,17 +427,20 @@ app.include_router(birfatura.router, prefix="/api")
 app.include_router(apps.router)
 app.include_router(pos_commission.router)
 app.include_router(uts.router)
-app.include_router(sms_packages.router, prefix="/api") # Active: SMS Package Management
+from routers import invoice_normalizer
+app.include_router(invoice_normalizer.router, prefix="/api")
+# sms_packages already included above (line 388)
 # app.include_router(orders.router, prefix="/api") # Pending: Marketplace Orders
 
 # Phase 7 migrated routers - Final modules
-from routers import invoice_management, invoices_actions, communications, sms_integration, smtp_config, email_logs
+from routers import invoice_management, invoices_actions, communications, sms_integration, smtp_config, email_logs, whatsapp
 app.include_router(sms_integration.router)
 app.include_router(invoice_management.router)
 app.include_router(invoices_actions.router)
 app.include_router(communications.router)
 app.include_router(smtp_config.router)
 app.include_router(email_logs.router)
+app.include_router(whatsapp.router, prefix="/api")
 
 # Tool API routers (AI Layer integration)
 from routers.tool_api import email_notifications as tool_api_email
@@ -449,6 +453,10 @@ app.include_router(commissions.router, prefix="/api")
 
 from routers import schema_registry
 app.include_router(schema_registry.router, prefix="/api") # Active: Developer Schema Registry
+
+# Noah Import / Agent routers
+from routers import noah_imports
+app.include_router(noah_imports.router, prefix="/api")
 
 # AI Layer routers
 from ai.api import (

@@ -6,6 +6,7 @@ import {
     useCreatePoCommissionInstallmentOptions
 } from '@/api/client/payments.client';
 import { CreditCard, AlertTriangle, ShieldCheck, Check, TrendingDown } from 'lucide-react';
+import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 
 interface InitPaymentPayload {
     amount: number;
@@ -173,15 +174,13 @@ export default function PosPage() {
 
     return (
         <div className="max-w-4xl mx-auto py-8 px-4">
-            <div className="mb-8">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                    <CreditCard className="w-8 h-8 text-blue-600 dark:text-blue-500" />
-                    {t('pos.title')}
-                </h1>
-                <p className="text-gray-500 dark:text-gray-400 mt-1">
-                    {t('pos.description')}
-                </p>
-            </div>
+            <DesktopPageHeader
+                className="mb-8"
+                title={t('pos.title')}
+                description={t('pos.description')}
+                icon={<CreditCard className="w-6 h-6" />}
+                eyebrow={{ tr: 'POS', en: 'POS' }}
+            />
 
             {result === 'success' && (
                 <div className="mb-6 bg-green-50 border border-green-200 dark:bg-green-900/30 dark:border-green-800 p-4 rounded-2xl flex items-center gap-3 text-green-800 dark:text-green-300">

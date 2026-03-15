@@ -4,8 +4,10 @@ Handles appointment CRUD, scheduling, availability
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional, List
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
+import json
+import uuid
 
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
@@ -23,6 +25,7 @@ from core.models.party import Party
 from models.tenant import Tenant
 from services.event_service import event_service
 from fastapi import BackgroundTasks
+from models.user import ActivityLog
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Appointments"])
@@ -179,6 +182,19 @@ def create_appointment(
         appointment.notes = data.get('notes')
         
         db_session.add(appointment)
+
+        activity = ActivityLog(
+            id=str(uuid.uuid4()),
+            tenant_id=appointment.tenant_id,
+            user_id=access.user_id,
+            action='appointment_created',
+            entity_type='party',
+            entity_id=data['party_id'],
+            details=json.dumps({"title": "Randevu oluşturuldu", "appointment_id": appointment.id}),
+            created_at=datetime.now(timezone.utc),
+        )
+        db_session.add(activity)
+
         db_session.commit()
         
         logger.info(f"Appointment created: {appointment.id}")
@@ -371,6 +387,18 @@ def update_appointment(
         if 'branch_id' in data:
             appointment.branch_id = data['branch_id']
         
+        activity = ActivityLog(
+            id=str(uuid.uuid4()),
+            tenant_id=appointment.tenant_id,
+            user_id=access.user_id,
+            action='appointment_updated',
+            entity_type='party',
+            entity_id=appointment.party_id,
+            details=json.dumps({"title": "Randevu güncellendi", "appointment_id": appointment_id}),
+            created_at=datetime.now(timezone.utc),
+        )
+        db_session.add(activity)
+
         db_session.commit()
         return ResponseEnvelope(data=appointment)
     except HTTPException:
@@ -390,6 +418,19 @@ def delete_appointment(
     try:
         appointment = get_appointment_or_404(db_session, appointment_id, access)
         db_session.delete(appointment)
+
+        activity = ActivityLog(
+            id=str(uuid.uuid4()),
+            tenant_id=appointment.tenant_id,
+            user_id=access.user_id,
+            action='appointment_deleted',
+            entity_type='party',
+            entity_id=appointment.party_id,
+            details=json.dumps({"title": "Randevu silindi", "appointment_id": appointment_id}),
+            created_at=datetime.now(timezone.utc),
+        )
+        db_session.add(activity)
+
         db_session.commit()
         return ResponseEnvelope(message="Appointment deleted")
     except HTTPException:
@@ -414,6 +455,18 @@ def reschedule_appointment(
         appointment.time = reschedule_data.time
         appointment.status = 'rescheduled'
         
+        activity = ActivityLog(
+            id=str(uuid.uuid4()),
+            tenant_id=appointment.tenant_id,
+            user_id=access.user_id,
+            action='appointment_rescheduled',
+            entity_type='party',
+            entity_id=appointment.party_id,
+            details=json.dumps({"title": "Randevu yeniden planlandı", "appointment_id": appointment_id}),
+            created_at=datetime.now(timezone.utc),
+        )
+        db_session.add(activity)
+
         db_session.commit()
         return ResponseEnvelope(data=appointment)
     except HTTPException:
@@ -433,6 +486,19 @@ def cancel_appointment(
     try:
         appointment = get_appointment_or_404(db_session, appointment_id, access)
         appointment.status = 'cancelled'
+
+        activity = ActivityLog(
+            id=str(uuid.uuid4()),
+            tenant_id=appointment.tenant_id,
+            user_id=access.user_id,
+            action='appointment_cancelled',
+            entity_type='party',
+            entity_id=appointment.party_id,
+            details=json.dumps({"title": "Randevu iptal edildi", "appointment_id": appointment_id}),
+            created_at=datetime.now(timezone.utc),
+        )
+        db_session.add(activity)
+
         db_session.commit()
         return ResponseEnvelope(data=appointment)
     except HTTPException:
@@ -452,6 +518,19 @@ def complete_appointment(
     try:
         appointment = get_appointment_or_404(db_session, appointment_id, access)
         appointment.status = AppointmentStatus.COMPLETED
+
+        activity = ActivityLog(
+            id=str(uuid.uuid4()),
+            tenant_id=appointment.tenant_id,
+            user_id=access.user_id,
+            action='appointment_completed',
+            entity_type='party',
+            entity_id=appointment.party_id,
+            details=json.dumps({"title": "Randevu tamamlandı", "appointment_id": appointment_id}),
+            created_at=datetime.now(timezone.utc),
+        )
+        db_session.add(activity)
+
         db_session.commit()
         return ResponseEnvelope(data=appointment)
     except HTTPException:

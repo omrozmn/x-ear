@@ -1,14 +1,16 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from '@tanstack/react-router';
-import { Button, Tabs, TabsContent, TabsList, TabsTrigger, Badge, Loading, DataTable } from '@x-ear/ui-web';
+import { Button, Tabs, TabsContent, TabsList, TabsTrigger, Badge, Loading, DataTable, Input } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
-import { ArrowLeft, Building2, Mail, Phone, MapPin, Globe, Edit, Trash2, PackagePlus, FileText, X, Check, CheckCircle2 } from 'lucide-react';
+import { Building2, Mail, Phone, MapPin, Globe, Edit, Trash2, PackagePlus, FileText, X, Check, CheckCircle2 } from 'lucide-react';
 import { useSupplier, useDeleteSupplier, useUpdateSupplier, useSupplierProducts, type SupplierFormData } from '../hooks/useSuppliers';
 import { useSupplierInvoiceItems, useAddToInventory, type SupplierInvoiceItem } from '../hooks/useSupplierInvoiceItems';
 import { apiClient } from '@/api/orval-mutator';
 import { SupplierFormModal } from '../components/suppliers/SupplierFormModal';
 import { SupplierExtended } from '../components/suppliers/supplier-search.types';
 import toast from 'react-hot-toast';
+import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
+import { HeaderBackButton } from '../components/layout/HeaderBackButton';
 
 // Known hearing aid brands for auto-parsing product names
 const KNOWN_BRANDS = [
@@ -172,42 +174,36 @@ export function SupplierDetailPage() {
     <div className="min-h-screen bg-gray-50 p-6">
       {/* Header */}
       <div className="mb-6">
-        <Button variant="ghost" onClick={handleBack} className="mb-4 pl-0 hover:bg-transparent hover:text-blue-600">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Tedarikçilere Dön
-        </Button>
-
-        <div className="flex items-start justify-between">
-          <div className="flex items-center">
-            <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white shadow-lg">
-              <Building2 className="h-8 w-8" />
-            </div>
-            <div className="ml-4">
-              <h1 className="text-2xl font-bold text-gray-900">{supplierData.companyName || supplierData.name}</h1>
-              <div className="flex items-center mt-1 space-x-2">
-                {supplierData.companyCode && (
-                  <Badge variant="secondary">{supplierData.companyCode}</Badge>
-                )}
-                {supplierData.isActive ? (
-                  <Badge variant="success">Aktif</Badge>
-                ) : (
-                  <Badge variant="secondary">Pasif</Badge>
-                )}
-              </div>
-            </div>
+        <DesktopPageHeader
+          leading={<HeaderBackButton label="Tedarikçilere Dön" onClick={handleBack} />}
+          title={supplierData.companyName || supplierData.name}
+          description="Tedarikçi kaydının detaylarını yönetin"
+          icon={<Building2 className="h-6 w-6" />}
+          eyebrow={{ tr: 'Tedarikçi Kartı', en: 'Supplier Profile' }}
+          actions={(
+            <>
+              <Button variant="outline" onClick={handleEdit}>
+                <Edit className="h-4 w-4 mr-2" />
+                Düzenle
+              </Button>
+              <Button variant="danger" onClick={handleDelete}>
+                <Trash2 className="h-4 w-4 mr-2" />
+                Sil
+              </Button>
+            </>
+          )}
+        >
+          <div className="flex items-center gap-2">
+            {supplierData.companyCode && (
+              <Badge variant="secondary">{supplierData.companyCode}</Badge>
+            )}
+            {supplierData.isActive ? (
+              <Badge variant="success">Aktif</Badge>
+            ) : (
+              <Badge variant="secondary">Pasif</Badge>
+            )}
           </div>
-
-          <div className="flex space-x-2">
-            <Button variant="outline" onClick={handleEdit}>
-              <Edit className="h-4 w-4 mr-2" />
-              Düzenle
-            </Button>
-            <Button variant="danger" onClick={handleDelete}>
-              <Trash2 className="h-4 w-4 mr-2" />
-              Sil
-            </Button>
-          </div>
-        </div>
+        </DesktopPageHeader>
       </div>
 
       {/* Content */}
@@ -241,6 +237,14 @@ export function SupplierDetailPage() {
                     <Phone className="h-5 w-5" />
                   </div>
                   <span className="text-sm">{supplierData.phone}</span>
+                </div>
+              )}
+              {supplierData.institutionNumber && (
+                <div className="flex items-center text-gray-600">
+                  <div className="w-8 flex-shrink-0">
+                    <CheckCircle2 className="h-5 w-5" />
+                  </div>
+                  <span className="text-sm">UTS Kurum No: {supplierData.institutionNumber}</span>
                 </div>
               )}
               {supplierData.website && (
@@ -408,15 +412,17 @@ export function SupplierDetailPage() {
                         sortable: true,
                         sortAccessor: (item) => item.invoiceNumber,
                         render: (_, item) => (
-                          <button
+                          <Button
                             type="button"
+                            variant="ghost"
+                            size="sm"
                             onClick={() => handleViewInvoicePdf(item.purchaseInvoiceId, item.invoiceNumber)}
                             disabled={invoiceLoading === item.invoiceNumber}
-                            className="text-blue-600 hover:text-blue-800 hover:underline font-medium inline-flex items-center gap-1"
+                            className="h-auto p-0 text-blue-600 hover:text-blue-800 hover:bg-transparent hover:underline dark:text-blue-400 dark:hover:text-blue-300"
                           >
                             <FileText className="h-3.5 w-3.5" />
                             {invoiceLoading === item.invoiceNumber ? 'Yükleniyor...' : item.invoiceNumber}
-                          </button>
+                          </Button>
                         ),
                       },
                       {
@@ -537,50 +543,53 @@ export function SupplierDetailPage() {
             <div className="space-y-3">
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Ürün Adı (Faturadan)</label>
-                <input
+                <Input
                   type="text"
                   value={confirmModal.item.productName}
                   disabled
-                  className="w-full px-3 py-2 border border-gray-200 rounded-xl bg-gray-50 text-sm text-gray-700"
+                  fullWidth
+                  className="bg-gray-50 text-gray-700"
                 />
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Marka</label>
-                <input
+                <Input
                   type="text"
                   value={confirmModal.brand}
                   onChange={(e) => setConfirmModal({ ...confirmModal, brand: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  fullWidth
                   placeholder="Marka adı"
                 />
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Model</label>
-                <input
+                <Input
                   type="text"
                   value={confirmModal.model}
                   onChange={(e) => setConfirmModal({ ...confirmModal, model: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  fullWidth
                   placeholder="Model adı"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">Birim Fiyat</label>
-                  <input
+                  <Input
                     type="text"
                     value={`${Number(confirmModal.item.unitPrice).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺`}
                     disabled
-                    className="w-full px-3 py-2 border border-gray-200 rounded-xl bg-gray-50 text-sm text-gray-500"
+                    fullWidth
+                    className="bg-gray-50 text-gray-500"
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">Fatura No</label>
-                  <input
+                  <Input
                     type="text"
                     value={confirmModal.item.invoiceNumber}
                     disabled
-                    className="w-full px-3 py-2 border border-gray-200 rounded-xl bg-gray-50 text-sm text-gray-500"
+                    fullWidth
+                    className="bg-gray-50 text-gray-500"
                   />
                 </div>
               </div>

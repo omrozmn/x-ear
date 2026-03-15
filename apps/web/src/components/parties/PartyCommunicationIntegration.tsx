@@ -6,6 +6,7 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   MessageSquare,
+  MessageCircle,
   Mail,
   Send,
   Clock,
@@ -27,7 +28,7 @@ interface PartyCommunicationIntegrationProps {
 
 interface CommunicationMessage {
   id: string;
-  type: 'sms' | 'email';
+  type: 'sms' | 'email' | 'whatsapp';
   recipient: string;
   recipientName?: string;
   partyId?: string;
@@ -47,7 +48,7 @@ interface CommunicationMessage {
 interface QuickMessageTemplate {
   id: string;
   name: string;
-  type: 'sms' | 'email';
+  type: 'sms' | 'email' | 'whatsapp';
   content: string;
   subject?: string;
   category: 'appointment' | 'reminder' | 'follow_up' | 'general';
@@ -64,7 +65,7 @@ const QUICK_TEMPLATES: QuickMessageTemplate[] = [
   {
     id: 'follow_up',
     name: 'Tedavi Sonrası Takip',
-    type: 'sms',
+    type: 'whatsapp',
     content: 'Sayın {{partyName}}, tedaviniz sonrası durumunuz nasıl? Herhangi bir sorunuz varsa bize ulaşabilirsiniz.',
     category: 'follow_up'
   },
@@ -90,7 +91,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
   onClose
 }) => {
   const [activeTab, setActiveTab] = useState<'send' | 'history'>('send');
-  const [messageType, setMessageType] = useState<'sms' | 'email'>('sms');
+  const [messageType, setMessageType] = useState<'sms' | 'email' | 'whatsapp'>('sms');
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [messageContent, setMessageContent] = useState('');
   const [messageSubject, setMessageSubject] = useState('');
@@ -172,9 +173,9 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
       return;
     }
 
-    const recipient = messageType === 'sms' ? party.phone : party.email;
+    const recipient = messageType === 'email' ? party.email : party.phone;
     if (!recipient) {
-      error(`Hasta ${messageType === 'sms' ? 'telefon numarası' : 'e-posta adresi'} bulunamadı`);
+      error(`Hasta ${messageType === 'email' ? 'e-posta adresi' : 'telefon numarası'} bulunamadı`);
       return;
     }
 
@@ -356,7 +357,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
                   name="messageType"
                   value="sms"
                   checked={messageType === 'sms'}
-                  onChange={(e) => setMessageType(e.target.value as 'sms' | 'email')}
+                  onChange={(e) => setMessageType(e.target.value as 'sms' | 'email' | 'whatsapp')}
                   className="mr-2"
                 />
                 <MessageSquare className="w-4 h-4 mr-1" />
@@ -369,11 +370,24 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
                   name="messageType"
                   value="email"
                   checked={messageType === 'email'}
-                  onChange={(e) => setMessageType(e.target.value as 'sms' | 'email')}
+                  onChange={(e) => setMessageType(e.target.value as 'sms' | 'email' | 'whatsapp')}
                   className="mr-2"
                 />
                 <Mail className="w-4 h-4 mr-1" />
                 E-posta
+              </label>
+              <label className="flex items-center">
+                <input
+                  data-allow-raw="true"
+                  type="radio"
+                  name="messageType"
+                  value="whatsapp"
+                  checked={messageType === 'whatsapp'}
+                  onChange={(e) => setMessageType(e.target.value as 'sms' | 'email' | 'whatsapp')}
+                  className="mr-2"
+                />
+                <MessageCircle className="w-4 h-4 mr-1" />
+                WhatsApp
               </label>
             </div>
           </Card>
@@ -422,11 +436,11 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
                 <Textarea
                   value={messageContent}
                   onChange={(e) => setMessageContent(e.target.value)}
-                  placeholder={`${messageType === 'sms' ? 'SMS' : 'E-posta'} içeriğini yazın...`}
-                  rows={messageType === 'sms' ? 4 : 8}
+                  placeholder={`${messageType === 'sms' ? 'SMS' : messageType === 'whatsapp' ? 'WhatsApp' : 'E-posta'} içeriğini yazın...`}
+                  rows={messageType === 'email' ? 8 : 4}
                   className="resize-none"
                 />
-                {messageType === 'sms' && (
+                {messageType !== 'email' && (
                   <div className="text-xs text-gray-500 mt-1">
                     {messageContent.length}/160 karakter
                   </div>
@@ -529,6 +543,8 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
                         <div className="flex items-center space-x-2">
                           {message.type === 'sms' ? (
                             <MessageSquare className="w-4 h-4 text-blue-500" />
+                          ) : message.type === 'whatsapp' ? (
+                            <MessageCircle className="w-4 h-4 text-emerald-500" />
                           ) : (
                             <Mail className="w-4 h-4 text-green-500" />
                           )}

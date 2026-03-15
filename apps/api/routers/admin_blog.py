@@ -9,7 +9,7 @@ from datetime import datetime
 
 router = APIRouter(prefix="/admin/blog", tags=["Admin Blog"])
 
-@router.get("/", response_model=List[PostRead])
+@router.get("/", operation_id="listAdminBlogPosts", response_model=List[PostRead])
 def admin_get_posts(
     current_user = Depends(get_current_admin_user),
     db: Session = Depends(get_db)
@@ -17,7 +17,7 @@ def admin_get_posts(
     """Admin endpoint to see all posts (published or not)."""
     return db.query(Post).order_by(Post.created_at.desc()).all()
 
-@router.post("/", response_model=PostRead)
+@router.post("/", operation_id="createAdminBlogPost", response_model=PostRead)
 def create_post(
     post_in: PostCreate,
     current_user = Depends(get_current_admin_user),
@@ -47,7 +47,7 @@ def create_post(
     db.refresh(db_post)
     return db_post
 
-@router.put("/{post_id}", response_model=PostRead)
+@router.put("/{post_id}", operation_id="updateAdminBlogPost", response_model=PostRead)
 def update_post(
     post_id: str,
     post_in: PostUpdate,
@@ -75,7 +75,7 @@ def update_post(
     db.refresh(db_post)
     return db_post
 
-@router.delete("/{post_id}")
+@router.delete("/{post_id}", operation_id="deleteAdminBlogPost")
 def delete_post(
     post_id: str,
     current_user = Depends(get_current_admin_user),

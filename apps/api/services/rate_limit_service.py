@@ -105,7 +105,7 @@ class RateLimitService:
         Returns:
             int: Number of emails sent in last hour
         """
-        from core.models.email import EmailLog
+        from core.models.email import SMTPEmailLog as EmailLog
         
         one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
         
@@ -128,7 +128,7 @@ class RateLimitService:
         Returns:
             int: Number of emails sent in last 24 hours
         """
-        from core.models.email import EmailLog
+        from core.models.email import SMTPEmailLog as EmailLog
         
         twenty_four_hours_ago = datetime.now(timezone.utc) - timedelta(hours=24)
         

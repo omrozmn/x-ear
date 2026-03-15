@@ -15,7 +15,7 @@ export const CashRegisterCard: React.FC<CashRegisterCardProps> = ({
 }) => {
   return (
     <div
-      className="bg-gradient-to-br from-teal-500 to-emerald-600 rounded-2xl p-8 cursor-pointer shadow-lg shadow-teal-100 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl relative overflow-hidden group"
+      className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 rounded-2xl p-8 cursor-pointer shadow-lg shadow-emerald-100/80 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl relative overflow-hidden group"
       onClick={onClick}
     >
       {/* Decorative */}
@@ -30,7 +30,7 @@ export const CashRegisterCard: React.FC<CashRegisterCardProps> = ({
             <div>
               <p className="text-2xl font-bold text-white tracking-tight">Kasa Kaydı</p>
               <div className="flex items-center space-x-2 mt-1">
-                <span className="text-sm font-medium text-emerald-100 bg-emerald-700/30 px-2 py-0.5 rounded-xl border border-emerald-500/30">Hızlı Giriş</span>
+                <span className="text-sm font-medium text-emerald-50 bg-white/16 px-2 py-0.5 rounded-xl border border-white/20">Hızlı Giriş</span>
               </div>
               <p className="text-sm text-emerald-50/80 mt-2 font-medium">
                 Gelir ve gider işlemlerinizi kolayca kaydedin

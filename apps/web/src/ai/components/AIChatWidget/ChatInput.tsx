@@ -110,6 +110,32 @@ const PaperclipIcon = () => (
 );
 
 /**
+ * Camera icon SVG for photo capture
+ */
+const CameraIcon = () => (
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+    />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+    />
+  </svg>
+);
+
+/**
  * Loading spinner SVG
  */
 const LoadingSpinner = () => (
@@ -168,6 +194,7 @@ export function ChatInput({
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-focus on mount
   useEffect(() => {
@@ -232,6 +259,9 @@ export function ChatInput({
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = '';
+    }
   };
 
   return (
@@ -262,6 +292,29 @@ export function ChatInput({
             title="Dosya Yükle"
           >
             {isUploading ? <LoadingSpinner /> : <PaperclipIcon />}
+          </button>
+
+          {/* Camera Capture Button */}
+          <input data-allow-raw="true"
+            type="file"
+            accept="image/*"
+            capture="environment"
+            ref={cameraInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+          />
+          <button data-allow-raw="true"
+            type="button"
+            disabled={isDisabled}
+            onClick={() => cameraInputRef.current?.click()}
+            className={`
+              flex items-center justify-center p-2 rounded-full transition-colors
+              bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700
+              disabled:opacity-50 disabled:cursor-not-allowed
+            `}
+            title="Kamera ile Çek"
+          >
+            <CameraIcon />
           </button>
         </>
       )}

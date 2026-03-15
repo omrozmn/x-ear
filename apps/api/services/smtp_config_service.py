@@ -191,7 +191,7 @@ class SMTPConfigService:
                     "from_email": from_email,
                     "server_ip": server_ip,
                     "is_valid": is_valid,
-                    "message": message
+                    "spf_message": message
                 }
             )
             

@@ -33,9 +33,10 @@ def test_get_affiliate_profile(client, db_session):
     client.post('/api/affiliates/register', json={'email': email, 'password': 'password123'})
     
     login_resp = client.post('/api/affiliates/login', json={'email': email, 'password': 'password123'})
-    affiliate_id = login_resp.json()['data']['id']
+    login_data = login_resp.json()['data']
+    access_token = login_data.get('access_token')
     
-    resp = client.get(f'/api/affiliates/me?affiliate_id={affiliate_id}')
+    resp = client.get('/api/affiliates/me', headers={'Authorization': f'Bearer {access_token}'})
     assert resp.status_code == 200
     assert resp.json()['data']['email'] == email
 

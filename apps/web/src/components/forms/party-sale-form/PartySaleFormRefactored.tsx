@@ -4,6 +4,7 @@ import { PartyApiService } from '../../../services/party/party-api.service';
 import { listInventory } from '@/api/client/inventory.client';
 import { unwrapArray } from '../../../utils/response-unwrap';
 import { createPartyTimeline, createPartyActivities } from '@/api/client/timeline.client';
+import { SerialAutocomplete } from '@/components/shared/SerialAutocomplete';
 
 // InventoryItem type definition (since schema may not export it directly)
 interface InventoryItem {
@@ -14,6 +15,8 @@ interface InventoryItem {
   price: number;
   availableInventory?: number;
   inventory?: number;
+  vatRate?: number;
+  availableSerials?: string[];
 }
 
 // Product interface for the dropdown - mapped from InventoryItem
@@ -24,6 +27,8 @@ interface Product {
   brand?: string;
   price: number;
   stock?: number;
+  kdvRate?: number;
+  availableSerials?: string[];
 }
 
 // Convert InventoryItem to Product interface
@@ -33,7 +38,9 @@ const mapInventoryItemToProduct = (item: InventoryItem): Product => ({
   category: item.category,
   brand: item.brand,
   price: item.price,
-  stock: item.availableInventory || item.inventory || 0
+  stock: item.availableInventory || item.inventory || 0,
+  kdvRate: item.vatRate ?? 0,
+  availableSerials: item.availableSerials || []
 });
 
 // Searchable Product Dropdown Component
@@ -274,59 +281,43 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
     }
   }, [selectedProduct]);
 
-  // Helper function to get KDV rate based on category
-  const getKdvRate = (category: string | undefined): number => {
-    if (!category) return 20;
-
-    // Hearing aids have 0% KDV, others have 20%
-    const lowerCategory = category.toLowerCase();
-    if (lowerCategory.includes('işitme') || lowerCategory.includes('hearing') ||
-      lowerCategory.includes('cihaz') || lowerCategory.includes('aid')) {
-      return 0;
-    }
-    return 20;
-  };
-
   // Pricing calculation with discount and SGK
   const pricingCalculation = useMemo(() => {
     // 1. Base Price
     const basePrice = quantity * unitPrice;
 
-    // 2. KDV setup (Hearing aids 0%, others 20%)
-    const kdvRate = selectedProduct ? getKdvRate(selectedProduct.category) : 20;
+    // 2. KDV from inventory (hearing aids = 0%, set in inventory)
+    const kdvRate = selectedProduct?.kdvRate ?? 0;
     const kdvAmount = (basePrice * kdvRate) / 100;
 
     // 3. Amount with KDV
     const totalWithKdv = basePrice + kdvAmount;
 
-    // 4. Calculate Discount ON the KDV-inclusive amount
+    // 4. SGK FIRST — only for hearing aids
+    let calculatedSgk = 0;
+    if (isHearingAid) {
+      const schemeAmount = sgkFallbackValues[sgkSupportType] || 0;
+      const sgkMultiplier = ear === 'both' ? 2 : 1;
+      const totalSgkSupport = schemeAmount * sgkMultiplier;
+      calculatedSgk = Math.min(totalSgkSupport, totalWithKdv);
+    }
+
+    // 5. After SGK
+    const afterSgk = totalWithKdv - calculatedSgk;
+
+    // 6. Discount SECOND — on SGK-reduced amount
     let calculatedDiscount = 0;
     if (discountType === 'percentage') {
-      calculatedDiscount = (totalWithKdv * discountInput) / 100;
+      calculatedDiscount = (afterSgk * discountInput) / 100;
     } else {
       calculatedDiscount = discountInput;
     }
 
-    // 5. Net Amount is after discount
-    const netAmount = Math.max(0, totalWithKdv - calculatedDiscount);
-
-    // Calculate SGK
-    let calculatedSgk = 0;
-    if (isHearingAid) {
-      const schemeAmount = sgkFallbackValues[sgkSupportType] || 0;
-      // For bilateral, SGK support is per ear, so multiply by 2
-      const sgkMultiplier = ear === 'both' ? 2 : 1;
-      const totalSgkSupport = schemeAmount * sgkMultiplier;
-      calculatedSgk = Math.min(totalSgkSupport, totalWithKdv);
-    } else {
-      calculatedSgk = 0;
-    }
-
-    const finalAmount = Math.max(0, totalWithKdv - calculatedSgk);
+    // 7. Final amount = after SGK and discount
+    const finalAmount = Math.max(0, afterSgk - calculatedDiscount);
 
     return {
       basePrice,
-      netAmount, // netAmount is now the amount after discount (and KDV) but before SGK
       kdvRate,
       kdvAmount,
       totalWithKdv,
@@ -353,34 +344,17 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
     e.preventDefault();
 
     if (!selectedProduct) {
-      alert('Lütfen bir ürün seçin');
+      warning('Lütfen bir ürün seçin');
       return;
     }
 
     if (quantity <= 0) {
-      alert('Miktar 0\'dan büyük olmalıdır');
+      warning('Miktar 0\'dan büyük olmalıdır');
       return;
     }
 
     if (isHearingAid) {
-      if (ear === 'both') {
-        if (!serialNumberLeft.trim() || !serialNumberRight.trim()) {
-          alert('Bilateral satışlarda sağ ve sol seri numaraları zorunludur');
-          return;
-        }
-      } else if (ear === 'left') {
-        // ✅ FIXED: Seri numarası artık zorunlu değil (User Request)
-        // if (!serialNumber.trim()) {
-        //   alert('Sol kulak için seri numarası zorunludur');
-        //   return;
-        // }
-      } else if (ear === 'right') {
-        // ✅ FIXED: Seri numarası artık zorunlu değil (User Request)
-        // if (!serialNumber.trim()) {
-        //   alert('Sağ kulak için seri numarası zorunludur');
-        //   return;
-        // }
-      }
+      // Seri numaraları opsiyoneldir — validation yok
     }
 
     try {
@@ -588,47 +562,32 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
           <div className="grid grid-cols-2 gap-4" data-testid="sale-form-serial-section">
             {ear === 'both' ? (
               <>
-                <div>
-                  <Label className="mb-1">
-                    <span className="text-blue-600">Sol Kulak</span> Seri No
-                  </Label>
-                  <Input
-                    type="text"
-                    value={serialNumberLeft}
-                    onChange={(e) => setSerialNumberLeft(e.target.value)}
-                    placeholder="Sol kulak seri numarası"
-                    fullWidth
-                    data-testid="sale-form-serial-left"
-                  />
-                </div>
-                <div>
-                  <Label className="mb-1">
-                    <span className="text-red-600">Sağ Kulak</span> Seri No
-                  </Label>
-                  <Input
-                    type="text"
-                    value={serialNumberRight}
-                    onChange={(e) => setSerialNumberRight(e.target.value)}
-                    placeholder="Sağ kulak seri numarası"
-                    fullWidth
-                    data-testid="sale-form-serial-right"
-                  />
-                </div>
+                <SerialAutocomplete
+                  value={serialNumberLeft}
+                  onChange={setSerialNumberLeft}
+                  availableSerials={selectedProduct?.availableSerials || []}
+                  placeholder="Sol kulak seri numarası"
+                  label="Sol Kulak Seri No"
+                  color="blue"
+                />
+                <SerialAutocomplete
+                  value={serialNumberRight}
+                  onChange={setSerialNumberRight}
+                  availableSerials={selectedProduct?.availableSerials || []}
+                  placeholder="Sağ kulak seri numarası"
+                  label="Sağ Kulak Seri No"
+                  color="red"
+                />
               </>
             ) : (
               <div className="col-span-2">
-                <Label className="mb-1">
-                  <span className={ear === 'left' ? 'text-blue-600' : 'text-red-600'}>
-                    {ear === 'left' ? 'Sol Kulak' : 'Sağ Kulak'}
-                  </span> Seri No
-                </Label>
-                <Input
-                  type="text"
+                <SerialAutocomplete
                   value={serialNumber}
-                  onChange={(e) => setSerialNumber(e.target.value)}
+                  onChange={setSerialNumber}
+                  availableSerials={selectedProduct?.availableSerials || []}
                   placeholder="Seri numarası"
-                  fullWidth
-                  data-testid="sale-form-serial-number"
+                  label={`${ear === 'left' ? 'Sol Kulak' : 'Sağ Kulak'} Seri No`}
+                  color={ear === 'left' ? 'blue' : 'red'}
                 />
               </div>
             )}

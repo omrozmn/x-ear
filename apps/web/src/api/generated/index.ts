@@ -62,7 +62,9 @@ export * from './hearing-profiles/hearing-profiles.ts';
 export * from './inventory/inventory.ts';
 export * from './invoice-actions/invoice-actions.ts';
 export * from './invoice-management/invoice-management.ts';
+export * from './invoice-normalizer/invoice-normalizer.ts';
 export * from './invoices/invoices.ts';
+export * from './noah-import/noah-import.ts';
 export * from './notifications/notifications.ts';
 export * from './ocr/ocr.ts';
 export * from './parties/parties.ts';
@@ -80,6 +82,7 @@ export * from './roles/roles.ts';
 export * from './sales/sales.ts';
 export * from './settings/settings.ts';
 export * from './sgk/sgk.ts';
+export * from './sgk-credentials/sgk-credentials.ts';
 export * from './sms/sms.ts';
 export * from './sms-integration/sms-integration.ts';
 export * from './smtp-configuration/smtp-configuration.ts';
@@ -92,6 +95,7 @@ export * from './unified-cash/unified-cash.ts';
 export * from './upload/upload.ts';
 export * from './users/users.ts';
 export * from './uts/uts.ts';
+export * from './whats-app/whats-app.ts';
 
 // Re-export schemas
 export * from './schemas';

@@ -7,6 +7,7 @@
  */
 import type { SaleCreateSalesPrice } from './saleCreateSalesPrice';
 import type { SaleCreateDiscountType } from './saleCreateDiscountType';
+import type { SaleCreateDiscountValue } from './saleCreateDiscountValue';
 import type { SaleCreateDiscountAmount } from './saleCreateDiscountAmount';
 import type { SaleCreatePaymentMethod } from './saleCreatePaymentMethod';
 import type { SaleCreateNotes } from './saleCreateNotes';
@@ -27,6 +28,7 @@ export interface SaleCreate {
   salesPrice?: SaleCreateSalesPrice;
   quantity?: number;
   discountType?: SaleCreateDiscountType;
+  discountValue?: SaleCreateDiscountValue;
   discountAmount?: SaleCreateDiscountAmount;
   paymentMethod?: SaleCreatePaymentMethod;
   notes?: SaleCreateNotes;

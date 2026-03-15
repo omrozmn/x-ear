@@ -1,10 +1,12 @@
 import React, { useState, useCallback } from 'react';
 import { Modal, Button } from '@x-ear/ui-web';
-import { FileText, Eye, Download, Scissors, Zap } from 'lucide-react';
+import { FileText, Eye, Download, Scissors, Zap, CheckCircle } from 'lucide-react';
 import PartySearch from './PartySearch';
 import DocumentTypeSelector from './DocumentTypeSelector';
 import { type Party } from '../../types/party';
 import { type ProcessingResult, type MatchedParty } from './DocumentPreview';
+import { uploadOcrDocument } from '@/api/client/ocr.client';
+import { normalizeTurkishChars } from '../../utils/stringUtils';
 
 interface ProcessedDocument {
   id: string;
@@ -94,141 +96,199 @@ const DocumentProcessor: React.FC<DocumentProcessorProps> = ({
     });
   }, []);
 
-  // Detect document edges and crop
+  // Detect document edges and crop using canvas-based analysis
   const detectAndCropDocument = useCallback(async (imageData: string): Promise<{
     croppedImage: string;
     corners: Array<{ x: number; y: number }>;
     confidence: number;
   }> => {
-    // Simulate edge detection processing
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve({ croppedImage: imageData, corners: [], confidence: 0 });
+          return;
+        }
 
-    // Mock edge detection result
-    const mockCorners = [
-      { x: 50, y: 50 },
-      { x: 350, y: 45 },
-      { x: 355, y: 450 },
-      { x: 45, y: 455 }
-    ];
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
 
-    // For now, return the original image as "cropped"
-    // In real implementation, this would use OpenCV.js or similar
-    return {
-      croppedImage: imageData,
-      corners: mockCorners,
-      confidence: 0.85 + Math.random() * 0.1, // 85-95% confidence
-    };
+        const imgDataObj = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgDataObj.data;
+
+        // Convert to grayscale and find edge boundaries
+        const threshold = 200; // White background threshold
+        let minX = canvas.width, minY = canvas.height, maxX = 0, maxY = 0;
+        const totalPixels = canvas.width * canvas.height;
+
+        for (let y = 0; y < canvas.height; y++) {
+          for (let x = 0; x < canvas.width; x++) {
+            const i = (y * canvas.width + x) * 4;
+            const gray = (data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114);
+            
+            if (gray < threshold) {
+              if (x < minX) minX = x;
+              if (y < minY) minY = y;
+              if (x > maxX) maxX = x;
+              if (y > maxY) maxY = y;
+            }
+          }
+        }
+
+        // Add small margin
+        const margin = Math.min(canvas.width, canvas.height) * 0.02;
+        minX = Math.max(0, minX - margin);
+        minY = Math.max(0, minY - margin);
+        maxX = Math.min(canvas.width, maxX + margin);
+        maxY = Math.min(canvas.height, maxY + margin);
+
+        const docWidth = maxX - minX;
+        const docHeight = maxY - minY;
+
+        // Only crop if we detected a meaningful document area
+        const areaRatio = (docWidth * docHeight) / totalPixels;
+        const hasDocument = areaRatio > 0.1 && areaRatio < 0.98;
+        const confidence = hasDocument 
+          ? Math.min(0.95, 0.5 + areaRatio * 0.5)
+          : 0.3;
+
+        const corners = [
+          { x: Math.round(minX), y: Math.round(minY) },
+          { x: Math.round(maxX), y: Math.round(minY) },
+          { x: Math.round(maxX), y: Math.round(maxY) },
+          { x: Math.round(minX), y: Math.round(maxY) },
+        ];
+
+        if (hasDocument && docWidth > 100 && docHeight > 100) {
+          // Crop to detected document area
+          const cropCanvas = document.createElement('canvas');
+          const cropCtx = cropCanvas.getContext('2d');
+          if (cropCtx) {
+            cropCanvas.width = docWidth;
+            cropCanvas.height = docHeight;
+            cropCtx.drawImage(canvas, minX, minY, docWidth, docHeight, 0, 0, docWidth, docHeight);
+            resolve({
+              croppedImage: cropCanvas.toDataURL('image/jpeg', 0.85),
+              corners,
+              confidence,
+            });
+            return;
+          }
+        }
+
+        resolve({
+          croppedImage: imageData,
+          corners,
+          confidence,
+        });
+      };
+      img.onerror = () => {
+        resolve({ croppedImage: imageData, corners: [], confidence: 0 });
+      };
+      img.src = imageData;
+    });
   }, []);
 
-  // Enhanced document type detection with weighted keyword scoring
+  // Enhanced document type detection with weighted keyword scoring and Turkish normalization
   const detectDocumentType = useCallback((text: string): string => {
-    const keywords = {
-      sgk_reçete: ['reçete', 'ilaç', 'eczane', 'sgk', 'sosyal güvenlik', 'prescription', 'medicine'],
-      sgk_rapor: ['rapor', 'doktor', 'hekim', 'muayene', 'tanı', 'report', 'diagnosis'],
-      odyometri: ['odyometri', 'işitme', 'audiometry', 'hearing', 'kulak', 'ear'],
-      garanti_belgesi: ['garanti', 'warranty', 'cihaz', 'device', 'serial'],
+    const keywords: Record<string, string[]> = {
+      sgk_reçete: ['reçete', 'recete', 'ilaç', 'ilac', 'eczane', 'sgk', 'sosyal güvenlik', 'sosyal guvenlik', 'prescription', 'medicine', 'medula'],
+      sgk_rapor: ['rapor', 'doktor', 'hekim', 'muayene', 'tanı', 'tani', 'report', 'diagnosis', 'bulgular', 'tedavi'],
+      odyometri: ['odyometri', 'işitme', 'isitme', 'audiometry', 'hearing', 'kulak', 'ear', 'odyogram', 'audiogram', 'db', 'hz', 'frekans'],
+      garanti_belgesi: ['garanti', 'warranty', 'cihaz', 'device', 'serial', 'seri no', 'seri numarası'],
+      fatura: ['fatura', 'invoice', 'kdv', 'matrah', 'tutar', 'toplam', 'vergi', 'vkn', 'tckn'],
       diger: []
     };
 
     const scores: Record<string, number> = {};
+    const normalizedText = normalizeTurkishChars(text).toLowerCase();
     const lowerText = text.toLowerCase();
 
-    // Calculate weighted scores for each document type
     Object.entries(keywords).forEach(([type, words]) => {
       scores[type] = 0;
       words.forEach(keyword => {
-        const matches = (lowerText.match(new RegExp(keyword, 'g')) || []).length;
-        // Weight keywords by importance and frequency
+        const normalizedKeyword = normalizeTurkishChars(keyword).toLowerCase();
+        // Check both original and normalized text
+        const matchesOriginal = (lowerText.match(new RegExp(keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
+        const matchesNormalized = (normalizedText.match(new RegExp(normalizedKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
+        const matches = Math.max(matchesOriginal, matchesNormalized);
         scores[type] += matches * (keyword.length > 5 ? 2 : 1);
       });
     });
 
-    // Find the highest scoring document type
     const maxScore = Math.max(...Object.values(scores));
     const detectedType = Object.entries(scores).find(([, score]) => score === maxScore)?.[0];
     
-    // Return detected type if confidence is high enough, otherwise 'diger'
     return maxScore >= 3 ? detectedType! : 'diger';
   }, []);
 
-  // Enhanced text extraction with better OCR simulation
-  const extractTextFromImage = useCallback(async (): Promise<ProcessingResult['result']> => {
-    // Simulate OCR processing with realistic delay
-    await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
-
-    // Enhanced mock OCR results with more realistic patterns
-    const mockTexts = [
-      {
-        ocr_text: `T.C. SAĞLIK BAKANLIĞI
-SGK REÇETE
-Hasta Adı: AHMET YILMAZ
-TC Kimlik No: 12345678901
-Tarih: ${new Date().toLocaleDateString('tr-TR')}
-İlaç Listesi:
-- Aspirin 100mg
-- Vitamin D3`,
-        matched_party: {
-          name: "AHMET YILMAZ",
-          tcNumber: "12345678901",
-          match_details: {
-            confidence: 0.92
-          }
-        },
-        document_type: "sgk_reçete",
-        confidence_score: 0.95
-      },
-      {
-        ocr_text: `ODYOMETRI TEST SONUCU
-Hasta: FATMA KAYA
-TC: 98765432109
-Test Tarihi: ${new Date().toLocaleDateString('tr-TR')}
-Sağ Kulak: Normal
-Sol Kulak: Hafif kayıp`,
-        matched_party: {
-          name: "FATMA KAYA",
-          tcNumber: "98765432109",
-          match_details: {
-            confidence: 0.88
-          }
-        },
-        document_type: "odyometri",
-        confidence_score: 0.91
-      },
-      {
-        ocr_text: `DOKTOR RAPORU
-Dr. Mehmet Özkan
-Hasta: ALİ DEMİR
-TC: 11223344556
-Tanı: Kronik otitis media
-Önerilen tedavi: Antibiyotik`,
-        matched_party: {
-          name: "ALİ DEMİR",
-          tcNumber: "11223344556",
-          match_details: {
-            confidence: 0.85
-          }
-        },
-        document_type: "sgk_rapor",
-        confidence_score: 0.89
+  // Real OCR text extraction via backend API
+  const extractTextFromImage = useCallback(async (imageFile: File, docType?: string): Promise<ProcessingResult['result']> => {
+    try {
+      const response = await uploadOcrDocument(
+        { file: imageFile },
+        { doc_type: docType, auto_crop: true }
+      );
+      
+      // ResponseEnvelope wraps: { success, data: { result, timestamp } }
+      const envelope = response as unknown as { success?: boolean; data?: { result?: Record<string, unknown> } };
+      const result = envelope?.data?.result as Record<string, unknown> | undefined;
+      if (!result) {
+        return { ocr_text: '', confidence_score: 0, document_type: 'diger' };
       }
-    ];
 
-    // Select random result and apply confidence variation
-    const randomResult = mockTexts[Math.floor(Math.random() * mockTexts.length)];
-    const baseConfidence = 0.8 + Math.random() * 0.15; // 80-95% base confidence
+      // Map backend response to ProcessingResult format
+      const entities = (result.entities || result.custom_entities || []) as Array<Record<string, unknown>>;
+      const classification = (result.classification || {}) as Record<string, unknown>;
+      const patientInfo = (result.patient_info || {}) as Record<string, unknown>;
+      const medicalTerms = (result.medical_terms || []) as Array<Record<string, unknown>>;
 
-    return {
-      ocr_text: randomResult.ocr_text,
-      confidence_score: baseConfidence,
-      matched_party: randomResult.matched_party ? {
-        ...randomResult.matched_party,
+      // Extract OCR text from entities
+      const ocrText = entities
+        .map((e) => (e.text as string) || '')
+        .filter(Boolean)
+        .join('\n') || (result.ocr_text as string) || '';
+
+      // Calculate average confidence
+      const confidences = entities
+        .map((e) => (e.confidence as number) || 0)
+        .filter((c) => c > 0);
+      const avgConfidence = confidences.length > 0 
+        ? confidences.reduce((a, b) => a + b, 0) / confidences.length 
+        : 0;
+
+      // Build matched party from patient info
+      const matchedParty: MatchedParty | undefined = patientInfo.name ? {
+        name: patientInfo.name as string,
+        tcNumber: (patientInfo.tc_number as string) || 
+          (entities.find((e) => e.label === 'TC_NUMBER')?.text as string),
         match_details: {
-          ...randomResult.matched_party.match_details,
-          confidence: (randomResult.matched_party.match_details?.confidence || 0) * baseConfidence
+          confidence: (patientInfo.confidence as number) || avgConfidence,
+          source: 'ocr',
+          medical_terms: medicalTerms.map((t) => t.term as string),
         }
-      } : undefined,
-      document_type: randomResult.document_type,
-    };
+      } : undefined;
+
+      return {
+        ocr_text: ocrText,
+        confidence_score: (classification.confidence as number) || avgConfidence,
+        matched_party: matchedParty,
+        document_type: (classification.type as string) || 'diger',
+        entities: entities.map((e) => ({
+          type: (e.label as string) || 'TEXT',
+          value: (e.text as string) || '',
+          confidence: e.confidence as number,
+        })),
+        processing_time: result.processing_time ? 
+          new Date(result.processing_time as string).getTime() : undefined,
+      };
+    } catch (error) {
+      console.error('OCR extraction failed:', error);
+      return { ocr_text: '', confidence_score: 0, document_type: 'diger' };
+    }
   }, []);
 
   // Generate filename based on party and document type
@@ -251,6 +311,7 @@ Tanı: Kronik otitis media
     setProcessingProgress(0);
 
     const processedDocs: ProcessedDocument[] = [];
+    const objectUrls: string[] = [];
 
     for (let i = 0; i < images.length; i++) {
       const image = images[i];
@@ -265,22 +326,28 @@ Tanı: Kronik otitis media
         const compressedImage = await compressImage(image);
 
         // Step 2: Detect and crop document
-        setProcessingProgress(baseProgress + 30);
+        setProcessingProgress(baseProgress + 25);
         const edgeDetection = await detectAndCropDocument(compressedImage);
 
-        // Step 3: Extract text with OCR
-        setProcessingProgress(baseProgress + 60);
-        const ocrResult = await extractTextFromImage();
+        // Step 3: Extract text with real OCR backend
+        setProcessingProgress(baseProgress + 40);
+        const ocrResult = await extractTextFromImage(image);
 
-        // Step 4: Detect document type
-        const detectedType = detectDocumentType(ocrResult?.ocr_text || '');
+        // Step 4: Detect document type (combine backend + frontend classification)
+        setProcessingProgress(baseProgress + 70);
+        const backendType = ocrResult?.document_type;
+        const frontendType = detectDocumentType(ocrResult?.ocr_text || '');
+        const detectedType = (backendType && backendType !== 'diger') ? backendType : frontendType;
         
         // Step 5: Generate filename
         const fileName = generateFileName(ocrResult?.matched_party, detectedType);
 
+        const objUrl = URL.createObjectURL(image);
+        objectUrls.push(objUrl);
+
         const processedDoc: ProcessedDocument = {
           id: `doc_${Date.now()}_${i}`,
-          originalImage: URL.createObjectURL(image),
+          originalImage: objUrl,
           processedImage: compressedImage,
           croppedImage: edgeDetection.croppedImage,
           ocrResult: ocrResult ? {
@@ -300,11 +367,12 @@ Tanı: Kronik otitis media
 
       } catch (error) {
         console.error('Error processing image:', error);
-        // Add failed document
+        const objUrl = URL.createObjectURL(image);
+        objectUrls.push(objUrl);
         processedDocs.push({
           id: `doc_${Date.now()}_${i}`,
-          originalImage: URL.createObjectURL(image),
-          processedImage: URL.createObjectURL(image),
+          originalImage: objUrl,
+          processedImage: objUrl,
           finalFileName: `error_${image.name}`
         });
       }
@@ -314,6 +382,11 @@ Tanı: Kronik otitis media
     setProcessingProgress(100);
     setIsProcessing(false);
     setCurrentStep('review');
+
+    // Cleanup object URLs when component unmounts
+    return () => {
+      objectUrls.forEach(url => URL.revokeObjectURL(url));
+    };
   }, [images, compressImage, detectAndCropDocument, extractTextFromImage, detectDocumentType, generateFileName]);
 
   // Handle party selection
@@ -387,7 +460,8 @@ Tanı: Kronik otitis media
       pdf.text(splitText, 20, 230);
     }
     
-    return pdf.output('bloburl') as unknown as string;
+    const blobUrl = pdf.output('bloburl');
+    return typeof blobUrl === 'string' ? blobUrl : URL.createObjectURL(new Blob([pdf.output('blob')], { type: 'application/pdf' }));
   }, []);
 
   // Handle completion
@@ -437,13 +511,19 @@ Tanı: Kronik otitis media
       <div className="text-center">
         <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
         <h3 className="text-lg font-medium mb-2">Belgeler İşleniyor</h3>
-        <p className="text-gray-600">Lütfen bekleyin, belgeleriniz analiz ediliyor...</p>
+        <p className="text-gray-600">
+          {processingProgress < 40 
+            ? 'Görüntüler sıkıştırılıyor ve kenarlar tespit ediliyor...'
+            : processingProgress < 80
+            ? 'OCR ile metin çıkarılıyor...'
+            : 'Son işlemler yapılıyor...'}
+        </p>
       </div>
 
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
-          <span>İlerleme</span>
-          <span>{Math.round(processingProgress)}%</span>
+          <span>İlerleme ({Math.round(processingProgress)}%)</span>
+          <span>{images.length} belge</span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div 
@@ -454,16 +534,16 @@ Tanı: Kronik otitis media
       </div>
 
       <div className="text-sm text-gray-600 space-y-1">
-        <div className="flex items-center gap-2">
-          <Zap className="w-4 h-4" />
+        <div className={`flex items-center gap-2 ${processingProgress >= 10 ? 'text-green-600' : ''}`}>
+          {processingProgress >= 25 ? <CheckCircle className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
           <span>Görüntüler sıkıştırılıyor</span>
         </div>
-        <div className="flex items-center gap-2">
-          <Scissors className="w-4 h-4" />
+        <div className={`flex items-center gap-2 ${processingProgress >= 25 ? 'text-green-600' : ''}`}>
+          {processingProgress >= 40 ? <CheckCircle className="w-4 h-4" /> : <Scissors className="w-4 h-4" />}
           <span>Belge kenarları tespit ediliyor</span>
         </div>
-        <div className="flex items-center gap-2">
-          <FileText className="w-4 h-4" />
+        <div className={`flex items-center gap-2 ${processingProgress >= 70 ? 'text-green-600' : ''}`}>
+          {processingProgress >= 70 ? <CheckCircle className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
           <span>Metin çıkarılıyor (OCR)</span>
         </div>
       </div>
@@ -472,11 +552,18 @@ Tanı: Kronik otitis media
 
   const renderReviewStep = () => {
     const selectedDoc = documents.find(d => d.id === selectedDocumentId);
+    const errorCount = documents.filter(d => d.finalFileName?.startsWith('error_')).length;
+    const successCount = documents.length - errorCount;
     
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-medium">Belgeleri İnceleyin</h3>
+          <div>
+            <h3 className="text-lg font-medium">Belgeleri İnceleyin</h3>
+            <p className="text-sm text-gray-500">
+              {successCount} başarılı{errorCount > 0 ? `, ${errorCount} hatalı` : ''}
+            </p>
+          </div>
           <div className="flex gap-2">
             {documents.map((doc, index) => (
               <Button

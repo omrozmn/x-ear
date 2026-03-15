@@ -33,5 +33,37 @@
             "success": "POS ayarları güncellendi",
             "error": "Güncelleme başarısız"
         }
+    },
+    "party": {
+        "title": "Hasta Ayarları",
+        "description": "Hasta segmentlerini, kazanım türlerini ve anamnez sorularını yönetin",
+        "segments_title": "Hasta Segmentleri",
+        "acquisitions_title": "Kazanım Türleri"
+    },
+    "anamnesis": {
+        "title": "Anamnez Soruları",
+        "defaults_info": "Varsayılan odyoloji soruları kullanılıyor. Özel sorular ekleyerek özelleştirin.",
+        "add_question": "Yeni Soru Ekle",
+        "question_placeholder": "Soru metni yazın...",
+        "category": "Kategori",
+        "answer_type": "Cevap Tipi",
+        "type_text": "Metin",
+        "type_select": "Tek Seçim",
+        "type_multiselect": "Çoklu Seçim",
+        "required": "Zorunlu",
+        "options": "Seçenekler",
+        "option_placeholder": "Seçenek ekle...",
+        "add": "Ekle",
+        "add_question_btn": "Soru Ekle",
+        "custom_questions": "Özel Sorular",
+        "option_count": "seçenek",
+        "make_optional": "Opsiyonel yap",
+        "make_required": "Zorunlu yap",
+        "save_success": "Anamnez soruları kaydedildi",
+        "save_error": "Kaydetme hatası: ",
+        "question_required": "Soru metni gerekli"
+    },
+    "common": {
+        "saving": "Kaydediliyor..."
     }
 }

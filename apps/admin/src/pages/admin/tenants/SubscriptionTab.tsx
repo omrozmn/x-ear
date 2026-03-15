@@ -98,12 +98,25 @@ function getPlans(data: unknown): DetailedPlanRead[] {
         return [];
     }
 
-    if ('plans' in data && Array.isArray(data.plans)) {
-        return data.plans.filter(isDetailedPlanRead);
+    const obj = data as Record<string, unknown>;
+
+    // API returns { items: [...], pagination: {...} } (Orval unwraps envelope)
+    if ('items' in obj && Array.isArray(obj.items)) {
+        return (obj.items as unknown[]).filter(isDetailedPlanRead);
     }
 
-    if ('data' in data && data.data && typeof data.data === 'object' && 'plans' in data.data && Array.isArray(data.data.plans)) {
-        return data.data.plans.filter(isDetailedPlanRead);
+    if ('plans' in obj && Array.isArray(obj.plans)) {
+        return (obj.plans as unknown[]).filter(isDetailedPlanRead);
+    }
+
+    if ('data' in obj && obj.data && typeof obj.data === 'object') {
+        const inner = obj.data as Record<string, unknown>;
+        if ('items' in inner && Array.isArray(inner.items)) {
+            return (inner.items as unknown[]).filter(isDetailedPlanRead);
+        }
+        if ('plans' in inner && Array.isArray(inner.plans)) {
+            return (inner.plans as unknown[]).filter(isDetailedPlanRead);
+        }
     }
 
     return [];
@@ -118,12 +131,24 @@ function getAddons(data: unknown): AddonRead[] {
         return [];
     }
 
-    if ('addons' in data && Array.isArray(data.addons)) {
-        return data.addons.filter(isAddonRead);
+    const obj = data as Record<string, unknown>;
+
+    if ('items' in obj && Array.isArray(obj.items)) {
+        return (obj.items as unknown[]).filter(isAddonRead);
     }
 
-    if ('data' in data && data.data && typeof data.data === 'object' && 'addons' in data.data && Array.isArray(data.data.addons)) {
-        return data.data.addons.filter(isAddonRead);
+    if ('addons' in obj && Array.isArray(obj.addons)) {
+        return (obj.addons as unknown[]).filter(isAddonRead);
+    }
+
+    if ('data' in obj && obj.data && typeof obj.data === 'object') {
+        const inner = obj.data as Record<string, unknown>;
+        if ('items' in inner && Array.isArray(inner.items)) {
+            return (inner.items as unknown[]).filter(isAddonRead);
+        }
+        if ('addons' in inner && Array.isArray(inner.addons)) {
+            return (inner.addons as unknown[]).filter(isAddonRead);
+        }
     }
 
     return [];

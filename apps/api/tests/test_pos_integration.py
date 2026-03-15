@@ -17,7 +17,7 @@ def test_pos_integration(client, db_session, auth_headers):
         tenant = Tenant(id='tenant-1', name="Test Tenant", slug=f"test-tenant-{suffix}", owner_email="o@x.com", billing_email="b@x.com")
         db_session.add(tenant)
     
-    tenant.settings_json = {
+    tenant.settings = {
         "pos_integration": {
             "enabled": True,
             "provider": "paytr",
@@ -44,7 +44,7 @@ def test_pos_integration(client, db_session, auth_headers):
     sale = Sale(
         id=f"sale_{suffix}", 
         tenant_id=tenant.id, 
-        patient_id=patient.id, 
+        party_id=patient.id, 
         total_amount=1000.00, 
         final_amount=1000.00,
         sale_date=datetime.utcnow()
@@ -53,9 +53,15 @@ def test_pos_integration(client, db_session, auth_headers):
     db_session.commit()
     
     # Mock PayTR Service
-    with patch('services.paytr_service.PayTRService.generate_token_request') as mock_gen:
+    with patch('services.paytr_service.PayTRService.generate_token_request') as mock_gen, \
+         patch('services.paytr_service.PayTRService.get_token') as mock_get_token:
         mock_gen.return_value = {
-            'iframe_url': 'https://www.paytr.com/iframe/xyz'
+            'merchant_id': 'test_merchant',
+            'paytr_token': 'mock_token_value'
+        }
+        mock_get_token.return_value = {
+            'success': True,
+            'token': 'mock_iframe_token_123'
         }
         
         response = client.post('/api/payments/pos/paytr/initiate', json={

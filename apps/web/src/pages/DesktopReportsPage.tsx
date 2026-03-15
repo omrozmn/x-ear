@@ -119,7 +119,7 @@ export function DesktopReportsPage() {
           title="Raporlar ve Analizler"
           description="Satış performansı, hasta analizleri ve işlem dökümleri"
           icon={<PieChart className="w-6 h-6" />}
-          eyebrow="Insights"
+          eyebrow={{ tr: 'İçgörüler', en: 'Insights' }}
           actions={canExportReports ? (
             <>
               <Button

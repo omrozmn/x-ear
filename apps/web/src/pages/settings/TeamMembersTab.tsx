@@ -21,6 +21,7 @@ import { branchService, Branch } from '../../services/branch.service';
 import { useAuthStore } from '../../stores/authStore';
 import toast from 'react-hot-toast';
 import { generateUsername } from '../../utils/stringUtils';
+import { SettingsSectionHeader } from '../../components/layout/SettingsSectionHeader';
 
 interface ConfirmationModal {
     isOpen: boolean;
@@ -324,20 +325,22 @@ export function TeamMembersTab() {
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-6">
-                <div>
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Ekip Uyeleri</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Sistemdeki tum kullanicilari yonetin</p>
-                </div>
-                <Button
-                    onClick={() => setIsModalOpen(true)}
-                    variant="primary"
-                    className="flex items-center"
-                >
-                    <Plus className="w-5 h-5 mr-2" />
-                    Yeni Kullanici Ekle
-                </Button>
-            </div>
+            <SettingsSectionHeader
+                className="mb-6"
+                title="Ekip Üyeleri"
+                description="Sistemdeki tüm kullanıcıları yönetin"
+                icon={<User className="w-6 h-6" />}
+                actions={(
+                    <Button
+                        onClick={() => setIsModalOpen(true)}
+                        variant="primary"
+                        className="flex items-center"
+                    >
+                        <Plus className="w-5 h-5 mr-2" />
+                        Yeni Kullanıcı Ekle
+                    </Button>
+                )}
+            />
 
             {error && (
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl flex items-center">

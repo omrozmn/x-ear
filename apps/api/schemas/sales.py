@@ -19,6 +19,7 @@ class PaymentRecordBase(AppBaseModel):
 class PaymentRecordRead(IDMixin, TimestampMixin, PaymentRecordBase):
     sale_id: Optional[str] = Field(None, alias="saleId")
     party_id: Optional[str] = Field(None, alias="partyId")
+    party_name: Optional[str] = Field(None, alias="partyName")
 
 class PaymentRecordCreate(PaymentRecordBase):
     pass
@@ -372,6 +373,7 @@ class SaleCreate(AppBaseModel):
     quantity: int = Field(1)
     
     discount_type: Optional[str] = Field(None, alias="discountType")
+    discount_value: Optional[float] = Field(None, alias="discountValue")
     discount_amount: Optional[float] = Field(None, alias="discountAmount")
     
     payment_method: Optional[str] = Field("cash", alias="paymentMethod")

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { listInventory, getInventory } from '@/api/client/inventory.client';
 import { updateSale } from '@/api/client/sales.client';
 import type { SaleUpdate } from '@/api/generated/schemas';
@@ -73,7 +73,7 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
     notes: ''
   });
 
-  // SGK support amounts (matching device assignment form)
+  // SGK support amounts (fallback for new scheme selection)
   const sgkAmounts = useMemo(() => ({
     'no_coverage': 0,
     'under4_parent_working': 6104.44,
@@ -87,6 +87,11 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
     'under18': 5000,
     'standard': 0
   }), []);
+
+  // Track whether the user has manually changed the SGK scheme
+  // When false, use DB-stored per-ear SGK value; when true, use hardcoded lookup
+  const sgkSchemeUserChanged = useRef(false);
+  const storedSgkPerEar = useRef<number>(0);
 
   // Reactive pricing calculation (matching device assignment form logic)
   const calculatedPricing = useMemo(() => {
@@ -105,12 +110,19 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
     const totalListPrice = listPrice * quantity;
 
     // 1. Calculate SGK reduction per unit
+    // Use DB-stored per-ear value for existing sales (until user changes the scheme)
     let sgkReductionPerUnit = 0;
     const sgkScheme = formData.sgkScheme as keyof typeof sgkAmounts | '';
     if (sgkScheme && sgkScheme !== 'no_coverage') {
-      const sgkAmount = sgkAmounts[sgkScheme];
-      if (sgkAmount !== undefined) {
-        sgkReductionPerUnit = Math.min(sgkAmount, listPrice);
+      if (!sgkSchemeUserChanged.current && storedSgkPerEar.current > 0) {
+        // Use the actual stored per-ear SGK from DB (matches sale history)
+        sgkReductionPerUnit = Math.min(storedSgkPerEar.current, listPrice);
+      } else {
+        // User changed scheme or new sale — use hardcoded lookup
+        const sgkAmount = sgkAmounts[sgkScheme];
+        if (sgkAmount !== undefined) {
+          sgkReductionPerUnit = Math.min(sgkAmount, listPrice);
+        }
       }
     }
 
@@ -134,12 +146,12 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
     const remainingAmount = Math.max(0, totalAmount - (formData.downPayment || 0));
 
     return {
-      salePrice: salePrice,  // ✅ Fixed: Use calculated salePrice instead of undefined variable
+      salePrice: salePrice,
       sgkReduction: totalSgkReduction,
       totalAmount,
       remainingAmount
     };
-  }, [formData.listPrice, formData.sgkScheme, formData.discountType, formData.discountValue, formData.ear, formData.downPayment, sgkAmounts]);
+  }, [formData.listPrice, formData.sgkScheme, formData.sgkCoverage, formData.discountType, formData.discountValue, formData.ear, formData.downPayment, sgkAmounts]);
 
   // Calculated values
   const totalPaid = paymentRecords.reduce((sum, payment) => sum + (payment.amount || 0), 0);
@@ -234,6 +246,11 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
       // Calculate totals from ALL devices (for bilateral sales)
       const totalSgkCoverage = devices.reduce((sum, d) => sum + (d.sgkSupport || d.sgkCoverageAmount || 0), 0);
 
+      // Store per-ear SGK from DB and reset user-changed flag
+      const deviceCount = devices.length || 1;
+      storedSgkPerEar.current = totalSgkCoverage > 0 ? totalSgkCoverage / deviceCount : 0;
+      sgkSchemeUserChanged.current = false;
+
       // ✅ FIXED: Get serial numbers from correct devices for bilateral sales
       const leftDevice = devices.find(d => d.ear === 'left');
       const rightDevice = devices.find(d => d.ear === 'right');
@@ -297,6 +314,10 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
 
   // Update form data
   const updateFormData = (updates: Partial<SaleFormData>) => {
+    // Mark SGK scheme as user-changed when scheme selection changes
+    if ('sgkScheme' in updates) {
+      sgkSchemeUserChanged.current = true;
+    }
     setFormData(prev => ({ ...prev, ...updates }));
   };
 

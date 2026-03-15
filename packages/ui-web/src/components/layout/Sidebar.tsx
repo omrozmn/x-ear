@@ -19,6 +19,7 @@ import {
   PlusCircle,
   PanelTop,
   FileSpreadsheet,
+  ShieldCheck,
 } from 'lucide-react';
 import { useBreakpoints } from '../../hooks/useMediaQuery';
 
@@ -29,6 +30,7 @@ interface MenuItem {
   href?: string;
   children?: MenuItem[];
   badge?: string | number;
+  requiredFeature?: string;
 }
 
 interface SidebarProps {
@@ -41,6 +43,7 @@ interface SidebarProps {
   isTablet?: boolean;
   isDesktop?: boolean;
   onNavigate?: (href: string) => void;
+  enabledFeatures?: Record<string, boolean>;
 }
 
 const menuItems: MenuItem[] = [
@@ -87,6 +90,12 @@ const menuItems: MenuItem[] = [
     href: '/purchases',
   },
   {
+    id: 'uts',
+    label: 'UTS',
+    icon: <ShieldCheck className="w-5 h-5" />,
+    href: '/uts',
+  },
+  {
     id: 'payments',
     label: 'Ödemeler',
     icon: <DollarSign className="w-5 h-5" />,
@@ -97,17 +106,20 @@ const menuItems: MenuItem[] = [
     label: 'Kampanyalar',
     icon: <Megaphone className="w-5 h-5" />,
     href: '/campaigns',
+    requiredFeature: 'campaigns',
   },
   {
     id: 'website-builder',
     label: 'Web Sitesi',
     icon: <PanelTop className="w-5 h-5" />,
     href: '/web-management',
+    requiredFeature: 'website_builder',
   },
   {
     id: 'invoices',
     label: 'Faturalar',
     icon: <FileText className="w-5 h-5" />,
+    requiredFeature: 'invoices',
     children: [
       {
         id: 'outgoing-invoices',
@@ -145,6 +157,7 @@ const menuItems: MenuItem[] = [
     id: 'sgk-reports',
     label: 'SGK',
     icon: <Activity className="w-5 h-5" />,
+    requiredFeature: 'sgk',
     children: [
       {
         id: 'sgk-upload',
@@ -165,12 +178,14 @@ const menuItems: MenuItem[] = [
     label: 'Raporlar',
     icon: <BarChart3 className="w-5 h-5" />,
     href: '/reports',
+    requiredFeature: 'reports',
   },
   {
     id: 'invoice-normalizer',
     label: 'Muhasebe',
     icon: <FileSpreadsheet className="w-5 h-5" />,
     href: '/invoice-normalizer',
+    requiredFeature: 'accounting',
   },
   {
     id: 'settings',
@@ -227,6 +242,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isTablet: propIsTablet,
   isDesktop: propIsDesktop,
   onNavigate,
+  enabledFeatures,
 }) => {
   const breakpoints = useBreakpoints();
   const isMobile = propIsMobile ?? breakpoints.isMobile;
@@ -234,6 +250,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const isDesktop = propIsDesktop ?? breakpoints.isDesktop;
 
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+
+  // Filter menu items by enabled features
+  const visibleMenuItems = enabledFeatures
+    ? menuItems.filter((item) => {
+        if (!item.requiredFeature) return true;
+        return enabledFeatures[item.requiredFeature] === true;
+      })
+    : menuItems;
 
   // Load expanded items from localStorage
   useEffect(() => {
@@ -258,10 +282,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setExpandedItems(newExpanded);
   };
 
+  // Collect all menu hrefs for precise active-state matching
+  const collectHrefs = (items: MenuItem[]): string[] => {
+    const hrefs: string[] = [];
+    for (const item of items) {
+      if (item.href) hrefs.push(item.href);
+      if (item.children) hrefs.push(...collectHrefs(item.children));
+    }
+    return hrefs;
+  };
+  const allHrefs = collectHrefs(visibleMenuItems);
+
   const isActive = (href?: string) => {
     if (!href) return false;
     if (href === '/') return currentPath === '/';
-    return currentPath === href || currentPath.startsWith(`${href}/`) || currentPath.startsWith(`${href}?`);
+
+    const matches = currentPath === href || currentPath.startsWith(`${href}/`) || currentPath.startsWith(`${href}?`);
+    if (!matches) return false;
+    if (currentPath === href) return true;
+
+    // For prefix matches, only activate if no more-specific menu item also matches
+    const hasMoreSpecificMatch = allHrefs.some(otherHref => {
+      if (otherHref === href || otherHref.length <= href.length) return false;
+      return currentPath === otherHref || currentPath.startsWith(`${otherHref}/`) || currentPath.startsWith(`${otherHref}?`);
+    });
+    return !hasMoreSpecificMatch;
   };
 
   const handleNavigation = (href?: string) => {
@@ -381,7 +426,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           {/* Navigation */}
           <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-            {menuItems.map((item) => renderMenuItem(item))}
+            {visibleMenuItems.map((item) => renderMenuItem(item))}
           </nav>
 
           {/* Footer */}
@@ -411,7 +456,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Navigation */}
         <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
-          {menuItems.map((item) => renderMenuItem(item))}
+          {visibleMenuItems.map((item) => renderMenuItem(item))}
         </nav>
       </div>
     );
@@ -477,7 +522,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Navigation */}
       <nav className={`flex-1 py-4 space-y-1 overflow-y-auto ${isCollapsed ? 'px-2' : 'px-3'}`}>
-        {menuItems.map((item) => renderMenuItem(item))}
+        {visibleMenuItems.map((item) => renderMenuItem(item))}
       </nav>
 
       {/* Footer */}

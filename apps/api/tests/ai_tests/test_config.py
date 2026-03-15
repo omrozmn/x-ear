@@ -360,7 +360,7 @@ class TestModelConfig:
         config = AIConfig.get()
         # Validate structure, not specific values (values may change)
         assert hasattr(config.model, "provider")
-        assert hasattr(config.model, "model_id")
+        assert hasattr(config.model, "ai_model_id")
         assert hasattr(config.model, "base_url")
         assert hasattr(config.model, "timeout_seconds")
         assert hasattr(config.model, "max_tokens")
@@ -369,8 +369,8 @@ class TestModelConfig:
         # Validate types and reasonable values
         assert isinstance(config.model.provider, str)
         assert len(config.model.provider) > 0
-        assert isinstance(config.model.model_id, str)
-        assert len(config.model.model_id) > 0
+        assert isinstance(config.model.ai_model_id, str)
+        assert len(config.model.ai_model_id) > 0
         assert isinstance(config.model.base_url, str)
         assert config.model.base_url.startswith("http")
         assert isinstance(config.model.timeout_seconds, int)
@@ -385,13 +385,15 @@ class TestModelConfig:
         "AI_MODEL_ID": "llama-3-8b",
         "AI_MODEL_BASE_URL": "http://custom:8080",
         "AI_MODEL_TIMEOUT_SECONDS": "60",
+        "TEXT_MODEL_ENDPOINT": "",
+        "VISION_MODEL_ENDPOINT": "",
     })
     def test_custom_model_config(self):
         """Custom model configuration is loaded from environment."""
         AIConfig.reset()
         config = AIConfig.get()
         assert config.model.provider == "custom"
-        assert config.model.model_id == "llama-3-8b"
+        assert config.model.ai_model_id == "llama-3-8b"
         assert config.model.base_url == "http://custom:8080"
         assert config.model.timeout_seconds == 60
 

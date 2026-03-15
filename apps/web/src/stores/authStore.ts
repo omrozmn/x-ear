@@ -311,7 +311,11 @@ export const useAuthStore = create<AuthStore>()(
               tokenManager.setTokens(newToken, refreshToken || null);
 
               // Check subscription
-              await checkSubscription();
+              try {
+                await checkSubscription();
+              } catch (subscriptionError) {
+                console.error('Subscription check after OTP verification failed:', subscriptionError);
+              }
 
               // Trigger lazy services that need auth (don't await, fire-and-forget)
               // Skip for admin users who don't have tenant context

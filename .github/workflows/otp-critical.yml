@@ -1,0 +1,175 @@
+name: OTP Critical Gate
+
+on:
+  pull_request:
+    branches: [main, develop, dev]
+  push:
+    branches: [main, develop, dev]
+
+concurrency:
+  group: otp-critical-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  otp-critical:
+    name: OTP Flows
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: xear_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: |
+            x-ear/package-lock.json
+            x-ear/apps/web/package-lock.json
+            x-ear/apps/admin/package-lock.json
+            x-ear/apps/landing/package-lock.json
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install frontend dependencies
+        working-directory: x-ear
+        run: |
+          npm ci
+          cd apps/web && npm ci
+          cd ../admin && npm ci
+          cd ../landing && npm ci
+
+      - name: Install backend dependencies
+        working-directory: x-ear/apps/api
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install Playwright browser
+        working-directory: x-ear
+        run: npx playwright install --with-deps chromium
+
+      - name: Setup test database
+        working-directory: x-ear/apps/api
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/xear_test
+          REDIS_URL: redis://localhost:6379
+        run: |
+          alembic upgrade head
+          python scripts/seed_comprehensive_data.py
+          python create_simple_admin.py
+
+      - name: Start backend
+        working-directory: x-ear/apps/api
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/xear_test
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET_KEY: test-secret-key-for-ci
+          ENVIRONMENT: test
+          ENABLE_REAL_SMS_IN_TESTS: "false"
+        run: |
+          python -m uvicorn main:app --host 127.0.0.1 --port 5003 > /tmp/xear-api.log 2>&1 &
+          echo $! > backend.pid
+
+      - name: Start web app
+        working-directory: x-ear/apps/web
+        env:
+          VITE_API_BASE_URL: http://127.0.0.1:5003
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 8080 > /tmp/xear-web.log 2>&1 &
+          echo $! > web.pid
+
+      - name: Start admin app
+        working-directory: x-ear/apps/admin
+        env:
+          VITE_API_BASE_URL: http://127.0.0.1:5003
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 8082 > /tmp/xear-admin.log 2>&1 &
+          echo $! > admin.pid
+
+      - name: Start landing app
+        working-directory: x-ear/apps/landing
+        env:
+          NEXT_PUBLIC_API_BASE_URL: http://127.0.0.1:5003
+          NEXT_PUBLIC_WEB_URL: http://127.0.0.1:8080
+        run: |
+          npm run dev -- --hostname 127.0.0.1 --port 3000 > /tmp/xear-landing.log 2>&1 &
+          echo $! > landing.pid
+
+      - name: Wait for services
+        working-directory: x-ear
+        run: |
+          npx wait-on http://127.0.0.1:5003/health --timeout 120000
+          npx wait-on http://127.0.0.1:8080 --timeout 120000
+          npx wait-on http://127.0.0.1:8082 --timeout 120000
+          npx wait-on http://127.0.0.1:3000 --timeout 120000
+
+      - name: Run OTP critical suite
+        working-directory: x-ear
+        env:
+          API_BASE_URL: http://127.0.0.1:5003
+          WEB_BASE_URL: http://127.0.0.1:8080
+          ADMIN_BASE_URL: http://127.0.0.1:8082
+          LANDING_BASE_URL: http://127.0.0.1:3000
+        run: npm run test:e2e:otp
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-otp
+          path: x-ear/playwright-report/
+          retention-days: 14
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: otp-critical-logs
+          path: |
+            /tmp/xear-api.log
+            /tmp/xear-web.log
+            /tmp/xear-admin.log
+            /tmp/xear-landing.log
+            x-ear/test-results/
+          retention-days: 14
+
+      - name: Cleanup
+        if: always()
+        working-directory: x-ear
+        run: |
+          if [ -f apps/api/backend.pid ]; then kill $(cat apps/api/backend.pid) || true; fi
+          if [ -f apps/web/web.pid ]; then kill $(cat apps/web/web.pid) || true; fi
+          if [ -f apps/admin/admin.pid ]; then kill $(cat apps/admin/admin.pid) || true; fi
+          if [ -f apps/landing/landing.pid ]; then kill $(cat apps/landing/landing.pid) || true; fi

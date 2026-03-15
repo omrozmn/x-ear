@@ -19,6 +19,7 @@ from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
+from sqlalchemy import and_
 
 from core.database import get_db, unbound_session
 from middleware.unified_access import UnifiedAccess, require_access
@@ -33,29 +34,430 @@ from schemas.invoices_new import (
     SupplierInvoiceItemResponse, SupplierInvoiceItemsListResponse,
     InvoiceProviderStatusResponse, InvoiceProviderActionResponse,
     ReferenceCodeItemResponse, TaxOfficeItemResponse, RecipientCheckResponse,
+    SupplierSuggestionResponse, SupplierSuggestionItem,
 )
 from core.models.purchase_invoice import PurchaseInvoice, PurchaseInvoiceItem
 from core.models.tenant import Tenant
 from core.models.integration_config import IntegrationConfig
 from core.models.purchase import Purchase
+from core.models.suppliers import Supplier
 from services.birfatura.service import BirfaturaClient
 from services.invoice_service_new import InvoiceServiceNew
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/invoices", tags=["invoices"])
-_REFERENCE_CACHE_TTL_SECONDS = 60 * 60 * 12
-_reference_cache: dict[str, tuple[datetime, object]] = {}
 
 
 def _resolve_tenant(access: UnifiedAccess) -> str:
-    """Return the effective tenant_id for a request, supporting super-admin impersonation."""
-    tid = access.effective_tenant_id or access.tenant_id
-    if not tid:
-        raise HTTPException(
-            status_code=401,
-            detail={"message": "Tenant context required", "code": "TENANT_REQUIRED"}
-        )
-    return tid
+    tenant_id = access.effective_tenant_id or access.tenant_id
+    if not tenant_id:
+        raise HTTPException(status_code=401, detail="Tenant context required")
+    return tenant_id
+_REFERENCE_CACHE_TTL_SECONDS = 60 * 60 * 12
+_reference_cache: dict[str, tuple[datetime, object]] = {}
+
+# ── Invoice type / UBL helpers for copy/draft ──────────────────────────────────
+_DOC_TYPE_TO_FORM = {
+    "SATIS": "0", "IADE": "50", "ISTISNA": "13",
+    "TEVKIFAT": "11", "OZELMATRAH": "12", "IHRAC": "27",
+    "IHRACKAYITLI": "27", "SGK": "14", "TEVKIFAT_IADE": "15",
+    "KOMISYONCU": "16", "HKSSATIS": "17", "HKSKOMISYONCU": "18",
+    "KONAKLAMAVERGI": "19",
+}
+_PROFILE_TO_SCENARIO = {
+    "TEMELFATURA": "other", "TICARIFATURA": "other",
+    "IHRACFATURA": "export", "KAMUFATURA": "government",
+    "EARSIVFATURA": "other",
+}
+
+_LINE_EXT_KEYS = (
+    "discount", "discountType",
+    "taxExemptionCode", "tax_exemption_code",
+    "taxExemptionReason", "tax_exemption_reason",
+    "withholdingData", "withholding_rate", "withholding_code",
+    "medicalDeviceData", "medical_device_data",
+    "lineWithholding",
+    "specialBaseData", "specialTaxBase",
+    "sgkCode", "serviceCode", "aliciStokKodu",
+)
+
+
+def _ubl_val(obj, default=""):
+    """Get plain value from UBL {'Value': x} wrapper or return as-is."""
+    if isinstance(obj, dict):
+        return obj.get("Value", default)
+    return obj if obj is not None else default
+
+
+def _resolve_invoice_type_code(raw: dict) -> str:
+    """Extract form invoiceType code from any raw_data format."""
+    # Rich format (X-EAR invoice_dict)
+    it = raw.get("invoiceType")
+    if it and isinstance(it, str) and it in _DOC_TYPE_TO_FORM.values():
+        return it
+
+    # BirFatura flat API
+    dtc = raw.get("DocumentTypeCode") or raw.get("InvoiceTypeCode") or ""
+    if isinstance(dtc, dict):
+        dtc = dtc.get("Value", "")
+    if isinstance(dtc, str):
+        dtc = dtc.strip()
+    if dtc in _DOC_TYPE_TO_FORM:
+        return _DOC_TYPE_TO_FORM[dtc]
+    # Already a form code
+    if dtc in _DOC_TYPE_TO_FORM.values():
+        return dtc
+    return "0"
+
+
+def _resolve_scenario(raw: dict) -> str:
+    """Extract form scenario from any raw_data format."""
+    sc = raw.get("scenario")
+    if sc and isinstance(sc, str) and sc != "other":
+        return sc
+    pid = raw.get("ProfileID") or raw.get("profileId") or ""
+    if isinstance(pid, dict):
+        pid = pid.get("Value", "")
+    return _PROFILE_TO_SCENARIO.get(pid, "other")
+
+
+def _extract_customer_from_raw(raw: dict, original) -> dict:
+    """Extract customer fields from any raw_data format."""
+    # Rich format (X-EAR invoice_dict)
+    customer = raw.get("customer") or {}
+    if customer:
+        addr = customer.get("address") or {}
+        return {
+            "customerFirstName": customer.get("name") or original.sender_name or "",
+            "customerTaxNumber": customer.get("tax_id") or original.sender_tax_number or "",
+            "customerTaxId": customer.get("tax_id") or original.sender_tax_number or "",
+            "customerTaxOffice": customer.get("tax_office") or original.sender_tax_office or "",
+            "customerAddress": addr.get("street") or original.sender_address or "",
+            "customerCity": addr.get("city") or original.sender_city or "",
+        }
+    # UBL format (AccountingCustomerParty)
+    acp = raw.get("AccountingCustomerParty") or {}
+    party = acp.get("Party") or {}
+    if party:
+        pn = party.get("PartyName") or {}
+        tax_scheme = party.get("PartyTaxScheme") or {}
+        postal = party.get("PostalAddress") or {}
+        return {
+            "customerFirstName": _ubl_val(pn.get("Name")) or original.sender_name or "",
+            "customerTaxNumber": _ubl_val(tax_scheme.get("ID")) or original.sender_tax_number or "",
+            "customerTaxId": _ubl_val(tax_scheme.get("ID")) or original.sender_tax_number or "",
+            "customerTaxOffice": _ubl_val((tax_scheme.get("TaxScheme") or {}).get("Name")) or original.sender_tax_office or "",
+            "customerAddress": _ubl_val(postal.get("StreetName")) or original.sender_address or "",
+            "customerCity": _ubl_val(postal.get("CityName")) or original.sender_city or "",
+        }
+    # Flat BirFatura API
+    return {
+        "customerFirstName": original.sender_name or raw.get("ReceiverName") or raw.get("receiverName", ""),
+        "customerTaxNumber": original.sender_tax_number or raw.get("ReceiverKN") or raw.get("receiverKN", ""),
+        "customerTaxId": original.sender_tax_number or raw.get("ReceiverKN") or raw.get("receiverKN", ""),
+        "customerTaxOffice": original.sender_tax_office or "",
+        "customerAddress": original.sender_address or "",
+        "customerCity": original.sender_city or "",
+    }
+
+
+def _extract_items_from_raw(raw: dict) -> list[dict]:
+    """Extract form items from any raw_data format (rich, UBL, flat)."""
+    # Rich format (X-EAR invoice_dict)
+    rich_lines = raw.get("lines") or []
+    if rich_lines:
+        items = []
+        for line in rich_lines:
+            item = {
+                "id": str(uuid.uuid4()),
+                "name": line.get("name") or line.get("description") or "",
+                "description": line.get("description") or "",
+                "quantity": float(line.get("quantity", 1)),
+                "unit": line.get("unit") or "Adet",
+                "unitPrice": float(line.get("unitPrice") or line.get("price", 0)),
+                "taxRate": float(line.get("tax_rate") or line.get("taxRate", 0)),
+                "taxAmount": float(line.get("tax_amount") or line.get("taxAmount", 0)),
+                "total": float(line.get("line_extension_amount") or line.get("total", 0)),
+            }
+            for ext_key in _LINE_EXT_KEYS:
+                val = line.get(ext_key)
+                if val is not None:
+                    item[ext_key] = val
+            items.append(item)
+        return items
+
+    # UBL format (InvoiceLine)
+    ubl_lines = raw.get("InvoiceLine") or []
+    if isinstance(ubl_lines, dict):
+        ubl_lines = [ubl_lines]
+    if ubl_lines:
+        unit_map = {"C62": "Adet", "KGM": "Kg", "LTR": "Litre", "MTR": "Metre", "BX": "Kutu", "PR": "Çift"}
+        items = []
+        for line in ubl_lines:
+            item_obj = line.get("Item") or {}
+            qty_obj = line.get("InvoicedQuantity") or {}
+            price_obj = line.get("Price") or {}
+            tax_total = line.get("TaxTotal") or {}
+            # Extract tax rate/amount
+            tax_rate = 0.0
+            tax_amount = 0.0
+            if isinstance(tax_total, dict):
+                tax_amount = float(_ubl_val(tax_total.get("TaxAmount", {}), 0))
+                tax_subtotals = tax_total.get("TaxSubtotal", [])
+                if isinstance(tax_subtotals, dict):
+                    tax_subtotals = [tax_subtotals]
+                if tax_subtotals:
+                    tax_rate = float(_ubl_val(tax_subtotals[0].get("Percent", {}), 0))
+            # Withholding tax
+            wh_total = line.get("WithholdingTaxTotal") or {}
+            wh_data = {}
+            if isinstance(wh_total, dict) and wh_total:
+                wh_subtotals = wh_total.get("TaxSubtotal", [])
+                if isinstance(wh_subtotals, dict):
+                    wh_subtotals = [wh_subtotals]
+                if wh_subtotals:
+                    wh_sub = wh_subtotals[0]
+                    wh_data = {
+                        "rate": float(_ubl_val(wh_sub.get("Percent", {}), 0)),
+                        "code": _ubl_val((wh_sub.get("TaxCategory", {}).get("TaxScheme", {}) or {}).get("TaxTypeCode", {}), ""),
+                    }
+            elif isinstance(wh_total, list):
+                for wht in wh_total:
+                    wh_subtotals = (wht or {}).get("TaxSubtotal", [])
+                    if isinstance(wh_subtotals, dict):
+                        wh_subtotals = [wh_subtotals]
+                    if wh_subtotals:
+                        wh_sub = wh_subtotals[0]
+                        wh_data = {
+                            "rate": float(_ubl_val(wh_sub.get("Percent", {}), 0)),
+                            "code": _ubl_val((wh_sub.get("TaxCategory", {}).get("TaxScheme", {}) or {}).get("TaxTypeCode", {}), ""),
+                        }
+                        break
+            # Tax exemption
+            tax_exemption_code = ""
+            tax_exemption_reason = ""
+            if isinstance(tax_total, dict):
+                ts = tax_total.get("TaxSubtotal", [])
+                if isinstance(ts, dict):
+                    ts = [ts]
+                if ts:
+                    tc = ts[0].get("TaxCategory", {}) or {}
+                    tax_exemption_code = _ubl_val(tc.get("TaxExemptionReasonCode", {}), "")
+                    tax_exemption_reason = _ubl_val(tc.get("TaxExemptionReason", {}), "")
+
+            uc = qty_obj.get("unitCode", "C62") if isinstance(qty_obj, dict) else "C62"
+            item = {
+                "id": str(uuid.uuid4()),
+                "name": _ubl_val(item_obj.get("Name", {})),
+                "description": _ubl_val(item_obj.get("Description", {})),
+                "quantity": float(_ubl_val(qty_obj, 1)),
+                "unit": unit_map.get(uc, uc),
+                "unitPrice": float(_ubl_val((price_obj.get("PriceAmount") or {}), 0)),
+                "taxRate": tax_rate,
+                "taxAmount": tax_amount,
+                "total": float(_ubl_val(line.get("LineExtensionAmount", {}), 0)),
+            }
+            if tax_exemption_code:
+                item["taxExemptionCode"] = tax_exemption_code
+            if tax_exemption_reason:
+                item["taxExemptionReason"] = tax_exemption_reason
+            if wh_data:
+                item["withholdingData"] = wh_data
+            # Seller item code
+            seller_id = (item_obj.get("SellersItemIdentification") or {}).get("ID")
+            if seller_id:
+                item["serviceCode"] = _ubl_val(seller_id)
+            buyer_id = (item_obj.get("BuyersItemIdentification") or {}).get("ID")
+            if buyer_id:
+                item["aliciStokKodu"] = _ubl_val(buyer_id)
+            items.append(item)
+        return items
+
+    # Flat BirFatura API format (invoiceLines)
+    flat_lines = raw.get("invoiceLines") or raw.get("invoiceLine") or []
+    if flat_lines:
+        items = []
+        for line in flat_lines:
+            item = {
+                "id": str(uuid.uuid4()),
+                "name": line.get("itemName") or line.get("name", ""),
+                "description": line.get("itemDescription") or line.get("description", ""),
+                "quantity": float(line.get("quantity", 1)),
+                "unit": line.get("unitCode") or line.get("unit", "Adet"),
+                "unitPrice": float(line.get("priceAmount") or line.get("unitPrice", 0)),
+                "taxRate": float(line.get("taxRate") or line.get("tax_rate", 20)),
+                "taxAmount": float(line.get("taxAmount") or line.get("tax_amount", 0)),
+                "total": float(line.get("lineExtensionAmount") or line.get("lineTotal", 0)),
+            }
+            for ext_key in _LINE_EXT_KEYS:
+                val = line.get(ext_key)
+                if val is not None:
+                    item[ext_key] = val
+            items.append(item)
+        return items
+
+    return []
+
+
+def _extract_type_specific_data(raw: dict) -> dict:
+    """Extract SGK, withholding, export, special tax base etc. from any raw_data format."""
+    extra: dict = {}
+
+    # SGK data
+    sgk = raw.get("sgk_data") or raw.get("sgkData")
+    if isinstance(sgk, dict) and sgk:
+        extra["sgkData"] = sgk
+
+    # Export details
+    export = raw.get("exportDetails") or raw.get("export_details")
+    if isinstance(export, dict) and export:
+        extra["exportDetails"] = export
+
+    # Withholding data (document-level)
+    withholding = raw.get("withholdingData") or raw.get("withholding_data")
+    if isinstance(withholding, dict) and withholding:
+        extra["withholdingData"] = withholding
+
+    # Government fields
+    for gk in ("governmentPayingCustomer", "governmentExemptionReason", "governmentExportRegisteredReason"):
+        if raw.get(gk) is not None:
+            extra[gk] = raw[gk]
+
+    # Profile details
+    profile = raw.get("profileDetails") or raw.get("profile_details")
+    if isinstance(profile, dict) and profile:
+        extra["profileDetails"] = profile
+
+    # Return invoice details
+    ret = raw.get("returnInvoiceDetails") or raw.get("return_invoice_details")
+    if isinstance(ret, dict) and ret:
+        extra["returnInvoiceDetails"] = ret
+    # UBL BillingReference
+    billing_ref = raw.get("BillingReference") or {}
+    if isinstance(billing_ref, dict) and not ret:
+        inv_ref = billing_ref.get("InvoiceDocumentReference") or {}
+        ref_id = _ubl_val(inv_ref.get("ID", {}))
+        ref_date = _ubl_val(inv_ref.get("IssueDate", {}))
+        if ref_id:
+            extra["returnInvoiceDetails"] = {
+                "returnInvoiceNumber": ref_id,
+                "returnInvoiceDate": ref_date,
+            }
+
+    # Special tax base
+    stb = raw.get("specialTaxBase") or raw.get("special_tax_base")
+    if isinstance(stb, dict) and stb:
+        extra["specialTaxBase"] = stb
+
+    # Medical device data
+    med = raw.get("medicalDeviceData") or raw.get("medical_device_data")
+    if isinstance(med, dict) and med:
+        extra["medicalDeviceData"] = med
+
+    # Notes
+    notes_val = raw.get("notes") or raw.get("Note")
+    if notes_val:
+        if isinstance(notes_val, list):
+            parts = []
+            for n in notes_val:
+                parts.append(_ubl_val(n) if isinstance(n, dict) else str(n))
+            extra["notes"] = " ".join(p for p in parts if p)
+        elif isinstance(notes_val, dict):
+            extra["notes"] = _ubl_val(notes_val)
+        elif isinstance(notes_val, str):
+            extra["notes"] = notes_val
+
+    # UBL AdditionalDocumentReference — may contain SGK dosya no, referans no etc.
+    add_refs = raw.get("AdditionalDocumentReference") or []
+    if isinstance(add_refs, dict):
+        add_refs = [add_refs]
+    for ref in add_refs:
+        if not isinstance(ref, dict):
+            continue
+        doc_type = _ubl_val(ref.get("DocumentType", {}))
+        ref_id = _ubl_val(ref.get("ID", {}))
+        # DocumentDescription holds the field label, DocumentType holds the value
+        doc_desc_raw = ref.get("DocumentDescription", [])
+        if isinstance(doc_desc_raw, dict):
+            doc_desc_raw = [doc_desc_raw]
+        desc_label = ""
+        for dd in (doc_desc_raw if isinstance(doc_desc_raw, list) else []):
+            desc_label = (_ubl_val(dd) if isinstance(dd, dict) else str(dd)).lower()
+            if desc_label:
+                break
+        if not doc_type:
+            continue
+        dt_lower = doc_type.lower()
+        if "dosya" in dt_lower and ref_id:
+            extra.setdefault("sgkData", {})["dosyaNo"] = ref_id
+        elif "abone" in dt_lower and ref_id:
+            extra.setdefault("sgkData", {})["aboneNo"] = ref_id
+        # SGK pattern: desc_label is field name, doc_type is field value
+        if desc_label:
+            if "evrak" in desc_label or "dosya" in desc_label:
+                extra.setdefault("sgkData", {})["dosyaNo"] = doc_type
+            elif "mükellef" in desc_label and "kod" in desc_label:
+                extra.setdefault("sgkData", {})["mukellefKodu"] = doc_type
+            elif "mükellef" in desc_label and "ad" in desc_label:
+                extra.setdefault("sgkData", {})["mukellefAdi"] = doc_type
+            elif "satış merkezi kod" in desc_label:
+                extra.setdefault("sgkData", {})["mukellefKodu"] = doc_type
+            elif "satış merkezi ad" in desc_label:
+                extra.setdefault("sgkData", {})["mukellefAdi"] = doc_type
+
+    # UBL InvoicePeriod → SGK period dates
+    inv_period = raw.get("InvoicePeriod")
+    if isinstance(inv_period, dict):
+        start_d = _ubl_val(inv_period.get("StartDate", {}))
+        end_d = _ubl_val(inv_period.get("EndDate", {}))
+        if start_d or end_d:
+            sgk_d = extra.setdefault("sgkData", {})
+            if start_d:
+                dt_str = start_d[:10] if isinstance(start_d, str) else str(start_d)
+                sgk_d["periodStartDate"] = dt_str
+                parts = dt_str.split("-")
+                if len(parts) >= 2:
+                    sgk_d.setdefault("periodYear", parts[0])
+                    sgk_d.setdefault("periodMonth", str(int(parts[1])))
+            if end_d:
+                dt_str = end_d[:10] if isinstance(end_d, str) else str(end_d)
+                sgk_d["periodEndDate"] = dt_str
+
+    return extra
+
+
+def _build_form_data_from_raw(raw: dict, original) -> dict:
+    """Build complete form_data from any raw_data format (rich, UBL, flat BirFatura API).
+    Also checks _source_form_data embedded in raw as a high-fidelity source."""
+    # If _source_form_data exists inside raw, prefer it for type-specific data
+    src = raw.get("_source_form_data") if isinstance(raw.get("_source_form_data"), dict) else None
+
+    form_data = {
+        "invoiceType": _resolve_invoice_type_code(src or raw),
+        "scenario": _resolve_scenario(src or raw),
+        "currency": (
+            (src or raw).get("currency")
+            or _ubl_val(raw.get("DocumentCurrencyCode", {}))
+            or original.currency
+            or "TRY"
+        ),
+        **_extract_customer_from_raw(src or raw, original),
+    }
+
+    # Items: prefer _source_form_data items, then extract from raw
+    if src and src.get("items"):
+        form_data["items"] = src["items"]
+    else:
+        items = _extract_items_from_raw(raw)
+        if items:
+            form_data["items"] = items
+
+    # Type-specific data: merge from both _source_form_data and raw
+    if src:
+        form_data.update(_extract_type_specific_data(src))
+    form_data.update(_extract_type_specific_data(raw))
+
+    return form_data
 
 
 def _reference_cache_get(key: str) -> object | None:
@@ -83,6 +485,8 @@ def list_incoming_invoices(
     date_to: Optional[date] = Query(None, description="Filter to date"),
     page: int = Query(1, ge=1, description="Page number"),
     per_page: int = Query(50, ge=1, le=500, description="Items per page"),
+    sort_field: Optional[str] = Query(None, description="Sort field: invoiceDate, supplier, invoiceNumber, totalAmount, status"),
+    sort_dir: Optional[str] = Query(None, description="Sort direction: asc or desc"),
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access("invoices.view"))
 ):
@@ -99,7 +503,9 @@ def list_incoming_invoices(
             date_from=date_from,
             date_to=date_to,
             page=page,
-            per_page=per_page
+            per_page=per_page,
+            sort_field=sort_field,
+            sort_dir=sort_dir,
         )
         
         return ResponseEnvelope(
@@ -111,6 +517,69 @@ def list_incoming_invoices(
     except Exception as e:
         logger.error(f"Error listing incoming invoices: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to retrieve incoming invoices")
+
+
+@router.get("/incoming/suggest-supplier",
+            operation_id="suggestSupplierMatch",
+            response_model=ResponseEnvelope[SupplierSuggestionResponse])
+def suggest_supplier_match(
+    sender_name: str = Query(..., description="Invoice sender name from OCR or e-fatura"),
+    sender_tax_number: Optional[str] = Query(None, description="Invoice sender tax number"),
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access("purchases.view"))
+):
+    """
+    Auto-suggest matching suppliers for an invoice sender using fuzzy matching.
+    Returns ranked list of potential supplier matches with confidence scores.
+    """
+    from utils.turkish_fuzzy_match import fuzzy_match_supplier
+    tenant_id = _resolve_tenant(access)
+    
+    try:
+        suppliers = db.query(Supplier).filter(
+            and_(
+                Supplier.tenant_id == tenant_id,
+                Supplier.is_active == True
+            )
+        ).all()
+        
+        supplier_dicts = [
+            {
+                'id': s.id,
+                'company_name': s.company_name,
+                'tax_number': s.tax_number,
+                'tax_office': s.tax_office,
+                'city': s.city,
+            }
+            for s in suppliers
+        ]
+        
+        matches = fuzzy_match_supplier(
+            name=sender_name,
+            tax_number=sender_tax_number,
+            suppliers=supplier_dicts,
+            threshold=0.4
+        )
+        
+        suggestions = [
+            SupplierSuggestionItem(
+                supplier_id=match[0]['id'],
+                company_name=match[0]['company_name'],
+                tax_number=match[0].get('tax_number'),
+                score=round(match[1], 3),
+                match_reason=match[2],
+            )
+            for match in matches[:5]
+        ]
+        
+        return ResponseEnvelope(
+            success=True,
+            data=SupplierSuggestionResponse(suggestions=suggestions, query=sender_name)
+        )
+        
+    except Exception as e:
+        logger.error(f"Error suggesting supplier match: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to suggest supplier match")
 
 
 @router.get("/incoming/supplier-items",
@@ -201,6 +670,8 @@ def list_outgoing_invoices(
     date_to: Optional[date] = Query(None, description="Filter to date"),
     page: int = Query(1, ge=1, description="Page number"),
     per_page: int = Query(50, ge=1, le=100, description="Items per page"),
+    sort_field: Optional[str] = Query(None, description="Sort field: invoiceDate, party, invoiceNumber, totalAmount, status"),
+    sort_dir: Optional[str] = Query(None, description="Sort direction: asc or desc"),
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access("invoices.view"))
 ):
@@ -217,7 +688,9 @@ def list_outgoing_invoices(
             date_from=date_from,
             date_to=date_to,
             page=page,
-            per_page=per_page
+            per_page=per_page,
+            sort_field=sort_field,
+            sort_dir=sort_dir,
         )
         
         return ResponseEnvelope(
@@ -713,7 +1186,13 @@ def _render_invoice_html(invoice: "PurchaseInvoice") -> bytes:
 
     inv_no = raw.get("InvoiceNo") or invoice.invoice_number or ""
     issue_date = (raw.get("IssueDate") or str(invoice.invoice_date or ""))[:10]
-    inv_type = raw.get("InvoiceTypeCode") or invoice.invoice_type or ""
+    inv_type = _normalize_invoice_type_code(
+        raw.get("InvoiceTypeCode")
+        or raw.get("invoiceTypeCode")
+        or raw.get("invoiceType")
+        or invoice.invoice_type
+        or ""
+    )
     profile = raw.get("ProfileId") or ""
     currency = raw.get("DocumentCurrencyCode") or invoice.currency or "TRY"
     note = (raw.get("Note") or "").replace("\n", "<br>")
@@ -1641,36 +2120,8 @@ def get_invoice_draft(
         # User-created draft: raw_data IS the serialized form state
         form_data = {k: v for k, v in raw.items() if k != "_is_form_draft"}
     else:
-        # BirFatura-sourced draft (copy): map XML fields to form state
-        items = []
-        for line in (raw.get("invoiceLines") or raw.get("invoiceLine") or []):
-            items.append({
-                "id": str(uuid.uuid4()),
-                "name": line.get("itemName") or line.get("name", ""),
-                "description": line.get("itemDescription") or line.get("description", ""),
-                "quantity": float(line.get("quantity", 1)),
-                "unit": line.get("unitCode", "Adet"),
-                "unitPrice": float(line.get("priceAmount") or line.get("unitPrice", 0)),
-                "taxRate": 20,
-                "taxAmount": 0,
-                "total": float(line.get("lineExtensionAmount") or line.get("lineTotal", 0)),
-            })
-
-        form_data = {
-            "customerFirstName": (
-                raw.get("ReceiverName") or raw.get("receiverName") or draft.sender_name or ""
-            ),
-            "customerTaxNumber": (
-                raw.get("ReceiverKN") or raw.get("receiverTaxNumber") or draft.sender_tax_number or ""
-            ),
-            "customerTaxId": (
-                raw.get("ReceiverKN") or raw.get("receiverTaxNumber") or draft.sender_tax_number or ""
-            ),
-            "invoiceType": raw.get("InvoiceTypeCode", ""),
-            "currency": raw.get("DocumentCurrencyCode") or draft.currency or "TRY",
-            "invoiceDate": draft.invoice_date.isoformat() if draft.invoice_date else None,
-            "items": items,
-        }
+        # BirFatura-sourced draft: use unified extraction from any raw_data format
+        form_data = _build_form_data_from_raw(raw, draft)
 
     return ResponseEnvelope(
         success=True,
@@ -1706,128 +2157,17 @@ def copy_invoice(
         # Original was a form-created draft
         form_data = {k: v for k, v in raw.items() if k != "_is_form_draft"}
     else:
-        # BirFatura-synced or rich-format invoice: map to form state
-        # Detect format: rich (from draft_to_invoice) vs basic (BirFatura API)
-        is_rich = "invoiceType" in raw and "customer" in raw
+        # BirFatura-synced or any other format: unified extraction
+        form_data = _build_form_data_from_raw(raw, original)
 
-        if is_rich:
-            # Rich format (sent via X-EAR): invoiceType, customer, lines, sgk_data, etc.
-            form_invoice_type = raw.get("invoiceType", "0")
-            form_scenario = raw.get("scenario", "other")
-            customer = raw.get("customer") or {}
-            customer_addr = customer.get("address") or {}
-            form_data = {
-                "invoiceType": form_invoice_type,
-                "scenario": form_scenario,
-                "currency": raw.get("currency") or original.currency or "TRY",
-                "customerFirstName": customer.get("name") or original.sender_name or "",
-                "customerTaxNumber": customer.get("tax_id") or original.sender_tax_number or "",
-                "customerTaxId": customer.get("tax_id") or original.sender_tax_number or "",
-                "customerTaxOffice": customer.get("tax_office") or original.sender_tax_office or "",
-                "customerAddress": customer_addr.get("street") or original.sender_address or "",
-                "customerCity": customer_addr.get("city") or original.sender_city or "",
-            }
-            # Extract items from rich-format lines
-            rich_lines = raw.get("lines") or []
-            if rich_lines:
-                form_items = []
-                for line in rich_lines:
-                    form_items.append({
-                        "id": str(uuid.uuid4()),
-                        "name": line.get("name") or line.get("description") or "",
-                        "description": line.get("description") or "",
-                        "quantity": float(line.get("quantity", 1)),
-                        "unit": line.get("unit") or "Adet",
-                        "unitPrice": float(line.get("unitPrice") or line.get("price", 0)),
-                        "taxRate": float(line.get("tax_rate", 0)),
-                        "taxAmount": float(line.get("tax_amount", 0)),
-                        "total": float(line.get("line_extension_amount") or line.get("total", 0)),
-                    })
-                form_data["items"] = form_items
-        else:
-            # Basic BirFatura API format: DocumentTypeCode, ProfileID, etc.
-            doc_type_map = {
-                "SATIS": "0", "IADE": "50", "ISTISNA": "13",
-                "TEVKIFAT": "11", "OZELMATRAH": "12", "IHRAC": "27",
-                "SGK": "14", "TEVKIFAT_IADE": "15",
-            }
-            doc_type_code = raw.get("DocumentTypeCode", "")
-            form_invoice_type = doc_type_map.get(doc_type_code, "0")
-
-            profile_map = {
-                "TEMELFATURA": "other", "TICARIFATURA": "other",
-                "IHRACFATURA": "export", "KAMUFATURA": "government",
-            }
-            profile_id = raw.get("ProfileID", "")
-            form_scenario = profile_map.get(profile_id, "other")
-
-            form_data = {
-                "invoiceType": form_invoice_type,
-                "scenario": form_scenario,
-                "currency": raw.get("DocumentCurrencyCode") or original.currency or "TRY",
-                "customerFirstName": original.sender_name or raw.get("ReceiverName", ""),
-                "customerTaxNumber": original.sender_tax_number or raw.get("ReceiverKN", ""),
-                "customerTaxId": original.sender_tax_number or raw.get("ReceiverKN", ""),
-                "customerTaxOffice": original.sender_tax_office or "",
-                "customerAddress": original.sender_address or "",
-                "customerCity": original.sender_city or "",
-            }
-
-        # --- Extract type-specific nested data from raw_data ---
-        # SGK data (snake_case sgk_data from invoice_dict, or camelCase sgkData from form)
-        sgk = raw.get("sgk_data") or raw.get("sgkData")
-        if isinstance(sgk, dict) and sgk:
-            form_data["sgkData"] = sgk
-
-        # Export details
-        export = raw.get("exportDetails") or raw.get("export_details")
-        if isinstance(export, dict) and export:
-            form_data["exportDetails"] = export
-
-        # Withholding data
-        withholding = raw.get("withholdingData") or raw.get("withholding_data")
-        if isinstance(withholding, dict) and withholding:
-            form_data["withholdingData"] = withholding
-
-        # Government fields
-        for gk in ("governmentPayingCustomer", "governmentExemptionReason", "governmentExportRegisteredReason"):
-            if raw.get(gk) is not None:
-                form_data[gk] = raw[gk]
-
-        # Profile details
-        profile = raw.get("profileDetails") or raw.get("profile_details")
-        if isinstance(profile, dict) and profile:
-            form_data["profileDetails"] = profile
-
-        # Return invoice details
-        ret = raw.get("returnInvoiceDetails") or raw.get("return_invoice_details")
-        if isinstance(ret, dict) and ret:
-            form_data["returnInvoiceDetails"] = ret
-
-        # Special tax base
-        stb = raw.get("specialTaxBase") or raw.get("special_tax_base")
-        if isinstance(stb, dict) and stb:
-            form_data["specialTaxBase"] = stb
-
-        # Medical device data
-        med = raw.get("medicalDeviceData") or raw.get("medical_device_data")
-        if isinstance(med, dict) and med:
-            form_data["medicalDeviceData"] = med
-
-        # Notes
-        notes_val = raw.get("notes")
-        if notes_val:
-            if isinstance(notes_val, list):
-                form_data["notes"] = " ".join(str(n) for n in notes_val if n)
-            elif isinstance(notes_val, str):
-                form_data["notes"] = notes_val
-
-    # Build items from PurchaseInvoiceItem records (if any)
+    # Build items from PurchaseInvoiceItem records (if any and form_data has none)
     original_items = db.query(PurchaseInvoiceItem).filter_by(purchase_invoice_id=original.id).all()
-    if original_items:
+    if original_items and not form_data.get("items"):
+        # Try to get extended per-line data from raw_data lines/items
+        raw_lines = _extract_items_from_raw(raw)
         form_items = []
-        for item in original_items:
-            form_items.append({
+        for idx, item in enumerate(original_items):
+            fi = {
                 "id": str(uuid.uuid4()),
                 "name": item.product_name or "",
                 "description": item.product_description or "",
@@ -1837,7 +2177,15 @@ def copy_invoice(
                 "taxRate": float(item.tax_rate or 0),
                 "taxAmount": float(item.tax_amount or 0),
                 "total": float(item.line_total or 0),
-            })
+            }
+            # Merge extended fields from raw_data line if available
+            if idx < len(raw_lines) and isinstance(raw_lines[idx], dict):
+                rl = raw_lines[idx]
+                for ext_key in _LINE_EXT_KEYS:
+                    val = rl.get(ext_key)
+                    if val is not None:
+                        fi[ext_key] = val
+            form_items.append(fi)
         form_data["items"] = form_items
     elif "items" not in form_data:
         # No DB items and no items in form_data → create a default line from totals
@@ -1961,4 +2309,63 @@ def delete_purchase(
         success=True,
         data=InvoiceActionResponse(invoice_id=0, success=True, message="Alış kaydı silindi"),
         message="Purchase deleted"
+    )
+
+
+@router.post("/repair-form-data",
+             operation_id="repairFormData",
+             response_model=ResponseEnvelope[InvoiceActionResponse])
+def repair_form_data(
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access("invoices.view"))
+):
+    """Reconstruct _source_form_data for all invoices that are missing it.
+    Safe to run multiple times — skips invoices that already have it."""
+    tenant_id = _resolve_tenant(access)
+    invoices = db.query(PurchaseInvoice).filter(
+        PurchaseInvoice.tenant_id == tenant_id,
+    ).all()
+
+    repaired = 0
+    skipped = 0
+    errors = 0
+    for inv in invoices:
+        raw = inv.raw_data if isinstance(inv.raw_data, dict) else {}
+        if not raw:
+            skipped += 1
+            continue
+        # Already has _source_form_data
+        if isinstance(raw.get("_source_form_data"), dict) and raw["_source_form_data"]:
+            skipped += 1
+            continue
+        # Draft — its own raw IS the form data
+        if raw.get("_is_form_draft"):
+            skipped += 1
+            continue
+        try:
+            fd = _build_form_data_from_raw(raw, inv)
+            if fd and fd.get("invoiceType"):
+                raw["_source_form_data"] = fd
+                inv.raw_data = raw
+                # Force SQLAlchemy to detect the change
+                from sqlalchemy.orm.attributes import flag_modified
+                flag_modified(inv, "raw_data")
+                repaired += 1
+            else:
+                skipped += 1
+        except Exception as e:
+            logger.warning(f"Repair form_data error for invoice {inv.id}: {e}")
+            errors += 1
+
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Repair commit failed: {e}")
+
+    msg = f"{repaired} fatura onarıldı, {skipped} atlandı, {errors} hata"
+    return ResponseEnvelope(
+        success=True,
+        data=InvoiceActionResponse(invoice_id=repaired, success=True, message=msg),
+        message=msg
     )

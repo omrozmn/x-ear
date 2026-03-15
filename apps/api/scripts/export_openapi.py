@@ -39,11 +39,21 @@ def export_openapi(output_path: str = None):
         else:
             json.dump(openapi_schema, f, indent=2, ensure_ascii=False, default=str)
 
+    # Also generate YAML version for merge_openapi.py pipeline
+    yaml_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        "openapi.generated.yaml",
+    )
+    import yaml
+    with open(yaml_path, "w", encoding="utf-8") as f:
+        yaml.dump(openapi_schema, f, sort_keys=False, allow_unicode=True, default_flow_style=False, indent=2)
+
     # Stats
     paths_count = len(openapi_schema.get("paths", {}))
     schemas_count = len(openapi_schema.get("components", {}).get("schemas", {}))
 
     print(f"✅ OpenAPI schema exported to: {output_path}")
+    print(f"   Also: {yaml_path}")
     print(f"   Paths: {paths_count}")
     print(f"   Schemas: {schemas_count}")
 

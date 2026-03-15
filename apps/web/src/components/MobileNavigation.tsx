@@ -6,6 +6,7 @@ import {
   Calendar,
   MessageSquare,
   Settings,
+  FileSpreadsheet,
   Menu,
   X,
   Bell,
@@ -45,6 +46,11 @@ const navigationItems = [
     name: 'nav.settings.main',
     href: '/settings',
     icon: Settings,
+  },
+  {
+    name: 'nav.invoice_normalizer',
+    href: '/invoice-normalizer',
+    icon: FileSpreadsheet,
   },
 ];
 

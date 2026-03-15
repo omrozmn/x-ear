@@ -21,11 +21,8 @@ interface SalesFiltersProps {
   setSortOrder: (value: 'asc' | 'desc') => void;
   showAdvancedFilters: boolean;
   setShowAdvancedFilters: (value: boolean) => void;
-  selectedSales: string[];
   onExportSales: () => void;
   onPrintSales: () => void;
-  onBulkCollection: () => void;
-  onBulkPromissoryNote: () => void;
 }
 
 export const SalesFilters: React.FC<SalesFiltersProps> = ({
@@ -47,11 +44,8 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
   setSortOrder,
   showAdvancedFilters,
   setShowAdvancedFilters,
-  selectedSales,
   onExportSales,
   onPrintSales,
-  onBulkCollection,
-  onBulkPromissoryNote
 }) => {
   return (
     <div className="space-y-4">
@@ -174,23 +168,6 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
                 </select>
               </div>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Bulk Actions */}
-      {selectedSales.length > 0 && (
-        <div className="flex items-center gap-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-200 dark:border-blue-800">
-          <span className="text-sm font-medium text-blue-800 dark:text-blue-300">
-            {selectedSales.length} satış seçildi
-          </span>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={onBulkCollection}>
-              Toplu Tahsilat
-            </Button>
-            <Button variant="outline" onClick={onBulkPromissoryNote}>
-              Toplu Senet
-            </Button>
           </div>
         </div>
       )}

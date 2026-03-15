@@ -18,6 +18,7 @@
         "reports": "Reports",
         "automation": "Automation",
         "communication": "Communication",
+        "invoice_normalizer": "Accounting",
         "settings": {
             "main": "Settings",
             "general": "General",

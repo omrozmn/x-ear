@@ -1,5 +1,6 @@
 from sqlalchemy import Table, Column, Boolean, DateTime, ForeignKey, Integer, String, Text, Index
 from sqlalchemy.orm import relationship, backref
+from werkzeug.security import check_password_hash, generate_password_hash
 # User and Activity Models
 from core.models.base import Base
 from .base import BaseModel, gen_id, JSONMixin
@@ -35,6 +36,9 @@ class User(BaseModel, TenantScopedMixin):
     # Token contains this version, if mismatch -> force re-login
     permissions_version = Column(Integer, default=1, nullable=False)
     
+    # Impersonation consent — admin can only impersonate when True
+    allow_impersonation = Column(Boolean, default=False, nullable=False, server_default="0")
+    
     # Relationships
     branches = relationship('Branch', secondary=user_branches, lazy='subquery',
         backref=backref('users', lazy=True))
@@ -46,16 +50,20 @@ class User(BaseModel, TenantScopedMixin):
     affiliate_code = Column(String(50), nullable=True, index=True)
 
     def set_password(self, password):
-        """Hash and set password using passlib bcrypt"""
-        from passlib.context import CryptContext
-        pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-        self.password_hash = pwd_context.hash(password)
+        """Hash and set password using the app's stable werkzeug format."""
+        self.password_hash = generate_password_hash(password, method='pbkdf2:sha256')
 
     def check_password(self, password):
-        """Check password against hash using passlib"""
-        from passlib.context import CryptContext
-        pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        """Check password against both legacy bcrypt and current werkzeug hashes."""
         try:
+            if not self.password_hash:
+                return False
+
+            if self.password_hash.startswith(("pbkdf2:", "scrypt:")):
+                return check_password_hash(self.password_hash, password)
+
+            from passlib.context import CryptContext
+            pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
             return pwd_context.verify(password, self.password_hash)
         except Exception:
             return False

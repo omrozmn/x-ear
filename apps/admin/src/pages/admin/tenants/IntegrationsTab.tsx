@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CreditCard, FileText, MessageSquare } from 'lucide-react';
+import { CreditCard, FileText, MessageSquare, RefreshCw, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { apiClient } from '@/lib/api';
 import { useUpdateAdminTenant } from '@/lib/api-client';
@@ -93,6 +93,9 @@ export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant; 
         enabled: smsSettings.enabled || false
     });
 
+    const [syncing, setSyncing] = useState(false);
+    const [syncResult, setSyncResult] = useState<{ success: boolean; message: string } | null>(null);
+
     useEffect(() => {
         const fetchSmsConfig = async () => {
             try {
@@ -118,6 +121,34 @@ export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant; 
 
     const handleSmsChange = <Key extends keyof SmsIntegrationSettings>(field: Key, value: SmsIntegrationSettings[Key]) => {
         setSmsConfig(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleSync = async () => {
+        if (!tenant.id) return;
+        if (!invoiceConfig.api_key || !invoiceConfig.secret_key) {
+            toast.error('Senkronizasyon için önce API Key ve Secret Key kaydedin');
+            return;
+        }
+        setSyncing(true);
+        setSyncResult(null);
+        try {
+            const res = await apiClient.post<{ data?: { incoming?: number; outgoing?: number; synced_count?: number } }>(
+                `/api/admin/birfatura/sync/${tenant.id}`
+            );
+            const incoming = res.data?.data?.incoming ?? 0;
+            const outgoing = res.data?.data?.outgoing ?? 0;
+            // Backfill in background
+            apiClient.post(`/api/admin/birfatura/backfill/${tenant.id}`).catch(() => {});
+            const total = incoming + outgoing;
+            setSyncResult({ success: true, message: `${total} fatura senkronize edildi (${incoming} gelen, ${outgoing} giden)` });
+            toast.success(`Senkronizasyon tamamlandı: ${total} fatura`);
+        } catch (error: unknown) {
+            const msg = getApiErrorMessage(error, 'Senkronizasyon başarısız');
+            setSyncResult({ success: false, message: msg });
+            toast.error(msg);
+        } finally {
+            setSyncing(false);
+        }
     };
 
     const handleSave = async (e: React.FormEvent) => {
@@ -320,6 +351,49 @@ export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant; 
                                             placeholder="Abone'ye özel Secret Key"
                                         />
                                     </div>
+                                </div>
+
+                                {/* Senkronizasyon */}
+                                <div className="mt-4 pt-4 border-t border-gray-200">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-900">Fatura Senkronizasyonu</p>
+                                            <p className="text-xs text-gray-500 mt-0.5">
+                                                Bu tenant için gelen ve giden faturaları senkronize et
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={handleSync}
+                                            disabled={syncing || !invoiceConfig.api_key || !invoiceConfig.secret_key}
+                                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            {syncing ? (
+                                                <>
+                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                    Senkronize ediliyor...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <RefreshCw className="w-4 h-4" />
+                                                    Senkronizasyonu Başlat
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+                                    {syncResult && (
+                                        <div className={`mt-3 p-3 rounded-xl flex items-start gap-2 text-sm ${
+                                            syncResult.success
+                                                ? 'bg-green-50 text-green-700'
+                                                : 'bg-red-50 text-red-700'
+                                        }`}>
+                                            {syncResult.success
+                                                ? <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                                                : <XCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                                            }
+                                            {syncResult.message}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </>

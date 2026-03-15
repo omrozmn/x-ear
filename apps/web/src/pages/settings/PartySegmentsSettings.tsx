@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
-import { Users, Plus, Trash2, Edit2, X, Check } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Users, Plus, Trash2, Edit2, X, Check, ChevronDown, ChevronUp, ClipboardList, Loader2 } from 'lucide-react';
 import { Button } from '@x-ear/ui-web';
 import toast from 'react-hot-toast';
 import { customInstance } from '@/api/orval-mutator';
 import { extractErrorMessage } from '@/utils/error-utils';
+import { SettingsSectionHeader } from '../../components/layout/SettingsSectionHeader';
+import { useTranslation } from 'react-i18next';
 
 interface SegmentOption {
   value: string;
@@ -41,7 +43,54 @@ const INITIAL_ACQUISITIONS: AcquisitionOption[] = [
 const STORAGE_KEY_SEGMENTS = 'custom_party_segments';
 const STORAGE_KEY_ACQUISITIONS = 'custom_acquisition_types';
 
+interface AnamnesisQuestionTemplate {
+  id: string;
+  question: string;
+  category: string;
+  type: 'text' | 'select' | 'multiselect';
+  options?: string[];
+  required?: boolean;
+}
+
+const CollapsibleSettingsSection: React.FC<{
+  title: string;
+  icon: React.ReactNode;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}> = ({ title, icon, defaultOpen = true, children }) => {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <button
+        data-allow-raw="true"
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full p-6 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors rounded-2xl"
+      >
+        <div className="flex items-center gap-3">
+          {icon}
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
+        </div>
+        {isOpen ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
+      </button>
+      {isOpen && <div className="px-6 pb-6 border-t dark:border-gray-700">{children}</div>}
+    </div>
+  );
+};
+
+const ANAMNESIS_CATEGORIES = [
+  { value: 'isitme_kaybi', label: 'Isitme Kaybi' },
+  { value: 'semptom', label: 'Semptomlar' },
+  { value: 'oykü', label: 'Aile Oykusu' },
+  { value: 'tibbi_gecmis', label: 'Tibbi Gecmis' },
+  { value: 'risk_faktorleri', label: 'Risk Faktorleri' },
+  { value: 'cihaz', label: 'Cihaz Gecmisi' },
+  { value: 'beklenti', label: 'Beklentiler' },
+  { value: 'diger', label: 'Diger' },
+];
+
 export default function PartySegmentsSettings() {
+  const { t } = useTranslation('settings');
   const [segments, setSegments] = useState<SegmentOption[]>([]);
   const [acquisitions, setAcquisitions] = useState<AcquisitionOption[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,9 +107,100 @@ export default function PartySegmentsSettings() {
   const [deletingSegment, setDeletingSegment] = useState<string | null>(null);
   const [deletingAcquisition, setDeletingAcquisition] = useState<string | null>(null);
 
+  // Anamnesis question templates
+  const [anamnesisQuestions, setAnamnesisQuestions] = useState<AnamnesisQuestionTemplate[]>([]);
+  const [useDefaults, setUseDefaults] = useState(true);
+  const [savingAnamnesis, setSavingAnamnesis] = useState(false);
+  const [newQ, setNewQ] = useState({ question: '', category: 'diger', type: 'text' as 'text' | 'select' | 'multiselect', required: false });
+  const [newOption, setNewOption] = useState('');
+  const [newQOptions, setNewQOptions] = useState<string[]>([]);
+
+  const loadAnamnesisQuestions = useCallback(async () => {
+    try {
+      const response = await customInstance<unknown>({
+        url: '/api/settings/anamnesis-questions',
+        method: 'GET',
+      });
+      const envelope = response as Record<string, unknown>;
+      const data = (envelope?.data ?? envelope) as Record<string, unknown>;
+      const questions = (data?.questions ?? []) as AnamnesisQuestionTemplate[];
+      if (questions.length > 0) {
+        setAnamnesisQuestions(questions);
+        setUseDefaults(false);
+      } else {
+        // No custom questions saved — load defaults from party endpoint
+        try {
+          const defaultsRes = await customInstance<unknown>({
+            url: '/api/settings/anamnesis-questions/defaults',
+            method: 'GET',
+          });
+          const dEnv = defaultsRes as Record<string, unknown>;
+          const dData = (dEnv?.data ?? dEnv) as Record<string, unknown>;
+          const defaultQs = (dData?.questions ?? []) as AnamnesisQuestionTemplate[];
+          setAnamnesisQuestions(defaultQs);
+        } catch {
+          setAnamnesisQuestions([]);
+        }
+        setUseDefaults(true);
+      }
+    } catch {
+      // Keep defaults
+    }
+  }, []);
+
+  const saveAnamnesisQuestions = async (questions: AnamnesisQuestionTemplate[]) => {
+    setSavingAnamnesis(true);
+    try {
+      await customInstance({
+        url: '/api/settings/anamnesis-questions',
+        method: 'PUT',
+        data: { questions, useDefaults: questions.length === 0 },
+      });
+      setAnamnesisQuestions(questions);
+      setUseDefaults(questions.length === 0);
+      toast.success(t('anamnesis.save_success', 'Anamnez sorulari kaydedildi'));
+    } catch (error) {
+      toast.error(t('anamnesis.save_error', 'Kaydetme hatasi: ') + extractErrorMessage(error));
+    } finally {
+      setSavingAnamnesis(false);
+    }
+  };
+
+  const handleAddAnamnesisQuestion = () => {
+    if (!newQ.question.trim()) {
+      toast.error(t('anamnesis.question_required', 'Soru metni gerekli'));
+      return;
+    }
+    const q: AnamnesisQuestionTemplate = {
+      id: `q_${Date.now()}`,
+      question: newQ.question.trim(),
+      category: newQ.category,
+      type: newQ.type,
+      required: newQ.required,
+      ...(newQ.type !== 'text' && newQOptions.length > 0 ? { options: newQOptions } : {}),
+    };
+    const updated = [...anamnesisQuestions, q];
+    saveAnamnesisQuestions(updated);
+    setNewQ({ question: '', category: 'diger', type: 'text', required: false });
+    setNewQOptions([]);
+  };
+
+  const handleDeleteAnamnesisQuestion = (id: string) => {
+    const updated = anamnesisQuestions.filter(q => q.id !== id);
+    saveAnamnesisQuestions(updated);
+  };
+
+  const handleToggleRequired = (id: string) => {
+    const updated = anamnesisQuestions.map(q =>
+      q.id === id ? { ...q, required: !q.required } : q
+    );
+    saveAnamnesisQuestions(updated);
+  };
+
   useEffect(() => {
     loadSettings();
-  }, []);
+    loadAnamnesisQuestions();
+  }, [loadAnamnesisQuestions]);
 
   const loadSettings = async () => {
     try {
@@ -385,22 +525,19 @@ export default function PartySegmentsSettings() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-2xl">
-            <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Hasta Segmentleri</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Hasta segmentlerini ve kazanım türlerini yönetin
-            </p>
-          </div>
-        </div>
+      <SettingsSectionHeader
+        title={t('party.title', 'Hasta Ayarlari')}
+        description={t('party.description', 'Hasta segmentlerini, kazanim turlerini ve anamnez sorularini yonetin')}
+        icon={<Users className="w-6 h-6" />}
+      />
       </div>
 
       {/* Segments Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Hasta Segmentleri</h3>
+      <CollapsibleSettingsSection
+        title={t('party.segments_title', 'Hasta Segmentleri')}
+        icon={<Users className="w-5 h-5 text-gray-500" />}
+        defaultOpen={true}
+      >
         
         {/* Add New Segment */}
         <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-2xl">
@@ -516,11 +653,14 @@ export default function PartySegmentsSettings() {
             </div>
           ))}
         </div>
-      </div>
+      </CollapsibleSettingsSection>
 
       {/* Acquisition Types Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Kazanım Türleri</h3>
+      <CollapsibleSettingsSection
+        title={t('party.acquisitions_title', 'Kazanim Turleri')}
+        icon={<Users className="w-5 h-5 text-gray-500" />}
+        defaultOpen={true}
+      >
         
         {/* Add New Acquisition */}
         <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-2xl">
@@ -636,7 +776,204 @@ export default function PartySegmentsSettings() {
             </div>
           ))}
         </div>
-      </div>
+      </CollapsibleSettingsSection>
+
+      {/* Anamnesis Questions Section */}
+      <CollapsibleSettingsSection
+        title={t('anamnesis.title', 'Anamnez Sorulari')}
+        icon={<ClipboardList className="w-5 h-5 text-gray-500" />}
+        defaultOpen={false}
+      >
+        <div className="pt-4 space-y-4">
+          {useDefaults && anamnesisQuestions.length > 0 && (
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl text-sm text-blue-700 dark:text-blue-300">
+              {t('anamnesis.defaults_info', 'Varsayılan odyoloji soruları gösteriliyor. Düzenleyebilir, silebilir veya yeni sorular ekleyebilirsiniz.')}
+            </div>
+          )}
+          {useDefaults && anamnesisQuestions.length === 0 && (
+            <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl text-sm text-yellow-700 dark:text-yellow-300">
+              {t('anamnesis.no_defaults', 'Varsayılan sorular yüklenemedi.')}
+            </div>
+          )}
+
+          {/* Add New Question */}
+          <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-2xl space-y-3">
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('anamnesis.add_question', 'Yeni Soru Ekle')}</h4>
+            <input
+              data-allow-raw="true"
+              type="text"
+              placeholder={t('anamnesis.question_placeholder', 'Soru metni yazin...')}
+              value={newQ.question}
+              onChange={e => setNewQ(prev => ({ ...prev, question: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+            />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t('anamnesis.category', 'Kategori')}</label>
+                <select
+                  data-allow-raw="true"
+                  value={newQ.category}
+                  onChange={e => setNewQ(prev => ({ ...prev, category: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                >
+                  {ANAMNESIS_CATEGORIES.map(c => (
+                    <option key={c.value} value={c.value}>{c.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t('anamnesis.answer_type', 'Cevap Tipi')}</label>
+                <select
+                  data-allow-raw="true"
+                  value={newQ.type}
+                  onChange={e => setNewQ(prev => ({ ...prev, type: e.target.value as 'text' | 'select' | 'multiselect' }))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                >
+                  <option value="text">{t('anamnesis.type_text', 'Metin')}</option>
+                  <option value="select">{t('anamnesis.type_select', 'Tek Secim')}</option>
+                  <option value="multiselect">{t('anamnesis.type_multiselect', 'Coklu Secim')}</option>
+                </select>
+              </div>
+              <div className="flex items-end gap-3">
+                <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                  <input
+                    data-allow-raw="true"
+                    type="checkbox"
+                    checked={newQ.required}
+                    onChange={e => setNewQ(prev => ({ ...prev, required: e.target.checked }))}
+                    className="rounded border-gray-300 dark:border-gray-600"
+                  />
+                  {t('anamnesis.required', 'Zorunlu')}
+                </label>
+              </div>
+            </div>
+
+            {newQ.type !== 'text' && (
+              <div className="space-y-2">
+                <label className="block text-xs text-gray-500 dark:text-gray-400">{t('anamnesis.options', 'Secenekler')}</label>
+                <div className="flex gap-2">
+                  <input
+                    data-allow-raw="true"
+                    type="text"
+                    placeholder={t('anamnesis.option_placeholder', 'Secenek ekle...')}
+                    value={newOption}
+                    onChange={e => setNewOption(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && newOption.trim()) {
+                        setNewQOptions(prev => [...prev, newOption.trim()]);
+                        setNewOption('');
+                      }
+                    }}
+                    className="flex-1 px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                  />
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      if (newOption.trim()) {
+                        setNewQOptions(prev => [...prev, newOption.trim()]);
+                        setNewOption('');
+                      }
+                    }}
+                    icon={<Plus className="w-3 h-3" />}
+                    iconPosition="left"
+                  >
+                    {t('anamnesis.add', 'Ekle')}
+                  </Button>
+                </div>
+                {newQOptions.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {newQOptions.map((opt, i) => (
+                      <span key={i} className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-xs rounded-lg">
+                        {opt}
+                        <button
+                          data-allow-raw="true"
+                          type="button"
+                          onClick={() => setNewQOptions(prev => prev.filter((_, idx) => idx !== i))}
+                          className="hover:text-red-500"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <Button
+              onClick={handleAddAnamnesisQuestion}
+              icon={savingAnamnesis ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+              iconPosition="left"
+              disabled={savingAnamnesis || !newQ.question.trim()}
+            >
+              {savingAnamnesis ? t('common.saving', 'Kaydediliyor...') : t('anamnesis.add_question_btn', 'Soru Ekle')}
+            </Button>
+          </div>
+
+          {/* Questions List */}
+          {anamnesisQuestions.length > 0 && (
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {t('anamnesis.questions_list', 'Sorular')} ({anamnesisQuestions.length})
+              </h4>
+              {anamnesisQuestions.map(q => (
+                <div
+                  key={q.id}
+                  className="flex items-start justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{q.question}</span>
+                      {q.required && (
+                        <span className="text-[10px] px-1.5 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded">
+                          {t('anamnesis.required', 'Zorunlu')}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      <span className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded">
+                        {ANAMNESIS_CATEGORIES.find(c => c.value === q.category)?.label || q.category}
+                      </span>
+                      <span className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded">
+                        {q.type === 'text' ? t('anamnesis.type_text', 'Metin') : q.type === 'select' ? t('anamnesis.type_select', 'Tek Secim') : t('anamnesis.type_multiselect', 'Coklu Secim')}
+                      </span>
+                      {q.options && q.options.length > 0 && (
+                        <span>{q.options.length} {t('anamnesis.option_count', 'secenek')}</span>
+                      )}
+                    </div>
+                    {q.options && q.options.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {q.options.map((o, i) => (
+                          <span key={i} className="text-[11px] px-1.5 py-0.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded">
+                            {o}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 ml-3 flex-shrink-0">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleToggleRequired(q.id)}
+                      title={q.required ? t('anamnesis.make_optional', 'Opsiyonel yap') : t('anamnesis.make_required', 'Zorunlu yap')}
+                    >
+                      {q.required ? <Check className="w-4 h-4 text-green-600" /> : <Check className="w-4 h-4 text-gray-400" />}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleDeleteAnamnesisQuestion(q.id)}
+                    >
+                      <Trash2 className="w-4 h-4 text-red-600" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </CollapsibleSettingsSection>
     </div>
   );
 }

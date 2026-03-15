@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import utsService from '@/services/uts/uts.service';
-import type { ListUtRegistrationsParams, BulkRegistration } from '@/api/generated/schemas';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
+import utsService, { type UtsConfigUpdate, type UtsMovementRequest, type UtsSerialStateUpsertRequest } from '@/services/uts/uts.service';
 
 interface UtsJobStatus {
   status: string;
@@ -12,29 +12,114 @@ const isUtsJobStatus = (data: unknown): data is UtsJobStatus => {
   return typeof data === 'object' && data !== null && 'status' in data;
 };
 
-const QUERY_KEY = ['uts', 'registrations'] as const;
+const UTS_CONFIG_QUERY_KEY = ['uts', 'config'] as const;
+const UTS_REGISTRATIONS_QUERY_KEY = ['uts', 'registrations'] as const;
 
-export function useUtsRegistrations(params?: ListUtRegistrationsParams) {
-  return useQuery({ queryKey: QUERY_KEY, queryFn: () => utsService.listRegistrations(params) });
+export function useUtsConfig() {
+  return useQuery({
+    queryKey: UTS_CONFIG_QUERY_KEY,
+    queryFn: () => utsService.getConfig(),
+  });
+}
+
+export function useUpdateUtsConfig() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: UtsConfigUpdate) => utsService.updateConfig(body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: UTS_CONFIG_QUERY_KEY });
+    },
+  });
+}
+
+export function useUtsSerialStates(params?: { status?: 'owned' | 'pending_receipt' | 'not_owned'; inventoryId?: string; search?: string }) {
+  return useQuery({
+    queryKey: ['uts', 'serial-states', params],
+    queryFn: () => utsService.listSerialStates(params),
+  });
+}
+
+export function useUpsertUtsSerialState() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: UtsSerialStateUpsertRequest) => utsService.upsertSerialState(body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['uts', 'serial-states'] });
+    },
+  });
+}
+
+export function useQueryUtsTekilUrun() {
+  return useMutation({
+    mutationFn: (body: { productNumber: string; serialNumber?: string; lotBatchNumber?: string }) => utsService.queryTekilUrun(body),
+  });
+}
+
+export function useExecuteUtsVerme() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: UtsMovementRequest) => utsService.executeVerme(body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['uts', 'serial-states'] });
+    },
+  });
+}
+
+export function useExecuteUtsAlma() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: UtsMovementRequest) => utsService.executeAlma(body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['uts', 'serial-states'] });
+    },
+  });
+}
+
+export function useTestUtsConfig() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => utsService.testConfig(),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: UTS_CONFIG_QUERY_KEY });
+    },
+  });
+}
+
+export function useRunUtsSync() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => utsService.runSync(),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['uts'] });
+      qc.invalidateQueries({ queryKey: ['uts', 'serial-states'] });
+    },
+  });
+}
+
+export function useUtsRegistrations() {
+  return useQuery({
+    queryKey: UTS_REGISTRATIONS_QUERY_KEY,
+    queryFn: () => utsService.listRegistrations(),
+  });
 }
 
 export function useStartBulkUtsRegistration() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: BulkRegistration) => utsService.createUtRegistrationBulk(body),
-    onSuccess: () => qc.invalidateQueries({ queryKey: QUERY_KEY }),
+    mutationFn: (body: unknown) => utsService.createUtRegistrationBulk(body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: UTS_REGISTRATIONS_QUERY_KEY }),
   });
 }
 
 export function useUtsJobStatus(jobId: string) {
-  // Basic status query — useful for one-off checks
-  return useQuery({ queryKey: ['uts', 'job', jobId], queryFn: () => utsService.getUtJob(jobId), enabled: !!jobId });
+  return useQuery({
+    queryKey: ['uts', 'job', jobId],
+    queryFn: () => utsService.getUtJob(jobId),
+    enabled: !!jobId,
+  });
 }
 
-
-
 export function usePollUtsJob(jobId: string, opts?: { interval?: number; onComplete?: (data: unknown) => void }) {
-  // Poll the job status until terminal state
   const interval = opts?.interval ?? 3000;
   const query = useQuery({
     queryKey: ['uts', 'job', jobId, 'poll'],
@@ -44,23 +129,19 @@ export function usePollUtsJob(jobId: string, opts?: { interval?: number; onCompl
       if (!data) return interval;
       if (isUtsJobStatus(data)) {
         const { status } = data;
-        // consider 'completed', 'failed', 'cancelled' as terminal
-        if (status === 'completed' || status === 'failed' || status === 'cancelled') return false;
+        if (status === 'completed' || status === 'failed' || status === 'cancelled') {
+          return false;
+        }
       }
       return interval;
     },
   });
 
-  const onComplete = opts?.onComplete;
-
   useEffect(() => {
-    if (query.data && isUtsJobStatus(query.data)) {
-      const { status } = query.data;
-      if (status === 'completed' && onComplete) {
-        onComplete(query.data);
-      }
+    if (query.data && isUtsJobStatus(query.data) && query.data.status === 'completed' && opts?.onComplete) {
+      opts.onComplete(query.data);
     }
-  }, [query.data, onComplete]);
+  }, [opts, query.data]);
 
   return query;
 }

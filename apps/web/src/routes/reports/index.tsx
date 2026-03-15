@@ -1,12 +1,21 @@
 import { createFileRoute } from '@tanstack/react-router'
 import ReportsPage from '../../pages/ReportsPage'
+import { FeatureGate } from '../../components/common/FeatureGate'
 import { z } from 'zod'
 
 const reportsSearchSchema = z.object({
   tab: z.enum(['overview', 'sales', 'parties', 'promissory', 'remaining', 'activity', 'pos_movements']).optional(),
 })
 
+function GatedReportsPage() {
+  return (
+    <FeatureGate featureKey="reports">
+      <ReportsPage />
+    </FeatureGate>
+  )
+}
+
 export const Route = createFileRoute('/reports/')({
-  component: ReportsPage,
+  component: GatedReportsPage,
   validateSearch: reportsSearchSchema,
 })

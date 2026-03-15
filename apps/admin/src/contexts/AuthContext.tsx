@@ -106,7 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         tokenManager.clearToken();
         tokenManager.clearRefreshToken();
         toast.success('Çıkış yapıldı');
-        // window.location.href = '/login'; // Disable redirect to see logs
+        window.location.replace('/login');
     }, [clearAuth]);
 
     const silentRefresh = useCallback(async () => {

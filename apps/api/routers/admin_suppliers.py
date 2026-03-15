@@ -1,13 +1,13 @@
 """Admin Suppliers Router - FastAPI"""
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, text
 from typing import Optional
 from datetime import datetime
 import logging
 
 from database import get_db
-from core.database import unbound_session
+from core.database import engine, unbound_session
 from models.suppliers import Supplier
 from middleware.unified_access import UnifiedAccess, require_access
 from schemas.suppliers import SupplierCreate, SupplierUpdate, SupplierRead
@@ -15,6 +15,25 @@ from schemas.base import ResponseEnvelope
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin/suppliers", tags=["Admin Suppliers"])
+_SUPPLIER_SCHEMA_ENSURED = False
+
+
+def _ensure_supplier_schema() -> None:
+    global _SUPPLIER_SCHEMA_ENSURED
+    if _SUPPLIER_SCHEMA_ENSURED:
+        return
+    with engine.begin() as connection:
+        if connection.dialect.name == "sqlite":
+            rows = connection.exec_driver_sql("PRAGMA table_info(suppliers)").fetchall()
+            columns = {row[1] for row in rows}
+        else:
+            rows = connection.execute(text(
+                "SELECT column_name FROM information_schema.columns WHERE table_name = 'suppliers'"
+            )).fetchall()
+            columns = {row[0] for row in rows}
+        if "institution_number" not in columns:
+            connection.exec_driver_sql("ALTER TABLE suppliers ADD COLUMN institution_number VARCHAR(50)")
+    _SUPPLIER_SCHEMA_ENSURED = True
 
 # Response models
 class SupplierListResponse(ResponseEnvelope):
@@ -34,6 +53,7 @@ async def get_suppliers(
 ):
     """Get list of suppliers"""
     try:
+        _ensure_supplier_schema()
         with unbound_session(reason="admin-cross-tenant"):
             query = db.query(Supplier)
             
@@ -71,6 +91,7 @@ async def create_supplier(
 ):
     """Create a new supplier"""
     try:
+        _ensure_supplier_schema()
         if not data.company_name:
             raise HTTPException(status_code=400, detail="Company name is required")
         
@@ -83,6 +104,7 @@ async def create_supplier(
             address=data.address,
             tax_number=data.tax_number,
             tax_office=data.tax_office,
+            institution_number=data.institution_number,
             is_active=data.is_active,
             created_at=datetime.utcnow()
         )
@@ -104,6 +126,7 @@ async def get_supplier(
 ):
     """Get single supplier"""
     try:
+        _ensure_supplier_schema()
         with unbound_session(reason="admin-cross-tenant"):
             supplier = db.get(Supplier, supplier_id)
         if not supplier:
@@ -123,6 +146,7 @@ async def update_supplier(
 ):
     """Update a supplier"""
     try:
+        _ensure_supplier_schema()
         with unbound_session(reason="admin-cross-tenant"):
             supplier = db.get(Supplier, supplier_id)
         if not supplier:
@@ -142,6 +166,8 @@ async def update_supplier(
             supplier.tax_number = data.tax_number
         if data.tax_office is not None:
             supplier.tax_office = data.tax_office
+        if getattr(data, "institution_number", None) is not None:
+            supplier.institution_number = data.institution_number
         if data.is_active is not None:
             supplier.is_active = data.is_active
         if data.tenant_id is not None:

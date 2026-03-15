@@ -234,33 +234,6 @@ def advanced_search(
         },
     )
 
-@router.get("/inventory/stats", operation_id="listInventoryStats", response_model=ResponseEnvelope[InventoryStats])
-def get_inventory_stats(
-    access: UnifiedAccess = Depends(require_access()),
-    db: Session = Depends(get_db)
-):
-    """Get inventory stats"""
-    query = db.query(InventoryItem)
-    if access.tenant_id: query = query.filter_by(tenant_id=access.tenant_id)
-    
-    total = query.count()
-    low = query.filter(InventoryItem.available_inventory <= InventoryItem.reorder_level).count()
-    out = query.filter(InventoryItem.available_inventory == 0).count()
-    
-    # Value
-    # Note: query already filtered by tenant
-    val_query = db.query(func.sum(InventoryItem.price * InventoryItem.available_inventory))
-    if access.tenant_id: val_query = val_query.filter(InventoryItem.tenant_id == access.tenant_id)
-    
-    total_value = val_query.scalar() or 0
-    
-    return ResponseEnvelope(data={
-        "total_items": total, 
-        "low_stock": low, 
-        "out_of_stock": out, 
-        "total_value": float(total_value)
-    })
-
 @router.get("/inventory/low-stock", operation_id="listInventoryLowStock", response_model=ResponseEnvelope[List[InventoryItemRead]])
 def get_low_stock(
     access: UnifiedAccess = Depends(require_access()),
@@ -603,7 +576,10 @@ def add_serials(
             count += 1
     db.commit()
     db.refresh(item)
-    return ResponseEnvelope(message=f"{count} serial numbers added", data={"item": item, "count": count})
+    return ResponseEnvelope(
+        message=f"{count} serial numbers added",
+        data={"count": count, "availableSerials": item.available_serials or []}
+    )
 
 @router.get("/inventory/{item_id}/movements", operation_id="listInventoryMovements", response_model=ResponseEnvelope[List[StockMovementRead]])
 def get_movements(

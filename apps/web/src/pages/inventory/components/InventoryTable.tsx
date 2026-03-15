@@ -273,7 +273,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
         pageSize: itemsPerPage,
         total: (items || []).length,
         showSizeChanger: !!onItemsPerPageChange,
-        pageSizeOptions: ['10', '20', '50', '100'],
+        pageSizeOptions: [10, 20, 50, 100],
         onChange: (page, size) => {
           onPageChange(page);
           if (size !== itemsPerPage && onItemsPerPageChange) {

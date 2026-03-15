@@ -17,6 +17,7 @@ IMPORTANT: These tests use REAL cryptographic operations (no mocks) as per X-Ear
 
 import pytest
 import os
+from copy import deepcopy
 import sys
 from pathlib import Path
 
@@ -212,9 +213,9 @@ class TestDKIMSigningProperty:
         service = DKIMSigningService()
         
         # Act: Sign message multiple times
-        signed1 = service.sign_email(message.copy(), domain)
-        signed2 = service.sign_email(message.copy(), domain)
-        signed3 = service.sign_email(message.copy(), domain)
+        signed1 = service.sign_email(deepcopy(message), domain)
+        signed2 = service.sign_email(deepcopy(message), domain)
+        signed3 = service.sign_email(deepcopy(message), domain)
         
         # Assert: All signatures must be valid
         is_valid1, _ = service.verify_signature(signed1, domain, public_key_base64=self.public_key)
@@ -331,7 +332,7 @@ class TestDKIMSigningProperty:
         
         # Tampering with any critical header should invalidate signature
         for header in ['From', 'To', 'Subject']:
-            tampered = signed_message.copy()
+            tampered = deepcopy(signed_message)
             original_value = tampered[header]
             tampered.replace_header(header, original_value + " TAMPERED")
             

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { Button, Input, Card, CardHeader, CardTitle, CardContent } from '@x-ear/ui-web';
-import { User, Mail, Shield, Key, Save, Phone, Eye, EyeOff, Edit2 } from 'lucide-react';
+import { User, Mail, Shield, Key, Save, Phone, Eye, EyeOff, Edit2, Users } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { generateUsername } from '../utils/stringUtils';
+import { customInstance } from '@/api/orval-mutator';
 import {
     useListUserMe,
     useUpdateUserMe,
@@ -11,6 +12,7 @@ import {
     getListUserMeQueryKey
 } from '@/api/client/users.client';
 import { ResponseEnvelopeUserRead, UserUpdate } from '@/api/generated/schemas';
+import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 
 
 export const DesktopProfilePage: React.FC = () => {
@@ -49,6 +51,10 @@ export const DesktopProfilePage: React.FC = () => {
     const [showOtpInput, setShowOtpInput] = useState(false);
     const [isVerifyingPhone, setIsVerifyingPhone] = useState(false);
     const [isEditingPhone, setIsEditingPhone] = useState(false);
+
+    // Impersonation consent
+    const [allowImpersonation, setAllowImpersonation] = useState(false);
+    const [impersonationLoading, setImpersonationLoading] = useState(false);
 
     // API Hooks (Query & Mutations)
     const { data: userDataResponse, isError, isLoading, error } = useListUserMe({
@@ -168,6 +174,16 @@ export const DesktopProfilePage: React.FC = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userDataResponse, setUser]);
 
+    // Load impersonation consent
+    React.useEffect(() => {
+        customInstance<{ data: { allowImpersonation: boolean } }>({
+            url: '/api/users/me/impersonation-consent',
+            method: 'GET',
+        }).then(res => {
+            setAllowImpersonation(res.data?.allowImpersonation ?? false);
+        }).catch(() => { /* ignore if endpoint not yet available */ });
+    }, []);
+
     // 2. CONDITIONAL RETURNS FOR UI STATE (After all hooks)
 
     // Show loading spinner while fetching
@@ -256,10 +272,12 @@ export const DesktopProfilePage: React.FC = () => {
 
     return (
         <div className="space-y-6 max-w-4xl mx-auto">
-            <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Profil Ayarları</h1>
-                <p className="text-gray-500 dark:text-gray-400">Kişisel bilgilerinizi ve hesap güvenliğinizi yönetin.</p>
-            </div>
+            <DesktopPageHeader
+                title="Profil Ayarları"
+                description="Kişisel bilgilerinizi ve hesap güvenliğinizi yönetin."
+                icon={<User className="w-6 h-6" />}
+                eyebrow={{ tr: 'Hesap', en: 'Account' }}
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Basic Info Card */}
@@ -526,10 +544,64 @@ export const DesktopProfilePage: React.FC = () => {
                             </form>
                         </CardContent>
                     </Card>
+
+                    {/* Impersonation Consent Card */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Users className="w-5 h-5" />
+                                Yönetici Erişim İzni
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                        Platform yöneticisine erişim izni ver
+                                    </p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                        Bu izni verdiğinizde, platform yöneticisi destek amacıyla hesabınıza erişebilir.
+                                        İzni istediğiniz zaman geri alabilirsiniz.
+                                    </p>
+                                </div>
+                                <button
+                                    data-allow-raw="true"
+                                    type="button"
+                                    role="switch"
+                                    aria-checked={allowImpersonation}
+                                    disabled={impersonationLoading}
+                                    onClick={async () => {
+                                        const newVal = !allowImpersonation;
+                                        setImpersonationLoading(true);
+                                        try {
+                                            await customInstance({
+                                                url: '/api/users/me/impersonation-consent',
+                                                method: 'PUT',
+                                                data: { allowImpersonation: newVal },
+                                            });
+                                            setAllowImpersonation(newVal);
+                                            toast.success(newVal ? 'Yönetici erişim izni verildi' : 'Yönetici erişim izni kaldırıldı');
+                                        } catch {
+                                            toast.error('İzin güncellenemedi');
+                                        } finally {
+                                            setImpersonationLoading(false);
+                                        }
+                                    }}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                        allowImpersonation ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-600'
+                                    } ${impersonationLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                >
+                                    <span
+                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                            allowImpersonation ? 'translate-x-6' : 'translate-x-1'
+                                        }`}
+                                    />
+                                </button>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
         </div>
     );
 };
-
-

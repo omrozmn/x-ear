@@ -19,7 +19,8 @@ from schemas.ocr import (
     OcrJobRead, OcrProcessRequest, SimilarityRequest, EntityExtractionRequest,
     PatientExtractionRequest, DebugNERRequest, CreateJobRequest,
     OcrHealthResponse, OcrInitResponse, OcrProcessResponse, OcrSimilarityResponse,
-    OcrEntitiesResponse, OcrPatientResponse, OcrDebugResponse
+    OcrEntitiesResponse, OcrPatientResponse, OcrDebugResponse,
+    AudiogramThresholdResponse, AudiogramDetectionDetails,
 )
 
 logger = logging.getLogger(__name__)
@@ -645,3 +646,43 @@ def get_job(
     except Exception as e:
         logger.error(f"Get job error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/audiogram", operation_id="extractAudiogramThresholds", response_model=ResponseEnvelope[AudiogramThresholdResponse])
+async def extract_audiogram(
+    file: UploadFile = File(...),
+    access: UnifiedAccess = Depends(require_access("parties.view")),
+):
+    """
+    Extract hearing thresholds from an audiogram image.
+    Detects red (right ear) and blue (left ear) markers at standard frequencies
+    (125, 250, 500, 1000, 2000, 3000, 4000, 6000, 8000 Hz).
+    """
+    from services.audiogram_ocr_service import extract_audiogram_thresholds
+    
+    temp_path = None
+    try:
+        # Save uploaded file to temp
+        suffix = os.path.splitext(file.filename or '.jpg')[1]
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+            content = await file.read()
+            tmp.write(content)
+            temp_path = tmp.name
+        
+        # Extract thresholds
+        result = extract_audiogram_thresholds(temp_path)
+        
+        response_data = AudiogramThresholdResponse(
+            right_ear={str(k): v for k, v in result['right_ear'].items()},
+            left_ear={str(k): v for k, v in result['left_ear'].items()},
+            confidence=result['confidence'],
+            detection_details=AudiogramDetectionDetails(**result['detection_details']),
+        )
+        
+        return ResponseEnvelope(data=response_data)
+    except Exception as e:
+        logger.error(f"Audiogram extraction error: {e}")
+        raise HTTPException(status_code=500, detail=f"Audiogram extraction failed: {str(e)}")
+    finally:
+        if temp_path and os.path.exists(temp_path):
+            os.unlink(temp_path)

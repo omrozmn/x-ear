@@ -56,10 +56,12 @@ except (ImportError, AttributeError):
 
 @pytest.fixture(scope="session")
 def db_engine():
-    """Create test database engine"""
+    """Create test database engine (in-memory DB via DATABASE_URL env override)"""
     Base.metadata.create_all(bind=engine)
     yield engine
-    Base.metadata.drop_all(bind=engine)
+    # NOTE: Do NOT call drop_all here. If DATABASE_URL override fails to
+    # take effect (import order race), drop_all would wipe the production DB.
+    # In-memory DBs are discarded automatically when the connection closes.
 
 @pytest.fixture(scope="function")
 def db_session(db_engine):

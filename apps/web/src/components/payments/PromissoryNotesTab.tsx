@@ -43,9 +43,10 @@ import {
   getListSalePromissoryNotesQueryKey,
   getListPartyPaymentRecordsQueryKey,
   createPromissoryNotes,
-  createPromissoryNoteCollect
+  createPromissoryNoteCollect,
+  updatePromissoryNote
 } from '@/api/client/payments.client';
-import { apiClient } from '@/api/orval-mutator';
+import { createPartyTimeline } from '@/api/generated/timeline/timeline';
 import { companyService } from '@/services/company.service';
 import { useGetParty } from '@/api/client/parties.client';
 
@@ -182,7 +183,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
   // Helper: Log to timeline
   const logToTimeline = async (eventType: string, title: string, description: string, details: Record<string, unknown> = {}) => {
     try {
-      await apiClient.post(`/api/parties/${sale.partyId}/timeline`, {
+      await createPartyTimeline(sale.partyId!, {
         type: eventType,
         title,
         description,
@@ -435,7 +436,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
     if (!deleteModal.noteId) return;
 
     try {
-      await apiClient.patch(`/api/promissory-notes/${deleteModal.noteId}`, {
+      await updatePromissoryNote(deleteModal.noteId!, {
         status: 'cancelled'
       });
 

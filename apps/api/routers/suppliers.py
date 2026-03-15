@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 import logging
 
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, func
+from sqlalchemy import or_, func, text
 from sqlalchemy.exc import IntegrityError
 
 from schemas.base import ResponseEnvelope, ApiError
@@ -20,10 +20,30 @@ from models.suppliers import Supplier, ProductSupplier
 from models.tenant import Tenant
 from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
+from core.database import engine
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Suppliers"])
+_SUPPLIER_SCHEMA_ENSURED = False
+
+
+def _ensure_supplier_schema() -> None:
+    global _SUPPLIER_SCHEMA_ENSURED
+    if _SUPPLIER_SCHEMA_ENSURED:
+        return
+    with engine.begin() as connection:
+        if connection.dialect.name == "sqlite":
+            rows = connection.exec_driver_sql("PRAGMA table_info(suppliers)").fetchall()
+            columns = {row[1] for row in rows}
+        else:
+            rows = connection.execute(text(
+                "SELECT column_name FROM information_schema.columns WHERE table_name = 'suppliers'"
+            )).fetchall()
+            columns = {row[0] for row in rows}
+        if "institution_number" not in columns:
+            connection.exec_driver_sql("ALTER TABLE suppliers ADD COLUMN institution_number VARCHAR(50)")
+    _SUPPLIER_SCHEMA_ENSURED = True
 
 # --- Helper Functions ---
 
@@ -50,6 +70,7 @@ class SupplierCreate(BaseModel):
     company_code: Optional[str] = Field(None, alias="companyCode")
     tax_number: Optional[str] = Field(None, alias="taxNumber")
     tax_office: Optional[str] = Field(None, alias="taxOffice")
+    institution_number: Optional[str] = Field(None, alias="institutionNumber")
     contact_person: Optional[str] = Field(None, alias="contactPerson")
     email: Optional[str] = None
     phone: Optional[str] = None
@@ -72,6 +93,7 @@ class SupplierUpdate(BaseModel):
     company_code: Optional[str] = Field(None, alias="companyCode")
     tax_number: Optional[str] = Field(None, alias="taxNumber")
     tax_office: Optional[str] = Field(None, alias="taxOffice")
+    institution_number: Optional[str] = Field(None, alias="institutionNumber")
     contact_person: Optional[str] = Field(None, alias="contactPerson")
     email: Optional[str] = None
     phone: Optional[str] = None
@@ -93,7 +115,7 @@ class SupplierUpdate(BaseModel):
 @router.get("/suppliers", operation_id="listSuppliers", response_model=ResponseEnvelope[List[SupplierRead]])
 def get_suppliers(
     page: int = Query(1, ge=1, le=1000000),
-    per_page: int = Query(50, ge=1, le=100),
+    per_page: int = Query(50, ge=1, le=200),
     search: Optional[str] = None,
     is_active: Optional[bool] = None,
     city: Optional[str] = None,
@@ -104,6 +126,7 @@ def get_suppliers(
 ):
     """Get all suppliers with filtering and pagination"""
     try:
+        _ensure_supplier_schema()
         query = tenant_scoped_query(access, Supplier, db_session)
         
         if is_active is not None:
@@ -159,6 +182,7 @@ def search_suppliers(
 ):
     """Fast supplier search for autocomplete"""
     try:
+        _ensure_supplier_schema()
         if not q or len(q) < 2:
             return ResponseEnvelope(data={"suppliers": []})
         
@@ -190,6 +214,7 @@ def get_supplier_stats(
 ):
     """Get supplier statistics"""
     try:
+        _ensure_supplier_schema()
         base_query = tenant_scoped_query(access, Supplier, db_session)
         
         total_suppliers = base_query.count()
@@ -235,6 +260,7 @@ def get_supplier(
 ):
     """Get a single supplier by ID"""
     try:
+        _ensure_supplier_schema()
         supplier = get_or_404_scoped(db_session, access, Supplier, supplier_id)
         if not supplier:
             raise HTTPException(
@@ -276,6 +302,7 @@ def create_supplier(
 ):
     """Create a new supplier"""
     try:
+        _ensure_supplier_schema()
         access.tenant_id = access.tenant_id or supplier_in.tenant_id
         
         if not access.tenant_id:
@@ -345,6 +372,7 @@ def update_supplier(
 ):
     """Update an existing supplier"""
     try:
+        _ensure_supplier_schema()
         supplier = get_or_404_scoped(db_session, access, Supplier, supplier_id)
         if not supplier:
             raise HTTPException(

@@ -12,6 +12,7 @@ import type { SchemasInvoicesNewInvoiceStatus } from './schemasInvoicesNewInvoic
 import type { OutgoingInvoiceResponseInvoiceTypeCode } from './outgoingInvoiceResponseInvoiceTypeCode';
 import type { OutgoingInvoiceResponseProfileId } from './outgoingInvoiceResponseProfileId';
 import type { OutgoingInvoiceResponseSystemTypeCode } from './outgoingInvoiceResponseSystemTypeCode';
+import type { OutgoingInvoiceResponseEdocumentStatus } from './outgoingInvoiceResponseEdocumentStatus';
 
 /**
  * Response schema for outgoing invoices (giden faturalar)
@@ -49,8 +50,8 @@ export interface OutgoingInvoiceResponse {
   systemTypeCode?: OutgoingInvoiceResponseSystemTypeCode;
   /** Can create proforma */
   canCreateProforma?: boolean;
-  /** E-document status from BirFatura */
-  edocumentStatus?: string;
+  /** E-document status from BirFatura (Status code) */
+  edocumentStatus?: OutgoingInvoiceResponseEdocumentStatus;
   /** Has GIB PDF available */
   hasGibPdf?: boolean;
   /** Creation timestamp */

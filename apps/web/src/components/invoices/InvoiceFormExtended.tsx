@@ -82,6 +82,8 @@ interface InvoiceFormState {
   // Customer/Party fields (some are legacy/form specific)
   customerId?: string;
   customerName?: string;
+  customerFirstName?: string;
+  customerLastName?: string;
   customerTcNumber?: string;
   customerTaxNumber?: string;
   customerTaxId?: string;
@@ -199,14 +201,24 @@ export function InvoiceFormExtended({
   // Sync initialData → extendedData when draft loads asynchronously.
   // useState initializer only runs at mount; if initialData arrives later (API call),
   // we need to push the new values into extendedData once.
-  const initialDataSynced = useRef(false);
+  const initialDataSignatureRef = useRef<string>('');
   useEffect(() => {
-    if (initialDataSynced.current || !initialData) return;
+    if (!initialData) return;
     const hasItems = Array.isArray(initialData.items) && (initialData.items as unknown[]).length > 0;
     const hasInvoiceType = !!initialData.invoiceType && initialData.invoiceType !== '';
-    if (!hasItems && !hasInvoiceType) return;
+    const signature = JSON.stringify({
+      customerId: initialData.customerId || '',
+      customerName: initialData.customerName || '',
+      customerFirstName: initialData.customerFirstName || '',
+      customerLastName: initialData.customerLastName || '',
+      invoiceType: initialData.invoiceType || '',
+      scenario: initialData.scenario || '',
+      items: hasItems ? initialData.items : [],
+    });
+    if (!hasItems && !hasInvoiceType && !initialData.customerId && !initialData.customerName) return;
+    if (initialDataSignatureRef.current === signature) return;
 
-    initialDataSynced.current = true;
+    initialDataSignatureRef.current = signature;
     setExtendedData(prev => ({
       ...prev,
       ...initialData,

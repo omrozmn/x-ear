@@ -27,6 +27,7 @@ class Supplier(BaseModel, TenantScopedMixin):
     company_code = Column(String(50), unique=True, index=True)  # Optional internal code
     tax_number = Column(String(50))
     tax_office = Column(String(100))
+    institution_number = Column(String(50), index=True)
     
     # Contact Information
     contact_person = Column(String(100))
@@ -70,6 +71,7 @@ class Supplier(BaseModel, TenantScopedMixin):
             'companyCode': self.company_code,
             'taxNumber': self.tax_number,
             'taxOffice': self.tax_office,
+            'institutionNumber': self.institution_number,
             'contactPerson': self.contact_person,
             'email': self.email,
             'phone': self.phone,

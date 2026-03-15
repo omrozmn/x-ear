@@ -9,6 +9,7 @@ import {
 } from '@x-ear/ui-web';
 import { Package, Calendar } from 'lucide-react';
 import type { SaleFormData, EditSaleState } from '../types';
+import { SerialAutocomplete } from '@/components/shared/SerialAutocomplete';
 // Local type for inventory items to avoid import errors
 export interface InventoryItem {
   id?: string;
@@ -61,6 +62,10 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
   const handleInputChange = (field: keyof SaleFormData, value: string | number) => {
     onFormDataChange({ [field]: value });
   };
+
+  // Get available serials from the current product
+  const currentDevice = availableDevices.find(d => d.name === formData.productName);
+  const availableSerials = currentDevice?.availableSerials || [];
 
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('tr-TR', {
@@ -239,64 +244,58 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
             formData.ear === 'both' ? (
               // Bilateral: Show both left and right
               <div className="grid grid-cols-2 gap-4">
-                <div className="w-full">
-                  <Label htmlFor="serialNumberLeft">Sol Kulak Seri No</Label>
-                  <Input
-                    className="w-full"
-                    id="serialNumberLeft"
-                    value={formData.serialNumberLeft}
-                    onChange={(e) => handleInputChange('serialNumberLeft', e.target.value)}
-                    placeholder="Sol kulak seri numarası"
-                  />
-                </div>
-                <div className="w-full">
-                  <Label htmlFor="serialNumberRight">Sağ Kulak Seri No</Label>
-                  <Input
-                    className="w-full"
-                    id="serialNumberRight"
-                    value={formData.serialNumberRight}
-                    onChange={(e) => handleInputChange('serialNumberRight', e.target.value)}
-                    placeholder="Sağ kulak seri numarası"
-                  />
-                </div>
+                <SerialAutocomplete
+                  value={formData.serialNumberLeft}
+                  onChange={(val) => handleInputChange('serialNumberLeft', val)}
+                  availableSerials={availableSerials}
+                  placeholder="Sol kulak seri numarası"
+                  label="Sol Kulak Seri No"
+                  color="blue"
+                  id="serialNumberLeft"
+                />
+                <SerialAutocomplete
+                  value={formData.serialNumberRight}
+                  onChange={(val) => handleInputChange('serialNumberRight', val)}
+                  availableSerials={availableSerials}
+                  placeholder="Sağ kulak seri numarası"
+                  label="Sağ Kulak Seri No"
+                  color="red"
+                  id="serialNumberRight"
+                />
               </div>
             ) : formData.ear === 'left' ? (
               // Left ear only
-              <div className="w-full">
-                <Label htmlFor="serialNumberLeft">Sol Kulak Seri No</Label>
-                <Input
-                  className="w-full"
-                  id="serialNumberLeft"
-                  value={formData.serialNumberLeft}
-                  onChange={(e) => handleInputChange('serialNumberLeft', e.target.value)}
-                  placeholder="Sol kulak seri numarası"
-                />
-              </div>
+              <SerialAutocomplete
+                value={formData.serialNumberLeft}
+                onChange={(val) => handleInputChange('serialNumberLeft', val)}
+                availableSerials={availableSerials}
+                placeholder="Sol kulak seri numarası"
+                label="Sol Kulak Seri No"
+                color="blue"
+                id="serialNumberLeft"
+              />
             ) : formData.ear === 'right' ? (
               // Right ear only
-              <div className="w-full">
-                <Label htmlFor="serialNumberRight">Sağ Kulak Seri No</Label>
-                <Input
-                  className="w-full"
-                  id="serialNumberRight"
-                  value={formData.serialNumberRight}
-                  onChange={(e) => handleInputChange('serialNumberRight', e.target.value)}
-                  placeholder="Sağ kulak seri numarası"
-                />
-              </div>
+              <SerialAutocomplete
+                value={formData.serialNumberRight}
+                onChange={(val) => handleInputChange('serialNumberRight', val)}
+                availableSerials={availableSerials}
+                placeholder="Sağ kulak seri numarası"
+                label="Sağ Kulak Seri No"
+                color="red"
+                id="serialNumberRight"
+              />
             ) : null
           ) : (
             // Other products: Single serial number
-            <div className="w-full">
-              <Label htmlFor="serialNumber">Seri Numarası</Label>
-              <Input
-                className="w-full"
-                id="serialNumber"
-                value={formData.serialNumber}
-                onChange={(e) => handleInputChange('serialNumber', e.target.value)}
-                placeholder="Seri numarası"
-              />
-            </div>
+            <SerialAutocomplete
+              value={formData.serialNumber}
+              onChange={(val) => handleInputChange('serialNumber', val)}
+              availableSerials={availableSerials}
+              placeholder="Seri numarası"
+              label="Seri Numarası"
+              id="serialNumber"
+            />
           )}
         </CardContent>
       </Card>

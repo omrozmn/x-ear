@@ -4,10 +4,12 @@ Payment records and promissory notes management
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from pydantic import BaseModel, Field
 import logging
+import json
+import uuid
 
 from sqlalchemy.orm import Session
 
@@ -16,8 +18,10 @@ from schemas.sales import PaymentRecordRead
 
 from models.sales import Sale, PaymentRecord
 from models.promissory_note import PromissoryNote
+from core.models.party import Party
 from middleware.unified_access import UnifiedAccess, require_access
 from database import get_db
+from models.user import ActivityLog
 from schemas.sales import (
     PromissoryNoteRead,
     PromissoryNoteCollectionResponse
@@ -167,6 +171,18 @@ def create_payment_record(
                 
                 db_session.add(sale)
         
+        activity = ActivityLog(
+            id=str(uuid.uuid4()),
+            tenant_id=access.tenant_id,
+            user_id=access.user_id,
+            action='payment_record_created',
+            entity_type='party',
+            entity_id=payment_in.party_id,
+            details=json.dumps({"title": "Ödeme kaydı oluşturuldu", "amount": float(payment_in.amount), "payment_type": payment_in.payment_type}),
+            created_at=datetime.now(timezone.utc),
+        )
+        db_session.add(activity)
+
         db_session.commit()
         db_session.refresh(payment)  # Refresh to get all fields after commit
         logger.info(f"Payment record created: {payment.id}")
@@ -198,8 +214,21 @@ def list_payment_records(
         total = query.count()
         payment_records = query.order_by(PaymentRecord.payment_date.desc()).offset((page - 1) * per_page).limit(per_page).all()
         
+        # Collect unique party_ids and resolve names in one query
+        party_ids = {r.party_id for r in payment_records if r.party_id}
+        party_name_map: dict[str, str] = {}
+        if party_ids:
+            parties = db_session.query(Party.id, Party.first_name, Party.last_name).filter(Party.id.in_(party_ids)).all()
+            party_name_map = {p.id: f"{p.first_name or ''} {p.last_name or ''}".strip() for p in parties}
+        
+        data = []
+        for record in payment_records:
+            d = PaymentRecordRead.model_validate(record).model_dump(by_alias=True)
+            d["partyName"] = party_name_map.get(record.party_id, "")
+            data.append(d)
+        
         return ResponseEnvelope(
-            data=[PaymentRecordRead.model_validate(record).model_dump(by_alias=True) for record in payment_records],
+            data=data,
             meta={
                 "total": total,
                 "page": page,
@@ -362,6 +391,18 @@ def create_promissory_notes(
             db_session.add(note)
             created_notes.append(note)
         
+        activity = ActivityLog(
+            id=str(uuid.uuid4()),
+            tenant_id=access.tenant_id,
+            user_id=access.user_id,
+            action='promissory_notes_created',
+            entity_type='party',
+            entity_id=notes_in.party_id,
+            details=json.dumps({"title": "Senet oluşturuldu"}),
+            created_at=datetime.now(timezone.utc),
+        )
+        db_session.add(activity)
+
         db_session.commit()
         
         # Refresh all notes to get updated fields after commit
@@ -502,6 +543,18 @@ def collect_promissory_note(
                 
                 db_session.add(sale)
         
+        activity = ActivityLog(
+            id=str(uuid.uuid4()),
+            tenant_id=access.tenant_id,
+            user_id=access.user_id,
+            action='promissory_note_collected',
+            entity_type='party',
+            entity_id=note.party_id,
+            details=json.dumps({"title": "Senet tahsil edildi", "note_id": note_id}),
+            created_at=datetime.now(timezone.utc),
+        )
+        db_session.add(activity)
+
         db_session.commit()
         db_session.refresh(note)  # Refresh to get all fields after commit
         db_session.refresh(payment)  # Refresh to get all fields after commit

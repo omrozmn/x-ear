@@ -47,6 +47,7 @@ export function SupplierFormModal({
     companyCode: '',
     taxNumber: '',
     taxOffice: '',
+    institutionNumber: '',
     contactPerson: '',
     email: '',
     phone: '',
@@ -74,6 +75,7 @@ export function SupplierFormModal({
         companyCode: supplier.companyCode || '',
         taxNumber: supplier.taxNumber || '',
         taxOffice: supplier.taxOffice || '',
+        institutionNumber: supplier.institutionNumber || '',
         contactPerson: supplier.contactPerson || '',
         email: supplier.email || '',
         phone: supplier.phone || '',
@@ -99,6 +101,7 @@ export function SupplierFormModal({
         companyCode: '',
         taxNumber: '',
         taxOffice: '',
+        institutionNumber: '',
         contactPerson: '',
         email: '',
         phone: '',
@@ -265,6 +268,18 @@ export function SupplierFormModal({
                   </Button>
                 )}
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                UTS Kurum No
+              </label>
+              <Input
+                fullWidth
+                value={formData.institutionNumber}
+                onChange={(e) => handleChange('institutionNumber', e.target.value)}
+                placeholder="UTS kurum numarası"
+              />
             </div>
 
             <div>

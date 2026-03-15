@@ -106,7 +106,8 @@ def _check_quota(tenant_id: str, db: Session) -> tuple[bool, str]:
     warmup_phase = rate_limit_service.get_current_warmup_phase()
     
     # Stricter limits during warm-up
-    if warmup_phase != "COMPLETE":
+    from services.rate_limit_service import WarmupPhase
+    if warmup_phase != WarmupPhase.POST_WARMUP:
         ai_limit = 10  # 10 per hour during warm-up
         if count >= ai_limit:
             return False, f"AI email quota exceeded during warm-up ({ai_limit} per hour)"
@@ -250,7 +251,7 @@ async def send_ai_email_notification(
         
         # Render template to get email content for AI safety check
         try:
-            html_content, text_content = template_service.render_template(
+            subject, html_content, text_content = template_service.render_template(
                 scenario=request.scenario,
                 language=request.language,
                 variables=request.variables or {}
@@ -265,10 +266,9 @@ async def send_ai_email_notification(
                 message=error_msg
             )
         
-        # Render subject and body
-        subject = template_service.render_template(template.subject, request.variables)
-        body_text = template_service.render_template(template.body_text, request.variables)
-        body_html = template_service.render_template(template.body_html, request.variables) if template.body_html else None
+        # Use rendered values from above
+        body_text = text_content
+        body_html = html_content
         
         # AI safety check
         requires_approval, risk_level, risk_reasons = approval_service.requires_approval(

@@ -119,19 +119,26 @@ export async function login(
   
   // Support both identifier and username for backward compatibility
   const loginId = creds.identifier || creds.username || defaultCreds.identifier;
+  const baseUrl = page.url() || WEB_BASE_URL;
+  const isAdminApp = baseUrl.includes('8082') || baseUrl.includes('8083') || baseUrl.includes('admin');
+  const isAdminIdentifier = loginId === 'admin@x-ear.com' || loginId.endsWith('@x-ear.com');
   
   try {
     // Try API login first (more reliable) - only if page.request is available
     if (page.request) {
-      const loginResponse = await page.request.post(`${API_BASE_URL}/api/auth/login`, {
+      const loginEndpoint = isAdminApp || isAdminIdentifier
+        ? `${API_BASE_URL}/api/admin/auth/login`
+        : `${API_BASE_URL}/api/auth/login`;
+      const payload = isAdminApp || isAdminIdentifier
+        ? { email: loginId, password: creds.password }
+        : { identifier: loginId, password: creds.password };
+
+      const loginResponse = await page.request.post(loginEndpoint, {
         headers: {
           'Idempotency-Key': crypto.randomUUID(),
           'Content-Type': 'application/json'
         },
-        data: {
-          identifier: loginId,
-          password: creds.password
-        }
+        data: payload
       });
       
       if (loginResponse.ok()) {
@@ -140,23 +147,65 @@ export async function login(
         const refreshToken = loginJson.data?.refreshToken;
         
         if (token) {
-          // Set tokens in localStorage (TokenManager uses localStorage)
-          await page.evaluate(({ accessToken, refreshToken: nextRefreshToken, email }) => {
-            localStorage.setItem('x-ear.auth.auth-storage-persist@v1', JSON.stringify({
-              state: {
-                accessToken,
-                refreshToken: nextRefreshToken || accessToken,
-                isAuthenticated: true,
-                user: { email },
-                expiresAt: Date.now() + 3600000
-              },
-              version: 0
-            }));
-          }, { accessToken: token, refreshToken, email: loginId });
-          
-          // Navigate to app
-          await page.goto('/');
-          await page.waitForLoadState('networkidle');
+          if (isAdminApp || isAdminIdentifier) {
+            const user = loginJson.data?.user || {};
+            await page.evaluate(({ accessToken, nextRefreshToken, authUser }) => {
+              localStorage.setItem('admin_token', accessToken as string);
+              localStorage.setItem('admin_refresh_token', (nextRefreshToken || accessToken) as string);
+              localStorage.setItem('admin-auth-storage', JSON.stringify({
+                state: {
+                  user: authUser,
+                  token: accessToken,
+                  isAuthenticated: true,
+                  _hasHydrated: true,
+                },
+                version: 0,
+              }));
+            }, {
+              accessToken: token,
+              nextRefreshToken: refreshToken,
+              authUser: user,
+            });
+
+            await page.goto('/dashboard');
+            await page.waitForLoadState('networkidle');
+          } else {
+            const user = loginJson.data?.user || {};
+            const tenantId = user.tenantId || user.tenant_id || null;
+            await page.evaluate(({ accessToken, nextRefreshToken, email, authUser, authTenantId }) => {
+              localStorage.setItem('x-ear.auth.token@v1', accessToken as string);
+              localStorage.setItem('x-ear.auth.refresh@v1', (nextRefreshToken || accessToken) as string);
+              if (authTenantId) {
+                localStorage.setItem('x-ear.auth.currentTenantId@v1', authTenantId as string);
+              }
+
+              localStorage.setItem('x-ear.auth.auth-storage-persist@v1', JSON.stringify({
+                state: {
+                  user: authUser,
+                  token: accessToken,
+                  refreshToken: nextRefreshToken || accessToken,
+                  isAuthenticated: true,
+                  isInitialized: true,
+                  isLoading: false,
+                  error: null,
+                  requiresOtp: false,
+                  requiresPhone: false,
+                  maskedPhone: null,
+                  subscription: { isExpired: false, daysRemaining: 30, planName: 'PRO' }
+                },
+                version: 0
+              }));
+            }, {
+              accessToken: token,
+              nextRefreshToken: refreshToken,
+              email: loginId,
+              authUser: { ...user, email: user.email || loginId },
+              authTenantId: tenantId,
+            });
+
+            await page.goto('/');
+            await page.waitForLoadState('networkidle');
+          }
           
           // Remove error overlay if present
           await page.evaluate(() => {
@@ -180,11 +229,26 @@ export async function login(
   
   // Fallback to UI login
   await page.goto('/login');
-  await page.locator('[data-testid="login-identifier-input"]').fill(loginId);
-  await page.locator('[data-testid="login-password-input"]').fill(creds.password);
-  await page.locator('[data-testid="login-submit-button"]').waitFor({ state: 'visible' });
+
+  const identifierSelectors = isAdminApp || isAdminIdentifier
+    ? ['input[type="email"]', 'input[name="email"]', 'input[placeholder*="admin"]']
+    : ['[data-testid="login-identifier-input"]', 'input[name="username"]', 'input#username', 'input[type="text"]'];
+  const passwordSelectors = isAdminApp || isAdminIdentifier
+    ? ['input[type="password"]', 'input[name="password"]']
+    : ['[data-testid="login-password-input"]', 'input[name="password"]', 'input[type="password"]'];
+  const submitSelectors = isAdminApp || isAdminIdentifier
+    ? ['button:has-text("Sign in")', 'button[type="submit"]']
+    : ['[data-testid="login-submit-button"]', 'button[type="submit"]', 'button:has-text("Login")'];
+
+  const identifier = page.locator(identifierSelectors.join(',')).first();
+  const password = page.locator(passwordSelectors.join(',')).first();
+  const submit = page.locator(submitSelectors.join(',')).first();
+
+  await identifier.fill(loginId);
+  await password.fill(creds.password);
+  await submit.waitFor({ state: 'visible' });
   await page.waitForTimeout(100);
-  await page.locator('[data-testid="login-submit-button"]').click();
+  await submit.click();
   await page.waitForURL((url) => !url.pathname.includes('/login'), { timeout: 10000 });
 }
 
@@ -194,19 +258,33 @@ export async function login(
  * @param page - Playwright page object
  */
 export async function logout(page: Page): Promise<void> {
+  const isAdminApp = page.url().includes('8082') || page.url().includes('/dashboard');
+
   // Try to close any modals by clicking outside or pressing Escape multiple times
   await page.keyboard.press('Escape');
   await page.keyboard.press('Escape');
   await page.waitForTimeout(500);
-  
-  // Force click user menu to open dropdown (bypass any overlays)
-  await page.locator('[data-testid="user-menu"]').click({ force: true, timeout: 5000 });
-  
-  // Wait for logout button to be visible in dropdown
-  await page.locator('[data-testid="logout-button"]').waitFor({ state: 'visible', timeout: 5000 });
-  
-  // Click logout button
-  await page.locator('[data-testid="logout-button"]').click();
+
+  if (isAdminApp) {
+    await page.locator('button:has-text("Admin User")').click({ force: true, timeout: 5000 });
+    const logoutButton = page.locator('button:has-text("Çıkış Yap")');
+    const logoutVisible = await logoutButton.isVisible().catch(() => false);
+    if (logoutVisible) {
+      await logoutButton.click({ force: true, timeout: 5000 });
+    } else {
+      await page.evaluate(() => {
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_refresh_token');
+        localStorage.removeItem('admin-auth-storage');
+      });
+      await page.goto('/login');
+      await page.waitForLoadState('networkidle');
+    }
+  } else {
+    await page.locator('[data-testid="user-menu"]').click({ force: true, timeout: 5000 });
+    await page.locator('[data-testid="logout-button"]').waitFor({ state: 'visible', timeout: 5000 });
+    await page.locator('[data-testid="logout-button"]').click();
+  }
   
   // Wait for redirect to login
   await page.waitForURL('/login', { timeout: 10000 });

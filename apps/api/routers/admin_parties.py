@@ -1,7 +1,7 @@
 """Admin Patients Router - FastAPI"""
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import List, Optional
 import logging
 
 from database import get_db
@@ -16,6 +16,7 @@ from schemas.parties import PartyRead
 from schemas.sales import DeviceAssignmentRead, SaleRead
 from schemas.audit import AuditLogRead
 from schemas.documents import DocumentRead
+from routers.sales import _build_full_sale_data
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin/parties", tags=["Admin Parties"])
@@ -73,7 +74,7 @@ async def get_all_parties(
         logger.error(f"Get all patients error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/{party_id}", operation_id="getAdminParty", response_model=PartyDetailResponse)
+@router.get("/{party_id}", operation_id="getAdminPartyDetail", response_model=PartyDetailResponse)
 async def get_party_detail(
     party_id: str,
     db: Session = Depends(get_db),
@@ -119,7 +120,7 @@ async def get_party_devices(
         logger.error(f"Get patient devices error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/{party_id}/sales", operation_id="listAdminPartySales", response_model=ResponseEnvelope)
+@router.get("/{party_id}/sales", operation_id="listAdminPartySales", response_model=ResponseEnvelope[List[SaleRead]])
 async def get_party_sales(
     party_id: str,
     db: Session = Depends(get_db),
@@ -131,8 +132,16 @@ async def get_party_sales(
         if not party:
             raise HTTPException(status_code=404, detail="Party not found")
         
-        sales = db.query(Sale).filter(Sale.party_id == party_id).all()
-        return ResponseEnvelope(data={"sales": [SaleRead.model_validate(s).model_dump(by_alias=True) for s in sales]})
+        sales = db.query(Sale).filter(Sale.party_id == party_id).order_by(Sale.sale_date.desc(), Sale.id.desc()).all()
+        sales_data = []
+        for s in sales:
+            try:
+                sale_dict = _build_full_sale_data(db, s)
+                sales_data.append(sale_dict)
+            except Exception as e:
+                logger.warning(f"Failed to build full sale data for {s.id}: {e}")
+                sales_data.append(SaleRead.model_validate(s).model_dump(by_alias=True))
+        return ResponseEnvelope(data=sales_data)
     except HTTPException:
         raise
     except Exception as e:

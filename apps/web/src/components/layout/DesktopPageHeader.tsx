@@ -1,17 +1,26 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
+
+type LocalizedLabel = string | {
+  tr?: string;
+  en?: string;
+  [key: string]: string | undefined;
+};
 
 interface DesktopPageHeaderProps {
+  leading?: ReactNode;
   title: string;
   description?: string;
   icon?: ReactNode;
   actions?: ReactNode;
-  eyebrow?: string;
+  eyebrow?: LocalizedLabel;
   className?: string;
   children?: ReactNode;
 }
 
 export function DesktopPageHeader({
+  leading,
   title,
   description,
   icon,
@@ -20,6 +29,12 @@ export function DesktopPageHeader({
   className,
   children,
 }: DesktopPageHeaderProps) {
+  const { i18n } = useTranslation();
+  const language = (i18n.resolvedLanguage || i18n.language || 'en').split('-')[0];
+  const resolvedEyebrow = typeof eyebrow === 'string'
+    ? eyebrow
+    : eyebrow?.[language] ?? eyebrow?.tr ?? eyebrow?.en ?? Object.values(eyebrow ?? {}).find(Boolean);
+
   return (
     <section
       className={cn(
@@ -41,9 +56,15 @@ export function DesktopPageHeader({
             ) : null}
 
             <div className="min-w-0">
-              {eyebrow ? (
+              {leading ? (
+                <div className="mb-3">
+                  {leading}
+                </div>
+              ) : null}
+
+              {resolvedEyebrow ? (
                 <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-blue-600/80 dark:text-blue-300/80">
-                  {eyebrow}
+                  {resolvedEyebrow}
                 </div>
               ) : null}
 

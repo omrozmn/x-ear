@@ -220,12 +220,10 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-gray-600 block mb-1">Birim Satış Fiyatı</label>
+                      <label className="text-xs text-gray-600 block mb-1">Toplam Liste Fiyatı</label>
                       <div className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded bg-gray-50 text-gray-700">
-                        {formData.listPrice > 0 ? (
-                          new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(
-                            formData.ear === 'both' ? formData.listPrice * 2 : formData.listPrice
-                          )
+                        {formData.listPrice > 0 ? new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(
+                          formData.ear === 'both' ? formData.listPrice * 2 : formData.listPrice
                         ) : '₺0,00'}
                       </div>
                     </div>
@@ -307,7 +305,11 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
                     {/* List Price */}
                     {formData.listPrice > 0 && (
                       <div className="flex justify-between text-gray-700">
-                        <span>Liste Fiyatı (birim):</span>
+                        <span>
+                          Liste Fiyatı (birim)
+                          {sale.kdvRate != null && <span className="text-gray-400 ml-1">(KDV %{sale.kdvRate})</span>}
+                          :
+                        </span>
                         <span className="font-medium">
                           {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(formData.listPrice)}
                           {formData.ear === 'both' && <span className="text-blue-600 ml-1">x2</span>}
@@ -339,7 +341,7 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
                       </div>
                     )}
 
-                    {/* KDV */}
+                    {/* KDV Amount (only shown when there's a KDV amount) */}
                     {sale.kdvAmount != null && sale.kdvAmount > 0 && (
                       <div className="flex justify-between text-gray-500 pt-1 border-t border-blue-200">
                         <span>KDV (%{sale.kdvRate || 20}):</span>

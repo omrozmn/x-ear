@@ -61,16 +61,15 @@ class IdempotencyMiddleware:
     
     def __init__(self, app: ASGIApp, *, enabled: bool = True):
         self.app = app
-        # Enable idempotency middleware unless explicitly disabled
-        # For idempotency tests, we want it enabled even in test environment
-        testing_mode = os.getenv("TESTING") == "true"
-        enable_for_idempotency_tests = os.getenv("ENABLE_IDEMPOTENCY_TESTS") == "true"
-        
-        self.enabled = enabled and (not testing_mode or enable_for_idempotency_tests)
+        self.enabled = enabled
     
     async def __call__(self, scope: Scope, receive: Receive, send: Send):
-        # Skip if disabled (e.g., in tests)
-        if not self.enabled:
+        # Check enabled state at request time for testability
+        testing_mode = os.getenv("TESTING") == "true"
+        enable_for_tests = os.getenv("ENABLE_IDEMPOTENCY_TESTS") == "true"
+        is_enabled = self.enabled and (not testing_mode or enable_for_tests)
+        
+        if not is_enabled:
             await self.app(scope, receive, send)
             return
         

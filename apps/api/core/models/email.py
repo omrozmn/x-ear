@@ -95,6 +95,10 @@ class SMTPEmailLog(BaseModel, TenantScopedMixin):
     # Idempotency
     idempotency_key = Column(String(128), nullable=True, index=True)
 
+    # Promotional email tracking
+    is_promotional = Column(Boolean, default=False)
+    unsubscribe_token = Column(String(128), nullable=True)
+
     # Timestamps
     created_at = Column(DateTime(timezone=True), default=now_utc)
     updated_at = Column(DateTime(timezone=True), default=now_utc, onupdate=now_utc)

@@ -211,7 +211,7 @@ export const DesktopInventoryPage: React.FC = () => {
       <DesktopPageHeader
         title="Envanter Yönetimi"
         description="İşitme cihazları ve aksesuarlarını yönetin"
-        eyebrow="Inventory"
+        eyebrow={{ tr: 'Envanter', en: 'Inventory' }}
         actions={(
           <>
             <Button

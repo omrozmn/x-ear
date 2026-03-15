@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { FileText, Search, CheckSquare, Square, X, Download, RefreshCw, CreditCard, Clock3, Trash2, Filter } from 'lucide-react';
+import { FileText, Search, CheckSquare, Square, X, Download, RefreshCw, CreditCard, Clock3, Trash2, Filter, MoreVertical, Eye } from 'lucide-react';
 import { MobileLayout } from '@/components/mobile/MobileLayout';
 import { MobileHeader } from '@/components/mobile/MobileHeader';
 import { FloatingActionButton } from '@/components/mobile/FloatingActionButton';
@@ -338,83 +338,18 @@ export const MobileInvoicesPage: React.FC = () => {
                             </div>
                         ) : filteredInvoices.length > 0 ? (
                             filteredInvoices.map((inv) => (
-                                <div
+                                <OutgoingInvoiceMobileCard
                                     key={inv.invoiceId}
-                                    className={cn(
-                                        'bg-white dark:bg-gray-900 rounded-xl border shadow-sm overflow-visible relative transition-all',
-                                        selectedIds.has(String(inv.invoiceId))
-                                            ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 dark:border-blue-500'
-                                            : 'border-gray-200 dark:border-gray-700'
-                                    )}
-                                >
-                                    {isSelectionMode && (
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
-                                            {selectedIds.has(String(inv.invoiceId)) ? (
-                                                <CheckSquare className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                                            ) : (
-                                                <Square className="w-6 h-6 text-gray-300 dark:text-gray-600" />
-                                            )}
-                                        </div>
-                                    )}
-
-                                    <div
-                                        className={cn('p-4 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800 transition-colors', isSelectionMode && 'pr-12')}
-                                        onClick={() => {
-                                            triggerSelection();
-                                            if (isSelectionMode) {
-                                                toggleSelect(String(inv.invoiceId));
-                                            } else {
-                                                void handleOpenInvoice(inv);
-                                            }
-                                        }}
-                                    >
-                                        <div className="flex justify-between items-start mb-3 gap-3">
-                                            <div className="flex items-center gap-3 min-w-0">
-                                                <div className="h-10 w-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
-                                                    <FileText className="h-5 w-5" />
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate">{inv.invoiceNumber || 'Fatura'}</h3>
-                                                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{`${inv.partyFirstName || ''} ${inv.partyLastName || ''}`.trim() || 'Alıcı bilgisi yok'}</p>
-                                                </div>
-                                            </div>
-                                            <span className={cn('text-[10px] px-2 py-1 rounded-full font-medium border shrink-0', getStatusColor(inv.status || ''))}>
-                                                {getStatusLabel(inv.status || '')}
-                                            </span>
-                                        </div>
-
-                                        <div className="border-t border-gray-100 dark:border-gray-800 pt-3 flex justify-between items-end gap-3">
-                                            <div>
-                                                <p className="text-xs text-gray-400">Tarih</p>
-                                                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                    {inv.invoiceDate ? formatDate(inv.invoiceDate) : '-'}
-                                                </p>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-xs text-gray-400">Tutar</p>
-                                                <p className="text-lg font-bold text-gray-900 dark:text-white">
-                                                    {formatCurrency(Number(inv.totalAmount || 0), 'TRY')}
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        {!isSelectionMode && (
-                                            <div className="mt-3 flex justify-end">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="h-8 rounded-xl px-2 text-gray-500"
-                                                    onClick={(event) => {
-                                                        event.stopPropagation();
-                                                        void handleDownloadInvoice(inv);
-                                                    }}
-                                                >
-                                                    <Download className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
+                                    invoice={inv}
+                                    onView={() => void handleOpenInvoice(inv)}
+                                    onDownload={() => void handleDownloadInvoice(inv)}
+                                    getStatusColor={getStatusColor}
+                                    getStatusLabel={getStatusLabel}
+                                    isSelectionMode={isSelectionMode}
+                                    isSelected={selectedIds.has(String(inv.invoiceId))}
+                                    onToggleSelect={() => toggleSelect(String(inv.invoiceId))}
+                                    triggerSelection={triggerSelection}
+                                />
                             ))
                         ) : (
                             <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -514,3 +449,97 @@ export const MobileInvoicesPage: React.FC = () => {
         </>
     );
 };
+
+// ─── Mobile Card Component (matching Incoming style) ──────────────────────────
+interface OutgoingInvoiceMobileCardProps {
+    invoice: OutgoingInvoiceResponse;
+    onView: () => void;
+    onDownload: () => void;
+    getStatusColor: (status: string) => string;
+    getStatusLabel: (status: string) => string;
+    isSelectionMode: boolean;
+    isSelected: boolean;
+    onToggleSelect: () => void;
+    triggerSelection: () => void;
+}
+
+function OutgoingInvoiceMobileCard({ invoice, onView, onDownload, getStatusColor, getStatusLabel, isSelectionMode, isSelected, onToggleSelect, triggerSelection }: OutgoingInvoiceMobileCardProps) {
+    const [menuOpen, setMenuOpen] = useState(false);
+    const menuRef = React.useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!menuOpen) return;
+        const handler = (e: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [menuOpen]);
+
+    const partyName = `${invoice.partyFirstName || ''} ${invoice.partyLastName || ''}`.trim() || 'Alıcı bilgisi yok';
+
+    return (
+        <div className={cn('bg-white dark:bg-gray-900 rounded-xl border shadow-sm overflow-visible relative transition-all', isSelected ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 dark:border-blue-500' : 'border-gray-200 dark:border-gray-700')}>
+            {isSelectionMode && (
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+                    {isSelected ? (
+                        <CheckSquare className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                    ) : (
+                        <Square className="w-6 h-6 text-gray-300 dark:text-gray-600" />
+                    )}
+                </div>
+            )}
+            <div
+                className={cn('p-4 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800 transition-colors', isSelectionMode && 'pr-12')}
+                onClick={() => {
+                    triggerSelection();
+                    if (isSelectionMode) {
+                        onToggleSelect();
+                    } else {
+                        onView();
+                    }
+                }}
+            >
+                <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{invoice.invoiceNumber || 'Fatura'}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">{partyName}</p>
+                    </div>
+                    <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+                        <span className={cn('text-[10px] px-2 py-1 rounded-full font-medium border shrink-0', getStatusColor(invoice.status || ''))}>
+                            {getStatusLabel(invoice.status || '')}
+                        </span>
+                        <div className="relative" ref={menuRef}>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="p-1.5"
+                                onClick={(e) => { e.stopPropagation(); setMenuOpen(v => !v); }}
+                            >
+                                <MoreVertical className="w-4 h-4" />
+                            </Button>
+                            {menuOpen && (
+                                <div className="absolute right-0 top-8 z-50 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl">
+                                    <Button variant="ghost" fullWidth onClick={() => { setMenuOpen(false); onView(); }} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 justify-start h-auto">
+                                        <Eye className="w-4 h-4" /> Görüntüle
+                                    </Button>
+                                    <Button variant="ghost" fullWidth onClick={() => { setMenuOpen(false); onDownload(); }} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 justify-start h-auto">
+                                        <Download className="w-4 h-4" /> PDF İndir
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+                <div className="flex items-center justify-between mt-2">
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                        {formatCurrency(Number(invoice.totalAmount || 0), 'TRY')}
+                    </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {invoice.invoiceDate ? formatDate(invoice.invoiceDate) : '-'}
+                    </span>
+                </div>
+            </div>
+        </div>
+    );
+}

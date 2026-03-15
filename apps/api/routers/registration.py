@@ -22,6 +22,23 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Registration"])
 
+
+def _is_nonprod_otp_env() -> bool:
+    return os.getenv('ENVIRONMENT', 'production').lower() in {'development', 'test', 'testing'}
+
+
+def _generate_registration_otp() -> str:
+    if _is_nonprod_otp_env():
+        return '123456'
+    now_ts = int(now_utc().timestamp())
+    return str(100000 + (now_ts % 900000))
+
+
+def _should_skip_external_sms() -> bool:
+    if not _is_nonprod_otp_env():
+        return False
+    return os.getenv('ENABLE_REAL_SMS_IN_TESTS', 'false').lower() not in {'1', 'true', 'yes'}
+
 def now_utc():
     """Return current UTC timestamp"""
     return datetime.now(timezone.utc)
@@ -82,11 +99,7 @@ def register_phone(
             raise HTTPException(status_code=400, detail="Phone required")
         
         # Generate OTP
-        if phone.startswith("555"):
-            code = "123456"
-        else:
-            now_ts = int(now_utc().timestamp())
-            code = str(100000 + (now_ts % 900000))
+        code = _generate_registration_otp()
         
         logger.info(f"Generating OTP for {phone}: {code}")
         
@@ -94,33 +107,36 @@ def register_phone(
         otp_store.set_otp(phone, code, ttl=300)
         
         # Send SMS via VatanSMS
-        try:
-            api_id = os.getenv('VATANSMS_USERNAME') or os.getenv('VATAN_API_ID')
-            api_key = os.getenv('VATANSMS_PASSWORD') or os.getenv('VATAN_API_KEY')
-            sender = os.getenv('VATANSMS_SENDER') or os.getenv('VATAN_SENDER', 'OZMN TIBCHZ')
-            
-            # Fallbacks for dev
-            if not api_id:
-                api_id = '4ab531b6fd26fd9ba6010b0d'
-            if not api_key:
-                api_key = '49b2001edbb1789e4e62f935'
-            
-            if api_id and api_key:
-                sms_service = VatanSMSService(api_id, api_key, sender)
+        if _should_skip_external_sms():
+            logger.info("Skipping external registration SMS in non-production OTP env")
+        else:
+            try:
+                api_id = os.getenv('VATANSMS_USERNAME') or os.getenv('VATAN_API_ID')
+                api_key = os.getenv('VATANSMS_PASSWORD') or os.getenv('VATAN_API_KEY')
+                sender = os.getenv('VATANSMS_SENDER') or os.getenv('VATAN_SENDER', 'OZMN TIBCHZ')
                 
-                clean_phone = phone.replace(' ', '').replace('+', '')
-                sms_service.send_sms([clean_phone], f"X-Ear Doğrulama Kodunuz: {code}")
-            else:
-                raise HTTPException(
-                    status_code=500,
-                    detail="SMS Configuration Missing (VATANSMS_USERNAME/PASSWORD)"
-                )
+                # Fallbacks for dev
+                if not api_id:
+                    api_id = '4ab531b6fd26fd9ba6010b0d'
+                if not api_key:
+                    api_key = '49b2001edbb1789e4e62f935'
                 
-        except HTTPException:
-            raise
-        except Exception as sms_error:
-            logger.error(f"Failed to send SMS: {sms_error}")
-            raise HTTPException(status_code=500, detail=f"SMS gönderilemedi: {str(sms_error)}")
+                if api_id and api_key:
+                    sms_service = VatanSMSService(api_id, api_key, sender)
+                    
+                    clean_phone = phone.replace(' ', '').replace('+', '')
+                    sms_service.send_sms([clean_phone], f"X-Ear Doğrulama Kodunuz: {code}")
+                else:
+                    raise HTTPException(
+                        status_code=500,
+                        detail="SMS Configuration Missing (VATANSMS_USERNAME/PASSWORD)"
+                    )
+                    
+            except HTTPException:
+                raise
+            except Exception as sms_error:
+                logger.error(f"Failed to send SMS: {sms_error}")
+                raise HTTPException(status_code=500, detail=f"SMS gönderilemedi: {str(sms_error)}")
         
         return ResponseEnvelope(message='OTP generated and sent')
         
