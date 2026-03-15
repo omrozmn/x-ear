@@ -64,6 +64,8 @@ export interface UtsTekilUrunQueryResponse {
   success: boolean;
   items: UtsTekilUrunRecord[];
   message?: string | null;
+  isOwned?: boolean | null;
+  ourMemberNumber?: string | null;
   queriedProductNumbers: string[];
   rawResponse?: Record<string, unknown> | null;
 }
@@ -179,6 +181,8 @@ export interface UtsConfig {
   identityDiscoveryStatus: string;
   autoSendNotifications: boolean;
   notificationMode: 'manual' | 'outbox';
+  autoAddToInventoryOnAlma: boolean;
+  autoDecreaseStockOnVerme: boolean;
   documentationUrl: string;
   testEndpointUrl: string;
   lastTest?: UtsConnectionTestResult | null;
@@ -198,8 +202,20 @@ export interface UtsConfigUpdate {
   memberNumber?: string;
   autoSendNotifications: boolean;
   notificationMode: 'manual' | 'outbox';
+  autoAddToInventoryOnAlma?: boolean;
+  autoDecreaseStockOnVerme?: boolean;
   baseUrlOverride?: string;
   notificationTemplates: Record<string, UtsMessageTemplate>;
+}
+
+export interface UtsAddToInventoryResponse {
+  success: boolean;
+  message: string;
+  inventoryId?: string | null;
+  created: boolean;
+  serialAdded: boolean;
+  stockUpdated: boolean;
+  barcodeUpdated: boolean;
 }
 
 interface Envelope<T> {
@@ -236,6 +252,7 @@ export const utsService = {
   upsertSerialState: async (body: UtsSerialStateUpsertRequest) => send<UtsSerialState>('put', '/api/uts/serial-states', body),
   executeVerme: async (body: UtsMovementRequest) => send<UtsMovementExecuteResponse>('post', '/api/uts/verme/execute', body),
   executeAlma: async (body: UtsMovementRequest) => send<UtsMovementExecuteResponse>('post', '/api/uts/alma/execute', body),
+  addSerialToInventory: async (serialKey: string, brand?: string, model?: string) => send<UtsAddToInventoryResponse>('post', '/api/uts/serial-states/add-to-inventory', { serialKey, brand, model }),
   listRegistrations: async () => get<unknown[]>('/api/uts/registrations'),
   createUtRegistrationBulk: async (body: unknown) => send<unknown>('post', '/api/uts/registrations/bulk', body),
   getUtJob: async (jobId: string) => get<unknown>(`/api/uts/jobs/${jobId}`),

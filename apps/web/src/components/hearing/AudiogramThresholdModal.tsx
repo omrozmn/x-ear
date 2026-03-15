@@ -72,6 +72,21 @@ const AudiogramThresholdModal: React.FC<AudiogramThresholdModalProps> = ({
     setterMap[mode](prev => ({ ...prev, [String(frequency)]: db }));
   }, []);
 
+  // Interactive chart right-click handler — remove threshold
+  const handleChartThresholdRemove = useCallback((frequency: number, mode: 'rightAir' | 'leftAir' | 'rightBone' | 'leftBone') => {
+    const setterMap = {
+      rightAir: setRightEar,
+      leftAir: setLeftEar,
+      rightBone: setRightBone,
+      leftBone: setLeftBone,
+    };
+    setterMap[mode](prev => {
+      const next = { ...prev };
+      delete next[String(frequency)];
+      return next;
+    });
+  }, []);
+
   const editingMode = `${activeTab === 'right' ? 'right' : 'left'}${conductionType === 'air' ? 'Air' : 'Bone'}` as 'rightAir' | 'leftAir' | 'rightBone' | 'leftBone';
 
   const handleSave = useCallback(() => {
@@ -173,6 +188,7 @@ const AudiogramThresholdModal: React.FC<AudiogramThresholdModalProps> = ({
             interactive
             editingMode={editingMode}
             onThresholdChange={handleChartThresholdChange}
+            onThresholdRemove={handleChartThresholdRemove}
           />
 
           {/* Threshold input tabs */}
@@ -217,7 +233,7 @@ const AudiogramThresholdModal: React.FC<AudiogramThresholdModalProps> = ({
             </div>
 
             <p className="text-[10px] text-gray-400 mb-2">
-              {conductionType === 'air' ? 'Hava yolu iletim esikleri' : 'Kemik yolu iletim esikleri'} — Grafik uzerinde tiklayarak da isaretleyebilirsiniz
+              {conductionType === 'air' ? 'Hava yolu iletim esikleri' : 'Kemik yolu iletim esikleri'} — Sol tık: işaretle / Sağ tık: kaldır
             </p>
 
             <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">

@@ -20,6 +20,8 @@ from schemas.base import ResponseEnvelope
 from schemas.uts import (
     BulkRegistration,
     UtsMessageTemplate,
+    UtsAddToInventoryRequest,
+    UtsAddToInventoryResponse,
     UtsAlmaBekleyenlerSyncResponse,
     UtsAlmaRequest,
     UtsCancelResponse,
@@ -204,6 +206,8 @@ def _serialize_uts_config(tenant: Tenant) -> UtsConfigRead:
         identity_discovery_status="tenant_company_info_fallback",
         auto_send_notifications=bool(settings.get("auto_send_notifications", False)),
         notification_mode=settings.get("notification_mode") or "outbox",
+        auto_add_to_inventory_on_alma=bool(settings.get("auto_add_to_inventory_on_alma", False)),
+        auto_decrease_stock_on_verme=bool(settings.get("auto_decrease_stock_on_verme", False)),
         documentation_url=UTS_DOCS_URL,
         test_endpoint_url=_probe_url(base_url),
         last_test=last_test,
@@ -246,6 +250,8 @@ def _persist_uts_settings(tenant: Tenant, payload: UtsConfigUpdate) -> None:
             "member_number": (payload.member_number or "").strip() or None,
             "auto_send_notifications": payload.auto_send_notifications,
             "notification_mode": payload.notification_mode,
+            "auto_add_to_inventory_on_alma": payload.auto_add_to_inventory_on_alma,
+            "auto_decrease_stock_on_verme": payload.auto_decrease_stock_on_verme,
             "base_url_override": (payload.base_url_override or "").strip() or None,
             "notification_templates": {
                 key: value.model_dump(mode="json", by_alias=True)
@@ -314,10 +320,37 @@ def _load_inventory_serial_states(db: Session, tenant_id: str, serial_states: di
             serial_key = _serial_state_key(item.barcode, serial, None)
             inventory_lookup[serial_key] = item
 
+    # Build secondary lookups for barcode/name fallback
+    _barcode_lookup: dict[str, InventoryItem] = {}
+    _name_lookup: dict[str, InventoryItem] = {}
+    for item in inventory_items:
+        if item.barcode and item.barcode.strip():
+            for candidate in _product_number_candidates(item.barcode):
+                if candidate not in _barcode_lookup:
+                    _barcode_lookup[candidate] = item
+        if item.name and item.name.strip():
+            if item.name.strip() not in _name_lookup:
+                _name_lookup[item.name.strip()] = item
+
+    seen_keys: set[str] = set()
+
     for serial_key, raw_state in serial_states.items():
         if not isinstance(raw_state, dict):
             continue
+        seen_keys.add(serial_key)
         item = inventory_lookup.get(serial_key)
+        # Fallback: match by barcode candidates then by product name
+        if item is None and not raw_state.get("inventory_id"):
+            pn = raw_state.get("product_number")
+            if pn:
+                for candidate in _product_number_candidates(pn):
+                    item = _barcode_lookup.get(candidate)
+                    if item:
+                        break
+            if item is None:
+                pname = raw_state.get("product_name")
+                if pname and pname.strip():
+                    item = _name_lookup.get(pname.strip())
         try:
             records.append(UtsSerialState.model_validate({
                 "serialKey": serial_key,
@@ -342,6 +375,34 @@ def _load_inventory_serial_states(db: Session, tenant_id: str, serial_states: di
         except Exception:
             continue
 
+    # Auto-discover inventory serials not yet in serial_states
+    for serial_key, item in inventory_lookup.items():
+        if serial_key in seen_keys:
+            continue
+        try:
+            records.append(UtsSerialState.model_validate({
+                "serialKey": serial_key,
+                "status": "not_owned",
+                "inventoryId": item.id,
+                "inventoryName": item.name,
+                "productName": (f"{item.brand or ''} {item.model or ''}".strip() or item.name),
+                "productNumber": item.barcode,
+                "serialNumber": serial_key.split("::")[1] if "::" in serial_key else None,
+                "lotBatchNumber": None,
+                "supplierName": item.supplier,
+                "supplierId": None,
+                "institutionNumber": None,
+                "documentNumber": None,
+                "lastMovementType": None,
+                "lastMovementId": None,
+                "lastMessage": None,
+                "lastMovementAt": None,
+                "updatedAt": None,
+                "rawResponse": None,
+            }))
+        except Exception:
+            continue
+
     records.sort(
         key=lambda item: (
             item.status != "pending_receipt",
@@ -350,6 +411,153 @@ def _load_inventory_serial_states(db: Session, tenant_id: str, serial_states: di
         )
     )
     return records
+
+
+def _find_inventory_match(db: Session, tenant_id: str, product_name: Optional[str], product_number: Optional[str]) -> Optional[InventoryItem]:
+    """Find an existing inventory item by barcode or name match."""
+    if product_number:
+        for candidate in _product_number_candidates(product_number):
+            item = db.query(InventoryItem).filter(
+                InventoryItem.tenant_id == tenant_id,
+                InventoryItem.barcode == candidate,
+            ).first()
+            if item:
+                return item
+    if product_name and product_name.strip():
+        name_q = product_name.strip()
+        item = db.query(InventoryItem).filter(
+            InventoryItem.tenant_id == tenant_id,
+            InventoryItem.name == name_q,
+        ).first()
+        if item:
+            return item
+    return None
+
+
+def _sync_inventory_on_alma(
+    db: Session,
+    tenant_id: str,
+    *,
+    product_number: Optional[str],
+    serial_number: Optional[str],
+    product_name: Optional[str],
+    supplier_name: Optional[str],
+    brand: Optional[str] = None,
+    model: Optional[str] = None,
+) -> dict:
+    """Add serial to inventory after successful alma. Returns info dict."""
+    import json
+    from datetime import datetime as dt
+    from uuid import uuid4
+    from services.stock_service import create_stock_movement
+
+    result = {"inventory_id": None, "created": False, "serial_added": False, "stock_updated": False, "barcode_updated": False}
+    item = _find_inventory_match(db, tenant_id, product_name, product_number)
+
+    if item is None:
+        item_id = f"item_{dt.now(timezone.utc).strftime('%d%m%Y%H%M%S')}_{uuid4().hex[:6]}"
+        item = InventoryItem(
+            id=item_id,
+            tenant_id=tenant_id,
+            name=product_name or product_number or "UTS Alma",
+            brand=brand or None,
+            model=model or None,
+            barcode=product_number or None,
+            category="hearing_aid",
+            available_inventory=1,
+            total_inventory=1,
+            used_inventory=0,
+            supplier=supplier_name,
+        )
+        if serial_number:
+            item.available_serials = json.dumps([serial_number])
+        db.add(item)
+        create_stock_movement(
+            inventory_id=item.id,
+            movement_type="uts_alma",
+            quantity=1,
+            tenant_id=tenant_id,
+            serial_number=serial_number,
+            session=db,
+        )
+        result.update(inventory_id=item.id, created=True, serial_added=bool(serial_number), stock_updated=True)
+        return result
+
+    # Existing item found
+    result["inventory_id"] = item.id
+
+    # Update barcode if missing
+    if product_number and not item.barcode:
+        item.barcode = product_number
+        result["barcode_updated"] = True
+
+    # Update brand/model if missing
+    if brand and not item.brand:
+        item.brand = brand
+    if model and not item.model:
+        item.model = model
+
+    # Add serial if not already present
+    if serial_number:
+        added = item.add_serial_number(serial_number)
+        if added:
+            result["serial_added"] = True
+
+    # Increase stock
+    item.available_inventory = (item.available_inventory or 0) + 1
+    item.total_inventory = (item.total_inventory or 0) + 1
+    result["stock_updated"] = True
+
+    create_stock_movement(
+        inventory_id=item.id,
+        movement_type="uts_alma",
+        quantity=1,
+        tenant_id=tenant_id,
+        serial_number=serial_number,
+        session=db,
+    )
+
+    return result
+
+
+def _sync_inventory_on_verme(
+    db: Session,
+    tenant_id: str,
+    *,
+    product_number: Optional[str],
+    serial_number: Optional[str],
+    product_name: Optional[str],
+    inventory_id: Optional[str],
+) -> bool:
+    """Decrease stock and remove serial after successful verme. Returns True if updated."""
+    from services.stock_service import create_stock_movement
+
+    item: Optional[InventoryItem] = None
+    if inventory_id:
+        item = db.query(InventoryItem).filter(
+            InventoryItem.id == inventory_id,
+            InventoryItem.tenant_id == tenant_id,
+        ).first()
+    if not item:
+        item = _find_inventory_match(db, tenant_id, product_name, product_number)
+    if not item:
+        return False
+
+    if serial_number:
+        item.remove_serial_number(serial_number)
+
+    if (item.available_inventory or 0) > 0:
+        item.available_inventory = (item.available_inventory or 0) - 1
+
+    create_stock_movement(
+        inventory_id=item.id,
+        movement_type="uts_verme",
+        quantity=-1,
+        tenant_id=tenant_id,
+        serial_number=serial_number,
+        session=db,
+    )
+    return True
 
 
 def _upsert_serial_state(
@@ -794,14 +1002,14 @@ def query_tekil_urun(
 
     for candidate in candidate_numbers:
         json_data = {
-            "urunNumarasi": candidate,
+            "UNO": candidate,
         }
         serial = (payload.serial_number or "").strip()
         lot = (payload.lot_batch_number or "").strip()
         if serial:
-            json_data["seriNumarasi"] = serial
+            json_data["SNO"] = serial
         if lot:
-            json_data["lotBatchNumarasi"] = lot
+            json_data["LNO"] = lot
         response = _post_uts_json(base_url, UTS_TEKIL_URUN_QUERY_PATH, auth_scheme, token, json_data)
         try:
             response_payload = response.json()
@@ -820,11 +1028,20 @@ def query_tekil_urun(
                     last_message = first_message.get("MET") or last_message
 
         if records:
+            parsed_items = [_parse_tekil_urun_item(item) for item in records]
+            our_member = _serialize_uts_config(tenant).member_number
+            is_owned = None
+            if our_member and parsed_items:
+                first = parsed_items[0]
+                if first.owner_institution_number:
+                    is_owned = first.owner_institution_number.strip() == our_member.strip()
             return ResponseEnvelope(
                 data=UtsTekilUrunQueryResponse(
                     success=True,
-                    items=[_parse_tekil_urun_item(item) for item in records],
-                    message=f"{len(records)} kayit bulundu",
+                    items=parsed_items,
+                    message=f"{len(records)} kayit bulundu" + (" - ustumuzde" if is_owned else " - ustumuzde degil" if is_owned is False else ""),
+                    isOwned=is_owned,
+                    ourMemberNumber=our_member,
                     queriedProductNumbers=candidate_numbers,
                     rawResponse=last_payload,
                 )
@@ -983,6 +1200,64 @@ def upsert_serial_state(
     return ResponseEnvelope(data=state, message="UTS seri durumu guncellendi")
 
 
+@router.post("/serial-states/add-to-inventory", operation_id="addUtsSerialToInventory", response_model=ResponseEnvelope[UtsAddToInventoryResponse])
+def add_serial_to_inventory(
+    payload: UtsAddToInventoryRequest,
+    access: UnifiedAccess = Depends(require_access()),
+    db: Session = Depends(get_db),
+):
+    """Add a UTS serial state item to inventory (create or update existing)."""
+    tenant_id = _require_tenant(access)
+    tenant = _get_tenant(db, tenant_id)
+    settings = _get_raw_uts_settings(tenant)
+    serial_states = _get_serial_states(settings)
+
+    raw_state = serial_states.get(payload.serial_key)
+    if not raw_state or not isinstance(raw_state, dict):
+        raise HTTPException(status_code=404, detail="Seri durumu bulunamadi")
+
+    product_number = raw_state.get("product_number") or ""
+    serial_number = raw_state.get("serial_number") or ""
+    product_name = raw_state.get("product_name") or raw_state.get("inventory_name") or ""
+    supplier_name = raw_state.get("supplier_name") or ""
+
+    inv_result = _sync_inventory_on_alma(
+        db, tenant_id,
+        product_number=product_number,
+        serial_number=serial_number,
+        product_name=product_name,
+        supplier_name=supplier_name,
+        brand=payload.brand,
+        model=payload.model,
+    )
+
+    # Update serial state with inventory_id
+    if inv_result.get("inventory_id"):
+        raw_state["inventory_id"] = inv_result["inventory_id"]
+        serial_states[payload.serial_key] = raw_state
+        settings["serial_states"] = serial_states
+        all_settings = tenant.settings or {}
+        all_settings["uts_integration"] = settings
+        tenant.settings = all_settings
+        flag_modified(tenant, "settings")
+
+    db.commit()
+
+    action = "Yeni envanter kaydi olusturuldu" if inv_result.get("created") else "Mevcut envantere eklendi"
+    return ResponseEnvelope(
+        data=UtsAddToInventoryResponse(
+            success=True,
+            message=action,
+            inventoryId=inv_result.get("inventory_id"),
+            created=inv_result.get("created", False),
+            serialAdded=inv_result.get("serial_added", False),
+            stockUpdated=inv_result.get("stock_updated", False),
+            barcodeUpdated=inv_result.get("barcode_updated", False),
+        ),
+        message=action,
+    )
+
+
 @router.post("/verme/execute", operation_id="executeUtsVerme", response_model=ResponseEnvelope[UtsMovementExecuteResponse])
 def execute_verme(
     payload: UtsVermeDraftRequest,
@@ -1042,6 +1317,18 @@ def execute_verme(
             last_message=message,
             raw_response=body_text[:4000] if body_text else None,
         )
+        # Auto-decrease stock if enabled
+        if settings.get("auto_decrease_stock_on_verme"):
+            try:
+                _sync_inventory_on_verme(
+                    db, tenant_id,
+                    product_number=payload.product_number,
+                    serial_number=payload.serial_number,
+                    product_name=payload.product_name or payload.inventory_name,
+                    inventory_id=payload.inventory_id,
+                )
+            except Exception as inv_err:
+                logger.warning("[uts-verme] auto inventory sync failed: %s", inv_err)
         db.commit()
 
     return ResponseEnvelope(data=UtsMovementExecuteResponse(
@@ -1117,6 +1404,20 @@ def execute_alma(
             last_message=message,
             raw_response=body_text[:4000] if body_text else None,
         )
+        # Auto-sync inventory if enabled
+        if settings.get("auto_add_to_inventory_on_alma"):
+            try:
+                inv_result = _sync_inventory_on_alma(
+                    db, tenant_id,
+                    product_number=payload.product_number,
+                    serial_number=payload.serial_number,
+                    product_name=payload.product_name or payload.inventory_name,
+                    supplier_name=payload.supplier_name,
+                )
+                if inv_result.get("inventory_id"):
+                    logger.info("[uts-alma] auto inventory sync: %s", inv_result)
+            except Exception as inv_err:
+                logger.warning("[uts-alma] auto inventory sync failed: %s", inv_err)
         db.commit()
 
     return ResponseEnvelope(data=UtsMovementExecuteResponse(

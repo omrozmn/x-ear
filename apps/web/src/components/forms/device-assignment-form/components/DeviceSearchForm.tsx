@@ -5,6 +5,7 @@ import { Search, Package, Headphones } from 'lucide-react';
 export interface DeviceInventoryItem {
   id: string;
   uniqueId?: string;
+  name: string;
   brand: string;
   model: string;
   price: number;
@@ -98,7 +99,7 @@ export const DeviceSearchForm: React.FC<DeviceSearchFormProps> = memo(({
             type="text"
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Marka, model veya barkod ile arayın..."
+            placeholder="Marka, model, ürün adı veya barkod ile arayın..."
             className={`w-full pl-10 ${errors.deviceId ? 'border-red-300' : ''}`}
           />
         </div>
@@ -124,7 +125,9 @@ export const DeviceSearchForm: React.FC<DeviceSearchFormProps> = memo(({
                       <div className="flex items-center space-x-2 mb-1">
                         {getCategoryIcon(device.category)}
                         <h4 className="text-sm font-medium text-gray-900">
-                          {device.brand} {device.model}
+                          {device.brand && device.model
+                            ? `${device.brand} ${device.model}`
+                            : device.name || `${device.brand} ${device.model}`}
                         </h4>
                         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
                           {getCategoryLabel(device.category)}

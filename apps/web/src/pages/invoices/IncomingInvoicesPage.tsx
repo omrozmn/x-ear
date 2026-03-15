@@ -173,6 +173,20 @@ export function IncomingInvoicesPage() {
     }
   };
 
+  const handleOpenRemoteHtml = async (invoice: IncomingInvoiceResponse) => {
+    setActiveMenu(null);
+    const toastId = toast.loading('HTML görünümü hazırlanıyor...');
+    try {
+      const { data: buf } = await fetchInvoiceDocument(invoice.invoiceId, 'html', 'remote');
+      const blob = new Blob([buf], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank', 'noopener,noreferrer');
+      toast.success('HTML görünümü açıldı', { id: toastId });
+    } catch {
+      toast.error('HTML görünümü açılamadı', { id: toastId });
+    }
+  };
+
   const handleDownloadPdf = async (invoice: IncomingInvoiceResponse) => {
     setActiveMenu(null);
     const toastId = toast.loading('PDF indiriliyor...');
@@ -204,8 +218,6 @@ export function IncomingInvoicesPage() {
       }
     }
   };
-
-  // handleViewHtml removed as it was unused
 
   const handleAccept = async (invoice: IncomingInvoiceResponse) => {
     setActiveMenu(null);
@@ -273,14 +285,9 @@ export function IncomingInvoicesPage() {
     setSyncLoading(true);
     const toastId = toast.loading('GİB\'den faturalar çekiliyor...');
     try {
-      const stats = await syncInvoicesFromProvider();
-      const total = (stats.incoming ?? 0) + (stats.outgoing ?? 0);
-      if (total > 0) {
-        toast.success(`${stats.incoming} gelen, ${stats.outgoing} giden fatura senkronize edildi`, { id: toastId });
-      } else {
-        toast.success('Tüm faturalar güncel', { id: toastId });
-      }
-      refetch();
+      await syncInvoicesFromProvider();
+      toast.success('Senkronizasyon başlatıldı. Faturalar birkaç dakika içinde görünecektir.', { id: toastId });
+      setTimeout(() => refetch(), 5000);
     } catch {
       toast.error('Fatura çekme işlemi başarısız', { id: toastId });
     } finally {
@@ -385,6 +392,9 @@ export function IncomingInvoicesPage() {
               </Button>
               <Button variant="ghost" fullWidth onClick={() => handleDownloadPdf(invoice)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 justify-start h-auto">
                 <Download className="w-4 h-4" /> PDF İndir
+              </Button>
+              <Button variant="ghost" fullWidth onClick={() => handleOpenRemoteHtml(invoice)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 justify-start h-auto">
+                <FileText className="w-4 h-4" /> HTML Aç
               </Button>
               <Button variant="ghost" fullWidth onClick={() => handleCopy(invoice)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 justify-start h-auto">
                 <Copy className="w-4 h-4" /> Kopyala

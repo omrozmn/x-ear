@@ -8,6 +8,7 @@ import { CashRegisterCard } from '../components/dashboard/CashRegisterCard';
 import { PricingCalculatorCard } from '../components/dashboard/PricingCalculatorCard';
 import { CashRegisterModal } from '../components/dashboard/CashRegisterModal';
 import { PricingCalculatorModal } from '../components/dashboard/PricingCalculatorModal';
+import type { PricingCalculation } from '../components/dashboard/PricingCalculatorModal';
 import { useDashboardData } from '../hooks/useDashboardData';
 import { usePermissions } from '../hooks/usePermissions';
 // import { getEnvVar } from '../utils/env'; // Available but not currently used
@@ -28,16 +29,6 @@ interface CashRegisterData {
   description?: string;
   category?: string;
 }
-
-interface PricingCalculation {
-  devicePrice: number;
-  discountPercent: number;
-  discountAmount: number;
-  finalPrice: number;
-  installments?: number;
-  installmentAmount?: number;
-}
-
 
 export const Route = createFileRoute('/')({
   component: Dashboard,

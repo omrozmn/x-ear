@@ -9,7 +9,8 @@
  * Uses @x-ear/ui-web Button only; dropdown is custom (no external UI lib).
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from '@x-ear/ui-web';
 import { Download, ChevronDown, FileSpreadsheet, FileText, Loader2 } from 'lucide-react';
 import { fetchTemplates, normalizeFile } from '@/services/invoiceNormalizer.service';
@@ -50,11 +51,30 @@ export function ExportDropdown({
   const [loadingTemplates, setLoadingTemplates] = useState(false);
   const [exportingId, setExportingId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number; openUp: boolean }>({ top: 0, left: 0, openUp: false });
+
+  // Recalculate position when dropdown opens
+  useLayoutEffect(() => {
+    if (!isOpen || !triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const menuHeight = 300; // estimated max height
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const openUp = spaceBelow < menuHeight && rect.top > menuHeight;
+    setMenuPos({
+      top: openUp ? rect.top : rect.bottom + 4,
+      left: Math.max(8, rect.right - 256), // 256 = w-64
+      openUp,
+    });
+  }, [isOpen]);
 
   // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current && !dropdownRef.current.contains(e.target as Node) &&
+        triggerRef.current && !triggerRef.current.contains(e.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -131,7 +151,7 @@ export function ExportDropdown({
   };
 
   return (
-    <div className="relative inline-block" ref={dropdownRef}>
+    <div className="relative inline-block" ref={triggerRef}>
       <Button
         variant={variant}
         className={
@@ -147,8 +167,16 @@ export function ExportDropdown({
         <ChevronDown className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </Button>
 
-      {isOpen && (
-        <div className="absolute right-0 z-50 mt-1 w-64 rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 overflow-hidden">
+      {isOpen && createPortal(
+        <div
+          ref={dropdownRef}
+          className="fixed z-[9999] w-64 rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 overflow-hidden"
+          style={{
+            top: menuPos.openUp ? undefined : menuPos.top,
+            bottom: menuPos.openUp ? window.innerHeight - menuPos.top + 4 : undefined,
+            left: menuPos.left,
+          }}
+        >
           {/* Standard CSV */}
           <button
             data-allow-raw="true"
@@ -212,7 +240,8 @@ export function ExportDropdown({
                 </div>
               </button>
             ))}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -34,6 +34,8 @@ SKIP_PATHS = [
     "/api/auth/refresh",
     "/api/auth/logout",
     "/api/auth/lookup-phone",
+    "/api/noah-import/agents/enroll",
+    "/api/noah-import/agents/heartbeat",
     "/docs",
     "/openapi.json",
     "/redoc",

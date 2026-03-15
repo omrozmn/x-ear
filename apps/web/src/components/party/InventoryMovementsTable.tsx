@@ -11,6 +11,7 @@ interface StockMovement {
     serialNumber?: string;
     partyId?: string;
     partyName?: string;
+    prescriptionStatus?: string;
     createdAt?: string;
     createdBy?: string;
 }
@@ -56,6 +57,8 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
             'loaner_out': 'Emanet Verildi',
             'loaner_return': 'Emanet İade',
             'manual_add': 'Manuel Eklendi',
+            'uts_alma': 'UTS Alma',
+            'uts_verme': 'UTS Verme',
         };
         return labels[type] || type;
     };
@@ -76,7 +79,11 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
         const partyName = movement.partyName || movement.partyId;
         const type = movement.movementType || '';
 
-        if (!partyName) return '-';
+        if (!partyName) {
+            if (type === 'uts_alma') return 'UTS alma bildirimi ile eklendi';
+            if (type === 'uts_verme') return 'UTS verme bildirimi ile çıktı';
+            return '-';
+        }
 
         if (type === 'sale' || type === 'delivery') {
             return `Hastaya çıktı: ${partyName}`;
@@ -150,6 +157,24 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
             render: (_: unknown, record: StockMovement) => (
                 <span className="text-sm text-gray-600">{getMovementDescription(record)}</span>
             )
+        },
+        {
+            key: 'prescriptionStatus',
+            title: 'Reçete',
+            render: (_: unknown, record: StockMovement) => {
+                if (!record.prescriptionStatus) return <span className="text-sm text-gray-400">-</span>;
+                const statusLabels: Record<string, { label: string; className: string }> = {
+                    'raporlu': { label: 'Raporlu', className: 'bg-green-100 text-green-800' },
+                    'raporsuz': { label: 'Raporsuz', className: 'bg-gray-100 text-gray-700' },
+                    'bekleniyor': { label: 'Bekliyor', className: 'bg-yellow-100 text-yellow-800' },
+                };
+                const info = statusLabels[record.prescriptionStatus] || { label: record.prescriptionStatus, className: 'bg-blue-100 text-blue-800' };
+                return (
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${info.className}`}>
+                        {info.label}
+                    </span>
+                );
+            }
         },
         {
             key: 'createdBy',

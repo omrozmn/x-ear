@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Card, Button, DatePicker, Input, Select, DataTable } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
-import { ShoppingCart, Search, FileText, X, RefreshCw, Filter, CheckSquare, CreditCard, Square } from 'lucide-react';
+import { ShoppingCart, Search, FileText, X, RefreshCw, Filter, CheckSquare, CreditCard, Square, Plus } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { useNavigate } from '@tanstack/react-router';
 import { useListIncomingInvoices } from '@/api/client/invoices.client';
@@ -12,6 +12,8 @@ import { useIsMobile } from '@/hooks/useBreakpoint';
 import { cn } from '@/lib/utils';
 import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 import { ExportDropdown } from '@/components/common/ExportDropdown';
+import { ConvertToPurchaseModal } from '@/components/invoices/ConvertToPurchaseModal';
+import toast from 'react-hot-toast';
 
 export function PurchasesPage() {
   const navigate = useNavigate();
@@ -30,6 +32,7 @@ export function PurchasesPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isMobileSelectionMode, setIsMobileSelectionMode] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [isConvertModalOpen, setIsConvertModalOpen] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const debouncedSearch = useDebounce(searchTerm, 300);
@@ -151,6 +154,28 @@ export function PurchasesPage() {
     await refetch();
   }, [refetch]);
 
+  const selectedInvoicesForConversion = useMemo(() => {
+    return sortedInvoices
+      .filter((invoice: IncomingInvoiceResponse) => selectedIds.has(String(invoice.invoiceId)))
+      .map((invoice: IncomingInvoiceResponse) => ({
+        invoiceId: String(invoice.invoiceId),
+        supplierName: invoice.supplierName || '',
+        supplierTaxNumber: invoice.supplierTaxNumber || undefined,
+        invoiceNumber: invoice.invoiceNumber || '',
+        totalAmount: Number(invoice.totalAmount || 0),
+        currency: invoice.currency || 'TRY',
+      }));
+  }, [selectedIds, sortedInvoices]);
+
+  const handleOpenConvertModal = useCallback(() => {
+    if (selectedInvoicesForConversion.length === 0) {
+      toast.error('Yeni alış için önce en az bir kayıt seçin.');
+      return;
+    }
+
+    setIsConvertModalOpen(true);
+  }, [selectedInvoicesForConversion.length]);
+
   const renderMobileCards = () => (
     <div className="block md:hidden space-y-3 mt-3">
       {sortedInvoices.length === 0 ? (
@@ -233,6 +258,12 @@ export function PurchasesPage() {
               <RefreshCw size={18} />
               Yenile
             </Button>
+            <div className="ml-auto">
+              <Button className="flex items-center gap-2" onClick={handleOpenConvertModal}>
+                <Plus size={18} />
+                Yeni Alış
+              </Button>
+            </div>
           </>
         )}
       />
@@ -476,6 +507,16 @@ export function PurchasesPage() {
           </div>
         </div>
       )}
+
+      <ConvertToPurchaseModal
+        isOpen={isConvertModalOpen}
+        onClose={() => setIsConvertModalOpen(false)}
+        selectedInvoices={selectedInvoicesForConversion}
+        onSuccess={() => {
+          setSelectedIds(new Set());
+          void refetch();
+        }}
+      />
     </div>
   );
 }

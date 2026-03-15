@@ -628,6 +628,8 @@ def get_movements(
                         if party:
                             m_dict['partyId'] = party.id
                             m_dict['partyName'] = f"{party.first_name} {party.last_name}".strip()
+                        if assignment.sgk_scheme:
+                            m_dict['prescriptionStatus'] = assignment.report_status or 'raporlu'
                 # If transaction is a sale
                 elif m.transaction_id.startswith('sale_'):
                     sale = db.get(Sale, m.transaction_id)
@@ -636,9 +638,32 @@ def get_movements(
                         if party:
                             m_dict['partyId'] = party.id
                             m_dict['partyName'] = f"{party.first_name} {party.last_name}".strip()
+                        # Check assignments under this sale for prescription info
+                        for da in db.query(DeviceAssignment).filter(
+                            DeviceAssignment.sale_id == sale.id,
+                            DeviceAssignment.inventory_id == item_id,
+                        ).all():
+                            if da.sgk_scheme:
+                                m_dict['prescriptionStatus'] = da.report_status or 'raporlu'
+                                break
             except Exception as enrich_err:
                 logger.warning(f"Failed to enrich movement {m.id}: {enrich_err}")
-        
+
+        # For serial-based movements, also check if serial was used in any prescription
+        if not m_dict.get('prescriptionStatus') and m.serial_number:
+            try:
+                da = db.query(DeviceAssignment).filter(
+                    DeviceAssignment.tenant_id == access.tenant_id,
+                    DeviceAssignment.sgk_scheme.isnot(None),
+                    (DeviceAssignment.serial_number == m.serial_number) |
+                    (DeviceAssignment.serial_number_left == m.serial_number) |
+                    (DeviceAssignment.serial_number_right == m.serial_number),
+                ).first()
+                if da:
+                    m_dict['prescriptionStatus'] = da.report_status or 'raporlu'
+            except Exception:
+                pass
+
         results.append(m_dict)
     
     return ResponseEnvelope(

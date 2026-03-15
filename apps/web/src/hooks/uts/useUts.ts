@@ -75,6 +75,18 @@ export function useExecuteUtsAlma() {
   });
 }
 
+export function useAddUtsSerialToInventory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (params: { serialKey: string; brand?: string; model?: string }) =>
+      utsService.addSerialToInventory(params.serialKey, params.brand, params.model),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['uts', 'serial-states'] });
+      qc.invalidateQueries({ queryKey: ['inventory'] });
+    },
+  });
+}
+
 export function useTestUtsConfig() {
   const qc = useQueryClient();
   return useMutation({

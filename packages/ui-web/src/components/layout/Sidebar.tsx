@@ -28,6 +28,8 @@ interface MenuItem {
   label: string;
   icon: React.ReactNode;
   href?: string;
+  activePatterns?: string[];
+  exactMatch?: boolean;
   children?: MenuItem[];
   badge?: string | number;
   requiredFeature?: string;
@@ -52,6 +54,7 @@ const menuItems: MenuItem[] = [
     label: 'Dashboard',
     icon: <Home className="w-5 h-5" />,
     href: '/',
+    exactMatch: true,
   },
   {
     id: 'patients',
@@ -126,18 +129,21 @@ const menuItems: MenuItem[] = [
         label: 'Giden Faturalar',
         icon: <FileText className="w-4 h-4" />,
         href: '/invoices',
+        exactMatch: true,
       },
       {
         id: 'incoming-invoices',
         label: 'Gelen Faturalar',
         icon: <FileText className="w-4 h-4" />,
         href: '/invoices/incoming',
+        activePatterns: ['/invoices/incoming', '/invoices/purchases'],
       },
       {
         id: 'proformas',
         label: 'Proformalar',
         icon: <FileText className="w-4 h-4" />,
         href: '/invoices?tab=proformas',
+        exactMatch: true,
       },
       {
         id: 'invoice-summary',
@@ -163,13 +169,14 @@ const menuItems: MenuItem[] = [
         id: 'sgk-upload',
         label: 'SGK Yükleme',
         icon: <Activity className="w-4 h-4" />,
-        href: '/sgk/upload',
+        href: '/sgk',
+        exactMatch: true,
       },
       {
         id: 'sgk-reports-list',
         label: 'Rapor Listesi',
         icon: <Activity className="w-4 h-4" />,
-        href: '/sgk/reports',
+        href: '/sgk/downloads',
       },
     ],
   },
@@ -185,7 +192,7 @@ const menuItems: MenuItem[] = [
     label: 'Muhasebe',
     icon: <FileSpreadsheet className="w-5 h-5" />,
     href: '/invoice-normalizer',
-    requiredFeature: 'accounting',
+    requiredFeature: 'invoice_normalizer',
   },
   {
     id: 'settings',
@@ -197,36 +204,42 @@ const menuItems: MenuItem[] = [
         label: 'Firma Bilgileri',
         icon: <Settings className="w-4 h-4" />,
         href: '/settings?tab=company',
+        exactMatch: true,
       },
       {
         id: 'settings-integration',
         label: 'Entegrasyonlar',
         icon: <Settings className="w-4 h-4" />,
         href: '/settings?tab=integration',
+        exactMatch: true,
       },
       {
         id: 'settings-team',
         label: 'Ekip Yönetimi',
         icon: <Settings className="w-4 h-4" />,
         href: '/settings?tab=team',
+        exactMatch: true,
       },
       {
         id: 'settings-parties',
         label: 'Hasta Ayarları',
         icon: <Settings className="w-4 h-4" />,
         href: '/settings?tab=parties',
+        exactMatch: true,
       },
       {
         id: 'settings-sgk',
         label: 'SGK Ayarları',
         icon: <Settings className="w-4 h-4" />,
         href: '/settings?tab=sgk',
+        exactMatch: true,
       },
       {
         id: 'settings-subscription',
         label: 'Abonelik',
         icon: <Settings className="w-4 h-4" />,
         href: '/settings?tab=subscription',
+        exactMatch: true,
       },
     ],
   },
@@ -282,31 +295,87 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setExpandedItems(newExpanded);
   };
 
+  const normalizePath = (href: string) => {
+    try {
+      return new URL(href, 'http://localhost');
+    } catch {
+      return new URL('/', 'http://localhost');
+    }
+  };
+
+  const matchesPattern = (pattern: string, exactMatch = false) => {
+    const current = normalizePath(currentPath);
+    const target = normalizePath(pattern);
+
+    if (current.pathname !== target.pathname) {
+      if (exactMatch || target.pathname === '/') {
+        return false;
+      }
+
+      if (!current.pathname.startsWith(`${target.pathname}/`)) {
+        return false;
+      }
+    }
+
+    const targetParams = new URLSearchParams(target.search);
+    if ([...targetParams.keys()].length === 0) {
+      return exactMatch ? current.pathname === target.pathname : true;
+    }
+
+    const currentParams = new URLSearchParams(current.search);
+    for (const [key, value] of targetParams.entries()) {
+      if (currentParams.get(key) !== value) {
+        return false;
+      }
+    }
+
+    return exactMatch ? current.pathname === target.pathname : true;
+  };
+
   // Collect all menu hrefs for precise active-state matching
-  const collectHrefs = (items: MenuItem[]): string[] => {
-    const hrefs: string[] = [];
+  const collectMatchers = (items: MenuItem[]): Array<{ pattern: string; exactMatch: boolean }> => {
+    const hrefs: Array<{ pattern: string; exactMatch: boolean }> = [];
     for (const item of items) {
-      if (item.href) hrefs.push(item.href);
-      if (item.children) hrefs.push(...collectHrefs(item.children));
+      if (item.href) {
+        hrefs.push({ pattern: item.href, exactMatch: item.exactMatch ?? false });
+      }
+      if (item.activePatterns) {
+        hrefs.push(...item.activePatterns.map((pattern) => ({
+          pattern,
+          exactMatch: item.exactMatch ?? false,
+        })));
+      }
+      if (item.children) hrefs.push(...collectMatchers(item.children));
     }
     return hrefs;
   };
-  const allHrefs = collectHrefs(visibleMenuItems);
+  const allMatchers = collectMatchers(visibleMenuItems);
 
-  const isActive = (href?: string) => {
-    if (!href) return false;
-    if (href === '/') return currentPath === '/';
+  const isActive = (item: MenuItem) => {
+    const patterns = [
+      ...(item.href ? [item.href] : []),
+      ...(item.activePatterns ?? []),
+    ];
 
-    const matches = currentPath === href || currentPath.startsWith(`${href}/`) || currentPath.startsWith(`${href}?`);
-    if (!matches) return false;
-    if (currentPath === href) return true;
+    if (patterns.length === 0) return false;
 
-    // For prefix matches, only activate if no more-specific menu item also matches
-    const hasMoreSpecificMatch = allHrefs.some(otherHref => {
-      if (otherHref === href || otherHref.length <= href.length) return false;
-      return currentPath === otherHref || currentPath.startsWith(`${otherHref}/`) || currentPath.startsWith(`${otherHref}?`);
+    const matchedPattern = patterns.find((pattern) => matchesPattern(pattern, item.exactMatch ?? false));
+    if (!matchedPattern) return false;
+
+    const matchedPathLength = normalizePath(matchedPattern).pathname.length;
+    const hasMoreSpecificMatch = allMatchers.some(({ pattern, exactMatch }) => {
+      if (patterns.includes(pattern)) return false;
+      if (!matchesPattern(pattern, exactMatch)) return false;
+
+      return normalizePath(pattern).pathname.length > matchedPathLength;
     });
+
     return !hasMoreSpecificMatch;
+  };
+
+  const hasActiveChild = (item: MenuItem): boolean => {
+    if (!item.children?.length) return false;
+    return item.children.some((child) => isActive(child) || hasActiveChild(child));
   };
 
   const handleNavigation = (href?: string) => {
@@ -320,8 +389,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const renderMenuItem = (item: MenuItem, level = 0) => {
     const hasChildren = item.children && item.children.length > 0;
-    const isExpanded = expandedItems.has(item.id);
-    const active = isActive(item.href);
+    const active = isActive(item) || hasActiveChild(item);
+    const isExpanded = expandedItems.has(item.id) || hasActiveChild(item);
     const showLabel = !isCollapsed || isMobile;
 
     return (

@@ -1,11 +1,17 @@
 from typing import Optional, List, Dict
 from pydantic import Field, field_validator, ValidationInfo, model_validator
 from .base import AppBaseModel, IDMixin, TimestampMixin
+from constants import normalize_category
+
+# Default KDV rates per category
+_CATEGORY_DEFAULT_KDV: dict[str, float] = {
+    "hearing_aid": 0.0,
+}
 
 # --- Inventory Schemas ---
 class InventoryItemBase(AppBaseModel):
     name: str
-    brand: str
+    brand: Optional[str] = None
     model: Optional[str] = None
     category: str = "hearing_aid"
     barcode: Optional[str] = None
@@ -30,6 +36,20 @@ class InventoryItemBase(AppBaseModel):
     features: List[str] = Field(default_factory=list)
     direction: Optional[str] = None # left, right, both
     warranty: int = 0 # months
+
+    @field_validator("category", mode="before")
+    @classmethod
+    def _normalize_category(cls, v: str) -> str:
+        return normalize_category(v) if v else "hearing_aid"
+
+    @model_validator(mode="after")
+    def _apply_category_kdv_default(self):
+        """Set KDV to 0% for hearing_aid when kdv_rate was not explicitly provided."""
+        if self.category in _CATEGORY_DEFAULT_KDV:
+            # Only override if still at the schema default (20.0)
+            if self.kdv_rate == 20.0:
+                self.kdv_rate = _CATEGORY_DEFAULT_KDV[self.category]
+        return self
 
 class InventoryItemCreate(InventoryItemBase):
     tenant_id: Optional[str] = Field(None, alias="tenantId")
@@ -58,6 +78,11 @@ class InventoryItemUpdate(AppBaseModel):
     price: Optional[float] = None
     cost: Optional[float] = None
     kdv_rate: Optional[float] = Field(None, alias="vatRate")
+
+    @field_validator("category", mode="before")
+    @classmethod
+    def _normalize_category(cls, v: Optional[str]) -> Optional[str]:
+        return normalize_category(v) if v else v
     price_includes_kdv: Optional[bool] = Field(None, alias="priceIncludesKdv")
     cost_includes_kdv: Optional[bool] = Field(None, alias="costIncludesKdv")
     
@@ -148,6 +173,7 @@ class StockMovementRead(IDMixin, TimestampMixin, AppBaseModel):
     # Enrichment fields (optional)
     party_id: Optional[str] = Field(None, alias="partyId")
     party_name: Optional[str] = Field(None, alias="partyName")
+    prescription_status: Optional[str] = Field(None, alias="prescriptionStatus")
 
 class InventoryFilterOptions(AppBaseModel):
     categories: List[str]

@@ -21,6 +21,19 @@ interface SaleModalProps {
   onSaleCreate: (sale: SaleRead) => void;
 }
 
+const CATEGORY_LABELS: Record<string, string> = {
+  hearing_aid: 'İşitme Cihazı',
+  battery: 'Pil',
+  accessory: 'Aksesuar',
+  ear_mold: 'Kulak Kalıbı',
+  maintenance: 'Bakım',
+};
+
+function getCategoryLabel(category?: string): string {
+  if (!category) return 'Kategori belirtilmemiş';
+  return CATEGORY_LABELS[category] || category;
+}
+
 function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
   // Legacy UX'a uygun basit state
   const [partyStatus, setPartyStatus] = useState('worker');
@@ -335,17 +348,23 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
                           className="px-3 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
                           onClick={() => {
                             setSelectedDevice(product);
-                            setProductSearchTerm(`${product.brand} ${product.model || product.name}`);
+                            setProductSearchTerm(
+                              product.brand && product.model
+                                ? `${product.brand} ${product.model}`
+                                : product.name || `${product.brand || ''} ${product.model || ''}`
+                            );
                             setShowProductDropdown(false);
                           }}
                         >
                           <div className="flex justify-between items-center">
                             <div className="flex-1">
                               <div className="font-medium text-gray-900 text-sm">
-                                {product.brand} {product.model || product.name}
+                                {product.brand && product.model
+                                  ? `${product.brand} ${product.model}`
+                                  : product.name || `${product.brand || ''} ${product.model || ''}`}
                               </div>
                               <div className="text-xs text-gray-600">
-                                {product.category || 'Kategori belirtilmemiş'}
+                                {getCategoryLabel(product.category)}
                               </div>
                             </div>
                             <div className="text-right">
@@ -387,7 +406,7 @@ function SaleModal({ isOpen, onClose, party, onSaleCreate }: SaleModalProps) {
                   </div>
                   <div>
                     <span className="text-gray-600">Kategori:</span>
-                    <span className="font-medium ml-2">{selectedDevice.category || 'Kategori belirtilmemiş'}</span>
+                    <span className="font-medium ml-2">{getCategoryLabel(selectedDevice.category)}</span>
                   </div>
                   <div>
                     <span className="text-gray-600">Fiyat:</span>

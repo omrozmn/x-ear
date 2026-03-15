@@ -121,6 +121,7 @@ class InvoiceSyncService:
             total_count += chunk_count
 
         self.db.commit()
+        self._precache_pdf_links(tenant_id)
         self._run_automation(tenant_id)
         return total_count
 
@@ -139,6 +140,77 @@ class InvoiceSyncService:
             chunk_start = max(current, start_date)
             yield chunk_start, chunk_end
             current = next_month
+
+    def _precache_pdf_links(self, tenant_id: str) -> None:
+        """Pre-fetch PDF links for incoming invoices that don't have one cached yet.
+        
+        Uses batch GetPDFLinkByUUID call to avoid per-invoice API calls when viewing.
+        """
+        try:
+            invoices = (
+                self.db.query(PurchaseInvoice)
+                .filter_by(tenant_id=tenant_id, invoice_type="INCOMING")
+                .filter(
+                    PurchaseInvoice.birfatura_uuid.isnot(None),
+                    ~PurchaseInvoice.birfatura_uuid.like("local-%"),
+                    ~PurchaseInvoice.birfatura_uuid.like("draft-%"),
+                )
+                .all()
+            )
+
+            # Filter to only those without a cached link
+            need_link = []
+            for inv in invoices:
+                raw = inv.raw_data if isinstance(inv.raw_data, dict) else {}
+                has_cached = raw.get("_cached_pdf_link") or (
+                    isinstance(raw.get("_provider_response"), dict)
+                    and raw["_provider_response"].get("pdfLink")
+                )
+                if not has_cached:
+                    need_link.append(inv)
+
+            if not need_link:
+                return
+
+            # Batch in groups of 50 UUIDs
+            batch_size = 50
+            for i in range(0, len(need_link), batch_size):
+                batch = need_link[i : i + batch_size]
+                uuids = [inv.birfatura_uuid for inv in batch]
+                try:
+                    resp = self.client.get_pdf_link_by_uuid({
+                        "uuids": uuids,
+                        "systemType": "EFATURA",
+                    })
+                    if resp.get("Success"):
+                        links = resp.get("Result") or []
+                        # Result is a list of links matching the UUIDs order
+                        if isinstance(links, list):
+                            for idx, inv in enumerate(batch):
+                                link = None
+                                if idx < len(links):
+                                    candidate = links[idx]
+                                    if isinstance(candidate, str) and candidate.strip().startswith("http"):
+                                        link = candidate.strip()
+                                    elif isinstance(candidate, dict):
+                                        for key in ("pdfLink", "url", "link"):
+                                            val = candidate.get(key, "")
+                                            if isinstance(val, str) and val.startswith("http"):
+                                                link = val
+                                                break
+                                if link:
+                                    raw = inv.raw_data if isinstance(inv.raw_data, dict) else {}
+                                    raw["_cached_pdf_link"] = link
+                                    inv.raw_data = raw
+                                    self.db.add(inv)
+                    self.db.commit()
+                except Exception as e:
+                    logger.warning("Batch PDF link pre-cache failed: %s", e)
+                    self.db.rollback()
+
+            logger.info("Pre-cached PDF links for %d incoming invoices (tenant %s)", len(need_link), tenant_id)
+        except Exception as e:
+            logger.warning("PDF link pre-cache error: %s", e)
 
     def _fetch_incoming_chunk(self, tenant_id: str, start_date: datetime, end_date: datetime) -> int:
         """Fetch incoming invoices for a single date chunk with pagination."""

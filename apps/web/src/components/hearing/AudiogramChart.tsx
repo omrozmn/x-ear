@@ -37,6 +37,8 @@ export interface AudiogramChartProps {
   editingMode?: 'rightAir' | 'leftAir' | 'rightBone' | 'leftBone';
   /** Callback when a threshold is placed/moved via click */
   onThresholdChange?: (frequency: number, db: number, mode: 'rightAir' | 'leftAir' | 'rightBone' | 'leftBone') => void;
+  /** Callback when a threshold is removed via right-click */
+  onThresholdRemove?: (frequency: number, mode: 'rightAir' | 'leftAir' | 'rightBone' | 'leftBone') => void;
 }
 
 // ── Constants ────────────────────────────────────────────
@@ -75,6 +77,7 @@ const AudiogramChart: React.FC<AudiogramChartProps> = ({
   interactive = false,
   editingMode = 'rightAir',
   onThresholdChange,
+  onThresholdRemove,
 }) => {
   const width = compact ? 320 : 600;
   const height = compact ? 220 : 500;
@@ -226,6 +229,50 @@ const AudiogramChart: React.FC<AudiogramChartProps> = ({
     onThresholdChange(nearestFreq, clampedDb, editingMode);
   }, [interactive, onThresholdChange, editingMode, width, height, pad, chartW, chartH]);
 
+  // ── Interactive right-click handler (remove threshold) ─
+  const handleContextMenu = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
+    if (!interactive || !onThresholdRemove || !svgRef.current) return;
+
+    e.preventDefault();
+
+    const svg = svgRef.current;
+    const rect = svg.getBoundingClientRect();
+    const scaleX = width / rect.width;
+    const scaleY = height / rect.height;
+    const svgX = (e.clientX - rect.left) * scaleX;
+    const svgY = (e.clientY - rect.top) * scaleY;
+
+    if (svgX < pad.left || svgX > pad.left + chartW || svgY < pad.top || svgY > pad.top + chartH) return;
+
+    // Find which threshold data belongs to current editing mode
+    const dataMap: Record<string, ThresholdData> = {
+      rightAir: rightEar,
+      leftAir: leftEar,
+      rightBone: rightBone ?? {},
+      leftBone: leftBone ?? {},
+    };
+    const currentData = dataMap[editingMode];
+
+    // Find closest existing point
+    let closestFreq: number | null = null;
+    let closestDist = Infinity;
+    for (const f of FREQUENCIES) {
+      if (currentData[String(f)] === undefined) continue;
+      const px = freqToX(f);
+      const py = dbToY(currentData[String(f)]);
+      const dist = Math.sqrt((svgX - px) ** 2 + (svgY - py) ** 2);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closestFreq = f;
+      }
+    }
+
+    // Only remove if right-clicked reasonably close to a point (within 25px in SVG coords)
+    if (closestFreq !== null && closestDist < 25) {
+      onThresholdRemove(closestFreq, editingMode);
+    }
+  }, [interactive, onThresholdRemove, editingMode, width, height, pad, chartW, chartH, rightEar, leftEar, rightBone, leftBone, freqToX, dbToY]);
+
   // dB label intervals
   const dbStep = compact ? 20 : 10;
   const dbLabels = [];
@@ -239,6 +286,7 @@ const AudiogramChart: React.FC<AudiogramChartProps> = ({
         className={`w-full h-auto ${interactive ? 'cursor-crosshair' : ''}`}
         style={{ maxWidth: width }}
         onClick={handleChartClick}
+        onContextMenu={handleContextMenu}
       >
         {/* Background */}
         <rect x={0} y={0} width={width} height={height} fill="white" rx={compact ? 6 : 8} />

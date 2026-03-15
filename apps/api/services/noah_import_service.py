@@ -702,6 +702,21 @@ class NoahImportService:
                 raise ValueError("Enrollment token has expired")
 
         # Activate
+        # Clear fingerprint from any existing device BEFORE assigning to pending
+        # Use raw SQL to avoid ORM flush-order issues with UNIQUE constraint
+        from sqlalchemy import text as sa_text
+        db.execute(
+            sa_text(
+                "UPDATE noah_agent_devices "
+                "SET device_fingerprint = 'replaced_' || id, "
+                "    status = 'INACTIVE', "
+                "    device_token_hash = NULL "
+                "WHERE device_fingerprint = :fp AND id != :pending_id"
+            ),
+            {"fp": device_fingerprint, "pending_id": pending.id},
+        )
+        db.flush()
+
         device_token = secrets.token_urlsafe(48)
         pending.device_fingerprint = device_fingerprint
         pending.device_name = device_name

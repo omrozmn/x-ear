@@ -1,5 +1,5 @@
 """BirFatura Integration Router - FastAPI"""
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional, Any, Callable
@@ -348,15 +348,13 @@ async def cancel_invoice(
 @router.post("/birfatura/sync-invoices", operation_id="createBirfaturaSyncInvoices")
 async def sync_invoices(
     data: InvoiceSyncRequest,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_access())
 ):
-    """Sync invoices from BirFatura API"""
+    """Sync invoices from BirFatura API (runs in background)"""
     if not access.tenant_id:
         raise HTTPException(status_code=400, detail="Tenant context required")
-    
-    # Initialize sync service
-    sync_service = InvoiceSyncService(db)
     
     start_date = None
     end_date = None
@@ -373,16 +371,25 @@ async def sync_invoices(
         except (ValueError, TypeError):
             pass
     
-    try:
-        stats = sync_service.sync_invoices(access.tenant_id, start_date, end_date)
-        return ResponseEnvelope(data=InvoiceSyncResponse(
-            synced_count=stats.get('incoming', 0) + stats.get('outgoing', 0),
-            incoming=stats.get('incoming', 0),
-            outgoing=stats.get('outgoing', 0),
-            duplicates=stats.get('duplicates', 0),
-        ))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    def _run_sync(tenant_id: str, sd, ed):
+        from core.database import SessionLocal, set_tenant_context, reset_tenant_context
+        token = set_tenant_context(tenant_id)
+        sync_db = SessionLocal()
+        try:
+            svc = InvoiceSyncService(sync_db)
+            stats = svc.sync_invoices(tenant_id, sd, ed)
+            logger.info(f"[sync] tenant={tenant_id} incoming={stats.get('incoming')} outgoing={stats.get('outgoing')}")
+        except Exception as e:
+            logger.error(f"[sync] tenant={tenant_id} error: {e}")
+        finally:
+            sync_db.close()
+            reset_tenant_context(token)
+
+    background_tasks.add_task(_run_sync, access.tenant_id, start_date, end_date)
+    return ResponseEnvelope(
+        data={"message": "Senkronizasyon arka planda başlatıldı"},
+        message="Senkronizasyon başlatıldı. Faturalar birkaç dakika içinde görünecektir."
+    )
 
 @router.post("/birfatura/backfill-invoice-items", operation_id="createBirfaturaBackfillInvoiceItems")
 async def backfill_invoice_items(

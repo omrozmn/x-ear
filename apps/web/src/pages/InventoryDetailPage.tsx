@@ -354,13 +354,16 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
         serialNumber: serial,
       });
       const firstMatch = response.items?.[0];
-      // Only set "owned" if UTS explicitly returns the item AND the owner institution matches ours
-      // Otherwise set to "not_owned" since UTS couldn't confirm ownership
+      // tekilUrun/sorgula returns products ON our institution per UTS docs.
+      // records found → owned, no records → not owned
       let nextStatus: 'owned' | 'not_owned' | 'pending_receipt' = 'not_owned';
-      if (response.success && response.items?.length && firstMatch) {
-        // If ownerInstitutionNumber is returned and matches our member number, it's truly owned
-        // If UTS returned the item, it exists in the system
-        nextStatus = firstMatch.ownerInstitutionNumber ? 'owned' : 'not_owned';
+      if (response.isOwned === true) {
+        nextStatus = 'owned';
+      } else if (response.isOwned === false) {
+        nextStatus = 'not_owned';
+      } else {
+        // isOwned is null — fallback: if records returned assume owned
+        nextStatus = firstMatch?.ownerInstitutionNumber ? 'owned' : 'not_owned';
       }
       const nextState = await upsertUtsState.mutateAsync({
         status: nextStatus,

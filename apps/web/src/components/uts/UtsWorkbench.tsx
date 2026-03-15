@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CheckSquare, Download, RefreshCw, Search, Send, ShieldCheck, ShieldQuestion, Square } from 'lucide-react';
+import { CheckSquare, Download, Package, RefreshCw, Search, Send, ShieldCheck, ShieldQuestion, Square, Check } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { Button, Card, DataTable, Input } from '@x-ear/ui-web';
+import { Button, Card, DataTable, Input, useToastHelpers } from '@x-ear/ui-web';
 
 import { useIsMobile } from '@/hooks/useBreakpoint';
-import { useUtsConfig, useUtsSerialStates } from '@/hooks/uts/useUts';
+import { useAddUtsSerialToInventory, useUtsConfig, useUtsSerialStates } from '@/hooks/uts/useUts';
 import { useSyncUtsAlmaBekleyenler } from '@/api/generated/uts/uts';
 import type { UtsSerialState } from '@/services/uts/uts.service';
 import { DesktopPageHeader } from '@/components/layout/DesktopPageHeader';
@@ -17,16 +17,50 @@ type TabKey = 'owned' | 'pending_receipt';
 
 const UTS_VERIFIED_MOVEMENT_TYPES = ['query', 'alma', 'verme', 'sync'];
 
+const KNOWN_BRANDS = [
+  'Phonak', 'Signia', 'Oticon', 'ReSound', 'Resound', 'Widex', 'Starkey',
+  'Unitron', 'Bernafon', 'Sonic', 'Hansaton', 'Rexton', 'Audio Service',
+  'Audifon', 'Beltone', 'Interton', 'Philips', 'Siemens', 'GN',
+  'Ear Teknik', 'Rayovac', 'Duracell', 'PowerOne', 'Power One',
+  'Sonova', 'WS Audiology', 'Demant', 'GN Hearing',
+];
+
+function parseBrandModel(productName: string): { brand: string; model: string } {
+  const trimmed = productName.trim();
+  const lowerName = trimmed.toLowerCase();
+  const sorted = [...KNOWN_BRANDS].sort((a, b) => b.length - a.length);
+  for (const brand of sorted) {
+    if (lowerName.startsWith(brand.toLowerCase())) {
+      const rest = trimmed.slice(brand.length).trim();
+      const model = rest.replace(/^[-:]\s*/, '').trim();
+      return { brand, model: model || trimmed };
+    }
+  }
+  const parts = trimmed.split(/\s+/);
+  return {
+    brand: parts[0] || trimmed,
+    model: parts.length > 1 ? parts.slice(1).join(' ') : trimmed,
+  };
+}
+
 export function UtsWorkbench() {
   const isMobile = useIsMobile();
   const qc = useQueryClient();
   const { data: utsConfig } = useUtsConfig();
+  const { success: showSuccessToast, error: showErrorToast } = useToastHelpers();
+  const addToInventoryMutation = useAddUtsSerialToInventory();
   const [activeTab, setActiveTab] = useState<TabKey>('owned');
   const [search, setSearch] = useState('');
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
   const [selectedState, setSelectedState] = useState<UtsSerialState | null>(null);
   const [selectedStates, setSelectedStates] = useState<UtsSerialState[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [inventoryConfirm, setInventoryConfirm] = useState<{
+    serialKey: string;
+    productName: string;
+    brand: string;
+    model: string;
+  } | null>(null);
 
   const query = useUtsSerialStates({
     status: activeTab,
@@ -40,18 +74,11 @@ export function UtsWorkbench() {
   });
 
   const rawItems = useMemo(() => query.data?.items || [], [query.data?.items]);
-  // For "Üstümdeki Cihazlar" tab, only show items verified through UTS (query, sync, alma, verme)
-  // For "Alma Bekleyenler" tab, show all pending items
-  const items = useMemo(() => {
-    if (activeTab === 'owned') {
-      return rawItems.filter((item) => UTS_VERIFIED_MOVEMENT_TYPES.includes(item.lastMovementType || ''));
-    }
-    return rawItems;
-  }, [rawItems, activeTab]);
+  const items = rawItems;
   const total = items.length;
   const ownedAllItems = useUtsSerialStates({ status: 'owned' }).data?.items || [];
-  const ownedCount = ownedAllItems.filter((item) => UTS_VERIFIED_MOVEMENT_TYPES.includes(item.lastMovementType || '')).length;
-  const unverifiedCount = ownedAllItems.length - ownedCount;
+  const ownedCount = ownedAllItems.length;
+  const unverifiedCount = ownedAllItems.filter((item) => !UTS_VERIFIED_MOVEMENT_TYPES.includes(item.lastMovementType || '')).length;
   const pendingCount = useUtsSerialStates({ status: 'pending_receipt' }).data?.total || 0;
 
   useEffect(() => {
@@ -62,6 +89,32 @@ export function UtsWorkbench() {
     setSelectedStates([]);
     setSelectedState(item);
     setIsModalOpen(true);
+  };
+
+  const handleOpenAddToInventory = (record: UtsSerialState) => {
+    const name = record.productName || record.inventoryName || '';
+    const { brand, model } = parseBrandModel(name);
+    setInventoryConfirm({
+      serialKey: record.serialKey,
+      productName: name,
+      brand,
+      model,
+    });
+  };
+
+  const handleConfirmAddToInventory = async () => {
+    if (!inventoryConfirm) return;
+    try {
+      const result = await addToInventoryMutation.mutateAsync({
+        serialKey: inventoryConfirm.serialKey,
+        brand: inventoryConfirm.brand || undefined,
+        model: inventoryConfirm.model || undefined,
+      });
+      showSuccessToast(result.message || 'Envantere eklendi');
+      setInventoryConfirm(null);
+    } catch (error) {
+      showErrorToast((error as Error)?.message || 'Envantere eklenemedi');
+    }
   };
 
   const selectedItems = useMemo(
@@ -153,23 +206,52 @@ export function UtsWorkbench() {
       ),
     },
     {
+      key: 'inventory',
+      title: 'Envanter',
+      render: (_value: unknown, record: UtsSerialState) => (
+        record.inventoryId ? (
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+            <Package className="h-3 w-3" />
+            Envanterde
+          </span>
+        ) : null
+      ),
+    },
+    {
       key: 'actions',
       title: 'Islem',
       render: (_value: unknown, record: UtsSerialState) => (
-        <Button
-          variant="outline"
-          size="sm"
-          className="rounded-full"
-          onClick={(event) => {
-            event.stopPropagation();
-            setSelectedState(record);
-            setSelectedStates([]);
-            setIsModalOpen(true);
-          }}
-        >
-          <Send className="mr-1 h-3.5 w-3.5" />
-          {activeTab === 'owned' ? 'Verme Bildir' : 'Alma Bildir'}
-        </Button>
+        <div className="flex items-center gap-2">
+          {!record.inventoryId && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full"
+              disabled={addToInventoryMutation.isPending}
+              onClick={(event) => {
+                event.stopPropagation();
+                handleOpenAddToInventory(record);
+              }}
+            >
+              <Package className="mr-1 h-3.5 w-3.5" />
+              Envantere Ekle
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-full"
+            onClick={(event) => {
+              event.stopPropagation();
+              setSelectedState(record);
+              setSelectedStates([]);
+              setIsModalOpen(true);
+            }}
+          >
+            <Send className="mr-1 h-3.5 w-3.5" />
+            {activeTab === 'owned' ? 'Verme Bildir' : 'Alma Bildir'}
+          </Button>
+        </div>
       ),
     },
   ], [activeTab, items, selectedKeys]);
@@ -205,7 +287,25 @@ export function UtsWorkbench() {
               <p className="font-medium text-slate-700">{item.institutionNumber || '-'}</p>
             </div>
           </div>
-          <div className="mt-3 flex justify-end border-t border-slate-100 pt-3">
+          <div className="mt-3 flex flex-wrap items-center justify-end gap-2 border-t border-slate-100 pt-3">
+            {item.inventoryId && (
+              <span className="mr-auto inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+                <Package className="h-3 w-3" />
+                Envanterde
+              </span>
+            )}
+            {!item.inventoryId && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full"
+                disabled={addToInventoryMutation.isPending}
+                onClick={() => handleOpenAddToInventory(item)}
+              >
+                <Package className="mr-1 h-3.5 w-3.5" />
+                Envantere Ekle
+              </Button>
+            )}
             <Button variant="outline" size="sm" className="rounded-full" onClick={() => handleOpen(item)}>
               <Send className="mr-1 h-3.5 w-3.5" />
               {activeTab === 'owned' ? 'Verme Bildir' : 'Alma Bildir'}
@@ -340,6 +440,55 @@ export function UtsWorkbench() {
           Bu sekmede {total} kayit listeleniyor.
         </div>
       </div>
+
+      {/* Envantere Ekle Onay Modalı */}
+      {inventoryConfirm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onMouseDown={(e) => { if (e.target === e.currentTarget) setInventoryConfirm(null); }}
+        >
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl" onMouseDown={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Envantere Ekle</h3>
+            <p className="text-sm text-gray-500 mb-4">Ürün bilgilerini kontrol edin ve gerekirse düzenleyin.</p>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Ürün Adı (UTS)</label>
+                <Input type="text" value={inventoryConfirm.productName} disabled className="bg-gray-50 text-gray-700 w-full" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Marka</label>
+                <Input
+                  type="text"
+                  value={inventoryConfirm.brand}
+                  onChange={(e) => setInventoryConfirm({ ...inventoryConfirm, brand: e.target.value })}
+                  placeholder="Marka adı"
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Model</label>
+                <Input
+                  type="text"
+                  value={inventoryConfirm.model}
+                  onChange={(e) => setInventoryConfirm({ ...inventoryConfirm, model: e.target.value })}
+                  placeholder="Model adı"
+                  className="w-full"
+                />
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setInventoryConfirm(null)}>İptal</Button>
+              <Button
+                onClick={() => void handleConfirmAddToInventory()}
+                disabled={addToInventoryMutation.isPending}
+              >
+                <Check className="mr-1 h-4 w-4" />
+                {addToInventoryMutation.isPending ? 'Ekleniyor...' : 'Onayla ve Ekle'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <UtsSerialStatusModal
         isOpen={isModalOpen}

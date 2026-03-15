@@ -43,6 +43,8 @@ export function UtsSettingsPanel() {
   const [memberNumber, setMemberNumber] = useState('');
   const [notificationMode, setNotificationMode] = useState<'manual' | 'outbox'>('outbox');
   const [autoSendNotifications, setAutoSendNotifications] = useState(false);
+  const [autoAddToInventoryOnAlma, setAutoAddToInventoryOnAlma] = useState(false);
+  const [autoDecreaseStockOnVerme, setAutoDecreaseStockOnVerme] = useState(false);
   const [baseUrlOverride, setBaseUrlOverride] = useState('');
   const [showIdentityOverrides, setShowIdentityOverrides] = useState(false);
   const [notificationTemplates, setNotificationTemplates] = useState<Record<string, UtsMessageTemplate>>({
@@ -74,6 +76,8 @@ export function UtsSettingsPanel() {
     setMemberNumber(config.memberNumber || '');
     setNotificationMode(config.notificationMode);
     setAutoSendNotifications(config.autoSendNotifications);
+    setAutoAddToInventoryOnAlma(config.autoAddToInventoryOnAlma ?? false);
+    setAutoDecreaseStockOnVerme(config.autoDecreaseStockOnVerme ?? false);
     setBaseUrlOverride(config.baseUrl === (config.environment === 'prod'
       ? 'https://utsuygulama.saglik.gov.tr/UTS'
       : 'https://utstest.saglik.gov.tr/UTS')
@@ -141,6 +145,8 @@ export function UtsSettingsPanel() {
         memberNumber,
         notificationMode,
         autoSendNotifications,
+        autoAddToInventoryOnAlma,
+        autoDecreaseStockOnVerme,
         baseUrlOverride: baseUrlOverride.trim() || undefined,
         notificationTemplates,
       });
@@ -369,6 +375,36 @@ export function UtsSettingsPanel() {
                   <span className="block text-xs text-slate-500">Su an yalnizca ayar olarak saklanir; alma-verme worker baglanacak.</span>
                 </span>
               </label>
+
+              <div className="mt-2 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-3 space-y-3">
+                <p className="text-xs font-semibold text-emerald-800">Envanter Otomasyonu</p>
+                <label className="flex items-start gap-3">
+                  <input
+                    data-allow-raw="true"
+                    type="checkbox"
+                    checked={autoAddToInventoryOnAlma}
+                    onChange={(event) => setAutoAddToInventoryOnAlma(event.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                  />
+                  <span>
+                    <span className="block text-sm font-medium text-slate-800">Alma bildiriminde envantere otomatik ekle</span>
+                    <span className="block text-xs text-slate-500">Alma bildirimi yapilan urunler envanterde yoksa otomatik olusturulur, varsa stok artar ve seri no eklenir.</span>
+                  </span>
+                </label>
+                <label className="flex items-start gap-3">
+                  <input
+                    data-allow-raw="true"
+                    type="checkbox"
+                    checked={autoDecreaseStockOnVerme}
+                    onChange={(event) => setAutoDecreaseStockOnVerme(event.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                  />
+                  <span>
+                    <span className="block text-sm font-medium text-slate-800">Verme bildiriminde stoku otomatik azalt</span>
+                    <span className="block text-xs text-slate-500">Verme bildirimi yapilan urunlerin stoku azalir ve ilgili seri no envanter listesinden cikarilir.</span>
+                  </span>
+                </label>
+              </div>
 
               <label className="space-y-2">
                 <span className="text-sm font-medium text-slate-700">Bildirim modu</span>

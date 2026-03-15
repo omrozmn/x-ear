@@ -50,6 +50,8 @@ class UtsConfigUpdate(AppBaseModel):
     notification_mode: Literal["manual", "outbox"] = "outbox"
     base_url_override: Optional[str] = None
     notification_templates: Dict[str, "UtsMessageTemplate"] = Field(default_factory=dict, alias="notificationTemplates")
+    auto_add_to_inventory_on_alma: bool = Field(default=False, alias="autoAddToInventoryOnAlma")
+    auto_decrease_stock_on_verme: bool = Field(default=False, alias="autoDecreaseStockOnVerme")
 
 
 class UtsConnectionTestResult(AppBaseModel):
@@ -95,6 +97,8 @@ class UtsConfigRead(AppBaseModel):
     public_ip_detected_at: Optional[datetime] = Field(default=None, alias="publicIpDetectedAt")
     token_setup_steps: List[str] = Field(default_factory=list, alias="tokenSetupSteps")
     notification_templates: Dict[str, "UtsMessageTemplate"] = Field(default_factory=dict, alias="notificationTemplates")
+    auto_add_to_inventory_on_alma: bool = Field(default=False, alias="autoAddToInventoryOnAlma")
+    auto_decrease_stock_on_verme: bool = Field(default=False, alias="autoDecreaseStockOnVerme")
     sync: UtsSyncStatus = Field(alias="sync")
 
 
@@ -138,6 +142,8 @@ class UtsTekilUrunQueryResponse(AppBaseModel):
     success: bool
     items: List[UtsTekilUrunRecord]
     message: Optional[str] = None
+    is_owned: Optional[bool] = Field(default=None, alias="isOwned")
+    our_member_number: Optional[str] = Field(default=None, alias="ourMemberNumber")
     queried_product_numbers: List[str] = Field(default_factory=list, alias="queriedProductNumbers")
     raw_response: Optional[Dict[str, Any]] = Field(default=None, alias="rawResponse")
 
@@ -236,6 +242,22 @@ class UtsAlmaBekleyenlerSyncResponse(AppBaseModel):
     synced: int
     total: int
     message: Optional[str] = None
+
+
+class UtsAddToInventoryRequest(AppBaseModel):
+    serial_key: str = Field(alias="serialKey")
+    brand: Optional[str] = None
+    model: Optional[str] = None
+
+
+class UtsAddToInventoryResponse(AppBaseModel):
+    success: bool
+    message: Optional[str] = None
+    inventory_id: Optional[str] = Field(default=None, alias="inventoryId")
+    created: bool = False
+    serial_added: bool = Field(default=False, alias="serialAdded")
+    stock_updated: bool = Field(default=False, alias="stockUpdated")
+    barcode_updated: bool = Field(default=False, alias="barcodeUpdated")
 
 
 UtsConfigUpdate.model_rebuild()

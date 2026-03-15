@@ -113,17 +113,28 @@ Tarih: `14 Mart 2026`
 ### 6. Tekil ürün sorgulama
 
 - Endpoint:
-  - `/uh/rest/tekilUrun/hastaninVucudundanCikarma/tekilUrunBilgileri/sorgula`
+  - `/uh/rest/tekilUrun/sorgula`
 - Durum:
-  - `KISMEN DOGRULANDI`
+  - `CANLI DOGRULANDI`
 - Amaç:
-  - ürün numarası + seri/lot ile tekil ürün kaydını sorgular
+  - kurum/firma üzerindeki tekil ürünleri sorgular (UNO + SNO/LNO)
 - x-ear akışı:
   - seri no satırındaki UTS badge
   - UTS durum modalı
+- İstek alanları:
+  - `UNO` (zorunlu) - Ürün numarası/barkod
+  - `SNO` (koşullu) - Seri numarası (seri takipli ürünler için)
+  - `LNO` (koşullu) - Lot numarası (lot takipli ürünler için)
+- Cevap alanları:
+  - `SNC` listesi: UTP, UNO, LNO, SNO, ADT, URT, SKT, ITT, UIK, UAK, SKG, KKG, UDI, MME
+  - `MSJ` listesi: TIP, MET, KOD, MPA
+- Sahiplik mantığı:
+  - Bu endpoint yalnızca authenticated kurumun üzerindeki ürünleri döndürür
+  - Sonuç dönüyorsa → ürün bizde, dönmüyorsa → bizde değil
+  - Response'ta `KUN` (kurum numarası) alanı YOKTUR, karşılaştırma yapılamaz
 - Not:
-  - aynı ürün bazı UI ekranlarında görünürken sistem token ile bu endpointte tutarsız davranış görüldü
-  - bu yüzden tek başına "kesin sahiplik kaynağı" olarak güvenilmiyor
+  - Resmi PDF dokümanı: UTS-PRJ-TakipVeIzlemeWebServisTanimlariDokumani, Bölüm 3.4.1
+  - Kaynak: `https://uts.saglik.gov.tr/wp-content/uploads/2021/UTS-PRJ-TakipVeIzlemeWebServisTanimlariDokumani.pdf`
 
 ## x-ear için Nihai Operasyon Haritası
 

@@ -56,6 +56,34 @@ def _resolve_tenant(access: UnifiedAccess) -> str:
 _REFERENCE_CACHE_TTL_SECONDS = 60 * 60 * 12
 _reference_cache: dict[str, tuple[datetime, object]] = {}
 
+# ── PDF cache helpers ──────────────────────────────────────────────────────────
+_PDF_CACHE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "instance", "pdf_cache"))
+
+def _get_cached_pdf(invoice_id: int, birfatura_uuid: str | None) -> bytes | None:
+    """Return cached PDF bytes if available, else None."""
+    if not birfatura_uuid:
+        return None
+    path = os.path.join(_PDF_CACHE_DIR, f"{birfatura_uuid}.pdf")
+    if os.path.isfile(path):
+        try:
+            with open(path, "rb") as f:
+                data = f.read()
+            if data[:4] == b"%PDF":
+                return data
+        except Exception:
+            pass
+    return None
+
+def _save_pdf_cache(birfatura_uuid: str, pdf_bytes: bytes) -> None:
+    """Persist PDF bytes to disk cache."""
+    try:
+        os.makedirs(_PDF_CACHE_DIR, exist_ok=True)
+        path = os.path.join(_PDF_CACHE_DIR, f"{birfatura_uuid}.pdf")
+        with open(path, "wb") as f:
+            f.write(pdf_bytes)
+    except Exception as e:
+        logger.debug("Failed to cache PDF for %s: %s", birfatura_uuid, e)
+
 # ── Invoice type / UBL helpers for copy/draft ──────────────────────────────────
 _DOC_TYPE_TO_FORM = {
     "SATIS": "0", "IADE": "50", "ISTISNA": "13",
@@ -79,7 +107,26 @@ _LINE_EXT_KEYS = (
     "lineWithholding",
     "specialBaseData", "specialTaxBase",
     "sgkCode", "serviceCode", "aliciStokKodu",
+    "description", "gtipCode",
 )
+
+# UBL unit codes → form unit values (Turkish)
+_UBL_UNIT_TO_FORM: dict[str, str] = {
+    "MON": "Ay", "ANN": "Yıl", "DAY": "Gün", "HUR": "Saat",
+    "NIU": "Adet", "C62": "Adet", "EA": "Adet",
+    "KGM": "Kg", "TNE": "Ton", "LTR": "Lt",
+    "MTR": "M", "MTK": "M2", "MTQ": "M3",
+    "XPK": "Paket", "BX": "Kutu", "KT": "Takım", "XCS": "Koli",
+    "PR": "Kişi",
+    # Uppercase/lowercase variants
+    "ADET": "Adet", "AY": "Ay",
+}
+
+def _normalize_unit(unit: str) -> str:
+    """Map UBL unit codes to form-friendly Turkish unit names."""
+    if not unit:
+        return "Adet"
+    return _UBL_UNIT_TO_FORM.get(unit, unit)
 
 
 def _ubl_val(obj, default=""):
@@ -191,7 +238,7 @@ def _extract_items_from_raw(raw: dict) -> list[dict]:
     if isinstance(ubl_lines, dict):
         ubl_lines = [ubl_lines]
     if ubl_lines:
-        unit_map = {"C62": "Adet", "KGM": "Kg", "LTR": "Litre", "MTR": "Metre", "BX": "Kutu", "PR": "Çift"}
+        unit_map = _UBL_UNIT_TO_FORM
         items = []
         for line in ubl_lines:
             item_obj = line.get("Item") or {}
@@ -317,6 +364,25 @@ def _extract_type_specific_data(raw: dict) -> dict:
     withholding = raw.get("withholdingData") or raw.get("withholding_data")
     if isinstance(withholding, dict) and withholding:
         extra["withholdingData"] = withholding
+    # UBL WithholdingTaxTotal (document-level fallback)
+    if not withholding:
+        wh_total = raw.get("WithholdingTaxTotal")
+        if wh_total:
+            if isinstance(wh_total, dict):
+                wh_total = [wh_total]
+            if isinstance(wh_total, list) and wh_total:
+                wh_sub_list = (wh_total[0] or {}).get("TaxSubtotal", [])
+                if isinstance(wh_sub_list, dict):
+                    wh_sub_list = [wh_sub_list]
+                if wh_sub_list:
+                    wh_sub = wh_sub_list[0]
+                    tc = (wh_sub.get("TaxCategory") or {})
+                    ts = (tc.get("TaxScheme") or {})
+                    extra["withholdingData"] = {
+                        "rate": float(_ubl_val(wh_sub.get("Percent", {}), 0)),
+                        "code": _ubl_val(ts.get("TaxTypeCode", {}), ""),
+                        "name": _ubl_val(ts.get("Name", {}), ""),
+                    }
 
     # Government fields
     for gk in ("governmentPayingCustomer", "governmentExemptionReason", "governmentExportRegisteredReason"):
@@ -332,17 +398,21 @@ def _extract_type_specific_data(raw: dict) -> dict:
     ret = raw.get("returnInvoiceDetails") or raw.get("return_invoice_details")
     if isinstance(ret, dict) and ret:
         extra["returnInvoiceDetails"] = ret
-    # UBL BillingReference
-    billing_ref = raw.get("BillingReference") or {}
-    if isinstance(billing_ref, dict) and not ret:
-        inv_ref = billing_ref.get("InvoiceDocumentReference") or {}
-        ref_id = _ubl_val(inv_ref.get("ID", {}))
-        ref_date = _ubl_val(inv_ref.get("IssueDate", {}))
-        if ref_id:
-            extra["returnInvoiceDetails"] = {
-                "returnInvoiceNumber": ref_id,
-                "returnInvoiceDate": ref_date,
-            }
+    # UBL BillingReference (can be a dict or a list of dicts)
+    billing_ref = raw.get("BillingReference")
+    if billing_ref and not ret:
+        # Normalize to single dict (take first element if list)
+        if isinstance(billing_ref, list):
+            billing_ref = billing_ref[0] if billing_ref else {}
+        if isinstance(billing_ref, dict):
+            inv_ref = billing_ref.get("InvoiceDocumentReference") or {}
+            ref_id = _ubl_val(inv_ref.get("ID", {}))
+            ref_date = _ubl_val(inv_ref.get("IssueDate", {}))
+            if ref_id:
+                extra["returnInvoiceDetails"] = {
+                    "returnInvoiceNumber": ref_id,
+                    "returnInvoiceDate": ref_date,
+                }
 
     # Special tax base
     stb = raw.get("specialTaxBase") or raw.get("special_tax_base")
@@ -456,6 +526,16 @@ def _build_form_data_from_raw(raw: dict, original) -> dict:
     if src:
         form_data.update(_extract_type_specific_data(src))
     form_data.update(_extract_type_specific_data(raw))
+
+    # Normalize UBL unit codes → form values
+    if form_data.get("items"):
+        for fi in form_data["items"]:
+            if fi.get("unit"):
+                fi["unit"] = _normalize_unit(fi["unit"])
+
+    # Ensure SGK additionalInfo default
+    if form_data.get("sgkData") and isinstance(form_data["sgkData"], dict):
+        form_data["sgkData"].setdefault("additionalInfo", "E")
 
     return form_data
 
@@ -910,11 +990,17 @@ def _get_provider_pdf_link_for_invoice(invoice: "PurchaseInvoice", tenant_id: st
         return None
 
     raw_data = raw_data or {}
+    # Check cached _provider_response (outgoing invoices)
     provider_response = raw_data.get("_provider_response") if isinstance(raw_data, dict) else None
     if isinstance(provider_response, dict):
         cached_link = _extract_http_link(provider_response.get("pdfLink"))
         if cached_link:
             return cached_link
+
+    # Check previously cached PDF link (incoming invoices, saved after first API call)
+    cached_pdf_link = raw_data.get("_cached_pdf_link") if isinstance(raw_data, dict) else None
+    if isinstance(cached_pdf_link, str) and cached_pdf_link.startswith("http"):
+        return cached_pdf_link
 
     is_real_birfatura_uuid = (
         invoice.birfatura_uuid
@@ -932,7 +1018,20 @@ def _get_provider_pdf_link_for_invoice(invoice: "PurchaseInvoice", tenant_id: st
     })
     if not pdf_link_resp.get("Success"):
         return None
-    return _extract_http_link(pdf_link_resp.get("Result"))
+    link = _extract_http_link(pdf_link_resp.get("Result"))
+
+    # Cache the link in raw_data so subsequent calls skip the API
+    if link:
+        try:
+            current_raw = invoice.raw_data if isinstance(invoice.raw_data, dict) else {}
+            current_raw["_cached_pdf_link"] = link
+            invoice.raw_data = current_raw
+            db.add(invoice)
+            db.commit()
+        except Exception:
+            db.rollback()
+
+    return link
 
 
 def _render_minimal_pdf(invoice: "PurchaseInvoice") -> bytes:
@@ -1392,6 +1491,13 @@ def get_invoice_document(
                         headers={"Content-Disposition": f'inline; filename="{filename}"'})
 
     if format == "pdf":
+        # Check filesystem cache first (instant)
+        cached_pdf = _get_cached_pdf(invoice_id, invoice.birfatura_uuid)
+        if cached_pdf and render_mode not in ("direct",):
+            filename = f"{invoice.invoice_number or invoice_id}.pdf"
+            return Response(content=cached_pdf, media_type="application/pdf",
+                            headers={"Content-Disposition": f'inline; filename="{filename}"'})
+
         provider_pdf_link = _get_provider_pdf_link_for_invoice(invoice, tenant_id, db, raw_data if isinstance(raw_data, dict) else {})
         system_type_code = str(raw_data.get("systemType") or raw_data.get("systemTypeCode") or "EFATURA")
 
@@ -1470,31 +1576,47 @@ def get_invoice_document(
                     except Exception as e:
                         logger.warning(f"BirFatura preview from outbox XML failed for invoice {invoice_id}: {e}")
 
-        # -- Step B: For real BirFatura invoices, download XML then convert --
+        # -- Step B: For real BirFatura invoices, download PDF via link --
         if _is_real_birfatura_uuid:
+            # Reuse provider_pdf_link already fetched above (avoid duplicate API call)
+            if provider_pdf_link:
+                try:
+                    pdf_link_response = requests.get(provider_pdf_link, timeout=30)
+                    pdf_link_response.raise_for_status()
+                    if pdf_link_response.content[:4] == b"%PDF":
+                        pdf_bytes = pdf_link_response.content
+                except Exception as e:
+                    logger.warning(f"BirFatura direct PDF link download failed for invoice {invoice_id}: {e}")
+
+        # -- Step B2: Try direct PDF download via DocumentDownloadByUUID (single API call) --
+        if _is_real_birfatura_uuid and not pdf_bytes:
             try:
                 client = _get_birfatura_client(tenant_id, db)
-                pdf_link_resp = client.get_pdf_link_by_uuid({
-                    "uuids": [invoice.birfatura_uuid],
-                    "systemType": system_type_code,
+                pdf_resp = client.document_download_by_uuid({
+                    "documentUUID": invoice.birfatura_uuid,
+                    "inOutCode": in_out_code,
+                    "systemTypeCodes": system_type_code,
+                    "fileExtension": "PDF"
                 })
-                if pdf_link_resp.get("Success"):
-                    pdf_links = pdf_link_resp.get("Result") or []
-                    first_link = str(pdf_links[0]).strip() if pdf_links else ""
-                    if first_link:
-                        pdf_link_response = requests.get(first_link, timeout=30)
-                        pdf_link_response.raise_for_status()
-                        if pdf_link_response.content[:4] == b"%PDF":
-                            pdf_bytes = pdf_link_response.content
-                else:
-                    logger.warning(
-                        "GetPDFLinkByUUID failed for invoice %s: %s",
-                        invoice_id,
-                        pdf_link_resp.get("Message"),
-                    )
+                if pdf_resp.get("Success") and pdf_resp.get("Result", {}).get("content"):
+                    pdf_raw = base64.b64decode(pdf_resp["Result"]["content"])
+                    if pdf_raw[:4] == b"%PDF":
+                        pdf_bytes = pdf_raw
+                    elif pdf_raw[:2] == b"PK":
+                        zf = zipfile.ZipFile(io.BytesIO(pdf_raw))
+                        names = zf.namelist()
+                        if names:
+                            pdf_bytes = zf.read(names[0])
+                    elif len(pdf_raw) > 10:
+                        # Might be gzipped
+                        try:
+                            pdf_bytes = gzip.decompress(pdf_raw)
+                        except Exception:
+                            pass
             except Exception as e:
-                logger.warning(f"BirFatura direct PDF link failed for invoice {invoice_id}: {e}")
+                logger.warning(f"Direct PDF download failed for invoice {invoice_id}: {e}")
 
+        # -- Step B3 (fallback): Download XML then render to PDF via PreviewDocumentReturnPDF --
         if _is_real_birfatura_uuid and not pdf_bytes:
             try:
                 client = _get_birfatura_client(tenant_id, db)
@@ -1548,6 +1670,9 @@ def get_invoice_document(
                     logger.warning(f"BirFatura preview from local XML (fallback) failed for invoice {invoice_id}: {e}")
 
         if pdf_bytes:
+            # Cache for instant access next time
+            if invoice.birfatura_uuid:
+                _save_pdf_cache(invoice.birfatura_uuid, pdf_bytes)
             filename = f"{invoice.invoice_number or invoice_id}.pdf"
             return Response(content=pdf_bytes, media_type="application/pdf",
                             headers={"Content-Disposition": f'inline; filename="{filename}"'})
@@ -2094,6 +2219,41 @@ def update_invoice_draft(
     )
 
 
+@router.delete("/draft/{draft_id}",
+               operation_id="deleteInvoiceDraft",
+               response_model=ResponseEnvelope[InvoiceActionResponse])
+def delete_invoice_draft(
+    draft_id: int,
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access("invoices.view"))
+):
+    """Delete an invoice draft."""
+    tenant_id = _resolve_tenant(access)
+    draft = db.query(PurchaseInvoice).filter(
+        PurchaseInvoice.id == draft_id,
+        PurchaseInvoice.tenant_id == tenant_id,
+        PurchaseInvoice.status == "DRAFT"
+    ).first()
+    if not draft:
+        raise HTTPException(status_code=404, detail="Draft not found")
+
+    try:
+        # Delete associated items first
+        db.query(PurchaseInvoiceItem).filter_by(purchase_invoice_id=draft.id).delete()
+        db.delete(draft)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error deleting invoice draft {draft_id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to delete draft")
+
+    return ResponseEnvelope(
+        success=True,
+        data=InvoiceActionResponse(invoice_id=draft_id, success=True, message="Taslak silindi"),
+        message="Draft deleted"
+    )
+
+
 @router.get("/draft/{draft_id}",
             operation_id="getInvoiceDraft",
             response_model=ResponseEnvelope[InvoiceDraftResponse])
@@ -2123,6 +2283,16 @@ def get_invoice_draft(
         # BirFatura-sourced draft: use unified extraction from any raw_data format
         form_data = _build_form_data_from_raw(raw, draft)
 
+    # Normalize UBL unit codes → form values (MON→Ay, NIU→Adet, etc.)
+    if form_data.get("items"):
+        for fi in form_data["items"]:
+            if isinstance(fi, dict) and fi.get("unit"):
+                fi["unit"] = _normalize_unit(fi["unit"])
+
+    # Ensure SGK additionalInfo has a default value
+    if form_data.get("sgkData") and isinstance(form_data["sgkData"], dict):
+        form_data["sgkData"].setdefault("additionalInfo", "E")
+
     return ResponseEnvelope(
         success=True,
         data=InvoiceDraftResponse(draft_id=draft.id, form_data=form_data)
@@ -2147,18 +2317,47 @@ def copy_invoice(
         raise HTTPException(status_code=404, detail="Invoice not found")
 
     raw = original.raw_data if isinstance(original.raw_data, dict) else (original.raw_data or {})
+    # If raw_data is a JSON string, parse it
+    if isinstance(raw, str):
+        try:
+            import json as _json_mod
+            raw = _json_mod.loads(raw)
+        except Exception:
+            raw = {}
 
     # --- Build form_data for the draft ---
     # Priority: existing form data > BirFatura raw_data mapping > DB fields
     if raw.get("_source_form_data") and isinstance(raw["_source_form_data"], dict):
-        # Original was itself a copy with form data
-        form_data = dict(raw["_source_form_data"])
+        # Original was itself a copy with form data — deep copy to avoid reference issues
+        import copy as _copy_mod
+        form_data = _copy_mod.deepcopy(raw["_source_form_data"])
     elif raw.get("_is_form_draft"):
         # Original was a form-created draft
         form_data = {k: v for k, v in raw.items() if k != "_is_form_draft"}
     else:
         # BirFatura-synced or any other format: unified extraction
         form_data = _build_form_data_from_raw(raw, original)
+
+    # Always extract type-specific data (SGK, withholding, export, etc.) from raw
+    # and merge into form_data — ensures sgkData, period info, etc. are never lost
+    # Check both top-level raw AND _source_form_data (sgkData lives inside _source_form_data)
+    type_data = _extract_type_specific_data(raw)
+    src_fd = raw.get("_source_form_data")
+    if isinstance(src_fd, dict):
+        src_type_data = _extract_type_specific_data(src_fd)
+        for key, val in src_type_data.items():
+            if key not in type_data or not type_data[key]:
+                type_data[key] = val
+            elif key == "sgkData" and isinstance(val, dict) and isinstance(type_data.get(key), dict):
+                for sk, sv in val.items():
+                    type_data[key].setdefault(sk, sv)
+    for key, val in type_data.items():
+        if key not in form_data or not form_data[key]:
+            form_data[key] = val
+        elif key == "sgkData" and isinstance(val, dict) and isinstance(form_data.get(key), dict):
+            # Merge sgkData fields without overwriting existing ones
+            for sk, sv in val.items():
+                form_data[key].setdefault(sk, sv)
 
     # Build items from PurchaseInvoiceItem records (if any and form_data has none)
     original_items = db.query(PurchaseInvoiceItem).filter_by(purchase_invoice_id=original.id).all()
@@ -2200,6 +2399,29 @@ def copy_invoice(
             "taxAmount": float(original.tax_amount or 0),
             "total": float(original.total_amount or 0),
         }]
+
+    # Enrich form_data items from PurchaseInvoiceItem records if names/units are empty
+    if original_items and form_data.get("items"):
+        form_items = form_data["items"]
+        for idx, fi in enumerate(form_items):
+            if idx < len(original_items):
+                db_item = original_items[idx]
+                if not fi.get("name") and db_item.product_name:
+                    fi["name"] = db_item.product_name
+                if fi.get("unit") == "Adet" and db_item.unit and db_item.unit != "Adet":
+                    fi["unit"] = db_item.unit
+                if not fi.get("description") and db_item.product_description:
+                    fi["description"] = db_item.product_description
+
+    # Normalize UBL unit codes to form-friendly Turkish values (MON→Ay, NIU→Adet, etc.)
+    if form_data.get("items"):
+        for fi in form_data["items"]:
+            if fi.get("unit"):
+                fi["unit"] = _normalize_unit(fi["unit"])
+
+    # Ensure SGK additionalInfo has a default value
+    if form_data.get("sgkData") and isinstance(form_data["sgkData"], dict):
+        form_data["sgkData"].setdefault("additionalInfo", "E")
 
     # Store totals in form_data
     form_data.setdefault("totalAmount", float(original.total_amount or 0))

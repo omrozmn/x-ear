@@ -4,7 +4,7 @@ import { FeatureGate } from '../components/common/FeatureGate';
 
 function GatedUTSPage() {
   return (
-    <FeatureGate featureKey="uts_integration">
+    <FeatureGate featureKey="uts">
       <UtsWorkbench />
     </FeatureGate>
   );
