@@ -81,7 +81,7 @@ class InvoiceSyncService:
         if not end_date:
             end_date = datetime.now(timezone.utc)
         if not start_date:
-            start_date = end_date - timedelta(days=7)
+            start_date = end_date - timedelta(days=730)
         
         stats = {
             'incoming': 0,
@@ -109,18 +109,48 @@ class InvoiceSyncService:
         return stats
     
     def _sync_incoming_invoices(self, tenant_id: str, start_date: datetime, end_date: datetime) -> int:
-        """Sync incoming invoices from suppliers"""
+        """Sync incoming invoices from suppliers.
+        
+        BirFatura API does not reliably return all invoices for wide date ranges,
+        so we split into monthly windows to ensure complete coverage.
+        """
+        total_count = 0
+
+        for chunk_start, chunk_end in self._month_chunks(start_date, end_date):
+            chunk_count = self._fetch_incoming_chunk(tenant_id, chunk_start, chunk_end)
+            total_count += chunk_count
+
+        self.db.commit()
+        self._run_automation(tenant_id)
+        return total_count
+
+    @staticmethod
+    def _month_chunks(start_date: datetime, end_date: datetime):
+        """Yield (start, end) tuples for each calendar month in the range."""
+        current = start_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        if current.tzinfo is None:
+            current = current.replace(tzinfo=timezone.utc)
+        if end_date.tzinfo is None:
+            end_date = end_date.replace(tzinfo=timezone.utc)
+
+        while current < end_date:
+            next_month = (current.replace(day=28) + timedelta(days=4)).replace(day=1)
+            chunk_end = min(next_month, end_date)
+            chunk_start = max(current, start_date)
+            yield chunk_start, chunk_end
+            current = next_month
+
+    def _fetch_incoming_chunk(self, tenant_id: str, start_date: datetime, end_date: datetime) -> int:
+        """Fetch incoming invoices for a single date chunk with pagination."""
         count = 0
         page = 1
         page_size = 50
         
         while True:
-            # Fetch page of invoices
             params = {
                 'systemType': 'EFATURA',
                 'startDateTime': start_date.isoformat(),
                 'endDateTime': end_date.isoformat(),
-                'documentType': 'INVOICE',
                 'pageNumber': page,
                 'pageSize': page_size,
             }
@@ -131,7 +161,6 @@ class InvoiceSyncService:
                 logger.error(f"API Error: {response.get('Message')}")
                 break
             
-            # Extract invoices from response
             result = response.get('Result', {})
             inbox_invoices = result.get('InBoxInvoices', {})
             invoices = inbox_invoices.get('objects', [])
@@ -139,10 +168,8 @@ class InvoiceSyncService:
             if not invoices:
                 break
             
-            # Process each invoice
             for raw_obj in invoices:
                 try:
-                    # WithDetail wraps as {inBoxInvoice: {...}, jsonData: "..."}
                     inbox_inv = raw_obj.get('inBoxInvoice', raw_obj)
                     json_data_str = raw_obj.get('jsonData')
                     
@@ -156,9 +183,7 @@ class InvoiceSyncService:
                     elif isinstance(json_data_str, dict):
                         parsed_detail = json_data_str
                     
-                    # Process the invoice header (uses inBoxInvoice data)
                     if self._process_incoming_invoice(tenant_id, inbox_inv):
-                        # Also extract and save line items from parsed detail
                         if parsed_detail:
                             birfatura_uuid = inbox_inv.get('UUID') or inbox_inv.get('uuid')
                             inv = self.db.query(PurchaseInvoice).filter_by(
@@ -186,33 +211,39 @@ class InvoiceSyncService:
                     logger.error(f"Error processing invoice: {e}")
                     continue
             
-            # Check if there are more pages
             total = inbox_invoices.get('total', 0)
             if page * page_size >= total:
                 break
             
             page += 1
         
-        self.db.commit()
-        
-        # Run automation after sync
-        self._run_automation(tenant_id)
-        
         return count
     
     def _sync_outgoing_invoices(self, tenant_id: str, start_date: datetime, end_date: datetime) -> int:
-        """Sync outgoing invoices (returns/corrections) to suppliers"""
+        """Sync outgoing invoices (returns/corrections) to suppliers.
+        
+        Uses monthly chunks like incoming sync for reliable coverage.
+        """
+        total_count = 0
+
+        for chunk_start, chunk_end in self._month_chunks(start_date, end_date):
+            chunk_count = self._fetch_outgoing_chunk(tenant_id, chunk_start, chunk_end)
+            total_count += chunk_count
+
+        self.db.commit()
+        return total_count
+
+    def _fetch_outgoing_chunk(self, tenant_id: str, start_date: datetime, end_date: datetime) -> int:
+        """Fetch outgoing invoices for a single date chunk with pagination."""
         count = 0
         page = 1
         page_size = 50
         
         while True:
-            # Fetch page of invoices
             params = {
                 'systemType': 'EFATURA',
                 'startDateTime': start_date.isoformat(),
                 'endDateTime': end_date.isoformat(),
-                'documentType': 'INVOICE',
                 'pageNumber': page,
                 'pageSize': page_size,
             }
@@ -223,7 +254,6 @@ class InvoiceSyncService:
                 logger.error(f"API Error: {response.get('Message')}")
                 break
             
-            # Extract invoices from response
             result = response.get('Result', {})
             outbox_documents = result.get('OutBoxEDocuments', {})
             invoices = outbox_documents.get('objects', [])
@@ -231,7 +261,6 @@ class InvoiceSyncService:
             if not invoices:
                 break
             
-            # Process each invoice
             for invoice_data in invoices:
                 try:
                     if self._process_outgoing_invoice(tenant_id, invoice_data):
@@ -240,14 +269,12 @@ class InvoiceSyncService:
                     logger.error(f"Error processing outgoing invoice: {e}")
                     continue
             
-            # Check if there are more pages
             total = outbox_documents.get('total', 0)
             if page * page_size >= total:
                 break
             
             page += 1
         
-        self.db.commit()
         return count
     
     def _process_incoming_invoice(self, tenant_id: str, invoice_data: Dict[str, Any]) -> bool:

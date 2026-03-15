@@ -31,9 +31,13 @@ def _run_sync_job():
 
         synced_tenants = 0
         for tenant in tenants:
+            # Check for credentials: per-tenant settings OR global env vars
             settings = (tenant.settings or {}).get('invoice_integration', {})
-            if not settings.get('api_key') and os.getenv('BIRFATURA_MOCK', '') != '1' and os.getenv('ENVIRONMENT', 'production') == 'production':
-                continue  # Skip tenants without credentials in production
+            has_tenant_creds = bool(settings.get('api_key'))
+            has_global_creds = bool(os.getenv('BIRFATURA_API_KEY')) and bool(os.getenv('BIRFATURA_SECRET_KEY'))
+            is_mock = os.getenv('BIRFATURA_MOCK', '') == '1'
+            if not has_tenant_creds and not has_global_creds and not is_mock:
+                continue  # Skip only when no credentials exist anywhere
 
             try:
                 svc = InvoiceSyncService(db)

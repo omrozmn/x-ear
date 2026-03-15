@@ -30,6 +30,11 @@ async function markInvoiceRead(invoiceId: number | string): Promise<void> {
   await apiClient.post(`/api/invoices/${invoiceId}/mark-read`);
 }
 
+async function syncInvoicesFromProvider(): Promise<{ incoming: number; outgoing: number }> {
+  const resp = await apiClient.post<{ data: { incoming: number; outgoing: number } }>('/api/birfatura/sync-invoices', {});
+  return resp.data?.data ?? { incoming: 0, outgoing: 0 };
+}
+
 export function IncomingInvoicesPage() {
   const isMobile = useIsMobile();
   const [searchTerm, setSearchTerm] = useState('');
@@ -52,6 +57,7 @@ export function IncomingInvoicesPage() {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const mobileLoadMoreRef = useRef<HTMLDivElement | null>(null);
 
+  const [syncLoading, setSyncLoading] = useState(false);
   const debouncedSearch = useDebounce(searchTerm, 300);
 
   useEffect(() => {
@@ -263,6 +269,24 @@ export function IncomingInvoicesPage() {
       setSelectedIds(new Set()); refetch();
     } catch { toast.error('Toplu reddetme işlemi başarısız', { id: toastId }); }
   };
+  const handleSyncFromProvider = async () => {
+    setSyncLoading(true);
+    const toastId = toast.loading('GİB\'den faturalar çekiliyor...');
+    try {
+      const stats = await syncInvoicesFromProvider();
+      const total = (stats.incoming ?? 0) + (stats.outgoing ?? 0);
+      if (total > 0) {
+        toast.success(`${stats.incoming} gelen, ${stats.outgoing} giden fatura senkronize edildi`, { id: toastId });
+      } else {
+        toast.success('Tüm faturalar güncel', { id: toastId });
+      }
+      refetch();
+    } catch {
+      toast.error('Fatura çekme işlemi başarısız', { id: toastId });
+    } finally {
+      setSyncLoading(false);
+    }
+  };
   const incomingExportHeaders = useMemo(() => ['Fatura No', 'Tedarikçi', 'VKN', 'Tutar', 'Tarih', 'Durum'], []);
 
   const getIncomingExportRows = useCallback(() => {
@@ -402,10 +426,21 @@ export function IncomingInvoicesPage() {
         icon={<ShoppingCart className="h-6 w-6" />}
         eyebrow={{ tr: 'Gelen Kuyruğu', en: 'Incoming Queue' }}
         actions={(
-          <Button variant="outline" className="flex items-center gap-2" onClick={() => refetch()}>
-            <Download size={18} />
-            Yenile
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="default"
+              className="flex items-center gap-2"
+              onClick={handleSyncFromProvider}
+              disabled={syncLoading}
+            >
+              <RefreshCw size={18} className={syncLoading ? 'animate-spin' : ''} />
+              {syncLoading ? 'Çekiliyor...' : 'Faturaları Çek'}
+            </Button>
+            <Button variant="outline" className="flex items-center gap-2" onClick={() => refetch()}>
+              <Download size={18} />
+              Yenile
+            </Button>
+          </div>
         )}
       />
 
