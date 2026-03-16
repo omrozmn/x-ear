@@ -272,6 +272,7 @@ class SaleRead(IDMixin, TimestampMixin, AppBaseModel):
     """Schema for reading a sale - matches Sale.to_dict() output"""
     party_id: str = Field(..., alias="partyId")
     product_id: Optional[str] = Field(None, alias="productId")
+    sales_owner_user_id: Optional[str] = Field(None, alias="salesOwnerUserId")
     tenant_id: Optional[str] = Field(None, alias="tenantId")
     branch_id: Optional[str] = Field(None, alias="branchId")
     
@@ -367,6 +368,7 @@ class SaleRead(IDMixin, TimestampMixin, AppBaseModel):
 class SaleCreate(AppBaseModel):
     party_id: str = Field(..., alias="partyId")
     product_id: str = Field(..., alias="productId")
+    sales_owner_user_id: Optional[str] = Field(None, alias="salesOwnerUserId")
     
     # Optional overrides
     sales_price: Optional[float] = Field(None, alias="salesPrice")
@@ -394,6 +396,7 @@ class SaleCreate(AppBaseModel):
     sale_date: Optional[datetime] = Field(None, alias="saleDate")
 
 class SaleUpdate(AppBaseModel):
+    sales_owner_user_id: Optional[str] = Field(None, alias="salesOwnerUserId")
     total_amount: Optional[float] = Field(None, alias="totalAmount")
     list_price_total: Optional[float] = Field(None, alias="listPriceTotal")
     unit_list_price: Optional[float] = Field(None, alias="unitListPrice")  # ✅ NEW: Unit price field
@@ -471,4 +474,3 @@ class PromissoryNoteRead(IDMixin, TimestampMixin, PromissoryNoteBase):
 class PromissoryNoteCollectionResponse(AppBaseModel):
     note: PromissoryNoteRead
     payment: PaymentRecordRead
-

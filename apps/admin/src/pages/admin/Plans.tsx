@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { z } from 'zod';
 import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -8,7 +9,7 @@ import { PlusIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon, ExclamationTrian
 import Pagination from '@/components/ui/Pagination';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
-import { extractPagination, isRecord, unwrapData } from '@/lib/orval-response';
+import { extractPagination, isRecord } from '@/lib/orval-response';
 
 const PLAN_TYPES = ['BASIC', 'PRO', 'ENTERPRISE', 'CUSTOM'] as const;
 const BILLING_INTERVALS = ['MONTHLY', 'YEARLY', 'QUARTERLY'] as const;
@@ -50,18 +51,28 @@ interface PlanFormState {
   isActive: boolean;
 }
 
+const planFormSchema = z.object({
+  name: z.string().min(1, 'Plan adi gerekli'),
+  price: z.number().min(0, 'Fiyat 0 veya ustu olmali'),
+  maxUsers: z.number().min(1, 'En az 1 kullanici olmali'),
+  maxStorageGb: z.number().min(1, 'En az 1 GB depolama olmali'),
+  planType: z.enum(PLAN_TYPES, { errorMap: () => ({ message: 'Gecerli bir plan tipi secin' }) }),
+  billingInterval: z.enum(BILLING_INTERVALS, { errorMap: () => ({ message: 'Gecerli bir faturalama araligi secin' }) }),
+});
+
 function getApiErrorMessage(error: unknown, fallback: string): string {
   const apiError = error as ApiErrorLike;
   return apiError.response?.data?.error?.message || fallback;
 }
 
 function getPlans(data: PlanListResponse | undefined): PlanRead[] {
-  const responseData = unwrapData<unknown>(data);
-  const candidate = Array.isArray(responseData)
-    ? responseData
-    : isRecord(responseData) && Array.isArray(responseData.plans)
+  if (!data) return [];
+  const responseData = data as unknown as Record<string, unknown>;
+  const candidate = Array.isArray(data)
+    ? data
+    : Array.isArray(responseData.plans)
       ? responseData.plans
-      : isRecord(responseData) && Array.isArray(responseData.items)
+      : Array.isArray(responseData.items)
         ? responseData.items
         : [];
 
@@ -195,6 +206,14 @@ const Plans: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    const validation = planFormSchema.safeParse(formData);
+    if (!validation.success) {
+      toast.error(validation.error.errors[0].message);
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const featuresObject = formData.features.reduce((acc, feature) => {
         const key = feature.key || feature.name.toLowerCase().replace(/ /g, '_');

@@ -29,6 +29,7 @@ import type {
   HTTPValidationError,
   ListUtRegistrationsParams,
   ListUtsSerialStatesParams,
+  ResponseEnvelopeUtsAddToInventoryResponse,
   ResponseEnvelopeUtsAlmaBekleyenlerSyncResponse,
   ResponseEnvelopeUtsCancelResponse,
   ResponseEnvelopeUtsConfigRead,
@@ -42,6 +43,7 @@ import type {
   ResponseEnvelopeUtsSyncStatus,
   ResponseEnvelopeUtsTekilUrunQueryResponse,
   ResponseEnvelopeUtsVermeDraftResponse,
+  UtsAddToInventoryRequest,
   UtsAlmaRequest,
   UtsConfigUpdate,
   UtsSerialStateUpsertRequest,
@@ -739,6 +741,71 @@ export const useUpsertUtsSerialState = <TError = HTTPValidationError,
       > => {
 
       const mutationOptions = getUpsertUtsSerialStateMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Add a UTS serial state item to inventory (create or update existing).
+ * @summary Add Serial To Inventory
+ */
+export const addUtsSerialToInventory = (
+    utsAddToInventoryRequest: UtsAddToInventoryRequest,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeUtsAddToInventoryResponse>(
+      {url: `/api/uts/serial-states/add-to-inventory`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: utsAddToInventoryRequest, signal
+    },
+      );
+    }
+  
+
+
+export const getAddUtsSerialToInventoryMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addUtsSerialToInventory>>, TError,{data: UtsAddToInventoryRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof addUtsSerialToInventory>>, TError,{data: UtsAddToInventoryRequest}, TContext> => {
+
+const mutationKey = ['addUtsSerialToInventory'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addUtsSerialToInventory>>, {data: UtsAddToInventoryRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  addUtsSerialToInventory(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddUtsSerialToInventoryMutationResult = NonNullable<Awaited<ReturnType<typeof addUtsSerialToInventory>>>
+    export type AddUtsSerialToInventoryMutationBody = UtsAddToInventoryRequest
+    export type AddUtsSerialToInventoryMutationError = HTTPValidationError
+
+    /**
+ * @summary Add Serial To Inventory
+ */
+export const useAddUtsSerialToInventory = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addUtsSerialToInventory>>, TError,{data: UtsAddToInventoryRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof addUtsSerialToInventory>>,
+        TError,
+        {data: UtsAddToInventoryRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getAddUtsSerialToInventoryMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

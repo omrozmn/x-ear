@@ -19,6 +19,8 @@ import {
     LockIcon
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { PermissionGate } from '@/hooks/PermissionGate';
+import { AdminPermissions } from '@/types';
 import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
 import { extractPagination, unwrapData } from '@/lib/orval-response';
 import Pagination from '@/components/ui/Pagination';
@@ -200,13 +202,15 @@ const AdminRolesPage: React.FC = () => {
                     <h1 className="text-2xl font-bold text-gray-900">Rol ve Yetki Yönetimi</h1>
                     <p className="text-gray-500">Admin paneli kullanıcı rolleri ve erişim izinleri</p>
                 </div>
-                <button
-                    onClick={() => setIsCreateModalOpen(true)}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white bg-primary-600 hover:bg-primary-700"
-                >
-                    <PlusIcon className="h-5 w-5 mr-2" />
-                    Yeni Rol
-                </button>
+                <PermissionGate permission={AdminPermissions.ROLES_MANAGE}>
+                    <button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white bg-primary-600 hover:bg-primary-700"
+                    >
+                        <PlusIcon className="h-5 w-5 mr-2" />
+                        Yeni Rol
+                    </button>
+                </PermissionGate>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -250,13 +254,15 @@ const AdminRolesPage: React.FC = () => {
                                     >
                                         Secimi temizle
                                     </button>
-                                    <button
-                                        type="button"
-                                        onClick={handleBulkDelete}
-                                        className="rounded-xl bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
-                                    >
-                                        Secilenleri sil
-                                    </button>
+                                    <PermissionGate permission={AdminPermissions.ROLES_MANAGE}>
+                                        <button
+                                            type="button"
+                                            onClick={handleBulkDelete}
+                                            className="rounded-xl bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700"
+                                        >
+                                            Secilenleri sil
+                                        </button>
+                                    </PermissionGate>
                                 </>
                             )}
                             columns={[
@@ -313,21 +319,23 @@ const AdminRolesPage: React.FC = () => {
                                     header: 'İşlemler',
                                     render: (role: RoleRead) => (
                                         <div className="flex items-center justify-end gap-2">
-                                            <button
-                                                onClick={() => openPermissionModal(role)}
-                                                className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-xl text-sm text-gray-700 hover:bg-gray-50"
-                                            >
-                                                <LockIcon className="w-4 h-4 mr-2" />
-                                                İzinler
-                                            </button>
-                                            {!role.isSystem && (
+                                            <PermissionGate permission={AdminPermissions.ROLES_MANAGE}>
                                                 <button
-                                                    onClick={() => handleDelete(role.id)}
-                                                    className="text-gray-400 hover:text-red-600"
+                                                    onClick={() => openPermissionModal(role)}
+                                                    className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-xl text-sm text-gray-700 hover:bg-gray-50"
                                                 >
-                                                    <TrashIcon className="w-5 h-5" />
+                                                    <LockIcon className="w-4 h-4 mr-2" />
+                                                    İzinler
                                                 </button>
-                                            )}
+                                                {!role.isSystem && (
+                                                    <button
+                                                        onClick={() => handleDelete(role.id)}
+                                                        className="text-gray-400 hover:text-red-600"
+                                                    >
+                                                        <TrashIcon className="w-5 h-5" />
+                                                    </button>
+                                                )}
+                                            </PermissionGate>
                                         </div>
                                     )
                                 }

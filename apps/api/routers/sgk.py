@@ -35,7 +35,10 @@ from database import get_db
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["SGK"])
+from middleware.require_module import require_module
+from fastapi import Depends as _Depends
+
+router = APIRouter(tags=["SGK"], dependencies=[_Depends(require_module("sgk"))])
 
 MAX_UPLOAD_FILES = 50
 ALLOWED_IMAGE_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.tiff', '.tif', '.bmp'}

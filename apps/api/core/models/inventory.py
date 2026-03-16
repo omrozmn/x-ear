@@ -92,6 +92,7 @@ class InventoryItem(BaseModel, TenantScopedMixin):
     stock_code = Column(String(100), unique=True, nullable=True)  # Stock/SKU code
     supplier = Column(String(200))
     unit = Column(String(50), default='adet')  # Unit type (adet, metre, litre, etc.)
+    package_quantity = Column(Integer, nullable=True)  # Number of items per package (e.g., 6 batteries per pack)
     description = Column(Text)
     
     # Inventory tracking
@@ -168,6 +169,7 @@ class InventoryItem(BaseModel, TenantScopedMixin):
             'stockCode': self.stock_code,
             'supplier': self.supplier,
             'unit': self.unit,
+            'packageQuantity': self.package_quantity,
             'description': self.description,
             'availableInventory': self.available_inventory,
             'totalInventory': self.total_inventory,
@@ -222,6 +224,7 @@ class InventoryItem(BaseModel, TenantScopedMixin):
         
         inventory.supplier = data.get('supplier', '')
         inventory.unit = data.get('unit', 'adet')
+        inventory.package_quantity = data.get('packageQuantity') or data.get('package_quantity')
         inventory.description = data.get('description', '')
         
         # Inventory levels - support both new and legacy field names

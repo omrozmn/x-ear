@@ -33,6 +33,13 @@ export interface InvoiceDraftPayload {
   saleId?: string;
   saleIds?: string[];
   proformaNumber?: string;
+  notes?: string;
+  /** Return invoice reference details (iade fatura bilgileri) */
+  returnInvoiceDetails?: {
+    returnInvoiceNumber?: string;
+    returnInvoiceDate?: string;
+    returnReason?: string;
+  };
 }
 
 export interface SaleInvoiceSource {

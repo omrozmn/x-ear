@@ -64,6 +64,7 @@ def _ensure_test_users(db_session):
                 id=tid, name=name, slug=tid,
                 owner_email=f"{tid}@test.com",
                 billing_email=f"billing-{tid}@test.com",
+                country_code="TR",
                 is_active=True, created_at=datetime.utcnow(),
             ))
 

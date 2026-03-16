@@ -2584,6 +2584,17 @@ paths:
       summary: Patient Distribution
       description: Patient distribution by branch
       operationId: listDashboardChartPatientDistribution
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: branch_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Branch Id
       responses:
         '200':
           description: Successful Response
@@ -2591,8 +2602,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ResponseEnvelope_List_BranchDistribution__'
-      security:
-      - OAuth2PasswordBearer: []
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/devices:
     get:
       tags:
@@ -3296,6 +3311,22 @@ paths:
           - type: string
           - type: 'null'
           title: Branch Id
+      - name: startDate
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Startdate
+      - name: endDate
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Enddate
       responses:
         '200':
           description: Successful Response
@@ -3328,6 +3359,30 @@ paths:
           minimum: 1
           default: 30
           title: Days
+      - name: branch_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Branch Id
+      - name: startDate
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Startdate
+      - name: endDate
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Enddate
       responses:
         '200':
           description: Successful Response
@@ -3368,6 +3423,22 @@ paths:
           - type: string
           - type: 'null'
           title: Branch Id
+      - name: startDate
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Startdate
+      - name: endDate
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Enddate
       responses:
         '200':
           description: Successful Response
@@ -3487,6 +3558,30 @@ paths:
           minimum: 1
           default: 365
           title: Days
+      - name: branch_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Branch Id
+      - name: startDate
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Startdate
+      - name: endDate
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Enddate
       responses:
         '200':
           description: Successful Response
@@ -3536,6 +3631,30 @@ paths:
           - type: string
           - type: 'null'
           title: Status
+      - name: branch_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Branch Id
+      - name: startDate
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Startdate
+      - name: endDate
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Enddate
       responses:
         '200':
           description: Successful Response
@@ -3585,6 +3704,14 @@ paths:
           - type: string
           - type: 'null'
           title: Status
+      - name: branch_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Branch Id
       - name: startDate
         in: query
         required: false
@@ -3666,6 +3793,22 @@ paths:
           minimum: 0
           default: 0
           title: Min Amount
+      - name: startDate
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Startdate
+      - name: endDate
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Enddate
       responses:
         '200':
           description: Successful Response
@@ -3698,6 +3841,30 @@ paths:
           minimum: 1
           default: 30
           title: Days
+      - name: branch_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Branch Id
+      - name: startDate
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Startdate
+      - name: endDate
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Enddate
       responses:
         '200':
           description: Successful Response
@@ -3748,6 +3915,30 @@ paths:
           minimum: 1
           default: 30
           title: Days
+      - name: branch_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Branch Id
+      - name: startDate
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Startdate
+      - name: endDate
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Enddate
       responses:
         '200':
           description: Successful Response
@@ -3761,6 +3952,160 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/reports/report-tracking:
+    get:
+      tags:
+      - Reports
+      summary: Report Tracking
+      description: Track device-assignment report and delivery status
+      operationId: listReportTracking
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000000
+          minimum: 1
+          default: 1
+          title: Page
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Per Page
+      - name: branch_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Branch Id
+      - name: report_status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Report Status
+      - name: delivery_status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Delivery Status
+      - name: startDate
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Startdate
+      - name: endDate
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Enddate
+      - name: search
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Search
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_List_ReportTrackingItem__'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/purchases/manual:
+    get:
+      tags:
+      - Purchases
+      summary: List Manual Purchases
+      operationId: listManualPurchases
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+      security:
+      - OAuth2PasswordBearer: []
+    post:
+      tags:
+      - Purchases
+      summary: Create Manual Purchase
+      operationId: createManualPurchase
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManualPurchaseCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/purchases/manual/record-payment:
+    post:
+      tags:
+      - Purchases
+      summary: Record Manual Purchase Payment
+      operationId: recordManualPurchasePayment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManualPurchasePaymentCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
   /api/roles:
     get:
       tags:
@@ -4294,6 +4639,137 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/personnel/overview:
+    get:
+      tags:
+      - Personnel
+      summary: Get Personnel Overview
+      operationId: getPersonnelOverview
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_PersonnelOverviewResponse_'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/personnel/employees:
+    get:
+      tags:
+      - Personnel
+      summary: List Personnel Employees
+      operationId: listPersonnelEmployees
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_list_PersonnelEmployee__'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/personnel/leave:
+    get:
+      tags:
+      - Personnel
+      summary: List Personnel Leave
+      operationId: listPersonnelLeave
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_list_PersonnelLeaveRecord__'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/personnel/documents:
+    get:
+      tags:
+      - Personnel
+      summary: List Personnel Documents
+      operationId: listPersonnelDocuments
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_list_PersonnelDocumentRecord__'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/personnel/compensation:
+    get:
+      tags:
+      - Personnel
+      summary: List Personnel Compensation
+      operationId: listPersonnelCompensation
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_list_PersonnelCompensationRecord__'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/personnel/settings:
+    get:
+      tags:
+      - Personnel
+      summary: Get Personnel Settings
+      operationId: getPersonnelSettings
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_PersonnelSettingsResponse_'
+      security:
+      - OAuth2PasswordBearer: []
+    put:
+      tags:
+      - Personnel
+      summary: Update Personnel Settings
+      operationId: updatePersonnelSettings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonnelSettingsUpdate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_PersonnelSettingsResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/admin/personnel/overview:
+    get:
+      tags:
+      - Personnel
+      summary: Get Admin Personnel Overview
+      operationId: getAdminPersonnelOverview
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_AdminPersonnelOverviewResponse_'
+      security:
+      - OAuth2PasswordBearer: []
   /api/users:
     get:
       tags:
@@ -7072,6 +7548,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/invoices/incoming/search-by-product:
+    get:
+      tags:
+      - invoices
+      summary: Search Incoming Invoices By Product
+      description: 'Search all incoming invoices for line items whose product_name
+        contains the
+
+        given keyword. Used by the device-replacement modal to pre-fill return invoice
+
+        data from an existing purchase invoice.
+
+
+        Returns invoices grouped with their matching line items.'
+      operationId: searchIncomingInvoicesByProduct
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: q
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 2
+          description: Product name keyword (case-insensitive, partial match)
+          title: Q
+        description: Product name keyword (case-insensitive, partial match)
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_ProductSearchResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/invoices/incoming/supplier-items:
     get:
       tags:
@@ -7636,6 +8152,34 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/InvoiceDraftRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_InvoiceActionResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - invoices
+      summary: Delete Invoice Draft
+      description: Delete an invoice draft.
+      operationId: deleteInvoiceDraft
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: draft_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Draft Id
       responses:
         '200':
           description: Successful Response
@@ -9292,6 +9836,14 @@ paths:
           - type: string
           - type: 'null'
           title: Tenant Id
+      - name: branch_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Branch Id
       - name: user_id
         in: query
         required: false
@@ -9861,9 +10413,7 @@ paths:
       summary: Extract Audiogram
       description: 'Extract hearing thresholds from an audiogram image.
 
-        Detects red (right ear) and blue (left ear) markers at standard frequencies
-
-        (125, 250, 500, 1000, 2000, 3000, 4000, 6000, 8000 Hz).'
+        Detects red (right ear) and blue (left ear) markers at standard frequencies.'
       operationId: extractAudiogramThresholds
       requestBody:
         content:
@@ -10685,6 +11235,22 @@ paths:
           - type: string
           - type: 'null'
           title: Status
+      - name: transaction_type
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Transaction Type
+      - name: record_type
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Record Type
       - name: start_date
         in: query
         required: false
@@ -11538,7 +12104,12 @@ paths:
       tags:
       - Subscriptions
       summary: Get Enabled Features
-      description: Return enabled feature flags for the current tenant's plan.
+      description: 'Return enabled feature flags for the current tenant''s plan.
+
+
+        Reads admin-configured flags from SystemSetting table (key=''features'').
+
+        Each flag has mode=''visible'' or ''hidden'', and optional plan restrictions.'
       operationId: listSubscriptionFeatures
       responses:
         '200':
@@ -14546,7 +15117,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /parties/{party_id}/replacements:
+  /api/parties/{party_id}/replacements:
     get:
       tags:
       - Replacements
@@ -14609,7 +15180,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /replacements/{replacement_id}:
+  /api/replacements/{replacement_id}:
     get:
       tags:
       - Replacements
@@ -14638,7 +15209,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /replacements/{replacement_id}/status:
+  /api/replacements/{replacement_id}/status:
     patch:
       tags:
       - Replacements
@@ -14673,7 +15244,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /replacements/{replacement_id}/invoice:
+  /api/replacements/{replacement_id}/invoice:
     post:
       tags:
       - Replacements
@@ -14708,7 +15279,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /return-invoices/{invoice_id}/send-to-gib:
+  /api/return-invoices/{invoice_id}/send-to-gib:
     post:
       tags:
       - Replacements
@@ -14842,7 +15413,7 @@ paths:
       tags:
       - BirFatura
       summary: Sync Invoices
-      description: Sync invoices from BirFatura API
+      description: Sync invoices from BirFatura API (runs in background)
       operationId: createBirfaturaSyncInvoices
       requestBody:
         content:
@@ -16122,6 +16693,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/uts/serial-states/add-to-inventory:
+    post:
+      tags:
+      - UTS
+      summary: Add Serial To Inventory
+      description: Add a UTS serial state item to inventory (create or update existing).
+      operationId: addUtsSerialToInventory
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UtsAddToInventoryRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseEnvelope_UtsAddToInventoryResponse_'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
   /api/uts/verme/execute:
     post:
       tags:
@@ -19136,10 +19735,10 @@ paths:
       tags:
       - AI Actions
       summary: Create an action plan from intent
-      description: "Generate an action plan from a classified intent.\n    \n    The\
-        \ endpoint:\n    1. Validates the intent\n    2. Maps intent to Tool API operations\n\
+      description: "Generate an action plan from a classified intent.\n\n    The endpoint:\n\
+        \    1. Validates the intent\n    2. Maps intent to Tool API operations\n\
         \    3. Calculates risk levels\n    4. Generates approval token if required\n\
-        \    \n    High-risk actions require approval before execution."
+        \n    High-risk actions require approval before execution."
       operationId: create_action_api_ai_actions_post
       requestBody:
         content:
@@ -19166,6 +19765,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
   /api/ai/actions/{action_id}:
     get:
       tags:
@@ -19173,6 +19774,8 @@ paths:
       summary: Get action details
       description: Get details of an action.
       operationId: get_action_api_ai_actions__action_id__get
+      security:
+      - OAuth2PasswordBearer: []
       parameters:
       - name: action_id
         in: path
@@ -19204,6 +19807,8 @@ paths:
       summary: Approve an action
       description: Approve an action for execution.
       operationId: approve_action_api_ai_actions__action_id__approve_post
+      security:
+      - OAuth2PasswordBearer: []
       parameters:
       - name: action_id
         in: path
@@ -19243,6 +19848,8 @@ paths:
       summary: Execute an action
       description: Execute an action plan.
       operationId: execute_action_api_ai_actions__action_id__execute_post
+      security:
+      - OAuth2PasswordBearer: []
       parameters:
       - name: action_id
         in: path
@@ -20148,6 +20755,38 @@ components:
           - type: string
           - type: 'null'
           title: Tenantid
+        branchId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Branchid
+        branchName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Branchname
+        role:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Role
+        data:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: string
+          - type: 'null'
+          title: Data
+        ipAddress:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ipaddress
+        userAgent:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Useragent
         userName:
           anyOf:
           - type: string
@@ -20614,6 +21253,70 @@ components:
       - refresh_token
       - user
       title: AdminLoginResponse
+    AdminPersonnelOverviewResponse:
+      properties:
+        totalTenants:
+          type: integer
+          title: Totaltenants
+        activeRules:
+          type: integer
+          title: Activerules
+        linkedUserRequiredCount:
+          type: integer
+          title: Linkeduserrequiredcount
+        tenants:
+          items:
+            $ref: '#/components/schemas/AdminPersonnelTenantSummary'
+          type: array
+          title: Tenants
+      type: object
+      required:
+      - totalTenants
+      - activeRules
+      - linkedUserRequiredCount
+      - tenants
+      title: AdminPersonnelOverviewResponse
+    AdminPersonnelTenantSummary:
+      properties:
+        tenantId:
+          type: string
+          title: Tenantid
+        tenantName:
+          type: string
+          title: Tenantname
+        personnelEnabled:
+          type: boolean
+          title: Personnelenabled
+        linkedUserRequired:
+          type: boolean
+          title: Linkeduserrequired
+        userCount:
+          type: integer
+          title: Usercount
+        branchCount:
+          type: integer
+          title: Branchcount
+        compensationModel:
+          type: string
+          title: Compensationmodel
+        collectionRule:
+          type: string
+          title: Collectionrule
+        calculationOffsetDays:
+          type: integer
+          title: Calculationoffsetdays
+      type: object
+      required:
+      - tenantId
+      - tenantName
+      - personnelEnabled
+      - linkedUserRequired
+      - userCount
+      - branchCount
+      - compensationModel
+      - collectionRule
+      - calculationOffsetDays
+      title: AdminPersonnelTenantSummary
     AffiliateCommissionEventRead:
       properties:
         id:
@@ -28296,7 +28999,9 @@ components:
           type: string
           title: Name
         brand:
-          type: string
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Brand
         model:
           anyOf:
@@ -28326,6 +29031,11 @@ components:
           type: string
           title: Unit
           default: adet
+        packageQuantity:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Packagequantity
         description:
           anyOf:
           - type: string
@@ -28396,7 +29106,6 @@ components:
       type: object
       required:
       - name
-      - brand
       title: InventoryItemCreate
     InventoryItemRead:
       properties:
@@ -28422,7 +29131,9 @@ components:
           type: string
           title: Name
         brand:
-          type: string
+          anyOf:
+          - type: string
+          - type: 'null'
           title: Brand
         model:
           anyOf:
@@ -28452,6 +29163,11 @@ components:
           type: string
           title: Unit
           default: adet
+        packageQuantity:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Packagequantity
         description:
           anyOf:
           - type: string
@@ -28546,7 +29262,6 @@ components:
       required:
       - id
       - name
-      - brand
       - tenantId
       title: InventoryItemRead
     InventoryItemUpdate:
@@ -28591,6 +29306,11 @@ components:
           - type: string
           - type: 'null'
           title: Unit
+        packageQuantity:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Packagequantity
         description:
           anyOf:
           - type: string
@@ -29830,6 +30550,73 @@ components:
 
 
         Returns masked phone number for password reset flow.'
+    ManualPurchaseCreate:
+      properties:
+        supplierId:
+          type: string
+          title: Supplierid
+        totalAmount:
+          type: number
+          title: Totalamount
+        purchaseDate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Purchasedate
+        paymentMethod:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Paymentmethod
+        paidAmount:
+          type: number
+          title: Paidamount
+          default: 0
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        referenceNumber:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Referencenumber
+        productName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Productname
+      type: object
+      required:
+      - supplierId
+      - totalAmount
+      title: ManualPurchaseCreate
+    ManualPurchasePaymentCreate:
+      properties:
+        purchaseIds:
+          items:
+            type: string
+          type: array
+          title: Purchaseids
+        paymentMethod:
+          type: string
+          title: Paymentmethod
+        paymentDate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Paymentdate
+        amount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Amount
+      type: object
+      required:
+      - purchaseIds
+      - paymentMethod
+      title: ManualPurchasePaymentCreate
     MarketplaceDetailResponse:
       properties:
         success:
@@ -30652,7 +31439,8 @@ components:
     OcrSimilarityResponse:
       properties:
         result:
-          type: number
+          additionalProperties: true
+          type: object
           title: Result
         timestamp:
           type: string
@@ -32397,6 +33185,383 @@ components:
       title: PermissionRead
       description: Schema for reading a permission - matches Permission.to_dict()
         output
+    PersonnelCompensationRecord:
+      properties:
+        id:
+          type: string
+          title: Id
+        employeeId:
+          type: string
+          title: Employeeid
+        employeeName:
+          type: string
+          title: Employeename
+        linkedUserId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Linkeduserid
+        linkedUser:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Linkeduser
+        periodLabel:
+          type: string
+          title: Periodlabel
+        calculationDate:
+          type: string
+          title: Calculationdate
+        modelType:
+          type: string
+          title: Modeltype
+        collectionRule:
+          type: string
+          title: Collectionrule
+        targetAmount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Targetamount
+        rateSummary:
+          type: string
+          title: Ratesummary
+        salesTotal:
+          type: number
+          title: Salestotal
+        accruedPremium:
+          type: number
+          title: Accruedpremium
+        payrollStatus:
+          type: string
+          title: Payrollstatus
+      type: object
+      required:
+      - id
+      - employeeId
+      - employeeName
+      - periodLabel
+      - calculationDate
+      - modelType
+      - collectionRule
+      - rateSummary
+      - salesTotal
+      - accruedPremium
+      - payrollStatus
+      title: PersonnelCompensationRecord
+    PersonnelCompensationSettings:
+      properties:
+        periodMode:
+          type: string
+          title: Periodmode
+        calculationOffsetDays:
+          type: integer
+          title: Calculationoffsetdays
+        modelType:
+          type: string
+          title: Modeltype
+        baseRate:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Baserate
+        targetEnabled:
+          type: boolean
+          title: Targetenabled
+        targetAmount:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Targetamount
+        collectionRule:
+          type: string
+          title: Collectionrule
+        tiers:
+          items:
+            $ref: '#/components/schemas/PersonnelTierRule'
+          type: array
+          title: Tiers
+      type: object
+      required:
+      - periodMode
+      - calculationOffsetDays
+      - modelType
+      - targetEnabled
+      - collectionRule
+      title: PersonnelCompensationSettings
+    PersonnelDocumentPolicy:
+      properties:
+        requiredDocumentTypes:
+          items:
+            type: string
+          type: array
+          title: Requireddocumenttypes
+        expiringDocumentTypes:
+          items:
+            type: string
+          type: array
+          title: Expiringdocumenttypes
+        reminderDaysBeforeExpiry:
+          type: integer
+          title: Reminderdaysbeforeexpiry
+      type: object
+      required:
+      - reminderDaysBeforeExpiry
+      title: PersonnelDocumentPolicy
+    PersonnelDocumentRecord:
+      properties:
+        id:
+          type: string
+          title: Id
+        employeeId:
+          type: string
+          title: Employeeid
+        employeeName:
+          type: string
+          title: Employeename
+        documentType:
+          type: string
+          title: Documenttype
+        status:
+          type: string
+          title: Status
+        validUntil:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Validuntil
+        branchName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Branchname
+      type: object
+      required:
+      - id
+      - employeeId
+      - employeeName
+      - documentType
+      - status
+      title: PersonnelDocumentRecord
+    PersonnelEmployee:
+      properties:
+        id:
+          type: string
+          title: Id
+        fullName:
+          type: string
+          title: Fullname
+        linkedUserId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Linkeduserid
+        linkedUser:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Linkeduser
+        email:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Email
+        role:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Role
+        branchNames:
+          items:
+            type: string
+          type: array
+          title: Branchnames
+        status:
+          type: string
+          enum:
+          - active
+          - passive
+          title: Status
+        hiredAt:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Hiredat
+        lastLogin:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Lastlogin
+        premiumProfile:
+          type: string
+          title: Premiumprofile
+      type: object
+      required:
+      - id
+      - fullName
+      - status
+      - premiumProfile
+      title: PersonnelEmployee
+    PersonnelLeavePolicy:
+      properties:
+        annualEntitlementDays:
+          type: integer
+          title: Annualentitlementdays
+        carryOverEnabled:
+          type: boolean
+          title: Carryoverenabled
+        leaveTypes:
+          items:
+            type: string
+          type: array
+          title: Leavetypes
+      type: object
+      required:
+      - annualEntitlementDays
+      - carryOverEnabled
+      title: PersonnelLeavePolicy
+    PersonnelLeaveRecord:
+      properties:
+        id:
+          type: string
+          title: Id
+        employeeId:
+          type: string
+          title: Employeeid
+        employeeName:
+          type: string
+          title: Employeename
+        leaveType:
+          type: string
+          title: Leavetype
+        startDate:
+          type: string
+          title: Startdate
+        endDate:
+          type: string
+          title: Enddate
+        dayCount:
+          type: number
+          title: Daycount
+        status:
+          type: string
+          title: Status
+        approver:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Approver
+      type: object
+      required:
+      - id
+      - employeeId
+      - employeeName
+      - leaveType
+      - startDate
+      - endDate
+      - dayCount
+      - status
+      title: PersonnelLeaveRecord
+    PersonnelOverviewKpi:
+      properties:
+        key:
+          type: string
+          title: Key
+        label:
+          type: string
+          title: Label
+        value:
+          type: string
+          title: Value
+      type: object
+      required:
+      - key
+      - label
+      - value
+      title: PersonnelOverviewKpi
+    PersonnelOverviewResponse:
+      properties:
+        employees:
+          items:
+            $ref: '#/components/schemas/PersonnelOverviewKpi'
+          type: array
+          title: Employees
+        leave:
+          items:
+            $ref: '#/components/schemas/PersonnelOverviewKpi'
+          type: array
+          title: Leave
+        documents:
+          items:
+            $ref: '#/components/schemas/PersonnelOverviewKpi'
+          type: array
+          title: Documents
+        compensation:
+          items:
+            $ref: '#/components/schemas/PersonnelOverviewKpi'
+          type: array
+          title: Compensation
+      type: object
+      required:
+      - employees
+      - leave
+      - documents
+      - compensation
+      title: PersonnelOverviewResponse
+    PersonnelSettingsResponse:
+      properties:
+        linkedUserRequired:
+          type: boolean
+          title: Linkeduserrequired
+        compensation:
+          $ref: '#/components/schemas/PersonnelCompensationSettings'
+        leavePolicy:
+          $ref: '#/components/schemas/PersonnelLeavePolicy'
+        documentPolicy:
+          $ref: '#/components/schemas/PersonnelDocumentPolicy'
+      type: object
+      required:
+      - linkedUserRequired
+      - compensation
+      - leavePolicy
+      - documentPolicy
+      title: PersonnelSettingsResponse
+    PersonnelSettingsUpdate:
+      properties:
+        linkedUserRequired:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Linkeduserrequired
+        compensation:
+          anyOf:
+          - $ref: '#/components/schemas/PersonnelCompensationSettings'
+          - type: 'null'
+        leavePolicy:
+          anyOf:
+          - $ref: '#/components/schemas/PersonnelLeavePolicy'
+          - type: 'null'
+        documentPolicy:
+          anyOf:
+          - $ref: '#/components/schemas/PersonnelDocumentPolicy'
+          - type: 'null'
+      type: object
+      title: PersonnelSettingsUpdate
+    PersonnelTierRule:
+      properties:
+        threshold:
+          type: number
+          title: Threshold
+        rate:
+          type: number
+          title: Rate
+      type: object
+      required:
+      - threshold
+      - rate
+      title: PersonnelTierRule
     PlanCreate:
       properties:
         name:
@@ -33063,6 +34228,87 @@ components:
       - sales
       - revenue
       title: ProductSalesData
+    ProductSearchInvoiceResult:
+      properties:
+        invoiceId:
+          type: integer
+          title: Invoiceid
+          description: PurchaseInvoice DB id
+        invoiceNumber:
+          type: string
+          title: Invoicenumber
+          description: Invoice number
+        invoiceDate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Invoicedate
+          description: Invoice date
+        senderName:
+          type: string
+          title: Sendername
+          description: Supplier / sender name
+          default: ''
+        matchedItems:
+          items:
+            $ref: '#/components/schemas/ProductSearchMatchedItem'
+          type: array
+          title: Matcheditems
+          description: Matching line items
+      type: object
+      required:
+      - invoiceId
+      - invoiceNumber
+      title: ProductSearchInvoiceResult
+      description: An invoice that contains products matching a search query.
+    ProductSearchMatchedItem:
+      properties:
+        productName:
+          type: string
+          title: Productname
+          description: Product name from invoice line
+        quantity:
+          type: number
+          title: Quantity
+          description: Quantity on this invoice line
+          default: 1.0
+        unitPrice:
+          type: number
+          title: Unitprice
+          description: Unit price
+          default: 0.0
+        lineTotal:
+          type: number
+          title: Linetotal
+          description: Line total amount
+          default: 0.0
+        unit:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Unit
+          description: Unit (Adet, etc.)
+      type: object
+      required:
+      - productName
+      title: ProductSearchMatchedItem
+      description: A single matched invoice line item for product search.
+    ProductSearchResponse:
+      properties:
+        invoices:
+          items:
+            $ref: '#/components/schemas/ProductSearchInvoiceResult'
+          type: array
+          title: Invoices
+          description: Invoices containing matching products
+        total:
+          type: integer
+          title: Total
+          description: Total invoice count
+          default: 0
+      type: object
+      title: ProductSearchResponse
+      description: Response for /incoming/search-by-product endpoint.
     PromissoryNoteCollectionResponse:
       properties:
         note:
@@ -33234,6 +34480,16 @@ components:
         remainingAmount:
           type: number
           title: Remainingamount
+        firstDueDate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Firstduedate
+        lastDueDate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Lastduedate
       type: object
       required:
       - partyId
@@ -34069,6 +35325,27 @@ components:
           title: Statusdistribution
         patientSegments:
           $ref: '#/components/schemas/PatientSegments'
+        summary:
+          anyOf:
+          - additionalProperties:
+              type: integer
+            type: object
+          - type: 'null'
+          title: Summary
+        acquisitionBreakdown:
+          anyOf:
+          - additionalProperties:
+              type: integer
+            type: object
+          - type: 'null'
+          title: Acquisitionbreakdown
+        segmentBreakdown:
+          anyOf:
+          - additionalProperties:
+              type: integer
+            type: object
+          - type: 'null'
+          title: Segmentbreakdown
       type: object
       required:
       - ageDistribution
@@ -34106,6 +35383,89 @@ components:
       required:
       - monthly
       title: ReportRevenueResponse
+    ReportTrackingItem:
+      properties:
+        id:
+          type: string
+          title: Id
+        saleId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Saleid
+        partyId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Partyid
+        partyName:
+          type: string
+          title: Partyname
+        branchId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Branchid
+        branchName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Branchname
+        brand:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Brand
+        model:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Model
+        deviceName:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Devicename
+        serialNumber:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Serialnumber
+        ear:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ear
+        reportStatus:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reportstatus
+        deliveryStatus:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Deliverystatus
+        assignedDate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Assigneddate
+        saleDate:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Saledate
+        updatedAt:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Updatedat
+      type: object
+      required:
+      - id
+      - partyName
+      title: ReportTrackingItem
     RescheduleRequest:
       properties:
         date:
@@ -34372,6 +35732,41 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[AdminLoginResponse]
+    ResponseEnvelope_AdminPersonnelOverviewResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/AdminPersonnelOverviewResponse'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[AdminPersonnelOverviewResponse]
     ResponseEnvelope_AffiliateDetailRead_:
       properties:
         success:
@@ -38247,6 +39642,44 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[List[RemainingPaymentItem]]
+    ResponseEnvelope_List_ReportTrackingItem__:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/ReportTrackingItem'
+            type: array
+          - type: 'null'
+          title: Data
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[List[ReportTrackingItem]]
     ResponseEnvelope_List_RoleRead__:
       properties:
         success:
@@ -39684,6 +41117,76 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[PermissionRead]
+    ResponseEnvelope_PersonnelOverviewResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/PersonnelOverviewResponse'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[PersonnelOverviewResponse]
+    ResponseEnvelope_PersonnelSettingsResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/PersonnelSettingsResponse'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[PersonnelSettingsResponse]
     ResponseEnvelope_PossibleDuplicateRead_:
       properties:
         success:
@@ -39789,6 +41292,39 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[PricingSettingsResponse]
+    ResponseEnvelope_ProductSearchResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/ProductSearchResponse'
+          - type: 'null'
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Meta
+        request_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Request Id
+      type: object
+      title: ResponseEnvelope[ProductSearchResponse]
     ResponseEnvelope_PromissoryNoteCollectionResponse_:
       properties:
         success:
@@ -41955,6 +43491,41 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[UserResponse]
+    ResponseEnvelope_UtsAddToInventoryResponse_:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/UtsAddToInventoryResponse'
+          - type: 'null'
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[UtsAddToInventoryResponse]
     ResponseEnvelope_UtsAlmaBekleyenlerSyncResponse_:
       properties:
         success:
@@ -42620,6 +44191,158 @@ components:
           title: Timestamp
       type: object
       title: ResponseEnvelope[WhatsAppSyncResult]
+    ResponseEnvelope_list_PersonnelCompensationRecord__:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/PersonnelCompensationRecord'
+            type: array
+          - type: 'null'
+          title: Data
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[list[PersonnelCompensationRecord]]
+    ResponseEnvelope_list_PersonnelDocumentRecord__:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/PersonnelDocumentRecord'
+            type: array
+          - type: 'null'
+          title: Data
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[list[PersonnelDocumentRecord]]
+    ResponseEnvelope_list_PersonnelEmployee__:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/PersonnelEmployee'
+            type: array
+          - type: 'null'
+          title: Data
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[list[PersonnelEmployee]]
+    ResponseEnvelope_list_PersonnelLeaveRecord__:
+      properties:
+        success:
+          type: boolean
+          title: Success
+          default: true
+        data:
+          anyOf:
+          - items:
+              $ref: '#/components/schemas/PersonnelLeaveRecord'
+            type: array
+          - type: 'null'
+          title: Data
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        error:
+          anyOf:
+          - {}
+          - type: 'null'
+          title: Error
+        meta:
+          anyOf:
+          - $ref: '#/components/schemas/ResponseMeta'
+          - type: 'null'
+        requestId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Requestid
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+      type: object
+      title: ResponseEnvelope[list[PersonnelLeaveRecord]]
     ResponseEnvelope_list_ReplacementRead__:
       properties:
         success:
@@ -42834,6 +44557,11 @@ components:
         productId:
           type: string
           title: Productid
+        salesOwnerUserId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Salesowneruserid
         salesPrice:
           anyOf:
           - type: number
@@ -42953,6 +44681,11 @@ components:
           - type: string
           - type: 'null'
           title: Productid
+        salesOwnerUserId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Salesowneruserid
         tenantId:
           anyOf:
           - type: string
@@ -43249,6 +44982,11 @@ components:
       title: SaleRecalcResponse
     SaleUpdate:
       properties:
+        salesOwnerUserId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Salesowneruserid
         totalAmount:
           anyOf:
           - type: number
@@ -43818,16 +45556,6 @@ components:
           - type: string
           - type: 'null'
           title: Text2
-        textA:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Texta
-        textB:
-          anyOf:
-          - type: string
-          - type: 'null'
-          title: Textb
       type: object
       title: SimilarityRequest
     SlaMetricsResponse:
@@ -44681,6 +46409,11 @@ components:
           - type: string
           - type: 'null'
           title: Partyname
+        prescriptionStatus:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Prescriptionstatus
       type: object
       required:
       - id
@@ -47188,6 +48921,60 @@ components:
           title: Password
       type: object
       title: UserUpdate
+    UtsAddToInventoryRequest:
+      properties:
+        serialKey:
+          type: string
+          title: Serialkey
+        brand:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Brand
+        model:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Model
+      type: object
+      required:
+      - serialKey
+      title: UtsAddToInventoryRequest
+    UtsAddToInventoryResponse:
+      properties:
+        success:
+          type: boolean
+          title: Success
+        message:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Message
+        inventoryId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Inventoryid
+        created:
+          type: boolean
+          title: Created
+          default: false
+        serialAdded:
+          type: boolean
+          title: Serialadded
+          default: false
+        stockUpdated:
+          type: boolean
+          title: Stockupdated
+          default: false
+        barcodeUpdated:
+          type: boolean
+          title: Barcodeupdated
+          default: false
+      type: object
+      required:
+      - success
+      title: UtsAddToInventoryResponse
     UtsAlmaBekleyenlerSyncResponse:
       properties:
         success:
@@ -47384,6 +49171,14 @@ components:
             $ref: '#/components/schemas/UtsMessageTemplate'
           type: object
           title: Notificationtemplates
+        autoAddToInventoryOnAlma:
+          type: boolean
+          title: Autoaddtoinventoryonalma
+          default: false
+        autoDecreaseStockOnVerme:
+          type: boolean
+          title: Autodecreasestockonverme
+          default: false
         sync:
           $ref: '#/components/schemas/UtsSyncStatus'
       type: object
@@ -47455,6 +49250,14 @@ components:
             $ref: '#/components/schemas/UtsMessageTemplate'
           type: object
           title: Notificationtemplates
+        autoAddToInventoryOnAlma:
+          type: boolean
+          title: Autoaddtoinventoryonalma
+          default: false
+        autoDecreaseStockOnVerme:
+          type: boolean
+          title: Autodecreasestockonverme
+          default: false
       type: object
       title: UtsConfigUpdate
     UtsConnectionTestResult:
@@ -47904,6 +49707,16 @@ components:
           - type: string
           - type: 'null'
           title: Message
+        isOwned:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Isowned
+        ourMemberNumber:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ourmembernumber
         queriedProductNumbers:
           items:
             type: string

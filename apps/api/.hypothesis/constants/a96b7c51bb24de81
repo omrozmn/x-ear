@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/country.py
+# hypothesis_version: 6.151.6
+
+[100, 'DD.MM.YYYY', 'code', 'config', 'countries', 'creatable', 'createdAt', 'currencyCode', 'dateFormat', 'enabled', 'flagEmoji', 'locale', 'name', 'nativeName', 'phonePrefix', 'sortOrder', 'timezone', 'updatedAt']

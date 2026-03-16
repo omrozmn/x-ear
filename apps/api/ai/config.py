@@ -19,6 +19,7 @@ Environment Variables:
 
 import os
 import logging
+import threading
 from enum import Enum
 from functools import wraps
 from typing import Callable, Any
@@ -119,7 +120,8 @@ class AIConfig:
     """
     
     _instance: "AIConfig | None" = None
-    
+    _lock = threading.Lock()
+
     def __init__(self):
         # Phase configuration
         self._phase = AIPhase.from_string(os.getenv("AI_PHASE", "A"))
@@ -177,22 +179,25 @@ class AIConfig:
             rate_limit_per_user_per_minute=int(os.getenv("AI_RATE_LIMIT_PER_USER_PER_MINUTE", "20")),
         )
         
-        # Memory configuration
-        # BUG-005: support persistence
-        self._memory_backend = os.getenv("AI_MEMORY_BACKEND", "in_memory").lower()
+        # Memory configuration - default to Redis for persistence across restarts
+        # Fall back to in_memory only if explicitly set or Redis is unavailable
+        self._memory_backend = os.getenv("AI_MEMORY_BACKEND", "redis").lower()
         self._redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
     
     @classmethod
     def get(cls) -> "AIConfig":
-        """Get the singleton AIConfig instance."""
+        """Get the singleton AIConfig instance (thread-safe)."""
         if cls._instance is None:
-            cls._instance = cls()
+            with cls._lock:
+                if cls._instance is None:
+                    cls._instance = cls()
         return cls._instance
-    
+
     @classmethod
     def reset(cls) -> None:
         """Reset the singleton instance (for testing)."""
-        cls._instance = None
+        with cls._lock:
+            cls._instance = None
     
     @property
     def phase(self) -> AIPhase:

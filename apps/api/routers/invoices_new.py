@@ -35,6 +35,7 @@ from schemas.invoices_new import (
     InvoiceProviderStatusResponse, InvoiceProviderActionResponse,
     ReferenceCodeItemResponse, TaxOfficeItemResponse, RecipientCheckResponse,
     SupplierSuggestionResponse, SupplierSuggestionItem,
+    ProductSearchMatchedItem, ProductSearchInvoiceResult, ProductSearchResponse,
 )
 from core.models.purchase_invoice import PurchaseInvoice, PurchaseInvoiceItem
 from core.models.tenant import Tenant
@@ -660,6 +661,88 @@ def suggest_supplier_match(
     except Exception as e:
         logger.error(f"Error suggesting supplier match: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to suggest supplier match")
+
+
+@router.get("/incoming/search-by-product",
+            operation_id="searchIncomingInvoicesByProduct",
+            response_model=ResponseEnvelope[ProductSearchResponse])
+def search_incoming_invoices_by_product(
+    q: str = Query(..., min_length=2, description="Product name keyword (case-insensitive, partial match)"),
+    db: Session = Depends(get_db),
+    access: UnifiedAccess = Depends(require_access("invoices.view"))
+):
+    """
+    Search all incoming invoices for line items whose product_name contains the
+    given keyword. Used by the device-replacement modal to pre-fill return invoice
+    data from an existing purchase invoice.
+
+    Returns invoices grouped with their matching line items.
+    """
+    try:
+        tenant_id = _resolve_tenant(access)
+        q_lower = q.strip().lower()
+
+        # Find invoices that have at least one matching item
+        matching_items = (
+            db.query(PurchaseInvoiceItem)
+            .join(PurchaseInvoice, PurchaseInvoiceItem.purchase_invoice_id == PurchaseInvoice.id)
+            .filter(
+                PurchaseInvoice.tenant_id == tenant_id,
+                PurchaseInvoice.invoice_type == "INCOMING",
+                PurchaseInvoiceItem.product_name.ilike(f"%{q_lower}%"),
+            )
+            .all()
+        )
+
+        # Group by invoice
+        invoice_map: dict[int, tuple[PurchaseInvoice, list[PurchaseInvoiceItem]]] = {}
+        for item in matching_items:
+            inv = item.purchase_invoice
+            if inv is None:
+                continue
+            if inv.id not in invoice_map:
+                invoice_map[inv.id] = (inv, [])
+            invoice_map[inv.id][1].append(item)
+
+        results: list[ProductSearchInvoiceResult] = []
+        for inv, items in invoice_map.values():
+            matched = [
+                ProductSearchMatchedItem(
+                    product_name=it.product_name or "",
+                    quantity=float(it.quantity or 1),
+                    unit_price=float(it.unit_price or 0),
+                    line_total=float(it.line_total or 0),
+                    unit=it.unit,
+                )
+                for it in items
+            ]
+            inv_date = None
+            if inv.invoice_date:
+                inv_date = inv.invoice_date[:10] if isinstance(inv.invoice_date, str) else str(inv.invoice_date)[:10]
+            results.append(
+                ProductSearchInvoiceResult(
+                    invoice_id=inv.id,
+                    invoice_number=inv.invoice_number or f"INV-{inv.id}",
+                    invoice_date=inv_date,
+                    sender_name=inv.sender_name or "",
+                    sender_tax_number=getattr(inv, 'sender_tax_number', None),
+                    sender_address=getattr(inv, 'sender_address', None),
+                    sender_city=getattr(inv, 'sender_city', None),
+                    matched_items=matched,
+                )
+            )
+
+        # Sort: most recent first
+        results.sort(key=lambda r: r.invoice_date or "", reverse=True)
+
+        return ResponseEnvelope(
+            success=True,
+            data=ProductSearchResponse(invoices=results, total=len(results)),
+        )
+
+    except Exception as e:
+        logger.error(f"Error searching invoices by product: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to search invoices by product")
 
 
 @router.get("/incoming/supplier-items",

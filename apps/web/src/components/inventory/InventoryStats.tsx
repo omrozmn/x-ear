@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { listInventoryStats } from '@/api/client/inventory.client';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface InventoryStatsProps {
   className?: string;
@@ -34,6 +35,8 @@ interface ExtendedInventoryStats extends BaseInventoryStats {
 }
 
 export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }) => {
+  const { hasPermission } = usePermissions();
+  const canViewCost = hasPermission('sensitive.inventory.overview.cost.view');
   const [stats, setStats] = useState<InventoryStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -87,6 +90,10 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
       currency: 'TRY'
     }).format(amount);
   };
+
+  const formatProtectedCurrency = (amount: number) => (
+    canViewCost ? formatCurrency(amount) : 'Bu rol icin gizli'
+  );
 
   if (loading) {
     return (
@@ -149,7 +156,7 @@ export const InventoryStats: React.FC<InventoryStatsProps> = ({ className = '' }
     },
     {
       name: 'Toplam Değer',
-      value: formatCurrency(stats.totalValue),
+      value: formatProtectedCurrency(stats.totalValue),
       icon: (
         <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />

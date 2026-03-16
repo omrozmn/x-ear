@@ -917,8 +917,7 @@ export function useGetOcrJob<TData = Awaited<ReturnType<typeof getOcrJob>>, TErr
 
 /**
  * Extract hearing thresholds from an audiogram image.
-Detects red (right ear) and blue (left ear) markers at standard frequencies
-(125, 250, 500, 1000, 2000, 3000, 4000, 6000, 8000 Hz).
+Detects red (right ear) and blue (left ear) markers at standard frequencies.
  * @summary Extract Audiogram
  */
 export const extractAudiogramThresholds = (

@@ -74,10 +74,10 @@ describe('Plans Component', () => {
             id: '1',
             name: 'Basic Plan',
             price: 100,
-            plan_type: 'BASIC',
-            billing_interval: 'MONTHLY',
-            max_users: 5,
-            is_active: true,
+            planType: 'BASIC',
+            billingInterval: 'MONTHLY',
+            maxUsers: 5,
+            isActive: true,
             description: 'Basic features',
         },
     ];
@@ -95,8 +95,9 @@ describe('Plans Component', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         (useQueryClient as UseQueryClientMock).mockReturnValue(mockQueryClient);
+        // Orval mutator already unwraps ResponseEnvelope, so hook returns inner data directly
         vi.mocked(ApiClient.useListAdminPlans).mockReturnValue(createListAdminPlansResult({
-            data: { data: { plans: mockPlans } },
+            data: { plans: mockPlans } as unknown as ReturnType<typeof ApiClient.useListAdminPlans>['data'],
             isLoading: false,
             error: null,
         }));
@@ -113,8 +114,9 @@ describe('Plans Component', () => {
 
         expect(screen.getByText('Planlar')).toBeInTheDocument();
         expect(screen.getByText('Basic Plan')).toBeInTheDocument();
-        expect(screen.getByText('100 TRY')).toBeInTheDocument();
-        expect(screen.getByText('BASIC / MONTHLY')).toBeInTheDocument();
+        expect(screen.getByText(/100\s*₺/)).toBeInTheDocument();
+        expect(screen.getByText('BASIC')).toBeInTheDocument();
+        expect(screen.getByText('MONTHLY')).toBeInTheDocument();
     });
 
     it('opens create modal when "Plan Ekle" is clicked', () => {
@@ -138,9 +140,11 @@ describe('Plans Component', () => {
         // Open modal
         fireEvent.click(screen.getByText('Plan Ekle'));
 
-        // Fill form
-        fireEvent.change(screen.getByLabelText('Plan Adı'), { target: { value: 'Pro Plan' } });
-        fireEvent.change(screen.getByLabelText('Fiyat (TRY)'), { target: { value: '200' } });
+        // Fill form - labels don't use htmlFor, so find inputs via their parent label text
+        const nameInput = screen.getByText('Plan Adı').closest('div')!.querySelector('input')!;
+        const priceInput = screen.getByText('Fiyat (TRY)').closest('div')!.querySelector('input')!;
+        fireEvent.change(nameInput, { target: { value: 'Pro Plan' } });
+        fireEvent.change(priceInput, { target: { value: '200' } });
 
         // Submit
         fireEvent.click(screen.getByText('Oluştur'));

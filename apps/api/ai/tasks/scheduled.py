@@ -8,9 +8,11 @@ Requirements:
 - 1.2: Run daily to identify AI requests older than retention period
 """
 
+import asyncio
 import logging
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.interval import IntervalTrigger
 
 from database import SessionLocal
 from ai.services.data_retention import DataRetentionService
@@ -59,21 +61,39 @@ def cleanup_expired_ai_prompts():
         db.close()
 
 
+def run_proactive_insights():
+    """
+    Scheduled task to run proactive AI insight analysis.
+
+    Wraps the async orchestrator in a sync function for APScheduler.
+    Runs all registered analyzers for all tenants, refines findings,
+    and bridges them to the AI Inbox.
+    """
+    logger.info("Starting scheduled proactive AI analysis")
+    try:
+        from ai.insights.orchestrator import run_proactive_analysis_cycle
+        asyncio.run(run_proactive_analysis_cycle())
+        logger.info("Proactive AI analysis completed")
+    except Exception as e:
+        logger.error(f"Proactive AI analysis failed: {e}", exc_info=True)
+
+
 def start_scheduler():
     """
     Start the APScheduler for AI Layer scheduled tasks.
-    
+
     Schedules:
     - cleanup_expired_ai_prompts: Daily at 2 AM UTC
+    - run_proactive_insights: Every 60 minutes
     """
     global scheduler
-    
+
     if scheduler is not None:
         logger.warning("Scheduler already started")
         return
-    
+
     scheduler = AsyncIOScheduler()
-    
+
     # Schedule daily cleanup at 2 AM UTC
     scheduler.add_job(
         cleanup_expired_ai_prompts,
@@ -82,9 +102,18 @@ def start_scheduler():
         name='Cleanup Expired AI Prompts',
         replace_existing=True,
     )
-    
+
+    # Schedule proactive AI analysis every 60 minutes
+    scheduler.add_job(
+        run_proactive_insights,
+        trigger=IntervalTrigger(minutes=60),
+        id='run_proactive_insights',
+        name='Proactive AI Insight Analysis',
+        replace_existing=True,
+    )
+
     scheduler.start()
-    logger.info("AI Layer scheduler started")
+    logger.info("AI Layer scheduler started (cleanup + proactive insights)")
 
 
 def stop_scheduler():

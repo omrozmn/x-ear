@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/utils/turkish_ocr.py
+# hypothesis_version: 6.151.6
+
+[0.0, 0.8, 1.0, 2.0, 'NFKC', '\\bazalmasi\\b', '\\bcihazi\\b', '\\bdoktur\\b', '\\bgurultu\\b', '\\bisitme\\b', '\\bkaybi\\b', '\\bmueyene\\b', '\\bodiyometri\\b', '\\brecete\\b', '\\bsagirlik\\b', 'azalması', 'cgiIosuCGOSU', 'cihazı', 'doktor', 'gürültü', 'işitme', 'kaybı', 'muayene', 'odyometri', 'reçete', 'sağırlık', 'çğıİöşüÇĞÖŞÜ']

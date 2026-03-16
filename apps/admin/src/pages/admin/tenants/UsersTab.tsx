@@ -3,15 +3,18 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Edit, UserPlus, Eye, EyeOff, X, RefreshCw, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import * as Dialog from '@radix-ui/react-dialog';
-import { apiClient } from '@/lib/api';
 import {
     useListAdminTenantUsers,
-    getListAdminTenantUsersQueryKey
+    getListAdminTenantUsersQueryKey,
+    useCreateAdminTenantUsers,
+    useUpdateAdminTenantUser
 } from '@/api/generated/admin-tenants/admin-tenants';
 import { UserRead } from '@/api/generated/schemas';
+import type { CreateTenantUserRequest } from '@/api/generated/schemas/createTenantUserRequest';
+import type { UpdateTenantUserRequest } from '@/api/generated/schemas/updateTenantUserRequest';
+import type { ListAdminTenantUsersParams } from '@/api/generated/schemas/listAdminTenantUsersParams';
 import { DataTable } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
-import { unwrapData } from '@/lib/orval-response';
 
 interface UsersTabProps {
     tenantId: string;
@@ -36,16 +39,6 @@ interface TenantUserFormData {
     username: string;
 }
 
-interface TenantUserPayload {
-    email: string;
-    first_name: string;
-    last_name: string;
-    role: string;
-    username: string;
-    password?: string;
-    is_active?: boolean;
-}
-
 interface ApiErrorLike {
     response?: {
         data?: {
@@ -65,8 +58,15 @@ function getApiErrorMessage(error: unknown, fallback: string): string {
 export const UsersTab = ({ tenantId }: UsersTabProps) => {
     const queryClient = useQueryClient();
 
-    const { data: usersResponse, isLoading } = useListAdminTenantUsers(tenantId);
-    const usersPayload = unwrapData<TenantUsersResponse | ExtendedTenantUser[] | undefined>(usersResponse);
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10);
+
+    const params: ListAdminTenantUsersParams = { page, limit };
+    const { data: usersResponse, isLoading } = useListAdminTenantUsers(tenantId, params);
+    const createUserMutation = useCreateAdminTenantUsers();
+    const updateUserMutation = useUpdateAdminTenantUser();
+    // Orval mutator already unwraps ResponseEnvelope - no need for unwrapData
+    const usersPayload = usersResponse as TenantUsersResponse | ExtendedTenantUser[] | undefined;
     const users = Array.isArray(usersPayload)
         ? usersPayload
         : Array.isArray(usersPayload?.users)
@@ -75,10 +75,7 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
                 ? usersPayload.items
                 : [];
 
-    const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(10);
-    const totalItems = users.length;
-    const paginatedUsers = users.slice((page - 1) * limit, page * limit);
+    const totalItems = (usersPayload as TenantUsersResponse)?.total ?? users.length;
 
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -124,7 +121,7 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            const payload: TenantUserPayload = {
+            const payload: CreateTenantUserRequest = {
                 email: formData.email,
                 password: formData.password,
                 first_name: formData.first_name,
@@ -134,11 +131,11 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
                 is_active: true
             };
 
-            await apiClient.post(`/api/admin/tenants/${tenantId}/users`, payload);
+            await createUserMutation.mutateAsync({ tenantId, data: payload });
             toast.success('Kullanıcı eklendi');
             setIsAddModalOpen(false);
             resetForm();
-            await queryClient.invalidateQueries({ queryKey: getListAdminTenantUsersQueryKey(tenantId) });
+            await queryClient.invalidateQueries({ queryKey: getListAdminTenantUsersQueryKey(tenantId, params) });
         } catch (error: unknown) {
             console.error('Add user error:', error);
             toast.error(getApiErrorMessage(error, 'Kullanıcı eklenemedi'));
@@ -152,7 +149,7 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
         if (!editingUser) return;
         setIsSubmitting(true);
         try {
-            const payload: TenantUserPayload = {
+            const payload: UpdateTenantUserRequest = {
                 email: formData.email,
                 first_name: formData.first_name,
                 last_name: formData.last_name,
@@ -161,12 +158,12 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
                 ...(formData.password ? { password: formData.password } : {})
             };
 
-            await apiClient.put(`/api/admin/tenants/${tenantId}/users/${editingUser.id}`, payload);
+            await updateUserMutation.mutateAsync({ tenantId, userId: String(editingUser.id), data: payload });
             toast.success('Kullanıcı güncellendi');
             setIsEditModalOpen(false);
             setEditingUser(null);
             resetForm();
-            await queryClient.invalidateQueries({ queryKey: getListAdminTenantUsersQueryKey(tenantId) });
+            await queryClient.invalidateQueries({ queryKey: getListAdminTenantUsersQueryKey(tenantId, params) });
         } catch (error: unknown) {
             console.error('Update user error:', error);
             toast.error(getApiErrorMessage(error, 'Güncelleme başarısız'));
@@ -179,13 +176,15 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
         if (!userToToggle) return;
         setIsSubmitting(true);
         try {
-            await apiClient.put(`/api/admin/tenants/${tenantId}/users/${userToToggle.id}`, {
-                is_active: !userToToggle.isActive
+            await updateUserMutation.mutateAsync({
+                tenantId,
+                userId: String(userToToggle.id),
+                data: { is_active: !userToToggle.isActive }
             });
 
             toast.success(`Kullanıcı ${!userToToggle.isActive ? 'aktifleştirildi' : 'pasife alındı'}`);
             setUserToToggle(null);
-            await queryClient.invalidateQueries({ queryKey: getListAdminTenantUsersQueryKey(tenantId) });
+            await queryClient.invalidateQueries({ queryKey: getListAdminTenantUsersQueryKey(tenantId, params) });
         } catch (error: unknown) {
             toast.error('Durum değiştirilemedi');
         } finally {
@@ -222,7 +221,7 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
             {isLoading ? <div>Yükleniyor...</div> : (
                 <div className="space-y-4">
                     <DataTable<ExtendedTenantUser>
-                        data={paginatedUsers}
+                        data={users}
                         columns={[
                             {
                                 key: 'firstName',

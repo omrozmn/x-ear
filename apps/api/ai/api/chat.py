@@ -285,6 +285,7 @@ async def chat(
         usage_tracker.acquire_quota(
             tenant_id=tenant_id,
             usage_type=UsageType.CHAT,
+            db=db,
         )
     except Exception as e:
         logger.warning(f"Quota exceeded: {e}")
@@ -304,11 +305,13 @@ async def chat(
     try:
         # Get conversation history for context (Requirement 4.6)
         memory = get_conversation_memory()
-        session_id = request.session_id or f"session_{tenant_id}_{user_id}"
+        # Security: Always prefix session_id with tenant_id to enforce tenant isolation.
+        # Even if user provides a custom session_id, it's scoped to their tenant.
+        raw_session_id = request.session_id or f"{user_id}"
+        session_id = f"session_{tenant_id}_{raw_session_id}"
         conversation_history = memory.get_history(session_id, max_turns=3)
         
-        # Check for pending action plan (for slot-filling and timeout)
-        pending_plan = None
+        # Check for pending action plan context (for slot-filling)
         awaiting_slot_fill = False
         slot_name = None
         

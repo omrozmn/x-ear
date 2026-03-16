@@ -7,6 +7,7 @@ import { unwrapPaginated } from '../../../utils/response-unwrap';
 import type { ResponseMeta } from '@/api/generated/schemas';
 import type { FilterState, ReportTrackingItem } from '../types';
 import { TabExportButton } from '../components/TabExportButton';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface ReportTrackingTabProps {
     filters: FilterState;
@@ -33,6 +34,8 @@ function getStatusLabel(value?: string, fallback = '-') {
 }
 
 export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
+    const { hasPermission } = usePermissions();
+    const canViewDetails = hasPermission('sensitive.reports.report_tracking.details.view');
     const [page, setPage] = useState(1);
     const [reportStatus, setReportStatus] = useState('all');
     const [deliveryStatus, setDeliveryStatus] = useState('all');
@@ -63,7 +66,7 @@ export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
             title: 'Hasta',
             render: (_, item) => (
                 <div>
-                    <p className="font-medium text-gray-900 dark:text-white">{item.partyName}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{canViewDetails ? item.partyName : 'Bu rol icin gizli'}</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">{item.branchName || 'Şube yok'}</p>
                 </div>
             )
@@ -73,8 +76,8 @@ export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
             title: 'Cihaz',
             render: (_, item) => (
                 <div>
-                    <p className="font-medium text-gray-900 dark:text-white">{item.deviceName || '-'}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{item.serialNumber || 'Seri no yok'}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{canViewDetails ? (item.deviceName || '-') : 'Bu rol icin gizli'}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{canViewDetails ? (item.serialNumber || 'Seri no yok') : 'Bu rol icin gizli'}</p>
                 </div>
             )
         },
@@ -233,10 +236,10 @@ export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
                             <Button variant="ghost" onClick={() => setSelectedRow(null)} className="!w-auto !h-auto px-2 py-1">Kapat</Button>
                         </div>
                         <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div><span className="text-gray-500">Hasta</span><p className="font-medium">{selectedRow.partyName || '-'}</p></div>
+                            <div><span className="text-gray-500">Hasta</span><p className="font-medium">{canViewDetails ? (selectedRow.partyName || '-') : 'Bu rol icin gizli'}</p></div>
                             <div><span className="text-gray-500">Şube</span><p className="font-medium">{selectedRow.branchName || '-'}</p></div>
-                            <div><span className="text-gray-500">Cihaz</span><p className="font-medium">{selectedRow.deviceName || '-'}</p></div>
-                            <div><span className="text-gray-500">Seri No</span><p className="font-medium">{selectedRow.serialNumber || '-'}</p></div>
+                            <div><span className="text-gray-500">Cihaz</span><p className="font-medium">{canViewDetails ? (selectedRow.deviceName || '-') : 'Bu rol icin gizli'}</p></div>
+                            <div><span className="text-gray-500">Seri No</span><p className="font-medium">{canViewDetails ? (selectedRow.serialNumber || '-') : 'Bu rol icin gizli'}</p></div>
                             <div><span className="text-gray-500">Rapor Durumu</span><p className="font-medium">{getStatusLabel(selectedRow.reportStatus)}</p></div>
                             <div><span className="text-gray-500">Teslim Durumu</span><p className="font-medium">{getStatusLabel(selectedRow.deliveryStatus)}</p></div>
                             <div><span className="text-gray-500">Satış Tarihi</span><p className="font-medium">{selectedRow.saleDate ? new Date(selectedRow.saleDate).toLocaleString('tr-TR') : '-'}</p></div>

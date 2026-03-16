@@ -5,6 +5,7 @@ import { listInventory } from '@/api/client/inventory.client';
 import { unwrapArray } from '../../../utils/response-unwrap';
 import { createPartyTimeline, createPartyActivities } from '@/api/client/timeline.client';
 import { SerialAutocomplete } from '@/components/shared/SerialAutocomplete';
+import { customInstance } from '@/api/orval-mutator';
 
 // InventoryItem type definition (since schema may not export it directly)
 interface InventoryItem {
@@ -17,6 +18,8 @@ interface InventoryItem {
   inventory?: number;
   vatRate?: number;
   availableSerials?: string[];
+  unit?: string;
+  packageQuantity?: number;
 }
 
 // Product interface for the dropdown - mapped from InventoryItem
@@ -29,6 +32,8 @@ interface Product {
   stock?: number;
   kdvRate?: number;
   availableSerials?: string[];
+  unit?: string;
+  packageQuantity?: number;
 }
 
 // Convert InventoryItem to Product interface
@@ -40,7 +45,9 @@ const mapInventoryItemToProduct = (item: InventoryItem): Product => ({
   price: item.price,
   stock: item.availableInventory || item.inventory || 0,
   kdvRate: item.vatRate ?? 0,
-  availableSerials: item.availableSerials || []
+  availableSerials: item.availableSerials || [],
+  unit: item.unit,
+  packageQuantity: item.packageQuantity,
 });
 
 // Searchable Product Dropdown Component
@@ -269,8 +276,68 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
   const isHearingAid = useMemo(() => {
     if (!selectedProduct?.category) return false;
     const cat = selectedProduct.category.toLowerCase();
+    // Exclude battery categories from hearing aid detection
+    if (cat === 'hearing_aid_battery' || cat === 'implant_battery') return false;
     return cat.includes('işitme') || cat.includes('hearing') || cat.includes('cihaz') || cat.includes('aid');
   }, [selectedProduct]);
+
+  // Determine if product is a hearing aid battery
+  const isHearingAidBattery = useMemo(() => {
+    if (!selectedProduct?.category) return false;
+    const cat = selectedProduct.category.toLowerCase();
+    return cat === 'hearing_aid_battery' || cat === 'işitme cihazı pili';
+  }, [selectedProduct]);
+
+  // Determine if product is an implant battery
+  const isImplantBattery = useMemo(() => {
+    if (!selectedProduct?.category) return false;
+    const cat = selectedProduct.category.toLowerCase();
+    return cat === 'implant_battery' || cat === 'implant pili' || cat === 'İmplant pili';
+  }, [selectedProduct]);
+
+  // Combined: is any type of battery with SGK support
+  const isSgkBattery = isHearingAidBattery || isImplantBattery;
+
+  // Battery SGK settings from API
+  interface BatterySgkScheme {
+    label: string;
+    quantity_per_ear: number;
+    coverage_amount: number;
+    kdv_rate: number;
+  }
+  const [batterySgkSettings, setBatterySgkSettings] = useState<Record<string, BatterySgkScheme>>({});
+
+  // Battery report quantity options (per ear or bilateral)
+  const [batteryReportQuantity, setBatteryReportQuantity] = useState<'per_ear' | 'bilateral'>('per_ear');
+
+  // Load battery SGK settings from API
+  useEffect(() => {
+    const loadBatterySgkSettings = async () => {
+      try {
+        const response = await customInstance<{ data: { settings: { sgk?: { battery_schemes?: Record<string, BatterySgkScheme> } } } }>({
+          url: '/api/settings',
+          method: 'GET',
+        });
+        const schemes = response.data?.settings?.sgk?.battery_schemes;
+        if (schemes) {
+          setBatterySgkSettings(schemes);
+        } else {
+          // Fallback defaults
+          setBatterySgkSettings({
+            hearing_aid_battery: { label: 'İşitme Cihazı Pili', quantity_per_ear: 104, coverage_amount: 790, kdv_rate: 20 },
+            implant_battery: { label: 'İmplant Pili', quantity_per_ear: 360, coverage_amount: 2300, kdv_rate: 20 },
+          });
+        }
+      } catch {
+        // Fallback defaults
+        setBatterySgkSettings({
+          hearing_aid_battery: { label: 'İşitme Cihazı Pili', quantity_per_ear: 104, coverage_amount: 790, kdv_rate: 20 },
+          implant_battery: { label: 'İmplant Pili', quantity_per_ear: 360, coverage_amount: 2300, kdv_rate: 20 },
+        });
+      }
+    };
+    loadBatterySgkSettings();
+  }, []);
 
   // Update unit price when product is selected
   useEffect(() => {
@@ -293,7 +360,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
     // 3. Amount with KDV
     const totalWithKdv = basePrice + kdvAmount;
 
-    // 4. SGK FIRST — only for hearing aids
+    // 4. SGK FIRST — for hearing aids (device SGK)
     let calculatedSgk = 0;
     if (isHearingAid) {
       const schemeAmount = sgkFallbackValues[sgkSupportType] || 0;
@@ -302,8 +369,22 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
       calculatedSgk = Math.min(totalSgkSupport, totalWithKdv);
     }
 
+    // 4b. SGK for batteries — deduct battery report amount if raporlu
+    let batterySgkAmount = 0;
+    if (isSgkBattery && reportStatus !== 'no_report') {
+      const schemeKey = isHearingAidBattery ? 'hearing_aid_battery' : 'implant_battery';
+      const scheme = batterySgkSettings[schemeKey];
+      if (scheme) {
+        const sgkAmountWithKdv = scheme.coverage_amount * (1 + scheme.kdv_rate / 100);
+        const earMultiplier = batteryReportQuantity === 'bilateral' ? 2 : 1;
+        batterySgkAmount = Math.min(sgkAmountWithKdv * earMultiplier, totalWithKdv);
+      }
+    }
+
+    const totalSgkCoverage = calculatedSgk + batterySgkAmount;
+
     // 5. After SGK
-    const afterSgk = totalWithKdv - calculatedSgk;
+    const afterSgk = totalWithKdv - totalSgkCoverage;
 
     // 6. Discount SECOND — on SGK-reduced amount
     let calculatedDiscount = 0;
@@ -321,12 +402,13 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
       kdvRate,
       kdvAmount,
       totalWithKdv,
-      sgkCoverage: calculatedSgk,
+      sgkCoverage: totalSgkCoverage,
+      batterySgkAmount,
       discountAmount: calculatedDiscount,
       finalAmount
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quantity, unitPrice, discountType, discountInput, selectedProduct, sgkSupportType, isHearingAid, ear]);
+  }, [quantity, unitPrice, discountType, discountInput, selectedProduct, sgkSupportType, isHearingAid, ear, isSgkBattery, reportStatus, batteryReportQuantity, batterySgkSettings, isHearingAidBattery]);
 
   // Calculate total amount
   // const totalAmount = useMemo(() => {
@@ -381,8 +463,11 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
         paidAmount: collectedAmount,
         sgkScheme: isHearingAid ? sgkSupportType : 'none',
         sgkAmount: pricingCalculation.sgkCoverage,
+        batterySgkAmount: pricingCalculation.batterySgkAmount || 0,
+        batteryReportQuantity: isSgkBattery ? batteryReportQuantity : undefined,
         discount: pricingCalculation.discountAmount,
-        reportStatus: reportStatus
+        reportStatus: reportStatus,
+        ear: (isHearingAid || isSgkBattery) ? ear : undefined
       };
 
       // Add serial numbers based on ear selection
@@ -477,6 +562,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
     setSerialNumber('');
     setSerialNumberLeft('');
     setSerialNumberRight('');
+    setBatteryReportQuantity('per_ear');
   };
 
   return (
@@ -496,7 +582,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
           />
         </div>
 
-        {/* Ear Selection (for hearing aids) or Quantity (for other products) and Unit Price */}
+        {/* Ear Selection (for hearing aids and batteries) or Quantity (for other products) and Unit Price */}
         <div className="grid grid-cols-2 gap-4" data-testid="sale-form-quantity-price">
           {isHearingAid ? (
             <div>
@@ -524,7 +610,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
           ) : (
             <div>
               <Label className="mb-1">
-                Miktar *
+                Miktar {selectedProduct?.unit === 'paket' ? '(Paket)' : ''} *
               </Label>
               <Input
                 type="number"
@@ -536,6 +622,11 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
                 fullWidth
                 data-testid="sale-form-quantity"
               />
+              {selectedProduct?.unit === 'paket' && selectedProduct?.packageQuantity && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Toplam: {quantity * selectedProduct.packageQuantity} adet ({quantity} paket × {selectedProduct.packageQuantity} adet/paket)
+                </p>
+              )}
             </div>
           )}
 
@@ -650,6 +741,70 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
           </div>
         )}
 
+        {/* Battery SGK Section - Only for hearing_aid_battery and implant_battery */}
+        {isSgkBattery && (
+          <div className="bg-green-50 p-3 rounded-2xl border border-green-200">
+            <Label className="mb-2 text-green-900 font-semibold">
+              Raporlu Pil SGK Bilgileri
+            </Label>
+
+            {/* Ear selection for battery */}
+            <div className="grid grid-cols-2 gap-4 mb-3">
+              <div>
+                <Label className="mb-1 text-sm">Kulak Seçimi</Label>
+                <Select
+                  value={ear}
+                  onChange={(e) => setEar(e.target.value as 'left' | 'right' | 'both')}
+                  fullWidth
+                  options={[
+                    { value: 'left', label: 'Sol Kulak' },
+                    { value: 'right', label: 'Sağ Kulak' },
+                    { value: 'both', label: 'İki Kulak (Bilateral)' }
+                  ]}
+                />
+              </div>
+              <div>
+                <Label className="mb-1 text-sm">Rapor Adet Kapsamı</Label>
+                <Select
+                  value={batteryReportQuantity}
+                  onChange={(e) => setBatteryReportQuantity(e.target.value as 'per_ear' | 'bilateral')}
+                  fullWidth
+                  options={(() => {
+                    const schemeKey = isHearingAidBattery ? 'hearing_aid_battery' : 'implant_battery';
+                    const scheme = batterySgkSettings[schemeKey];
+                    const qtyPerEar = scheme?.quantity_per_ear || (isHearingAidBattery ? 104 : 360);
+                    return [
+                      { value: 'per_ear', label: `Tek Kulak (${qtyPerEar} adet)` },
+                      { value: 'bilateral', label: `Bilateral (${qtyPerEar * 2} adet)` },
+                    ];
+                  })()}
+                />
+              </div>
+            </div>
+
+            {/* SGK amount info */}
+            {reportStatus !== 'no_report' && (() => {
+              const schemeKey = isHearingAidBattery ? 'hearing_aid_battery' : 'implant_battery';
+              const scheme = batterySgkSettings[schemeKey];
+              if (!scheme) return null;
+              const sgkWithKdv = scheme.coverage_amount * (1 + scheme.kdv_rate / 100);
+              const earMul = batteryReportQuantity === 'bilateral' ? 2 : 1;
+              return (
+                <div className="text-xs text-green-700 space-y-1">
+                  <div>SGK Ödeme: ₺{scheme.coverage_amount.toLocaleString('tr-TR')} + %{scheme.kdv_rate} KDV = ₺{sgkWithKdv.toFixed(2)} / kulak</div>
+                  <div className="font-semibold">Toplam SGK Düşümü: ₺{(sgkWithKdv * earMul).toFixed(2)}</div>
+                </div>
+              );
+            })()}
+
+            {reportStatus === 'no_report' && (
+              <div className="text-xs text-amber-600 mt-1">
+                Raporsuz özel satış seçili — SGK pil düşümü uygulanmayacak
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Product Details Display */}
         {selectedProduct && (
           <div className="bg-blue-50 p-3 rounded-2xl border border-blue-200">
@@ -715,10 +870,16 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
                     <span>-₺{pricingCalculation.discountAmount.toLocaleString('tr-TR')}</span>
                   </div>
                 )}
-                {pricingCalculation.sgkCoverage > 0 && (
+                {pricingCalculation.sgkCoverage > 0 && !isSgkBattery && (
                   <div className="flex justify-between text-xs text-green-700 font-medium">
                     <span>SGK Desteği:</span>
                     <span>-₺{pricingCalculation.sgkCoverage.toLocaleString('tr-TR')}</span>
+                  </div>
+                )}
+                {pricingCalculation.batterySgkAmount > 0 && (
+                  <div className="flex justify-between text-xs text-green-700 font-medium">
+                    <span>SGK Pil Rapor Düşümü:</span>
+                    <span>-₺{pricingCalculation.batterySgkAmount.toLocaleString('tr-TR')}</span>
                   </div>
                 )}
               </div>

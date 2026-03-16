@@ -55,7 +55,9 @@ export const TenantEditModal = ({ tenantId, isOpen, onClose }: { tenantId: strin
     });
     
     // Orval already unwraps ResponseEnvelope, tenantData is the tenant directly
-    const tenant = tenantData as ExtendedTenant;
+    const tenant = tenantData && typeof tenantData === 'object'
+        ? (tenantData as ExtendedTenant)
+        : undefined;
 
     useEffect(() => {
         if (tenantId && isOpen) {
@@ -138,7 +140,7 @@ export const TenantEditModal = ({ tenantId, isOpen, onClose }: { tenantId: strin
                                         }} />
                                     </Tabs.Content>
                                     <Tabs.Content value="users" className="outline-none">
-                                        <UsersTab tenantId={tenant.id!} />
+                                        <UsersTab tenantId={tenant.id ?? tenantId ?? ''} />
                                     </Tabs.Content>
                                     <Tabs.Content value="subscription" className="outline-none">
                                         <SubscriptionTab tenant={tenant} onUpdate={() => {

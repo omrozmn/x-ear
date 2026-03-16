@@ -4,6 +4,7 @@ import {
     Building2,
     Users,
     CreditCard,
+    Briefcase,
     LifeBuoy,
     Settings,
     PlusCircle,
@@ -27,6 +28,7 @@ import {
     Bot,
     Globe2,
     ToggleRight,
+    Flag,
 } from 'lucide-react'
 import { useAdminResponsive } from '../../hooks/useAdminResponsive'
 
@@ -58,8 +60,10 @@ const navigation = [
     { name: 'OCR Kuyruğu', href: '/ocr-queue', icon: FileText },
     { name: 'Faturalar', href: '/billing', icon: CreditCard },
     { name: 'Ödemeler', href: '/payments', icon: Wallet },
+    { name: 'Personel', href: '/personnel', icon: Briefcase },
     { name: 'Destek', href: '/support', icon: LifeBuoy },
     { name: 'Feature Flags', href: '/features', icon: ToggleRight },
+    { name: 'Countries', href: '/countries', icon: Flag },
     { name: 'Entegrasyonlar', href: '/integrations', icon: Zap },
     { name: 'Ayarlar', href: '/settings', icon: Settings },
 ]

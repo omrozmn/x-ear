@@ -139,7 +139,7 @@ function InventoryAutocomplete({
       />
 
       {isOpen ? (
-        <div className="absolute z-50 mt-2 max-h-72 w-full overflow-y-auto rounded-3xl border border-white/55 bg-white/92 shadow-[0_20px_60px_-24px_rgba(15,23,42,0.45)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/96">
+        <div className="absolute z-50 mt-2 max-h-72 w-full overflow-y-auto rounded-3xl border border-slate-200/90 bg-white/98 shadow-[0_20px_60px_-24px_rgba(15,23,42,0.2)] backdrop-blur-xl dark:border-slate-700 dark:bg-slate-950/96">
           {loading ? (
             <div className="px-4 py-3 text-sm text-gray-500">Envanter yukleniyor...</div>
           ) : error ? (
@@ -301,9 +301,9 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
   const stock = selectedProduct ? selectedProduct.availableInventory ?? 0 : 0;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/55 backdrop-blur-md dark:bg-slate-950/72">
-      <div className="mx-4 max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-[30px] border border-white/45 bg-white/84 shadow-[0_30px_120px_-40px_rgba(15,23,42,0.55)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-900/90 dark:shadow-[0_30px_120px_-48px_rgba(2,6,23,0.92)]">
-        <div className="flex items-center justify-between border-b border-slate-200/80 p-6 dark:border-white/10">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/55 backdrop-blur-md dark:bg-black/82">
+      <div className="mx-4 max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-[30px] border border-slate-200/90 bg-[linear-gradient(180deg,rgba(255,255,255,0.97),rgba(248,250,252,0.94))] shadow-[0_30px_120px_-40px_rgba(15,23,42,0.32)] backdrop-blur-2xl dark:border-slate-800 dark:bg-[linear-gradient(180deg,rgba(2,6,23,0.98),rgba(15,23,42,0.96))] dark:shadow-[0_30px_120px_-48px_rgba(0,0,0,0.98)]">
+        <div className="flex items-center justify-between border-b border-slate-200/80 p-6 dark:border-slate-800">
           <h2 className="flex items-center text-xl font-semibold text-slate-900 dark:text-white">
             <Calculator className="mr-2 h-6 w-6 text-sky-600" />
             Fiyat Hesaplama
@@ -311,7 +311,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
           <Button
             type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 dark:text-slate-400 dark:hover:text-white"
+            className="bg-transparent text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
             variant="default"
           >
             <X className="h-6 w-6" />
@@ -322,7 +322,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
           {formError ? <Alert variant="error">{formError}</Alert> : null}
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300">Envanterden Cihaz Secimi</label>
+            <label className="mb-2 block text-sm font-semibold text-slate-800 dark:text-slate-300">Envanterden Cihaz Secimi</label>
             <InventoryAutocomplete
               value={searchTerm}
               onValueChange={setSearchTerm}
@@ -332,26 +332,26 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
           </div>
 
           {selectedProduct ? (
-            <div className="rounded-3xl border border-sky-200/70 bg-sky-50/78 p-4 backdrop-blur-md dark:border-sky-500/20 dark:bg-sky-950/28">
-              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-sky-900 dark:text-sky-200">
+            <div className="rounded-3xl border border-sky-200/80 bg-sky-50/92 p-4 backdrop-blur-md dark:border-sky-800 dark:bg-slate-900">
+              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-sky-900 dark:text-sky-100">
                 <DollarSign className="h-4 w-4" />
                 Secili Urun
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
                 <div>
-                  <div className="text-xs text-sky-700 dark:text-sky-300">Marka</div>
+                  <div className="text-xs text-sky-700 dark:text-slate-400">Marka</div>
                   <div className="truncate font-medium text-sky-950 dark:text-white">{selectedProduct.brand || '-'}</div>
                 </div>
                 <div>
-                  <div className="text-xs text-sky-700 dark:text-sky-300">Model</div>
+                  <div className="text-xs text-sky-700 dark:text-slate-400">Model</div>
                   <div className="truncate font-medium text-sky-950 dark:text-white">{selectedProduct.model || selectedProduct.name}</div>
                 </div>
                 <div>
-                  <div className="text-xs text-sky-700 dark:text-sky-300">Liste Fiyati</div>
+                  <div className="text-xs text-sky-700 dark:text-slate-400">Liste Fiyati</div>
                   <div className="font-medium text-sky-950 dark:text-white">{Number(selectedProduct.price || 0).toLocaleString('tr-TR')} TL</div>
                 </div>
                 <div>
-                  <div className="text-xs text-sky-700 dark:text-sky-300">Stok</div>
+                  <div className="text-xs text-sky-700 dark:text-slate-400">Stok</div>
                   <div className="font-medium text-sky-950 dark:text-white">{stock}</div>
                 </div>
               </div>
@@ -361,7 +361,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {isHearingAid ? (
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300">Kulak Secimi</label>
+                <label className="mb-2 block text-sm font-semibold text-slate-800 dark:text-slate-300">Kulak Secimi</label>
                 <Select
                   value={ear}
                   onChange={(e) => setEar(e.target.value as 'left' | 'right' | 'both')}
@@ -375,7 +375,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
               </div>
             ) : (
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300">Miktar</label>
+                <label className="mb-2 block text-sm font-semibold text-slate-800 dark:text-slate-300">Miktar</label>
                 <Input
                   type="number"
                   min="1"
@@ -387,7 +387,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
             )}
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300">
+              <label className="mb-2 block text-sm font-semibold text-slate-800 dark:text-slate-300">
                 <DollarSign className="mr-1 inline h-4 w-4" />
                 Birim Fiyat (TL)
               </label>
@@ -405,7 +405,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
           {isHearingAid ? (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300">SGK Semasi</label>
+                <label className="mb-2 block text-sm font-semibold text-slate-800 dark:text-slate-300">SGK Semasi</label>
                 <Select
                   value={sgkScheme}
                   onChange={(e) => setSgkScheme(e.target.value)}
@@ -413,7 +413,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
                   options={sgkSupportOptions}
                 />
               </div>
-              <div className="rounded-3xl border border-emerald-200/70 bg-emerald-50/78 p-3 backdrop-blur-md dark:border-emerald-500/20 dark:bg-emerald-950/24">
+              <div className="rounded-3xl border border-emerald-200/80 bg-emerald-50/92 p-3 backdrop-blur-md dark:border-emerald-800 dark:bg-slate-900">
                 <div className="text-xs font-medium text-emerald-700 dark:text-emerald-300">Tahmini SGK Destegi</div>
                 <div className="mt-1 text-lg font-semibold text-emerald-900 dark:text-emerald-100">
                   {calculation.sgkAmount.toLocaleString('tr-TR')} TL
@@ -427,7 +427,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300">Indirim Tipi</label>
+              <label className="mb-2 block text-sm font-semibold text-slate-800 dark:text-slate-300">Indirim Tipi</label>
               <Select
                 value={discountType}
                 onChange={(e) => setDiscountType(e.target.value as 'amount' | 'percentage')}
@@ -439,7 +439,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
               />
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300">
+              <label className="mb-2 block text-sm font-semibold text-slate-800 dark:text-slate-300">
                 <Percent className="mr-1 inline h-4 w-4" />
                 Indirim Degeri
               </label>
@@ -471,7 +471,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
             </div>
           </div>
 
-          <div className="rounded-3xl border border-white/45 bg-white/68 p-4 backdrop-blur-md dark:border-white/10 dark:bg-slate-950/32">
+          <div className="rounded-3xl border border-slate-200/90 bg-white/94 p-4 shadow-sm shadow-slate-200/55 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900">
             <h3 className="mb-3 flex items-center gap-2 font-medium text-gray-900 dark:text-white">
               <Calculator className="h-4 w-4" />
               Hesaplama Sonucu
@@ -496,10 +496,10 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
                   <span className="font-medium text-rose-600">-{calculation.discountAmount.toLocaleString('tr-TR')} TL</span>
                 </div>
               ) : null}
-              <div className="border-t border-slate-200 pt-2 dark:border-white/10">
+              <div className="border-t border-slate-200 pt-2 dark:border-slate-800">
                 <div className="flex justify-between text-lg font-semibold text-slate-900 dark:text-white">
                   <span>Toplam</span>
-                  <span className="text-sky-700">{calculation.finalPrice.toLocaleString('tr-TR')} TL</span>
+                  <span className="text-sky-700 dark:text-sky-300">{calculation.finalPrice.toLocaleString('tr-TR')} TL</span>
                 </div>
                 {calculation.installmentAmount ? (
                   <div className="mt-1 flex justify-between text-sm text-gray-600 dark:text-slate-400">
@@ -517,7 +517,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
             <Button
               type="button"
               onClick={resetForm}
-              className="border border-slate-300 px-4 py-2 text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:text-slate-200 dark:hover:bg-white/10"
+              className="border border-slate-300 bg-white px-4 py-2 text-slate-800 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
               variant="default"
             >
               Temizle
@@ -525,7 +525,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
             <Button
               type="button"
               onClick={onClose}
-              className="border border-slate-300 px-4 py-2 text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:text-slate-200 dark:hover:bg-white/10"
+              className="border border-slate-300 bg-white px-4 py-2 text-slate-800 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
               variant="default"
             >
               Iptal

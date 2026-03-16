@@ -368,10 +368,11 @@ class AuditService:
         if validate:
             missing = self._validate_required_fields(entry_dict, entry.event_type)
             if missing:
-                logger.warning(f"Audit entry missing required fields: {missing}")
-                # Log anyway but mark as incomplete
-                entry_dict["extra_data"] = entry_dict.get("extra_data", {})
-                entry_dict["extra_data"]["_missing_fields"] = missing
+                logger.error(f"Audit entry missing required fields: {missing}")
+                raise ValueError(
+                    f"Audit entry incomplete: missing required fields {missing} "
+                    f"for event type {entry.event_type.value}"
+                )
         
         # Compute entry hash
         entry_dict["_entry_hash"] = self._compute_entry_hash(entry_dict)

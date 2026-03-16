@@ -1,8 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Zap, Save, RefreshCw, CheckCircle, XCircle, FileText, Upload, Eye, Trash2, Download, MessageSquare } from 'lucide-react';
-import { useListAdminIntegrations } from '@/lib/api-client';
-import { adminApi } from '@/lib/apiMutator';
+import {
+    useListAdminIntegrations,
+    useListAdminIntegrationVatanSmConfig,
+    useUpdateAdminIntegrationVatanSmConfig,
+    useListAdminIntegrationBirfaturaConfig,
+    useUpdateAdminIntegrationBirfaturaConfig,
+    useListAdminIntegrationTelegramConfig,
+    useUpdateAdminIntegrationTelegramConfig,
+    useListAdminExampleDocuments,
+    useCreateAdminExampleDocumentUpload,
+    useDeleteAdminExampleDocument,
+    getAdminExampleDocumentDownload,
+} from '@/lib/api-client';
 import toast from 'react-hot-toast';
 import * as Dialog from '@radix-ui/react-dialog';
 import { XMarkIcon } from '@heroicons/react/24/outline';
@@ -100,140 +111,76 @@ export default function IntegrationsPage() {
         enabled: false
     });
 
+    // --- Declarative data loading via Orval query hooks ---
+    const { data: vatanSmsData } = useListAdminIntegrationVatanSmConfig();
+    const { data: birfaturaData } = useListAdminIntegrationBirfaturaConfig();
+    const { data: telegramData } = useListAdminIntegrationTelegramConfig();
+    const { data: exampleDocsData } = useListAdminExampleDocuments();
+
     useEffect(() => {
-        // Load configurations
-        const loadConfigs = async () => {
-            // 1. BirFatura
-            try {
-                const response = await adminApi({
-                    url: '/admin/integrations/birfatura/config',
-                    method: 'GET'
-                }) as ApiResponse<{
-                    integrationKey?: string;
-                    appApiKey?: string;
-                    appSecretKey?: string;
-                }>;
+        if (!birfaturaData) return;
+        const d = birfaturaData as Record<string, unknown>;
+        setBirFaturaConfig({
+            integrationKey: String(d.integrationKey ?? ''),
+            appApiKey: String(d.appApiKey ?? ''),
+            appSecretKey: String(d.appSecretKey ?? ''),
+        });
+    }, [birfaturaData]);
 
-                if (response.success && response.data) {
-                    setBirFaturaConfig({
-                        integrationKey: response.data.integrationKey || '',
-                        appApiKey: response.data.appApiKey || '',
-                        appSecretKey: response.data.appSecretKey || ''
-                    });
-                }
-            } catch (e) {
-                // Check if e is object and has message potentially
-                const errMsg = e instanceof Error ? e.message : String(e);
-                // Safe check
-                if (typeof errMsg === 'string' && errMsg.includes('404')) {
-                    // Config might not exist yet, which is fine
-                } else {
-                    console.error('Failed to load BirFatura config', e);
-                }
-            }
+    useEffect(() => {
+        if (!vatanSmsData) return;
+        const d = vatanSmsData as Record<string, unknown>;
+        setSmsConfig({
+            provider: 'vatan-sms',
+            username: String(d.username ?? ''),
+            password: String(d.password ?? ''),
+            senderId: String(d.senderId ?? ''),
+            enabled: d.isActive === true,
+        });
+    }, [vatanSmsData]);
 
-            // 2. Vatan SMS
-            try {
-                const response = await adminApi({
-                    url: '/admin/integrations/vatan-sms/config',
-                    method: 'GET'
-                }) as ApiResponse<{
-                    username?: string;
-                    password?: string;
-                    senderId?: string;
-                    isActive?: boolean;
-                }>;
+    useEffect(() => {
+        if (!telegramData) return;
+        const d = telegramData as Record<string, unknown>;
+        setTelegramConfig({
+            botToken: String(d.botToken ?? ''),
+            chatId: String(d.chatId ?? ''),
+            enabled: d.isActive === true,
+        });
+    }, [telegramData]);
 
-                if (response.success && response.data) {
-                    setSmsConfig({
-                        provider: 'vatan-sms',
-                        username: response.data.username || '',
-                        password: response.data.password || '',
-                        senderId: response.data.senderId || '',
-                        enabled: response.data.isActive === true // Explicitly use isActive
-                    });
-                }
-            } catch (e) {
-                console.error('Failed to load VatanSMS config', e);
-            }
-
-            // 3. Telegram
-            try {
-                const response = await adminApi({
-                    url: '/admin/integrations/telegram/config',
-                    method: 'GET'
-                }) as ApiResponse<{
-                    botToken?: string;
-                    chatId?: string;
-                    isActive?: boolean;
-                }>;
-
-                if (response.success && response.data) {
-                    setTelegramConfig({
-                        botToken: response.data.botToken || '',
-                        chatId: response.data.chatId || '',
-                        enabled: response.data.isActive === true
-                    });
-                }
-            } catch (e) {
-                console.error('Failed to load Telegram config', e);
-            }
-
-            // 4. Load SMS Documents from API
-            try {
-                const docsResponse = await adminApi({
-                    url: '/admin/example-documents',
-                    method: 'GET'
-                }) as ApiResponse<ExampleDocumentResponse[]>;
-
-                if (docsResponse.success && docsResponse.data) {
-                    const docs = docsResponse.data;
-
-                    // Find contract document
-                    const contractDoc = docs.find(d => d.document_type === 'contract');
-                    if (contractDoc && contractDoc.exists) {
-                        setSmsDocuments(prev => ({
-                            ...prev,
-                            contractDocument: {
-                                filename: contractDoc.filename,
-                                url: contractDoc.url
-                            }
-                        }));
-                    }
-
-                    // Find example document
-                    const exampleDoc = docs.find(d => d.document_type === 'example');
-                    if (exampleDoc && exampleDoc.exists) {
-                        setSmsDocuments(prev => ({
-                            ...prev,
-                            exampleDocument: {
-                                filename: exampleDoc.filename,
-                                url: exampleDoc.url
-                            }
-                        }));
-                    }
-                }
-            } catch (e) {
-                console.log('Failed to load SMS documents', e);
-            }
-        };
-        loadConfigs();
-    }, []);
+    useEffect(() => {
+        if (!exampleDocsData) return;
+        const docs = (Array.isArray(exampleDocsData) ? exampleDocsData : []) as ExampleDocumentResponse[];
+        const contractDoc = docs.find(d => d.document_type === 'contract');
+        if (contractDoc && contractDoc.exists) {
+            setSmsDocuments(prev => ({ ...prev, contractDocument: { filename: contractDoc.filename, url: contractDoc.url } }));
+        }
+        const exampleDoc = docs.find(d => d.document_type === 'example');
+        if (exampleDoc && exampleDoc.exists) {
+            setSmsDocuments(prev => ({ ...prev, exampleDocument: { filename: exampleDoc.filename, url: exampleDoc.url } }));
+        }
+    }, [exampleDocsData]);
 
 
     const integrations = getIntegrations(integrationsData);
 
+    // --- Mutation hooks ---
+    const { mutateAsync: saveVatanSms } = useUpdateAdminIntegrationVatanSmConfig();
+    const { mutateAsync: saveBirFatura } = useUpdateAdminIntegrationBirfaturaConfig();
+    const { mutateAsync: saveTelegram } = useUpdateAdminIntegrationTelegramConfig();
+    const { mutateAsync: uploadDoc } = useCreateAdminExampleDocumentUpload();
+    const { mutateAsync: deleteDoc } = useDeleteAdminExampleDocument();
+
     const handleSave = async () => {
         try {
-            await adminApi({
-                url: '/admin/integrations/vatan-sms/config',
-                method: 'PUT',
+            await saveVatanSms({
                 data: {
                     username: smsConfig.username,
                     password: smsConfig.password,
                     senderId: smsConfig.senderId,
-                    isActive: smsConfig.enabled
-                }
+                    isActive: smsConfig.enabled,
+                },
             });
             toast.success('VatanSMS ayarları kaydedildi');
             queryClient.invalidateQueries({ queryKey: ['/api/admin/integrations'] });
@@ -245,14 +192,12 @@ export default function IntegrationsPage() {
 
     const handleSaveBirFatura = async () => {
         try {
-            await adminApi({
-                url: '/admin/integrations/birfatura/config',
-                method: 'PUT',
+            await saveBirFatura({
                 data: {
                     integrationKey: birFaturaConfig.integrationKey,
                     appApiKey: birFaturaConfig.appApiKey,
-                    appSecretKey: birFaturaConfig.appSecretKey
-                }
+                    appSecretKey: birFaturaConfig.appSecretKey,
+                },
             });
             toast.success('BirFatura ayarları kaydedildi');
         } catch (error) {
@@ -263,14 +208,12 @@ export default function IntegrationsPage() {
 
     const handleSaveTelegram = async () => {
         try {
-            await adminApi({
-                url: '/admin/integrations/telegram/config',
-                method: 'PUT',
+            await saveTelegram({
                 data: {
                     botToken: telegramConfig.botToken,
                     chatId: telegramConfig.chatId,
-                    isActive: telegramConfig.enabled
-                }
+                    isActive: telegramConfig.enabled,
+                },
             });
             toast.success('Telegram ayarları kaydedildi');
         } catch (error) {
@@ -293,22 +236,16 @@ export default function IntegrationsPage() {
         setUploadingDoc(docType);
 
         try {
-            const formData = new FormData();
-            formData.append('file', file);
+            const response = await uploadDoc({
+                data: { file },
+                params: { document_type: docType },
+            });
 
-            const response = await adminApi({
-                url: `/admin/example-documents/upload?document_type=${docType}`,
-                method: 'POST',
-                data: formData,
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            }) as ApiResponse<ExampleDocumentResponse>;
-
-            if (response.success && response.data) {
+            const result = response as unknown as ApiResponse<ExampleDocumentResponse>;
+            if (result.success !== false && result.data) {
                 const newDoc = {
-                    filename: response.data.filename,
-                    url: response.data.url
+                    filename: result.data.filename,
+                    url: result.data.url,
                 };
 
                 if (docType === 'contract') {
@@ -329,21 +266,15 @@ export default function IntegrationsPage() {
 
     const handleDocumentDelete = async (docType: 'contract' | 'example') => {
         try {
-            const response = await adminApi({
-                url: `/admin/example-documents/${docType}`,
-                method: 'DELETE'
-            }) as ApiResponse;
+            await deleteDoc({ documentType: docType });
 
-            if (response.success) {
-                // Update state
-                if (docType === 'contract') {
-                    setSmsDocuments(prev => ({ ...prev, contractDocument: null }));
-                } else {
-                    setSmsDocuments(prev => ({ ...prev, exampleDocument: null }));
-                }
-
-                toast.success('Belge silindi');
+            if (docType === 'contract') {
+                setSmsDocuments(prev => ({ ...prev, contractDocument: null }));
+            } else {
+                setSmsDocuments(prev => ({ ...prev, exampleDocument: null }));
             }
+
+            toast.success('Belge silindi');
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Bilinmeyen hata';
             toast.error('Silme başarısız: ' + errorMessage);
@@ -361,12 +292,7 @@ export default function IntegrationsPage() {
 
     const handleDocumentDownload = async (docType: 'contract' | 'example') => {
         try {
-            // Use adminApi to get download URL
-            const response = await adminApi({
-                url: `/admin/example-documents/${docType}/download`,
-                method: 'GET',
-                responseType: 'blob'
-            }) as Blob;
+            const response = await getAdminExampleDocumentDownload(docType) as unknown as Blob;
 
             // Create blob URL and trigger download
             const blob = new Blob([response], { type: 'application/pdf' });

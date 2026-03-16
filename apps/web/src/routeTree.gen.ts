@@ -17,6 +17,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SalesRouteImport } from './routes/sales'
 import { Route as PurchasesRouteImport } from './routes/purchases'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as PersonnelRouteImport } from './routes/personnel'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as InvoicesRouteImport } from './routes/invoices'
 import { Route as InventoryRouteImport } from './routes/inventory'
@@ -95,6 +96,11 @@ const PurchasesRoute = PurchasesRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PersonnelRoute = PersonnelRouteImport.update({
+  id: '/personnel',
+  path: '/personnel',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -303,6 +309,7 @@ export interface FileRoutesByFullPath {
   '/inventory': typeof InventoryRouteWithChildren
   '/invoices': typeof InvoicesRouteWithChildren
   '/login': typeof LoginRoute
+  '/personnel': typeof PersonnelRoute
   '/profile': typeof ProfileRoute
   '/purchases': typeof PurchasesRoute
   '/sales': typeof SalesRoute
@@ -349,6 +356,7 @@ export interface FileRoutesByTo {
   '/campaigns': typeof CampaignsRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/personnel': typeof PersonnelRoute
   '/profile': typeof ProfileRoute
   '/purchases': typeof PurchasesRoute
   '/sales': typeof SalesRoute
@@ -398,6 +406,7 @@ export interface FileRoutesById {
   '/inventory': typeof InventoryRouteWithChildren
   '/invoices': typeof InvoicesRouteWithChildren
   '/login': typeof LoginRoute
+  '/personnel': typeof PersonnelRoute
   '/profile': typeof ProfileRoute
   '/purchases': typeof PurchasesRoute
   '/sales': typeof SalesRoute
@@ -449,6 +458,7 @@ export interface FileRouteTypes {
     | '/inventory'
     | '/invoices'
     | '/login'
+    | '/personnel'
     | '/profile'
     | '/purchases'
     | '/sales'
@@ -495,6 +505,7 @@ export interface FileRouteTypes {
     | '/campaigns'
     | '/forgot-password'
     | '/login'
+    | '/personnel'
     | '/profile'
     | '/purchases'
     | '/sales'
@@ -543,6 +554,7 @@ export interface FileRouteTypes {
     | '/inventory'
     | '/invoices'
     | '/login'
+    | '/personnel'
     | '/profile'
     | '/purchases'
     | '/sales'
@@ -593,6 +605,7 @@ export interface RootRouteChildren {
   InventoryRoute: typeof InventoryRouteWithChildren
   InvoicesRoute: typeof InvoicesRouteWithChildren
   LoginRoute: typeof LoginRoute
+  PersonnelRoute: typeof PersonnelRoute
   ProfileRoute: typeof ProfileRoute
   PurchasesRoute: typeof PurchasesRoute
   SalesRoute: typeof SalesRoute
@@ -671,6 +684,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/personnel': {
+      id: '/personnel'
+      path: '/personnel'
+      fullPath: '/personnel'
+      preLoaderRoute: typeof PersonnelRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -1035,6 +1055,7 @@ const rootRouteChildren: RootRouteChildren = {
   InventoryRoute: InventoryRouteWithChildren,
   InvoicesRoute: InvoicesRouteWithChildren,
   LoginRoute: LoginRoute,
+  PersonnelRoute: PersonnelRoute,
   ProfileRoute: ProfileRoute,
   PurchasesRoute: PurchasesRoute,
   SalesRoute: SalesRoute,

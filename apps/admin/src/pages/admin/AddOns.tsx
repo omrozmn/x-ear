@@ -1,4 +1,5 @@
 import React from 'react';
+import { z } from 'zod';
 
 import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -15,14 +16,10 @@ interface AddOn {
     name: string;
     slug?: string;
     price: number;
-    addon_type?: string;
     addonType?: string;
-    is_active?: boolean;
     isActive?: boolean;
     description?: string;
-    limit_amount?: number;
     limitAmount?: number;
-    unit_name?: string;
     unitName?: string;
     currency?: string;
 }
@@ -59,6 +56,12 @@ interface AddOnFormData {
     currency: string;
 }
 
+const addonFormSchema = z.object({
+    name: z.string().min(1, 'Eklenti adi gerekli'),
+    price: z.number().min(0, 'Fiyat 0 veya ustu olmali'),
+    addon_type: z.enum(['FLAT_FEE', 'PER_USER', 'USAGE_BASED'], { errorMap: () => ({ message: 'Gecerli bir tip secin' }) }),
+});
+
 function getApiErrorMessage(error: unknown, fallback: string): string {
     const apiError = error as ApiErrorLike;
     return apiError.response?.data?.error?.message || fallback;
@@ -88,14 +91,10 @@ function normalizeAddon(value: AddonRead | Record<string, unknown>): AddOn | nul
         slug: typeof value.slug === 'string' ? value.slug : undefined,
         description: typeof value.description === 'string' ? value.description : undefined,
         currency: typeof value.currency === 'string' ? value.currency : undefined,
-        addonType: typeof value.addonType === 'string' ? value.addonType : undefined,
-        addon_type: typeof value.addon_type === 'string' ? value.addon_type : typeof value.addonType === 'string' ? value.addonType : undefined,
-        isActive: typeof value.isActive === 'boolean' ? value.isActive : undefined,
-        is_active: typeof value.is_active === 'boolean' ? value.is_active : typeof value.isActive === 'boolean' ? value.isActive : undefined,
-        limitAmount: typeof value.limitAmount === 'number' ? value.limitAmount : undefined,
-        limit_amount: typeof value.limit_amount === 'number' ? value.limit_amount : typeof value.limitAmount === 'number' ? value.limitAmount : undefined,
-        unitName: typeof value.unitName === 'string' ? value.unitName : undefined,
-        unit_name: typeof value.unit_name === 'string' ? value.unit_name : typeof value.unitName === 'string' ? value.unitName : undefined,
+        addonType: typeof value.addonType === 'string' ? value.addonType : typeof value.addon_type === 'string' ? value.addon_type : undefined,
+        isActive: typeof value.isActive === 'boolean' ? value.isActive : typeof value.is_active === 'boolean' ? value.is_active : undefined,
+        limitAmount: typeof value.limitAmount === 'number' ? value.limitAmount : typeof value.limit_amount === 'number' ? value.limit_amount : undefined,
+        unitName: typeof value.unitName === 'string' ? value.unitName : typeof value.unit_name === 'string' ? value.unit_name : undefined,
     };
 }
 
@@ -158,8 +157,8 @@ const AddOns: React.FC = () => {
                 name: addon.name || '',
                 price: addon.price || 0,
                 description: addon.description || '',
-                addon_type: (addon.addon_type || addon.addonType || 'FLAT_FEE') as AddonType,
-                is_active: addon.is_active ?? addon.isActive ?? true,
+                addon_type: (addon.addonType || 'FLAT_FEE') as AddonType,
+                is_active: addon.isActive ?? true,
                 currency: addon.currency || 'TRY'
             });
         } else {
@@ -181,6 +180,14 @@ const AddOns: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
+
+        const validation = addonFormSchema.safeParse(formData);
+        if (!validation.success) {
+            toast.error(validation.error.errors[0].message);
+            setIsSubmitting(false);
+            return;
+        }
+
         try {
             const payload: AddonCreate | AddonUpdate = {
                 name: formData.name,
@@ -247,7 +254,7 @@ const AddOns: React.FC = () => {
                 data: {
                     name: statusAddon.name,
                     price: statusAddon.price,
-                    isActive: !(statusAddon.is_active ?? statusAddon.isActive ?? false)
+                    isActive: !(statusAddon.isActive ?? false)
                 }
             });
             await queryClient.invalidateQueries({ queryKey: ['/admin/addons'] });
@@ -276,7 +283,7 @@ const AddOns: React.FC = () => {
             header: 'Tip',
             mobileHidden: true,
             render: (addon: AddOn) => (
-                <span className="text-gray-500 dark:text-gray-400">{addon.addon_type || addon.addonType}</span>
+                <span className="text-gray-500 dark:text-gray-400">{addon.addonType}</span>
             )
         },
         {
@@ -290,8 +297,8 @@ const AddOns: React.FC = () => {
             key: 'is_active',
             header: 'Durum',
             render: (addon: AddOn) => (
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${(addon.is_active ?? addon.isActive) ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'}`}>
-                    {(addon.is_active ?? addon.isActive) ? 'Aktif' : 'Pasif'}
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${(addon.isActive) ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'}`}>
+                    {(addon.isActive) ? 'Aktif' : 'Pasif'}
                 </span>
             )
         },
@@ -302,13 +309,13 @@ const AddOns: React.FC = () => {
                 <div className="flex justify-end space-x-2">
                     <button
                         onClick={(e) => { e.stopPropagation(); handleStatusChangeClick(addon); }}
-                        className={`inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded focus:outline-none focus:ring-2 focus:ring-offset-2 touch-feedback ${(addon.is_active ?? addon.isActive)
+                        className={`inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded focus:outline-none focus:ring-2 focus:ring-offset-2 touch-feedback ${(addon.isActive)
                             ? 'text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:ring-yellow-500 dark:bg-yellow-900 dark:text-yellow-200'
                             : 'text-green-700 bg-green-100 hover:bg-green-200 focus:ring-green-500 dark:bg-green-900 dark:text-green-200'
                             }`}
-                        title={(addon.is_active ?? addon.isActive) ? 'Pasif Yap' : 'Aktif Yap'}
+                        title={(addon.isActive) ? 'Pasif Yap' : 'Aktif Yap'}
                     >
-                        {(addon.is_active ?? addon.isActive) ? 'Pasife Al' : 'Aktifleştir'}
+                        {(addon.isActive) ? 'Pasife Al' : 'Aktifleştir'}
                     </button>
                     <button
                         onClick={(e) => { e.stopPropagation(); handleOpenModal(addon); }}
@@ -497,7 +504,7 @@ const AddOns: React.FC = () => {
                             </Dialog.Title>
                         </div>
                         <div className="mb-6 text-sm text-gray-500">
-                            Bu eklentinin durumunu <strong>{statusAddon?.is_active ? 'Pasif' : 'Aktif'}</strong> olarak değiştirmek istediğinize emin misiniz?
+                            Bu eklentinin durumunu <strong>{statusAddon?.isActive ? 'Pasif' : 'Aktif'}</strong> olarak değiştirmek istediğinize emin misiniz?
                         </div>
                         <div className="flex justify-end space-x-3">
                             <Dialog.Close asChild>

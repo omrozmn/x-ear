@@ -16,12 +16,15 @@ import { TabExportButton } from '../components/TabExportButton';
 import type { ActivityLogRead, ResponseMeta } from '@/api/generated/schemas';
 import type { FilterState } from '../types';
 import { translateActivityAction, translateActivityMessage } from '../utils/activityLogPresentation';
+import { usePermissions } from '../../../hooks/usePermissions';
 
 interface ActivityTabProps {
     filters: FilterState;
 }
 
 export function ActivityTab({ filters }: ActivityTabProps) {
+    const { hasPermission } = usePermissions();
+    const canViewDetails = hasPermission('sensitive.reports.activity.details.view');
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState(20);
     const [selectedLog, setSelectedLog] = useState<ActivityLogRead | null>(null);
@@ -87,7 +90,7 @@ export function ActivityTab({ filters }: ActivityTabProps) {
                         {record.userName || '-'}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
-                        {record.userEmail || ''}
+                        {canViewDetails ? (record.userEmail || '') : ''}
                     </p>
                 </>
             )
@@ -132,7 +135,7 @@ export function ActivityTab({ filters }: ActivityTabProps) {
                     onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedLog(record); }}
                     variant="ghost"
                     className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors !w-auto !h-auto"
-                    title="Detay"
+                    title={canViewDetails ? 'Detay' : 'Detaylar gizli'}
                 >
                     <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 </Button>

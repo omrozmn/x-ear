@@ -2,9 +2,10 @@
  * CashflowPage Component
  * Main cashflow management page
  */
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Button, Modal, Pagination } from '@x-ear/ui-web';
 import { Plus, RefreshCw, Download, Filter, Trash2 } from 'lucide-react';
+import { useLocation, useNavigate } from '@tanstack/react-router';
 import { CashflowStats } from '../components/cashflow/CashflowStats';
 import { CashflowFilters } from '../components/cashflow/CashflowFilters';
 import { CashflowTable } from '../components/cashflow/CashflowTable';
@@ -18,8 +19,11 @@ import {
 import { CashRecordDetailModal } from '../components/cashflow/CashRecordDetailModal';
 import type { CashflowFilters as CashflowFiltersType, CashRecord, CashRecordFormData } from '../types/cashflow';
 import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
+import { PermissionGate } from '@/components/PermissionGate';
 
 export function CashflowPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [filters, setFilters] = useState<CashflowFiltersType>({});
   const [showFilters, setShowFilters] = useState(false);
   const [showNewRecordModal, setShowNewRecordModal] = useState(false);
@@ -27,6 +31,10 @@ export function CashflowPage() {
   const [recordToDelete, setRecordToDelete] = useState<CashRecord | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
+  const requestedTransactionType = useMemo(() => {
+    const value = (location.search as Record<string, unknown>)?.new;
+    return value === 'income' || value === 'expense' ? value : undefined;
+  }, [location.search]);
 
   // Hooks
   const { data, isLoading, error, refetch } = useCashRecords(filters);
@@ -101,9 +109,22 @@ export function CashflowPage() {
 
   const totalPages = Math.ceil(records.length / itemsPerPage);
 
+  useEffect(() => {
+    if (requestedTransactionType) {
+      setShowNewRecordModal(true);
+    }
+  }, [requestedTransactionType]);
+
   // Handlers
   const handleRefresh = () => {
     refetch();
+  };
+
+  const handleCloseNewRecordModal = () => {
+    setShowNewRecordModal(false);
+    if (requestedTransactionType) {
+      navigate({ to: '/cashflow' });
+    }
   };
 
   const handleClearFilters = () => {
@@ -192,14 +213,18 @@ export function CashflowPage() {
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Yenile
               </Button>
-              <Button variant="outline" onClick={handleExport}>
-                <Download className="h-4 w-4 mr-2" />
-                Dışa Aktar
-              </Button>
-              <Button onClick={() => setShowNewRecordModal(true)} className="premium-gradient tactile-press">
-                <Plus className="h-4 w-4 mr-2" />
-                Yeni Kayıt
-              </Button>
+              <PermissionGate permission="finance.payments.export.view">
+                <Button variant="outline" onClick={handleExport}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Dışa Aktar
+                </Button>
+              </PermissionGate>
+              <PermissionGate permission="finance.cash_register">
+                <Button onClick={() => setShowNewRecordModal(true)} className="premium-gradient tactile-press">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Yeni Kayıt
+                </Button>
+              </PermissionGate>
             </>
           )}
         />
@@ -274,9 +299,10 @@ export function CashflowPage() {
       {/* Modals */}
       <CashflowModal
         isOpen={showNewRecordModal}
-        onClose={() => setShowNewRecordModal(false)}
+        onClose={handleCloseNewRecordModal}
         onSave={handleSaveRecord}
         isLoading={createMutation.isPending}
+        lockedTransactionType={requestedTransactionType}
       />
 
       <CashRecordDetailModal
@@ -316,9 +342,11 @@ export function CashflowPage() {
             <Button variant="outline" onClick={() => setRecordToDelete(null)}>
               İptal
             </Button>
-            <Button variant="danger" onClick={confirmDelete} disabled={deleteMutation.isPending}>
-              {deleteMutation.isPending ? 'Siliniyor...' : 'Sil'}
-            </Button>
+            <PermissionGate permission="finance.cash_register">
+              <Button variant="danger" onClick={confirmDelete} disabled={deleteMutation.isPending}>
+                {deleteMutation.isPending ? 'Siliniyor...' : 'Sil'}
+              </Button>
+            </PermissionGate>
           </div>
         </div>
       </Modal>

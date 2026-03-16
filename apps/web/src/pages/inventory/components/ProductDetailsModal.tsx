@@ -3,6 +3,7 @@ import { Modal, Button, Badge } from '@x-ear/ui-web';
 import { Edit, Package, History, Printer, Shield, Barcode } from 'lucide-react';
 import { InventoryItem } from '../../../types/inventory';
 import { getCategoryDisplay } from '../../../utils/category-mapping';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface ProductDetailsModalProps {
   isOpen: boolean;
@@ -19,6 +20,8 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
   onEdit,
   onStockUpdate,
 }) => {
+  const { hasPermission } = usePermissions();
+  const canViewCost = hasPermission('sensitive.inventory.overview.cost.view');
   const [activeTab, setActiveTab] = useState<'details' | 'inventory' | 'history'>('details');
 
   if (!product) return null;
@@ -120,7 +123,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
               </div>
               <div class="field">
                 <div class="label">Maliyet:</div>
-                <div class="value">₺${product.cost?.toLocaleString()}</div>
+                <div class="value">${canViewCost ? `₺${product.cost?.toLocaleString()}` : 'Bu rol icin gizli'}</div>
               </div>
               <div class="field">
                 <div class="label">Yeniden Sipariş Seviyesi:</div>
@@ -285,12 +288,12 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Maliyet</label>
-                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">₺{product.cost?.toLocaleString()}</p>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{canViewCost ? `₺${product.cost?.toLocaleString()}` : 'Bu rol icin gizli'}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Kar Marjı</label>
                     <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                      {product.price && product.cost ? `%${(((product.price - product.cost) / product.cost) * 100).toFixed(1)}` : '-'}
+                      {canViewCost && product.price && product.cost ? `%${(((product.price - product.cost) / product.cost) * 100).toFixed(1)}` : 'Bu rol icin gizli'}
                     </p>
                   </div>
                 </div>

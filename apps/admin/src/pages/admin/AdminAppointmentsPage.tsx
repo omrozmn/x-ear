@@ -84,7 +84,7 @@ const AdminAppointmentsPage: React.FC = () => {
             render: (appt: ExtendedAppointment) => (
                 <div>
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
-                        {new Date(appt.date).toLocaleDateString('tr-TR')}
+                        {appt.date ? new Date(appt.date).toLocaleDateString('tr-TR') : '-'}
                     </div>
                     <div className="text-sm text-gray-500 dark:text-gray-400">
                         {appt.time} ({appt.duration ?? 0} dk)

@@ -10,6 +10,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useIsMobile } from '@/hooks/useBreakpoint';
 import { cn } from '@/lib/utils';
 import toast from 'react-hot-toast';
+import { PermissionGate } from '@/components/PermissionGate';
 
 type PaymentRow = Omit<PaymentRecordRead, 'partyName'> & { partyName?: string };
 
@@ -221,10 +222,12 @@ export function PaymentsPage() {
         eyebrow={{ tr: 'Tahsilat', en: 'Collections' }}
         actions={(
           <>
-            <Button variant="outline" className="flex items-center gap-2" onClick={exportToCsv}>
-              <Download size={18} />
-              Dışa Aktar
-            </Button>
+            <PermissionGate permission="finance.payments.export.view">
+              <Button variant="outline" className="flex items-center gap-2" onClick={exportToCsv}>
+                <Download size={18} />
+                Dışa Aktar
+              </Button>
+            </PermissionGate>
             <Button variant="outline" className="flex items-center gap-2" onClick={handleRefresh}>
               <RefreshCw size={18} />
               Yenile
@@ -365,7 +368,9 @@ export function PaymentsPage() {
         <div className={`fixed ${isMobile ? 'bottom-24' : 'bottom-6'} left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl px-4 md:px-6 py-3 flex items-center gap-3 md:gap-4 w-[90%] md:w-auto overflow-x-auto whitespace-nowrap`}>
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{selectedIds.size} kayıt seçildi</span>
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
-          <Button variant="ghost" onClick={exportToCsv} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-colors h-auto"><Download className="w-4 h-4" /> CSV Dışa Aktar</Button>
+          <PermissionGate permission="finance.payments.export.view">
+            <Button variant="ghost" onClick={exportToCsv} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-colors h-auto"><Download className="w-4 h-4" /> CSV Dışa Aktar</Button>
+          </PermissionGate>
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
           <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors h-auto"><X className="w-4 h-4" /> Seçimi Kaldır</Button>
         </div>

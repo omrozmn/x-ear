@@ -37,13 +37,39 @@ ALGORITHM = "HS256"
 class AccessContextFromToken:
     """Lightweight access context parsed directly from JWT token"""
     
+    # Bidirectional legacy <-> modern permission aliases
+    _LEGACY_TO_MODERN = {
+        "patient:read": "parties.view", "patient:write": "parties.create",
+        "patient:delete": "parties.delete", "patient:export": "parties.export",
+        "sale:read": "sales.view", "sale:write": "sales.create",
+        "inventory:read": "inventory.view", "inventory:write": "inventory.manage",
+        "finance:read": "finance.view", "finance:write": "finance.payments",
+        "appointment:read": "appointments.view", "appointment:write": "appointments.create",
+        "dashboard:read": "dashboard.view",
+        "reports:view": "reports.view", "reports:export": "reports.export",
+        "report:read": "reports.view",
+    }
+    # Reverse map: modern -> set of legacy aliases
+    _MODERN_TO_LEGACY: dict[str, list[str]] = {}
+    for _lk, _mv in _LEGACY_TO_MODERN.items():
+        _MODERN_TO_LEGACY.setdefault(_mv, []).append(_lk)
+
     def __init__(self, payload: dict):
         self.payload = payload
         self.user_id = payload.get("sub")
         self.tenant_id = payload.get("tenant_id") or payload.get("access.tenant_id")
         self.role = payload.get("role")
         self.user_type = payload.get("user_type")
-        self.permissions = payload.get("role_permissions", [])
+        # Read from both role_permissions and permissions claims
+        raw_perms = payload.get("role_permissions") or payload.get("permissions") or []
+        # Expand with aliases so both legacy and modern names match
+        expanded = set(raw_perms)
+        for p in raw_perms:
+            if p in self._LEGACY_TO_MODERN:
+                expanded.add(self._LEGACY_TO_MODERN[p])
+            if p in self._MODERN_TO_LEGACY:
+                expanded.update(self._MODERN_TO_LEGACY[p])
+        self.permissions = list(expanded)
         self.is_impersonating = payload.get("is_impersonating", False)
         
     @property

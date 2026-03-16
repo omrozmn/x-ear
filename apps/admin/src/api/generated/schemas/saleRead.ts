@@ -8,6 +8,7 @@
 import type { SaleReadCreatedAt } from './saleReadCreatedAt';
 import type { SaleReadUpdatedAt } from './saleReadUpdatedAt';
 import type { SaleReadProductId } from './saleReadProductId';
+import type { SaleReadSalesOwnerUserId } from './saleReadSalesOwnerUserId';
 import type { SaleReadTenantId } from './saleReadTenantId';
 import type { SaleReadBranchId } from './saleReadBranchId';
 import type { SaleReadSaleDate } from './saleReadSaleDate';
@@ -67,6 +68,7 @@ export interface SaleRead {
   id: string;
   partyId: string;
   productId?: SaleReadProductId;
+  salesOwnerUserId?: SaleReadSalesOwnerUserId;
   tenantId?: SaleReadTenantId;
   branchId?: SaleReadBranchId;
   saleDate?: SaleReadSaleDate;

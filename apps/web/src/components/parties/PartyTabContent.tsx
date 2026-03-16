@@ -15,6 +15,9 @@ import { PartyNotesTab } from './PartyNotesTab';
 import { PartySGKTab } from './PartySGKTab';
 import { PartyHearingTestsTab } from './PartyHearingTestsTab';
 import { Clock } from 'lucide-react';
+import { usePermissions } from '../../hooks/usePermissions';
+import { useSector } from '../../hooks/useSector';
+import { NoPermissionPlaceholder } from '../ui/NoPermissionPlaceholder';
 
 interface PartyTabContentProps {
   party: Party;
@@ -42,6 +45,16 @@ export const PartyTabContent: React.FC<PartyTabContentProps> = ({
   showNoteModal,
   onCloseNoteModal
 }) => {
+  const { hasPermission, isSuperAdmin } = usePermissions();
+  const { isModuleEnabled } = useSector();
+
+  // Module-gated tabs: if the module is disabled, treat as no permission
+  const tabModuleMap: Record<string, string> = {
+    'hearing-tests': 'hearing_tests',
+    'devices': 'devices',
+    'sgk': 'sgk',
+  };
+
   if (isLoading || !party) {
     return (
       <div className="p-6" role="status" aria-label="Hasta bilgileri yükleniyor">
@@ -62,6 +75,31 @@ export const PartyTabContent: React.FC<PartyTabContentProps> = ({
   );
 
   // _formatDate function removed - not used
+
+  // Permission-based tab content guard
+  const tabPermissionMap: Record<string, string> = {
+    'general': 'parties.detail.general.view',
+    'overview': 'parties.detail.general.view',
+    'devices': 'parties.detail.devices.view',
+    'sales': 'parties.detail.sales.view',
+    'timeline': 'parties.detail.timeline.view',
+    'documents': 'parties.detail.documents.view',
+    'appointments': 'parties.detail.appointments.view',
+    'hearing-tests': 'parties.detail.hearing_tests.view',
+    'sgk': 'parties.detail.sgk.view',
+    'notes': 'parties.detail.notes.view',
+  };
+
+  // Check module gating first
+  const requiredModule = tabModuleMap[activeTab];
+  if (requiredModule && !isModuleEnabled(requiredModule)) {
+    return null; // Module disabled for this sector — tab shouldn't be visible
+  }
+
+  const requiredPerm = tabPermissionMap[activeTab];
+  if (requiredPerm && !isSuperAdmin && !hasPermission(requiredPerm)) {
+    return <NoPermissionPlaceholder message="Bu sekmeyi görüntüleme izniniz yok" />;
+  }
 
   switch (activeTab) {
     case 'general':

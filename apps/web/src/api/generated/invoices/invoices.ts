@@ -55,10 +55,12 @@ import type {
   ResponseEnvelopeListInvoiceTemplate,
   ResponseEnvelopeNoneType,
   ResponseEnvelopeOutgoingInvoiceListResponse,
+  ResponseEnvelopeProductSearchResponse,
   ResponseEnvelopeSupplierInvoiceItemsListResponse,
   ResponseEnvelopeSupplierSuggestionResponse,
   SchemasBaseResponseEnvelopeBulkUploadResponse2,
   SchemasBaseResponseEnvelopeDict,
+  SearchIncomingInvoicesByProductParams,
   SuggestSupplierMatchParams
 } from '.././schemas';
 
@@ -245,6 +247,103 @@ export function useSuggestSupplierMatch<TData = Awaited<ReturnType<typeof sugges
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
   const queryOptions = getSuggestSupplierMatchQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+/**
+ * Search all incoming invoices for line items whose product_name contains the
+given keyword. Used by the device-replacement modal to pre-fill return invoice
+data from an existing purchase invoice.
+
+Returns invoices grouped with their matching line items.
+ * @summary Search Incoming Invoices By Product
+ */
+export const searchIncomingInvoicesByProduct = (
+    params: SearchIncomingInvoicesByProductParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeProductSearchResponse>(
+      {url: `/api/invoices/incoming/search-by-product`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getSearchIncomingInvoicesByProductQueryKey = (params?: SearchIncomingInvoicesByProductParams,) => {
+    return [
+    `/api/invoices/incoming/search-by-product`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getSearchIncomingInvoicesByProductQueryOptions = <TData = Awaited<ReturnType<typeof searchIncomingInvoicesByProduct>>, TError = HTTPValidationError>(params: SearchIncomingInvoicesByProductParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchIncomingInvoicesByProduct>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getSearchIncomingInvoicesByProductQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchIncomingInvoicesByProduct>>> = ({ signal }) => searchIncomingInvoicesByProduct(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchIncomingInvoicesByProduct>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type SearchIncomingInvoicesByProductQueryResult = NonNullable<Awaited<ReturnType<typeof searchIncomingInvoicesByProduct>>>
+export type SearchIncomingInvoicesByProductQueryError = HTTPValidationError
+
+
+export function useSearchIncomingInvoicesByProduct<TData = Awaited<ReturnType<typeof searchIncomingInvoicesByProduct>>, TError = HTTPValidationError>(
+ params: SearchIncomingInvoicesByProductParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchIncomingInvoicesByProduct>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchIncomingInvoicesByProduct>>,
+          TError,
+          Awaited<ReturnType<typeof searchIncomingInvoicesByProduct>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useSearchIncomingInvoicesByProduct<TData = Awaited<ReturnType<typeof searchIncomingInvoicesByProduct>>, TError = HTTPValidationError>(
+ params: SearchIncomingInvoicesByProductParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchIncomingInvoicesByProduct>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchIncomingInvoicesByProduct>>,
+          TError,
+          Awaited<ReturnType<typeof searchIncomingInvoicesByProduct>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useSearchIncomingInvoicesByProduct<TData = Awaited<ReturnType<typeof searchIncomingInvoicesByProduct>>, TError = HTTPValidationError>(
+ params: SearchIncomingInvoicesByProductParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchIncomingInvoicesByProduct>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Search Incoming Invoices By Product
+ */
+
+export function useSearchIncomingInvoicesByProduct<TData = Awaited<ReturnType<typeof searchIncomingInvoicesByProduct>>, TError = HTTPValidationError>(
+ params: SearchIncomingInvoicesByProductParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchIncomingInvoicesByProduct>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getSearchIncomingInvoicesByProductQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -1517,6 +1616,68 @@ export const useUpdateInvoiceDraft = <TError = HTTPValidationError,
       > => {
 
       const mutationOptions = getUpdateInvoiceDraftMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Delete an invoice draft.
+ * @summary Delete Invoice Draft
+ */
+export const deleteInvoiceDraft = (
+    draftId: number,
+ ) => {
+      
+      
+      return customInstance<ResponseEnvelopeInvoiceActionResponse>(
+      {url: `/api/invoices/draft/${draftId}`, method: 'DELETE'
+    },
+      );
+    }
+  
+
+
+export const getDeleteInvoiceDraftMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteInvoiceDraft>>, TError,{draftId: number}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteInvoiceDraft>>, TError,{draftId: number}, TContext> => {
+
+const mutationKey = ['deleteInvoiceDraft'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteInvoiceDraft>>, {draftId: number}> = (props) => {
+          const {draftId} = props ?? {};
+
+          return  deleteInvoiceDraft(draftId,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteInvoiceDraftMutationResult = NonNullable<Awaited<ReturnType<typeof deleteInvoiceDraft>>>
+    
+    export type DeleteInvoiceDraftMutationError = HTTPValidationError
+
+    /**
+ * @summary Delete Invoice Draft
+ */
+export const useDeleteInvoiceDraft = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteInvoiceDraft>>, TError,{draftId: number}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteInvoiceDraft>>,
+        TError,
+        {draftId: number},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteInvoiceDraftMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

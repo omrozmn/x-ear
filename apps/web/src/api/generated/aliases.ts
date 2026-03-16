@@ -6,7 +6,7 @@
  * Alias eklemek için: api-aliases.json dosyasını düzenleyin
  * Yeniden üretmek için: npm run gen:aliases
  * 
- * Generated: 2026-03-15T01:42:00.917Z
+ * Generated: 2026-03-16T03:01:29.926Z
  */
 
 // ACTIVITY_LOGS
@@ -601,6 +601,7 @@ export {
 export {
   useListIncomingInvoices,
   useSuggestSupplierMatch,
+  useSearchIncomingInvoicesByProduct,
   useListSupplierInvoiceItems,
   useListOutgoingInvoices,
   useConvertInvoicesToPurchases,
@@ -617,6 +618,7 @@ export {
   useMarkIncomingInvoiceRead,
   useCreateInvoiceDraft,
   useUpdateInvoiceDraft,
+  useDeleteInvoiceDraft,
   useGetInvoiceDraft,
   useDeletePurchase,
   useRepairFormData,
@@ -748,6 +750,18 @@ export {
   useUpdatePermissionRole,
 } from './permissions/permissions';
 
+// PERSONNEL
+export {
+  useGetPersonnelOverview,
+  useListPersonnelEmployees,
+  useListPersonnelLeave,
+  useListPersonnelDocuments,
+  useListPersonnelCompensation,
+  useGetPersonnelSettings,
+  useUpdatePersonnelSettings,
+  useGetAdminPersonnelOverview,
+} from './personnel/personnel';
+
 // PLANS
 export {
   useListPlans,
@@ -772,6 +786,13 @@ export {
 export {
   useProcessUnsubscribe,
 } from './public/public';
+
+// PURCHASES
+export {
+  useListManualPurchases,
+  useCreateManualPurchase,
+  useRecordManualPurchasePayment,
+} from './purchases/purchases';
 
 // REGISTRATION
 export {
@@ -804,6 +825,7 @@ export {
   useListReportRemainingPayments,
   useListReportCashflowSummary,
   useListReportPosMovements,
+  useListReportTracking,
 } from './reports/reports';
 
 // ROLES
@@ -999,6 +1021,7 @@ export {
   useSendUtsVerme,
   useListUtsSerialStates,
   useUpsertUtsSerialState,
+  useAddUtsSerialToInventory,
   useExecuteUtsVerme,
   useExecuteUtsAlma,
   useListUtRegistrations,

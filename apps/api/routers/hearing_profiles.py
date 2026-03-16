@@ -14,7 +14,10 @@ from services.hearing_profile_service import HearingProfileService
 from schemas.parties import HearingProfileRead
 from schemas.base import ResponseEnvelope
 
-router = APIRouter(prefix="/hearing-profiles", tags=["hearing-profiles"])
+from middleware.require_module import require_module
+from fastapi import Depends as _Depends
+
+router = APIRouter(prefix="/hearing-profiles", tags=["hearing-profiles"], dependencies=[_Depends(require_module("hearing_tests"))])
 
 
 class HearingProfileCreate(BaseModel):

@@ -27,7 +27,7 @@ class TenantStatus(str, Enum):
         return None
 
 
-from .enums import ProductCode
+from .enums import ProductCode, SectorCode
 
 class TenantBase(AppBaseModel):
     """Base tenant schema"""
@@ -50,12 +50,16 @@ class TenantBase(AppBaseModel):
     # Product (Strict)
     product_code: Optional[ProductCode] = Field(ProductCode.XEAR_HEARING, description="Product Code")
 
+    # Sector (Multi-sector platform)
+    sector: SectorCode = Field(SectorCode.HEARING, description="Business sector")
+
 
 class TenantCreate(TenantBase):
     """Schema for creating a tenant"""
     slug: Optional[str] = Field(None, description="Tenant slug (auto-generated if empty)")
     plan_id: Optional[str] = Field(None, alias="planId", description="Subscription plan ID")
     current_plan: Optional[str] = Field(None, description="Current Plan Slug") # Admin override
+    country_code: Optional[str] = Field(None, alias="countryCode", description="ISO country code")
     max_users: Optional[int] = Field(5, description="Max users")
     current_users: Optional[int] = Field(0, description="Current users")
     company_info: Optional[Dict[str, Any]] = Field(default={}, description="Company Info")
@@ -84,12 +88,20 @@ class TenantUpdate(AppBaseModel):
     description: Optional[str] = None
     slug: Optional[str] = None
     product_code: Optional[ProductCode] = None
+    sector: Optional[SectorCode] = None
+    country_code: Optional[str] = Field(None, alias="countryCode")
 
 
 class TenantRead(TenantBase, IDMixin, TimestampMixin):
     """Schema for reading a tenant"""
     # Product Identification (Optional - some old tenants may not have it)
     product_code: Optional[ProductCode] = Field(None, description="Product Code")
+
+    # Sector
+    sector: SectorCode = Field(SectorCode.HEARING, description="Business sector")
+
+    # Country
+    country_code: Optional[str] = Field(None, alias="countryCode", description="Country code")
 
     # Subscription info
     current_plan: Optional[str] = Field(None, alias="currentPlan", description="Current plan slug")

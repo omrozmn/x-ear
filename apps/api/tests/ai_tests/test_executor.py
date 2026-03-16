@@ -393,7 +393,10 @@ class TestFailureAndRollback:
             result = executor.execute_plan(plan, mode=ToolExecutionMode.EXECUTE)
         
         assert result.status == ExecutorStatus.ROLLED_BACK
-        assert result.step_results[0].rollback_executed
+        # Text-based rollback procedures are marked as rollback_pending
+        # since they can't be auto-executed (requires manual intervention)
+        assert result.step_results[0].status == "rollback_pending"
+        assert "Manual rollback required" in (result.step_results[0].error_message or "")
 
 
 # =============================================================================

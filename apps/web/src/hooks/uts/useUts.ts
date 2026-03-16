@@ -137,10 +137,11 @@ export function usePollUtsJob(jobId: string, opts?: { interval?: number; onCompl
     queryKey: ['uts', 'job', jobId, 'poll'],
     queryFn: () => utsService.getUtJob(jobId),
     enabled: !!jobId,
-    refetchInterval: (data) => {
-      if (!data) return interval;
-      if (isUtsJobStatus(data)) {
-        const { status } = data;
+    refetchInterval: (query) => {
+      const d = query.state.data;
+      if (!d) return interval;
+      if (isUtsJobStatus(d)) {
+        const { status } = d;
         if (status === 'completed' || status === 'failed' || status === 'cancelled') {
           return false;
         }

@@ -33,10 +33,12 @@ import type {
   ListReportPromissoryNoteListParams,
   ListReportPromissoryNotesParams,
   ListReportRemainingPaymentsParams,
+  ListReportTrackingParams,
   ResponseEnvelopeListPosMovementItem,
   ResponseEnvelopeListPromissoryNoteListItem,
   ResponseEnvelopeListPromissoryNotePatientItem,
   ResponseEnvelopeListRemainingPaymentItem,
+  ResponseEnvelopeListReportTrackingItem,
   ResponseEnvelopeReportCampaignsResponse,
   ResponseEnvelopeReportCashflowResponse,
   ResponseEnvelopeReportFinancialResponse,
@@ -1156,6 +1158,99 @@ export function useListReportPosMovements<TData = Awaited<ReturnType<typeof list
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
   const queryOptions = getListReportPosMovementsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+/**
+ * Track device-assignment report and delivery status
+ * @summary Report Tracking
+ */
+export const listReportTracking = (
+    params?: ListReportTrackingParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return adminApi<ResponseEnvelopeListReportTrackingItem>(
+      {url: `/api/reports/report-tracking`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getListReportTrackingQueryKey = (params?: ListReportTrackingParams,) => {
+    return [
+    `/api/reports/report-tracking`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getListReportTrackingQueryOptions = <TData = Awaited<ReturnType<typeof listReportTracking>>, TError = HTTPValidationError>(params?: ListReportTrackingParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportTracking>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListReportTrackingQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listReportTracking>>> = ({ signal }) => listReportTracking(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listReportTracking>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type ListReportTrackingQueryResult = NonNullable<Awaited<ReturnType<typeof listReportTracking>>>
+export type ListReportTrackingQueryError = HTTPValidationError
+
+
+export function useListReportTracking<TData = Awaited<ReturnType<typeof listReportTracking>>, TError = HTTPValidationError>(
+ params: undefined |  ListReportTrackingParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportTracking>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listReportTracking>>,
+          TError,
+          Awaited<ReturnType<typeof listReportTracking>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useListReportTracking<TData = Awaited<ReturnType<typeof listReportTracking>>, TError = HTTPValidationError>(
+ params?: ListReportTrackingParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportTracking>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listReportTracking>>,
+          TError,
+          Awaited<ReturnType<typeof listReportTracking>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useListReportTracking<TData = Awaited<ReturnType<typeof listReportTracking>>, TError = HTTPValidationError>(
+ params?: ListReportTrackingParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportTracking>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Report Tracking
+ */
+
+export function useListReportTracking<TData = Awaited<ReturnType<typeof listReportTracking>>, TError = HTTPValidationError>(
+ params?: ListReportTrackingParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listReportTracking>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getListReportTrackingQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import Pagination from '@/components/ui/Pagination';
 import { TenantEditModal, TenantCreateModal } from './tenants';
 import { PRODUCT_REGISTRY, getProductConfig } from '@/config/productRegistry';
+import { getCountryConfig } from '@/config/countryRegistry';
 import {
     useListAdminTenants,
     useUpdateAdminTenantStatus,
@@ -31,6 +32,8 @@ interface TenantRow extends TenantRead {
     current_plan?: string;
     billing_email?: string;
     created_at?: string;
+    countryCode?: string;
+    country_code?: string;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -72,6 +75,8 @@ function toTenantRow(value: Record<string, unknown>): TenantRow | null {
         current_plan: getString(value.current_plan),
         billing_email: getString(value.billing_email),
         created_at: getString(value.created_at),
+        countryCode: getString(value.countryCode),
+        country_code: getString(value.country_code),
     };
 }
 
@@ -247,6 +252,22 @@ export default function TenantsPage() {
                         'bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
                     }`}>
                         {productConfig.name}
+                    </span>
+                );
+            }
+        },
+        {
+            key: 'country',
+            header: 'Ülke',
+            sortable: true,
+            sortKey: 'countryCode',
+            render: (tenant: TenantRow) => {
+                const code = tenant.countryCode || tenant.country_code || 'TR';
+                const config = getCountryConfig(code);
+                return (
+                    <span className="inline-flex items-center gap-1 text-sm">
+                        <span>{config.flag}</span>
+                        <span className="text-gray-600 dark:text-gray-400">{code}</span>
                     </span>
                 );
             }

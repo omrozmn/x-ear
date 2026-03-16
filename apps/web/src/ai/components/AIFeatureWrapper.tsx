@@ -225,11 +225,13 @@ export function AIFeatureWrapper({
     );
   }, [status, isLoading, isError, capability, role, isContextValid, partyId, requirePartyContext]);
 
-  // Call onUnavailable callback when AI becomes unavailable
+  // Call onUnavailable callback when AI becomes unavailable (fire only once per transition)
+  const prevAvailableRef = React.useRef(availability.available);
   React.useEffect(() => {
-    if (!availability.available && availability.reason !== 'loading') {
+    if (prevAvailableRef.current && !availability.available && availability.reason !== 'loading') {
       onUnavailable?.(availability.reason, availability.message);
     }
+    prevAvailableRef.current = availability.available;
   }, [availability.available, availability.reason, availability.message, onUnavailable]);
 
   // Handle loading state

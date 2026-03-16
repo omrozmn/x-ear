@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/admin_parties.py
+# hypothesis_version: 6.151.6
+
+[100, 404, 500, 1000000, '/api/admin/parties', '/{party_id}', '/{party_id}/devices', '/{party_id}/sales', '/{party_id}/timeline', 'Admin Parties', 'Party not found', 'admin-list-parties', 'custom_data_json', 'data', 'devices', 'documents', 'getAdminPartyDetail', 'limit', 'listAdminParties', 'listAdminPartySales', 'page', 'pagination', 'parties', 'parties.read', 'success', 'tenantName', 'timeline', 'total', 'totalPages']

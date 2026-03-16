@@ -5,6 +5,7 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
+import type { SaleCreateSalesOwnerUserId } from './saleCreateSalesOwnerUserId';
 import type { SaleCreateSalesPrice } from './saleCreateSalesPrice';
 import type { SaleCreateDiscountType } from './saleCreateDiscountType';
 import type { SaleCreateDiscountValue } from './saleCreateDiscountValue';
@@ -25,6 +26,7 @@ import type { SaleCreateSaleDate } from './saleCreateSaleDate';
 export interface SaleCreate {
   partyId: string;
   productId: string;
+  salesOwnerUserId?: SaleCreateSalesOwnerUserId;
   salesPrice?: SaleCreateSalesPrice;
   quantity?: number;
   discountType?: SaleCreateDiscountType;

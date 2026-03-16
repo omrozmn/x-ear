@@ -22,6 +22,20 @@ import settingsTr from './locales/tr/settings.json';
 import validationEn from './locales/en/validation.json';
 import validationTr from './locales/tr/validation.json';
 
+// Sector terminology overlays
+import sectorHearingTr from './locales/tr/sectors/hearing.json';
+import sectorPharmacyTr from './locales/tr/sectors/pharmacy.json';
+import sectorHospitalTr from './locales/tr/sectors/hospital.json';
+import sectorHotelTr from './locales/tr/sectors/hotel.json';
+import sectorBeautyTr from './locales/tr/sectors/beauty.json';
+import sectorGeneralTr from './locales/tr/sectors/general.json';
+import sectorHearingEn from './locales/en/sectors/hearing.json';
+import sectorPharmacyEn from './locales/en/sectors/pharmacy.json';
+import sectorHospitalEn from './locales/en/sectors/hospital.json';
+import sectorHotelEn from './locales/en/sectors/hotel.json';
+import sectorBeautyEn from './locales/en/sectors/beauty.json';
+import sectorGeneralEn from './locales/en/sectors/general.json';
+
 // Define resources
 const resources = {
     en: {
@@ -34,6 +48,13 @@ const resources = {
         finance: financeEn,
         settings: settingsEn,
         validation: validationEn,
+        // Sector namespaces
+        sector_hearing: sectorHearingEn,
+        sector_pharmacy: sectorPharmacyEn,
+        sector_hospital: sectorHospitalEn,
+        sector_hotel: sectorHotelEn,
+        sector_beauty: sectorBeautyEn,
+        sector_general: sectorGeneralEn,
     },
     tr: {
         common: commonTr,
@@ -45,6 +66,13 @@ const resources = {
         finance: financeTr,
         settings: settingsTr,
         validation: validationTr,
+        // Sector namespaces
+        sector_hearing: sectorHearingTr,
+        sector_pharmacy: sectorPharmacyTr,
+        sector_hospital: sectorHospitalTr,
+        sector_hotel: sectorHotelTr,
+        sector_beauty: sectorBeautyTr,
+        sector_general: sectorGeneralTr,
     },
 };
 
@@ -73,5 +101,27 @@ i18n
             caches: ['localStorage'],
         }
     });
+
+/**
+ * Apply sector terminology overlay on the 'sector' namespace.
+ * Call this when the tenant sector is known (e.g., after auth + features load).
+ *
+ * Usage:
+ *   applySectorOverlay('pharmacy');
+ *   t('sector:party') // → "Müşteri"
+ */
+export function applySectorOverlay(sector: string): void {
+    const ns = `sector_${sector}`;
+    // Add 'sector' as an alias namespace pointing to the sector-specific bundle
+    const trBundle = i18n.getResourceBundle('tr', ns);
+    const enBundle = i18n.getResourceBundle('en', ns);
+
+    if (trBundle) {
+        i18n.addResourceBundle('tr', 'sector', trBundle, true, true);
+    }
+    if (enBundle) {
+        i18n.addResourceBundle('en', 'sector', enBundle, true, true);
+    }
+}
 
 export default i18n;

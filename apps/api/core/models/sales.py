@@ -212,6 +212,7 @@ class Sale(BaseModel, TenantScopedMixin):
     # Foreign keys
     party_id = Column(String(50), ForeignKey('parties.id'), nullable=False)
     product_id = Column(String(50), ForeignKey('inventory.id'), nullable=True)  # Link to inventory product
+    sales_owner_user_id = Column(String(50), ForeignKey('users.id'), nullable=True, index=True)
     # tenant_id is now inherited from TenantScopedMixin
     branch_id = Column(String(50), ForeignKey('branches.id'), nullable=True, index=True)
     
@@ -255,6 +256,7 @@ class Sale(BaseModel, TenantScopedMixin):
             'id': self.id,
             'partyId': self.party_id,
             'productId': self.product_id,
+            'salesOwnerUserId': self.sales_owner_user_id,
             'branchId': self.branch_id,
             'saleDate': self.sale_date.isoformat() if self.sale_date else None,
             'listPriceTotal': float(self.list_price_total) if self.list_price_total else None,

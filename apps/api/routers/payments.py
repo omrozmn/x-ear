@@ -117,7 +117,7 @@ class CollectPaymentRequest(BaseModel):
 @router.post("/payment-records", operation_id="createPaymentRecords", status_code=201, response_model=ResponseEnvelope[PaymentRecordRead])
 def create_payment_record(
     payment_in: PaymentRecordCreate,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("finance.payments")),
     db_session: Session = Depends(get_db)
 ):
     """Create a new payment record"""
@@ -209,7 +209,7 @@ def list_payment_records(
     page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(50, ge=1, le=100),
     sale_id: Optional[str] = Query(None, alias="saleId"),
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("finance.view")),
     db_session: Session = Depends(get_db)
 ):
     """List all payment records for the tenant"""
@@ -253,7 +253,7 @@ def get_party_payment_records(
     party_id: str,
     page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(50, ge=1, le=100),
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("finance.view")),
     db_session: Session = Depends(get_db)
 ):
     """Get all payment records for a party"""
@@ -281,7 +281,7 @@ def get_party_payment_records(
 def update_payment_record(
     record_id: str,
     payment_in: PaymentRecordUpdate,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("finance.payments")),
     db_session: Session = Depends(get_db)
 ):
     """Update a payment record"""
@@ -318,7 +318,7 @@ def update_payment_record(
 def get_party_promissory_notes(
     party_id: str,
     sale_id: Optional[str] = Query(None, alias="sale_id"),
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("finance.view")),
     db_session: Session = Depends(get_db)
 ):
     """Get all promissory notes for a party"""
@@ -342,7 +342,7 @@ def get_party_promissory_notes(
 @router.post("/promissory-notes", operation_id="createPromissoryNotes", status_code=201, response_model=ResponseEnvelope[List[PromissoryNoteRead]])
 def create_promissory_notes(
     notes_in: PromissoryNotesCreate,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("finance.payments")),
     db_session: Session = Depends(get_db)
 ):
     """Create multiple promissory notes"""
@@ -433,7 +433,7 @@ def create_promissory_notes(
 def update_promissory_note(
     note_id: str,
     note_in: PromissoryNoteUpdate,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("finance.payments")),
     db_session: Session = Depends(get_db)
 ):
     """Update a promissory note"""
@@ -470,7 +470,7 @@ def update_promissory_note(
 def collect_promissory_note(
     note_id: str,
     collect_in: CollectPaymentRequest,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("finance.payments")),
     db_session: Session = Depends(get_db)
 ):
     """Collect payment for a promissory note"""
@@ -586,7 +586,7 @@ def collect_promissory_note(
 @router.get("/sales/{sale_id}/promissory-notes", operation_id="listSalePromissoryNotes", response_model=ResponseEnvelope[List[PromissoryNoteRead]])
 def get_sale_promissory_notes(
     sale_id: str,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("finance.view")),
     db_session: Session = Depends(get_db)
 ):
     """Get all promissory notes for a specific sale"""

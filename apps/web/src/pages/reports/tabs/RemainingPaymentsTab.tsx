@@ -19,12 +19,16 @@ import {
 import { FilterState } from '../types';
 import type { RemainingPaymentItem, ResponseMeta } from '@/api/generated/schemas';
 import { TabExportButton } from '../components/TabExportButton';
+import { usePermissions } from '../../../hooks/usePermissions';
 
 interface RemainingPaymentsTabProps {
     filters: FilterState;
 }
 
 export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
+    const { hasPermission } = usePermissions();
+    const canViewFinancials = hasPermission('sensitive.reports.remaining.financials.view');
+    const canViewContact = hasPermission('sensitive.parties.list.contact.view');
     const [page, setPage] = useState(1);
     const [minAmount, setMinAmount] = useState(0);
     const reportParams = {
@@ -58,6 +62,10 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
         }).format(amount);
     };
 
+    const formatProtectedCurrency = (amount: number) => (
+        canViewFinancials ? formatCurrency(amount) : 'Bu rol icin gizli'
+    );
+
     if (isLoading) {
         return (
             <div className="flex justify-center py-12">
@@ -90,10 +98,13 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
             render: (_, party) => (
                 <div>
                     <p className="font-medium">{party.partyName}</p>
-                    {party.phone && (
+                    {canViewContact && party.phone && (
                         <p className="text-xs text-gray-500 flex items-center gap-1">
                             <Phone className="w-3 h-3" /> {party.phone}
                         </p>
+                    )}
+                    {!canViewContact && (
+                        <p className="text-xs text-amber-600">Iletisim bilgisi gizli</p>
                     )}
                 </div>
             ),
@@ -112,19 +123,19 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
             key: 'totalAmount',
             title: 'Toplam Tutar',
             align: 'right',
-            render: (_, party) => <span>{formatCurrency(party.totalAmount)}</span>,
+            render: (_, party) => <span>{formatProtectedCurrency(party.totalAmount)}</span>,
         },
         {
             key: 'paidAmount',
             title: 'Ödenen',
             align: 'right',
-            render: (_, party) => <span className="text-green-600">{formatCurrency(party.paidAmount)}</span>,
+            render: (_, party) => <span className="text-green-600">{formatProtectedCurrency(party.paidAmount)}</span>,
         },
         {
             key: 'remainingAmount',
             title: 'Kalan',
             align: 'right',
-            render: (_, party) => <span className="font-bold text-red-600">{formatCurrency(party.remainingAmount)}</span>,
+            render: (_, party) => <span className="font-bold text-red-600">{formatProtectedCurrency(party.remainingAmount)}</span>,
         },
     ];
 
@@ -145,7 +156,7 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
                         <div>
                             <p className="text-sm text-green-600 dark:text-green-400">Toplam Gelir</p>
                             <p className="text-2xl font-bold text-green-900 dark:text-green-100">
-                                {formatCurrency(cashflow?.totalRevenue || 0)}
+                                {formatProtectedCurrency(cashflow?.totalRevenue || 0)}
                             </p>
                             <p className="text-xs text-green-600 dark:text-green-400">{filters.dateRange.start} - {filters.dateRange.end}</p>
                         </div>
@@ -160,7 +171,7 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
                         <div>
                             <p className="text-sm text-red-600 dark:text-red-400">Toplam Gider</p>
                             <p className="text-2xl font-bold text-red-900 dark:text-red-100">
-                                {formatCurrency(cashflow?.totalExpenses || 0)}
+                                {formatProtectedCurrency(cashflow?.totalExpenses || 0)}
                             </p>
                             <p className="text-xs text-red-600 dark:text-red-400">{filters.dateRange.start} - {filters.dateRange.end}</p>
                         </div>
@@ -175,7 +186,7 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
                         <div>
                             <p className="text-sm text-blue-600 dark:text-blue-400">Net Nakit</p>
                             <p className={`text-2xl font-bold ${(cashflow?.netCash || 0) >= 0 ? 'text-green-900 dark:text-green-100' : 'text-red-900 dark:text-red-100'}`}>
-                                {formatCurrency(cashflow?.netCash || 0)}
+                                {formatProtectedCurrency(cashflow?.netCash || 0)}
                             </p>
                             <p className="text-xs text-blue-600 dark:text-blue-400">{filters.dateRange.start} - {filters.dateRange.end}</p>
                         </div>
@@ -193,7 +204,7 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
                         <div>
                             <p className="text-sm text-orange-600 dark:text-orange-400">Tahsil Edilecek Toplam</p>
                             <p className="text-3xl font-bold text-orange-900 dark:text-orange-100">
-                                {formatCurrency(summary?.totalRemaining || 0)}
+                                {formatProtectedCurrency(summary?.totalRemaining || 0)}
                             </p>
                         </div>
                     </div>

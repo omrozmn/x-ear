@@ -64,7 +64,7 @@ def _sync_tenant_states(db, tenant) -> int:
             serial_key = f"{barcode}::{serial.strip()}::"
             if serial_key not in serial_states:
                 serial_states[serial_key] = {
-                    "status": "unverified",
+                    "status": "not_owned",
                     "inventory_id": inv_item.id,
                     "inventory_name": inv_item.name,
                     "product_name": f"{inv_item.brand or ''} {inv_item.name}".strip(),

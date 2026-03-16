@@ -35,16 +35,7 @@ import { adminApi } from '../../orval-mutator';
 
 
 /**
- * Query AI audit logs with filtering and pagination.
-    
-    Filters:
-    - user_id: Filter by user
-    - event_type: Filter by event type
-    - from_date/to_date: Date range filter
-    - incident_tag: Filter by incident tag
-    
-    Results are sorted by timestamp descending (newest first).
- * @summary Query audit logs
+ * @summary List Audit Logs
  */
 export const listAuditLogsApiAiAuditGet = (
     params?: ListAuditLogsApiAiAuditGetParams,
@@ -69,7 +60,7 @@ export const getListAuditLogsApiAiAuditGetQueryKey = (params?: ListAuditLogsApiA
     }
 
     
-export const getListAuditLogsApiAiAuditGetQueryOptions = <TData = Awaited<ReturnType<typeof listAuditLogsApiAiAuditGet>>, TError = void | HTTPValidationError>(params?: ListAuditLogsApiAiAuditGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAuditLogsApiAiAuditGet>>, TError, TData>>, }
+export const getListAuditLogsApiAiAuditGetQueryOptions = <TData = Awaited<ReturnType<typeof listAuditLogsApiAiAuditGet>>, TError = HTTPValidationError>(params?: ListAuditLogsApiAiAuditGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAuditLogsApiAiAuditGet>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
@@ -88,10 +79,10 @@ const {query: queryOptions} = options ?? {};
 }
 
 export type ListAuditLogsApiAiAuditGetQueryResult = NonNullable<Awaited<ReturnType<typeof listAuditLogsApiAiAuditGet>>>
-export type ListAuditLogsApiAiAuditGetQueryError = void | HTTPValidationError
+export type ListAuditLogsApiAiAuditGetQueryError = HTTPValidationError
 
 
-export function useListAuditLogsApiAiAuditGet<TData = Awaited<ReturnType<typeof listAuditLogsApiAiAuditGet>>, TError = void | HTTPValidationError>(
+export function useListAuditLogsApiAiAuditGet<TData = Awaited<ReturnType<typeof listAuditLogsApiAiAuditGet>>, TError = HTTPValidationError>(
  params: undefined |  ListAuditLogsApiAiAuditGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAuditLogsApiAiAuditGet>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof listAuditLogsApiAiAuditGet>>,
@@ -101,7 +92,7 @@ export function useListAuditLogsApiAiAuditGet<TData = Awaited<ReturnType<typeof 
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListAuditLogsApiAiAuditGet<TData = Awaited<ReturnType<typeof listAuditLogsApiAiAuditGet>>, TError = void | HTTPValidationError>(
+export function useListAuditLogsApiAiAuditGet<TData = Awaited<ReturnType<typeof listAuditLogsApiAiAuditGet>>, TError = HTTPValidationError>(
  params?: ListAuditLogsApiAiAuditGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAuditLogsApiAiAuditGet>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof listAuditLogsApiAiAuditGet>>,
@@ -111,15 +102,15 @@ export function useListAuditLogsApiAiAuditGet<TData = Awaited<ReturnType<typeof 
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListAuditLogsApiAiAuditGet<TData = Awaited<ReturnType<typeof listAuditLogsApiAiAuditGet>>, TError = void | HTTPValidationError>(
+export function useListAuditLogsApiAiAuditGet<TData = Awaited<ReturnType<typeof listAuditLogsApiAiAuditGet>>, TError = HTTPValidationError>(
  params?: ListAuditLogsApiAiAuditGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAuditLogsApiAiAuditGet>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
- * @summary Query audit logs
+ * @summary List Audit Logs
  */
 
-export function useListAuditLogsApiAiAuditGet<TData = Awaited<ReturnType<typeof listAuditLogsApiAiAuditGet>>, TError = void | HTTPValidationError>(
+export function useListAuditLogsApiAiAuditGet<TData = Awaited<ReturnType<typeof listAuditLogsApiAiAuditGet>>, TError = HTTPValidationError>(
  params?: ListAuditLogsApiAiAuditGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAuditLogsApiAiAuditGet>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
@@ -136,8 +127,7 @@ export function useListAuditLogsApiAiAuditGet<TData = Awaited<ReturnType<typeof 
 
 
 /**
- * Get audit statistics for the tenant.
- * @summary Get audit statistics
+ * @summary Get Audit Stats
  */
 export const getAuditStatsApiAiAuditStatsGet = (
     params?: GetAuditStatsApiAiAuditStatsGetParams,
@@ -209,7 +199,7 @@ export function useGetAuditStatsApiAiAuditStatsGet<TData = Awaited<ReturnType<ty
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
- * @summary Get audit statistics
+ * @summary Get Audit Stats
  */
 
 export function useGetAuditStatsApiAiAuditStatsGet<TData = Awaited<ReturnType<typeof getAuditStatsApiAiAuditStatsGet>>, TError = HTTPValidationError>(
@@ -229,8 +219,7 @@ export function useGetAuditStatsApiAiAuditStatsGet<TData = Awaited<ReturnType<ty
 
 
 /**
- * Get a specific audit entry by ID.
- * @summary Get audit entry details
+ * @summary Get Audit Entry
  */
 export const getAuditEntryApiAiAuditAuditIdGet = (
     auditId: string,
@@ -254,7 +243,7 @@ export const getGetAuditEntryApiAiAuditAuditIdGetQueryKey = (auditId?: string,) 
     }
 
     
-export const getGetAuditEntryApiAiAuditAuditIdGetQueryOptions = <TData = Awaited<ReturnType<typeof getAuditEntryApiAiAuditAuditIdGet>>, TError = void | HTTPValidationError>(auditId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuditEntryApiAiAuditAuditIdGet>>, TError, TData>>, }
+export const getGetAuditEntryApiAiAuditAuditIdGetQueryOptions = <TData = Awaited<ReturnType<typeof getAuditEntryApiAiAuditAuditIdGet>>, TError = HTTPValidationError>(auditId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuditEntryApiAiAuditAuditIdGet>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
@@ -273,10 +262,10 @@ const {query: queryOptions} = options ?? {};
 }
 
 export type GetAuditEntryApiAiAuditAuditIdGetQueryResult = NonNullable<Awaited<ReturnType<typeof getAuditEntryApiAiAuditAuditIdGet>>>
-export type GetAuditEntryApiAiAuditAuditIdGetQueryError = void | HTTPValidationError
+export type GetAuditEntryApiAiAuditAuditIdGetQueryError = HTTPValidationError
 
 
-export function useGetAuditEntryApiAiAuditAuditIdGet<TData = Awaited<ReturnType<typeof getAuditEntryApiAiAuditAuditIdGet>>, TError = void | HTTPValidationError>(
+export function useGetAuditEntryApiAiAuditAuditIdGet<TData = Awaited<ReturnType<typeof getAuditEntryApiAiAuditAuditIdGet>>, TError = HTTPValidationError>(
  auditId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuditEntryApiAiAuditAuditIdGet>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAuditEntryApiAiAuditAuditIdGet>>,
@@ -286,7 +275,7 @@ export function useGetAuditEntryApiAiAuditAuditIdGet<TData = Awaited<ReturnType<
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAuditEntryApiAiAuditAuditIdGet<TData = Awaited<ReturnType<typeof getAuditEntryApiAiAuditAuditIdGet>>, TError = void | HTTPValidationError>(
+export function useGetAuditEntryApiAiAuditAuditIdGet<TData = Awaited<ReturnType<typeof getAuditEntryApiAiAuditAuditIdGet>>, TError = HTTPValidationError>(
  auditId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuditEntryApiAiAuditAuditIdGet>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAuditEntryApiAiAuditAuditIdGet>>,
@@ -296,15 +285,15 @@ export function useGetAuditEntryApiAiAuditAuditIdGet<TData = Awaited<ReturnType<
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAuditEntryApiAiAuditAuditIdGet<TData = Awaited<ReturnType<typeof getAuditEntryApiAiAuditAuditIdGet>>, TError = void | HTTPValidationError>(
+export function useGetAuditEntryApiAiAuditAuditIdGet<TData = Awaited<ReturnType<typeof getAuditEntryApiAiAuditAuditIdGet>>, TError = HTTPValidationError>(
  auditId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuditEntryApiAiAuditAuditIdGet>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
- * @summary Get audit entry details
+ * @summary Get Audit Entry
  */
 
-export function useGetAuditEntryApiAiAuditAuditIdGet<TData = Awaited<ReturnType<typeof getAuditEntryApiAiAuditAuditIdGet>>, TError = void | HTTPValidationError>(
+export function useGetAuditEntryApiAiAuditAuditIdGet<TData = Awaited<ReturnType<typeof getAuditEntryApiAiAuditAuditIdGet>>, TError = HTTPValidationError>(
  auditId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuditEntryApiAiAuditAuditIdGet>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {

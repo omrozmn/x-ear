@@ -402,10 +402,12 @@ _gate: Optional[ApprovalGate] = None
 
 
 def get_approval_gate() -> ApprovalGate:
-    """Get the global approval gate instance."""
+    """Get the global approval gate instance. Also triggers periodic cleanup."""
     global _gate
     if _gate is None:
         _gate = ApprovalGate()
+    # Cleanup expired tokens/approvals on access (lazy cleanup)
+    _gate.cleanup_expired()
     return _gate
 
 

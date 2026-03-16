@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 import { useNavigate } from '@tanstack/react-router';
 import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 import { ExportDropdown } from '@/components/common/ExportDropdown';
+import { PermissionGate } from '@/components/PermissionGate';
 interface InvoiceLog {
   id?: string;
   status?: string;
@@ -791,16 +792,18 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
           <Button variant="ghost" onClick={handleBulkCancel} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl transition-colors h-auto">
             <Ban className="w-4 h-4" /> Toplu İptal
           </Button>
-          <ExportDropdown
-            headers={outgoingExportHeaders}
-            getRows={getOutgoingExportRows}
-            filename="giden_faturalar"
-            variant="ghost"
-            label="Dışa Aktar"
-            compact
-            iconClassName="text-green-600"
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-2xl transition-colors h-auto"
-          />
+          <PermissionGate permission="invoices.documents.download.view">
+            <ExportDropdown
+              headers={outgoingExportHeaders}
+              getRows={getOutgoingExportRows}
+              filename="giden_faturalar"
+              variant="ghost"
+              label="Dışa Aktar"
+              compact
+              iconClassName="text-green-600"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-2xl transition-colors h-auto"
+            />
+          </PermissionGate>
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
           <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors h-auto">
             <X className="w-4 h-4" /> Seçimi Kaldır

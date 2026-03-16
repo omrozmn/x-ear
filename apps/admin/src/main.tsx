@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'react-hot-toast'
 import { HelmetProvider } from 'react-helmet-async'
 import { AuthProvider } from './contexts/AuthContext'
+import { ErrorBoundary } from './components/ErrorBoundary'
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
@@ -27,21 +28,21 @@ declare module '@tanstack/react-router' {
 
 const queryClient = new QueryClient()
 
-// --- DEBUG TRAP START ---
-if (typeof window !== 'undefined') {
+// --- DEBUG TRAP (dev-only) ---
+if (import.meta.env.DEV && typeof window !== 'undefined') {
     const originalRemoveItem = window.localStorage.removeItem;
     const originalClear = window.localStorage.clear;
 
     window.localStorage.removeItem = function (...args: [string]) {
         const [key] = args;
         if (key === 'admin_token') {
-            console.error('[TRAP] localStorage.removeItem("admin_token") called!', new Error().stack);
+            console.warn('[DEV TRAP] localStorage.removeItem("admin_token") called', new Error().stack);
         }
         return originalRemoveItem.apply(this, args);
     };
 
     window.localStorage.clear = function (...args: []) {
-        console.error('[TRAP] localStorage.clear() called!', new Error().stack);
+        console.warn('[DEV TRAP] localStorage.clear() called', new Error().stack);
         return originalClear.apply(this, args);
     };
 }
@@ -53,14 +54,16 @@ if (!rootElement.innerHTML) {
     const root = ReactDOM.createRoot(rootElement)
     root.render(
         <StrictMode>
-            <HelmetProvider>
-                <QueryClientProvider client={queryClient}>
-                    <AuthProvider>
-                        <RouterProvider router={router} />
-                        <Toaster position="top-right" />
-                    </AuthProvider>
-                </QueryClientProvider>
-            </HelmetProvider>
+            <ErrorBoundary>
+                <HelmetProvider>
+                    <QueryClientProvider client={queryClient}>
+                        <AuthProvider>
+                            <RouterProvider router={router} />
+                            <Toaster position="top-right" />
+                        </AuthProvider>
+                    </QueryClientProvider>
+                </HelmetProvider>
+            </ErrorBoundary>
         </StrictMode>,
     )
 }

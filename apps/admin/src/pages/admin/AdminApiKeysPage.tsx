@@ -24,21 +24,6 @@ interface AdminApiKey {
     createdAt?: string;
 }
 
-interface ApiKeyListShape {
-    keys?: AdminApiKey[];
-    data?: {
-        keys?: AdminApiKey[];
-        pagination?: {
-            total?: number;
-            totalPages?: number;
-        };
-    } | AdminApiKey[];
-    pagination?: {
-        total?: number;
-        totalPages?: number;
-    };
-}
-
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null;
 }
@@ -48,22 +33,12 @@ function extractApiKeys(value: ApiKeyListResponse | undefined): { keys: AdminApi
         return { keys: [], totalPages: 1, totalItems: 0 };
     }
 
-    const response = value as unknown as ApiKeyListShape;
-    const nestedData = response.data;
-
-    if (Array.isArray(nestedData)) {
-        return {
-            keys: nestedData,
-            totalPages: response.pagination?.totalPages || 1,
-            totalItems: response.pagination?.total || nestedData.length,
-        };
-    }
-
-    const keys = response.keys ?? nestedData?.keys ?? [];
+    const keys = Array.isArray(value.keys) ? value.keys : [];
+    const pagination = isRecord(value.pagination) ? value.pagination : undefined;
     return {
         keys,
-        totalPages: response.pagination?.totalPages ?? nestedData?.pagination?.totalPages ?? 1,
-        totalItems: response.pagination?.total ?? nestedData?.pagination?.total ?? keys.length,
+        totalPages: typeof pagination?.totalPages === 'number' ? pagination.totalPages : 1,
+        totalItems: typeof pagination?.total === 'number' ? pagination.total : keys.length,
     };
 }
 

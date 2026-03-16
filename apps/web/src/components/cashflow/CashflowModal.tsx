@@ -137,13 +137,13 @@ export function CashflowModal({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
-        <div className="fixed inset-0 bg-slate-950/55 backdrop-blur-md transition-opacity dark:bg-slate-950/72" onClick={handleClose} />
+        <div className="fixed inset-0 bg-slate-950/55 backdrop-blur-md transition-opacity dark:bg-black/82" onClick={handleClose} />
 
-        <div className="inline-block w-full max-w-2xl overflow-hidden rounded-[30px] border border-white/45 bg-white/82 p-6 text-left align-middle shadow-[0_30px_120px_-40px_rgba(15,23,42,0.55)] backdrop-blur-2xl transition-all transform dark:border-white/10 dark:bg-slate-900/90 dark:shadow-[0_30px_120px_-48px_rgba(2,6,23,0.92)]">
-          <div className="mb-6 flex items-center justify-between border-b border-slate-200/80 pb-4 dark:border-white/10">
+        <div className="inline-block w-full max-w-2xl overflow-hidden rounded-[30px] border border-slate-200/90 bg-[linear-gradient(180deg,rgba(255,255,255,0.97),rgba(248,250,252,0.94))] p-6 text-left align-middle shadow-[0_30px_120px_-40px_rgba(15,23,42,0.32)] backdrop-blur-2xl transition-all transform dark:border-slate-800 dark:bg-[linear-gradient(180deg,rgba(2,6,23,0.98),rgba(15,23,42,0.96))] dark:shadow-[0_30px_120px_-48px_rgba(0,0,0,0.98)]">
+          <div className="mb-6 flex items-center justify-between border-b border-slate-200/80 pb-4 dark:border-slate-800">
             <div>
               <h3 className="text-xl font-semibold text-slate-900 dark:text-white">{title}</h3>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Hizli kayit akisi</p>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Hizli kayit akisi</p>
             </div>
             <button data-allow-raw="true" onClick={handleClose} className="text-gray-400 hover:text-gray-600 dark:text-slate-400 dark:hover:text-white">
               <X className="h-5 w-5" />
@@ -153,7 +153,7 @@ export function CashflowModal({
           <form onSubmit={handleSubmit} className="space-y-6">
             {showTransactionSelector ? (
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                <label className="mb-3 block text-sm font-semibold text-slate-800 dark:text-gray-300">
                   İşlem Türü *
                 </label>
                 <div className="flex space-x-4">
@@ -164,8 +164,8 @@ export function CashflowModal({
                       setRecordType('');
                     }}
                     className={`flex-1 py-3 px-4 border-2 rounded-2xl font-medium transition-all ${transactionType === 'income'
-                      ? 'border-green-500 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                      : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-green-300 dark:hover:border-green-500'
+                    ? 'border-green-500 bg-green-50 dark:border-green-700 dark:bg-green-950/65 text-green-700 dark:text-green-100'
+                      : 'border-slate-300 bg-white/88 text-slate-800 hover:border-green-300 hover:bg-white dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-green-700 dark:hover:bg-slate-900'
                       }`}
                   >
                     <TrendingUp className="inline h-5 w-5 mr-2" />
@@ -178,8 +178,8 @@ export function CashflowModal({
                       setRecordType('');
                     }}
                     className={`flex-1 py-3 px-4 border-2 rounded-2xl font-medium transition-all ${transactionType === 'expense'
-                      ? 'border-red-500 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                      : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-red-300 dark:hover:border-red-500'
+                    ? 'border-red-500 bg-red-50 dark:border-red-700 dark:bg-red-950/65 text-red-700 dark:text-red-100'
+                      : 'border-slate-300 bg-white/88 text-slate-800 hover:border-red-300 hover:bg-white dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-red-700 dark:hover:bg-slate-900'
                       }`}
                   >
                     <TrendingDown className="inline h-5 w-5 mr-2" />
@@ -204,7 +204,7 @@ export function CashflowModal({
 
             {transactionType === 'income' ? (
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="mb-2 block text-sm font-semibold text-slate-800 dark:text-gray-300">
                   Hasta (İsteğe Bağlı)
                 </label>
                 <PartySearchInput
@@ -232,7 +232,7 @@ export function CashflowModal({
 
             {/* Product Search */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="mb-2 block text-sm font-semibold text-slate-800 dark:text-gray-300">
                 Ürün (İsteğe Bağlı)
               </label>
               <ProductSearchInput
@@ -245,7 +245,7 @@ export function CashflowModal({
 
             {/* Amount */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="mb-2 block text-sm font-semibold text-slate-800 dark:text-gray-300">
                 Tutar (₺) *
               </label>
               <input data-allow-raw="true"
@@ -258,7 +258,7 @@ export function CashflowModal({
                   const parts = value.split('.');
                   setAmount(parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : value);
                 }}
-                className="w-full rounded-2xl border border-slate-200 bg-white/92 px-3 py-2 text-slate-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-white/10 dark:bg-slate-950/40 dark:text-white"
+                className="w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm shadow-slate-200/60 placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-50 dark:placeholder:text-slate-500"
               />
               {errors.amount && (
                 <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.amount}</p>
@@ -267,7 +267,7 @@ export function CashflowModal({
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="mb-2 block text-sm font-semibold text-slate-800 dark:text-gray-300">
                 Açıklama (İsteğe Bağlı)
               </label>
               <textarea data-allow-raw="true"
@@ -275,16 +275,16 @@ export function CashflowModal({
                 placeholder="İşlem açıklaması..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full rounded-2xl border border-slate-200 bg-white/92 px-3 py-2 text-slate-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-white/10 dark:bg-slate-950/40 dark:text-white"
+                className="w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm shadow-slate-200/60 placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-50 dark:placeholder:text-slate-500"
               />
             </div>
 
             {/* Action Buttons */}
-            <div className="flex justify-end space-x-3 border-t border-slate-200 pt-4 dark:border-white/10">
-              <Button type="button" variant="outline" onClick={handleClose}>
+            <div className="flex justify-end space-x-3 border-t border-slate-200/90 pt-4 dark:border-slate-800">
+              <Button type="button" variant="outline" onClick={handleClose} className="border-slate-300 bg-white text-slate-800 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800">
                 İptal
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button type="submit" disabled={isLoading} className="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400">
                 {isLoading ? 'Kaydediliyor...' : saveButtonText}
               </Button>
             </div>

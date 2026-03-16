@@ -9,9 +9,6 @@ import type { AuditStatsResponseByEventType } from './auditStatsResponseByEventT
 import type { AuditStatsResponseByOutcome } from './auditStatsResponseByOutcome';
 import type { AuditStatsResponseByRiskLevel } from './auditStatsResponseByRiskLevel';
 
-/**
- * Audit statistics response.
- */
 export interface AuditStatsResponse {
   /** Total requests */
   total_requests: number;

@@ -13,12 +13,15 @@ import {
 } from '@/api/client/reports.client';
 import { ReportFinancial, FilterState } from '../types';
 import { TabExportButton } from '../components/TabExportButton';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface SalesTabProps {
     filters: FilterState;
 }
 
 export function SalesTab({ filters }: SalesTabProps) {
+    const { hasPermission } = usePermissions();
+    const canViewFinancials = hasPermission('sensitive.reports.sales.financials.view');
     const reportParams = {
         days: filters.days,
         branch_id: filters.branch,
@@ -38,6 +41,10 @@ export function SalesTab({ filters }: SalesTabProps) {
             minimumFractionDigits: 0
         }).format(amount);
     };
+
+    const formatProtectedCurrency = (amount: number) => (
+        canViewFinancials ? formatCurrency(amount) : 'Bu rol icin gizli'
+    );
 
     type SaleRow = { brand: string; sales: number; revenue: number };
     const financial = unwrapObject<ReportFinancial>(financialData);
@@ -61,7 +68,7 @@ export function SalesTab({ filters }: SalesTabProps) {
             sortable: true,
             align: 'right',
             render: (value: number) => (
-                <span className="font-medium text-green-600">{formatCurrency(value)}</span>
+                <span className="font-medium text-green-600">{formatProtectedCurrency(value)}</span>
             )
         },
     ];
@@ -107,7 +114,7 @@ export function SalesTab({ filters }: SalesTabProps) {
                                     />
                                 </div>
                                 <p className="text-xs text-gray-500 dark:text-gray-400">{month}. Ay</p>
-                                <p className="text-sm font-medium text-gray-900 dark:text-white">{formatCurrency(amount)}</p>
+                                <p className="text-sm font-medium text-gray-900 dark:text-white">{formatProtectedCurrency(amount)}</p>
                             </div>
                         ))}
                     </div>

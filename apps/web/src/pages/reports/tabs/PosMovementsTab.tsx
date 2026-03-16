@@ -14,12 +14,15 @@ import { FilterState } from '../types';
 import type { PosMovementItem, ResponseMeta } from '@/api/generated/schemas';
 import { PosMovementsList } from '@/components/reports/PosMovementsList';
 import { TabExportButton } from '../components/TabExportButton';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface PosMovementsTabProps {
     filters: FilterState;
 }
 
 export function PosMovementsTab({ filters }: PosMovementsTabProps) {
+    const { hasPermission } = usePermissions();
+    const canViewFinancials = hasPermission('sensitive.reports.pos_movements.financials.view');
     const [page, setPage] = useState(1);
     const reportParams = {
         page,
@@ -41,6 +44,10 @@ export function PosMovementsTab({ filters }: PosMovementsTabProps) {
             minimumFractionDigits: 0
         }).format(amount);
     };
+
+    const formatProtectedCurrency = (amount: number) => (
+        canViewFinancials ? formatCurrency(amount) : 'Bu rol icin gizli'
+    );
 
     if (isLoading) {
         return (
@@ -83,7 +90,7 @@ export function PosMovementsTab({ filters }: PosMovementsTabProps) {
                         <div>
                             <p className="text-sm text-green-600 dark:text-green-400">Toplam Başarılı İşlem</p>
                             <p className="text-2xl font-bold text-green-900 dark:text-green-100">
-                                {formatCurrency(summary?.totalVolume || 0)}
+                                {formatProtectedCurrency(summary?.totalVolume || 0)}
                             </p>
                             <p className="text-xs text-green-600 dark:text-green-400">{summary?.successCount || 0} işlem</p>
                         </div>
@@ -109,6 +116,7 @@ export function PosMovementsTab({ filters }: PosMovementsTabProps) {
             <PosMovementsList
                 movements={data}
                 isLoading={isLoading}
+                canViewFinancials={canViewFinancials}
                 pagination={{
                     current: page,
                     pageSize: 20,

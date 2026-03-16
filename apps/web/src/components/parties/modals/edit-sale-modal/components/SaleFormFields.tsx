@@ -78,6 +78,8 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
   const getCategoryLabel = (category: string): string => {
     const categoryMap: Record<string, string> = {
       'hearing_aid': 'İşitme Cihazı',
+      'hearing_aid_battery': 'İşitme Cihazı Pili',
+      'implant_battery': 'İmplant Pili',
       'battery': 'Pil',
       'accessory': 'Aksesuar',
       'service': 'Servis',
@@ -85,6 +87,9 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
     };
     return categoryMap[category] || category;
   };
+
+  // Check if category is a battery with SGK support
+  const isSgkBattery = formData.category === 'hearing_aid_battery' || formData.category === 'implant_battery';
 
   return (
     <div className="space-y-6">
@@ -204,8 +209,8 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
               />
             </div>
 
-            {/* Ear Selector (for hearing aids) or Quantity (for other products) */}
-            {formData.category === 'hearing_aid' ? (
+            {/* Ear Selector (for hearing aids and SGK batteries) or Quantity (for other products) */}
+            {(formData.category === 'hearing_aid' || isSgkBattery) ? (
               <div className="w-full">
                 <Label htmlFor="ear">Kulak *</Label>
                 <select data-allow-raw="true"
@@ -236,6 +241,23 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
                 />
               </div>
             ) : null}
+            {/* Quantity field for batteries (in addition to ear) */}
+            {isSgkBattery && (
+              <div className="w-full">
+                <Label htmlFor="quantity">Miktar (Paket) *</Label>
+                <Input
+                  className="w-full"
+                  id="quantity"
+                  type="number"
+                  value={formData.quantity || 1}
+                  onChange={(e) => onFormDataChange({ quantity: parseInt(e.target.value) || 1 })}
+                  placeholder="1"
+                  min="1"
+                  step="1"
+                  required
+                />
+              </div>
+            )}
           </div>
 
           {/* Serial Number Fields - Dynamic based on category and ear */}
@@ -300,8 +322,8 @@ export const SaleFormFields: React.FC<SaleFormFieldsProps> = ({
         </CardContent>
       </Card>
 
-      {/* Delivery & Report Status - Only for hearing_aid and battery categories */}
-      {(formData.category === 'hearing_aid' || formData.category === 'battery') && (
+      {/* Delivery & Report Status - For hearing_aid, battery, hearing_aid_battery, implant_battery categories */}
+      {(formData.category === 'hearing_aid' || formData.category === 'battery' || isSgkBattery) && (
         <Card>
           <CardHeader>
             <CardTitle>Teslim ve Rapor Durumu</CardTitle>

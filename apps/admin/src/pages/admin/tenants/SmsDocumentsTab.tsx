@@ -6,9 +6,9 @@ import toast from 'react-hot-toast';
 import {
     useListAdminTenantSmsDocuments,
     useUpdateAdminTenantSmsDocumentStatus,
-    useCreateAdminTenantSmsDocumentSendEmail
+    useCreateAdminTenantSmsDocumentSendEmail,
+    listAdminTenantSmsDocumentDownload,
 } from '@/lib/api-client';
-import { adminApi } from '@/lib/apiMutator';
 
 interface SmsDocumentsTabProps {
     tenantId: string;
@@ -143,12 +143,10 @@ export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) =>
         const doc = documents.find((document) => document.type === docType);
         if (!doc) return;
 
-        adminApi<PreviewDownloadResponse>({
-            url: `/api/admin/tenants/${tenantId}/sms-documents/${docType}/download`,
-            method: 'GET'
-        })
-            .then(data => {
-                const previewUrl = data.data?.url || data.url;
+        listAdminTenantSmsDocumentDownload(tenantId, docType)
+            .then((data) => {
+                const response = data as PreviewDownloadResponse;
+                const previewUrl = response.data?.url || response.url;
                 if (previewUrl) {
                     setPreviewDoc({ type: docType, url: previewUrl, filename: doc.filename || '' });
                 } else {

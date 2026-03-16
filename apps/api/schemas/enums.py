@@ -187,6 +187,44 @@ class DeviceCategory(str, Enum):
         return mapping.get(value_lower, cls.HEARING_AID)
 
 
+# ============================================================================
+# Sector Codes (Multi-Sector Platform)
+# ============================================================================
+
+class SectorCode(str, Enum):
+    """
+    Sector codes for multi-sector platform.
+    Maps to ProductCode but represents the business vertical.
+    Default: hearing (backward compatible with all existing tenants).
+    """
+    HEARING = "hearing"
+    PHARMACY = "pharmacy"
+    HOSPITAL = "hospital"
+    HOTEL = "hotel"
+    BEAUTY = "beauty"
+    GENERAL = "general"
+
+    @classmethod
+    def default(cls) -> "SectorCode":
+        return cls.HEARING
+
+    @classmethod
+    def from_product_code(cls, product_code: str) -> "SectorCode":
+        """Derive sector from product_code for backward compatibility."""
+        mapping = {
+            "xear_hearing": cls.HEARING,
+            "xear_pharmacy": cls.PHARMACY,
+            "xear_hospital": cls.HOSPITAL,
+            "xear_hotel": cls.HOTEL,
+            "xear_general": cls.GENERAL,
+        }
+        return mapping.get(product_code, cls.HEARING)
+
+    @classmethod
+    def all_sectors(cls) -> list["SectorCode"]:
+        return list(cls)
+
+
 # Multi-Product Architecture Enums (Contract #18)
 class ProductCode(str, Enum):
     """
@@ -240,3 +278,17 @@ class AppErrorCode(str, Enum):
     PRODUCT_NOT_ALLOWED = "PRODUCT_NOT_ALLOWED"
     FEATURE_LIMIT_EXCEEDED = "FEATURE_LIMIT_EXCEEDED"
     TENANT_SUSPENDED = "TENANT_SUSPENDED"
+
+
+class CountryCode(str, Enum):
+    """ISO 3166-1 alpha-2 country codes for supported markets"""
+    TR = "TR"
+    US = "US"
+    CA = "CA"
+    DE = "DE"
+    FR = "FR"
+    NL = "NL"
+    SA = "SA"
+    AE = "AE"
+    QA = "QA"
+    IQ = "IQ"

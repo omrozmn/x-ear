@@ -232,10 +232,10 @@ export const DeviceReplacementHistory: React.FC<DeviceReplacementHistoryProps> =
                         <div className="space-y-1">
                           <div className="text-sm font-medium">Eski Cihaz</div>
                           <div className="text-xs text-muted-foreground">
-                            {replacement.oldDeviceInfo.brand} {replacement.oldDeviceInfo.model}
+                            {replacement.oldDeviceInfo?.brand} {replacement.oldDeviceInfo?.model}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            SN: {replacement.oldDeviceInfo.serialNumber}
+                            SN: {replacement.oldDeviceInfo?.serialNumber || '-'}
                           </div>
                         </div>
 
@@ -244,10 +244,10 @@ export const DeviceReplacementHistory: React.FC<DeviceReplacementHistoryProps> =
                         <div className="space-y-1">
                           <div className="text-sm font-medium">Yeni Cihaz</div>
                           <div className="text-xs text-muted-foreground">
-                            {replacement.newDeviceInfo.brand} {replacement.newDeviceInfo.model}
+                            {replacement.newDeviceInfo?.brand} {replacement.newDeviceInfo?.model}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            SN: {replacement.newDeviceInfo.serialNumber}
+                            SN: {replacement.newDeviceInfo?.serialNumber || '-'}
                           </div>
                         </div>
                       </div>

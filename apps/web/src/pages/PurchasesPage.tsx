@@ -12,10 +12,9 @@ import { useIsMobile } from '@/hooks/useBreakpoint';
 import { cn } from '@/lib/utils';
 import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 import { ExportDropdown } from '@/components/common/ExportDropdown';
-import { CashflowModal } from '@/components/cashflow/CashflowModal';
-import { useCashRecords, useCreateCashRecord } from '@/hooks/useCashflow';
-import type { CashRecord } from '@/types/cashflow';
-import { RECORD_TYPE_LABELS } from '@/types/cashflow';
+import { PermissionGate } from '@/components/PermissionGate';
+import { ManualPurchaseModal } from '@/components/purchases/ManualPurchaseModal';
+import { useCreateManualPurchase, useManualPurchases, useRecordManualPurchasePayment, type ManualPurchaseRead } from '@/hooks/useManualPurchases';
 
 interface PurchaseTableRow {
   id: string;
@@ -28,8 +27,11 @@ interface PurchaseTableRow {
   status: string;
   currency?: string;
   description?: string;
+  paidAmount?: number;
+  remainingAmount?: number;
+  paymentMethod?: string;
   rawInvoice?: IncomingInvoiceResponse;
-  rawCashRecord?: CashRecord;
+  rawPurchase?: ManualPurchaseRead;
 }
 
 export function PurchasesPage() {
@@ -44,12 +46,15 @@ export function PurchasesPage() {
   const [dateTo, setDateTo] = useState<Date | null>(null);
   const [showBanner, setShowBanner] = useState(() => !localStorage.getItem(ONBOARDING_PURCHASES_DISMISSED));
   const [selectedInvoice, setSelectedInvoice] = useState<IncomingInvoiceResponse | null>(null);
+  const [selectedManualPurchase, setSelectedManualPurchase] = useState<ManualPurchaseRead | null>(null);
   const [sortField, setSortField] = useState<string>('');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isMobileSelectionMode, setIsMobileSelectionMode] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [isNewPurchaseModalOpen, setIsNewPurchaseModalOpen] = useState(false);
+  const [showNewPurchaseModal, setShowNewPurchaseModal] = useState(false);
+  const [showBulkPaymentModal, setShowBulkPaymentModal] = useState(false);
+  const [bulkPaymentMethod, setBulkPaymentMethod] = useState('cash');
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const debouncedSearch = useDebounce(searchTerm, 300);
@@ -62,33 +67,10 @@ export function PurchasesPage() {
     date_from: dateFrom ? dateFrom.toISOString().split('T')[0] : undefined,
     date_to: dateTo ? dateTo.toISOString().split('T')[0] : undefined,
   });
-  const { data: manualPurchaseRecordsData } = useCashRecords({
-    transactionType: 'expense',
-    startDate: dateFrom ? dateFrom.toISOString() : undefined,
-    endDate: dateTo ? dateTo.toISOString() : undefined,
-  });
-  const createCashRecordMutation = useCreateCashRecord();
-
   const invoiceList = useMemo(() => data?.data?.invoices ?? [], [data?.data?.invoices]);
-  const manualPurchaseRecords = useMemo(() => {
-    const raw = Array.isArray(manualPurchaseRecordsData)
-      ? manualPurchaseRecordsData
-      : ((manualPurchaseRecordsData as unknown as { data?: CashRecord[] })?.data ?? []);
-
-    return raw.filter((record) => {
-      const query = debouncedSearch.trim().toLowerCase();
-      if (!query) return true;
-
-      return [
-        record.partyName,
-        record.inventoryItemName,
-        record.description,
-        RECORD_TYPE_LABELS[record.recordType],
-      ]
-        .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(query));
-    });
-  }, [manualPurchaseRecordsData, debouncedSearch]);
+  const { data: manualPurchases = [] } = useManualPurchases();
+  const createManualPurchaseMutation = useCreateManualPurchase();
+  const recordManualPurchasePaymentMutation = useRecordManualPurchasePayment();
 
   useEffect(() => {
     if (!isMobile) return;
@@ -111,29 +93,54 @@ export function PurchasesPage() {
       description: undefined,
       rawInvoice: invoice,
     }));
-
-    const manualRows = manualPurchaseRecords.map((record): PurchaseTableRow => ({
-      id: `manual-${record.id}`,
+    const manualRows = manualPurchases.map((purchase): PurchaseTableRow => ({
+      id: `manual-${purchase.id}`,
       source: 'manual',
-      invoiceNumber: 'MANUEL',
-      supplierName: record.partyName || record.inventoryItemName || 'Manuel Alış',
-      supplierTaxNumber: undefined,
-      totalAmount: Math.abs(Number(record.amount || 0)),
-      invoiceDate: record.date,
-      status: 'MANUAL',
-      currency: 'TRY',
-      description: record.description || RECORD_TYPE_LABELS[record.recordType] || 'Manuel alış kaydı',
-      rawCashRecord: record,
+      invoiceNumber: purchase.referenceNumber || 'MANUEL',
+      supplierName: purchase.supplierName || '—',
+      totalAmount: Number(purchase.totalAmount || 0),
+      invoiceDate: purchase.purchaseDate || undefined,
+      status: purchase.status || 'APPROVED',
+      currency: purchase.currency || 'TRY',
+      description: purchase.notes || undefined,
+      paidAmount: Number(purchase.paidAmount || 0),
+      remainingAmount: Number(purchase.remainingAmount || 0),
+      paymentMethod: purchase.paymentMethod || undefined,
+      rawPurchase: purchase,
     }));
+    return [...manualRows, ...invoiceRows];
+  }, [invoiceList, manualPurchases]);
 
-    return [...invoiceRows, ...manualRows].sort((a, b) => {
-      const aDate = a.invoiceDate || '';
-      const bDate = b.invoiceDate || '';
-      return bDate.localeCompare(aDate);
-    });
-  }, [invoiceList, manualPurchaseRecords]);
+  const filteredPurchaseRows = useMemo(() => {
+    let rows = [...purchaseRows];
 
-  const totalCount = purchaseRows.length;
+    if (debouncedSearch) {
+      const term = debouncedSearch.toLocaleLowerCase('tr-TR');
+      rows = rows.filter((row) =>
+        row.supplierName.toLocaleLowerCase('tr-TR').includes(term) ||
+        row.invoiceNumber.toLocaleLowerCase('tr-TR').includes(term) ||
+        (row.description || '').toLocaleLowerCase('tr-TR').includes(term)
+      );
+    }
+
+    if (statusFilter !== 'all') {
+      rows = rows.filter((row) => row.status === statusFilter);
+    }
+
+    if (dateFrom) {
+      const fromStr = dateFrom.toISOString().split('T')[0];
+      rows = rows.filter((row) => row.invoiceDate && String(row.invoiceDate) >= fromStr);
+    }
+
+    if (dateTo) {
+      const toStr = dateTo.toISOString().split('T')[0];
+      rows = rows.filter((row) => row.invoiceDate && String(row.invoiceDate) <= toStr);
+    }
+
+    return rows;
+  }, [dateFrom, dateTo, debouncedSearch, purchaseRows, statusFilter]);
+
+  const totalCount = filteredPurchaseRows.length;
   const hasMoreMobile = isMobile && mobileVisibleCount < totalCount;
 
   useEffect(() => {
@@ -155,17 +162,17 @@ export function PurchasesPage() {
   }, [isMobile, hasMoreMobile, isLoading, isFetching, totalCount]);
 
   const totalPurchases = useMemo(
-    () => purchaseRows.reduce((sum: number, row: PurchaseTableRow) => sum + Number(row.totalAmount || 0), 0),
-    [purchaseRows]
+    () => filteredPurchaseRows.reduce((sum: number, row: PurchaseTableRow) => sum + Number(row.totalAmount || 0), 0),
+    [filteredPurchaseRows]
   );
 
   const supplierCount = useMemo(
-    () => new Set(purchaseRows.map((row: PurchaseTableRow) => row.supplierName).filter(Boolean)).size,
-    [purchaseRows]
+    () => new Set(filteredPurchaseRows.map((row: PurchaseTableRow) => row.supplierName).filter(Boolean)).size,
+    [filteredPurchaseRows]
   );
 
   const sortedInvoices = useMemo(() => {
-    const list = [...purchaseRows];
+    const list = [...filteredPurchaseRows];
     if (!sortField) return list;
 
     list.sort((a: PurchaseTableRow, b: PurchaseTableRow) => {
@@ -183,7 +190,7 @@ export function PurchasesPage() {
     });
 
     return list;
-  }, [purchaseRows, sortField, sortDir]);
+  }, [filteredPurchaseRows, sortField, sortDir]);
 
   const paginatedInvoices = useMemo(() => {
     const startIndex = (currentPage - 1) * perPage;
@@ -201,12 +208,16 @@ export function PurchasesPage() {
       RECEIVED: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
       PROCESSED: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
       PAID: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
+      PARTIAL: 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400',
+      APPROVED: 'bg-slate-100 text-slate-800 dark:bg-slate-900/20 dark:text-slate-300',
       MANUAL: 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400',
     };
     const labels: Record<string, string> = {
       RECEIVED: 'Alındı',
       PROCESSED: 'İşlendi',
       PAID: 'Ödendi',
+      PARTIAL: 'Kısmi Ödendi',
+      APPROVED: 'Açık',
       MANUAL: 'Manuel',
     };
     return <span className={`px-2 py-1 rounded-full text-xs font-medium ${styles[status] || 'bg-gray-100 text-gray-800'}`}>{labels[status] || status}</span>;
@@ -245,10 +256,26 @@ export function PurchasesPage() {
     await refetch();
   }, [refetch]);
 
-  const handleSavePurchaseRecord = useCallback(async (formData: Parameters<typeof createCashRecordMutation.mutateAsync>[0]) => {
-    await createCashRecordMutation.mutateAsync(formData);
+  const handleCreateManualPurchase = useCallback(async (payload: Parameters<typeof createManualPurchaseMutation.mutateAsync>[0]) => {
+    await createManualPurchaseMutation.mutateAsync(payload);
     await refetch();
-  }, [createCashRecordMutation, refetch]);
+  }, [createManualPurchaseMutation, refetch]);
+
+  const selectedManualPurchaseIds = useMemo(
+    () => sortedInvoices.filter((row) => selectedIds.has(row.id) && row.source === 'manual' && Number(row.remainingAmount || 0) > 0).map((row) => row.rawPurchase?.id).filter(Boolean) as string[],
+    [selectedIds, sortedInvoices]
+  );
+
+  const handleBulkMarkPaid = useCallback(async () => {
+    if (selectedManualPurchaseIds.length === 0) return;
+    await recordManualPurchasePaymentMutation.mutateAsync({
+      purchaseIds: selectedManualPurchaseIds,
+      paymentMethod: bulkPaymentMethod,
+    });
+    setShowBulkPaymentModal(false);
+    setSelectedIds(new Set());
+    await refetch();
+  }, [bulkPaymentMethod, recordManualPurchasePaymentMutation, refetch, selectedManualPurchaseIds]);
 
   const renderMobileCards = () => (
     <div className="block md:hidden space-y-3 mt-3">
@@ -265,7 +292,8 @@ export function PurchasesPage() {
           key={invoice.id}
           onClick={() => {
             if (isMobileSelectionMode) toggleSelect(invoice.id);
-            else if (invoice.rawInvoice) setSelectedInvoice(invoice.rawInvoice);
+            else if (invoice.source === 'manual') setSelectedManualPurchase(invoice.rawPurchase || null);
+            else setSelectedInvoice(invoice.rawInvoice || null);
           }}
           className={cn(
             'bg-white dark:bg-gray-900 rounded-xl border shadow-sm overflow-visible relative transition-all',
@@ -314,7 +342,7 @@ export function PurchasesPage() {
     <div className="p-6 space-y-6">
       <DesktopPageHeader
         title="Alışlar"
-        description="Gelen faturalardan oluşturulan alış kayıtları"
+        description="Gelen faturalar ve manuel alış kayıtları"
         icon={<ShoppingCart className="h-6 w-6" />}
         eyebrow={{ tr: 'Satın Alma', en: 'Purchasing' }}
         actions={(
@@ -323,20 +351,24 @@ export function PurchasesPage() {
               <FileText size={18} />
               Gelen Faturalar
             </Button>
-            <ExportDropdown
-              headers={purchaseExportHeaders}
-              getRows={getPurchaseExportRows}
-              filename="alislar"
-            />
+            <PermissionGate permission="invoices.documents.download.view">
+              <ExportDropdown
+                headers={purchaseExportHeaders}
+                getRows={getPurchaseExportRows}
+                filename="alislar"
+              />
+            </PermissionGate>
             <Button variant="outline" className="flex items-center gap-2" onClick={handleRefresh}>
               <RefreshCw size={18} />
               Yenile
             </Button>
             <div className="ml-auto">
-              <Button className="flex items-center gap-2" onClick={() => setIsNewPurchaseModalOpen(true)}>
-                <Plus size={18} />
-                Yeni Alış
-              </Button>
+              <PermissionGate permission="invoices.create">
+                <Button className="flex items-center gap-2" onClick={() => setShowNewPurchaseModal(true)}>
+                  <Plus size={18} />
+                  Yeni Alış
+                </Button>
+              </PermissionGate>
             </div>
           </>
         )}
@@ -384,7 +416,7 @@ export function PurchasesPage() {
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 flex items-center gap-3">
           <FileText className="text-blue-600 dark:text-blue-400 flex-shrink-0" size={20} />
           <p className="text-sm text-blue-800 dark:text-blue-300 flex-1">
-            Bu sayfada gelen faturalardan oluşan alış kayıtları listelenir. Fatura önizleme için Gelen Faturalar sayfasını kullanın.
+            Bu sayfada sadece alış kayıtları listelenir. Kasa giderleri için Kasa sayfasını, fatura önizleme için Gelen Faturalar sayfasını kullanın.
           </p>
           <Button variant="ghost" size="sm" onClick={() => { setShowBanner(false); localStorage.setItem(ONBOARDING_PURCHASES_DISMISSED, '1'); }} className="text-blue-400 hover:text-blue-600 dark:hover:text-blue-200 flex-shrink-0">
             <X size={18} />
@@ -427,6 +459,8 @@ export function PurchasesPage() {
                   { value: 'all', label: 'Tüm Durumlar' },
                   { value: 'RECEIVED', label: 'Alındı' },
                   { value: 'PROCESSED', label: 'İşlendi' },
+                  { value: 'APPROVED', label: 'Açık' },
+                  { value: 'PARTIAL', label: 'Kısmi Ödendi' },
                   { value: 'PAID', label: 'Ödendi' },
                 ]}
               />
@@ -477,9 +511,7 @@ export function PurchasesPage() {
                 render: (_: unknown, inv: PurchaseTableRow) => (
                   <div>
                     <div className="text-sm text-gray-900 dark:text-white">{inv.supplierName}</div>
-                    {inv.source === 'manual' ? (
-                      <div className="text-xs text-gray-500 dark:text-gray-400">{inv.description || 'Manuel gider kaydı'}</div>
-                    ) : inv.supplierTaxNumber ? (
+                    {inv.supplierTaxNumber ? (
                       <div className="text-xs text-gray-500 dark:text-gray-400">VKN: {inv.supplierTaxNumber}</div>
                     ) : null}
                   </div>
@@ -509,7 +541,16 @@ export function PurchasesPage() {
                 key: '_actions',
                 title: 'İşlemler',
                 render: (_: unknown, inv: PurchaseTableRow) => (
-                  <Button variant="ghost" size="sm" onClick={() => inv.rawInvoice && setSelectedInvoice(inv.rawInvoice)} disabled={inv.source === 'manual'}>Detay</Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      if (inv.source === 'manual') setSelectedManualPurchase(inv.rawPurchase || null);
+                      else if (inv.rawInvoice) setSelectedInvoice(inv.rawInvoice);
+                    }}
+                  >
+                    Detay
+                  </Button>
                 ),
               },
             ] as Column<PurchaseTableRow>[]}
@@ -528,16 +569,29 @@ export function PurchasesPage() {
         <div className={`fixed ${isMobile ? 'bottom-24' : 'bottom-6'} left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl px-4 md:px-6 py-3 flex items-center gap-3 md:gap-4 w-[90%] md:w-auto overflow-x-auto whitespace-nowrap`}>
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{selectedIds.size} kayıt seçildi</span>
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
-          <ExportDropdown
-            headers={purchaseExportHeaders}
-            getRows={getPurchaseExportRows}
-            filename="alislar"
-            variant="ghost"
-            label="Dışa Aktar"
-            compact
-            iconClassName="text-blue-600"
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-colors h-auto"
-          />
+          <PermissionGate permission="invoices.documents.download.view">
+            <ExportDropdown
+              headers={purchaseExportHeaders}
+              getRows={getPurchaseExportRows}
+              filename="alislar"
+              variant="ghost"
+              label="Dışa Aktar"
+              compact
+              iconClassName="text-blue-600"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-colors h-auto"
+            />
+          </PermissionGate>
+          {selectedManualPurchaseIds.length > 0 ? (
+            <>
+              <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
+              <PermissionGate permission="invoices.create">
+                <Button variant="ghost" onClick={() => setShowBulkPaymentModal(true)} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-2xl transition-colors h-auto">
+                  <CreditCard className="w-4 h-4" />
+                  Ödendi İşaretle
+                </Button>
+              </PermissionGate>
+            </>
+          ) : null}
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
           <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors h-auto"><X className="w-4 h-4" /> Seçimi Kaldır</Button>
         </div>
@@ -586,15 +640,93 @@ export function PurchasesPage() {
         </div>
       )}
 
-      <CashflowModal
-        isOpen={isNewPurchaseModalOpen}
-        onClose={() => setIsNewPurchaseModalOpen(false)}
-        onSave={handleSavePurchaseRecord}
-        isLoading={createCashRecordMutation.isPending}
-        title="Yeni Alış Kaydı"
-        saveButtonText="Alışı Kaydet"
-        lockedTransactionType="expense"
+      {selectedManualPurchase && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4" onClick={() => setSelectedManualPurchase(null)}>
+          <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col" onClick={(event) => event.stopPropagation()}>
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Manuel Alış Detayı</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{selectedManualPurchase.supplierName}</p>
+              </div>
+              <Button variant="ghost" onClick={() => setSelectedManualPurchase(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><X size={24} /></Button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Toplam</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{formatCurrency(Number(selectedManualPurchase.totalAmount), selectedManualPurchase.currency || 'TRY')}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Ödenen</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{formatCurrency(Number(selectedManualPurchase.paidAmount), selectedManualPurchase.currency || 'TRY')}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Kalan</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{formatCurrency(Number(selectedManualPurchase.remainingAmount), selectedManualPurchase.currency || 'TRY')}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Durum</p>
+                  <div className="mt-0.5">{getStatusBadge(selectedManualPurchase.status)}</div>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Tarih</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{selectedManualPurchase.purchaseDate ? formatDate(selectedManualPurchase.purchaseDate) : '-'}</p>
+                </div>
+                {selectedManualPurchase.notes ? (
+                  <div className="col-span-2">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Not</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{selectedManualPurchase.notes}</p>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+              <Button variant="outline" onClick={() => setSelectedManualPurchase(null)}>Kapat</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showBulkPaymentModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4" onClick={() => setShowBulkPaymentModal(false)}>
+          <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full overflow-hidden" onClick={(event) => event.stopPropagation()}>
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Ödendi Olarak İşaretle</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{selectedManualPurchaseIds.length} manuel alış için kalan tutar kasaya gider olarak işlenecek.</p>
+              </div>
+              <Button variant="ghost" onClick={() => setShowBulkPaymentModal(false)}><X size={20} /></Button>
+            </div>
+            <div className="p-6">
+              <Select
+                label="Ödeme Şekli"
+                value={bulkPaymentMethod}
+                onChange={(event) => setBulkPaymentMethod(event.target.value)}
+                options={[
+                  { value: 'cash', label: 'Nakit' },
+                  { value: 'card', label: 'Kart' },
+                  { value: 'transfer', label: 'Havale/EFT' },
+                  { value: 'check', label: 'Çek' },
+                ]}
+              />
+            </div>
+            <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+              <Button variant="outline" onClick={() => setShowBulkPaymentModal(false)}>İptal</Button>
+              <Button onClick={handleBulkMarkPaid} disabled={recordManualPurchasePaymentMutation.isPending}>
+                {recordManualPurchasePaymentMutation.isPending ? 'İşleniyor...' : 'Kaydet'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <ManualPurchaseModal
+        isOpen={showNewPurchaseModal}
+        isLoading={createManualPurchaseMutation.isPending}
+        onClose={() => setShowNewPurchaseModal(false)}
+        onSubmit={handleCreateManualPurchase}
       />
+
     </div>
   );
 }

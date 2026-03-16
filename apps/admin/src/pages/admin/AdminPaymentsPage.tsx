@@ -19,7 +19,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function getTransactions(data: ResponseEnvelopeListPaymentRecordRead | undefined): PaymentTransaction[] {
-    const payload = unwrapData<unknown>(data)
+    // Orval mutator already unwraps ResponseEnvelope - no need for unwrapData
+    const payload = data as unknown;
     const candidate = Array.isArray(payload)
         ? payload
         : isPayloadRecord(payload) && Array.isArray(payload.transactions)
@@ -45,22 +46,11 @@ export default function AdminPaymentsPage() {
         provider: appliedFilter.provider || undefined,
         start_date: appliedFilter.start_date || undefined,
         end_date: appliedFilter.end_date || undefined,
+        search: appliedFilter.search || undefined,
     }
 
     const { data, isLoading: loading, error, refetch } = useListAdminPaymentPoTransactions(params)
-    const transactions = getTransactions(data).filter((transaction) => {
-        if (!appliedFilter.search) {
-            return true
-        }
-
-        const searchTerm = appliedFilter.search.toLowerCase()
-        return [
-            transaction.id,
-            transaction.pos_transaction_id,
-            transaction.referenceNumber,
-            transaction.patient_name,
-        ].some((value) => typeof value === 'string' && value.toLowerCase().includes(searchTerm))
-    })
+    const transactions = getTransactions(data)
 
     const stats = useMemo(() => {
         const total = transactions.reduce((sum, transaction) => sum + (transaction.amount || 0), 0)
@@ -270,7 +260,18 @@ export default function AdminPaymentsPage() {
                     <Filter className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                     <h3 className="font-semibold text-gray-900 dark:text-white">Filtreler</h3>
                 </div>
-                <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-4'}`}>
+                <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-5'}`}>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ara</label>
+                        <input
+                            type="text"
+                            placeholder="İşlem ID, referans no, hasta adı..."
+                            value={filter.search}
+                            onChange={(e) => handleFilterChange('search', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                    </div>
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">POS Sağlayıcı</label>
                         <select

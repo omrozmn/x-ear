@@ -40,8 +40,6 @@ class SimilarityRequest(AppBaseModel):
     image_path2: Optional[str] = Field(None, alias="imagePath2")
     text1: Optional[str] = None
     text2: Optional[str] = None
-    textA: Optional[str] = None
-    textB: Optional[str] = None
 
 class EntityExtractionRequest(AppBaseModel):
     image_path: Optional[str] = Field(None, alias="imagePath")
@@ -80,7 +78,7 @@ class OcrProcessResponse(AppBaseModel):
     timestamp: str
 
 class OcrSimilarityResponse(AppBaseModel):
-    result: float
+    result: Dict[str, Any]
     timestamp: str
 
 class OcrEntitiesResponse(AppBaseModel):

@@ -4,6 +4,7 @@ import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { Toaster } from 'react-hot-toast';
 import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { AuthProvider } from './components/AuthProvider';
+import { SectorProvider } from './contexts/SectorContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { GlobalErrorProvider } from './components/GlobalErrorHandler';
 import { ToastProvider } from '@x-ear/ui-web';
@@ -74,6 +75,7 @@ function App() {
             <GlobalErrorProvider>
               <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
                 <AuthProvider>
+                  <SectorProvider>
                   <RouterProvider router={router} />
                   <PhoneVerificationModal />
                   <Toaster 
@@ -90,6 +92,7 @@ function App() {
                     }}
                   />
                   <ReactQueryDevtools initialIsOpen={false} />
+                  </SectorProvider>
                 </AuthProvider>
               </ThemeProvider>
             </GlobalErrorProvider>

@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/hearing_profiles.py
+# hypothesis_version: 6.151.6
+
+[201, 404, 500, '/hearing-profiles', '/{party_id}', 'createHearingProfile', 'getHearingProfile', 'hearing-profiles', 'hearing_tests', 'parties.edit', 'parties.view', 'partyId', 'sgkInfo', 'updateHearingProfile']

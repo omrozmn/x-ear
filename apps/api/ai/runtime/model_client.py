@@ -120,25 +120,31 @@ class LocalModelClient(ModelClient):
     
     async def check_health(self) -> bool:
         try:
-            # Special bypass for known reliable cloud APIs during health check
-            if self.config.base_url and ("generativelanguage" in self.config.base_url or "api.groq.com" in self.config.base_url or "api.minimax" in self.config.base_url):
-                self._status = ModelStatus.AVAILABLE
-                return True
-
             async with httpx.AsyncClient(timeout=5.0) as client:
-                health_url = f"{self.config.base_url}/api/tags"
-                if self.config.base_url and "/v1" in self.config.base_url:
-                    health_url = f"{self.config.base_url}/models"
-                
-                response = await client.get(health_url)
+                # Determine health check endpoint based on API type
+                if self.config.base_url and "generativelanguage" in self.config.base_url:
+                    # Gemini: list models endpoint
+                    health_url = f"{self.config.base_url.rstrip('/')}/models"
+                elif self.config.base_url and ("api.groq.com" in self.config.base_url or "/v1" in self.config.base_url):
+                    # OpenAI-compatible: models endpoint
+                    health_url = f"{self.config.base_url.rstrip('/')}/models"
+                else:
+                    # Ollama local: tags endpoint
+                    health_url = f"{self.config.base_url}/api/tags"
+
+                headers = {}
+                if hasattr(self.config, 'api_key') and self.config.api_key:
+                    headers["Authorization"] = f"Bearer {self.config.api_key}"
+
+                response = await client.get(health_url, headers=headers)
                 if response.status_code == 200:
                     self._status = ModelStatus.AVAILABLE
                     return True
+                self._status = ModelStatus.UNAVAILABLE
                 return False
         except Exception:
             self._status = ModelStatus.UNAVAILABLE
             return False
-        return False
     
     async def generate(self, prompt: str, **kwargs) -> ModelResponse:
         start_time = time.time()

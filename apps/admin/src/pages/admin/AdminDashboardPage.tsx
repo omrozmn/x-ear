@@ -342,6 +342,7 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Recent Errors Table */}
+            <PermissionGate permissions={[AdminPermissions.SYSTEM_READ, AdminPermissions.AUDIT_READ]} mode="any">
             {recentErrors && recentErrors.length > 0 && (
                 <div className="bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 rounded-2xl overflow-hidden mt-6 sm:mt-8">
                     <div className={`${isMobile ? 'px-4 py-4' : 'px-6 py-5'} border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-700/50`}>
@@ -407,6 +408,7 @@ export default function AdminDashboardPage() {
                     />
                 </div>
             )}
+            </PermissionGate>
         </div>
     );
 }

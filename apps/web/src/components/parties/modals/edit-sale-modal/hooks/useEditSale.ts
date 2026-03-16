@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { listInventory, getInventory } from '@/api/client/inventory.client';
 import { updateSale } from '@/api/client/sales.client';
+import { customInstance } from '@/api/orval-mutator';
 import type { SaleUpdate } from '@/api/generated/schemas';
 import type {
   Sale,
@@ -93,6 +94,16 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
   const sgkSchemeUserChanged = useRef(false);
   const storedSgkPerEar = useRef<number>(0);
 
+  // Battery SGK settings
+  interface BatterySgkScheme {
+    label: string;
+    quantity_per_ear: number;
+    coverage_amount: number;
+    kdv_rate: number;
+  }
+  const [batterySgkSettings, setBatterySgkSettings] = useState<Record<string, BatterySgkScheme>>({});
+  const [batteryReportQuantity, setBatteryReportQuantity] = useState<'per_ear' | 'bilateral'>('per_ear');
+
   // Reactive pricing calculation (matching device assignment form logic)
   const calculatedPricing = useMemo(() => {
     if (!formData.listPrice || formData.listPrice <= 0) {
@@ -126,11 +137,26 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
       }
     }
 
-    // 2. Calculate total SGK reduction
+    // 2. Calculate total SGK reduction (device)
     const totalSgkReduction = sgkReductionPerUnit * quantity;
 
+    // 2b. Calculate battery SGK reduction (if applicable)
+    let batterySgkAmount = 0;
+    const isSgkBattery = formData.category === 'hearing_aid_battery' || formData.category === 'implant_battery';
+    if (isSgkBattery && formData.reportStatus !== 'none' && formData.reportStatus !== 'raporsuz') {
+      const schemeKey = formData.category === 'hearing_aid_battery' ? 'hearing_aid_battery' : 'implant_battery';
+      const scheme = batterySgkSettings[schemeKey];
+      if (scheme) {
+        const sgkAmountWithKdv = scheme.coverage_amount * (1 + scheme.kdv_rate / 100);
+        const earMultiplier = batteryReportQuantity === 'bilateral' ? 2 : 1;
+        batterySgkAmount = Math.min(sgkAmountWithKdv * earMultiplier, totalListPrice);
+      }
+    }
+
+    const totalAllSgkReduction = totalSgkReduction + batterySgkAmount;
+
     // 3. Apply SGK FIRST: Total after SGK
-    const totalAfterSgk = totalListPrice - totalSgkReduction;
+    const totalAfterSgk = totalListPrice - totalAllSgkReduction;
 
     // 4. Apply discount SECOND: To the SGK-reduced amount
     let discountTotal = 0;
@@ -147,11 +173,12 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
 
     return {
       salePrice: salePrice,
-      sgkReduction: totalSgkReduction,
+      sgkReduction: totalAllSgkReduction,
+      batterySgkAmount,
       totalAmount,
       remainingAmount
     };
-  }, [formData.listPrice, formData.sgkScheme, formData.discountType, formData.discountValue, formData.ear, formData.downPayment, sgkAmounts]);
+  }, [formData.listPrice, formData.sgkScheme, formData.discountType, formData.discountValue, formData.ear, formData.downPayment, formData.category, formData.reportStatus, sgkAmounts, batterySgkSettings, batteryReportQuantity]);
 
   // Calculated values
   const totalPaid = paymentRecords.reduce((sum, payment) => sum + (payment.amount || 0), 0);
@@ -210,11 +237,36 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
     }
   };
 
+  // Load battery SGK settings
+  const loadBatterySgkSettings = async () => {
+    try {
+      const response = await customInstance<{ data: { settings: { sgk?: { battery_schemes?: Record<string, BatterySgkScheme> } } } }>({
+        url: '/api/settings',
+        method: 'GET',
+      });
+      const schemes = response.data?.settings?.sgk?.battery_schemes;
+      if (schemes) {
+        setBatterySgkSettings(schemes);
+      } else {
+        setBatterySgkSettings({
+          hearing_aid_battery: { label: 'İşitme Cihazı Pili', quantity_per_ear: 104, coverage_amount: 790, kdv_rate: 20 },
+          implant_battery: { label: 'İmplant Pili', quantity_per_ear: 360, coverage_amount: 2300, kdv_rate: 20 },
+        });
+      }
+    } catch {
+      setBatterySgkSettings({
+        hearing_aid_battery: { label: 'İşitme Cihazı Pili', quantity_per_ear: 104, coverage_amount: 790, kdv_rate: 20 },
+        implant_battery: { label: 'İmplant Pili', quantity_per_ear: 360, coverage_amount: 2300, kdv_rate: 20 },
+      });
+    }
+  };
+
   // Load Reference Data
   useEffect(() => {
     if (isOpen) {
       loadAvailableDevices();
       loadSgkSchemes();
+      loadBatterySgkSettings();
     }
   }, [isOpen]);
 
@@ -508,6 +560,8 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
     sgkSchemes,
     paymentRecords,
     serviceInfo,
+    batterySgkSettings,
+    batteryReportQuantity,
 
     // Calculated values
     calculatedPricing,
@@ -523,6 +577,7 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
     submitForm,
     resetForm,
     loadAvailableDevices,
-    setServiceInfo
+    setServiceInfo,
+    setBatteryReportQuantity,
   };
 };

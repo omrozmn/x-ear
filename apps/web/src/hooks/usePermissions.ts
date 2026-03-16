@@ -19,6 +19,7 @@ export const PERMISSION_CATEGORIES = {
   devices: { label: 'Cihazlar', icon: 'headphones' },
   inventory: { label: 'Stok', icon: 'package' },
   campaigns: { label: 'Kampanyalar', icon: 'megaphone' },
+  personnel: { label: 'Personel', icon: 'briefcase' },
   sgk: { label: 'SGK', icon: 'shield' },
   settings: { label: 'Ayarlar', icon: 'settings' },
   team: { label: 'Ekip', icon: 'users-round' },
@@ -28,11 +29,51 @@ export const PERMISSION_CATEGORIES = {
 
 export type PermissionCategory = keyof typeof PERMISSION_CATEGORIES;
 
+const normalizeRole = (role?: string | null): string => (role || '').trim().toLowerCase();
+
+const PERMISSION_ALIASES: Record<string, string[]> = {
+  'patient:read': ['parties.view', 'patients.view'],
+  'patient:write': ['parties.create', 'parties.edit'],
+  'patient:delete': ['parties.delete'],
+  'appointment:read': ['appointments.view'],
+  'appointment:write': ['appointments.create', 'appointments.edit'],
+  'sale:read': ['sales.view'],
+  'sale:write': ['sales.create', 'sales.edit'],
+  'branches:read': ['branches.view'],
+  'branches:write': ['branches.create', 'branches.edit'],
+  'activity_logs:read': ['activity_logs.view', 'reports.activity.view'],
+  'activity_logs.view': ['reports.activity.view'],
+  'reports.view': [
+    'reports.overview.view',
+    'reports.sales.view',
+    'reports.parties.view',
+    'reports.promissory.view',
+    'reports.remaining.view',
+    'reports.pos_movements.view',
+    'reports.report_tracking.view',
+  ],
+  'dashboard:read': ['dashboard.view', 'dashboard.analytics'],
+};
+
+function expandPermissions(rawPermissions: string[]): string[] {
+  const expanded = new Set<string>();
+
+  rawPermissions.forEach((permission) => {
+    expanded.add(permission);
+    const aliases = PERMISSION_ALIASES[permission];
+    aliases?.forEach((alias) => expanded.add(alias));
+  });
+
+  return Array.from(expanded);
+}
+
 /**
  * Hook to check and manage user permissions
  */
 export function usePermissions() {
   const { isAuthenticated, user } = useAuthStore();
+  const normalizedRole = normalizeRole(user?.role);
+  const isTenantAdminRole = normalizedRole === 'admin' || normalizedRole === 'tenant_admin' || normalizedRole === 'owner';
 
   // Fetch current user's permissions
   const {
@@ -48,12 +89,21 @@ export function usePermissions() {
     }
   });
 
-  const permissions = useMemo(() =>
-    myPermissions?.data?.permissions || [],
-    [myPermissions]
-  );
+  const permissions = useMemo(() => {
+    const serverPermissions = myPermissions?.data?.permissions || [];
 
-  const isSuperAdmin = myPermissions?.data?.isSuperAdmin || false;
+    if (serverPermissions.length > 0) {
+      return expandPermissions(serverPermissions);
+    }
+
+    if (isTenantAdminRole) {
+      return ['*'];
+    }
+
+    return [];
+  }, [isTenantAdminRole, myPermissions]);
+
+  const isSuperAdmin = myPermissions?.data?.isSuperAdmin || normalizedRole === 'super_admin' || user?.is_super_admin === true;
   const role = myPermissions?.data?.role || user?.role;
 
   /**
@@ -130,7 +180,8 @@ export function usePermissions() {
  */
 export function useAllPermissions(): UseQueryResult<ListPermissionsQueryResult | undefined, unknown> {
   const { isAuthenticated, user } = useAuthStore();
-  const isAdmin = user?.role === 'admin' || user?.role === 'tenant_admin';
+  const role = normalizeRole(user?.role);
+  const isAdmin = role === 'admin' || role === 'tenant_admin';
 
   return useListPermissions({
     query: {
@@ -145,7 +196,8 @@ export function useAllPermissions(): UseQueryResult<ListPermissionsQueryResult |
  */
 export function useRolePermissions(roleName: string | null): UseQueryResult<GetPermissionRoleQueryResult | undefined, unknown> {
   const { isAuthenticated, user } = useAuthStore();
-  const isAdmin = user?.role === 'admin' || user?.role === 'tenant_admin';
+  const role = normalizeRole(user?.role);
+  const isAdmin = role === 'admin' || role === 'tenant_admin';
 
   return useGetPermissionRole(roleName || '', {
     query: {

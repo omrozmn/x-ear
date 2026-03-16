@@ -34,6 +34,11 @@ import { useBreakpoints } from '../../hooks/useMediaQuery';
 import { useLayoutStore } from '../../stores/layoutStore';
 import { BottomNav } from './BottomNav';
 import { useFeatures } from '../../hooks/useFeatures';
+import { usePermissions } from '../../hooks/usePermissions';
+import { useSector } from '../../hooks/useSector';
+import { useDynamicTitle } from '../../hooks/useDynamicTitle';
+import { useListNotifications } from '../../api/generated/notifications/notifications';
+import type { NotificationRead } from '../../api/generated/schemas';
 import {
   JWT_TOKEN,
   AUTH_TOKEN,
@@ -54,6 +59,7 @@ const getPageKeyFromPath = (pathname: string): { key: string; title: string } | 
     '/sales': { key: 'sales', title: 'Satışlar' },
     '/finance': { key: 'finance', title: 'Finans' },
     '/invoices': { key: 'invoices', title: 'Faturalar' },
+    '/personnel': { key: 'personnel', title: 'Personel Yönetimi' },
     '/devices': { key: 'devices', title: 'Cihazlar' },
     '/inventory': { key: 'inventory', title: 'Stok' },
     '/campaigns': { key: 'campaigns', title: 'Kampanyalar' },
@@ -121,6 +127,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   // Feature flags for sidebar
   const { features: enabledFeatures } = useFeatures();
 
+  // Sector-based module gating
+  const { enabledModules } = useSector();
+
+  // Dynamic document title based on sector
+  useDynamicTitle();
+
   // AI Composer Shortcut (Cmd+K)
   const { toggleOpen } = useComposerStore();
   useHotkeys('meta+k', (e) => {
@@ -137,10 +149,65 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   }, [subscription, location.pathname, navigate]);
 
   const { theme, setTheme } = useTheme();
+  const { hasAnyPermission, hasPermission, isSuperAdmin } = usePermissions();
   const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const shouldUseStaticHeader = usesStaticHeaderLayout(location.pathname);
+
+  const visibleSidebarItemIds = React.useMemo(() => {
+    const canViewDashboard = isSuperAdmin || hasAnyPermission(['dashboard.view', 'dashboard.analytics']);
+    const canViewParties = isSuperAdmin || hasPermission('parties.view');
+    const canViewAppointments = isSuperAdmin || hasPermission('appointments.view');
+    const canViewInventory = isSuperAdmin || hasPermission('inventory.view');
+    const canViewSales = isSuperAdmin || hasPermission('sales.view');
+    const canViewFinance = isSuperAdmin || hasAnyPermission(['finance.view', 'finance.cash_register']);
+    const canViewCampaigns = isSuperAdmin || hasPermission('campaigns.view');
+    const canViewInvoices = isSuperAdmin || hasPermission('invoices.view');
+    const canViewSgk = isSuperAdmin || hasPermission('sgk.view');
+    const canViewReports = isSuperAdmin || hasAnyPermission([
+      'reports.view',
+      'reports.overview.view',
+      'reports.sales.view',
+      'reports.parties.view',
+      'reports.promissory.view',
+      'reports.remaining.view',
+      'reports.pos_movements.view',
+      'reports.report_tracking.view',
+      'reports.activity.view'
+    ]);
+    const canViewSettings = isSuperAdmin || hasAnyPermission(['settings.view', 'team.view', 'team.permissions']);
+    const canViewTeam = isSuperAdmin || hasAnyPermission(['team.view', 'team.permissions']);
+
+    return [
+      ...(canViewDashboard ? ['dashboard'] : []),
+      ...(canViewParties ? ['patients'] : []),
+      ...(canViewAppointments ? ['appointments'] : []),
+      ...(canViewInventory ? ['inventory'] : []),
+      ...(canViewSales ? ['sales'] : []),
+      ...(canViewFinance ? ['payments'] : []),
+      ...(canViewCampaigns ? ['campaigns'] : []),
+      ...(canViewInvoices ? ['invoices', 'outgoing-invoices', 'incoming-invoices', 'proformas', 'invoice-summary', 'new-invoice', 'purchases'] : []),
+      ...(canViewSgk ? ['sgk-reports', 'sgk-upload', 'sgk-reports-list', 'uts'] : []),
+      ...(canViewReports ? ['reports', 'reports-overview', 'reports-cashflow'] : []),
+      ...(canViewSettings ? ['settings', 'settings-company', 'settings-integration', 'settings-parties', 'settings-sgk', 'settings-subscription'] : []),
+      ...(canViewTeam ? ['settings-team', 'personnel'] : []),
+    ];
+  }, [hasAnyPermission, hasPermission, isSuperAdmin]);
+
+  const { data: notificationsResponse, isLoading: notificationsLoading } = useListNotifications(undefined, {
+    query: {
+      enabled: !!user && showNotifications,
+      staleTime: 60 * 1000,
+      select: (response) => response.data ?? [],
+    },
+  });
+
+  const notifications = React.useMemo(() => (
+    Array.isArray(notificationsResponse) ? (notificationsResponse as NotificationRead[]) : []
+  ), [notificationsResponse]);
+  const hasUnreadNotifications = notifications.some((notification) => notification.isRead === false);
 
   const toggleDarkMode = () => {
     setTheme(isDark ? "light" : "dark");
@@ -162,7 +229,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         isCollapsed={!sidebarOpen && isDesktop}
         onToggle={() => setSidebarOpen(!sidebarOpen)}
         onClose={() => setSidebarOpen(false)}
-        currentPath={location.pathname + location.search}
+        currentPath={location.href}
         isMobile={isMobile}
         isTablet={isTablet}
         isDesktop={isDesktop}
@@ -170,6 +237,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           navigate({ to: href as string });
         }}
         enabledFeatures={enabledFeatures}
+        visibleItemIds={visibleSidebarItemIds}
+        enabledModules={enabledModules}
       />
 
       {/* Main Content */}
@@ -236,13 +305,68 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               </Button>
 
               {/* Notifications - Hidden on mobile */}
-              <Button
-                className="hidden sm:flex relative p-2 h-auto min-h-[44px] min-w-[44px] text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                title={t('header.notifications')}
-                variant='ghost'>
-                <Bell size={18} className="sm:w-5 sm:h-5" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-              </Button>
+              <div className="relative hidden sm:block">
+                <Button
+                  onClick={() => setShowNotifications((current) => !current)}
+                  className="relative flex p-2 h-auto min-h-[44px] min-w-[44px] text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                  title={t('header.notifications')}
+                  variant='ghost'>
+                  <Bell size={18} className="sm:w-5 sm:h-5" />
+                  {hasUnreadNotifications ? (
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                  ) : null}
+                </Button>
+
+                {showNotifications ? (
+                  <div className="absolute right-0 top-full mt-3 w-[360px] overflow-hidden rounded-[24px] border border-gray-200/80 bg-white/95 shadow-2xl backdrop-blur-xl dark:border-gray-700/80 dark:bg-gray-900/95 z-[1100]">
+                    <div className="border-b border-gray-200/80 px-4 py-3 dark:border-gray-700/80">
+                      <div className="text-sm font-semibold text-gray-900 dark:text-white">Bildirimler</div>
+                      <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Son sistem ve ekip bildirimleri burada listelenir
+                      </div>
+                    </div>
+                    <div className="max-h-[420px] overflow-y-auto p-3">
+                      {notificationsLoading ? (
+                        <div className="rounded-2xl border border-dashed border-gray-200 px-4 py-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                          Bildirimler yukleniyor
+                        </div>
+                      ) : notifications.length === 0 ? (
+                        <div className="rounded-2xl border border-dashed border-gray-200 px-4 py-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                          Henuz bildiriminiz yok
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {notifications.map((notification) => (
+                            <div
+                              key={notification.id}
+                              className={cn(
+                                "rounded-[20px] border px-4 py-3 transition-colors",
+                                notification.isRead === false
+                                  ? "border-sky-200 bg-sky-50/80 dark:border-sky-900/60 dark:bg-sky-950/30"
+                                  : "border-gray-200 bg-white/80 dark:border-gray-800 dark:bg-gray-950/40"
+                              )}
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                  <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                    {notification.title}
+                                  </div>
+                                  <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                                    {notification.message}
+                                  </div>
+                                </div>
+                                {notification.isRead === false ? (
+                                  <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-sky-500" />
+                                ) : null}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
 
               {/* AI Inbox Toggle */}
               <Button

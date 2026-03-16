@@ -28,12 +28,16 @@ import type { ResponseMeta } from '@/api/generated/schemas';
 import type { FilterState } from '../types';
 import { TabExportButton } from '../components/TabExportButton';
 import PieChartSimple from '@/components/charts/PieChartSimple';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface PromissoryNotesTabProps {
     filters: FilterState;
 }
 
 export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
+    const { hasPermission } = usePermissions();
+    const canViewFinancials = hasPermission('sensitive.reports.promissory.financials.view');
+    const canViewContact = hasPermission('sensitive.parties.list.contact.view');
     const [showListModal, setShowListModal] = useState(false);
     const [listFilter, setListFilter] = useState<'active' | 'overdue' | 'paid' | 'all'>('all');
     const [listPage, setListPage] = useState(1);
@@ -95,6 +99,10 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
         }).format(amount);
     };
 
+    const formatProtectedCurrency = (amount: number) => (
+        canViewFinancials ? formatCurrency(amount) : 'Bu rol icin gizli'
+    );
+
     const getMonthName = (month: number) => {
         const months = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
         return months[month - 1] || '';
@@ -150,7 +158,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
             render: (_: unknown, record: ReportPromissoryNoteByParty) => (
                 <>
                     <p className="font-medium text-gray-900 dark:text-white">{record.partyName}</p>
-                    {record.phone && (
+                    {canViewContact && record.phone && (
                         <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                             <Phone className="w-3 h-3" /> {record.phone}
                         </p>
@@ -190,14 +198,14 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
             key: 'totalAmount',
             title: 'Toplam Tutar',
             align: 'right',
-            render: (_: unknown, record: ReportPromissoryNoteByParty) => formatCurrency(record.totalAmount)
+            render: (_: unknown, record: ReportPromissoryNoteByParty) => formatProtectedCurrency(record.totalAmount)
         },
         {
             key: 'remainingAmount',
             title: 'Kalan',
             align: 'right',
             render: (_: unknown, record: ReportPromissoryNoteByParty) => (
-                <span className="font-medium text-red-600">{formatCurrency(record.remainingAmount)}</span>
+                <span className="font-medium text-red-600">{formatProtectedCurrency(record.remainingAmount)}</span>
             )
         },
     ], []);
@@ -221,7 +229,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
             key: 'amount',
             title: 'Tutar',
             align: 'right',
-            render: (_: unknown, record: ReportPromissoryNoteListItem) => formatCurrency(record.amount)
+            render: (_: unknown, record: ReportPromissoryNoteListItem) => formatProtectedCurrency(record.amount)
         },
         {
             key: 'remainingAmount',
@@ -229,7 +237,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
             align: 'right',
             render: (_: unknown, record: ReportPromissoryNoteListItem) => (
                 <span className="font-medium text-red-600 dark:text-red-400">
-                    {formatCurrency(record.remainingAmount)}
+                    {formatProtectedCurrency(record.remainingAmount)}
                 </span>
             )
         },
@@ -327,7 +335,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
                         </div>
                         <div>
                             <p className="text-sm text-green-600 dark:text-green-400">Tahsil Edilen</p>
-                            <p className="text-2xl font-bold text-green-900 dark:text-green-100">{formatCurrency(notes?.summary?.totalCollected || 0)}</p>
+                            <p className="text-2xl font-bold text-green-900 dark:text-green-100">{formatProtectedCurrency(notes?.summary?.totalCollected || 0)}</p>
                         </div>
                     </div>
                 </div>
@@ -383,13 +391,13 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
                         (notes?.monthlyRevenue || []).map((item) => ({
                             month: item.month,
                             value: item.revenue,
-                            display: (value) => formatCurrency(value),
+                            display: (value) => formatProtectedCurrency(value),
                         })),
                         {
                             centerLabel: 'Tahsilat',
                             footerLabel: 'TL',
-                            totalFormatter: formatCurrency,
-                            detailFormatter: formatCurrency,
+                            totalFormatter: formatProtectedCurrency,
+                            detailFormatter: formatProtectedCurrency,
                         }
                     )}
                 </div>
@@ -525,19 +533,19 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
                             </div>
                             <div>
                                 <span className="text-gray-500 dark:text-gray-400">Telefon</span>
-                                <p className="font-medium text-gray-900 dark:text-white">{selectedNote.party?.phone || '-'}</p>
+                                <p className="font-medium text-gray-900 dark:text-white">{canViewContact ? (selectedNote.party?.phone || '-') : 'Bu rol icin gizli'}</p>
                             </div>
                             <div>
                                 <span className="text-gray-500 dark:text-gray-400">Senet Tutarı</span>
-                                <p className="font-medium text-gray-900 dark:text-white">{formatCurrency(selectedNote.amount)}</p>
+                                <p className="font-medium text-gray-900 dark:text-white">{formatProtectedCurrency(selectedNote.amount)}</p>
                             </div>
                             <div>
                                 <span className="text-gray-500 dark:text-gray-400">Tahsil Edilen</span>
-                                <p className="font-medium text-gray-900 dark:text-white">{formatCurrency(selectedNote.paidAmount)}</p>
+                                <p className="font-medium text-gray-900 dark:text-white">{formatProtectedCurrency(selectedNote.paidAmount)}</p>
                             </div>
                             <div>
                                 <span className="text-gray-500 dark:text-gray-400">Kalan Tutar</span>
-                                <p className="font-medium text-red-600 dark:text-red-400">{formatCurrency(selectedNote.remainingAmount)}</p>
+                                <p className="font-medium text-red-600 dark:text-red-400">{formatProtectedCurrency(selectedNote.remainingAmount)}</p>
                             </div>
                             <div>
                                 <span className="text-gray-500 dark:text-gray-400">Vade Tarihi</span>

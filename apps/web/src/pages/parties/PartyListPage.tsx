@@ -10,6 +10,7 @@ import { PartyCard } from '../../components/parties/PartyCard';
 import { PartySearch } from '../../components/parties/PartySearch';
 import { PartyFilters } from '../../components/parties/PartyFilters';
 import { PartyFormModal } from '../../components/parties/PartyFormModal';
+import { usePermissions } from '../../hooks/usePermissions';
 import { Button } from '@x-ear/ui-web';
 import type { PartyCreate } from '@/api/generated/schemas';
 
@@ -59,6 +60,9 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
     isOnline,
     clearError: clearMutationError
   } = usePartyMutations();
+  const { hasPermission } = usePermissions();
+  const canViewListContact = hasPermission('sensitive.parties.list.contact.view');
+  const canViewListIdentity = hasPermission('sensitive.parties.list.identity.view');
 
   // Extract data from query result
   const parties = partiesData?.parties || [];
@@ -95,9 +99,15 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
     id: party.id || '',
     firstName: party.firstName || '',
     lastName: party.lastName || '',
-    tcNumber: party.tcNumber || party.tc_number || '',
-    phone: party.phone || '',
-    email: party.email || '',
+    tcNumber: canViewListIdentity
+      ? (party.tcNumber || party.tc_number || '')
+      : 'Bu rol icin gizli',
+    phone: canViewListContact
+      ? (party.phone || '')
+      : 'Bu rol icin gizli',
+    email: canViewListContact
+      ? (party.email || '')
+      : 'Bu rol icin gizli',
     status: (party.status as PartyStatus) || 'active',
     segment: (party.segment as PartySegment) || 'NEW',
     labels: party.label ? [party.label as PartyLabel] : [],
@@ -105,9 +115,9 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
     lastVisitDate: party.updatedAt || party.updated_at || '',
     deviceCount: party.devices?.length || 0,
     hasInsurance: !!(party.sgkInfo || party.sgk_info),
-    outstandingBalance: 0, // This would need to be calculated
+    outstandingBalance: 0,
     priority: party.priorityScore || party.priority_score || 0
-  }), []);
+  }), [canViewListContact, canViewListIdentity]);
   const [selectedParties, setSelectedParties] = useState<Set<string>>(new Set());
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingParty, setEditingParty] = useState<Party | null>(null);

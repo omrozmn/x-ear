@@ -442,7 +442,7 @@ export async function withRetry<T>(
  * @param ms - Duration in milliseconds
  * @returns Promise that resolves after the duration
  */
-function sleep(ms: number): Promise<void> {
+export function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 

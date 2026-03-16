@@ -98,6 +98,8 @@ interface LoginCredentials {
 
 type AuthStore = AuthState & AuthActions;
 
+const normalizeRole = (role?: string | null): string => (role || 'user').trim().toLowerCase();
+
 export const useAuthStore = create<AuthStore>()(
   persist(
     (set, get) => ({
@@ -192,7 +194,7 @@ export const useAuthStore = create<AuthStore>()(
         try {
           // Skip subscription check for admin users - they don't have tenant subscriptions
           const { user } = get();
-          if (user?.role === 'super_admin' || user?.role === 'admin') {
+          if (normalizeRole(user?.role) === 'super_admin') {
             return;
           }
 
@@ -240,6 +242,7 @@ export const useAuthStore = create<AuthStore>()(
 
             // Map AuthUserRead to AuthStateUser and handle missing fields
             if (accessToken && userData) {
+              const normalizedRole = normalizeRole(userData.role);
               const name = (userData.firstName && userData.lastName)
                 ? `${userData.firstName} ${userData.lastName}`.trim()
                 : (userData.username || '');
@@ -248,8 +251,9 @@ export const useAuthStore = create<AuthStore>()(
                 ...userData,
                 firstName: userData.firstName || '',
                 lastName: userData.lastName || '',
+                role: normalizedRole,
                 name,
-                is_super_admin: userData.role === 'super_admin' || userData.role === 'admin',
+                is_super_admin: normalizedRole === 'super_admin',
                 isPhoneVerified: !requiresPhoneVerification
               } as AuthStateUser;
 
@@ -319,7 +323,7 @@ export const useAuthStore = create<AuthStore>()(
 
               // Trigger lazy services that need auth (don't await, fire-and-forget)
               // Skip for admin users who don't have tenant context
-              if (user.role !== 'super_admin' && user.role !== 'admin') {
+              if (normalizeRole(user.role) !== 'super_admin') {
                 try {
                   const { appointmentService } = await import('../services/appointment.service');
                   appointmentService.triggerServerSync();
@@ -734,13 +738,13 @@ export const useAuthStore = create<AuthStore>()(
                 name: (userData.firstName && userData.lastName)
                   ? `${userData.firstName} ${userData.lastName}`.trim()
                   : (userData.username || ''),
-                role: userData.role || 'user',
+                role: normalizeRole(userData.role),
                 phone: userData.phone,
                 tenantId: userData.tenantId,
                 isPhoneVerified,
                 isImpersonating,
                 realUserEmail,
-                is_super_admin: userData.role === 'super_admin',
+                is_super_admin: normalizeRole(userData.role) === 'super_admin',
                 effectiveTenantId: payload?.effective_tenant_id,
                 tenantName: (payload?.is_impersonating_tenant ? userData.tenantName : undefined),
                 isImpersonatingTenant: payload?.is_impersonating_tenant
@@ -769,7 +773,7 @@ export const useAuthStore = create<AuthStore>()(
               await checkSubscription();
 
               // Trigger lazy services that need auth (skip for admins)
-              if (transformedUser.role !== 'super_admin' && transformedUser.role !== 'admin') {
+              if (normalizeRole(transformedUser.role) !== 'super_admin') {
                 try {
                   const { appointmentService } = await import('../services/appointment.service');
                   appointmentService.triggerServerSync();

@@ -6,11 +6,12 @@ import type { ReplacementFormData, ReplacementFormState, Device } from '../types
 
 export const useDeviceReplacement = (isOpen: boolean) => {
   const [formData, setFormData] = useState<ReplacementFormData>({
-    replacementReason: '',
+    replacementReason: 'stock',
     notes: '',
     selectedInventoryItem: null,
     createReturnInvoice: false,
-    invoiceType: 'individual'
+    invoiceType: 'individual',
+    returnSource: null,
   });
 
   const [state, setState] = useState<ReplacementFormState>({
@@ -30,11 +31,12 @@ export const useDeviceReplacement = (isOpen: boolean) => {
 
   const resetForm = () => {
     setFormData({
-      replacementReason: '',
+      replacementReason: 'stock',
       notes: '',
       selectedInventoryItem: null,
       createReturnInvoice: false,
-      invoiceType: 'individual'
+      invoiceType: 'individual',
+      returnSource: null,
     });
     setState(prev => ({
       ...prev,
@@ -93,10 +95,6 @@ export const useDeviceReplacement = (isOpen: boolean) => {
   const validateForm = () => {
     if (!formData.replacementReason) {
       setState(prev => ({ ...prev, error: 'Lütfen değişim nedenini seçiniz.' }));
-      return false;
-    }
-    if (!formData.selectedInventoryItem) {
-      setState(prev => ({ ...prev, error: 'Lütfen yeni cihaz seçiniz.' }));
       return false;
     }
     return true;

@@ -4,6 +4,7 @@ import { Sparkles } from 'lucide-react';
 import { loadSiteWorkspace, type SiteWorkspace } from '@/lib/website-generator-client';
 import { WebsitePreviewCanvas } from '@/components/website-builder/WebsitePreviewCanvas';
 import { HeaderBackButton } from '@/components/layout/HeaderBackButton';
+import { useNavigate } from '@tanstack/react-router';
 
 const ACTIVE_SITE_STORAGE_KEY = 'xear.websiteGenerator.activeSiteId';
 const PENDING_PREVIEW_COMMAND_STORAGE_KEY = 'xear.websiteGenerator.pendingPreviewCommand';
@@ -12,6 +13,7 @@ const WebsiteBuilderPreviewPage: React.FC = () => {
     const [workspace, setWorkspace] = useState<SiteWorkspace | null>(null);
     const [selectedTarget, setSelectedTarget] = useState<{ key: string; label: string } | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const siteId = window.localStorage.getItem(ACTIVE_SITE_STORAGE_KEY);
@@ -35,11 +37,11 @@ const WebsiteBuilderPreviewPage: React.FC = () => {
         }
         const command = `${selectedTarget.label} kartini degistir, daha modern bir varyant sec ve icerigi guclendir`;
         window.localStorage.setItem(PENDING_PREVIEW_COMMAND_STORAGE_KEY, command);
-        window.location.href = '/web-management';
+        navigate({ to: '/web-management' });
     };
 
     const handleBack = () => {
-        window.location.href = '/web-management';
+        navigate({ to: '/web-management' });
     };
 
     return (

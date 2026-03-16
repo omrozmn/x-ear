@@ -207,7 +207,17 @@ ENDPOINT_PERMISSIONS = {
     ('GET', '/cash-records'): 'cash_records:read',
     ('POST', '/cash-records'): 'cash_records:write',
     ('DELETE', '/cash-records/<record_id>'): 'cash_records:delete',
-    
+
+    # Personnel
+    ('GET', '/api/personnel/overview'): 'team.view',
+    ('GET', '/api/personnel/employees'): 'team.view',
+    ('GET', '/api/personnel/leave'): 'team.view',
+    ('GET', '/api/personnel/documents'): 'team.view',
+    ('GET', '/api/personnel/compensation'): 'team.view',
+    ('GET', '/api/personnel/settings'): 'team.permissions',
+    ('PUT', '/api/personnel/settings'): 'team.permissions',
+    ('GET', '/api/admin/personnel/overview'): None,
+
     # Unified Cash Records
     ('GET', '/unified-cash-records'): 'finance:read',
     ('GET', '/unified-cash-records/summary'): 'finance:read',

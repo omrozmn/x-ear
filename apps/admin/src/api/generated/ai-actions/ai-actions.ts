@@ -42,13 +42,13 @@ import { adminApi } from '../../orval-mutator';
 
 /**
  * Generate an action plan from a classified intent.
-    
+
     The endpoint:
     1. Validates the intent
     2. Maps intent to Tool API operations
     3. Calculates risk levels
     4. Generates approval token if required
-    
+
     High-risk actions require approval before execution.
  * @summary Create an action plan from intent
  */

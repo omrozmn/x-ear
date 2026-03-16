@@ -39,7 +39,9 @@ from database import get_db
 from models.user import ActivityLog
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["Devices"])
+from middleware.require_module import require_module
+
+router = APIRouter(tags=["Devices"], dependencies=[Depends(require_module("devices"))])
 
 def ensure_hearing_product(db_session: Session, tenant_id: str):
     """Ensure tenant is using a hearing product"""

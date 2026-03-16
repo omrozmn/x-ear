@@ -18,8 +18,9 @@ class InventoryItemBase(AppBaseModel):
     stock_code: Optional[str] = Field(None, alias="stockCode")
     supplier: Optional[str] = None
     unit: str = "adet"
+    package_quantity: Optional[int] = Field(None, alias="packageQuantity")  # Items per package
     description: Optional[str] = None
-    
+
     # Inventory Counts
     available_inventory: int = Field(0, alias="availableInventory")
     total_inventory: int = Field(0, alias="totalInventory")
@@ -65,8 +66,9 @@ class InventoryItemUpdate(AppBaseModel):
     stock_code: Optional[str] = Field(None, alias="stockCode")
     supplier: Optional[str] = None
     unit: Optional[str] = None
+    package_quantity: Optional[int] = Field(None, alias="packageQuantity")
     description: Optional[str] = None
-    
+
     # Inventory Counts
     available_inventory: Optional[int] = Field(None, alias="availableInventory")
     total_inventory: Optional[int] = Field(None, alias="totalInventory")

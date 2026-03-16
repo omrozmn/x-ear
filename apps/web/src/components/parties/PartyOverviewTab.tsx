@@ -5,6 +5,7 @@ import { Button } from '../ui/Button';
 import { Modal, Input, Textarea } from '@x-ear/ui-web';
 import { customInstance } from '../../api/orval-mutator';
 import { useTranslation } from 'react-i18next';
+import { usePermissions } from '../../hooks/usePermissions';
 
 interface CollapsibleCardProps {
   title: string;
@@ -260,9 +261,21 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
   onCloseNoteModal,
 }) => {
   const { t } = useTranslation('patients');
+  const { hasPermission } = usePermissions();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [noteTitle, setNoteTitle] = useState('');
   const [noteContent, setNoteContent] = useState('');
+  const canViewContact = hasPermission('sensitive.parties.detail.contact.view');
+  const canViewIdentity = hasPermission('sensitive.parties.detail.identity.view');
+  const canViewNotes = hasPermission('sensitive.parties.detail.notes.view');
+
+  const getProtectedValue = (value: string | null | undefined, canView: boolean, emptyFallback = 'Belirtilmemis') => {
+    if (!canView) {
+      return 'Bu rol icin gizli';
+    }
+
+    return value || emptyFallback;
+  };
 
   // Use external control for modal state
   const isModalOpen = showNoteModal;
@@ -335,7 +348,7 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
               <Phone className="w-5 h-5 text-gray-400" />
               <div>
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Telefon</p>
-                <p className="text-sm text-gray-900 dark:text-white">{party.phone || 'Belirtilmemis'}</p>
+                <p className="text-sm text-gray-900 dark:text-white">{getProtectedValue(party.phone, canViewContact)}</p>
               </div>
             </div>
 
@@ -343,7 +356,7 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
               <Mail className="w-5 h-5 text-gray-400" />
               <div>
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">E-posta</p>
-                <p className="text-sm text-gray-900 dark:text-white">{party.email || 'Belirtilmemis'}</p>
+                <p className="text-sm text-gray-900 dark:text-white">{getProtectedValue(party.email, canViewContact)}</p>
               </div>
             </div>
 
@@ -361,7 +374,7 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
               <Tag className="w-5 h-5 text-gray-400" />
               <div>
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">TC Kimlik No</p>
-                <p className="text-sm text-gray-900 dark:text-white">{party.tcNumber || 'Belirtilmemis'}</p>
+                <p className="text-sm text-gray-900 dark:text-white">{getProtectedValue(party.tcNumber, canViewIdentity)}</p>
               </div>
             </div>
 
@@ -425,7 +438,13 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
       {/* Additional Details */}
       <CollapsibleCard title={t('overview.extra_info', 'Ek Bilgiler')} icon={<Tag className="w-5 h-5 text-gray-500" />} defaultOpen={false}>
           <div className="space-y-4 pt-4">
-            {party.notes && party.notes.length > 0 && (
+            {!canViewNotes && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                Not detaylari bu rol icin gizli.
+              </div>
+            )}
+
+            {canViewNotes && party.notes && party.notes.length > 0 && (
               <div>
                 <p className="text-sm font-medium text-gray-500 mb-2">Son Notlar</p>
                 <div className="space-y-2">

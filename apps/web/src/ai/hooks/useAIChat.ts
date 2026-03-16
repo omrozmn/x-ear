@@ -29,6 +29,7 @@ import {
   isRetryableError,
   getRetryDelay,
   isAIError,
+  sleep,
 } from '../utils/aiErrorMessages';
 import type {
   ChatMessage,
@@ -231,9 +232,6 @@ function parseErrorResponse(error: unknown): AIError {
 /**
  * Sleep for a specified duration
  */
-function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 // =============================================================================
 // Main Hook
@@ -340,7 +338,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
               clarificationNeeded: getBoolean(intent.clarificationNeeded) ?? false,
               clarificationQuestion: getString(intent.clarificationQuestion),
             } : undefined,
-            response: getString(api?.response) ?? JSON.stringify(api?.response),
+            response: getString(api?.response) ?? (api?.response != null ? JSON.stringify(api.response) : ''),
             needsClarification: getBoolean(api?.needsClarification) ?? false,
             clarificationQuestion: getString(api?.clarificationQuestion),
             processingTimeMs: getNumber(api?.processingTimeMs) ?? 0,
@@ -348,7 +346,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
             phiDetected: getBoolean(api?.phiDetected) ?? false,
             actionPlan: actionPlan ? {
               planId: getString(actionPlan.planId) ?? '',
-              status: 'pending',
+              status: (getString(actionPlan.status) ?? 'pending') as 'pending' | 'ready' | 'approved' | 'executing' | 'completed' | 'failed',
               steps: (Array.isArray(actionPlan.steps) ? actionPlan.steps : []).map((step) => {
                 const s = asObject(step) ?? {};
                 return {

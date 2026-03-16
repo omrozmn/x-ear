@@ -192,7 +192,11 @@ const WebsiteBuilderPage: React.FC = () => {
     ]);
     const [discovery, setDiscovery] = useState<AIDiscoveryResponse | null>(null);
     const [proposal, setProposal] = useState<AIEditProposalResponse | null>(null);
-    const [busyKey, setBusyKey] = useState<string | null>(null);
+    const [busyKeys, setBusyKeys] = useState<Set<string>>(new Set());
+    const addBusy = (key: string) => setBusyKeys((prev) => new Set(prev).add(key));
+    const removeBusy = (key: string) => setBusyKeys((prev) => { const next = new Set(prev); next.delete(key); return next; });
+    const isBusy = (key: string) => busyKeys.has(key);
+    const isAnyBusy = busyKeys.size > 0;
     const [error, setError] = useState<string | null>(null);
     const [domainProviders, setDomainProviders] = useState<DomainProviderCatalogResponse | null>(null);
     const [domainSearch, setDomainSearch] = useState<DomainAvailabilityResponse | null>(null);
@@ -226,7 +230,7 @@ const WebsiteBuilderPage: React.FC = () => {
     const [newMarketplaceUrl, setNewMarketplaceUrl] = useState('');
 
     const loadWorkspace = async (siteId: string) => {
-        setBusyKey('load-workspace');
+        addBusy('load-workspace');
         setError(null);
         try {
             const nextWorkspace = await loadSiteWorkspace(siteId);
@@ -235,7 +239,7 @@ const WebsiteBuilderPage: React.FC = () => {
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'Web Yonetim workspace yuklenemedi.');
         } finally {
-            setBusyKey(null);
+            removeBusy('load-workspace');
         }
     };
 
@@ -396,7 +400,8 @@ const WebsiteBuilderPage: React.FC = () => {
     };
 
     const handleCreateDraft = async () => {
-        setBusyKey('create-draft');
+        if (!siteName.trim() || !siteSlug.trim()) { setError('Site adi ve slug bos birakilamaz.'); return; }
+        addBusy('create-draft');
         setError(null);
         try {
             const result = await createSiteFromAi({
@@ -415,7 +420,7 @@ const WebsiteBuilderPage: React.FC = () => {
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'AI draft olusturulamadi.');
         } finally {
-            setBusyKey(null);
+            removeBusy('create-draft');
         }
     };
 
@@ -424,7 +429,7 @@ const WebsiteBuilderPage: React.FC = () => {
             setError('Chat ile duzenleme icin once aktif bir site olusturulmasi gerekiyor.');
             return;
         }
-        setBusyKey('propose-edit');
+        addBusy('propose-edit');
         setError(null);
         try {
             const nextProposal = await proposeAiEdit(workspace.site.id, command);
@@ -434,7 +439,7 @@ const WebsiteBuilderPage: React.FC = () => {
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'AI edit onerisi olusturulamadi.');
         } finally {
-            setBusyKey(null);
+            removeBusy('propose-edit');
         }
     };
 
@@ -442,7 +447,7 @@ const WebsiteBuilderPage: React.FC = () => {
         if (!proposal || !workspace) {
             return;
         }
-        setBusyKey('apply-proposal');
+        addBusy('apply-proposal');
         setError(null);
         try {
             await applyAiEdit(proposal.proposal_id);
@@ -451,7 +456,7 @@ const WebsiteBuilderPage: React.FC = () => {
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'AI edit uygulanamadi.');
         } finally {
-            setBusyKey(null);
+            removeBusy('apply-proposal');
         }
     };
 
@@ -459,7 +464,7 @@ const WebsiteBuilderPage: React.FC = () => {
         if (!proposal || !workspace) {
             return;
         }
-        setBusyKey('revert-proposal');
+        addBusy('revert-proposal');
         setError(null);
         try {
             await revertAiEdit(proposal.proposal_id);
@@ -468,7 +473,7 @@ const WebsiteBuilderPage: React.FC = () => {
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'AI edit geri alinamadi.');
         } finally {
-            setBusyKey(null);
+            removeBusy('revert-proposal');
         }
     };
 
@@ -481,7 +486,7 @@ const WebsiteBuilderPage: React.FC = () => {
         if (!theme) {
             return;
         }
-        setBusyKey('apply-theme');
+        addBusy('apply-theme');
         setError(null);
         try {
             await updateSiteTheme(workspace.site.id, theme.settings);
@@ -489,7 +494,7 @@ const WebsiteBuilderPage: React.FC = () => {
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'Tema ayarlari guncellenemedi.');
         } finally {
-            setBusyKey(null);
+            removeBusy('apply-theme');
         }
     };
 
@@ -498,7 +503,7 @@ const WebsiteBuilderPage: React.FC = () => {
             setError('Preview icin once aktif bir site olusturulmasi gerekiyor.');
             return;
         }
-        setBusyKey('preview');
+        addBusy('preview');
         setError(null);
         try {
             await createPreview(workspace.site.id);
@@ -506,7 +511,7 @@ const WebsiteBuilderPage: React.FC = () => {
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'Preview olusturulamadi.');
         } finally {
-            setBusyKey(null);
+            removeBusy('preview');
         }
     };
 
@@ -515,7 +520,7 @@ const WebsiteBuilderPage: React.FC = () => {
             setError('Publish icin once aktif bir site olusturulmasi gerekiyor.');
             return;
         }
-        setBusyKey('publish');
+        addBusy('publish');
         setError(null);
         try {
             await publishSite(workspace.site.id);
@@ -523,7 +528,7 @@ const WebsiteBuilderPage: React.FC = () => {
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'Publish islemi basarisiz oldu.');
         } finally {
-            setBusyKey(null);
+            removeBusy('publish');
         }
     };
 
@@ -532,7 +537,7 @@ const WebsiteBuilderPage: React.FC = () => {
             setError('Rollback icin once aktif bir site olusturulmasi gerekiyor.');
             return;
         }
-        setBusyKey('rollback');
+        addBusy('rollback');
         setError(null);
         try {
             await rollbackSite(workspace.site.id);
@@ -540,7 +545,7 @@ const WebsiteBuilderPage: React.FC = () => {
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'Rollback islemi basarisiz oldu.');
         } finally {
-            setBusyKey(null);
+            removeBusy('rollback');
         }
     };
 
@@ -549,7 +554,7 @@ const WebsiteBuilderPage: React.FC = () => {
             setError('Domain aramak icin once aktif bir site olusturulmasi gerekiyor.');
             return;
         }
-        setBusyKey('domain-search');
+        addBusy('domain-search');
         setError(null);
         try {
             const result = await searchSiteDomain(workspace.site.id, domainQuery);
@@ -557,7 +562,7 @@ const WebsiteBuilderPage: React.FC = () => {
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'Domain arama yapilamadi.');
         } finally {
-            setBusyKey(null);
+            removeBusy('domain-search');
         }
     };
 
@@ -566,7 +571,7 @@ const WebsiteBuilderPage: React.FC = () => {
             setError('Domain baglamak icin once aktif bir site olusturulmasi gerekiyor.');
             return;
         }
-        setBusyKey('connect-domain');
+        addBusy('connect-domain');
         setError(null);
         try {
             await connectSiteDomain(workspace.site.id, {
@@ -578,7 +583,7 @@ const WebsiteBuilderPage: React.FC = () => {
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'Domain baglama istegi olusturulamadi.');
         } finally {
-            setBusyKey(null);
+            removeBusy('connect-domain');
         }
     };
 
@@ -593,7 +598,7 @@ const WebsiteBuilderPage: React.FC = () => {
             setError('Sayfa eklemek icin once aktif bir site olusturulmasi gerekiyor.');
             return;
         }
-        setBusyKey('create-page');
+        addBusy('create-page');
         setError(null);
         try {
             await createSitePage(workspace.site.id, {
@@ -606,7 +611,7 @@ const WebsiteBuilderPage: React.FC = () => {
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'Yeni sayfa eklenemedi.');
         } finally {
-            setBusyKey(null);
+            removeBusy('create-page');
         }
     };
 
@@ -615,7 +620,7 @@ const WebsiteBuilderPage: React.FC = () => {
             setError('Guncellenecek sayfa bulunamadi.');
             return;
         }
-        setBusyKey('save-page');
+        addBusy('save-page');
         setError(null);
         try {
             await updateSitePage(workspace.site.id, selectedPage.slug, {
@@ -628,7 +633,7 @@ const WebsiteBuilderPage: React.FC = () => {
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'Sayfa bilgileri guncellenemedi.');
         } finally {
-            setBusyKey(null);
+            removeBusy('save-page');
         }
     };
 
@@ -637,7 +642,7 @@ const WebsiteBuilderPage: React.FC = () => {
             setError('Section eklemek icin once bir sayfa secilmesi gerekiyor.');
             return;
         }
-        setBusyKey('add-section');
+        addBusy('add-section');
         setError(null);
         try {
             await addSitePageSection(workspace.site.id, selectedPage.slug, {
@@ -649,7 +654,7 @@ const WebsiteBuilderPage: React.FC = () => {
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'Section eklenemedi.');
         } finally {
-            setBusyKey(null);
+            removeBusy('add-section');
         }
     };
 
@@ -657,7 +662,7 @@ const WebsiteBuilderPage: React.FC = () => {
         if (!workspace || !selectedPage) {
             return;
         }
-        setBusyKey('save-section');
+        addBusy('save-section');
         setError(null);
         try {
             await updateSitePageSection(workspace.site.id, selectedPage.slug, sectionIndex, {
@@ -670,7 +675,7 @@ const WebsiteBuilderPage: React.FC = () => {
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'Section icerigi guncellenemedi.');
         } finally {
-            setBusyKey(null);
+            removeBusy('save-section');
         }
     };
 
@@ -678,7 +683,8 @@ const WebsiteBuilderPage: React.FC = () => {
         if (!workspace || !selectedPage) {
             return;
         }
-        setBusyKey('delete-section');
+        if (!window.confirm('Bu ogesi silmek istediginize emin misiniz?')) return;
+        addBusy('delete-section');
         setError(null);
         try {
             await deleteSitePageSection(workspace.site.id, selectedPage.slug, sectionIndex);
@@ -686,7 +692,7 @@ const WebsiteBuilderPage: React.FC = () => {
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'Section silinemedi.');
         } finally {
-            setBusyKey(null);
+            removeBusy('delete-section');
         }
     };
 
@@ -700,7 +706,7 @@ const WebsiteBuilderPage: React.FC = () => {
             return;
         }
         [nextOrder[sectionIndex], nextOrder[targetIndex]] = [nextOrder[targetIndex], nextOrder[sectionIndex]];
-        setBusyKey('reorder-sections');
+        addBusy('reorder-sections');
         setError(null);
         try {
             await reorderSitePageSections(workspace.site.id, selectedPage.slug, nextOrder);
@@ -708,7 +714,7 @@ const WebsiteBuilderPage: React.FC = () => {
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'Section sirasi guncellenemedi.');
         } finally {
-            setBusyKey(null);
+            removeBusy('reorder-sections');
         }
     };
 
@@ -717,7 +723,7 @@ const WebsiteBuilderPage: React.FC = () => {
             setError('Lutfen bir sablon secin ve site adi girin.');
             return;
         }
-        setBusyKey('create-wizard');
+        addBusy('create-wizard');
         setError(null);
         try {
             const result = await createSiteFromWizard({
@@ -731,16 +737,16 @@ const WebsiteBuilderPage: React.FC = () => {
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'Sablondan site olusturulamadi.');
         } finally {
-            setBusyKey(null);
+            removeBusy('create-wizard');
         }
     };
 
     const handleAddBlogPost = async () => {
         if (!workspace || !newBlogTitle.trim()) return;
-        setBusyKey('add-blog');
+        addBusy('add-blog');
         setError(null);
         try {
-            const slug = newBlogSlug || newBlogTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            const slug = newBlogSlug || newBlogTitle.toLowerCase().replace(/ı/g,'i').replace(/ö/g,'o').replace(/ü/g,'u').replace(/ç/g,'c').replace(/ş/g,'s').replace(/ğ/g,'g').replace(/İ/g,'i').replace(/Ö/g,'o').replace(/Ü/g,'u').replace(/Ç/g,'c').replace(/Ş/g,'s').replace(/Ğ/g,'g').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
             await createBlogPost(workspace.site.id, {
                 slug,
                 title: newBlogTitle,
@@ -756,13 +762,14 @@ const WebsiteBuilderPage: React.FC = () => {
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'Blog yazisi eklenemedi.');
         } finally {
-            setBusyKey(null);
+            removeBusy('add-blog');
         }
     };
 
     const handleDeleteBlogPost = async (postSlug: string) => {
         if (!workspace) return;
-        setBusyKey('delete-blog');
+        if (!window.confirm('Bu ogesi silmek istediginize emin misiniz?')) return;
+        addBusy('delete-blog');
         setError(null);
         try {
             await deleteBlogPost(workspace.site.id, postSlug);
@@ -770,7 +777,7 @@ const WebsiteBuilderPage: React.FC = () => {
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'Blog yazisi silinemedi.');
         } finally {
-            setBusyKey(null);
+            removeBusy('delete-blog');
         }
     };
 

@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Dialog from '@radix-ui/react-dialog';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useCreateAdminTenant } from '@/lib/api-client';
 import toast from 'react-hot-toast';
-import { PRODUCT_REGISTRY } from '@/config/productRegistry';
+import { PRODUCT_REGISTRY, getSectorForProduct } from '@/config/productRegistry';
+import { adminApi } from '@/api/orval-mutator';
+import { getCountryConfig } from '@/config/countryRegistry';
 
 interface TenantCreateModalProps {
     isOpen: boolean;
@@ -13,11 +15,19 @@ interface TenantCreateModalProps {
 
 type TenantStatus = 'trial' | 'active';
 
+interface CountryData {
+    code: string;
+    name: string;
+    enabled: boolean;
+    creatable: boolean;
+}
+
 interface TenantCreateFormData {
     name: string;
     owner_email: string;
     status: TenantStatus;
     product_code: string;
+    country_code: string;
 }
 
 interface ApiErrorLike {
@@ -30,15 +40,32 @@ interface ApiErrorLike {
     };
 }
 
+function useCreatableCountries() {
+    return useQuery({
+        queryKey: ['/api/admin/countries/creatable'],
+        queryFn: async () => {
+            const response = await adminApi<{ countries: CountryData[] }>({
+                url: '/admin/countries',
+                method: 'GET',
+            });
+            const raw = response as Record<string, unknown>;
+            const countries = Array.isArray(raw.countries) ? raw.countries as CountryData[] : Array.isArray(raw) ? raw as CountryData[] : [];
+            return countries.filter(c => c.enabled && c.creatable);
+        },
+    });
+}
+
 export const TenantCreateModal = ({ isOpen, onClose }: TenantCreateModalProps) => {
     const queryClient = useQueryClient();
     const { mutateAsync: createTenant, isPending } = useCreateAdminTenant();
+    const { data: creatableCountries } = useCreatableCountries();
 
     const [formData, setFormData] = useState<TenantCreateFormData>({
         name: '',
         owner_email: '',
         status: 'trial',
-        product_code: 'xear_hearing'
+        product_code: 'xear_hearing',
+        country_code: 'TR'
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -48,7 +75,9 @@ export const TenantCreateModal = ({ isOpen, onClose }: TenantCreateModalProps) =
                 name: formData.name,
                 ownerEmail: formData.owner_email,
                 status: formData.status,
-                product_code: formData.product_code
+                product_code: formData.product_code,
+                sector: getSectorForProduct(formData.product_code),
+                countryCode: formData.country_code,
             };
             await createTenant({
                 data: payload
@@ -61,7 +90,8 @@ export const TenantCreateModal = ({ isOpen, onClose }: TenantCreateModalProps) =
                 name: '',
                 owner_email: '',
                 status: 'trial',
-                product_code: 'xear_hearing'
+                product_code: 'xear_hearing',
+                country_code: 'TR'
             });
         } catch (error: unknown) {
             const apiError = error as ApiErrorLike;
@@ -131,6 +161,27 @@ export const TenantCreateModal = ({ isOpen, onClose }: TenantCreateModalProps) =
                                     }
                                 </select>
                                 <p className="mt-1 text-xs text-gray-500">Varsayılan: İşitme Merkezi</p>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Ülke</label>
+                                <select
+                                    value={formData.country_code}
+                                    onChange={e => setFormData({ ...formData, country_code: e.target.value })}
+                                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                                >
+                                    {creatableCountries && creatableCountries.length > 0 ? (
+                                        creatableCountries.map((c) => {
+                                            const config = getCountryConfig(c.code);
+                                            return (
+                                                <option key={c.code} value={c.code}>{config.flag} {c.name} ({c.code})</option>
+                                            );
+                                        })
+                                    ) : (
+                                        <option value="TR">{getCountryConfig('TR').flag} Turkey (TR)</option>
+                                    )}
+                                </select>
+                                <p className="mt-1 text-xs text-gray-500">Varsayılan: Turkey</p>
                             </div>
 
                             <div>

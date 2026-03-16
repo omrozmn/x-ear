@@ -40,6 +40,12 @@ class Tenant(Base):
     
     # Product (Multi-product architecture - Contract #18)
     product_code = Column(String(50), nullable=True, default='xear_hearing', index=True)
+
+    # Country (International support)
+    country_code = Column(String(2), ForeignKey('countries.code'), default='TR', nullable=True, index=True)
+
+    # Sector (Multi-sector platform)
+    sector = Column(String(30), nullable=False, default='hearing', server_default='hearing', index=True)
     
     # Tenant Type (Phase 3 - B2B vs Consumer)
     from models.enums import TenantType
@@ -103,6 +109,8 @@ class Tenant(Base):
             'ownerEmail': self.owner_email,
             'billingEmail': self.billing_email,
             'status': self.status,
+            'sector': self.sector or 'hearing',
+            'countryCode': self.country_code,
             'currentPlan': self.current_plan,
             'currentPlanId': self.current_plan_id,
             'subscriptionStartDate': self.subscription_start_date.isoformat() if self.subscription_start_date else None,

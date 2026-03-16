@@ -466,8 +466,8 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
                 type="button"
                 onClick={() => handleSubmit(formData as unknown as CreateInvoiceData)}
                 disabled={isSubmitting}
-                className="flex-[1.4] rounded-xl bg-blue-700 font-bold text-white hover:bg-blue-800"
-                variant="default"
+                className="flex-[1.4] rounded-xl font-bold"
+                variant="primary"
               >
                 {isSubmitting ? 'Kaydediliyor...' : 'Faturayı Kes'}
               </Button>

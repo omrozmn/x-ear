@@ -1,4 +1,7 @@
 import type { InventoryItem } from '@/types/inventory';
+import type { SelectedReturnSource } from './components/InvoiceSearchStep';
+
+export type { SelectedReturnSource };
 
 export interface Device {
   id: string;
@@ -26,13 +29,15 @@ export interface ReplacementCreatedData {
   oldDeviceId?: string;
   newInventoryId?: string;
   oldDeviceInfo: DeviceInfo;
-  newDeviceInfo: DeviceInfo;
+  newDeviceInfo?: DeviceInfo;
   replacementReason: string;
-  priceDifference: number;
+  priceDifference?: number;
   notes: string;
   createReturnInvoice: boolean;
   invoiceType: 'individual' | 'corporate' | 'e_archive';
   timestamp: string;
+  /** Populated when user selects a source invoice/inventory for return invoice */
+  returnSource?: SelectedReturnSource;
 }
 
 export interface DeviceReplacementModalProps {
@@ -49,6 +54,8 @@ export interface ReplacementFormData {
   selectedInventoryItem: InventoryItem | null;
   createReturnInvoice: boolean;
   invoiceType: 'individual' | 'corporate' | 'e_archive';
+  /** The selected invoice/inventory source for return invoice pre-fill */
+  returnSource: SelectedReturnSource | null;
 }
 
 export interface ReplacementFormState {

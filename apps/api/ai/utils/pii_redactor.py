@@ -276,19 +276,30 @@ class PIIRedactor:
         if self.redact_phi:
             detected_phi = self._detect_phi(text)
         
-        # Sort all detections by position (reverse order for replacement)
+        # Collect all detections
         all_detections = []
         for pii_type, value, start, end in detected_pii:
             all_detections.append((start, end, self.PLACEHOLDERS[pii_type], pii_type, value))
         for phi_type, value, start, end in detected_phi:
             all_detections.append((start, end, self.PLACEHOLDERS[phi_type], phi_type, value))
-        
-        # Sort by start position descending (to replace from end to start)
-        all_detections.sort(key=lambda x: x[0], reverse=True)
-        
-        # Apply redactions
+
+        # Sort by start position ascending, then by length descending (prefer longer matches)
+        all_detections.sort(key=lambda x: (x[0], -(x[1] - x[0])))
+
+        # Merge overlapping intervals: keep the longer/first match, discard overlaps
+        merged = []
+        for detection in all_detections:
+            if merged and detection[0] < merged[-1][1]:
+                # Overlapping — keep the one that covers more text
+                if (detection[1] - detection[0]) > (merged[-1][1] - merged[-1][0]):
+                    merged[-1] = detection
+                # else: skip shorter overlap
+            else:
+                merged.append(detection)
+
+        # Apply redactions in reverse order (end-to-start) to preserve indices
         redacted_text = text
-        for start, end, placeholder, _, _ in all_detections:
+        for start, end, placeholder, _, _ in reversed(merged):
             redacted_text = redacted_text[:start] + placeholder + redacted_text[end:]
         
         return RedactionResult(

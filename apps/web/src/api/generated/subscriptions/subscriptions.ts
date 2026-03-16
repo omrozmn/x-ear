@@ -172,6 +172,9 @@ export const useCreateSubscriptionCompleteSignup = <TError = HTTPValidationError
     }
     /**
  * Return enabled feature flags for the current tenant's plan.
+
+Reads admin-configured flags from SystemSetting table (key='features').
+Each flag has mode='visible' or 'hidden', and optional plan restrictions.
  * @summary Get Enabled Features
  */
 export const listSubscriptionFeatures = (

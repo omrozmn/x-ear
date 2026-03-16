@@ -17,6 +17,7 @@ interface SupplierAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
   onSupplierCreated?: (supplierName: string, supplierId?: string) => void;
+  onSupplierSelect?: (supplier: { id?: string; name: string }) => void;
   placeholder?: string;
   label?: string;
   className?: string;
@@ -28,6 +29,7 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
   value,
   onChange,
   onSupplierCreated,
+  onSupplierSelect,
   placeholder = "Tedarikçi adı",
   label = "Tedarikçi",
   className = '',
@@ -238,8 +240,37 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
     setIsOpen(true);
   };
 
-  const handleSupplierSelect = (supplier: string) => {
-    onChange(supplier);
+  const handleSupplierSelect = (supplierName: string) => {
+    let supplierId: string | undefined;
+    if (suppliersData) {
+      let supplierArray: unknown[] = [];
+      if (Array.isArray(suppliersData)) {
+        supplierArray = suppliersData;
+      } else if ((suppliersData as Record<string, unknown>)?.data) {
+        const innerData = (suppliersData as Record<string, unknown>).data;
+        if (Array.isArray(innerData)) {
+          supplierArray = innerData;
+        } else if (typeof innerData === 'object' && innerData !== null) {
+          const innerDataObj = innerData as Record<string, unknown>;
+          if (innerDataObj.data && Array.isArray(innerDataObj.data)) {
+            supplierArray = innerDataObj.data;
+          }
+        }
+      }
+
+      const matchedSupplier = supplierArray.find((item) => {
+        const supplier = item as Record<string, unknown>;
+        const currentName = String(supplier.companyName || supplier.company_name || supplier.name || '');
+        return currentName.toLocaleLowerCase('tr-TR') === supplierName.toLocaleLowerCase('tr-TR');
+      }) as Record<string, unknown> | undefined;
+
+      if (matchedSupplier?.id !== undefined && matchedSupplier?.id !== null) {
+        supplierId = String(matchedSupplier.id);
+      }
+    }
+
+    onChange(supplierName);
+    onSupplierSelect?.({ id: supplierId, name: supplierName });
     setIsOpen(false);
     inputRef.current?.blur();
   };

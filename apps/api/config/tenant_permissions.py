@@ -4,6 +4,7 @@ Tenant Permissions Configuration
 Defines RBAC permissions and role mappings for Tenant users.
 This acts as the single source of truth for what tenant users/admins can do.
 """
+from config.permission_catalog import STATIC_PERMISSION_NAMES
 
 class TenantPermissions:
     # Generic Read/Write
@@ -156,7 +157,7 @@ _FULL_ADMIN_PERMISSIONS = {
     # Reports
     TenantPermissions.REPORTS_VIEW,
     TenantPermissions.REPORTS_EXPORT,
-}
+} | STATIC_PERMISSION_NAMES
 
 # Role-to-Permission Mapping
 # Valid roles: 'admin', 'tenant_admin', 'owner', 'manager', 'user'

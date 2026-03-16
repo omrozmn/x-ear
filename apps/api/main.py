@@ -73,11 +73,15 @@ logger = logging.getLogger("x-ear")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan: start/stop background scheduler."""
+    """Application lifespan: start/stop background schedulers."""
     from services.birfatura.auto_sync_scheduler import start_scheduler, stop_scheduler
     start_scheduler(interval_minutes=15)
+    # Start AI Layer scheduler (data retention cleanup + proactive insights)
+    from ai.tasks.scheduled import start_scheduler as start_ai_scheduler, stop_scheduler as stop_ai_scheduler
+    start_ai_scheduler()
     yield
     stop_scheduler()
+    stop_ai_scheduler()
 
 
 # Create FastAPI app - operation_ids are now explicit in each endpoint
@@ -257,10 +261,10 @@ register_tenant_context_middleware(app)
 from routers import parties, auth, users
 from routers import sms, campaigns, inventory, sales
 from routers import appointments, dashboard, devices
-from routers import notifications, branches, reports, roles
+from routers import notifications, branches, reports, roles, purchases, personnel
 from routers import payments, tenant_users, suppliers, settings
 # Admin routers
-from routers import admin, admin_tenants, admin_dashboard, admin_plans, admin_addons, admin_analytics, admin_example_documents
+from routers import admin, admin_tenants, admin_dashboard, admin_plans, admin_addons, admin_analytics, admin_example_documents, admin_countries
 # Additional routers
 from routers import invoices, sgk, sgk_credentials
 # Newly migrated routers
@@ -306,8 +310,10 @@ app.include_router(devices.router, prefix="/api")
 app.include_router(notifications.router, prefix="/api")
 app.include_router(branches.router, prefix="/api")
 app.include_router(reports.router, prefix="/api")
+app.include_router(purchases.router, prefix="/api")
 app.include_router(roles.router, prefix="/api")
 app.include_router(payments.router, prefix="/api")
+app.include_router(personnel.router, prefix="/api")
 app.include_router(users.router, prefix="/api")
 app.include_router(tenant_users.router, prefix="/api")
 app.include_router(suppliers.router, prefix="/api")
@@ -321,6 +327,7 @@ app.include_router(admin_plans.router, prefix="/api")
 app.include_router(admin_addons.router, prefix="/api")
 app.include_router(admin_analytics.router, prefix="/api")
 app.include_router(admin_example_documents.router, prefix="/api")
+app.include_router(admin_countries.router, prefix="/api")
 
 # Additional routers
 # New invoices router MUST be before legacy invoices router
@@ -422,7 +429,7 @@ app.include_router(audit.router)
 app.include_router(automation.router)
 app.include_router(affiliates.router)
 app.include_router(checkout.router)
-app.include_router(replacements.router)
+app.include_router(replacements.router, prefix="/api")
 app.include_router(birfatura.router, prefix="/api")
 app.include_router(apps.router)
 app.include_router(pos_commission.router)

@@ -23,6 +23,7 @@ from middleware.unified_access import UnifiedAccess, require_admin
 from core.dependencies import get_current_admin_user
 from database import get_db
 from core.models.enums import ProductCode
+from core.models.country import Country
 
 logger = logging.getLogger(__name__)
 
@@ -132,6 +133,15 @@ def create_tenant(
 ):
     """Create tenant"""
     try:
+        # Country validation
+        country_code = getattr(request_data, 'country_code', None) or 'TR'
+        country = db_session.get(Country, country_code)
+        if country and not (country.enabled and country.creatable):
+            raise HTTPException(
+                status_code=400,
+                detail={"message": f"Country '{country_code}' is not available for new tenants", "code": "COUNTRY_NOT_AVAILABLE"}
+            )
+
         tenant = Tenant(
             id=str(uuid.uuid4()),
             name=request_data.name,
@@ -145,7 +155,8 @@ def create_tenant(
             current_users=request_data.current_users,
             company_info=request_data.company_info,
             settings=request_data.settings,
-            product_code=getattr(request_data.product_code, 'value', request_data.product_code) if request_data.product_code else ProductCode.XEAR_HEARING.value
+            product_code=getattr(request_data.product_code, 'value', request_data.product_code) if request_data.product_code else ProductCode.XEAR_HEARING.value,
+            country_code=country_code,
         )
         db_session.add(tenant)
         db_session.commit()
@@ -223,20 +234,36 @@ def delete_tenant(
         logger.error(f"Delete tenant error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/{tenant_id}/users", operation_id="listAdminTenantUsers", response_model=ResponseEnvelope[UserListResponse])
+@router.get("/{tenant_id}/users", operation_id="listAdminTenantUsers")
 def get_tenant_users(
     tenant_id: str,
+    page: int = 1,
+    limit: int = 10,
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
 ):
-    """Get users for a specific tenant"""
+    """Get users for a specific tenant with server-side pagination"""
     tenant = db_session.get(Tenant, tenant_id)
     if not tenant:
         raise HTTPException(status_code=404, detail={"message": "Tenant not found", "code": "NOT_FOUND"})
-    
-    users = db_session.query(User).filter_by(tenant_id=tenant_id).all()
-    
-    return ResponseEnvelope(data=UserListResponse(users=users, total=len(users)))
+
+    query = db_session.query(User).filter_by(tenant_id=tenant_id).order_by(User.created_at.desc())
+    total = query.count()
+    users = query.offset((page - 1) * limit).limit(limit).all()
+
+    from schemas.users import UserRead as UserReadSchema
+    users_data = [UserReadSchema.model_validate(u).model_dump(by_alias=True) for u in users]
+
+    return ResponseEnvelope(data={
+        "users": users_data,
+        "total": total,
+        "pagination": {
+            "page": page,
+            "perPage": limit,
+            "total": total,
+            "totalPages": (total + limit - 1) // limit
+        }
+    })
 
 @router.post("/{tenant_id}/users", operation_id="createAdminTenantUsers", response_model=ResponseEnvelope[UserResponse])
 def create_tenant_user(

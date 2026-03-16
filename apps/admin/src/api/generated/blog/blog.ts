@@ -21,8 +21,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  GetPostsApiBlogGetParams,
   HTTPValidationError,
+  ListBlogPostsParams,
   PostRead
 } from '.././schemas';
 
@@ -35,8 +35,8 @@ import { adminApi } from '../../orval-mutator';
  * Fetch published blog posts for the landing page.
  * @summary Get Posts
  */
-export const getPostsApiBlogGet = (
-    params?: GetPostsApiBlogGetParams,
+export const listBlogPosts = (
+    params?: ListBlogPostsParams,
  signal?: AbortSignal
 ) => {
       
@@ -51,69 +51,69 @@ export const getPostsApiBlogGet = (
 
 
 
-export const getGetPostsApiBlogGetQueryKey = (params?: GetPostsApiBlogGetParams,) => {
+export const getListBlogPostsQueryKey = (params?: ListBlogPostsParams,) => {
     return [
     `/api/blog/`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetPostsApiBlogGetQueryOptions = <TData = Awaited<ReturnType<typeof getPostsApiBlogGet>>, TError = HTTPValidationError>(params?: GetPostsApiBlogGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPostsApiBlogGet>>, TError, TData>>, }
+export const getListBlogPostsQueryOptions = <TData = Awaited<ReturnType<typeof listBlogPosts>>, TError = HTTPValidationError>(params?: ListBlogPostsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBlogPosts>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetPostsApiBlogGetQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListBlogPostsQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPostsApiBlogGet>>> = ({ signal }) => getPostsApiBlogGet(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listBlogPosts>>> = ({ signal }) => listBlogPosts(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPostsApiBlogGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listBlogPosts>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetPostsApiBlogGetQueryResult = NonNullable<Awaited<ReturnType<typeof getPostsApiBlogGet>>>
-export type GetPostsApiBlogGetQueryError = HTTPValidationError
+export type ListBlogPostsQueryResult = NonNullable<Awaited<ReturnType<typeof listBlogPosts>>>
+export type ListBlogPostsQueryError = HTTPValidationError
 
 
-export function useGetPostsApiBlogGet<TData = Awaited<ReturnType<typeof getPostsApiBlogGet>>, TError = HTTPValidationError>(
- params: undefined |  GetPostsApiBlogGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPostsApiBlogGet>>, TError, TData>> & Pick<
+export function useListBlogPosts<TData = Awaited<ReturnType<typeof listBlogPosts>>, TError = HTTPValidationError>(
+ params: undefined |  ListBlogPostsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBlogPosts>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPostsApiBlogGet>>,
+          Awaited<ReturnType<typeof listBlogPosts>>,
           TError,
-          Awaited<ReturnType<typeof getPostsApiBlogGet>>
+          Awaited<ReturnType<typeof listBlogPosts>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetPostsApiBlogGet<TData = Awaited<ReturnType<typeof getPostsApiBlogGet>>, TError = HTTPValidationError>(
- params?: GetPostsApiBlogGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPostsApiBlogGet>>, TError, TData>> & Pick<
+export function useListBlogPosts<TData = Awaited<ReturnType<typeof listBlogPosts>>, TError = HTTPValidationError>(
+ params?: ListBlogPostsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBlogPosts>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPostsApiBlogGet>>,
+          Awaited<ReturnType<typeof listBlogPosts>>,
           TError,
-          Awaited<ReturnType<typeof getPostsApiBlogGet>>
+          Awaited<ReturnType<typeof listBlogPosts>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetPostsApiBlogGet<TData = Awaited<ReturnType<typeof getPostsApiBlogGet>>, TError = HTTPValidationError>(
- params?: GetPostsApiBlogGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPostsApiBlogGet>>, TError, TData>>, }
+export function useListBlogPosts<TData = Awaited<ReturnType<typeof listBlogPosts>>, TError = HTTPValidationError>(
+ params?: ListBlogPostsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBlogPosts>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Posts
  */
 
-export function useGetPostsApiBlogGet<TData = Awaited<ReturnType<typeof getPostsApiBlogGet>>, TError = HTTPValidationError>(
- params?: GetPostsApiBlogGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPostsApiBlogGet>>, TError, TData>>, }
+export function useListBlogPosts<TData = Awaited<ReturnType<typeof listBlogPosts>>, TError = HTTPValidationError>(
+ params?: ListBlogPostsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBlogPosts>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetPostsApiBlogGetQueryOptions(params,options)
+  const queryOptions = getListBlogPostsQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -128,7 +128,7 @@ export function useGetPostsApiBlogGet<TData = Awaited<ReturnType<typeof getPosts
  * Fetch a single blog post by its slug.
  * @summary Get Post By Slug
  */
-export const getPostBySlugApiBlogSlugGet = (
+export const getBlogPostBySlug = (
     slug: string,
  signal?: AbortSignal
 ) => {
@@ -143,69 +143,69 @@ export const getPostBySlugApiBlogSlugGet = (
 
 
 
-export const getGetPostBySlugApiBlogSlugGetQueryKey = (slug?: string,) => {
+export const getGetBlogPostBySlugQueryKey = (slug?: string,) => {
     return [
     `/api/blog/${slug}`
     ] as const;
     }
 
     
-export const getGetPostBySlugApiBlogSlugGetQueryOptions = <TData = Awaited<ReturnType<typeof getPostBySlugApiBlogSlugGet>>, TError = HTTPValidationError>(slug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPostBySlugApiBlogSlugGet>>, TError, TData>>, }
+export const getGetBlogPostBySlugQueryOptions = <TData = Awaited<ReturnType<typeof getBlogPostBySlug>>, TError = HTTPValidationError>(slug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBlogPostBySlug>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetPostBySlugApiBlogSlugGetQueryKey(slug);
+  const queryKey =  queryOptions?.queryKey ?? getGetBlogPostBySlugQueryKey(slug);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPostBySlugApiBlogSlugGet>>> = ({ signal }) => getPostBySlugApiBlogSlugGet(slug, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBlogPostBySlug>>> = ({ signal }) => getBlogPostBySlug(slug, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(slug), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPostBySlugApiBlogSlugGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(slug), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBlogPostBySlug>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetPostBySlugApiBlogSlugGetQueryResult = NonNullable<Awaited<ReturnType<typeof getPostBySlugApiBlogSlugGet>>>
-export type GetPostBySlugApiBlogSlugGetQueryError = HTTPValidationError
+export type GetBlogPostBySlugQueryResult = NonNullable<Awaited<ReturnType<typeof getBlogPostBySlug>>>
+export type GetBlogPostBySlugQueryError = HTTPValidationError
 
 
-export function useGetPostBySlugApiBlogSlugGet<TData = Awaited<ReturnType<typeof getPostBySlugApiBlogSlugGet>>, TError = HTTPValidationError>(
- slug: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPostBySlugApiBlogSlugGet>>, TError, TData>> & Pick<
+export function useGetBlogPostBySlug<TData = Awaited<ReturnType<typeof getBlogPostBySlug>>, TError = HTTPValidationError>(
+ slug: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBlogPostBySlug>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPostBySlugApiBlogSlugGet>>,
+          Awaited<ReturnType<typeof getBlogPostBySlug>>,
           TError,
-          Awaited<ReturnType<typeof getPostBySlugApiBlogSlugGet>>
+          Awaited<ReturnType<typeof getBlogPostBySlug>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetPostBySlugApiBlogSlugGet<TData = Awaited<ReturnType<typeof getPostBySlugApiBlogSlugGet>>, TError = HTTPValidationError>(
- slug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPostBySlugApiBlogSlugGet>>, TError, TData>> & Pick<
+export function useGetBlogPostBySlug<TData = Awaited<ReturnType<typeof getBlogPostBySlug>>, TError = HTTPValidationError>(
+ slug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBlogPostBySlug>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPostBySlugApiBlogSlugGet>>,
+          Awaited<ReturnType<typeof getBlogPostBySlug>>,
           TError,
-          Awaited<ReturnType<typeof getPostBySlugApiBlogSlugGet>>
+          Awaited<ReturnType<typeof getBlogPostBySlug>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetPostBySlugApiBlogSlugGet<TData = Awaited<ReturnType<typeof getPostBySlugApiBlogSlugGet>>, TError = HTTPValidationError>(
- slug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPostBySlugApiBlogSlugGet>>, TError, TData>>, }
+export function useGetBlogPostBySlug<TData = Awaited<ReturnType<typeof getBlogPostBySlug>>, TError = HTTPValidationError>(
+ slug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBlogPostBySlug>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
  * @summary Get Post By Slug
  */
 
-export function useGetPostBySlugApiBlogSlugGet<TData = Awaited<ReturnType<typeof getPostBySlugApiBlogSlugGet>>, TError = HTTPValidationError>(
- slug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPostBySlugApiBlogSlugGet>>, TError, TData>>, }
+export function useGetBlogPostBySlug<TData = Awaited<ReturnType<typeof getBlogPostBySlug>>, TError = HTTPValidationError>(
+ slug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBlogPostBySlug>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetPostBySlugApiBlogSlugGetQueryOptions(slug,options)
+  const queryOptions = getGetBlogPostBySlugQueryOptions(slug,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

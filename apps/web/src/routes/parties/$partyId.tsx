@@ -1,8 +1,18 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { PartyDetailsPage } from '../../pages/PartyDetailsPage'
+import { PermissionGate } from '../../components/PermissionGate'
+import { NoPermissionPlaceholder } from '../../components/ui/NoPermissionPlaceholder'
+
+function GatedPartyDetailsPage() {
+  return (
+    <PermissionGate permission="parties.view" fallback={<NoPermissionPlaceholder height="h-[80vh]" message="Hasta detayı sayfasını görüntüleme izniniz yok" />}>
+      <PartyDetailsPage />
+    </PermissionGate>
+  )
+}
 
 export const Route = createFileRoute('/parties/$partyId')({
-  component: PartyDetailsPage,
+  component: GatedPartyDetailsPage,
   loader: async ({ params }) => {
     // Party ID validation
     if (!params.partyId) {

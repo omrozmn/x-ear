@@ -45,7 +45,10 @@ from schemas.uts import (
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/uts", tags=["UTS"])
+from middleware.require_module import require_module
+from fastapi import Depends as _Depends
+
+router = APIRouter(prefix="/api/uts", tags=["UTS"], dependencies=[_Depends(require_module("uts"))])
 
 UTS_DOCS_URL = "https://uts.saglik.gov.tr/wp-content/uploads/UTS-PRJ-TakipVeIzlemeWebServisTanimlariDokumani.pdf"
 UTS_TEST_BASE_URL = "https://utstest.saglik.gov.tr/UTS"
@@ -954,6 +957,8 @@ def sync_alma_bekleyenler(
 
         if records:
             raw_state["status"] = "owned"
+            raw_state["last_movement_type"] = "sync"
+        else:
             raw_state["last_movement_type"] = "sync"
         raw_state["last_message"] = _extract_first_message(
             payload if isinstance(payload, dict) else None,

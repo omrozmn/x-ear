@@ -33,11 +33,16 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
     state,
     availableDevices,
     calculatedPricing,
+    batterySgkSettings,
+    batteryReportQuantity,
     updateFormData,
     updateState,
     submitForm,
-    resetForm
+    resetForm,
+    setBatteryReportQuantity,
   } = useEditSale(sale, isOpen);
+
+  const isSgkBattery = formData.category === 'hearing_aid_battery' || formData.category === 'implant_battery';
 
   // Fetch promissory notes for the notes tab
   const { data: promissoryNotesData, isLoading: notesLoading } = useListSalePromissoryNotes(
@@ -295,6 +300,42 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
                     </div>
                   </div>
 
+                  {/* Battery SGK Report Quantity Selection */}
+                  {isSgkBattery && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-gray-600 block mb-1">Rapor Adet Kapsamı</label>
+                        <Select
+                          value={batteryReportQuantity}
+                          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setBatteryReportQuantity(e.target.value as 'per_ear' | 'bilateral')}
+                          options={(() => {
+                            const schemeKey = formData.category === 'hearing_aid_battery' ? 'hearing_aid_battery' : 'implant_battery';
+                            const scheme = batterySgkSettings[schemeKey];
+                            const qtyPerEar = scheme?.quantity_per_ear || (formData.category === 'hearing_aid_battery' ? 104 : 360);
+                            return [
+                              { value: 'per_ear', label: `Tek Kulak (${qtyPerEar} adet)` },
+                              { value: 'bilateral', label: `Bilateral (${qtyPerEar * 2} adet)` },
+                            ];
+                          })()}
+                          className="w-full"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-600 block mb-1">SGK Pil Tutarı</label>
+                        <div className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded bg-green-50 text-green-700">
+                          {(() => {
+                            const schemeKey = formData.category === 'hearing_aid_battery' ? 'hearing_aid_battery' : 'implant_battery';
+                            const scheme = batterySgkSettings[schemeKey];
+                            if (!scheme) return '₺0';
+                            const amtWithKdv = scheme.coverage_amount * (1 + scheme.kdv_rate / 100);
+                            const mul = batteryReportQuantity === 'bilateral' ? 2 : 1;
+                            return `₺${(amtWithKdv * mul).toFixed(2)}`;
+                          })()}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* SGK Desteği field removed - will be shown in calculation breakdown */}
                 </div>
 
@@ -318,11 +359,20 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
                     )}
 
                     {/* SGK Deduction (shown before discount per correct calculation order) */}
-                    {calculatedPricing.sgkReduction > 0 && (
+                    {calculatedPricing.sgkReduction > 0 && !isSgkBattery && (
                       <div className="flex justify-between text-gray-700">
                         <span>SGK Desteği:</span>
                         <span className="font-medium text-green-600">
                           -{new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(calculatedPricing.sgkReduction)}
+                        </span>
+                      </div>
+                    )}
+                    {/* Battery SGK Deduction */}
+                    {(calculatedPricing.batterySgkAmount ?? 0) > 0 && (
+                      <div className="flex justify-between text-gray-700">
+                        <span>SGK Pil Rapor Düşümü:</span>
+                        <span className="font-medium text-green-600">
+                          -{new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(calculatedPricing.batterySgkAmount ?? 0)}
                         </span>
                       </div>
                     )}

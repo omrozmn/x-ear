@@ -1,7 +1,7 @@
 import React from 'react';
 import { XMarkIcon, UserGroupIcon, CurrencyDollarIcon, ChartBarIcon, ShoppingBagIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
-import { adminApi } from '@/lib/apiMutator';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useListAffiliateDetails, useUpdateAffiliateToggleStatus } from '@/lib/api-client';
+import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { DataTable } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
@@ -136,29 +136,25 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
     onStatusChange
 }) => {
     const queryClient = useQueryClient();
+    const numericId = Number(affiliateId);
 
-    const { data, isLoading, error } = useQuery<AffiliateDetails | null>({
-        queryKey: ['affiliate-details', affiliateId],
-        queryFn: async () => {
-            const response = await adminApi<unknown>({ url: `/affiliates/${affiliateId}/details`, method: 'GET' });
-            return normalizeAffiliateDetails(response);
-        },
-        enabled: isOpen && !!affiliateId,
+    const { data: rawData, isLoading, error } = useListAffiliateDetails(numericId, {
+        query: { enabled: isOpen && !!affiliateId },
     });
 
-    const toggleStatusMutation = useMutation({
-        mutationFn: () => adminApi({
-            url: `/affiliates/${affiliateId}/toggle-status`,
-            method: 'PATCH'
-        }),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['affiliate-details', affiliateId] });
-            toast.success('Affiliate durumu güncellendi');
-            onStatusChange();
+    const data = rawData ? normalizeAffiliateDetails(rawData) : null;
+
+    const toggleStatusMutation = useUpdateAffiliateToggleStatus({
+        mutation: {
+            onSuccess: () => {
+                queryClient.invalidateQueries({ queryKey: ['affiliate-details', affiliateId] });
+                toast.success('Affiliate durumu güncellendi');
+                onStatusChange();
+            },
+            onError: (error: ApiErrorLike) => {
+                toast.error(`Hata: ${error.message || 'Durum güncellenemedi'}`);
+            },
         },
-        onError: (error: ApiErrorLike) => {
-            toast.error(`Hata: ${error.message || 'Durum güncellenemedi'}`);
-        }
     });
 
     if (!isOpen) return null;
@@ -404,7 +400,7 @@ const AffiliateDetailModal: React.FC<AffiliateDetailModalProps> = ({
                 {data && (
                     <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200 mt-6">
                         <button
-                            onClick={() => toggleStatusMutation.mutate()}
+                            onClick={() => toggleStatusMutation.mutate({ affiliateId: numericId })}
                             disabled={toggleStatusMutation.isPending}
                             className={`px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-white ${data.is_active
                                 ? 'bg-red-600 hover:bg-red-700'

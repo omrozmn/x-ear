@@ -20,6 +20,7 @@ import {
   PanelTop,
   FileSpreadsheet,
   ShieldCheck,
+  Briefcase,
 } from 'lucide-react';
 import { useBreakpoints } from '../../hooks/useMediaQuery';
 
@@ -33,6 +34,8 @@ interface MenuItem {
   children?: MenuItem[];
   badge?: string | number;
   requiredFeature?: string;
+  /** Module ID — item hidden if module disabled for current sector */
+  requiredModule?: string;
 }
 
 interface SidebarProps {
@@ -46,6 +49,9 @@ interface SidebarProps {
   isDesktop?: boolean;
   onNavigate?: (href: string) => void;
   enabledFeatures?: Record<string, boolean>;
+  visibleItemIds?: string[];
+  /** Set of enabled module IDs for current sector (from SectorContext) */
+  enabledModules?: string[];
 }
 
 const menuItems: MenuItem[] = [
@@ -97,12 +103,19 @@ const menuItems: MenuItem[] = [
     label: 'UTS',
     icon: <ShieldCheck className="w-5 h-5" />,
     href: '/uts',
+    requiredModule: 'uts',
   },
   {
     id: 'payments',
     label: 'Ödemeler',
     icon: <DollarSign className="w-5 h-5" />,
     href: '/invoices/payments',
+  },
+  {
+    id: 'personnel',
+    label: 'Personel',
+    icon: <Briefcase className="w-5 h-5" />,
+    href: '/personnel',
   },
   {
     id: 'campaigns',
@@ -164,6 +177,7 @@ const menuItems: MenuItem[] = [
     label: 'SGK',
     icon: <Activity className="w-5 h-5" />,
     requiredFeature: 'sgk',
+    requiredModule: 'sgk',
     children: [
       {
         id: 'sgk-upload',
@@ -184,8 +198,23 @@ const menuItems: MenuItem[] = [
     id: 'reports',
     label: 'Raporlar',
     icon: <BarChart3 className="w-5 h-5" />,
-    href: '/reports',
+    activePatterns: ['/reports', '/cashflow'],
     requiredFeature: 'reports',
+    children: [
+      {
+        id: 'reports-overview',
+        label: 'Raporlar',
+        icon: <BarChart3 className="w-4 h-4" />,
+        href: '/reports',
+        exactMatch: true,
+      },
+      {
+        id: 'reports-cashflow',
+        label: 'Kasa',
+        icon: <DollarSign className="w-4 h-4" />,
+        href: '/cashflow',
+      },
+    ],
   },
   {
     id: 'invoice-normalizer',
@@ -233,6 +262,7 @@ const menuItems: MenuItem[] = [
         icon: <Settings className="w-4 h-4" />,
         href: '/settings?tab=sgk',
         exactMatch: true,
+        requiredModule: 'sgk',
       },
       {
         id: 'settings-subscription',
@@ -256,6 +286,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isDesktop: propIsDesktop,
   onNavigate,
   enabledFeatures,
+  visibleItemIds,
+  enabledModules,
 }) => {
   const breakpoints = useBreakpoints();
   const isMobile = propIsMobile ?? breakpoints.isMobile;
@@ -264,13 +296,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
-  // Filter menu items by enabled features
-  const visibleMenuItems = enabledFeatures
-    ? menuItems.filter((item) => {
-        if (!item.requiredFeature) return true;
-        return enabledFeatures[item.requiredFeature] === true;
-      })
-    : menuItems;
+  const filterMenuItems = (items: MenuItem[]): MenuItem[] => (
+    items.flatMap((item) => {
+      if (item.requiredFeature && enabledFeatures && enabledFeatures[item.requiredFeature] !== true) {
+        return [];
+      }
+
+      // Module gating: hide items whose module is not enabled for the current sector
+      if (item.requiredModule && enabledModules && enabledModules.length > 0) {
+        if (!enabledModules.includes(item.requiredModule)) {
+          return [];
+        }
+      }
+
+      const filteredChildren = item.children ? filterMenuItems(item.children) : undefined;
+      const isExplicitlyVisible = !visibleItemIds || visibleItemIds.includes(item.id);
+      const hasVisibleChildren = Boolean(filteredChildren && filteredChildren.length > 0);
+
+      if (!isExplicitlyVisible && !hasVisibleChildren) {
+        return [];
+      }
+
+      return [{ ...item, children: filteredChildren }];
+    })
+  );
+
+  const visibleMenuItems = filterMenuItems(menuItems);
 
   // Load expanded items from localStorage
   useEffect(() => {

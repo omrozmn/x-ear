@@ -9,6 +9,8 @@ import {
 import { Button } from '@/components/ui/Button';
 import { DataTable } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
+import { usePermissions } from '@/hooks/usePermissions';
+import { PermissionGate } from '@/components/PermissionGate';
 
 interface SalesTableViewProps {
   sales: PartySale[];
@@ -43,12 +45,15 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
   pagination,
 }) => {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const { hasPermission, isSuperAdmin } = usePermissions();
+  const canViewAmounts = isSuperAdmin || hasPermission('sensitive.sales.list.amounts.view');
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('tr-TR');
   };
 
   const formatCurrency = (amount: number) => {
+    if (!canViewAmounts) return '***';
     return amount.toLocaleString('tr-TR') + ' TL';
   };
 
@@ -352,30 +357,36 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
           {openMenuId === sale.id && (
             <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
               <div className="py-1">
-                <button
-                  data-allow-raw="true"
-                  onClick={() => { if (sale.invoice) { onViewInvoice?.(sale); } else { onCreateInvoice?.(sale); } closeOverflowMenu(); }}
-                  className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  <FileText className="w-4 h-4 mr-2" />
-                  {sale.invoice ? 'Fatura Görüntüle' : 'Fatura Kes'}
-                </button>
-                <button
-                  data-allow-raw="true"
-                  onClick={() => { onManagePromissoryNotes?.(sale); closeOverflowMenu(); }}
-                  className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  <Banknote className="w-4 h-4 mr-2" />
-                  Senetler
-                </button>
-                <button
-                  data-allow-raw="true"
-                  onClick={() => { onCancelSale?.(sale); closeOverflowMenu(); }}
-                  className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                >
-                  <Ban className="w-4 h-4 mr-2" />
-                  Satışı İptal Et
-                </button>
+                <PermissionGate permission="invoices.create">
+                  <button
+                    data-allow-raw="true"
+                    onClick={() => { if (sale.invoice) { onViewInvoice?.(sale); } else { onCreateInvoice?.(sale); } closeOverflowMenu(); }}
+                    className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    {sale.invoice ? 'Fatura Görüntüle' : 'Fatura Kes'}
+                  </button>
+                </PermissionGate>
+                <PermissionGate permission="sales.view">
+                  <button
+                    data-allow-raw="true"
+                    onClick={() => { onManagePromissoryNotes?.(sale); closeOverflowMenu(); }}
+                    className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    <Banknote className="w-4 h-4 mr-2" />
+                    Senetler
+                  </button>
+                </PermissionGate>
+                <PermissionGate permission="sales.delete">
+                  <button
+                    data-allow-raw="true"
+                    onClick={() => { onCancelSale?.(sale); closeOverflowMenu(); }}
+                    className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                  >
+                    <Ban className="w-4 h-4 mr-2" />
+                    Satışı İptal Et
+                  </button>
+                </PermissionGate>
               </div>
             </div>
           )}
@@ -422,46 +433,52 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
               {openMenuId === sale.id && (
                 <div className="absolute right-0 mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
                     <div className="py-1">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => {
-                        if (hasInvoice) {
-                          onViewInvoice?.(sale);
-                        } else {
-                          onCreateInvoice?.(sale);
-                        }
-                        closeOverflowMenu();
-                      }}
-                      className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      <FileText className="w-4 h-4 mr-2" />
-                      {hasInvoice ? 'Fatura Görüntüle' : 'Fatura Kes'}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => {
-                        onManagePromissoryNotes?.(sale);
-                        closeOverflowMenu();
-                      }}
-                      className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      <Banknote className="w-4 h-4 mr-2" />
-                      Senetler
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => {
-                        onCancelSale?.(sale);
-                        closeOverflowMenu();
-                      }}
-                      className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                    >
-                      <Ban className="w-4 h-4 mr-2" />
-                      Satışı İptal Et
-                    </Button>
+                    <PermissionGate permission="invoices.create">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => {
+                          if (hasInvoice) {
+                            onViewInvoice?.(sale);
+                          } else {
+                            onCreateInvoice?.(sale);
+                          }
+                          closeOverflowMenu();
+                        }}
+                        className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        {hasInvoice ? 'Fatura Görüntüle' : 'Fatura Kes'}
+                      </Button>
+                    </PermissionGate>
+                    <PermissionGate permission="sales.view">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => {
+                          onManagePromissoryNotes?.(sale);
+                          closeOverflowMenu();
+                        }}
+                        className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <Banknote className="w-4 h-4 mr-2" />
+                        Senetler
+                      </Button>
+                    </PermissionGate>
+                    <PermissionGate permission="sales.delete">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => {
+                          onCancelSale?.(sale);
+                          closeOverflowMenu();
+                        }}
+                        className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                      >
+                        <Ban className="w-4 h-4 mr-2" />
+                        Satışı İptal Et
+                      </Button>
+                    </PermissionGate>
                   </div>
                 </div>
               )}

@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/countries.py
+# hypothesis_version: 6.151.6
+
+['Date format pattern', 'Flag emoji', 'currencyCode', 'dateFormat', 'flagEmoji', 'nativeName', 'phonePrefix', 'sortOrder']

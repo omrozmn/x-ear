@@ -50,7 +50,7 @@ export const listPatientReplacements = (
       
       
       return customInstance<ResponseEnvelopeListReplacementRead>(
-      {url: `/parties/${partyId}/replacements`, method: 'GET', signal
+      {url: `/api/parties/${partyId}/replacements`, method: 'GET', signal
     },
       );
     }
@@ -60,7 +60,7 @@ export const listPatientReplacements = (
 
 export const getListPatientReplacementsQueryKey = (partyId?: string,) => {
     return [
-    `/parties/${partyId}/replacements`
+    `/api/parties/${partyId}/replacements`
     ] as const;
     }
 
@@ -143,7 +143,7 @@ export const createPatientReplacements = (
       
       
       return customInstance<ResponseEnvelopeReplacementRead>(
-      {url: `/parties/${partyId}/replacements`, method: 'POST',
+      {url: `/api/parties/${partyId}/replacements`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: replacementCreate, signal
     },
@@ -208,7 +208,7 @@ export const getReplacement = (
       
       
       return customInstance<ResponseEnvelopeReplacementRead>(
-      {url: `/replacements/${replacementId}`, method: 'GET', signal
+      {url: `/api/replacements/${replacementId}`, method: 'GET', signal
     },
       );
     }
@@ -218,7 +218,7 @@ export const getReplacement = (
 
 export const getGetReplacementQueryKey = (replacementId?: string,) => {
     return [
-    `/replacements/${replacementId}`
+    `/api/replacements/${replacementId}`
     ] as const;
     }
 
@@ -300,7 +300,7 @@ export const updateReplacementStatus = (
       
       
       return customInstance<ResponseEnvelopeReplacementRead>(
-      {url: `/replacements/${replacementId}/status`, method: 'PATCH',
+      {url: `/api/replacements/${replacementId}/status`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: replacementStatusUpdate
     },
@@ -366,7 +366,7 @@ export const createReplacementInvoice = (
       
       
       return customInstance<ResponseEnvelopeReplacementInvoiceResponse>(
-      {url: `/replacements/${replacementId}/invoice`, method: 'POST',
+      {url: `/api/replacements/${replacementId}/invoice`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: replacementInvoiceCreate, signal
     },
@@ -431,7 +431,7 @@ export const createReturnInvoiceSendToGib = (
       
       
       return customInstance<unknown>(
-      {url: `/return-invoices/${invoiceId}/send-to-gib`, method: 'POST', signal
+      {url: `/api/return-invoices/${invoiceId}/send-to-gib`, method: 'POST', signal
     },
       );
     }

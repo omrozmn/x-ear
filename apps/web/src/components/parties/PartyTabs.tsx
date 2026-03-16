@@ -2,6 +2,8 @@ import { Button } from '@x-ear/ui-web';
 import React from 'react';
 import { Party } from '../../types/party';
 import { useTranslation } from 'react-i18next';
+import { usePermissions } from '../../hooks/usePermissions';
+import { useSector } from '../../hooks/useSector';
 import {
   User,
   Headphones,
@@ -126,6 +128,17 @@ export const PartyTabs: React.FC<PartyTabsProps> = ({
   tabCounts,
 }) => {
   const { t } = useTranslation('patients');
+  const { hasPermission, isSuperAdmin } = usePermissions();
+  const { isModuleEnabled } = useSector();
+
+  const canViewGeneral = isSuperAdmin || hasPermission('parties.detail.general.view');
+  const canViewHearingTests = (isSuperAdmin || hasPermission('parties.detail.hearing_tests.view')) && isModuleEnabled('hearing_tests');
+  const canViewDevices = (isSuperAdmin || hasPermission('parties.detail.devices.view')) && isModuleEnabled('devices');
+  const canViewSales = isSuperAdmin || hasPermission('parties.detail.sales.view');
+  const canViewDocuments = isSuperAdmin || hasPermission('parties.detail.documents.view');
+  const canViewTimeline = isSuperAdmin || hasPermission('parties.detail.timeline.view');
+  const canViewNotes = isSuperAdmin || hasPermission('parties.detail.notes.view');
+
   const tabs = [
     {
       id: 'general',
@@ -133,7 +146,7 @@ export const PartyTabs: React.FC<PartyTabsProps> = ({
       icon: <User className="w-4 h-4" />,
       count: null,
       disabled: false,
-      hidden: false,
+      hidden: !canViewGeneral,
     },
     {
       id: 'hearing-tests',
@@ -141,7 +154,7 @@ export const PartyTabs: React.FC<PartyTabsProps> = ({
       icon: <Stethoscope className="w-4 h-4" />,
       count: tabCounts?.['hearing-tests'] ?? 0,
       disabled: false,
-      hidden: false,
+      hidden: !canViewHearingTests,
     },
     {
       id: 'devices',
@@ -149,7 +162,7 @@ export const PartyTabs: React.FC<PartyTabsProps> = ({
       icon: <Headphones className="w-4 h-4" />,
       count: tabCounts?.devices ?? party.devices?.length ?? 0,
       disabled: false,
-      hidden: false,
+      hidden: !canViewDevices,
     },
     {
       id: 'sales',
@@ -157,7 +170,7 @@ export const PartyTabs: React.FC<PartyTabsProps> = ({
       icon: <CreditCard className="w-4 h-4" />,
       count: tabCounts?.sales ?? 0,
       disabled: false,
-      hidden: false,
+      hidden: !canViewSales,
     },
     {
       id: 'documents',
@@ -165,7 +178,7 @@ export const PartyTabs: React.FC<PartyTabsProps> = ({
       icon: <FileText className="w-4 h-4" />,
       count: tabCounts?.documents ?? party.reports?.length ?? 0,
       disabled: false,
-      hidden: false,
+      hidden: !canViewDocuments,
     },
     {
       id: 'timeline',
@@ -173,7 +186,7 @@ export const PartyTabs: React.FC<PartyTabsProps> = ({
       icon: <Clock className="w-4 h-4" />,
       count: tabCounts?.timeline ?? null,
       disabled: false,
-      hidden: false,
+      hidden: !canViewTimeline,
     },
     {
       id: 'notes',
@@ -181,7 +194,7 @@ export const PartyTabs: React.FC<PartyTabsProps> = ({
       icon: <StickyNote className="w-4 h-4" />,
       count: tabCounts?.notes ?? party.notes?.length ?? 0,
       disabled: false,
-      hidden: false,
+      hidden: !canViewNotes,
     },
   ];
 

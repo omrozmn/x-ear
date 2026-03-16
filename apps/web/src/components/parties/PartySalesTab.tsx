@@ -45,6 +45,7 @@ import { unwrapArray } from '@/utils/response-unwrap';
 
 import { listPartySales } from '@/api/client/parties.client';
 import { PARTY_SALES_DATA } from '../../constants/storage-keys';
+import { PermissionGate } from '../../components/PermissionGate';
 
 interface PartySalesTabProps {
   party: Party;
@@ -512,13 +513,17 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Satış İşlemleri</h3>
         <div className="flex space-x-2">
-          <Button onClick={handleCreateSale} className="premium-gradient tactile-press">
-            <Plus className="w-4 h-4 mr-2" />
-            Yeni Satış
-          </Button>
-          <Button onClick={() => setShowProformaModal(true)} variant="outline">
-            Proforma
-          </Button>
+          <PermissionGate permission="sales.create">
+            <Button onClick={handleCreateSale} className="premium-gradient tactile-press">
+              <Plus className="w-4 h-4 mr-2" />
+              Yeni Satış
+            </Button>
+          </PermissionGate>
+          <PermissionGate permission="sales.create">
+            <Button onClick={() => setShowProformaModal(true)} variant="outline">
+              Proforma
+            </Button>
+          </PermissionGate>
         </div>
       </div>
 
@@ -579,9 +584,11 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
           {selectedSales.length > 0 && (
             <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-900 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-100">
               <span>{selectedSales.length} satış seçildi</span>
-              <Button onClick={handleCreateBulkInvoice} size="sm" className="premium-gradient tactile-press">
-                Tek Fatura Oluştur
-              </Button>
+              <PermissionGate permission="invoices.create">
+                <Button onClick={handleCreateBulkInvoice} size="sm" className="premium-gradient tactile-press">
+                  Tek Fatura Oluştur
+                </Button>
+              </PermissionGate>
               <Button variant="outline" size="sm" onClick={() => setSelectedSales([])}>
                 Seçimi Temizle
               </Button>

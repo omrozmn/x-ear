@@ -66,7 +66,7 @@ function getDayCount(start?: string, end?: string) {
 }
 
 export function DesktopReportsPage() {
-  const { hasPermission, isLoading: permissionsLoading } = usePermissions();
+  const { hasAnyPermission, isLoading: permissionsLoading } = usePermissions();
   const search = useSearch({ from: '/reports/' });
   const navigate = useNavigate();
 
@@ -94,30 +94,43 @@ export function DesktopReportsPage() {
   };
 
   // Permission check
-  const canViewReports = hasPermission('reports.view');
-  const canViewActivityLogs = hasPermission('activity_logs.view') || hasPermission('reports.view');
+  const canViewReports = hasAnyPermission([
+    'reports.view',
+    'reports.overview.view',
+    'reports.sales.view',
+    'reports.parties.view',
+    'reports.promissory.view',
+    'reports.remaining.view',
+    'reports.pos_movements.view',
+    'reports.report_tracking.view'
+  ]);
+  const canViewActivityLogs = hasAnyPermission([
+    'activity_logs.view',
+    'reports.activity.view',
+    'reports.view'
+  ]);
 
   // Tab definitions with permissions
   const tabs = useMemo(() => [
-    { id: 'overview' as const, label: 'Genel Bakış', icon: BarChart3, permission: 'reports.view' },
-    { id: 'sales' as const, label: 'Satış Raporları', icon: TrendingUp, permission: 'reports.view' },
-    { id: 'parties' as const, label: 'Hasta Raporları', icon: Users, permission: 'reports.view' },
-    { id: 'promissory' as const, label: 'Senet Raporları', icon: Receipt, permission: 'reports.view' },
-    { id: 'remaining' as const, label: 'Kalan Ödemeler', icon: Wallet, permission: 'reports.view' },
-    { id: 'pos_movements' as const, label: 'POS Hareketleri', icon: CreditCard, permission: 'reports.view' },
-    { id: 'report_tracking' as const, label: 'Rapor Takibi', icon: FileText, permission: 'reports.view' },
-    { id: 'activity' as const, label: 'İşlem Dökümü', icon: Activity, permission: 'activity_logs.view' }
+    { id: 'overview' as const, label: 'Genel Bakış', icon: BarChart3, permission: 'reports.overview.view' },
+    { id: 'sales' as const, label: 'Satış Raporları', icon: TrendingUp, permission: 'reports.sales.view' },
+    { id: 'parties' as const, label: 'Hasta Raporları', icon: Users, permission: 'reports.parties.view' },
+    { id: 'promissory' as const, label: 'Senet Raporları', icon: Receipt, permission: 'reports.promissory.view' },
+    { id: 'remaining' as const, label: 'Kalan Ödemeler', icon: Wallet, permission: 'reports.remaining.view' },
+    { id: 'pos_movements' as const, label: 'POS Hareketleri', icon: CreditCard, permission: 'reports.pos_movements.view' },
+    { id: 'report_tracking' as const, label: 'Rapor Takibi', icon: FileText, permission: 'reports.report_tracking.view' },
+    { id: 'activity' as const, label: 'İşlem Dökümü', icon: Activity, permission: 'reports.activity.view' }
   ], []);
 
   // Filter allowed tabs based on permissions
   const allowedTabs = useMemo(() => {
     return tabs.filter(tab => {
-      if (tab.permission === 'activity_logs.view') {
+      if (tab.id === 'activity') {
         return canViewActivityLogs;
       }
-      return canViewReports;
+      return hasAnyPermission([tab.permission, 'reports.view']);
     });
-  }, [tabs, canViewReports, canViewActivityLogs]);
+  }, [tabs, canViewActivityLogs, hasAnyPermission]);
 
   // Reset to first allowed tab if current is not allowed
   useEffect(() => {
@@ -165,7 +178,7 @@ export function DesktopReportsPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Filters - Only show for report tabs, not activity */}
-        {activeTab !== 'activity' && canViewReports && (
+        {activeTab !== 'activity' && allowedTabs.some((tab) => tab.id === activeTab) && (
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
             <div className="flex items-center gap-4 flex-wrap">
               <div className="flex items-center gap-2">

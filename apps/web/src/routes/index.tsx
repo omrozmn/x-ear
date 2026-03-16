@@ -86,14 +86,15 @@ function DesktopDashboard() {
   const [isCashRegisterModalOpen, setIsCashRegisterModalOpen] = useState(false);
   const [isPricingCalculatorModalOpen, setIsPricingCalculatorModalOpen] = useState(false);
   const createCashRecordMutation = useCreateCashRecord();
-  const { hasPermission, isSuperAdmin } = usePermissions();
+  const { hasPermission, hasAnyPermission, isSuperAdmin } = usePermissions();
 
+  const canViewDashboard = isSuperAdmin || hasAnyPermission(['dashboard.view', 'dashboard.analytics']);
   const canViewParties = isSuperAdmin || hasPermission('parties.view');
   const canViewFinance = isSuperAdmin || hasPermission('finance.view');
   const canViewAppointments = isSuperAdmin || hasPermission('appointments.view');
   const canViewCashRegister = isSuperAdmin || hasPermission('finance.cash_register');
   const canViewSales = isSuperAdmin || hasPermission('sales.view');
-  const canViewAnalytics = isSuperAdmin || hasPermission('dashboard.analytics');
+  const canViewAnalytics = isSuperAdmin || hasAnyPermission(['dashboard.analytics', 'dashboard.view']);
   const canViewActivityLogs = isSuperAdmin || hasPermission('activity_logs.view');
   const canViewBranches = isSuperAdmin || hasPermission('branches.view');
 
@@ -170,6 +171,10 @@ function DesktopDashboard() {
         <p className="text-red-600">Hata: {error}</p>
       </div>
     );
+  }
+
+  if (!canViewDashboard) {
+    return <NoPermissionPlaceholder />;
   }
 
   return (

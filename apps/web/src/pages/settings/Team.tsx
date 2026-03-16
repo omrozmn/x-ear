@@ -1,19 +1,48 @@
-import React, { useState } from 'react';
-import { Building2, Users, Shield } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { BadgePercent, Building2, Users, Shield } from 'lucide-react';
 import { TeamMembersTab } from './TeamMembersTab';
 import { RolePermissionsTab } from './RolePermissionsTab';
 import { BranchesTab } from './BranchesTab';
+import { PersonnelSettingsTab } from './PersonnelSettingsTab';
 import { Button } from '@x-ear/ui-web';
 
-type TabType = 'members' | 'permissions' | 'branches';
+type TabType = 'members' | 'permissions' | 'branches' | 'personnel-settings';
 
 export default function TeamSettings() {
-    const [activeTab, setActiveTab] = useState<TabType>('members');
+    const resolveHashTab = (): TabType => {
+        if (typeof window === 'undefined') return 'members';
+        return window.location.hash === '#personnel-settings' ? 'personnel-settings' : 'members';
+    };
+
+    const [activeTab, setActiveTab] = useState<TabType>(resolveHashTab);
+
+    const handleTabChange = (tab: TabType) => {
+        setActiveTab(tab);
+        if (typeof window === 'undefined') return;
+        if (tab === 'personnel-settings') {
+            window.location.hash = 'personnel-settings';
+            return;
+        }
+        if (window.location.hash === '#personnel-settings') {
+            history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+        }
+    };
+
+    useEffect(() => {
+        const syncFromHash = () => {
+            setActiveTab(window.location.hash === '#personnel-settings' ? 'personnel-settings' : 'members');
+        };
+
+        syncFromHash();
+        window.addEventListener('hashchange', syncFromHash);
+        return () => window.removeEventListener('hashchange', syncFromHash);
+    }, []);
 
     const tabs = [
         { id: 'members' as TabType, label: 'Ekip Uyeleri', icon: Users },
         { id: 'branches' as TabType, label: 'Subeler', icon: Building2 },
         { id: 'permissions' as TabType, label: 'Rol Izinleri', icon: Shield },
+        { id: 'personnel-settings' as TabType, label: 'Personel Ayarlari', icon: BadgePercent },
     ];
 
     return (
@@ -27,7 +56,7 @@ export default function TeamSettings() {
                         return (
                             <Button
                                 key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
+                                onClick={() => handleTabChange(tab.id)}
                                 variant="ghost"
                                 className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors ${isActive
                                         ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
@@ -46,6 +75,7 @@ export default function TeamSettings() {
             {activeTab === 'members' && <TeamMembersTab />}
             {activeTab === 'branches' && <BranchesTab />}
             {activeTab === 'permissions' && <RolePermissionsTab />}
+            {activeTab === 'personnel-settings' && <PersonnelSettingsTab />}
         </div>
     );
 }

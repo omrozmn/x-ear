@@ -12,6 +12,7 @@ import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useLayoutStore } from '../../stores/layoutStore';
 import { useNewActionStore } from '../../stores/newActionStore';
+import { usePermissions } from '../../hooks/usePermissions';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
     return twMerge(clsx(inputs));
@@ -51,13 +52,18 @@ export const BottomNav: React.FC = () => {
     const pathname = location.pathname;
     const { toggleAiInbox } = useLayoutStore();
     const { label: centerLabel, action: centerAction } = useNewButtonConfig(pathname);
+    const { hasAnyPermission, hasPermission, isSuperAdmin } = usePermissions();
+
+    const canViewDashboard = isSuperAdmin || hasAnyPermission(['dashboard.view', 'dashboard.analytics']);
+    const canViewParties = isSuperAdmin || hasPermission('parties.view');
+    const canViewAppointments = isSuperAdmin || hasPermission('appointments.view');
 
     const navItems = [
-        { label: 'Dashboard', icon: BarChart3, href: '/' },
-        { label: 'Hastalar', icon: Users, href: '/parties' },
+        ...(canViewDashboard ? [{ label: 'Dashboard', icon: BarChart3, href: '/' }] : []),
+        ...(canViewParties ? [{ label: 'Hastalar', icon: Users, href: '/parties' }] : []),
         { label: centerLabel, icon: PlusCircle, isCenter: true, onClick: centerAction },
         { label: 'AI', icon: Sparkles, onClick: toggleAiInbox, isSpecial: true },
-        { label: 'Randevu', icon: Calendar, href: '/appointments' },
+        ...(canViewAppointments ? [{ label: 'Randevu', icon: Calendar, href: '/appointments' }] : []),
     ];
 
     return (

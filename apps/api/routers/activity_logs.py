@@ -18,6 +18,8 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["ActivityLogs"])
 
+ACTIVITY_DETAIL_PERMISSION = "sensitive.reports.activity.details.view"
+
 
 def parse_activity_date(raw_value: Optional[str], end_of_day: bool = False) -> Optional[datetime]:
     if not raw_value:
@@ -110,6 +112,7 @@ def get_activity_logs(
         offset = (page - 1) * page_size
         logs = query.offset(offset).limit(page_size).all()
 
+        can_view_details = access.has_permission(ACTIVITY_DETAIL_PERMISSION)
         logs_data = []
         for log, user_first_name, user_last_name, user_email, user_username, branch_name in logs:
             full_name = " ".join([part for part in [user_first_name, user_last_name] if part]).strip()
@@ -124,18 +127,18 @@ def get_activity_logs(
                 "entityType": log.entity_type,
                 "entityId": log.entity_id,
                 "message": log.message,
-                "details": parsed_details,
-                "data": parsed_data,
+                "details": parsed_details if can_view_details else None,
+                "data": parsed_data if can_view_details else None,
                 "isCritical": log.is_critical,
                 "userId": log.user_id,
                 "tenantId": log.tenant_id,
                 "branchId": log.branch_id,
                 "branchName": branch_name,
                 "role": log.role,
-                "ipAddress": log.ip_address,
-                "userAgent": log.user_agent,
+                "ipAddress": log.ip_address if can_view_details else None,
+                "userAgent": log.user_agent if can_view_details else None,
                 "userName": full_name or user_username or log.user_id,
-                "userEmail": user_email,
+                "userEmail": user_email if can_view_details else None,
             }))
         
         return ResponseEnvelope(

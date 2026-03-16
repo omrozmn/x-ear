@@ -8,6 +8,7 @@ import {
     translateActivityEntity,
     translateActivityMessage
 } from '../utils/activityLogPresentation';
+import { usePermissions } from '../../../hooks/usePermissions';
 
 interface ActivityLogDetailModalProps {
     log: ActivityLogRead;
@@ -15,10 +16,12 @@ interface ActivityLogDetailModalProps {
 }
 
 export function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalProps) {
+    const { hasPermission } = usePermissions();
+    const canViewDetails = hasPermission('sensitive.reports.activity.details.view');
     const actionLabel = translateActivityAction(log.action);
     const entityLabel = translateActivityEntity(log.entityType);
     const messageLabel = translateActivityMessage(log);
-    const detailEntries = getActivityDetailEntries(log);
+    const detailEntries = canViewDetails ? getActivityDetailEntries(log) : [];
     const readableDetails = typeof log.details === 'string' ? log.details : JSON.stringify(log.details, null, 2);
 
     return (
@@ -50,7 +53,7 @@ export function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalP
                             <div>
                                 <label className="text-xs text-gray-500 dark:text-gray-400">Kullanıcı</label>
                                 <p className="font-medium text-gray-900 dark:text-white">{log.userName || log.userId || '-'}</p>
-                                {log.userEmail && <p className="text-xs text-gray-500 dark:text-gray-400">{log.userEmail}</p>}
+                                {canViewDetails && log.userEmail && <p className="text-xs text-gray-500 dark:text-gray-400">{log.userEmail}</p>}
                             </div>
                             <div>
                                 <label className="text-xs text-gray-500 dark:text-gray-400">Varlık</label>
@@ -71,7 +74,7 @@ export function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalP
                             </div>
                         )}
 
-                        {log.details && (
+                        {canViewDetails && log.details && (
                             <div>
                                 <label className="text-xs text-gray-500 dark:text-gray-400">İşlem Detayları</label>
                                 {detailEntries.length > 0 ? (
@@ -90,6 +93,12 @@ export function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalP
                                         {readableDetails}
                                     </pre>
                                 )}
+                            </div>
+                        )}
+
+                        {!canViewDetails && (
+                            <div className="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                                Bu rol icin log detay verisi gizli.
                             </div>
                         )}
                     </div>

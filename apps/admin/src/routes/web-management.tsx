@@ -1,6 +1,13 @@
+import { lazy, Suspense } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import WebManagementOversightPage from '../pages/admin/WebManagementOversightPage'
+import PageLoadingFallback from '../components/PageLoadingFallback'
+
+const WebManagementOversightPage = lazy(() => import('../pages/admin/WebManagementOversightPage'))
 
 export const Route = createFileRoute('/web-management')({
-    component: WebManagementOversightPage,
+    component: () => (
+        <Suspense fallback={<PageLoadingFallback />}>
+            <WebManagementOversightPage />
+        </Suspense>
+    ),
 })

@@ -18,6 +18,7 @@ import hmac
 import json
 import os
 import secrets
+import threading
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Optional, Set
@@ -283,51 +284,68 @@ class ApprovalTokenRegistry:
     """
     
     def __init__(self):
-        # In-memory storage for tokens
-        # In production, this should be backed by Redis or database
+        # Thread-safe in-memory storage for tokens
+        # In production, consider backing with Redis or database for multi-instance
+        self._lock = threading.Lock()
         self._tokens: Dict[str, ApprovalToken] = {}
         self._used_tokens: Set[str] = set()
-    
+
     def register(self, token: ApprovalToken) -> None:
-        """Register a new token."""
-        self._tokens[token.token_id] = token
+        """Register a new token (thread-safe)."""
+        with self._lock:
+            self._tokens[token.token_id] = token
         logger.debug(f"Registered token {token.token_id}")
-    
+
     def get(self, token_id: str) -> Optional[ApprovalToken]:
-        """Get a token by ID."""
-        return self._tokens.get(token_id)
-    
+        """Get a token by ID (thread-safe)."""
+        with self._lock:
+            return self._tokens.get(token_id)
+
     def mark_used(self, token_id: str) -> None:
-        """Mark a token as used (single-use enforcement)."""
-        self._used_tokens.add(token_id)
+        """Mark a token as used (thread-safe, single-use enforcement)."""
+        with self._lock:
+            self._used_tokens.add(token_id)
         logger.info(f"Marked token {token_id} as used")
-    
+
     def is_used(self, token_id: str) -> bool:
-        """Check if a token has been used."""
-        return token_id in self._used_tokens
-    
+        """Check if a token has been used (thread-safe)."""
+        with self._lock:
+            return token_id in self._used_tokens
+
+    def validate_and_consume(self, token_id: str) -> bool:
+        """Atomically check if unused and mark as used. Returns True if consumed."""
+        with self._lock:
+            if token_id in self._used_tokens:
+                return False
+            self._used_tokens.add(token_id)
+            return True
+
     def remove(self, token_id: str) -> None:
-        """Remove a token from the registry."""
-        self._tokens.pop(token_id, None)
-        self._used_tokens.discard(token_id)
-    
+        """Remove a token from the registry (thread-safe)."""
+        with self._lock:
+            self._tokens.pop(token_id, None)
+            self._used_tokens.discard(token_id)
+
     def cleanup_expired(self) -> int:
-        """Remove expired tokens. Returns count of removed tokens."""
+        """Remove expired tokens (thread-safe). Returns count of removed tokens."""
         now = datetime.now(timezone.utc)
-        expired = [
-            token_id for token_id, token in self._tokens.items()
-            if token.expires_at < now
-        ]
-        for token_id in expired:
-            self.remove(token_id)
+        with self._lock:
+            expired = [
+                token_id for token_id, token in self._tokens.items()
+                if token.expires_at < now
+            ]
+            for token_id in expired:
+                self._tokens.pop(token_id, None)
+                self._used_tokens.discard(token_id)
         if expired:
             logger.info(f"Cleaned up {len(expired)} expired tokens")
         return len(expired)
-    
+
     def clear(self) -> None:
         """Clear all tokens (for testing)."""
-        self._tokens.clear()
-        self._used_tokens.clear()
+        with self._lock:
+            self._tokens.clear()
+            self._used_tokens.clear()
 
 
 # Global registry instance
@@ -335,10 +353,11 @@ _registry: Optional[ApprovalTokenRegistry] = None
 
 
 def get_token_registry() -> ApprovalTokenRegistry:
-    """Get the global token registry instance."""
+    """Get the global token registry instance. Triggers lazy cleanup of expired tokens."""
     global _registry
     if _registry is None:
         _registry = ApprovalTokenRegistry()
+    _registry.cleanup_expired()
     return _registry
 
 

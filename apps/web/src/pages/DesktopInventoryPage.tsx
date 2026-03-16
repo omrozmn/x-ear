@@ -13,6 +13,7 @@ import { InventoryItem } from '../types/inventory';
 import { listInventory, deleteInventory } from '@/api/client/inventory.client';
 import { unwrapArray } from '../utils/response-unwrap';
 import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
+import { PermissionGate } from '@/components/PermissionGate';
 
 
 
@@ -214,26 +215,32 @@ export const DesktopInventoryPage: React.FC = () => {
         eyebrow={{ tr: 'Envanter', en: 'Inventory' }}
         actions={(
           <>
-            <Button
-              variant="outline"
-              onClick={exportInventory}
-              icon={<Download className="w-4 h-4" />}
-            >
-              Dışa Aktar
-            </Button>
-            <Button
-              variant="outline"
-              onClick={importInventory}
-              icon={<Upload className="w-4 h-4" />}
-            >
-              İçe Aktar
-            </Button>
-            <Button
-              onClick={() => setIsAddModalOpen(true)}
-              icon={<Plus className="w-4 h-4" />}
-            >
-              Yeni Ürün
-            </Button>
+            <PermissionGate permission="inventory.view">
+              <Button
+                variant="outline"
+                onClick={exportInventory}
+                icon={<Download className="w-4 h-4" />}
+              >
+                Dışa Aktar
+              </Button>
+            </PermissionGate>
+            <PermissionGate permission="inventory.manage">
+              <Button
+                variant="outline"
+                onClick={importInventory}
+                icon={<Upload className="w-4 h-4" />}
+              >
+                İçe Aktar
+              </Button>
+            </PermissionGate>
+            <PermissionGate permission="inventory.manage">
+              <Button
+                onClick={() => setIsAddModalOpen(true)}
+                icon={<Plus className="w-4 h-4" />}
+              >
+                Yeni Ürün
+              </Button>
+            </PermissionGate>
           </>
         )}
       />

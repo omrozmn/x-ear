@@ -39,6 +39,8 @@ export const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({
   // Common product categories (fallback)
   const defaultCategories = [
     'İşitme Cihazı',
+    'İşitme Cihazı Pili',
+    'İmplant Pili',
     'Pil',
     'Aksesuar',
     'Bakım Ürünleri',

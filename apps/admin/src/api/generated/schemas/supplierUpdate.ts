@@ -23,6 +23,7 @@ import type { SupplierUpdateCountry } from './supplierUpdateCountry';
 import type { SupplierUpdatePostalCode } from './supplierUpdatePostalCode';
 import type { SupplierUpdateTaxNumber } from './supplierUpdateTaxNumber';
 import type { SupplierUpdateTaxOffice } from './supplierUpdateTaxOffice';
+import type { SupplierUpdateInstitutionNumber } from './supplierUpdateInstitutionNumber';
 import type { SupplierUpdatePaymentTerms } from './supplierUpdatePaymentTerms';
 import type { SupplierUpdateCurrency } from './supplierUpdateCurrency';
 import type { SupplierUpdateRating } from './supplierUpdateRating';
@@ -55,6 +56,7 @@ export interface SupplierUpdate {
   postalCode?: SupplierUpdatePostalCode;
   taxNumber?: SupplierUpdateTaxNumber;
   taxOffice?: SupplierUpdateTaxOffice;
+  institutionNumber?: SupplierUpdateInstitutionNumber;
   paymentTerms?: SupplierUpdatePaymentTerms;
   currency?: SupplierUpdateCurrency;
   rating?: SupplierUpdateRating;

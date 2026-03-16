@@ -1,20 +1,12 @@
 import React, { useState } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { adminApi } from '@/lib/apiMutator';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useCreateAffiliateRegister, getListAffiliateListQueryKey } from '@/lib/api-client';
+import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 
 interface CreateAffiliateModalProps {
     isOpen: boolean;
     onClose: () => void;
-}
-
-interface CreateAffiliatePayload {
-    account_holder_name: string;
-    email: string;
-    password: string;
-    phone_number: string;
-    iban: string;
 }
 
 interface ApiErrorLike {
@@ -31,26 +23,31 @@ export default function CreateAffiliateModal({ isOpen, onClose }: CreateAffiliat
         iban: ''
     });
 
-    const createMutation = useMutation({
-        mutationFn: (data: CreateAffiliatePayload) => adminApi({
-            url: '/affiliate', // This becomes /api/affiliate via apiMutator
-            method: 'POST',
-            data
-        }),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['/affiliate/list'] });
-            toast.success('Affiliate başarıyla oluşturuldu');
-            setFormData({ account_holder_name: '', email: '', password: '', phone_number: '', iban: '' });
-            onClose();
+    const createMutation = useCreateAffiliateRegister({
+        mutation: {
+            onSuccess: () => {
+                queryClient.invalidateQueries({ queryKey: getListAffiliateListQueryKey() });
+                toast.success('Affiliate başarıyla oluşturuldu');
+                setFormData({ account_holder_name: '', email: '', password: '', phone_number: '', iban: '' });
+                onClose();
+            },
+            onError: (error: ApiErrorLike) => {
+                toast.error(`Hata: ${error.message || 'Oluşturulamadı'}`);
+            },
         },
-        onError: (error: ApiErrorLike) => {
-            toast.error(`Hata: ${error.message || 'Oluşturulamadı'}`);
-        }
     });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        createMutation.mutate(formData);
+        createMutation.mutate({
+            data: {
+                email: formData.email,
+                password: formData.password,
+                accountHolderName: formData.account_holder_name || undefined,
+                phone: formData.phone_number || undefined,
+                iban: formData.iban || undefined,
+            },
+        });
     };
 
     if (!isOpen) return null;

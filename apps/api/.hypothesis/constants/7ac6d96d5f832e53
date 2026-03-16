@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/purchases.py
+# hypothesis_version: 6.151.6
+
+[0.0, 400, 404, '+00:00', '-', '/purchases/manual', 'APPROVED', 'PAID', 'PARTIAL', 'Purchase not found', 'Purchases', 'Supplier not found', 'TRY', 'Z', 'approved', 'cash', 'count', 'createManualPurchase', 'createdAt', 'currency', 'id', 'listManualPurchases', 'notes', 'paid', 'paidAmount', 'payment', 'paymentMethod', 'productName', 'purch', 'purchaseDate', 'purchase_payment', 'purchases.create', 'purchases.edit', 'purchases.view', 'referenceNumber', 'remainingAmount', 'status', 'supplierId', 'supplierName', 'totalAmount']

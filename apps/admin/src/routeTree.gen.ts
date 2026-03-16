@@ -20,6 +20,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RolesRouteImport } from './routes/roles'
 import { Route as ProductionRouteImport } from './routes/production'
 import { Route as PlansRouteImport } from './routes/plans'
+import { Route as PersonnelRouteImport } from './routes/personnel'
 import { Route as PaymentsRouteImport } from './routes/payments'
 import { Route as PatientsRouteImport } from './routes/patients'
 import { Route as OcrQueueRouteImport } from './routes/ocr-queue'
@@ -30,6 +31,7 @@ import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as FilesRouteImport } from './routes/files'
 import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CountriesRouteImport } from './routes/countries'
 import { Route as CampaignsRouteImport } from './routes/campaigns'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as BillingRouteImport } from './routes/billing'
@@ -105,6 +107,11 @@ const PlansRoute = PlansRouteImport.update({
   path: '/plans',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PersonnelRoute = PersonnelRouteImport.update({
+  id: '/personnel',
+  path: '/personnel',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PaymentsRoute = PaymentsRouteImport.update({
   id: '/payments',
   path: '/payments',
@@ -153,6 +160,11 @@ const FeaturesRoute = FeaturesRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CountriesRoute = CountriesRouteImport.update({
+  id: '/countries',
+  path: '/countries',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CampaignsRoute = CampaignsRouteImport.update({
@@ -264,6 +276,7 @@ export interface FileRoutesByFullPath {
   '/billing': typeof BillingRoute
   '/blog': typeof BlogRoute
   '/campaigns': typeof CampaignsRoute
+  '/countries': typeof CountriesRoute
   '/dashboard': typeof DashboardRoute
   '/features': typeof FeaturesRoute
   '/files': typeof FilesRoute
@@ -274,6 +287,7 @@ export interface FileRoutesByFullPath {
   '/ocr-queue': typeof OcrQueueRoute
   '/patients': typeof PatientsRoute
   '/payments': typeof PaymentsRoute
+  '/personnel': typeof PersonnelRoute
   '/plans': typeof PlansRoute
   '/production': typeof ProductionRoute
   '/roles': typeof RolesRoute
@@ -306,6 +320,7 @@ export interface FileRoutesByTo {
   '/billing': typeof BillingRoute
   '/blog': typeof BlogRoute
   '/campaigns': typeof CampaignsRoute
+  '/countries': typeof CountriesRoute
   '/dashboard': typeof DashboardRoute
   '/features': typeof FeaturesRoute
   '/files': typeof FilesRoute
@@ -316,6 +331,7 @@ export interface FileRoutesByTo {
   '/ocr-queue': typeof OcrQueueRoute
   '/patients': typeof PatientsRoute
   '/payments': typeof PaymentsRoute
+  '/personnel': typeof PersonnelRoute
   '/plans': typeof PlansRoute
   '/production': typeof ProductionRoute
   '/roles': typeof RolesRoute
@@ -349,6 +365,7 @@ export interface FileRoutesById {
   '/billing': typeof BillingRoute
   '/blog': typeof BlogRoute
   '/campaigns': typeof CampaignsRoute
+  '/countries': typeof CountriesRoute
   '/dashboard': typeof DashboardRoute
   '/features': typeof FeaturesRoute
   '/files': typeof FilesRoute
@@ -359,6 +376,7 @@ export interface FileRoutesById {
   '/ocr-queue': typeof OcrQueueRoute
   '/patients': typeof PatientsRoute
   '/payments': typeof PaymentsRoute
+  '/personnel': typeof PersonnelRoute
   '/plans': typeof PlansRoute
   '/production': typeof ProductionRoute
   '/roles': typeof RolesRoute
@@ -393,6 +411,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/blog'
     | '/campaigns'
+    | '/countries'
     | '/dashboard'
     | '/features'
     | '/files'
@@ -403,6 +422,7 @@ export interface FileRouteTypes {
     | '/ocr-queue'
     | '/patients'
     | '/payments'
+    | '/personnel'
     | '/plans'
     | '/production'
     | '/roles'
@@ -435,6 +455,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/blog'
     | '/campaigns'
+    | '/countries'
     | '/dashboard'
     | '/features'
     | '/files'
@@ -445,6 +466,7 @@ export interface FileRouteTypes {
     | '/ocr-queue'
     | '/patients'
     | '/payments'
+    | '/personnel'
     | '/plans'
     | '/production'
     | '/roles'
@@ -477,6 +499,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/blog'
     | '/campaigns'
+    | '/countries'
     | '/dashboard'
     | '/features'
     | '/files'
@@ -487,6 +510,7 @@ export interface FileRouteTypes {
     | '/ocr-queue'
     | '/patients'
     | '/payments'
+    | '/personnel'
     | '/plans'
     | '/production'
     | '/roles'
@@ -520,6 +544,7 @@ export interface RootRouteChildren {
   BillingRoute: typeof BillingRoute
   BlogRoute: typeof BlogRoute
   CampaignsRoute: typeof CampaignsRoute
+  CountriesRoute: typeof CountriesRoute
   DashboardRoute: typeof DashboardRoute
   FeaturesRoute: typeof FeaturesRoute
   FilesRoute: typeof FilesRoute
@@ -530,6 +555,7 @@ export interface RootRouteChildren {
   OcrQueueRoute: typeof OcrQueueRoute
   PatientsRoute: typeof PatientsRoute
   PaymentsRoute: typeof PaymentsRoute
+  PersonnelRoute: typeof PersonnelRoute
   PlansRoute: typeof PlansRoute
   ProductionRoute: typeof ProductionRoute
   RolesRoute: typeof RolesRoute
@@ -629,6 +655,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlansRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/personnel': {
+      id: '/personnel'
+      path: '/personnel'
+      fullPath: '/personnel'
+      preLoaderRoute: typeof PersonnelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/payments': {
       id: '/payments'
       path: '/payments'
@@ -697,6 +730,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/countries': {
+      id: '/countries'
+      path: '/countries'
+      fullPath: '/countries'
+      preLoaderRoute: typeof CountriesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/campaigns': {
@@ -859,6 +899,7 @@ const rootRouteChildren: RootRouteChildren = {
   BillingRoute: BillingRoute,
   BlogRoute: BlogRoute,
   CampaignsRoute: CampaignsRoute,
+  CountriesRoute: CountriesRoute,
   DashboardRoute: DashboardRoute,
   FeaturesRoute: FeaturesRoute,
   FilesRoute: FilesRoute,
@@ -869,6 +910,7 @@ const rootRouteChildren: RootRouteChildren = {
   OcrQueueRoute: OcrQueueRoute,
   PatientsRoute: PatientsRoute,
   PaymentsRoute: PaymentsRoute,
+  PersonnelRoute: PersonnelRoute,
   PlansRoute: PlansRoute,
   ProductionRoute: ProductionRoute,
   RolesRoute: RolesRoute,

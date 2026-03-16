@@ -1,17 +1,7 @@
 /* eslint-disable no-restricted-syntax */
 import React from 'react';
 
-type SectionDocument = {
-    type: string;
-    variant: string;
-    fields: Record<string, unknown>;
-};
-
-type PageDocument = {
-    title: string;
-    slug: string;
-    sections: SectionDocument[];
-};
+import type { PageDocument, SectionDocument } from '@/lib/website-generator-client';
 
 type SitePreviewData = {
     name: string;

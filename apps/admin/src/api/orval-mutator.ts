@@ -62,7 +62,7 @@ function attachResponseMetadata<T>(payload: T, envelope: ResponseEnvelope<T>): T
     if (envelope.meta !== undefined && target.meta === undefined) {
         Object.defineProperty(target, 'meta', {
             value: envelope.meta,
-            enumerable: false,
+            enumerable: true,
             configurable: true,
             writable: true,
         });
@@ -71,7 +71,7 @@ function attachResponseMetadata<T>(payload: T, envelope: ResponseEnvelope<T>): T
     if (metadata !== undefined && target.pagination === undefined) {
         Object.defineProperty(target, 'pagination', {
             value: metadata,
-            enumerable: false,
+            enumerable: true,
             configurable: true,
             writable: true,
         });
@@ -125,21 +125,15 @@ axiosInstance.interceptors.response.use(
                 && error.config.url.includes('/auth/login');
 
             if (!isLoginRequest) {
-                // Clear auth data
-                // disable auto-logout for debugging
-                /*
                 if (typeof localStorage !== 'undefined') {
-
                     localStorage.removeItem('admin_token');
-                    localStorage.removeItem('auth-storage'); // Zustand persistence
+                    localStorage.removeItem('admin_refresh_token');
+                    localStorage.removeItem('auth-storage');
 
-                    // Redirect to login if not already there
                     if (!window.location.pathname.includes('/login')) {
                         window.location.href = '/login';
                     }
                 }
-                */
-                console.warn("[Orval Mutator] 401 detected but auto-logout disabled for debugging");
             }
         }
         return Promise.reject(error);

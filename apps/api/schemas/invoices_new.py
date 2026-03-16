@@ -254,6 +254,37 @@ class SupplierInvoiceItemsListResponse(AppBaseModel):
     supplier_name: str = Field(..., description="Supplier name")
 
 
+class ProductSearchMatchedItem(AppBaseModel):
+    """A single matched invoice line item for product search."""
+    product_name: str = Field(..., alias="productName", description="Product name from invoice line")
+    quantity: float = Field(1.0, description="Quantity on this invoice line")
+    unit_price: float = Field(0.0, alias="unitPrice", description="Unit price")
+    line_total: float = Field(0.0, alias="lineTotal", description="Line total amount")
+    unit: Optional[str] = Field(None, description="Unit (Adet, etc.)")
+
+
+class ProductSearchInvoiceResult(AppBaseModel):
+    """An invoice that contains products matching a search query."""
+    invoice_id: int = Field(..., alias="invoiceId", description="PurchaseInvoice DB id")
+    invoice_number: str = Field(..., alias="invoiceNumber", description="Invoice number")
+    invoice_date: Optional[str] = Field(None, alias="invoiceDate", description="Invoice date")
+    sender_name: str = Field("", alias="senderName", description="Supplier / sender name")
+    sender_tax_number: Optional[str] = Field(None, alias="senderTaxNumber", description="Supplier tax number")
+    sender_address: Optional[str] = Field(None, alias="senderAddress", description="Supplier address")
+    sender_city: Optional[str] = Field(None, alias="senderCity", description="Supplier city")
+    matched_items: List[ProductSearchMatchedItem] = Field(
+        default_factory=list, alias="matchedItems", description="Matching line items"
+    )
+
+
+class ProductSearchResponse(AppBaseModel):
+    """Response for /incoming/search-by-product endpoint."""
+    invoices: List[ProductSearchInvoiceResult] = Field(
+        default_factory=list, description="Invoices containing matching products"
+    )
+    total: int = Field(0, description="Total invoice count")
+
+
 class SupplierSuggestionItem(AppBaseModel):
     """A single supplier match suggestion."""
     supplier_id: str = Field(..., alias="supplierId", description="Matched supplier ID")

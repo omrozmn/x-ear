@@ -47,3 +47,4 @@ export * from './dashboard.client';
 export * from './admin.client';
 export * from './settings.client';
 export * from './ai.client';
+export * from './personnel.client';

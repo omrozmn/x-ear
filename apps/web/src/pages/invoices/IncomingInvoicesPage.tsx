@@ -13,6 +13,7 @@ import { apiClient } from '@/api/orval-mutator';
 import { useIsMobile } from '@/hooks/useBreakpoint';
 import { DesktopPageHeader } from '../../components/layout/DesktopPageHeader';
 import { ExportDropdown } from '@/components/common/ExportDropdown';
+import { PermissionGate } from '@/components/PermissionGate';
 
 async function fetchInvoiceDocument(invoiceId: number | string, format: 'pdf' | 'html' | 'xml', renderMode: 'auto' | 'local' | 'remote' = 'auto'): Promise<{ data: ArrayBuffer; contentType: string }> {
   const resp = await apiClient.get<ArrayBuffer>(`/api/invoices/${invoiceId}/document?format=${format}&render_mode=${renderMode}`, {
@@ -698,15 +699,17 @@ export function IncomingInvoicesPage() {
               <Button variant="ghost" onClick={handleBulkReject} className="flex items-center justify-center gap-2 rounded-xl bg-red-50 px-3 py-3 text-sm font-semibold text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/30 h-auto">
                 <XCircle className="w-4 h-4" /> Reddet
               </Button>
-              <ExportDropdown
-                headers={incomingExportHeaders}
-                getRows={getIncomingExportRows}
-                filename="gelen_faturalar"
-                variant="ghost"
-                label="Dışa Aktar"
-                compact
-                className="flex items-center justify-center gap-2 rounded-xl bg-blue-50 px-3 py-3 text-sm font-semibold text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/30 h-auto"
-              />
+              <PermissionGate permission="invoices.documents.download.view">
+                <ExportDropdown
+                  headers={incomingExportHeaders}
+                  getRows={getIncomingExportRows}
+                  filename="gelen_faturalar"
+                  variant="ghost"
+                  label="Dışa Aktar"
+                  compact
+                  className="flex items-center justify-center gap-2 rounded-xl bg-blue-50 px-3 py-3 text-sm font-semibold text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/30 h-auto"
+                />
+              </PermissionGate>
               <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center justify-center gap-2 rounded-xl bg-gray-100 px-3 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 h-auto">
                 <X className="w-4 h-4" /> Temizle
               </Button>
@@ -721,16 +724,18 @@ export function IncomingInvoicesPage() {
               <Button variant="ghost" onClick={handleBulkReject} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl transition-colors h-auto">
                 <XCircle className="w-4 h-4" /> Toplu Reddet
               </Button>
-              <ExportDropdown
-                headers={incomingExportHeaders}
-                getRows={getIncomingExportRows}
-                filename="gelen_faturalar"
-                variant="ghost"
-                label="Dışa Aktar"
-                compact
-                iconClassName="text-blue-600"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-colors h-auto"
-              />
+              <PermissionGate permission="invoices.documents.download.view">
+                <ExportDropdown
+                  headers={incomingExportHeaders}
+                  getRows={getIncomingExportRows}
+                  filename="gelen_faturalar"
+                  variant="ghost"
+                  label="Dışa Aktar"
+                  compact
+                  iconClassName="text-blue-600"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-colors h-auto"
+                />
+              </PermissionGate>
               <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
               <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors h-auto">
                 <X className="w-4 h-4" /> Seçimi Kaldır

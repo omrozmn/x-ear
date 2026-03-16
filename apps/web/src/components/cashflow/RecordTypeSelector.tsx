@@ -75,7 +75,7 @@ export function RecordTypeSelector({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">Kayıt Türü *</label>
+      <label className="mb-2 block text-sm font-semibold text-slate-800 dark:text-slate-200">Kayıt Türü *</label>
 
       {/* Add New Type */}
       <div className="flex space-x-2 mb-4">
@@ -92,7 +92,8 @@ export function RecordTypeSelector({
       </div>
 
       {/* Type Pills */}
-      <div className="flex flex-wrap gap-2 p-3 border border-gray-200 rounded-2xl bg-gray-50 min-h-[60px]">
+      <div className="min-h-[60px] rounded-2xl border border-slate-200 bg-white/88 p-3 shadow-sm shadow-slate-200/50 dark:border-slate-700 dark:bg-slate-900/82">
+        <div className="flex flex-wrap gap-2">
         {allTypes.map((type) => {
           const isCustom = customTypes[transactionType as 'income' | 'expense'].includes(type);
           const isSelected = selectedType === type;
@@ -106,8 +107,8 @@ export function RecordTypeSelector({
                     ? 'bg-green-600 text-white ring-2 ring-green-600'
                     : 'bg-red-600 text-white ring-2 ring-red-600'
                   : transactionType === 'income'
-                    ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                    : 'bg-red-100 text-red-800 hover:bg-red-200'
+                    ? 'bg-green-100 text-green-900 hover:bg-green-200 dark:bg-green-900/35 dark:text-green-100 dark:hover:bg-green-900/50'
+                    : 'bg-red-100 text-red-900 hover:bg-red-200 dark:bg-red-900/35 dark:text-red-100 dark:hover:bg-red-900/50'
                 }`}
             >
               <span>{RECORD_TYPE_LABELS[type as RecordType] || type}</span>
@@ -126,6 +127,7 @@ export function RecordTypeSelector({
             </div>
           );
         })}
+        </div>
       </div>
     </div>
   );

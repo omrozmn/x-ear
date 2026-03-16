@@ -7,12 +7,12 @@ export type Locale = "tr" | "en";
 // --------------- Translation Dictionary ---------------
 const translations: Record<string, Record<Locale, string>> = {
     // ---- Hero ----
-    "hero.badge": { tr: "X-EAR v2.0 - Sınırların Ötesinde", en: "X-EAR v2.0 - Beyond Limits" },
-    "hero.h1_1": { tr: "İşitme Merkezinizi", en: "Grow Your Hearing" },
-    "hero.h1_2": { tr: "Yapay Zeka ile Büyütün", en: "Center with AI" },
+    "hero.badge": { tr: "X-EAR v2.0 - Her Sektör İçin", en: "X-EAR v2.0 - For Every Sector" },
+    "hero.h1_1": { tr: "İşletmenizi", en: "Grow Your Business" },
+    "hero.h1_2": { tr: "Yapay Zeka ile Büyütün", en: "with AI" },
     "hero.desc": {
-        tr: "Dünyanın en gelişmiş mekansal CRM deneyimi. İşitme merkezinizi salt veriden akışkan bir zekaya dönüştürün.",
-        en: "The world's most advanced spatial CRM experience. Transform your hearing center from raw data into fluid intelligence."
+        tr: "Her sektör için akıllı iş yönetimi. İşitme merkezi, eczane, hastane, otel veya genel CRM — platformunuzu sektörünüze göre özelleştirin.",
+        en: "Smart business management for every sector. Hearing center, pharmacy, hospital, hotel, or general CRM — customize your platform for your industry."
     },
     "hero.cta1": { tr: "Tarihe Geçin", en: "Get Started" },
     "hero.cta2": { tr: "Sistemi Keşfet", en: "Explore the System" },

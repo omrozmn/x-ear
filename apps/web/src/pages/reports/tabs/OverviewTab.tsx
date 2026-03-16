@@ -19,12 +19,15 @@ import {
 import { KPICard } from '../components/KPICard';
 import { TabExportButton } from '../components/TabExportButton';
 import { FilterState, ReportOverview, ReportFinancial } from '../types';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface OverviewTabProps {
     filters: FilterState;
 }
 
 export function OverviewTab({ filters }: OverviewTabProps) {
+    const { hasPermission } = usePermissions();
+    const canViewFinancials = hasPermission('sensitive.reports.overview.financials.view');
     const reportParams = {
         days: filters.days,
         branch_id: filters.branch,
@@ -49,6 +52,10 @@ export function OverviewTab({ filters }: OverviewTabProps) {
             minimumFractionDigits: 0
         }).format(amount);
     };
+
+    const formatProtectedCurrency = (amount: number) => (
+        canViewFinancials ? formatCurrency(amount) : 'Bu rol icin gizli'
+    );
 
     if (isLoading) {
         return (
@@ -97,7 +104,7 @@ export function OverviewTab({ filters }: OverviewTabProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <KPICard
                     title="Toplam Ciro"
-                    value={formatCurrency(overview?.totalRevenue || 0)}
+                    value={formatProtectedCurrency(overview?.totalRevenue || 0)}
                     icon={DollarSign}
                     color="green"
                     subtitle={`${filters.dateRange.start} - ${filters.dateRange.end}`}
@@ -148,7 +155,7 @@ export function OverviewTab({ filters }: OverviewTabProps) {
                         {financial?.paymentMethods && Object.entries(financial.paymentMethods).map(([method, data]) => (
                             <div key={method} className="flex justify-between items-center">
                                 <span className="text-gray-600 dark:text-gray-400 capitalize">{method}</span>
-                                <span className="font-semibold text-gray-900 dark:text-white">{formatCurrency(data.amount || 0)}</span>
+                                <span className="font-semibold text-gray-900 dark:text-white">{formatProtectedCurrency(data.amount || 0)}</span>
                             </div>
                         ))}
                         {(!financial?.paymentMethods || Object.keys(financial.paymentMethods).length === 0) && (

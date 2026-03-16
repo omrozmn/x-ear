@@ -328,6 +328,8 @@ class FeaturesResponse(BaseModel):
     features: dict  # {feature_key: bool}
     plan_name: Optional[str] = None
     is_super_admin: bool = False
+    sector: str = "hearing"
+    enabled_modules: list[str] = []
 
 
 @router.get("/features", operation_id="listSubscriptionFeatures", response_model=ResponseEnvelope[FeaturesResponse])
@@ -347,10 +349,13 @@ def get_enabled_features(
 
     # Super-admin or impersonating admin → everything enabled
     if access.is_super_admin or (access.is_admin and access.is_impersonating):
+        from config.module_registry import get_all_modules
         return ResponseEnvelope(data=FeaturesResponse(
             features={f: True for f in ALL_FEATURE_DEFAULTS},
             plan_name='Super Admin',
             is_super_admin=True,
+            sector='hearing',
+            enabled_modules=[m.module_id for m in get_all_modules()],
         ))
 
     # Read admin-configured feature flags from SystemSetting
@@ -399,10 +404,17 @@ def get_enabled_features(
             for child_key in [k for k in features if k.startswith(parent_key + '.')]:
                 features[child_key] = False
 
+    # Derive sector and enabled modules
+    from config.module_registry import get_enabled_module_ids
+    tenant_sector = getattr(tenant, 'sector', None) or 'hearing'
+    enabled_module_ids = list(get_enabled_module_ids(tenant_sector))
+
     return ResponseEnvelope(data=FeaturesResponse(
         features=features,
         plan_name=plan_name,
         is_super_admin=False,
+        sector=tenant_sector,
+        enabled_modules=enabled_module_ids,
     ))
 
 @router.get("/current", operation_id="listSubscriptionCurrent", response_model=ResponseEnvelope[CurrentSubscriptionResponse])

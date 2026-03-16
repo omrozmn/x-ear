@@ -3,22 +3,21 @@ import { Card, Button, DatePicker, Input, DataTable } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
 import { ShoppingCart, Search, FileText, X, RefreshCw, Filter, CheckSquare, CreditCard, Square, Plus } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
-import { useListSales } from '@/api/client/sales.client';
-import type { SaleRead } from '@/api/generated/schemas';
+import { useCreateSales, useListSales } from '@/api/client/sales.client';
+import type { SaleCreate, SaleRead } from '@/api/generated/schemas';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useNavigate } from '@tanstack/react-router';
 import { useIsMobile } from '@/hooks/useBreakpoint';
 import { cn } from '@/lib/utils';
 import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 import { ExportDropdown } from '@/components/common/ExportDropdown';
-import { CashflowModal } from '@/components/cashflow/CashflowModal';
-import { useCashRecords, useCreateCashRecord } from '@/hooks/useCashflow';
-import type { CashRecord } from '@/types/cashflow';
-import { RECORD_TYPE_LABELS } from '@/types/cashflow';
+import { ManualSaleModal } from '@/components/sales/ManualSaleModal';
+import { usePermissions } from '@/hooks/usePermissions';
+import { PermissionGate } from '@/components/PermissionGate';
 
 interface SalesTableRow {
   id: string;
-  source: 'sale' | 'manual';
+  source: 'sale';
   partyId?: string;
   patientName?: string | null;
   productName: string;
@@ -30,10 +29,11 @@ interface SalesTableRow {
   model?: string;
   description?: string;
   rawSale?: SaleRead;
-  rawCashRecord?: CashRecord;
 }
 
 export function SalesPage() {
+  const { hasPermission } = usePermissions();
+  const canViewAmounts = hasPermission('sensitive.sales.list.amounts.view');
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [searchTerm, setSearchTerm] = useState('');
@@ -47,7 +47,7 @@ export function SalesPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isMobileSelectionMode, setIsMobileSelectionMode] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [isNewSaleModalOpen, setIsNewSaleModalOpen] = useState(false);
+  const [showNewSaleModal, setShowNewSaleModal] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const debouncedSearch = useDebounce(searchTerm, 300);
@@ -55,40 +55,15 @@ export function SalesPage() {
 
   const { data, isLoading, isFetching, refetch } = useListSales({
     page: 1,
-    per_page: 500,
+    per_page: 100,
     search: debouncedSearch || undefined,
     include_details: true,
   });
-  const { data: manualSalesData } = useCashRecords({
-    transactionType: 'income',
-    startDate: dateFrom ? dateFrom.toISOString() : undefined,
-    endDate: dateTo ? dateTo.toISOString() : undefined,
-  });
-  const createCashRecordMutation = useCreateCashRecord();
-
   const salesList: SaleRead[] = useMemo(() => {
     const payload = data?.data;
     return Array.isArray(payload) ? payload : [];
   }, [data]);
-  const manualSalesRecords = useMemo(() => {
-    const raw = Array.isArray(manualSalesData)
-      ? manualSalesData
-      : ((manualSalesData as unknown as { data?: CashRecord[] })?.data ?? []);
-
-    return raw.filter((record) => {
-      const query = debouncedSearch.trim().toLowerCase();
-      if (!query) return true;
-
-      return [
-        record.partyName,
-        record.inventoryItemName,
-        record.description,
-        RECORD_TYPE_LABELS[record.recordType],
-      ]
-        .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(query));
-    });
-  }, [manualSalesData, debouncedSearch]);
+  const createSaleMutation = useCreateSales();
 
   useEffect(() => {
     if (!isMobile) return;
@@ -98,7 +73,7 @@ export function SalesPage() {
   }, [isMobile, debouncedSearch, dateFrom, dateTo]);
 
   const salesRows = useMemo<SalesTableRow[]>(() => {
-    const regularRows = salesList.map((sale): SalesTableRow => {
+    return salesList.map((sale): SalesTableRow => {
       const patient = sale.patient as { firstName?: string; lastName?: string } | undefined;
       return {
         id: `sale-${sale.id}`,
@@ -115,23 +90,7 @@ export function SalesPage() {
         rawSale: sale,
       };
     });
-
-    const manualRows = manualSalesRecords.map((record): SalesTableRow => ({
-      id: `manual-${record.id}`,
-      source: 'manual',
-      partyId: record.partyId || undefined,
-      patientName: record.partyName || null,
-      productName: record.inventoryItemName || record.description || 'Manuel Satış',
-      amount: Number(record.amount || 0),
-      saleDate: record.date,
-      status: 'manual',
-      serialNumber: undefined,
-      description: record.description || RECORD_TYPE_LABELS[record.recordType] || 'Manuel satış kaydı',
-      rawCashRecord: record,
-    }));
-
-    return [...regularRows, ...manualRows];
-  }, [manualSalesRecords, salesList]);
+  }, [salesList]);
 
   const totalCount = salesRows.length;
   const hasMoreMobile = isMobile && mobileVisibleCount < totalCount;
@@ -212,20 +171,27 @@ export function SalesPage() {
     [sortedSales]
   );
   const averageAmount = sortedSales.length > 0 ? totalAmount / sortedSales.length : 0;
+  const protectedCurrency = (amount: number) => canViewAmounts ? formatCurrency(amount, 'TRY') : 'Bu rol icin gizli';
 
   const getStatusBadge = (status?: string | null) => {
     const styles: Record<string, string> = {
       draft: 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400',
+      pending: 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300',
       confirmed: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
+      completed: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300',
       delivered: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400',
+      partial: 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300',
       paid: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
       cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
       manual: 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400',
     };
     const labels: Record<string, string> = {
       draft: 'Taslak',
+      pending: 'Beklemede',
       confirmed: 'Onaylandı',
+      completed: 'Tamamlandı',
       delivered: 'Teslim Edildi',
+      partial: 'Kısmi',
       paid: 'Ödendi',
       cancelled: 'İptal Edildi',
       manual: 'Manuel',
@@ -237,11 +203,6 @@ export function SalesPage() {
   const handleRefresh = useCallback(async () => {
     await refetch();
   }, [refetch]);
-
-  const handleSaveSaleRecord = useCallback(async (formData: Parameters<typeof createCashRecordMutation.mutateAsync>[0]) => {
-    await createCashRecordMutation.mutateAsync(formData);
-    await refetch();
-  }, [createCashRecordMutation, refetch]);
 
   const salesExportHeaders = useMemo(() => ['Hasta Adı', 'Hasta ID', 'Ürün', 'Marka', 'Model', 'Tutar', 'Tarih', 'Durum', 'Seri No'], []);
 
@@ -278,6 +239,11 @@ export function SalesPage() {
     setSearchTerm('');
     setCurrentPage(1);
   };
+
+  const handleCreateSale = useCallback(async (payload: SaleCreate) => {
+    await createSaleMutation.mutateAsync({ data: payload });
+    await refetch();
+  }, [createSaleMutation, refetch]);
 
   const renderMobileCards = () => (
     <div className="block md:hidden space-y-3 mt-3">
@@ -321,7 +287,7 @@ export function SalesPage() {
               </div>
               <div className="text-right">
                 <p className="text-xs text-gray-400">Tutar</p>
-                <p className="text-lg font-bold text-gray-900 dark:text-white">{formatCurrency(Number(sale.amount || 0), 'TRY')}</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-white">{protectedCurrency(Number(sale.amount || 0))}</p>
               </div>
             </div>
           </div>
@@ -348,20 +314,24 @@ export function SalesPage() {
         eyebrow={{ tr: 'Gelir', en: 'Revenue' }}
         actions={(
           <>
-            <ExportDropdown
-              headers={salesExportHeaders}
-              getRows={getSalesExportRows}
-              filename="satislar"
-            />
+            <PermissionGate permission="sales.list.export.view">
+              <ExportDropdown
+                headers={salesExportHeaders}
+                getRows={getSalesExportRows}
+                filename="satislar"
+              />
+            </PermissionGate>
             <Button variant="outline" className="flex items-center gap-2" onClick={handleRefresh}>
               <RefreshCw size={18} />
               Yenile
             </Button>
             <div className="ml-auto">
-              <Button className="flex items-center gap-2" onClick={() => setIsNewSaleModalOpen(true)}>
-                <Plus size={18} />
-                Yeni Satış
-              </Button>
+              <PermissionGate permission="sales.create">
+                <Button className="flex items-center gap-2" onClick={() => setShowNewSaleModal(true)}>
+                  <Plus size={18} />
+                  Yeni Satış
+                </Button>
+              </PermissionGate>
             </div>
           </>
         )}
@@ -372,7 +342,7 @@ export function SalesPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Toplam Satış</p>
-              <p className="text-lg md:text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{formatCurrency(totalAmount, 'TRY')}</p>
+              <p className="text-lg md:text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{protectedCurrency(totalAmount)}</p>
             </div>
             <div className="p-2 md:p-3 bg-blue-100 dark:bg-blue-900/20 rounded-2xl">
               <ShoppingCart className="text-blue-600 dark:text-blue-400 w-4 h-4 md:w-6 md:h-6" />
@@ -396,7 +366,7 @@ export function SalesPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Ortalama</p>
-              <p className="text-lg md:text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{formatCurrency(averageAmount, 'TRY')}</p>
+              <p className="text-lg md:text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{protectedCurrency(averageAmount)}</p>
             </div>
             <div className="p-2 md:p-3 bg-green-100 dark:bg-green-900/20 rounded-2xl">
               <CreditCard className="text-green-600 dark:text-green-400 w-4 h-4 md:w-6 md:h-6" />
@@ -500,7 +470,7 @@ export function SalesPage() {
                 title: 'Tutar',
                 sortable: true,
                 render: (_: unknown, sale: SalesTableRow) => (
-                  <span className="text-sm font-semibold">{formatCurrency(Number(sale.amount || 0), 'TRY')}</span>
+                  <span className="text-sm font-semibold">{protectedCurrency(Number(sale.amount || 0))}</span>
                 ),
               },
               {
@@ -538,30 +508,30 @@ export function SalesPage() {
         <div className={`fixed ${isMobile ? 'bottom-24' : 'bottom-6'} left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl px-4 md:px-6 py-3 flex items-center gap-3 md:gap-4 w-[90%] md:w-auto overflow-x-auto whitespace-nowrap`}>
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{selectedIds.size} kayıt seçildi</span>
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
-          <ExportDropdown
-            headers={salesExportHeaders}
-            getRows={getSalesExportRows}
-            filename="satislar"
-            variant="ghost"
-            label="Dışa Aktar"
-            compact
-            iconClassName="text-blue-600"
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-colors h-auto"
-          />
+          <PermissionGate permission="sales.list.export.view">
+            <ExportDropdown
+              headers={salesExportHeaders}
+              getRows={getSalesExportRows}
+              filename="satislar"
+              variant="ghost"
+              label="Dışa Aktar"
+              compact
+              iconClassName="text-blue-600"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-colors h-auto"
+            />
+          </PermissionGate>
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
           <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors h-auto"><X className="w-4 h-4" /> Seçimi Kaldır</Button>
         </div>
       )}
 
-      <CashflowModal
-        isOpen={isNewSaleModalOpen}
-        onClose={() => setIsNewSaleModalOpen(false)}
-        onSave={handleSaveSaleRecord}
-        isLoading={createCashRecordMutation.isPending}
-        title="Yeni Satış Kaydı"
-        saveButtonText="Satışı Kaydet"
-        lockedTransactionType="income"
+      <ManualSaleModal
+        isOpen={showNewSaleModal}
+        isLoading={createSaleMutation.isPending}
+        onClose={() => setShowNewSaleModal(false)}
+        onSubmit={handleCreateSale}
       />
+
     </div>
   );
 }

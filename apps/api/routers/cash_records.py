@@ -72,6 +72,8 @@ def derive_record_type(notes: str) -> str:
 def get_cash_records(
     limit: int = Query(200, ge=1, le=1000),
     status: Optional[str] = None,
+    transaction_type: Optional[str] = None,
+    record_type: Optional[str] = None,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     search: Optional[str] = None,
@@ -142,7 +144,13 @@ def get_cash_records(
             records = [r for r in records if 
                       search_term in (r['partyName'] or '').lower() or 
                       search_term in (r['description'] or '').lower()]
-        
+
+        if transaction_type in {'income', 'expense'}:
+            records = [r for r in records if r['transactionType'] == transaction_type]
+
+        if record_type:
+            records = [r for r in records if r['recordType'] == record_type]
+
         return ResponseEnvelope(data=records, meta={'count': len(records)})
         
     except Exception as e:

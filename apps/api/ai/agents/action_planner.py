@@ -297,14 +297,13 @@ class ActionPlanner:
             tool_name = op.get("tool_name")
             try:
                 tool = self.tool_registry.get_tool(tool_name)
-                # Get required parameters from tool schema
-                # For now, we'll use a simple heuristic based on common patterns
-                if tool_name == "createParty":
-                    required_params.extend(["first_name", "last_name", "phone"])
-                elif tool_name == "appointment_create":
-                    required_params.extend(["party_id", "date", "time"])
-                elif tool_name == "device_assign":
-                    required_params.extend(["party_id", "device_id"])
+                # Get required parameters from tool schema definition
+                if hasattr(tool, 'required_parameters') and tool.required_parameters:
+                    required_params.extend(tool.required_parameters)
+                elif hasattr(tool, 'schema') and isinstance(tool.schema, dict):
+                    # Extract from JSON Schema if available
+                    schema_required = tool.schema.get("required", [])
+                    required_params.extend(schema_required)
             except Exception:
                 continue
         return required_params
@@ -436,12 +435,17 @@ class ActionPlanner:
                 processing_time_ms=(time.time() - start_time) * 1000,
             )
         
-        # Build action steps
+        # Build action steps (enforce max step limit to prevent DoS)
+        MAX_STEPS = 20
+        actions_list = plan_data["actions"][:MAX_STEPS]
+        if len(plan_data["actions"]) > MAX_STEPS:
+            logger.warning(f"Action plan truncated from {len(plan_data['actions'])} to {MAX_STEPS} steps")
+
         steps = []
         tool_schema_versions = {}
         required_permissions = set()
-        
-        for i, action in enumerate(plan_data["actions"], 1):
+
+        for i, action in enumerate(actions_list, 1):
             tool_name = action.get("tool_name")
             
             # Get tool definition

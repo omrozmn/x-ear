@@ -367,7 +367,7 @@ export const useCreateEfaturaCancel = <TError = HTTPValidationError,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * Sync invoices from BirFatura API
+ * Sync invoices from BirFatura API (runs in background)
  * @summary Sync Invoices
  */
 export const createBirfaturaSyncInvoices = (

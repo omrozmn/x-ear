@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
     useListAdminIntegrationVatanSmConfig,
     useUpdateAdminIntegrationVatanSmConfig,
@@ -9,6 +9,38 @@ import { EnvelopeIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 import { unwrapData } from '@/lib/orval-response';
+
+/**
+ * Sanitize HTML by stripping dangerous tags/attributes (script, on*, iframe, etc.)
+ * while preserving safe formatting tags used in email templates.
+ */
+function sanitizeHtml(html: string): string {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    // Remove dangerous elements
+    const dangerousTags = ['script', 'iframe', 'object', 'embed', 'form', 'link', 'style'];
+    for (const tag of dangerousTags) {
+        const elements = doc.body.getElementsByTagName(tag);
+        while (elements.length > 0) {
+            elements[0].parentNode?.removeChild(elements[0]);
+        }
+    }
+
+    // Remove event handler attributes from all elements
+    const allElements = doc.body.getElementsByTagName('*');
+    for (let i = 0; i < allElements.length; i++) {
+        const el = allElements[i];
+        const attrs = Array.from(el.attributes);
+        for (const attr of attrs) {
+            if (attr.name.startsWith('on') || attr.value.trim().toLowerCase().startsWith('javascript:')) {
+                el.removeAttribute(attr.name);
+            }
+        }
+    }
+
+    return doc.body.innerHTML;
+}
 
 const DEFAULT_SUBJECT = '[X-Ear CRM] {{tenant_name}} - Yeni Belge Onayı';
 const DEFAULT_BODY = '<h3>Merhaba,</h3><p>{{tenant_name}} adlı müşterimiz yeni belge yükledi.</p><p><strong>Belge Türleri:</strong> {{document_types}}</p><p><strong>Yükleyen:</strong> {{uploaded_by}}</p><p><strong>Tarih:</strong> {{uploaded_at}}</p><p>İyi çalışmalar,<br>X-Ear CRM Sistemi</p>';
@@ -183,7 +215,7 @@ const VatanSmsSettingsPage: React.FC = () => {
                         <div className="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
                             <div
                                 className="prose prose-sm max-w-none dark:prose-invert"
-                                dangerouslySetInnerHTML={{ __html: emailBody || '[İçerik Girilmedi]' }}
+                                dangerouslySetInnerHTML={{ __html: sanitizeHtml(emailBody || '[İçerik Girilmedi]') }}
                             />
                         </div>
                     </div>

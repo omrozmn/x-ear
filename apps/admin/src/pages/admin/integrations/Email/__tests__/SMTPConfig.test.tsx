@@ -44,6 +44,11 @@ vi.mock('react-hot-toast', () => ({
   },
 }));
 
+// Mock EmailIntegrationNav to avoid TanStack Router dependency
+vi.mock('@/components/integrations/EmailIntegrationNav', () => ({
+  EmailIntegrationNav: () => <div data-testid="email-nav" />,
+}));
+
 // Mock heroicons
 vi.mock('@heroicons/react/24/outline', () => ({
   EnvelopeIcon: () => <div data-testid="envelope-icon" />,

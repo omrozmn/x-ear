@@ -102,7 +102,7 @@ class PromptEncryptor:
                 "Generate a key using: python -c \"import secrets; print(secrets.token_hex(32))\""
             )
         
-        # Key can be hex-encoded or base64-encoded
+        # Key MUST be hex-encoded (64 chars) or base64-encoded (44 chars)
         try:
             # Try hex first
             if len(key_str) == 64:  # 32 bytes * 2 hex chars
@@ -113,147 +113,92 @@ class PromptEncryptor:
                 return key_bytes
         except Exception:
             pass
-        
-        # Derive key from string using PBKDF2
-        return self._derive_key(key_str)
-    
-    def _derive_key(self, password: str) -> bytes:
-        """Derive a 256-bit key from a password using PBKDF2."""
-        # Use a fixed salt for deterministic key derivation
-        # In production, consider using a per-tenant salt stored securely
-        salt = b"xear_ai_layer_v1"
-        return hashlib.pbkdf2_hmac(
-            'sha256',
-            password.encode('utf-8'),
-            salt,
-            iterations=100000,
-            dklen=self.KEY_SIZE
+
+        raise EncryptionError(
+            "AI_ENCRYPTION_KEY must be a valid 32-byte key in hex (64 chars) or base64 (44 chars) format. "
+            "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\""
         )
     
     def encrypt(self, plaintext: str) -> str:
         """
-        Encrypt a plaintext string.
-        
+        Encrypt a plaintext string using AES-256-GCM.
+
         Args:
             plaintext: The text to encrypt
-            
+
         Returns:
             Base64-encoded encrypted data
-            
+
         Raises:
-            EncryptionError: If encryption fails
+            EncryptionError: If encryption fails or cryptography is not installed
             EncryptionKeyMissingError: If no encryption key is configured
         """
         if not self._key:
             raise EncryptionKeyMissingError("Encryption key not configured")
-        
+
         try:
-            # Import cryptography here to make it optional
             from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-            
-            # Generate random nonce
+        except ImportError:
+            raise EncryptionError(
+                "cryptography library is required for AI layer encryption. "
+                "Install it with: pip install cryptography"
+            )
+
+        try:
             nonce = secrets.token_bytes(self.NONCE_SIZE)
-            
-            # Create cipher and encrypt
             aesgcm = AESGCM(self._key)
             ciphertext = aesgcm.encrypt(nonce, plaintext.encode('utf-8'), None)
-            
+
             # GCM appends the tag to ciphertext, extract it
-            # Tag is last 16 bytes
             tag = ciphertext[-16:]
             actual_ciphertext = ciphertext[:-16]
-            
+
             encrypted = EncryptedData(
                 ciphertext=actual_ciphertext,
                 nonce=nonce,
                 tag=tag
             )
-            
             return encrypted.to_base64()
-            
-        except ImportError:
-            # Fallback to simple encoding if cryptography not available
-            # This is NOT secure and should only be used for development
-            import warnings
-            warnings.warn(
-                "cryptography library not installed. Using insecure base64 encoding. "
-                "Install cryptography for production use: pip install cryptography",
-                RuntimeWarning
-            )
-            return self._fallback_encode(plaintext)
+        except EncryptionError:
+            raise
         except Exception as e:
             raise EncryptionError(f"Encryption failed: {e}")
     
     def decrypt(self, encrypted: str) -> str:
         """
         Decrypt an encrypted string.
-        
+
         Args:
             encrypted: Base64-encoded encrypted data
-            
+
         Returns:
             Decrypted plaintext
-            
+
         Raises:
-            EncryptionError: If decryption fails
+            EncryptionError: If decryption fails or cryptography is not installed
             EncryptionKeyMissingError: If no encryption key is configured
         """
         if not self._key:
             raise EncryptionKeyMissingError("Encryption key not configured")
-        
+
         try:
-            # Import cryptography here to make it optional
             from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-            
-            # Decode encrypted data
+        except ImportError:
+            raise EncryptionError(
+                "cryptography library is required for AI layer encryption. "
+                "Install it with: pip install cryptography"
+            )
+
+        try:
             data = EncryptedData.from_base64(encrypted)
-            
-            # Reconstruct ciphertext with tag
             ciphertext_with_tag = data.ciphertext + data.tag
-            
-            # Create cipher and decrypt
             aesgcm = AESGCM(self._key)
             plaintext = aesgcm.decrypt(data.nonce, ciphertext_with_tag, None)
-            
             return plaintext.decode('utf-8')
-            
-        except ImportError:
-            # Fallback to simple decoding if cryptography not available
-            return self._fallback_decode(encrypted)
+        except EncryptionError:
+            raise
         except Exception as e:
             raise EncryptionError(f"Decryption failed: {e}")
-    
-    def _fallback_encode(self, plaintext: str) -> str:
-        """Fallback encoding when cryptography is not available (NOT SECURE)."""
-        # XOR with key for minimal obfuscation (NOT SECURE)
-        key_bytes = self._key
-        plaintext_bytes = plaintext.encode('utf-8')
-        
-        # Simple XOR
-        result = bytes(
-            p ^ key_bytes[i % len(key_bytes)]
-            for i, p in enumerate(plaintext_bytes)
-        )
-        
-        # Prefix with marker to identify fallback encoding
-        return "FALLBACK:" + base64.b64encode(result).decode('utf-8')
-    
-    def _fallback_decode(self, encoded: str) -> str:
-        """Fallback decoding when cryptography is not available."""
-        if not encoded.startswith("FALLBACK:"):
-            raise EncryptionError("Cannot decode: not fallback encoded")
-        
-        encoded_data = encoded[9:]  # Remove "FALLBACK:" prefix
-        encrypted_bytes = base64.b64decode(encoded_data.encode('utf-8'))
-        
-        # Reverse XOR
-        key_bytes = self._key
-        result = bytes(
-            e ^ key_bytes[i % len(key_bytes)]
-            for i, e in enumerate(encrypted_bytes)
-        )
-        
-        return result.decode('utf-8')
     
     @staticmethod
     def hash_prompt(prompt: str) -> str:

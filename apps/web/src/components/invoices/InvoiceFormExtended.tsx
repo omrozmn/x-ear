@@ -234,6 +234,8 @@ export function InvoiceFormExtended({
       customerName: (initialData.customerName as string) || prev.customerName,
       customerId: (initialData.customerId as string) || prev.customerId,
       customerTaxId: (initialData.customerTaxId as string) || prev.customerTaxId,
+      returnInvoiceDetails: (initialData.returnInvoiceDetails as ReturnInvoiceDetailsData | undefined) || prev.returnInvoiceDetails,
+      notes: (initialData.notes as string | undefined) || prev.notes,
     }));
   }, [initialData]);
 

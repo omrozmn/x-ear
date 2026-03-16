@@ -35,6 +35,16 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Reports"])
 
+OVERVIEW_FINANCIAL_PERMISSION = "sensitive.reports.overview.financials.view"
+SALES_FINANCIAL_PERMISSION = "sensitive.reports.sales.financials.view"
+PROMISSORY_FINANCIAL_PERMISSION = "sensitive.reports.promissory.financials.view"
+PROMISSORY_CONTACT_PERMISSION = "sensitive.parties.list.contact.view"
+PATIENT_REPORT_IDENTITY_PERMISSION = "sensitive.reports.parties.identity.view"
+REMAINING_FINANCIAL_PERMISSION = "sensitive.reports.remaining.financials.view"
+POS_FINANCIAL_PERMISSION = "sensitive.reports.pos_movements.financials.view"
+TRACKING_DETAILS_PERMISSION = "sensitive.reports.report_tracking.details.view"
+REPORT_CONTACT_PERMISSION = "sensitive.parties.list.contact.view"
+
 # --- Helper Functions ---
 
 def tenant_scoped_query(access: UnifiedAccess, model, session: Session):
@@ -121,6 +131,109 @@ def resolve_report_window(
     resolved_start = parse_report_date(start_date) or (resolved_end - timedelta(days=days))
     return resolved_start, resolved_end
 
+
+def mask_remaining_payment_item(item: dict, access: UnifiedAccess) -> dict:
+    masked = dict(item)
+    if not access.has_permission(REPORT_CONTACT_PERMISSION):
+        masked["phone"] = None
+    if not access.has_permission(REMAINING_FINANCIAL_PERMISSION):
+        masked["total_amount"] = 0.0
+        masked["paid_amount"] = 0.0
+        masked["remaining_amount"] = 0.0
+    return masked
+
+
+def mask_overview_response(data: dict, access: UnifiedAccess) -> dict:
+    masked = dict(data)
+    if not access.has_permission(OVERVIEW_FINANCIAL_PERMISSION):
+        masked["total_revenue"] = 0.0
+        masked["conversion_rate"] = 0.0
+    return masked
+
+
+def mask_financial_response(data: dict, access: UnifiedAccess) -> dict:
+    masked = dict(data)
+    if not access.has_permission(SALES_FINANCIAL_PERMISSION):
+        masked["revenue_trend"] = {}
+        masked["product_sales"] = {
+            brand: {"sales": item.get("sales", 0), "revenue": 0.0}
+            for brand, item in data.get("product_sales", {}).items()
+        }
+        masked["payment_methods"] = {
+            method: {"count": item.get("count", 0), "amount": 0.0}
+            for method, item in data.get("payment_methods", {}).items()
+        }
+    return masked
+
+
+def mask_patients_report_response(data: dict, access: UnifiedAccess) -> dict:
+    masked = dict(data)
+    if not access.has_permission(PATIENT_REPORT_IDENTITY_PERMISSION):
+        masked["segment_breakdown"] = {}
+        masked["acquisition_breakdown"] = {}
+    return masked
+
+
+def mask_promissory_summary_response(data: dict, access: UnifiedAccess) -> dict:
+    masked = dict(data)
+    if not access.has_permission(PROMISSORY_FINANCIAL_PERMISSION):
+        summary = dict(masked.get("summary", {}))
+        summary["total_amount"] = 0.0
+        summary["total_collected"] = 0.0
+        masked["summary"] = summary
+        masked["monthly_revenue"] = []
+    return masked
+
+
+def mask_promissory_party_item(item: dict, access: UnifiedAccess) -> dict:
+    masked = dict(item)
+    if not access.has_permission(PROMISSORY_CONTACT_PERMISSION):
+        masked["phone"] = None
+    if not access.has_permission(PROMISSORY_FINANCIAL_PERMISSION):
+        masked["total_amount"] = 0.0
+        masked["paid_amount"] = 0.0
+        masked["remaining_amount"] = 0.0
+    return masked
+
+
+def mask_promissory_note_item(item: dict, access: UnifiedAccess) -> dict:
+    masked = dict(item)
+    if not access.has_permission(PROMISSORY_FINANCIAL_PERMISSION):
+        masked["amount"] = 0.0
+        masked["paidAmount"] = 0.0
+        masked["remainingAmount"] = 0.0
+    if not access.has_permission(PROMISSORY_CONTACT_PERMISSION):
+        party = dict(masked.get("party") or {})
+        if party:
+            party["phone"] = None
+            masked["party"] = party
+    return masked
+
+
+def mask_pos_movement_item(item: dict, access: UnifiedAccess) -> dict:
+    masked = dict(item)
+    if not access.has_permission(POS_FINANCIAL_PERMISSION):
+        masked["amount"] = 0.0
+        masked["sale_id"] = None
+        masked["party_name"] = None
+        masked["pos_transaction_id"] = None
+        masked["error_message"] = None
+    return masked
+
+
+def mask_report_tracking_item(item: dict, access: UnifiedAccess) -> dict:
+    masked = dict(item)
+    if not access.has_permission(TRACKING_DETAILS_PERMISSION):
+        masked["saleId"] = None
+        masked["partyId"] = None
+        masked["partyName"] = "Bu rol icin gizli"
+        masked["deviceName"] = None
+        masked["serialNumber"] = None
+        masked["brand"] = None
+        masked["model"] = None
+        masked["ear"] = None
+    return masked
+
 # --- Routes ---
 
 @router.get("/reports/overview", operation_id="listReportOverview", response_model=ResponseEnvelope[ReportOverviewResponse])
@@ -129,7 +242,7 @@ def report_overview(
     branch_id: Optional[str] = Query(None, alias="branch_id"),
     start_date: Optional[str] = Query(None, alias="startDate"),
     end_date: Optional[str] = Query(None, alias="endDate"),
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("reports.overview.view")),
     db_session: Session = Depends(get_db)
 ):
     """General report overview"""
@@ -185,17 +298,17 @@ def report_overview(
         
         conversion_rate = (total_sales / completed_appointments * 100) if completed_appointments > 0 else 0
         
-        return ResponseEnvelope(
-            data=ReportOverviewResponse(
-                total_patients=total_patients,
-                new_patients=new_patients,
-                total_appointments=total_appointments,
-                appointment_rate=round(appointment_rate, 1),
-                total_sales=total_sales,
-                total_revenue=float(total_revenue),
-                conversion_rate=round(conversion_rate, 1)
-            )
-        )
+        overview_data = mask_overview_response({
+            "total_patients": total_patients,
+            "new_patients": new_patients,
+            "total_appointments": total_appointments,
+            "appointment_rate": round(appointment_rate, 1),
+            "total_sales": total_sales,
+            "total_revenue": float(total_revenue),
+            "conversion_rate": round(conversion_rate, 1),
+        }, access)
+
+        return ResponseEnvelope(data=ReportOverviewResponse(**overview_data))
     except Exception as e:
         logger.error(f"Overview report error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -206,7 +319,7 @@ def report_patients(
     branch_id: Optional[str] = Query(None, alias="branch_id"),
     start_date: Optional[str] = Query(None, alias="startDate"),
     end_date: Optional[str] = Query(None, alias="endDate"),
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("reports.parties.view")),
     db_session: Session = Depends(get_db)
 ):
     """Patient analysis report"""
@@ -331,27 +444,27 @@ def report_patients(
             (segment or "belirsiz"): count for segment, count in segment_rows
         }
 
-        return ResponseEnvelope(
-            data=ReportPatientsResponse(
-                age_distribution=age_data,
-                status_distribution=status_data,
-                patient_segments=PatientSegments(
-                    new=new_patients,
-                    active=active_patients,
-                    trial=trial_patients,
-                    inactive=inactive_patients
-                ),
-                summary={
-                    "totalPatients": len(parties),
-                    "newPatients": new_patients,
-                    "patientsWithSales": int(patients_with_sales),
-                    "patientsWithUpcomingAppointments": int(patients_with_upcoming),
-                    "highPriorityPatients": high_priority_count,
-                },
-                acquisition_breakdown=acquisition_breakdown,
-                segment_breakdown=segment_breakdown
-            )
-        )
+        patients_data = mask_patients_report_response({
+            "age_distribution": age_data,
+            "status_distribution": status_data,
+            "patient_segments": PatientSegments(
+                new=new_patients,
+                active=active_patients,
+                trial=trial_patients,
+                inactive=inactive_patients
+            ),
+            "summary": {
+                "totalPatients": len(parties),
+                "newPatients": new_patients,
+                "patientsWithSales": int(patients_with_sales),
+                "patientsWithUpcomingAppointments": int(patients_with_upcoming),
+                "highPriorityPatients": high_priority_count,
+            },
+            "acquisition_breakdown": acquisition_breakdown,
+            "segment_breakdown": segment_breakdown,
+        }, access)
+
+        return ResponseEnvelope(data=ReportPatientsResponse(**patients_data))
     except Exception as e:
         logger.error(f"Patients report error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -362,7 +475,7 @@ def report_financial(
     branch_id: Optional[str] = Query(None, alias="branch_id"),
     start_date: Optional[str] = Query(None, alias="startDate"),
     end_date: Optional[str] = Query(None, alias="endDate"),
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("reports.sales.view")),
     db_session: Session = Depends(get_db)
 ):
     """Financial report"""
@@ -445,11 +558,17 @@ def report_financial(
                     "amount": float(amount)
                 }
         
+        financial_payload = mask_financial_response({
+            "revenue_trend": revenue_trend,
+            "product_sales": product_data,
+            "payment_methods": payment_data,
+        }, access)
+
         return ResponseEnvelope(
             data=ReportFinancialResponse(
-                revenue_trend=revenue_trend,
-                product_sales={k: ProductSalesData(**v) for k, v in product_data.items()},
-                payment_methods={k: PaymentMethodData(**v) for k, v in payment_data.items()}
+                revenue_trend=financial_payload["revenue_trend"],
+                product_sales={k: ProductSalesData(**v) for k, v in financial_payload["product_sales"].items()},
+                payment_methods={k: PaymentMethodData(**v) for k, v in financial_payload["payment_methods"].items()}
             )
         )
     except Exception as e:
@@ -459,7 +578,7 @@ def report_financial(
 @router.get("/reports/campaigns", operation_id="listReportCampaigns", response_model=ResponseEnvelope[ReportCampaignsResponse])
 def report_campaigns(
     days: int = Query(30, ge=1, le=365),
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("reports.sales.view")),
     db_session: Session = Depends(get_db)
 ):
     """Campaign report"""
@@ -525,7 +644,7 @@ def report_campaigns(
 
 @router.get("/reports/revenue", operation_id="listReportRevenue", response_model=ResponseEnvelope[ReportRevenueResponse])
 def report_revenue(
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("reports.sales.view")),
     db_session: Session = Depends(get_db)
 ):
     """Revenue report placeholder"""
@@ -537,7 +656,7 @@ def report_revenue(
 def report_appointments(
     page: int = Query(1, ge=1, le=1000000),
     per_page: int = Query(20, ge=1, le=100),
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("reports.overview.view")),
     db_session: Session = Depends(get_db)
 ):
     """Appointments report placeholder"""
@@ -552,7 +671,7 @@ def report_promissory_notes(
     branch_id: Optional[str] = Query(None, alias="branch_id"),
     start_date: Optional[str] = Query(None, alias="startDate"),
     end_date: Optional[str] = Query(None, alias="endDate"),
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("reports.promissory.view")),
     db_session: Session = Depends(get_db)
 ):
     """Promissory notes report"""
@@ -676,18 +795,24 @@ def report_promissory_notes(
                 "revenue": float(row.revenue) if row.revenue else 0
             })
         
+        promissory_payload = mask_promissory_summary_response({
+            "summary": {
+                "total_notes": total_notes,
+                "active_notes": active_notes,
+                "overdue_notes": overdue_notes,
+                "paid_notes": paid_notes,
+                "total_amount": float(total_amount),
+                "total_collected": float(total_collected),
+            },
+            "monthly_counts": monthly_counts_data,
+            "monthly_revenue": monthly_revenue_data,
+        }, access)
+
         return ResponseEnvelope(
             data=ReportPromissoryNotesResponse(
-                summary=PromissoryNotesSummary(
-                    total_notes=total_notes,
-                    active_notes=active_notes,
-                    overdue_notes=overdue_notes,
-                    paid_notes=paid_notes,
-                    total_amount=float(total_amount),
-                    total_collected=float(total_collected)
-                ),
-                monthly_counts=[MonthlyCount(**r) for r in monthly_counts_data],
-                monthly_revenue=[MonthlyRevenue(**r) for r in monthly_revenue_data]
+                summary=PromissoryNotesSummary(**promissory_payload["summary"]),
+                monthly_counts=[MonthlyCount(**r) for r in promissory_payload["monthly_counts"]],
+                monthly_revenue=[MonthlyRevenue(**r) for r in promissory_payload["monthly_revenue"]]
             )
         )
     except Exception as e:
@@ -702,7 +827,7 @@ def report_promissory_notes_by_patient(
     branch_id: Optional[str] = Query(None, alias="branch_id"),
     start_date: Optional[str] = Query(None, alias="startDate"),
     end_date: Optional[str] = Query(None, alias="endDate"),
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("reports.promissory.view")),
     db_session: Session = Depends(get_db)
 ):
     """Patient promissory notes summary"""
@@ -796,8 +921,10 @@ def report_promissory_notes_by_patient(
                 "last_due_date": row.last_due_date.isoformat() if row.last_due_date else None
             })
         
+        masked_patients = [mask_promissory_party_item(p, access) for p in patients_data]
+
         return ResponseEnvelope(
-            data=[PromissoryNotePatientItem(**p) for p in patients_data],
+            data=[PromissoryNotePatientItem(**p) for p in masked_patients],
             meta={
                 "total": total,
                 "page": page,
@@ -818,7 +945,7 @@ def report_promissory_notes_list(
     start_date: Optional[str] = Query(None, alias="startDate"),
     end_date: Optional[str] = Query(None, alias="endDate"),
     search: Optional[str] = Query(None),
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("reports.promissory.view")),
     db_session: Session = Depends(get_db)
 ):
     """Detailed promissory notes list report"""
@@ -886,8 +1013,10 @@ def report_promissory_notes_list(
             }
             results.append(note_dict)
             
+        masked_results = [mask_promissory_note_item(note, access) for note in results]
+
         return ResponseEnvelope(
-            data=results,
+            data=masked_results,
             meta={
                 "total": total,
                 "page": page,
@@ -907,7 +1036,7 @@ def report_remaining_payments(
     min_amount: float = Query(0, ge=0, alias="min_amount"),
     start_date: Optional[str] = Query(None, alias="startDate"),
     end_date: Optional[str] = Query(None, alias="endDate"),
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("reports.remaining.view")),
     db_session: Session = Depends(get_db)
 ):
     """Remaining payments report"""
@@ -993,8 +1122,11 @@ def report_remaining_payments(
                 summary_query = summary_query.filter(summary_condition)
         summary = summary_query.first()
         
+        masked_data = [mask_remaining_payment_item(p, access) for p in patients_data]
+        can_view_financials = access.has_permission(REMAINING_FINANCIAL_PERMISSION)
+
         return ResponseEnvelope(
-            data=[RemainingPaymentItem(**p) for p in patients_data],
+            data=[RemainingPaymentItem(**p) for p in masked_data],
             meta={
                 "total": total,
                 "page": page,
@@ -1002,7 +1134,7 @@ def report_remaining_payments(
                 "total_pages": (total + per_page - 1) // per_page,
                 "summary": RemainingPaymentsSummary(
                     total_parties=summary.party_count or 0 if summary else 0,
-                    total_remaining=float(summary.total_remaining) if summary and summary.total_remaining else 0
+                    total_remaining=float(summary.total_remaining) if can_view_financials and summary and summary.total_remaining else 0
                 )
             }
         )
@@ -1016,7 +1148,7 @@ def report_cashflow_summary(
     branch_id: Optional[str] = Query(None, alias="branch_id"),
     start_date: Optional[str] = Query(None, alias="startDate"),
     end_date: Optional[str] = Query(None, alias="endDate"),
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("reports.sales.view")),
     db_session: Session = Depends(get_db)
 ):
     """Cashflow summary report"""
@@ -1075,12 +1207,14 @@ def report_cashflow_summary(
                 "expense": 0
             })
             
+        can_view_financials = access.has_permission(REPORT_FINANCIAL_PERMISSION)
+
         return ResponseEnvelope(
             data=ReportCashflowResponse(
-                total_revenue=float(total_revenue),
-                total_expenses=float(total_expenses),
-                net_cash=float(net_cash),
-                daily_breakdown=[DailyCashflow(**d) for d in daily_data]
+                total_revenue=float(total_revenue) if can_view_financials else 0.0,
+                total_expenses=float(total_expenses) if can_view_financials else 0.0,
+                net_cash=float(net_cash) if can_view_financials else 0.0,
+                daily_breakdown=[DailyCashflow(**d) for d in daily_data] if can_view_financials else []
             )
         )
     except Exception as e:
@@ -1095,7 +1229,7 @@ def report_pos_movements(
     branch_id: Optional[str] = Query(None, alias="branch_id"),
     start_date: Optional[str] = Query(None, alias="startDate"),
     end_date: Optional[str] = Query(None, alias="endDate"),
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("reports.pos_movements.view")),
     db_session: Session = Depends(get_db)
 ):
     """POS movements report"""
@@ -1200,14 +1334,14 @@ def report_pos_movements(
         summary['fail_count'] = fail_query.scalar() or 0
             
         return ResponseEnvelope(
-            data=[PosMovementItem(**d) for d in data],
+            data=[PosMovementItem(**mask_pos_movement_item(d, access)) for d in data],
             meta={
                 "total": total,
                 "page": page,
                 "per_page": per_page,
                 "total_pages": (total + per_page - 1) // per_page,
                 "summary": PosMovementSummary(
-                    total_volume=summary['total_volume'],
+                    total_volume=summary['total_volume'] if access.has_permission(POS_FINANCIAL_PERMISSION) else 0.0,
                     success_count=summary['success_count'],
                     fail_count=summary['fail_count']
                 )
@@ -1227,7 +1361,7 @@ def report_tracking(
     start_date: Optional[str] = Query(None, alias="startDate"),
     end_date: Optional[str] = Query(None, alias="endDate"),
     search: Optional[str] = Query(None),
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("reports.report_tracking.view")),
     db_session: Session = Depends(get_db)
 ):
     """Track device-assignment report and delivery status"""
@@ -1303,7 +1437,7 @@ def report_tracking(
             })
 
         return ResponseEnvelope(
-            data=[ReportTrackingItem(**item) for item in data],
+            data=[ReportTrackingItem(**mask_report_tracking_item(item, access)) for item in data],
             meta={
                 "total": total,
                 "page": page,

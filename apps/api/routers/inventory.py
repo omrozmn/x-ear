@@ -20,6 +20,8 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Inventory"])
 
+INVENTORY_COST_PERMISSION = "sensitive.inventory.overview.cost.view"
+
 def get_inventory_or_404(db_session: Session, item_id: str, access: UnifiedAccess) -> InventoryItem:
     item = db_session.get(InventoryItem, item_id)
     if not item:
@@ -34,6 +36,13 @@ def get_inventory_or_404(db_session: Session, item_id: str, access: UnifiedAcces
         )
     return item
 
+
+def mask_inventory_item(item: InventoryItem, access: UnifiedAccess) -> InventoryItemRead:
+    payload = InventoryItemRead.model_validate(item).model_dump(by_alias=False)
+    if not access.has_permission(INVENTORY_COST_PERMISSION):
+        payload["cost"] = 0.0
+    return InventoryItemRead.model_validate(payload)
+
 @router.get("/inventory", operation_id="listInventory", response_model=ResponseEnvelope[List[InventoryItemRead]])
 def get_all_inventory(
     page: int = 1,
@@ -44,7 +53,7 @@ def get_all_inventory(
     low_stock: bool = False,
     out_of_stock: bool = False,
     search: Optional[str] = None,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("inventory.view")),
     db: Session = Depends(get_db)
 ):
     """Get all inventory items"""
@@ -83,7 +92,7 @@ def get_all_inventory(
     total_pages = (total + per_page - 1) // per_page
     
     return ResponseEnvelope(
-        data=items,
+        data=[mask_inventory_item(item, access) for item in items],
         meta={
             "total": total,
             "page": page,
@@ -94,7 +103,7 @@ def get_all_inventory(
 
 @router.get("/inventory/stats", operation_id="listInventoryStats", response_model=ResponseEnvelope[InventoryStats])
 def get_inventory_stats(
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("inventory.view")),
     db: Session = Depends(get_db)
 ):
     """Get inventory stats"""
@@ -135,7 +144,7 @@ def advanced_search(
     sortOrder: str = 'asc',
     page: int = 1,
     limit: int = 20,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("inventory.view")),
     db: Session = Depends(get_db)
 ):
     """Advanced product search"""
@@ -209,7 +218,7 @@ def advanced_search(
     
     return ResponseEnvelope(
         data={
-            "items": items,
+            "items": [mask_inventory_item(item, access) for item in items],
             "pagination": {
                 "page": page,
                 "limit": limit,
@@ -236,18 +245,18 @@ def advanced_search(
 
 @router.get("/inventory/low-stock", operation_id="listInventoryLowStock", response_model=ResponseEnvelope[List[InventoryItemRead]])
 def get_low_stock(
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("inventory.view")),
     db: Session = Depends(get_db)
 ):
     """Get low stock items"""
     query = db.query(InventoryItem)
     if access.tenant_id: query = query.filter_by(tenant_id=access.tenant_id)
     items = query.filter(InventoryItem.available_inventory <= InventoryItem.reorder_level).all()
-    return ResponseEnvelope(data=items)
+    return ResponseEnvelope(data=[mask_inventory_item(item, access) for item in items])
 
 @router.get("/inventory/units", operation_id="listInventoryUnits", response_model=ResponseEnvelope[Dict[str, List[str]]])
 def get_units(
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("inventory.view")),
     db: Session = Depends(get_db)
 ):
     """Get available units"""
@@ -257,7 +266,7 @@ def get_units(
 @router.get("/inventory/{item_id}/activity", operation_id="listInventoryActivity", response_model=ResponseEnvelope[List[Dict[str, Any]]])
 def get_inventory_activities(
     item_id: str,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("inventory.view")),
     db: Session = Depends(get_db)
 ):
     """Get inventory item activity log"""
@@ -269,7 +278,7 @@ def get_inventory_activities(
 @router.post("/inventory", operation_id="createInventory", response_model=ResponseEnvelope[InventoryItemRead], status_code=201)
 def create_inventory(
     item_in: InventoryItemCreate,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("inventory.manage")),
     db: Session = Depends(get_db)
 ):
     """Create inventory item"""
@@ -338,7 +347,7 @@ def create_inventory(
             logger.info("[CREATE_INVENTORY] Serials added successfully")
             
         logger.info("[CREATE_INVENTORY] ===== SUCCESS =====")
-        return ResponseEnvelope(data=item)
+        return ResponseEnvelope(data=mask_inventory_item(item, access))
     except Exception as e:
         db.rollback()
         logger.error("[CREATE_INVENTORY] ===== ERROR =====")
@@ -350,7 +359,7 @@ def create_inventory(
 
 @router.get("/inventory/categories", operation_id="listInventoryCategories", response_model=ResponseEnvelope[List[str]])
 def get_inventory_categories(
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("inventory.view")),
     db: Session = Depends(get_db)
 ):
     """Get unique inventory categories"""
@@ -362,7 +371,7 @@ def get_inventory_categories(
 
 @router.get("/inventory/brands", operation_id="listInventoryBrands", response_model=ResponseEnvelope[List[str]])
 def get_inventory_brands(
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("inventory.view")),
     db: Session = Depends(get_db)
 ):
     """Get unique inventory brands"""
@@ -375,18 +384,18 @@ def get_inventory_brands(
 @router.get("/inventory/{item_id}", operation_id="getInventory", response_model=ResponseEnvelope[InventoryItemRead])
 def get_inventory_item(
     item_id: str,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("inventory.view")),
     db: Session = Depends(get_db)
 ):
     """Get item"""
     item = get_inventory_or_404(db, item_id, access)
-    return ResponseEnvelope(data=item)
+    return ResponseEnvelope(data=mask_inventory_item(item, access))
 
 @router.put("/inventory/{item_id}", operation_id="updateInventory", response_model=ResponseEnvelope[InventoryItemRead])
 def update_inventory(
     item_id: str,
     item_in: InventoryItemUpdate,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("inventory.manage")),
     db: Session = Depends(get_db)
 ):
     """Update item"""
@@ -398,12 +407,12 @@ def update_inventory(
             setattr(item, k, v)
             
     db.commit()
-    return ResponseEnvelope(data=item)
+    return ResponseEnvelope(data=mask_inventory_item(item, access))
 
 @router.delete("/inventory/{item_id}", operation_id="deleteInventory")
 def delete_inventory(
     item_id: str,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("inventory.manage")),
     db: Session = Depends(get_db)
 ):
     """Delete item"""
@@ -415,7 +424,7 @@ def delete_inventory(
 @router.post("/inventory/bulk-upload", operation_id="createInventoryBulkUpload", response_model=ResponseEnvelope[Dict[str, Any]])
 async def bulk_upload_inventory(
     file: UploadFile = File(...),
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("inventory.manage")),
     db: Session = Depends(get_db)
 ):
     """Bulk upload inventory items from CSV/XLSX"""
@@ -564,7 +573,7 @@ async def bulk_upload_inventory(
 def add_serials(
     item_id: str,
     payload: Dict[str, List[str]], # manual schema
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("inventory.manage")),
     db: Session = Depends(get_db)
 ):
     """Add serial numbers"""
@@ -589,7 +598,7 @@ def get_movements(
     type: Optional[str] = None,
     page: int = 1,
     limit: int = 20,
-    access: UnifiedAccess = Depends(require_access()),
+    access: UnifiedAccess = Depends(require_access("inventory.view")),
     db: Session = Depends(get_db)
 ):
     """Get movements with patient enrichment (Flask parity)"""
@@ -674,4 +683,3 @@ def get_movements(
             "total": total
         }
     )
-

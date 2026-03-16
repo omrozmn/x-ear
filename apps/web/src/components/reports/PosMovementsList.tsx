@@ -5,6 +5,7 @@ import type { PosMovementItem } from '@/api/generated/schemas';
 interface PosMovementsListProps {
   movements: PosMovementItem[];
   isLoading?: boolean;
+  canViewFinancials?: boolean;
   pagination?: {
     current: number;
     pageSize: number;
@@ -15,7 +16,7 @@ interface PosMovementsListProps {
   };
 }
 
-export function PosMovementsList({ movements, isLoading, pagination }: PosMovementsListProps) {
+export function PosMovementsList({ movements, isLoading, pagination, canViewFinancials = true }: PosMovementsListProps) {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('tr-TR', {
       style: 'currency',
@@ -23,6 +24,10 @@ export function PosMovementsList({ movements, isLoading, pagination }: PosMoveme
       minimumFractionDigits: 0
     }).format(amount);
   };
+
+  const formatProtectedCurrency = (amount: number) => (
+    canViewFinancials ? formatCurrency(amount) : 'Bu rol icin gizli'
+  );
 
   const columns: Column<PosMovementItem>[] = useMemo(() => [
     {
@@ -40,7 +45,7 @@ export function PosMovementsList({ movements, isLoading, pagination }: PosMoveme
       title: 'İşlem ID',
       render: (_, item) => (
         <span className="text-xs font-mono text-gray-500 dark:text-gray-400">
-          {item.posTransactionId || '-'}
+          {canViewFinancials ? (item.posTransactionId || '-') : 'Bu rol icin gizli'}
         </span>
       )
     },
@@ -50,7 +55,7 @@ export function PosMovementsList({ movements, isLoading, pagination }: PosMoveme
       sortable: true,
       render: (_, item) => (
         <span className="text-sm text-gray-900 dark:text-white">
-          {item.patientName || '-'}
+          {canViewFinancials ? (item.patientName || '-') : 'Bu rol icin gizli'}
         </span>
       )
     },
@@ -60,7 +65,7 @@ export function PosMovementsList({ movements, isLoading, pagination }: PosMoveme
       sortable: true,
       render: (_, item) => (
         <span className="text-sm font-medium text-gray-900 dark:text-white">
-          {formatCurrency(item.amount)}
+          {formatProtectedCurrency(item.amount)}
         </span>
       )
     },
@@ -82,7 +87,7 @@ export function PosMovementsList({ movements, isLoading, pagination }: PosMoveme
           <Badge variant={item.status === 'paid' ? 'success' : 'danger'} size="sm">
             {item.status === 'paid' ? 'Başarılı' : 'Başarısız'}
           </Badge>
-          {item.errorMessage && (
+          {canViewFinancials && item.errorMessage && (
             <p className="text-xs text-red-500 mt-1 max-w-[200px] truncate" title={item.errorMessage}>
               {item.errorMessage}
             </p>
@@ -95,7 +100,7 @@ export function PosMovementsList({ movements, isLoading, pagination }: PosMoveme
       title: 'Satış Ref',
       render: (_, item) => (
         <span className="text-xs font-mono text-gray-500 dark:text-gray-400">
-          {item.saleId || '-'}
+          {canViewFinancials ? (item.saleId || '-') : 'Bu rol icin gizli'}
         </span>
       )
     }

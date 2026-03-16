@@ -1,6 +1,7 @@
 import React from 'react';
 import { Input, Select, Card, Checkbox } from '@x-ear/ui-web';
 import { InventoryItem } from '../../../types/inventory';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface PricingInfoSectionProps {
   item: InventoryItem;
@@ -27,6 +28,8 @@ export const PricingInfoSection: React.FC<PricingInfoSectionProps> = ({
   isCostKdvIncluded,
   onCostKdvIncludedChange,
 }) => {
+  const { hasPermission } = usePermissions();
+  const canViewCost = hasPermission('sensitive.inventory.overview.cost.view');
   const currentPrice = isEditMode && editedItem.price !== undefined ? editedItem.price : (item?.price || 0);
   const currentStock = isEditMode && editedItem.availableInventory !== undefined ? editedItem.availableInventory : (item?.availableInventory || 0);
 
@@ -107,6 +110,7 @@ export const PricingInfoSection: React.FC<PricingInfoSectionProps> = ({
             )}
           </div>
 
+          {canViewCost && (
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -170,6 +174,7 @@ export const PricingInfoSection: React.FC<PricingInfoSectionProps> = ({
               </p>
             )}
           </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

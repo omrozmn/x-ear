@@ -4,7 +4,7 @@
  * @version 1.0.0
  */
 
-import type { Party, PartyDevice, PartyNote, PartyCommunication } from './party-base.types';
+import type { Party, PartyDevice, PartyNote, PartyCommunication, SGKInfo, HearingProfile } from './party-base.types';
 import type { PartyRead } from '@/api/generated/schemas';
 
 // Adapter interface for converting between API and UI formats

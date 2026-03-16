@@ -11,8 +11,17 @@ interface SgkScheme {
   max_amount: number;
 }
 
+interface BatterySgkScheme {
+  name: string;
+  label: string;
+  quantity_per_ear: number;
+  coverage_amount: number; // SGK ödeme tutarı (KDV hariç)
+  kdv_rate: number; // KDV oranı (%)
+}
+
 interface SgkSettings {
   schemes: Record<string, Omit<SgkScheme, 'name'>>;
+  battery_schemes?: Record<string, Omit<BatterySgkScheme, 'name'>>;
   discount_before_sgk?: boolean;
   discount_includes_kdv?: boolean;
 }
@@ -27,6 +36,24 @@ const STANDARD_SCHEMES: SgkScheme[] = [
   { name: 'age5_12_parent_retired', coverage_amount: 6782.72, max_amount: 10000 },
   { name: 'age13_18_parent_working', coverage_amount: 5087.04, max_amount: 10000 },
   { name: 'age13_18_parent_retired', coverage_amount: 6358.88, max_amount: 10000 },
+];
+
+// Standard SGK battery schemes
+const STANDARD_BATTERY_SCHEMES: BatterySgkScheme[] = [
+  {
+    name: 'hearing_aid_battery',
+    label: 'İşitme Cihazı Pili',
+    quantity_per_ear: 104,
+    coverage_amount: 790,
+    kdv_rate: 20,
+  },
+  {
+    name: 'implant_battery',
+    label: 'İmplant Pili',
+    quantity_per_ear: 360,
+    coverage_amount: 2300,
+    kdv_rate: 20,
+  },
 ];
 
 const SCHEME_LABELS: Record<string, string> = {
@@ -45,6 +72,7 @@ export default function SgkSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState<SgkSettings>({
     schemes: {},
+    battery_schemes: {},
     discount_before_sgk: false,
     discount_includes_kdv: true,
   });
@@ -52,6 +80,9 @@ export default function SgkSettingsPage() {
     STANDARD_SCHEMES.map(s => ({ ...s }))
   );
   const [customSchemes, setCustomSchemes] = useState<SgkScheme[]>([]);
+  const [batterySchemes, setBatterySchemes] = useState<BatterySgkScheme[]>(
+    STANDARD_BATTERY_SCHEMES.map(s => ({ ...s }))
+  );
 
   useEffect(() => {
     loadSettings();
@@ -69,13 +100,14 @@ export default function SgkSettingsPage() {
       if (sgkSettings) {
         setSettings({
           schemes: sgkSettings.schemes || {},
+          battery_schemes: sgkSettings.battery_schemes || {},
           discount_before_sgk: sgkSettings.discount_before_sgk ?? false,
           discount_includes_kdv: sgkSettings.discount_includes_kdv ?? true,
         });
-        
+
         const storedSchemes = sgkSettings.schemes || {};
         const standardNames = new Set(STANDARD_SCHEMES.map(s => s.name));
-        
+
         // Update standard schemes with stored amounts (if any)
         setStandardSchemes(STANDARD_SCHEMES.map(s => {
           const stored = storedSchemes[s.name];
@@ -83,7 +115,7 @@ export default function SgkSettingsPage() {
             ? { name: s.name, coverage_amount: stored.coverage_amount, max_amount: stored.max_amount }
             : { ...s };
         }));
-        
+
         // Extract custom schemes (not in standard list)
         const custom: SgkScheme[] = [];
         Object.entries(storedSchemes).forEach(([name, config]) => {
@@ -92,6 +124,15 @@ export default function SgkSettingsPage() {
           }
         });
         setCustomSchemes(custom);
+
+        // Update battery schemes with stored values (if any)
+        const storedBatterySchemes = sgkSettings.battery_schemes || {};
+        setBatterySchemes(STANDARD_BATTERY_SCHEMES.map(s => {
+          const stored = storedBatterySchemes[s.name];
+          return stored
+            ? { name: s.name, label: stored.label || s.label, quantity_per_ear: stored.quantity_per_ear ?? s.quantity_per_ear, coverage_amount: stored.coverage_amount ?? s.coverage_amount, kdv_rate: stored.kdv_rate ?? s.kdv_rate }
+            : { ...s };
+        }));
       }
     } catch (error) {
       toast.error('SGK ayarları yüklenemedi: ' + extractErrorMessage(error));
@@ -121,9 +162,21 @@ export default function SgkSettingsPage() {
         };
       });
 
+      // Merge battery schemes
+      const allBatterySchemes: Record<string, Omit<BatterySgkScheme, 'name'>> = {};
+      batterySchemes.forEach(scheme => {
+        allBatterySchemes[scheme.name] = {
+          label: scheme.label,
+          quantity_per_ear: scheme.quantity_per_ear,
+          coverage_amount: scheme.coverage_amount,
+          kdv_rate: scheme.kdv_rate,
+        };
+      });
+
       const payload = {
         sgk: {
           schemes: allSchemes,
+          battery_schemes: allBatterySchemes,
           discount_before_sgk: settings.discount_before_sgk ?? false,
           discount_includes_kdv: settings.discount_includes_kdv ?? true,
         },
@@ -287,6 +340,88 @@ export default function SgkSettingsPage() {
                   onChange={(e) => updateStandardScheme('coverage_amount', scheme.name, parseFloat(e.target.value) || 0)}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Battery SGK Schemes */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+          Pil SGK Şemaları
+        </h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          Raporlu pil satışlarında SGK&apos;nın kulak başına ödediği tutarları ve adetleri ayarlayın
+        </p>
+        <div className="space-y-4">
+          {batterySchemes.map((scheme) => (
+            <div key={scheme.name} className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl">
+              <div className="font-medium text-gray-900 dark:text-white mb-3">
+                {scheme.label}
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Kulak Başına Adet
+                  </label>
+                  <input
+                    data-allow-raw="true"
+                    type="number"
+                    min="1"
+                    value={scheme.quantity_per_ear}
+                    onFocus={(e) => e.target.select()}
+                    onChange={(e) => {
+                      setBatterySchemes(prev => prev.map(s =>
+                        s.name === scheme.name ? { ...s, quantity_per_ear: parseInt(e.target.value) || 0 } : s
+                      ));
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    SGK Ödeme Tutarı (₺, KDV Hariç)
+                  </label>
+                  <input
+                    data-allow-raw="true"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={scheme.coverage_amount}
+                    onFocus={(e) => e.target.select()}
+                    onChange={(e) => {
+                      setBatterySchemes(prev => prev.map(s =>
+                        s.name === scheme.name ? { ...s, coverage_amount: parseFloat(e.target.value) || 0 } : s
+                      ));
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    KDV Oranı (%)
+                  </label>
+                  <input
+                    data-allow-raw="true"
+                    type="number"
+                    step="1"
+                    min="0"
+                    max="100"
+                    value={scheme.kdv_rate}
+                    onFocus={(e) => e.target.select()}
+                    onChange={(e) => {
+                      setBatterySchemes(prev => prev.map(s =>
+                        s.name === scheme.name ? { ...s, kdv_rate: parseFloat(e.target.value) || 0 } : s
+                      ));
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+              </div>
+              <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                KDV Dahil Toplam: ₺{(scheme.coverage_amount * (1 + scheme.kdv_rate / 100)).toFixed(2)} / kulak
+                {' '}| Bilateral: ₺{(scheme.coverage_amount * (1 + scheme.kdv_rate / 100) * 2).toFixed(2)}
               </div>
             </div>
           ))}

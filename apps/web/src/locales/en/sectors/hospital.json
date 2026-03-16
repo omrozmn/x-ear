@@ -1,0 +1,10 @@
+{
+  "party": "Patient",
+  "parties": "Patients",
+  "party_detail": "Patient Detail",
+  "new_party": "New Patient",
+  "device": "Medical Device",
+  "devices": "Medical Devices",
+  "app_title": "Hospital Management System",
+  "party_settings": "Patient Settings"
+}

@@ -148,15 +148,21 @@ export async function simulateActionExecution(
  */
 async function waitForSlot(
     store: ReturnType<typeof useComposerStore.getState>,
-    slotName: string
+    slotName: string,
+    timeoutMs: number = 120_000,
 ): Promise<unknown> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         const check = setInterval(() => {
             const currentSlots = useComposerStore.getState().slots;
             if (currentSlots[slotName]) {
                 clearInterval(check);
+                clearTimeout(timeout);
                 resolve(currentSlots[slotName]);
             }
         }, 200);
+        const timeout = setTimeout(() => {
+            clearInterval(check);
+            reject(new Error(`Slot "${slotName}" was not filled within ${timeoutMs / 1000}s`));
+        }, timeoutMs);
     });
 }

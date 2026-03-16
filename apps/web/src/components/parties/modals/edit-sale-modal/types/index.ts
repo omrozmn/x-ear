@@ -69,6 +69,8 @@ export interface SaleFormData {
   deliveryDate: string;
   deliveryStatus: string;
   reportStatus: string;
+  batteryReportQuantity?: 'per_ear' | 'bilateral';
+  inventoryId?: string;
 }
 
 export interface EditSaleState {

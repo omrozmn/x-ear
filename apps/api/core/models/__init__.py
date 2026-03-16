@@ -3,6 +3,7 @@ from .base import db, Base, BaseModel, JSONMixin, gen_sale_id, gen_id, now_utc
 
 # Core models
 from .tenant import Tenant
+from .country import Country
 from .user import User, ActivityLog
 from .role import Role
 from .permission import Permission

@@ -13,6 +13,7 @@ import type { PaymentRecordReadCreatedAt } from './paymentRecordReadCreatedAt';
 import type { PaymentRecordReadUpdatedAt } from './paymentRecordReadUpdatedAt';
 import type { PaymentRecordReadSaleId } from './paymentRecordReadSaleId';
 import type { PaymentRecordReadPartyId } from './paymentRecordReadPartyId';
+import type { PaymentRecordReadPartyName } from './paymentRecordReadPartyName';
 
 export interface PaymentRecordRead {
   amount: number;
@@ -32,4 +33,5 @@ export interface PaymentRecordRead {
   id: string;
   saleId?: PaymentRecordReadSaleId;
   partyId?: PaymentRecordReadPartyId;
+  partyName?: PaymentRecordReadPartyName;
 }

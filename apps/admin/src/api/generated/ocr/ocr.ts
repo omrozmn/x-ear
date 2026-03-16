@@ -25,6 +25,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  BodyExtractAudiogramThresholds,
   BodyUploadOcrDocument,
   CreateJobRequest,
   DebugNERRequest,
@@ -33,6 +34,7 @@ import type {
   ListOcrJobsParams,
   OcrProcessRequest,
   PatientExtractionRequest,
+  ResponseEnvelopeAudiogramThresholdResponse,
   ResponseEnvelopeListOcrJobRead,
   ResponseEnvelopeOcrDebugResponse,
   ResponseEnvelopeOcrEntitiesResponse,
@@ -913,3 +915,72 @@ export function useGetOcrJob<TData = Awaited<ReturnType<typeof getOcrJob>>, TErr
 
 
 
+/**
+ * Extract hearing thresholds from an audiogram image.
+Detects red (right ear) and blue (left ear) markers at standard frequencies.
+ * @summary Extract Audiogram
+ */
+export const extractAudiogramThresholds = (
+    bodyExtractAudiogramThresholds: BodyExtractAudiogramThresholds,
+ signal?: AbortSignal
+) => {
+      
+      const formData = new FormData();
+formData.append(`file`, bodyExtractAudiogramThresholds.file)
+
+      return adminApi<ResponseEnvelopeAudiogramThresholdResponse>(
+      {url: `/api/ocr/audiogram`, method: 'POST',
+      headers: {'Content-Type': 'multipart/form-data', },
+       data: formData, signal
+    },
+      );
+    }
+  
+
+
+export const getExtractAudiogramThresholdsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractAudiogramThresholds>>, TError,{data: BodyExtractAudiogramThresholds}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof extractAudiogramThresholds>>, TError,{data: BodyExtractAudiogramThresholds}, TContext> => {
+
+const mutationKey = ['extractAudiogramThresholds'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof extractAudiogramThresholds>>, {data: BodyExtractAudiogramThresholds}> = (props) => {
+          const {data} = props ?? {};
+
+          return  extractAudiogramThresholds(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ExtractAudiogramThresholdsMutationResult = NonNullable<Awaited<ReturnType<typeof extractAudiogramThresholds>>>
+    export type ExtractAudiogramThresholdsMutationBody = BodyExtractAudiogramThresholds
+    export type ExtractAudiogramThresholdsMutationError = HTTPValidationError
+
+    /**
+ * @summary Extract Audiogram
+ */
+export const useExtractAudiogramThresholds = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractAudiogramThresholds>>, TError,{data: BodyExtractAudiogramThresholds}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof extractAudiogramThresholds>>,
+        TError,
+        {data: BodyExtractAudiogramThresholds},
+        TContext
+      > => {
+
+      const mutationOptions = getExtractAudiogramThresholdsMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    

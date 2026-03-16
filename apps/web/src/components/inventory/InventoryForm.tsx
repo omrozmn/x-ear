@@ -45,6 +45,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
     stockCode: '',
     supplier: '',
     unit: 'adet',
+    packageQuantity: undefined,
     description: '',
     availableInventory: 0,
     reorderLevel: 5,
@@ -99,6 +100,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
         stockCode: item.stockCode || '',
         supplier: item.supplier || '',
         unit: item.unit || 'adet',
+        packageQuantity: item.packageQuantity,
         description: item.description || '',
         availableInventory: item.availableInventory,
         reorderLevel: item.reorderLevel,
@@ -617,6 +619,26 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
               className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
+
+          {/* Package Quantity - Only shown when unit is 'paket' */}
+          {formData.unit === 'paket' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Paket İçi Adet
+              </label>
+              <Input
+                type="number"
+                min="1"
+                value={formData.packageQuantity || ''}
+                onChange={(e) => handleInputChange('packageQuantity', e.target.value === '' ? undefined : parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Örn: 6"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Her pakette kaç adet ürün var?
+              </p>
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">

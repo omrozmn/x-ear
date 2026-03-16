@@ -168,7 +168,7 @@ def _build_device_info_from_assignment(db: Session, assignment: DeviceAssignment
             serial_number_right = serial_number_right or assignment.serial_number_right or main_serial
     
     # CRITICAL: Return ALL fields from assignment for consistency across endpoints
-    return {
+    result = {
         # CORRECT ID - assignment ID, not device/inventory ID!
         'id': assignment.id,
         'saleId': assignment.sale_id,
@@ -243,14 +243,14 @@ def _build_device_info_from_assignment(db: Session, assignment: DeviceAssignment
         
         # Backwards-compatible keys for frontend
         'sgkReduction': float(assignment.sgk_support) if assignment.sgk_support else 0.0,
-        'patientPayment': float(assignment.net_payable) if assignment.net_payable else None,
+        'patientPayment': float(assignment.net_payable) if assignment.net_payable else 0.0,
         'sgkCoverageAmount': float(assignment.sgk_support) if assignment.sgk_support else 0.0,
-        'patientResponsibleAmount': float(assignment.net_payable) if assignment.net_payable else None,
+        'patientResponsibleAmount': float(assignment.net_payable) if assignment.net_payable else 0.0,
         'kdvRate': float(inventory_kdv_rate) if inventory_kdv_rate is not None else None,
     }
-    
+
     logger.info(f"Built device info: brand={result.get('brand')}, deviceName={result.get('deviceName')}, keys_count={len(result)}")
-    return result
+    return result  # noqa: RET504
 
 def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
     """Build complete sale data with all enrichments - Flask parity."""
@@ -271,10 +271,10 @@ def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
         # Manual dict construction instead of to_dict serialization
         payment_plan_data = {
             'id': payment_plan.id,
+            'saleId': payment_plan.sale_id,
             'planName': payment_plan.plan_name,
             'totalAmount': float(payment_plan.total_amount) if payment_plan.total_amount else 0.0,
             'installmentCount': payment_plan.installment_count,
-            'installments': payment_plan.installment_count, # Alias
             'installmentAmount': float(payment_plan.installment_amount) if payment_plan.installment_amount else None,
             'status': payment_plan.status,
             'startDate': payment_plan.start_date.isoformat() if payment_plan.start_date else None
@@ -309,7 +309,7 @@ def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
             'purchaseInvoiceId': purchase_inv.id if purchase_inv else None,
             'invoiceNumber': invoice.invoice_number,
             'status': invoice.status,
-            'invoiceDate': invoice.invoice_date.isoformat() if invoice.invoice_date else None
+            'invoiceDate': invoice.issue_date.isoformat() if invoice.issue_date else None
         }
     
     # Calculate SGK coverage (recalc if zero)
@@ -360,7 +360,7 @@ def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
     # ✅ UPDATED: Use stored values from database instead of recalculating
     # The update_sale function already calculates and stores these values correctly
     discount_type = getattr(sale, 'discount_type', None) or 'none'
-    discount_value = float(getattr(sale, 'discount_value', 0)) if hasattr(sale, 'discount_value') else 0.0
+    discount_value = float(getattr(sale, 'discount_value', None) or 0)
     discount_amount = float(sale.discount_amount) if sale.discount_amount else 0.0
     
     # NOTE: total_sgk_coverage is already correctly calculated above by summing
@@ -383,6 +383,7 @@ def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
         'id': sale.id,
         'partyId': sale.party_id,
         'productId': sale.product_id,
+        'salesOwnerUserId': sale.sales_owner_user_id,
         'branchId': sale.branch_id,
         'saleDate': sale.sale_date.isoformat() if sale.sale_date else None,
         'listPriceTotal': unit_list_price,  # Keep as unit price for backwards compatibility
@@ -446,6 +447,19 @@ def _build_full_sale_data(db: Session, sale: Sale) -> Dict[str, Any]:
 
 # ============= READ ENDPOINTS =============
 
+SALES_AMOUNT_PERMISSION = "sensitive.sales.list.amounts.view"
+
+
+def _mask_sale_financials(data: dict, access: UnifiedAccess) -> dict:
+    if access.has_permission(SALES_AMOUNT_PERMISSION):
+        return data
+
+    masked = dict(data)
+    for key in ("totalAmount", "finalAmount", "paidAmount", "remainingAmount"):
+        if key in masked:
+            masked[key] = 0.0
+    return masked
+
 @router.get("/sales", operation_id="listSales", response_model=ResponseEnvelope[List[SaleRead]])
 def get_sales(
     page: int = Query(1, ge=1, le=1000000),
@@ -453,7 +467,7 @@ def get_sales(
     search: Optional[str] = None,
     include_details: bool = Query(True, description="Include full sale details (devices, payments, invoice)"),
     db: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_access())
+    access: UnifiedAccess = Depends(require_access("sales.view"))
 ):
     """Get all sales with tenant scoping and optional full details."""
     query = db.query(Sale)
@@ -535,10 +549,15 @@ def get_sales(
                 # but for the `else` block (basic view):
                 sale_data = sale
                 
-            results.append(sale_data)
+            if isinstance(sale_data, dict):
+                results.append(_mask_sale_financials(sale_data, access))
+            else:
+                validated = SaleRead.model_validate(sale_data).model_dump(mode="json", by_alias=True)
+                results.append(_mask_sale_financials(validated, access))
         except Exception as e:
             logger.warning(f"Error building sale data for {sale.id}: {e}")
-            results.append(sale)
+            validated = SaleRead.model_validate(sale).model_dump(mode="json", by_alias=True)
+            results.append(_mask_sale_financials(validated, access))
 
     return ResponseEnvelope(
         data=results,
@@ -555,7 +574,7 @@ def get_sales(
 def get_sale(
     sale_id: str,
     db: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_access())
+    access: UnifiedAccess = Depends(require_access("sales.view"))
 ):
     """Get a single sale with full details - Flask parity."""
     sale = get_sale_or_404(db, sale_id, access)
@@ -573,12 +592,17 @@ def get_sale(
             'id': sale.id,
             'partyId': sale.party_id,
             'productId': sale.product_id,
+            'salesOwnerUserId': sale.sales_owner_user_id,
             'status': sale.status,
             'totalAmount': float(sale.total_amount) if sale.total_amount else 0.0,
             'error': 'Failed to load full details'
         }
     
-    return ResponseEnvelope(data=sale_data)
+    if isinstance(sale_data, dict):
+        return ResponseEnvelope(data=_mask_sale_financials(sale_data, access))
+
+    validated = SaleRead.model_validate(sale_data).model_dump(mode="json", by_alias=True)
+    return ResponseEnvelope(data=_mask_sale_financials(validated, access))
 
 # Note: /patients/{patient_id}/sales endpoint moved to patients.py to avoid duplication
 
@@ -588,10 +612,10 @@ def get_sale(
 def get_sale_payments(
     sale_id: str,
     db: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_access())
+    access: UnifiedAccess = Depends(require_access("sales.view"))
 ):
     sale = get_sale_or_404(db, sale_id, access)
-    
+
     payments = db.query(PaymentRecord).filter(PaymentRecord.sale_id == sale_id).order_by(desc(PaymentRecord.payment_date)).all()
     
     payment_data = []
@@ -633,7 +657,7 @@ def record_sale_payment(
     sale_id: str,
     payment_in: PaymentRecordCreate,
     db: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_access())
+    access: UnifiedAccess = Depends(require_access("sales.create"))
 ):
     access.require_permission("sales:write") # Assume write permission
     
@@ -716,7 +740,7 @@ def record_sale_payment(
 def get_sale_payment_plan(
     sale_id: str,
     db: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_access())
+    access: UnifiedAccess = Depends(require_access("sales.view"))
 ):
     sale = get_sale_or_404(db, sale_id, access)
     plans = db.query(PaymentPlan).filter_by(sale_id=sale_id).all()
@@ -757,7 +781,7 @@ def create_sale_payment_plan(
     sale_id: str,
     request_data: PaymentPlanCreate,
     db: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_access())
+    access: UnifiedAccess = Depends(require_access("sales.create"))
 ):
     """Create payment plan for a sale - Flask parity"""
     access.require_permission("sale:write")
@@ -835,7 +859,7 @@ def pay_installment(
     installment_id: str,
     request_data: InstallmentPayment,
     db: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_access())
+    access: UnifiedAccess = Depends(require_access("sales.create"))
 ):
     """Pay a specific installment - Flask parity"""
     access.require_permission("sale:write")
@@ -998,7 +1022,7 @@ def create_sale(
     sale_in: SaleCreate,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_access())
+    access: UnifiedAccess = Depends(require_access("sales.create"))
 ):
     """Create a new sale."""
     from core.tenant_utils import get_effective_tenant_id
@@ -1079,6 +1103,7 @@ def create_sale(
         branch_id=access.branch_id, # If applicable
         party_id=sale_in.party_id,
         product_id=sale_in.product_id,
+        sales_owner_user_id=sale_in.sales_owner_user_id or getattr(access, 'user_id', None),
         sale_date=sale_in.sale_date or datetime.utcnow(),
         list_price_total=base_price,
         total_amount=base_price,
@@ -1278,20 +1303,21 @@ def create_sale(
         
         logger.info(f"✅ Created single ear sale: 1 assignment ({ear_side}) for sale {sale.id}, SGK: {sgk_per_ear}")
     
-    # 6. Create Payment Record if down_payment provided
-    if sale_in.down_payment and sale_in.down_payment > 0:
+    # 6. Create Payment Record for the actually collected amount
+    if paid_amt > 0:
         from core.models.sales import PaymentRecord
-        
+
+        payment_type = 'down_payment' if paid_amt < float(sale.final_amount or 0) else 'payment'
         payment = PaymentRecord(
             id=f"payment_{uuid4().hex[:8]}",
             tenant_id=tenant_id,
             party_id=sale.party_id,
             sale_id=sale.id,
-            amount=Decimal(str(sale_in.down_payment)),
+            amount=Decimal(str(paid_amt)),
             payment_method=sale_in.payment_method or 'cash',
-            payment_type='down_payment',
+            payment_type=payment_type,
             status='paid',
-            notes="Ön ödeme (satış oluşturma sırasında)",
+            notes="Satış tahsilatı (satış oluşturma sırasında)",
             payment_date=sale_in.sale_date or datetime.utcnow(),
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow()
@@ -1333,6 +1359,7 @@ def create_sale(
             "id": sale.id,
             "partyId": sale.party_id,
             "productId": sale.product_id,
+            "salesOwnerUserId": sale.sales_owner_user_id,
             "status": sale.status,
             "totalAmount": float(sale.total_amount) if sale.total_amount else 0.0,
             "finalAmount": float(sale.final_amount) if sale.final_amount else 0.0,
@@ -1349,7 +1376,7 @@ def update_sale(
     sale_id: str,
     sale_in: SaleUpdate,
     db: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_access())
+    access: UnifiedAccess = Depends(require_access("sales.edit"))
 ):
     access.require_permission("sale:write")
     
@@ -1370,6 +1397,8 @@ def update_sale(
         sale.final_amount = Decimal(str(sale_in.final_amount))
     if sale_in.paid_amount is not None: 
         sale.paid_amount = Decimal(str(sale_in.paid_amount))
+    if sale_in.sales_owner_user_id is not None:
+        sale.sales_owner_user_id = sale_in.sales_owner_user_id
     
     # ✅ UPDATED: Handle new discount fields (Fix #2 - Backend Calculation)
     if sale_in.discount_type is not None:
@@ -1715,7 +1744,7 @@ def update_sale(
 def recalc_sales(
     payload: SaleRecalcRequest,
     db: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_access())
+    access: UnifiedAccess = Depends(require_access("sales.edit"))
 ):
     """Recalculate SGK and patient payment amounts for sales."""
     from services.pricing import calculate_device_pricing
@@ -2048,7 +2077,7 @@ def create_device_assignments(
     party_id: str,
     data: DeviceAssignmentCreate,
     db: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_access())
+    access: UnifiedAccess = Depends(require_access("sales.create"))
 ):
     """
     Assign devices to a party with sale record creation.
@@ -2280,7 +2309,7 @@ def create_device_assignments(
 def get_device_assignment(
     assignment_id: str,
     db: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_access())
+    access: UnifiedAccess = Depends(require_access("sales.view"))
 ):
     """Get a single device assignment with full details."""
     assignment = db.get(DeviceAssignment, assignment_id)
@@ -2310,7 +2339,7 @@ def update_device_assignment(
     assignment_id: str,
     updates: DeviceAssignmentUpdate,
     db: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_access())
+    access: UnifiedAccess = Depends(require_access("sales.edit"))
 ):
     """
     Update a device assignment with full legacy logic:
@@ -2826,7 +2855,7 @@ def update_device_assignment(
 def return_loaner_to_stock(
     assignment_id: str,
     db: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_access())
+    access: UnifiedAccess = Depends(require_access("sales.edit"))
 ):
     """Return a loaner device to stock."""
     from services.stock_service import create_stock_movement
@@ -2915,7 +2944,7 @@ def return_loaner_to_stock(
 def pricing_preview(
     data: DeviceAssignmentCreate,
     db: Session = Depends(get_db),
-    access: UnifiedAccess = Depends(require_access())
+    access: UnifiedAccess = Depends(require_access("sales.view"))
 ):
     """Preview pricing calculation without creating records."""
     from services.pricing import calculate_device_pricing

@@ -18,6 +18,7 @@ page?: number;
  */
 per_page?: number;
 status?: string | null;
+branch_id?: string | null;
 startDate?: string | null;
 endDate?: string | null;
 search?: string | null;

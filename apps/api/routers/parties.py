@@ -31,6 +31,43 @@ router = APIRouter(tags=["Parties"])
 
 # --- HELPERS ---
 
+PATIENT_DETAIL_SENSITIVE_PERMISSION_MAP = {
+    "phone": "sensitive.parties.detail.contact.view",
+    "email": "sensitive.parties.detail.contact.view",
+    "tc_number": "sensitive.parties.detail.identity.view",
+    "identity_number": "sensitive.parties.detail.identity.view",
+    "sgk_info": "sensitive.parties.detail.sgk.view",
+}
+
+PATIENT_LIST_SENSITIVE_PERMISSION_MAP = {
+    "phone": "sensitive.parties.list.contact.view",
+    "email": "sensitive.parties.list.contact.view",
+    "tc_number": "sensitive.parties.list.identity.view",
+}
+
+
+def _mask_party_detail_response(patient: Party | dict, access: UnifiedAccess) -> PartyRead:
+    payload = PartyRead.model_validate(patient).model_dump(by_alias=False)
+
+    for field_name, permission_name in PATIENT_DETAIL_SENSITIVE_PERMISSION_MAP.items():
+        if not access.has_permission(permission_name):
+            payload[field_name] = {} if field_name == "sgk_info" else None
+
+    return PartyRead.model_validate(payload)
+
+
+def _mask_party_list_response(patients: list[Party], access: UnifiedAccess) -> list[PartyRead]:
+    masked_items: list[PartyRead] = []
+
+    for patient in patients:
+        payload = PartyRead.model_validate(patient).model_dump(by_alias=False)
+        for field_name, permission_name in PATIENT_LIST_SENSITIVE_PERMISSION_MAP.items():
+            if not access.has_permission(permission_name):
+                payload[field_name] = None
+        masked_items.append(PartyRead.model_validate(payload))
+
+    return masked_items
+
 
 
 # --- ROUTES ---
@@ -85,7 +122,7 @@ def list_parties(
             total_pages = (total + per_page - 1) // per_page
             
         return ResponseEnvelope(
-            data=items,
+            data=_mask_party_list_response(items, access),
             meta={
                 "total": total,
                 "page": page,
@@ -295,7 +332,7 @@ def get_party(
     service = PartyService(db)
     # Service raises 404 if not found or tenant mismatch
     patient = service.get_party(party_id, access.tenant_id)
-    return ResponseEnvelope(data=patient)
+    return ResponseEnvelope(data=_mask_party_detail_response(patient, access))
 
 @router.put("/parties/{party_id}", operation_id="updateParty", response_model=ResponseEnvelope[PartyRead])
 def update_party(

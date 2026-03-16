@@ -5,8 +5,9 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
+import type { OcrSimilarityResponseResult } from './ocrSimilarityResponseResult';
 
 export interface OcrSimilarityResponse {
-  result: number;
+  result: OcrSimilarityResponseResult;
   timestamp: string;
 }

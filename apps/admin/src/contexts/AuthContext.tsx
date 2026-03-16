@@ -145,6 +145,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     }, [isAuthenticated, silentRefresh]);
 
+    // Cross-tab auth synchronization via storage event
+    useEffect(() => {
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === 'admin_token') {
+                if (!e.newValue) {
+                    // Token removed in another tab - logout
+                    window.location.replace('/login');
+                } else if (!e.oldValue && e.newValue) {
+                    // Token added in another tab - reload to pick up new auth state
+                    window.location.reload();
+                }
+            }
+        };
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, []);
+
     const login = async (credentials: LoginCredentials & { mfa_token?: string }): Promise<LoginResult> => {
         try {
             const response = await adminLogin({ data: credentials });

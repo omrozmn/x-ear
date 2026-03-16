@@ -31,6 +31,7 @@ import type {
   HTTPValidationError,
   ListAffiliateListParams,
   ListAffiliateLookupParams,
+  ResponseEnvelopeAffiliateDetailRead,
   ResponseEnvelopeAffiliateRead,
   ResponseEnvelopeListAffiliateRead,
   ResponseEnvelopeListCommissionRead
@@ -522,7 +523,7 @@ export const listAffiliateDetails = (
 ) => {
       
       
-      return adminApi<ResponseEnvelopeAffiliateRead>(
+      return adminApi<ResponseEnvelopeAffiliateDetailRead>(
       {url: `/api/affiliates/${affiliateId}/details`, method: 'GET', signal
     },
       );

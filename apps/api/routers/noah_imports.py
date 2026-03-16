@@ -39,7 +39,10 @@ from services.noah_import_service import NoahImportService
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/noah-import", tags=["Noah Import"])
+from middleware.require_module import require_module
+from fastapi import Depends as _Depends
+
+router = APIRouter(prefix="/noah-import", tags=["Noah Import"], dependencies=[_Depends(require_module("noah"))])
 
 
 # ────────────────────────────────────────────────────────────

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { z } from 'zod';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   Search,
@@ -28,6 +29,8 @@ import { TenantAutocomplete } from '@/components/ui/TenantAutocomplete';
 import type { SchemasUsersUserCreate } from '@/api/generated/schemas';
 import { useAdminResponsive } from '@/hooks';
 import { ResponsiveTable } from '@/components/responsive';
+import { PermissionGate } from '@/hooks/PermissionGate';
+import { AdminPermissions } from '@/types';
 
 // Local type definitions to handle the mix of generated types and manual needs
 const AdminUserRoleValues = ['super_admin', 'admin', 'support', 'tenant_admin', 'user', 'doctor', 'secretary'] as const;
@@ -54,10 +57,6 @@ interface UsersResponseData {
   pagination?: PaginationMeta;
 }
 
-interface UsersResponseShape extends UsersResponseData {
-  data?: UsersResponseData;
-}
-
 interface ApiErrorPayload {
   response?: {
     data?: {
@@ -77,11 +76,9 @@ function extractUsersResponse(value: unknown): UsersResponseData {
     return { users: [] };
   }
 
-  const response = value as unknown as UsersResponseShape;
-  return {
-    users: response.users ?? response.data?.users ?? [],
-    pagination: response.pagination ?? response.data?.pagination,
-  };
+  const users = Array.isArray(value.users) ? value.users : [];
+  const pagination = isRecord(value.pagination) ? value.pagination as unknown as PaginationMeta : undefined;
+  return { users, pagination };
 }
 
 function isApiError(error: unknown): error is ApiErrorPayload {
@@ -126,6 +123,22 @@ function getUserTenantName(user: ExtendedUser): string {
 function getUserIsActive(user: ExtendedUser): boolean {
   return user.isActive ?? user.is_active ?? false;
 }
+
+const userCreateSchema = z.object({
+  email: z.string().min(1, 'E-posta gerekli').email('Gecerli bir e-posta girin'),
+  first_name: z.string().min(1, 'Isim gerekli'),
+  last_name: z.string().min(1, 'Soyisim gerekli'),
+  password: z.string().min(6, 'Sifre en az 6 karakter olmali'),
+  role: z.enum(AdminUserRoleValues, { errorMap: () => ({ message: 'Gecerli bir rol secin' }) }),
+});
+
+const userUpdateSchema = z.object({
+  email: z.string().min(1, 'E-posta gerekli').email('Gecerli bir e-posta girin'),
+  first_name: z.string().min(1, 'Isim gerekli'),
+  last_name: z.string().min(1, 'Soyisim gerekli'),
+  password: z.string().min(6, 'Sifre en az 6 karakter olmali').or(z.literal('')),
+  role: z.enum(AdminUserRoleValues, { errorMap: () => ({ message: 'Gecerli bir rol secin' }) }),
+});
 
 function getInitialFormData(userType: UserType, role: AdminUserRole): UserFormData {
   return {
@@ -251,6 +264,13 @@ export const Users: React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
+    const validation = userCreateSchema.safeParse(formData);
+    if (!validation.success) {
+      toast.error(validation.error.errors[0].message);
+      setIsSubmitting(false);
+      return;
+    }
+
     if (formData.user_type === 'tenant' && !formData.tenant_id) {
       toast.error('Lütfen bir abone seçin');
       setIsSubmitting(false);
@@ -288,6 +308,13 @@ export const Users: React.FC = () => {
     e.preventDefault();
     if (!selectedUser?.id) return;
     setIsSubmitting(true);
+
+    const validation = userUpdateSchema.safeParse(formData);
+    if (!validation.success) {
+      toast.error(validation.error.errors[0].message);
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       const payload: UpdateAdminUserAllPayload = {
@@ -462,20 +489,22 @@ export const Users: React.FC = () => {
             >
               <Eye className="h-4 w-4" />
             </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); handleEditClick(user); }}
-              className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-1 touch-feedback"
-              title="Düzenle"
-            >
-              <Edit className="h-4 w-4" />
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); handleStatusToggleClick(user); }}
-              className={`${isActive ? 'text-red-600 hover:text-red-900 dark:text-red-400' : 'text-green-600 hover:text-green-900 dark:text-green-400'} p-1 touch-feedback`}
-              title={isActive ? 'Pasife Al' : 'Aktifleştir'}
-            >
-              <RefreshCw className="h-4 w-4" />
-            </button>
+            <PermissionGate permission={AdminPermissions.USERS_MANAGE}>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleEditClick(user); }}
+                className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-1 touch-feedback"
+                title="Düzenle"
+              >
+                <Edit className="h-4 w-4" />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleStatusToggleClick(user); }}
+                className={`${isActive ? 'text-red-600 hover:text-red-900 dark:text-red-400' : 'text-green-600 hover:text-green-900 dark:text-green-400'} p-1 touch-feedback`}
+                title={isActive ? 'Pasife Al' : 'Aktifleştir'}
+              >
+                <RefreshCw className="h-4 w-4" />
+              </button>
+            </PermissionGate>
           </div>
         );
       }
@@ -501,13 +530,15 @@ export const Users: React.FC = () => {
             Sistem yöneticilerini ve abone kullanıcılarını buradan yönetebilirsiniz.
           </p>
         </div>
-        <button
-          onClick={handleAddClick}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white premium-gradient tactile-press focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 touch-feedback"
-        >
-          <UserPlus className="-ml-1 mr-2 h-5 w-5" />
-          Kullanıcı Ekle
-        </button>
+        <PermissionGate permission={AdminPermissions.USERS_MANAGE}>
+          <button
+            onClick={handleAddClick}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white premium-gradient tactile-press focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 touch-feedback"
+          >
+            <UserPlus className="-ml-1 mr-2 h-5 w-5" />
+            Kullanıcı Ekle
+          </button>
+        </PermissionGate>
       </div>
 
       <Tabs.Root value={activeTab} onValueChange={setActiveTab}>

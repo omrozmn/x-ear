@@ -6,6 +6,7 @@ import { MagneticButton } from "@/components/ui/MagneticButton";
 import { SentientDemo } from "@/components/ui/SentientDemo";
 import { FeatureCards } from "@/components/ui/FeatureCards";
 import { InteractiveRoi } from "@/components/ui/InteractiveRoi";
+import { SectorCards } from "@/components/ui/SectorCards";
 import { PainPoints } from "@/components/ui/PainPoints";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -58,6 +59,9 @@ function HomeContent() {
             </div>
           </div>
         </section>
+
+        {/* Sector showcase */}
+        <SectorCards />
 
         <PainPoints />
 
