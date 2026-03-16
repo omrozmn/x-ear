@@ -67,7 +67,7 @@ def create_session(
         allowed_formats=body.allowed_formats,
     )
     return ResponseEnvelope.create_success(
-        data=session.to_dict(),
+        data=ImportSessionRead.model_validate(session).model_dump(by_alias=True),
         message="İçe aktarım oturumu oluşturuldu",
     )
 
@@ -88,7 +88,7 @@ def get_session(
         raise HTTPException(status_code=404, detail="Oturum bulunamadı")
     if access.tenant_id and session.tenant_id != access.tenant_id:
         raise HTTPException(status_code=403, detail="Yetkisiz erişim")
-    return ResponseEnvelope.create_success(data=session.to_dict())
+    return ResponseEnvelope.create_success(data=ImportSessionRead.model_validate(session).model_dump(by_alias=True))
 
 
 @router.get(
@@ -110,7 +110,7 @@ def list_sessions(
     )
     total_pages = (total + per_page - 1) // per_page
     return ResponseEnvelope.create_success(
-        data=[s.to_dict() for s in items],
+        data=[ImportSessionRead.model_validate(s).model_dump(by_alias=True) for s in items],
         meta=ResponseMeta(
             total=total,
             page=page,
@@ -162,7 +162,7 @@ def upload_payload(
             payload=body.normalized_payload,
         )
         return ResponseEnvelope.create_success(
-            data=result.to_dict(),
+            data=ImportSessionRead.model_validate(result).model_dump(by_alias=True),
             message="İçe aktarım tamamlandı",
         )
     except ValueError as e:
@@ -255,7 +255,7 @@ def agent_heartbeat(
             agent_version=body.agent_version,
             ip_address=ip,
         )
-        return ResponseEnvelope.create_success(data=updated.to_dict())
+        return ResponseEnvelope.create_success(data=AgentDeviceRead.model_validate(updated).model_dump(by_alias=True))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -337,7 +337,7 @@ def list_agents(
     """List active agent devices for tenant (settings page)."""
     devices = NoahImportService.get_agent_status(db, access.tenant_id)
     return ResponseEnvelope.create_success(
-        data=[d.to_dict() for d in devices]
+        data=[AgentDeviceRead.model_validate(d).model_dump(by_alias=True) for d in devices]
     )
 
 
@@ -369,7 +369,7 @@ def list_duplicates(
     )
     total_pages = (total + per_page - 1) // per_page
     return ResponseEnvelope.create_success(
-        data=[d.to_dict() for d in items],
+        data=[PossibleDuplicateRead.model_validate(d).model_dump(by_alias=True) for d in items],
         meta=ResponseMeta(
             total=total,
             page=page,
@@ -402,7 +402,7 @@ def resolve_duplicate(
             target_party_id=body.target_party_id,
         )
         return ResponseEnvelope.create_success(
-            data=dup.to_dict(),
+            data=PossibleDuplicateRead.model_validate(dup).model_dump(by_alias=True),
             message="Çift kayıt çözümlendi",
         )
     except ValueError as e:
@@ -435,7 +435,7 @@ def list_audit_logs(
     )
     total_pages = (total + per_page - 1) // per_page
     return ResponseEnvelope.create_success(
-        data=[l.to_dict() for l in items],
+        data=[ImportAuditLogRead.model_validate(l).model_dump(by_alias=True) for l in items],
         meta=ResponseMeta(
             total=total,
             page=page,

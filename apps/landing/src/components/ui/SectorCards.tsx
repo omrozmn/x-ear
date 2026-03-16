@@ -1,52 +1,85 @@
 "use client";
 
 import { useLocale } from "@/lib/i18n";
+import { useSectorStore, type SectorId } from "@/lib/sector-store";
+import { motion } from "framer-motion";
 
 const SECTORS = [
   {
-    id: "hearing",
+    id: "hearing" as SectorId,
     icon: "🦻",
     name: { tr: "İşitme Merkezi", en: "Hearing Center" },
     desc: { tr: "NOAH, SGK, UTS entegrasyonu ile tam donanımlı işitme merkezi yönetimi", en: "Full-featured hearing center management with NOAH, SGK, UTS integration" },
     color: "from-blue-500/20 to-cyan-500/20",
     border: "border-blue-500/30",
+    activeBorder: "border-blue-500",
+    ring: "ring-blue-500/40",
   },
   {
-    id: "pharmacy",
+    id: "pharmacy" as SectorId,
     icon: "💊",
     name: { tr: "Eczane", en: "Pharmacy" },
     desc: { tr: "Stok takibi, reçete yönetimi ve müşteri ilişkileri", en: "Inventory tracking, prescription management, and customer relations" },
     color: "from-green-500/20 to-emerald-500/20",
     border: "border-green-500/30",
+    activeBorder: "border-green-500",
+    ring: "ring-green-500/40",
   },
   {
-    id: "hospital",
+    id: "hospital" as SectorId,
     icon: "🏥",
     name: { tr: "Hastane", en: "Hospital" },
     desc: { tr: "Hasta kayıt, randevu ve tıbbi cihaz yönetimi", en: "Patient registration, appointments, and medical device management" },
     color: "from-red-500/20 to-rose-500/20",
     border: "border-red-500/30",
+    activeBorder: "border-red-500",
+    ring: "ring-red-500/40",
   },
   {
-    id: "hotel",
+    id: "medical" as SectorId,
+    icon: "🩺",
+    name: { tr: "Medikal Firma", en: "Medical Company" },
+    desc: { tr: "Tıbbi cihaz satışı, UTS takibi, bayi yönetimi ve teknik servis", en: "Medical device sales, UTS tracking, dealer management, and technical service" },
+    color: "from-teal-500/20 to-cyan-500/20",
+    border: "border-teal-500/30",
+    activeBorder: "border-teal-500",
+    ring: "ring-teal-500/40",
+  },
+  {
+    id: "optic" as SectorId,
+    icon: "👓",
+    name: { tr: "Optik Mağaza", en: "Optical Store" },
+    desc: { tr: "Reçete takibi, lens & çerçeve envanteri ve müşteri sadakati", en: "Prescription tracking, lens & frame inventory, and customer loyalty" },
+    color: "from-violet-500/20 to-purple-500/20",
+    border: "border-violet-500/30",
+    activeBorder: "border-violet-500",
+    ring: "ring-violet-500/40",
+  },
+  {
+    id: "hotel" as SectorId,
     icon: "🏨",
     name: { tr: "Otel", en: "Hotel" },
     desc: { tr: "Misafir yönetimi, rezervasyon ve hizmet takibi", en: "Guest management, reservations, and service tracking" },
     color: "from-orange-500/20 to-amber-500/20",
     border: "border-orange-500/30",
+    activeBorder: "border-orange-500",
+    ring: "ring-orange-500/40",
   },
   {
-    id: "general",
+    id: "general" as SectorId,
     icon: "💼",
     name: { tr: "Genel CRM", en: "General CRM" },
     desc: { tr: "Her sektöre uyarlanabilen esnek iş yönetim sistemi", en: "Flexible business management system adaptable to any sector" },
     color: "from-gray-500/20 to-slate-500/20",
     border: "border-gray-500/30",
+    activeBorder: "border-gray-500",
+    ring: "ring-gray-500/40",
   },
 ];
 
 export function SectorCards() {
   const { locale } = useLocale();
+  const { sector: activeSector, setSector } = useSectorStore();
 
   return (
     <section id="sectors" className="relative z-10 py-24 px-4">
@@ -54,27 +87,41 @@ export function SectorCards() {
         <h2 className="text-center text-3xl md:text-5xl font-bold mb-4">
           {locale === "tr" ? "Her Sektör İçin" : "For Every Sector"}
         </h2>
-        <p className="text-center text-foreground/60 mb-16 max-w-2xl mx-auto">
+        <p className="text-center text-foreground/60 mb-6 max-w-2xl mx-auto">
           {locale === "tr"
-            ? "Tek platform, farklı sektörler. İşletmenize uygun modülleri seçin."
-            : "One platform, different sectors. Choose the modules that fit your business."}
+            ? "Tek platform, farklı sektörler. Sektörünüzü seçin, içerikler size göre değişsin."
+            : "One platform, different sectors. Select your sector, content adapts to you."}
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {SECTORS.map((sector) => (
-            <div
-              key={sector.id}
-              className={`group relative rounded-2xl border ${sector.border} bg-gradient-to-br ${sector.color} backdrop-blur-sm p-6 transition-all hover:scale-[1.02] hover:shadow-lg`}
-            >
-              <div className="text-4xl mb-4">{sector.icon}</div>
-              <h3 className="text-xl font-semibold mb-2">
-                {sector.name[locale]}
-              </h3>
-              <p className="text-sm text-foreground/70">
-                {sector.desc[locale]}
-              </p>
-            </div>
-          ))}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+          {SECTORS.map((s) => {
+            const isActive = activeSector === s.id;
+            return (
+              <motion.button
+                key={s.id}
+                onClick={() => setSector(s.id)}
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.97 }}
+                className={`relative rounded-2xl border-2 bg-gradient-to-br ${s.color} backdrop-blur-sm p-5 transition-all text-left cursor-pointer ${
+                  isActive
+                    ? `${s.activeBorder} ring-2 ${s.ring} shadow-lg`
+                    : `${s.border} hover:shadow-md`
+                }`}
+              >
+                <div className="text-3xl mb-3">{s.icon}</div>
+                <h3 className="text-sm font-semibold mb-1">{s.name[locale]}</h3>
+                <p className="text-xs text-foreground/60 leading-snug hidden md:block">
+                  {s.desc[locale]}
+                </p>
+                {isActive && (
+                  <motion.div
+                    layoutId="sector-indicator"
+                    className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-accent-blue shadow-[0_0_8px_rgba(34,211,238,0.6)]"
+                  />
+                )}
+              </motion.button>
+            );
+          })}
         </div>
       </div>
     </section>

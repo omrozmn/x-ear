@@ -1,7 +1,7 @@
 # Noah Import Schemas — Pydantic v2
 from typing import Optional, List, Any
 from datetime import datetime
-from pydantic import Field
+from pydantic import Field, model_validator
 from .base import AppBaseModel, IDMixin, TimestampMixin
 
 
@@ -116,6 +116,30 @@ class ImportSessionRead(AppBaseModel, IDMixin, TimestampMixin):
     expires_at: datetime = Field(..., alias="expiresAt")
     completed_at: Optional[datetime] = Field(None, alias="completedAt")
 
+    @model_validator(mode="before")
+    @classmethod
+    def _from_orm(cls, data: Any) -> Any:
+        if hasattr(data, "__tablename__"):
+            status = data.status
+            return {
+                "id": data.id,
+                "tenantId": data.tenant_id,
+                "branchId": data.branch_id,
+                "requestingUserId": data.requesting_user_id,
+                "deviceId": data.device_id,
+                "status": status.value if hasattr(status, "value") else status,
+                "allowedFormats": data.allowed_formats or [],
+                "progress": {"stage": data.progress_stage, "percent": data.progress_percent or 0},
+                "summary": {"created": data.records_created or 0, "updated": data.records_updated or 0, "skipped": data.records_skipped or 0, "duplicates": data.duplicates_found or 0, "errors": data.errors or []},
+                "fileMeta": {"name": data.file_name, "size": data.file_size, "sha256": data.file_sha256, "exportedAt": data.file_exported_at} if data.file_name else None,
+                "parser": {"name": data.parser_name, "version": data.parser_version} if data.parser_name else None,
+                "expiresAt": data.expires_at,
+                "completedAt": data.completed_at,
+                "createdAt": getattr(data, "created_at", None),
+                "updatedAt": getattr(data, "updated_at", None),
+            }
+        return data
+
 
 # ────────────────────────────────────────────────────────────
 # Agent Device
@@ -147,6 +171,20 @@ class AgentDeviceRead(AppBaseModel, IDMixin, TimestampMixin):
     export_folder: str = Field(..., alias="exportFolder")
     last_seen_at: Optional[datetime] = Field(None, alias="lastSeenAt")
 
+    @model_validator(mode="before")
+    @classmethod
+    def _from_orm(cls, data: Any) -> Any:
+        if hasattr(data, "__tablename__"):
+            status = data.status
+            return {
+                "id": data.id, "tenantId": data.tenant_id, "branchId": data.branch_id,
+                "deviceName": data.device_name, "agentVersion": data.agent_version,
+                "status": status.value if hasattr(status, "value") else status,
+                "exportFolder": data.export_folder, "lastSeenAt": data.last_seen_at,
+                "createdAt": getattr(data, "created_at", None), "updatedAt": getattr(data, "updated_at", None),
+            }
+        return data
+
 
 # ────────────────────────────────────────────────────────────
 # Upload (Agent → Backend)
@@ -169,6 +207,21 @@ class PossibleDuplicateRead(AppBaseModel, IDMixin, TimestampMixin):
     status: str
     resolved_by: Optional[str] = Field(None, alias="resolvedBy")
     resolved_at: Optional[datetime] = Field(None, alias="resolvedAt")
+
+    @model_validator(mode="before")
+    @classmethod
+    def _from_orm(cls, data: Any) -> Any:
+        if hasattr(data, "__tablename__"):
+            status = data.status
+            return {
+                "id": data.id, "sessionId": data.session_id,
+                "importedData": data.imported_data, "existingPartyId": data.existing_party_id,
+                "matchScore": data.match_score, "matchReason": data.match_reason,
+                "status": status.value if hasattr(status, "value") else status,
+                "resolvedBy": data.resolved_by, "resolvedAt": data.resolved_at,
+                "createdAt": getattr(data, "created_at", None), "updatedAt": getattr(data, "updated_at", None),
+            }
+        return data
 
 
 class DuplicateMergeRequest(AppBaseModel):
@@ -219,3 +272,18 @@ class ImportAuditLogRead(AppBaseModel, IDMixin, TimestampMixin):
     records_created: int = Field(0, alias="recordsCreated")
     records_updated: int = Field(0, alias="recordsUpdated")
     outcome: Optional[str] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _from_orm(cls, data: Any) -> Any:
+        if hasattr(data, "__tablename__"):
+            return {
+                "id": data.id, "sessionId": data.session_id,
+                "deviceId": data.device_id, "userId": data.user_id,
+                "action": data.action, "detail": data.detail or {},
+                "fileSha256": data.file_sha256, "parserVersion": data.parser_version,
+                "recordsCreated": data.records_created, "recordsUpdated": data.records_updated,
+                "outcome": data.outcome,
+                "createdAt": getattr(data, "created_at", None), "updatedAt": getattr(data, "updated_at", None),
+            }
+        return data

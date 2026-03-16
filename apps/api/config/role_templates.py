@@ -41,6 +41,19 @@ _ROLE_TEMPLATES: dict[str, list[dict[str, object]]] = {
         {"name": "Resepsiyonist", "description": "Ön büro ve check-in", "is_admin": False},
         {"name": "Housekeeping", "description": "Kat hizmetleri", "is_admin": False},
     ],
+    "medical": [
+        {"name": "Admin", "description": "Tam yetkili yönetici", "is_admin": True},
+        {"name": "Satış Müdürü", "description": "Satış ve bayi yönetimi", "is_admin": False},
+        {"name": "Teknik Servis", "description": "Servis ve bakım", "is_admin": False},
+        {"name": "Depo Sorumlusu", "description": "Stok ve lojistik", "is_admin": False},
+        {"name": "Muhasebeci", "description": "Finans ve faturalama", "is_admin": False},
+    ],
+    "optic": [
+        {"name": "Admin", "description": "Tam yetkili yönetici", "is_admin": True},
+        {"name": "Optisyen", "description": "Optisyen / uzman", "is_admin": False},
+        {"name": "Satış Danışmanı", "description": "Satış ve müşteri ilişkileri", "is_admin": False},
+        {"name": "Kasiyer", "description": "Satış ve kasa", "is_admin": False},
+    ],
     "beauty": [
         {"name": "Admin", "description": "Tam yetkili yönetici", "is_admin": True},
         {"name": "Uzman", "description": "Güzellik uzmanı", "is_admin": False},

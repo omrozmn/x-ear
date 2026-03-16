@@ -50,7 +50,7 @@ MODULES: tuple[SectorModule, ...] = (
     SectorModule(
         module_id="devices",
         label="Cihazlar",
-        applicable_sectors=("hearing",),
+        applicable_sectors=("hearing", "medical"),
         feature_flag="devices",
         permission_prefixes=("devices",),
     ),
@@ -64,14 +64,14 @@ MODULES: tuple[SectorModule, ...] = (
     SectorModule(
         module_id="sgk",
         label="SGK",
-        applicable_sectors=("hearing",),
+        applicable_sectors=("hearing", "optic"),
         feature_flag="sgk",
         permission_prefixes=("sgk",),
     ),
     SectorModule(
         module_id="uts",
         label="UTS",
-        applicable_sectors=("hearing",),
+        applicable_sectors=("hearing", "medical"),
         feature_flag="uts",
         permission_prefixes=(),
     ),

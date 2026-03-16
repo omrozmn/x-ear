@@ -6,18 +6,29 @@ import { HyperGlassCard } from "./HyperGlassCard";
 import { TextReveal } from "./TextReveal";
 import { Users, ShieldCheck, MessageSquare, Ear, BarChart3, Archive } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
+import { useSectorStore } from "@/lib/sector-store";
+import { getSectorContent } from "@/lib/sector-content";
+
+const ICON_MAP: Record<string, React.ReactNode> = {
+    users: <Users className="w-8 h-8 text-accent-blue" />,
+    ear: <Ear className="w-8 h-8 text-accent-purple" />,
+    shield: <ShieldCheck className="w-8 h-8 text-emerald-400" />,
+    message: <MessageSquare className="w-8 h-8 text-cyan-400" />,
+    archive: <Archive className="w-8 h-8 text-rose-400" />,
+    chart: <BarChart3 className="w-8 h-8 text-amber-400" />,
+};
 
 export function FeatureCards() {
-    const { t } = useLocale();
+    const { locale } = useLocale();
+    const sector = useSectorStore((s) => s.sector);
+    const content = getSectorContent(sector);
 
-    const features = [
-        { key: "patient", icon: <Users className="w-8 h-8 text-accent-blue" /> },
-        { key: "device", icon: <Ear className="w-8 h-8 text-accent-purple" /> },
-        { key: "crm", icon: <ShieldCheck className="w-8 h-8 text-emerald-400" /> },
-        { key: "sms", icon: <MessageSquare className="w-8 h-8 text-cyan-400" /> },
-        { key: "inventory", icon: <Archive className="w-8 h-8 text-rose-400" /> },
-        { key: "ai", icon: <BarChart3 className="w-8 h-8 text-amber-400" /> },
-    ];
+    const features = content.features.map((f) => ({
+        key: f.key,
+        icon: ICON_MAP[f.iconKey],
+        title: f.title[locale],
+        desc: f.desc[locale],
+    }));
 
     const [activeIndex, setActiveIndex] = useState(0);
     const sectionRef = useRef<HTMLDivElement>(null);
@@ -58,16 +69,16 @@ export function FeatureCards() {
                 <div className="max-w-4xl mx-auto w-full pointer-events-auto">
                     <div className="mb-16 text-center flex flex-col items-center focus-in">
                         <h2 className="text-4xl md:text-5xl lg:text-7xl font-display font-medium text-foreground mb-6 flex flex-col items-center gap-2">
-                            <TextReveal>{t("features.h2_1")}</TextReveal>
+                            <TextReveal>{locale === "tr" ? "Ekosistemin" : "Discover the Power"}</TextReveal>
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-blue to-accent-purple">
-                                <TextReveal delay={0.4}>{t("features.h2_2")}</TextReveal>
+                                <TextReveal delay={0.4}>{locale === "tr" ? "Gücünü Keşfedin" : "of the Ecosystem"}</TextReveal>
                             </span>
                         </h2>
                     </div>
 
                     <AnimatePresence mode="wait">
                         <motion.div
-                            key={`feature-${activeFeat.key}`}
+                            key={`feature-${sector}-${activeFeat.key}`}
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: -20 }}
@@ -76,7 +87,7 @@ export function FeatureCards() {
                         >
                             <HyperGlassCard className="py-16 px-8 md:px-16 flex flex-col items-center text-center">
                                 <motion.div
-                                    key={`feat-icon-${activeFeat.key}`}
+                                    key={`feat-icon-${sector}-${activeFeat.key}`}
                                     initial={{ scale: 0, rotate: -15 }}
                                     animate={{ scale: 1, rotate: 0 }}
                                     transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
@@ -85,18 +96,17 @@ export function FeatureCards() {
                                     {activeFeat.icon}
                                 </motion.div>
                                 <h3 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-6">
-                                    {t(`feat.${activeFeat.key}.title`)}
+                                    {activeFeat.title}
                                 </h3>
                                 <p className="text-foreground/70 leading-relaxed text-lg md:text-xl max-w-2xl">
-                                    {t(`feat.${activeFeat.key}.desc`)}
+                                    {activeFeat.desc}
                                 </p>
                             </HyperGlassCard>
                         </motion.div>
                     </AnimatePresence>
 
-                    {/* Subtle scroll position indicator */}
                     <div className="flex justify-center gap-2 mt-10">
-                        {features.map((_, idx) => (
+                        {features.map((_: unknown, idx: number) => (
                             <div
                                 key={idx}
                                 className={`h-1 rounded-full transition-all duration-500 ${activeIndex === idx

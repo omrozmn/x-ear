@@ -15,6 +15,7 @@ import type {
   InvoiceStatus,
   InvoiceTemplate,
   InvoiceType,
+  InvoiceTypeLegacy,
   InvoiceValidation,
   PaymentMethod,
   UpdateInvoiceData,
@@ -269,7 +270,7 @@ export class InvoiceService {
   private generateSampleInvoices(): Invoice[] {
     const sampleInvoices: Invoice[] = [];
     const statuses: InvoiceStatus[] = ['draft', 'sent', 'paid', 'overdue', 'cancelled'];
-    const types: InvoiceType[] = ['standard' as InvoiceType, 'proforma' as InvoiceType, 'credit_note' as InvoiceType, 'debit_note' as InvoiceType];
+    const types: InvoiceTypeLegacy[] = ['standard', 'proforma', 'credit_note', 'debit_note'];
 
     for (let i = 1; i <= 20; i++) {
       const createdDate = new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000);

@@ -14,7 +14,7 @@
 // Types
 // ============================================================================
 
-export type SectorCode = 'hearing' | 'pharmacy' | 'hospital' | 'hotel' | 'beauty' | 'general';
+export type SectorCode = 'hearing' | 'pharmacy' | 'hospital' | 'hotel' | 'medical' | 'optic' | 'beauty' | 'general';
 
 export interface SectorConfig {
   /** Sector identifier */
@@ -94,6 +94,24 @@ const SECTOR_CONFIGS: Record<SectorCode, SectorConfig> = {
     defaultRoles: ['Admin', 'Resepsiyonist', 'Housekeeping'],
     badgeColor: 'orange',
     description: 'Otel yönetim sistemi',
+  },
+  medical: {
+    sector: 'medical',
+    label: 'Medikal Firma',
+    enabledModules: [...UNIVERSAL_MODULES, 'devices', 'uts'],
+    terminologyNamespace: 'sector_medical',
+    defaultRoles: ['Admin', 'Satış Müdürü', 'Teknik Servis', 'Depo Sorumlusu', 'Muhasebeci'],
+    badgeColor: 'teal',
+    description: 'Medikal firma yönetim sistemi',
+  },
+  optic: {
+    sector: 'optic',
+    label: 'Optik Mağaza',
+    enabledModules: [...UNIVERSAL_MODULES, 'sgk'],
+    terminologyNamespace: 'sector_optic',
+    defaultRoles: ['Admin', 'Optisyen', 'Satış Danışmanı', 'Kasiyer'],
+    badgeColor: 'violet',
+    description: 'Optik mağaza yönetim sistemi',
   },
   beauty: {
     sector: 'beauty',

@@ -49,6 +49,22 @@ _TERMINOLOGY: dict[str, dict[str, str]] = {
         "app_title": "Otel Yönetim Sistemi",
         "party_settings": "Misafir Ayarları",
     },
+    "medical": {
+        "party": "Müşteri",
+        "parties": "Müşteriler",
+        "device": "Tıbbi Cihaz",
+        "devices": "Tıbbi Cihazlar",
+        "app_title": "Medikal Firma Yönetim Sistemi",
+        "party_settings": "Müşteri Ayarları",
+    },
+    "optic": {
+        "party": "Müşteri",
+        "parties": "Müşteriler",
+        "device": "Ürün",
+        "devices": "Ürünler",
+        "app_title": "Optik Mağaza Yönetim Sistemi",
+        "party_settings": "Müşteri Ayarları",
+    },
     "beauty": {
         "party": "Müşteri",
         "parties": "Müşteriler",

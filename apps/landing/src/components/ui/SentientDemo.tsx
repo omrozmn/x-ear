@@ -5,54 +5,34 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { HyperGlassCard } from "./HyperGlassCard";
 import { TextReveal } from "./TextReveal";
 import { useLocale } from "@/lib/i18n";
+import { useSectorStore } from "@/lib/sector-store";
+import { getSectorContent } from "@/lib/sector-content";
 
 type DemoPhase = "messages" | "thinking" | "prompt" | "processing" | "result";
-type DemoMessage = { role: "user" | "ai"; sublabel: string; content: string };
-type DemoScenario = {
-    id: string;
-    title: string;
-    messages: DemoMessage[];
-    thoughts: string[];
-    slotFilling: {
-        prompt: string;
-        options: string[];
-        results: string[];
-    };
-};
 
 export function SentientDemo() {
-    const { t } = useLocale();
+    const { locale } = useLocale();
+    const sector = useSectorStore((s) => s.sector);
+    const content = getSectorContent(sector);
 
-    const scenarios = useMemo<DemoScenario[]>(() => [
-        {
-            id: "mass_sms",
-            title: t("sms.title"),
-            messages: [{ role: "user" as const, sublabel: t("sms.user.sublabel"), content: t("sms.user.content") }],
-            thoughts: [t("sms.thought1"), t("sms.thought2"), t("sms.thought3"), t("sms.thought4"), t("sms.thought5")],
-            slotFilling: { prompt: t("sms.prompt"), options: [t("sms.opt1"), t("sms.opt2")], results: [t("sms.result1"), t("sms.result2")] },
-        },
-        {
-            id: "sgk_invoice",
-            title: t("sgk.title"),
-            messages: [{ role: "ai" as const, sublabel: t("sgk.ai.sublabel"), content: t("sgk.ai.content") }],
-            thoughts: [t("sgk.thought1"), t("sgk.thought2"), t("sgk.thought3"), t("sgk.thought4"), t("sgk.thought5")],
-            slotFilling: { prompt: t("sgk.prompt"), options: [t("sgk.opt1"), t("sgk.opt2")], results: [t("sgk.result1"), t("sgk.result2")] },
-        },
-        {
-            id: "uninvoiced_sales",
-            title: t("inv.title"),
-            messages: [{ role: "user" as const, sublabel: t("inv.user.sublabel"), content: t("inv.user.content") }],
-            thoughts: [t("inv.thought1"), t("inv.thought2"), t("inv.thought3"), t("inv.thought4"), t("inv.thought5")],
-            slotFilling: { prompt: t("inv.prompt"), options: [t("inv.opt1"), t("inv.opt2")], results: [t("inv.result1"), t("inv.result2")] },
-        },
-        {
-            id: "ocr_supplier",
-            title: t("ocr.title"),
-            messages: [{ role: "user" as const, sublabel: t("ocr.user.sublabel"), content: t("ocr.user.content") }],
-            thoughts: [t("ocr.thought1"), t("ocr.thought2"), t("ocr.thought3"), t("ocr.thought4"), t("ocr.thought5"), t("ocr.thought6")],
-            slotFilling: { prompt: t("ocr.prompt"), options: [t("ocr.opt1"), t("ocr.opt2")], results: [t("ocr.result1"), t("ocr.result2")] },
-        },
-    ], [t]);
+    const scenarios = useMemo(() =>
+        content.demoScenarios.map((sc) => ({
+            id: sc.id,
+            title: sc.title[locale],
+            messages: sc.messages.map((m) => ({
+                role: m.role,
+                sublabel: m.sublabel[locale],
+                content: m.content[locale],
+            })),
+            thoughts: sc.thoughts.map((t) => t[locale]),
+            slotFilling: {
+                prompt: sc.slotFilling.prompt[locale],
+                options: sc.slotFilling.options.map((o) => o[locale]),
+                results: sc.slotFilling.results.map((r) => r[locale]),
+            },
+        })),
+        [content.demoScenarios, locale]
+    );
 
     const [activeScenario, setActiveScenario] = useState(0);
     const sectionRef = useRef<HTMLDivElement>(null);
@@ -99,7 +79,7 @@ export function SentientDemo() {
             schedule(next, 400);
         }, 800);
         return () => { cancelled = true; timers.forEach(clearTimeout); };
-    }, [activeData.thoughts, activeScenario]);
+    }, [activeData.thoughts, activeScenario, sector]);
 
     const handleActionClick = (optIndex: number) => {
         setSelectedOptionIndex(optIndex);
@@ -109,6 +89,19 @@ export function SentientDemo() {
 
     const thoughtText = activeThoughtIndex >= 0 && activeThoughtIndex < activeData.thoughts.length
         ? activeData.thoughts[activeThoughtIndex] : null;
+
+    const demoLabels = {
+        shell: locale === "tr" ? "Ajan Hafıza Kabuğu" : "Agent Memory Shell",
+        waiting: locale === "tr" ? "girdi bekleniyor..." : "waiting for input...",
+        complete: locale === "tr" ? "görev değerlendirmesi tamamlandı. kullanıcı bekleniyor..." : "task evaluation complete. waiting for user...",
+        approval: locale === "tr" ? "Sistem Onayı Bekleniyor" : "Awaiting System Approval",
+        done: locale === "tr" ? "İşlem Tamamlandı" : "Action Completed",
+        processing: locale === "tr" ? "İşleniyor..." : "Processing...",
+        you: locale === "tr" ? "SİZ" : "YOU",
+        h2_1: locale === "tr" ? "Sadece Bir Yazılım Değil," : "Not Just Software,",
+        h2_2: locale === "tr" ? "Zeki Bir Asistan" : "An Intelligent Assistant",
+        desc: locale === "tr" ? "X-EAR her işlemi anlar, düşünür ve sizin yerinize otopilotta yürütür." : "X-EAR understands every task, thinks, and executes on autopilot for you.",
+    };
 
     // Shared prompt bubble content
     const PromptContent = () => (
@@ -129,7 +122,7 @@ export function SentientDemo() {
                         )}
                     </span>
                     <span className="text-[9px] uppercase tracking-widest font-bold opacity-90 text-accent-blue">
-                        {phase === "result" ? t("demo.done") : t("demo.approval")}
+                        {phase === "result" ? demoLabels.done : demoLabels.approval}
                     </span>
                 </div>
                 <p className="text-foreground/90 text-[13px] md:text-[15px] leading-relaxed font-medium">
@@ -152,7 +145,7 @@ export function SentientDemo() {
                                 {phase === "processing" && selectedOptionIndex === oIdx ? (
                                     <div className="flex items-center justify-center gap-2">
                                         <div className="w-3 h-3 rounded-full border-2 border-accent-blue/30 border-t-accent-blue animate-spin" />
-                                        <span>{t("demo.processing")}</span>
+                                        <span>{demoLabels.processing}</span>
                                     </div>
                                 ) : opt}
                             </button>
@@ -186,17 +179,17 @@ export function SentientDemo() {
                     {/* Header */}
                     <div className="text-center shrink-0 mb-3 md:mb-6">
                         <h2 className="text-2xl md:text-5xl lg:text-7xl font-display font-medium text-foreground mb-2 md:mb-4 flex flex-col items-center justify-center gap-1">
-                            <TextReveal>{t("demo.h2_1")}</TextReveal>
+                            <TextReveal>{demoLabels.h2_1}</TextReveal>
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-purple to-accent-blue">
-                                <TextReveal delay={0.4}>{t("demo.h2_2")}</TextReveal>
+                                <TextReveal delay={0.4}>{demoLabels.h2_2}</TextReveal>
                             </span>
                         </h2>
                         <p className="text-foreground/70 text-sm md:text-lg max-w-2xl mx-auto hidden md:block">
-                            {t("demo.desc")}
+                            {demoLabels.desc}
                         </p>
                         <div className="flex justify-center mt-3 md:mt-5">
                             <AnimatePresence mode="wait">
-                                <motion.span key={activeData.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+                                <motion.span key={`${sector}-${activeData.id}`} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
                                     className="text-xs md:text-sm font-semibold text-accent-blue bg-accent-blue/10 border border-accent-blue/20 px-3 py-1 rounded-full">
                                     {activeData.title}
                                 </motion.span>
@@ -209,17 +202,16 @@ export function SentientDemo() {
                         <HyperGlassCard className="h-full overflow-hidden">
                             <div className="flex flex-col lg:flex-row gap-4 lg:gap-8 w-full h-full overflow-y-auto">
 
-                                {/* COL 1 (mobile: row 1): User/System Message */}
+                                {/* COL 1: User/System Message */}
                                 <div className="w-full lg:flex-1 flex flex-col space-y-3 order-1 lg:order-1 min-h-0 pb-1">
                                     <AnimatePresence mode="popLayout">
-                                        {activeData.messages.map((msg: DemoMessage, idx: number) => (
-                                            <motion.div key={`${activeData.id}-msg-${idx}`} layout
+                                        {activeData.messages.map((msg, idx) => (
+                                            <motion.div key={`${sector}-${activeData.id}-msg-${idx}`} layout
                                                 initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
                                                 exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.3 }}
-                                                className={`rounded-2xl p-3 md:p-5 backdrop-blur-md border flex items-start gap-3 shadow-lg ${msg.role === "ai" ? "mr-2 md:mr-12 bg-foreground/5 border-foreground/5" : "ml-2 md:ml-12 bg-accent-purple/10 border-accent-purple/20"
-                                                    }`}>
+                                                className={`rounded-2xl p-3 md:p-5 backdrop-blur-md border flex items-start gap-3 shadow-lg ${msg.role === "ai" ? "mr-2 md:mr-12 bg-foreground/5 border-foreground/5" : "ml-2 md:ml-12 bg-accent-purple/10 border-accent-purple/20"}`}>
                                                 <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 shadow-md ${msg.role === "ai" ? "bg-gradient-to-br from-accent-purple to-accent-blue" : "bg-foreground/10 border border-foreground/10"}`}>
-                                                    {msg.role === "ai" ? <span className="text-white text-[10px] font-bold">AI</span> : <span className="text-foreground/80 text-[10px] font-bold">{t("demo.you")}</span>}
+                                                    {msg.role === "ai" ? <span className="text-white text-[10px] font-bold">AI</span> : <span className="text-foreground/80 text-[10px] font-bold">{demoLabels.you}</span>}
                                                 </div>
                                                 <div className="flex-1 space-y-1 mt-0.5">
                                                     <span className={`text-[9px] uppercase tracking-widest font-bold opacity-70 ${msg.role === "ai" ? "text-accent-blue" : "text-accent-purple"}`}>{msg.sublabel}</span>
@@ -229,11 +221,11 @@ export function SentientDemo() {
                                         ))}
                                     </AnimatePresence>
 
-                                    {/* Desktop: prompt inline after messages */}
+                                    {/* Desktop: prompt inline */}
                                     <div className="hidden lg:block">
                                         <AnimatePresence mode="popLayout">
                                             {showPrompt && (
-                                                <motion.div key={`prompt-lg-${activeData.id}`} layout
+                                                <motion.div key={`prompt-lg-${sector}-${activeData.id}`} layout
                                                     initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
                                                     transition={{ type: "spring", stiffness: 120 }}
                                                     className="rounded-2xl p-3 md:p-5 backdrop-blur-xl border border-accent-blue/30 bg-accent-blue/5 flex items-start gap-3 shadow-xl mr-2 md:mr-12">
@@ -244,13 +236,13 @@ export function SentientDemo() {
                                     </div>
                                 </div>
 
-                                {/* COL 2 (mobile: row 2): Terminal */}
+                                {/* COL 2: Terminal */}
                                 <div className="w-full lg:flex-1 bg-foreground/[0.03] dark:bg-black/40 rounded-2xl lg:rounded-[2rem] border border-foreground/5 p-4 md:p-6 flex flex-col relative overflow-hidden backdrop-blur-2xl shadow-inner shrink-0 min-h-[100px] md:min-h-[180px] lg:min-h-0 order-2">
                                     <div className="absolute inset-0 bg-gradient-to-br from-accent-blue/10 to-accent-purple/5 pointer-events-none" />
                                     <div className="flex flex-col justify-center relative z-10 flex-1 transition-opacity duration-500" style={{ opacity: phase === "messages" ? 0.3 : 1 }}>
                                         <div className="flex items-center justify-between mb-3 border-b border-foreground/10 pb-2">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-[10px] md:text-xs uppercase font-extrabold tracking-widest text-accent-purple/80">{t("demo.shell")}</span>
+                                                <span className="text-[10px] md:text-xs uppercase font-extrabold tracking-widest text-accent-purple/80">{demoLabels.shell}</span>
                                                 {phase === "thinking" && (
                                                     <div className="flex gap-1">
                                                         <span className="w-1 h-1 md:w-1.5 md:h-1.5 bg-accent-blue rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
@@ -266,10 +258,10 @@ export function SentientDemo() {
                                             </div>
                                         </div>
                                         <div className="font-mono text-xs md:text-sm text-accent-blue/90 flex flex-col items-start justify-center flex-1 min-h-[40px]">
-                                            {phase === "messages" && <div className="text-foreground/30">{">>"} {t("demo.waiting")}</div>}
+                                            {phase === "messages" && <div className="text-foreground/30">{">>"} {demoLabels.waiting}</div>}
                                             <AnimatePresence mode="popLayout">
                                                 {thoughtText && (
-                                                    <motion.div key={`th-${activeData.id}-${activeThoughtIndex}`}
+                                                    <motion.div key={`th-${sector}-${activeData.id}-${activeThoughtIndex}`}
                                                         initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
                                                         transition={{ duration: 0.2 }} className="flex items-start gap-2 w-full">
                                                         <span className="text-accent-purple font-bold shrink-0">{">>"}</span>
@@ -279,18 +271,18 @@ export function SentientDemo() {
                                             </AnimatePresence>
                                             {(phase === "prompt" || phase === "processing" || phase === "result") && (
                                                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} className="text-emerald-500 mt-2 font-bold text-xs">
-                                                    {">>"} {t("demo.complete")}
+                                                    {">>"} {demoLabels.complete}
                                                 </motion.div>
                                             )}
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Mobile only: row 3 – AI response after terminal */}
+                                {/* Mobile only: prompt after terminal */}
                                 <div className="w-full order-3 lg:hidden">
                                     <AnimatePresence mode="popLayout">
                                         {showPrompt && (
-                                            <motion.div key={`prompt-sm-${activeData.id}`} layout
+                                            <motion.div key={`prompt-sm-${sector}-${activeData.id}`} layout
                                                 initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }}
                                                 transition={{ type: "spring", stiffness: 120 }}
                                                 className="rounded-2xl p-3 backdrop-blur-xl border border-accent-blue/30 bg-accent-blue/5 flex items-start gap-3 shadow-xl mr-2">
@@ -306,7 +298,7 @@ export function SentientDemo() {
 
                     {/* Scroll indicator */}
                     <div className="flex justify-center gap-2 mt-3 md:mt-6 shrink-0">
-                        {scenarios.map((_: DemoScenario, idx: number) => (
+                        {scenarios.map((_: unknown, idx: number) => (
                             <div key={idx} className={`h-1 rounded-full transition-all duration-500 ${activeScenario === idx ? "w-8 bg-accent-blue" : "w-2 bg-foreground/15"}`} />
                         ))}
                     </div>

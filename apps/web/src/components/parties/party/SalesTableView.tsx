@@ -6,8 +6,7 @@ import {
   Banknote,
   Ban
 } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { DataTable } from '@x-ear/ui-web';
+import { Button, DataTable } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
 import { usePermissions } from '@/hooks/usePermissions';
 import { PermissionGate } from '@/components/PermissionGate';

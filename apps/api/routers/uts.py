@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import json
 import logging
 import os
 from typing import Optional
@@ -314,7 +315,7 @@ def _load_inventory_serial_states(db: Session, tenant_id: str, serial_states: di
     inventory_lookup: dict[str, InventoryItem] = {}
 
     for item in inventory_items:
-        raw_serials = item.to_dict().get("availableSerials") or []
+        raw_serials = json.loads(item.available_serials) if item.available_serials else []
         if not isinstance(raw_serials, list):
             continue
         for serial in raw_serials:

@@ -5,30 +5,26 @@ import { motion, AnimatePresence } from "framer-motion";
 import { TextReveal } from "./TextReveal";
 import { AlertTriangle, Clock, Frown, Receipt } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
+import { useSectorStore } from "@/lib/sector-store";
+import { getSectorContent, type SectorPainPoint } from "@/lib/sector-content";
+
+const ICON_MAP = {
+    receipt: <Receipt className="w-10 h-10 text-rose-400" />,
+    frown: <Frown className="w-10 h-10 text-orange-400" />,
+    clock: <Clock className="w-10 h-10 text-amber-400" />,
+};
 
 export function PainPoints() {
-    const { t } = useLocale();
+    const { locale } = useLocale();
+    const sector = useSectorStore((s) => s.sector);
+    const content = getSectorContent(sector);
 
-    const points = [
-        {
-            id: "sgk",
-            icon: <Receipt className="w-10 h-10 text-rose-400" />,
-            title: t("pain.sgk.title"),
-            desc: t("pain.sgk.desc"),
-        },
-        {
-            id: "patient",
-            icon: <Frown className="w-10 h-10 text-orange-400" />,
-            title: t("pain.patient.title"),
-            desc: t("pain.patient.desc"),
-        },
-        {
-            id: "time",
-            icon: <Clock className="w-10 h-10 text-amber-400" />,
-            title: t("pain.time.title"),
-            desc: t("pain.time.desc"),
-        },
-    ];
+    const points = content.painPoints.map((p: SectorPainPoint) => ({
+        id: p.id,
+        icon: ICON_MAP[p.iconKey],
+        title: p.title[locale],
+        desc: p.desc[locale],
+    }));
 
     const [activeIndex, setActiveIndex] = useState(0);
     const sectionRef = useRef<HTMLDivElement>(null);
@@ -42,11 +38,9 @@ export function PainPoints() {
             const sectionHeight = section.offsetHeight;
             const viewportHeight = window.innerHeight;
 
-            // How far we've scrolled into the sticky area
             const scrollProgress = -rect.top / (sectionHeight - viewportHeight);
             const clampedProgress = Math.max(0, Math.min(1, scrollProgress));
 
-            // Map progress to card index
             const newIndex = Math.min(
                 points.length - 1,
                 Math.floor(clampedProgress * points.length)
@@ -77,19 +71,19 @@ export function PainPoints() {
                             className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm font-semibold mb-6 uppercase tracking-wider"
                         >
                             <AlertTriangle className="w-4 h-4" />
-                            {t("pain.badge")}
+                            {content.painBadge[locale]}
                         </motion.div>
                         <h2 className="text-4xl md:text-5xl lg:text-7xl font-display font-medium text-foreground mb-6">
-                            <TextReveal>{t("pain.h2_1")}</TextReveal>
+                            <TextReveal>{content.painH2_1[locale]}</TextReveal>
                             <span className="block text-foreground/50 mt-2">
-                                <TextReveal delay={0.4}>{t("pain.h2_2")}</TextReveal>
+                                <TextReveal delay={0.4}>{content.painH2_2[locale]}</TextReveal>
                             </span>
                         </h2>
                     </div>
 
                     <AnimatePresence mode="wait">
                         <motion.div
-                            key={`pain-${activePoint.id}`}
+                            key={`pain-${sector}-${activePoint.id}`}
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: -20 }}
@@ -98,7 +92,7 @@ export function PainPoints() {
                         >
                             <div className="relative p-12 md:p-16 rounded-[2.5rem] bg-surface/50 border border-border-glow shadow-2xl backdrop-blur-md flex flex-col items-center text-center group">
                                 <motion.div
-                                    key={`pain-icon-${activePoint.id}`}
+                                    key={`pain-icon-${sector}-${activePoint.id}`}
                                     initial={{ scale: 0, rotate: -15 }}
                                     animate={{ scale: 1, rotate: 0 }}
                                     transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
@@ -114,9 +108,8 @@ export function PainPoints() {
                         </motion.div>
                     </AnimatePresence>
 
-                    {/* Small scroll position indicator (subtle) */}
                     <div className="flex justify-center gap-2 mt-8">
-                        {points.map((_, idx) => (
+                        {points.map((_: unknown, idx: number) => (
                             <div
                                 key={idx}
                                 className={`h-1 rounded-full transition-all duration-500 ${activeIndex === idx

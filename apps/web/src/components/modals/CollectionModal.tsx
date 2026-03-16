@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { createPaymentRecords } from '@/api/client/payments.client';
 import { Modal } from '../ui/Modal';
-import { Button } from '../ui/Button';
 import { Receipt, DollarSign, Calendar } from 'lucide-react';
-import { Input, Select, Textarea } from '@x-ear/ui-web';
+import { Button, Input, Select, Textarea } from '@x-ear/ui-web';
+import type { RoutersPaymentsPaymentRecordCreate } from '@/api/generated/schemas';
 
 // Local Sale type since it's not exported from schemas
 interface Sale {
@@ -21,17 +21,6 @@ interface PaymentRecord {
   paymentDate: string;
   referenceNumber?: string;
   notes?: string;
-}
-
-interface CreatePaymentPayload {
-  party_id: string;
-  sale_id: string;
-  amount: number;
-  payment_method: string;
-  payment_date: string;
-  reference_number?: string;
-  notes?: string;
-  payment_type: 'payment';
 }
 
 interface CollectionModalProps {
@@ -93,19 +82,17 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
     setIsLoading(true);
     setError(null);
     try {
-      const payload: CreatePaymentPayload = {
-        party_id: sale.partyId,
-        sale_id: sale.id,
+      const payload: RoutersPaymentsPaymentRecordCreate = {
+        partyId: sale.partyId,
+        saleId: sale.id,
         amount: paymentData.amount,
-        payment_method: paymentData.paymentMethod,
-        payment_date: paymentData.paymentDate,
-        reference_number: paymentData.referenceNumber,
-        notes: paymentData.notes,
-        payment_type: 'payment'
+        paymentMethod: paymentData.paymentMethod,
+        paymentType: 'payment',
+        paymentDate: paymentData.paymentDate,
+        referenceNumber: paymentData.referenceNumber || null,
+        notes: paymentData.notes || null,
       };
 
-      // Use Orval-generated function with typed payload
-      // @ts-expect-error - Generated types might trigger conflict until regen
       const resp = await createPaymentRecords(payload);
 
       const result = (resp as { data?: unknown })?.data || resp;

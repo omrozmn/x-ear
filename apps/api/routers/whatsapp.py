@@ -521,4 +521,4 @@ async def list_inbox(
         .limit(limit)
         .all()
     )
-    return ResponseEnvelope(data=[item.to_dict() for item in items])
+    return ResponseEnvelope(data=[WhatsAppInboxMessage.model_validate(item, from_attributes=True).model_dump(by_alias=True) for item in items])
