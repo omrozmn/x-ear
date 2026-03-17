@@ -32,7 +32,7 @@ import { adminApi } from '../../orval-mutator';
 
 
 /**
- * Get all POS transactions for admin panel with optional search
+ * Get all POS transactions for admin panel
  * @summary Get Pos Transactions
  */
 export const listAdminPaymentPoTransactions = (

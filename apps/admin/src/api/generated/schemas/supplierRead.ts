@@ -20,7 +20,6 @@ import type { SupplierReadCountry } from './supplierReadCountry';
 import type { SupplierReadPostalCode } from './supplierReadPostalCode';
 import type { SupplierReadTaxNumber } from './supplierReadTaxNumber';
 import type { SupplierReadTaxOffice } from './supplierReadTaxOffice';
-import type { SupplierReadInstitutionNumber } from './supplierReadInstitutionNumber';
 import type { SupplierReadPaymentTerms } from './supplierReadPaymentTerms';
 import type { SupplierReadCurrency } from './supplierReadCurrency';
 import type { SupplierReadRating } from './supplierReadRating';
@@ -63,8 +62,6 @@ export interface SupplierRead {
   taxNumber?: SupplierReadTaxNumber;
   /** Tax office */
   taxOffice?: SupplierReadTaxOffice;
-  /** UTS institution number */
-  institutionNumber?: SupplierReadInstitutionNumber;
   /** Payment terms */
   paymentTerms?: SupplierReadPaymentTerms;
   /** Currency */

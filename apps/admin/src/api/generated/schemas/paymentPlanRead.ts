@@ -9,8 +9,7 @@ import type { PaymentPlanReadPlanName } from './paymentPlanReadPlanName';
 import type { PaymentPlanReadNotes } from './paymentPlanReadNotes';
 import type { PaymentPlanReadCreatedAt } from './paymentPlanReadCreatedAt';
 import type { PaymentPlanReadUpdatedAt } from './paymentPlanReadUpdatedAt';
-import type { PaymentPlanReadPlanType } from './paymentPlanReadPlanType';
-import type { PaymentPlanReadInstallments } from './paymentPlanReadInstallments';
+import type { PaymentInstallmentRead } from './paymentInstallmentRead';
 
 export interface PaymentPlanRead {
   planName?: PaymentPlanReadPlanName;
@@ -28,7 +27,7 @@ export interface PaymentPlanRead {
   /** Unique identifier for the resource */
   id: string;
   saleId: string;
-  planType?: PaymentPlanReadPlanType;
+  planType: string;
   status?: string;
-  installments?: PaymentPlanReadInstallments;
+  installments?: PaymentInstallmentRead[];
 }

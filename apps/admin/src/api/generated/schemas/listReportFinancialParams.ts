@@ -13,6 +13,4 @@ export type ListReportFinancialParams = {
  */
 days?: number;
 branch_id?: string | null;
-startDate?: string | null;
-endDate?: string | null;
 };

@@ -12,7 +12,6 @@ date_from?: string | null;
 date_to?: string | null;
 /**
  * @minimum 1
- * @maximum 1000000
  */
 page?: number;
 /**

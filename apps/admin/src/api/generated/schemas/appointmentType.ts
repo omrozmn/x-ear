@@ -6,9 +6,6 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * Appointment type
- */
 export type AppointmentType = typeof AppointmentType[keyof typeof AppointmentType];
 
 

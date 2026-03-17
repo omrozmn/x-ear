@@ -12,8 +12,6 @@ import type { PlanUpdateFeatures } from './planUpdateFeatures';
 import type { PlanUpdateIsActive } from './planUpdateIsActive';
 import type { PlanUpdateIsPublic } from './planUpdateIsPublic';
 import type { PlanUpdateMaxUsers } from './planUpdateMaxUsers';
-import type { PlanUpdateSector } from './planUpdateSector';
-import type { PlanUpdateCountryCode } from './planUpdateCountryCode';
 
 /**
  * Schema for updating a plan
@@ -26,8 +24,4 @@ export interface PlanUpdate {
   isActive?: PlanUpdateIsActive;
   isPublic?: PlanUpdateIsPublic;
   maxUsers?: PlanUpdateMaxUsers;
-  /** Sector code (hearing, pharmacy, hospital, hotel, beauty, general, medical, optic) */
-  sector?: PlanUpdateSector;
-  /** ISO 3166-1 alpha-2 country code */
-  countryCode?: PlanUpdateCountryCode;
 }

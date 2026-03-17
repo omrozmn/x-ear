@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { Loader2, Scissors, Wand2 } from 'lucide-react';
 import { Button, Modal, useToastHelpers } from '@x-ear/ui-web';
 import { useRemoveBackground, useResizeImage } from '@/api/client/image-processing.client';
-import type { ProductMedia } from '@/api/client/product-media.client';
+import type { ProductMediaRead } from '@/api/client/product-media.client';
 import { MARKETPLACE_CONFIGS } from '../config/marketplaceFields';
 
 interface ImageStudioModalProps {
   isOpen: boolean;
   onClose: () => void;
-  media: ProductMedia | null;
+  media: ProductMediaRead | null;
   inventoryId: string;
   onImageProcessed: (url: string, s3Key: string) => void;
 }
@@ -34,7 +34,7 @@ export const ImageStudioModal: React.FC<ImageStudioModalProps> = ({
   const handleRemoveBg = async () => {
     if (!media.s3Key) return;
     try {
-      const result = await removeBgMutation.mutateAsync({ s3Key: media.s3Key });
+      const result = await removeBgMutation.mutateAsync({ data: { s3Key: media.s3Key as string } });
       if (result?.data) {
         onImageProcessed(result.data.url, result.data.s3Key);
         toast.success('Arka plan kaldırıldı');
@@ -48,10 +48,12 @@ export const ImageStudioModal: React.FC<ImageStudioModalProps> = ({
     if (!media.s3Key) return;
     try {
       const result = await resizeMutation.mutateAsync({
-        s3Key: media.s3Key,
-        width,
-        height,
-        maintainAspect: true,
+        data: {
+          s3Key: media.s3Key as string,
+          width,
+          height,
+          maintainAspect: true,
+        },
       });
       if (result?.data) {
         onImageProcessed(result.data.url, result.data.s3Key);
@@ -71,13 +73,13 @@ export const ImageStudioModal: React.FC<ImageStudioModalProps> = ({
         <div>
           <div className="rounded-xl overflow-hidden border border-border bg-[repeating-conic-gradient(#f0f0f0_0%_25%,transparent_0%_50%)] bg-[length:20px_20px]">
             <img
-              src={media.url}
-              alt={media.altText || 'Preview'}
+              src={media.url as string}
+              alt={media.altText as string || 'Preview'}
               className="w-full object-contain max-h-[400px]"
             />
           </div>
           <div className="mt-2 text-xs text-muted-foreground text-center">
-            {media.width}x{media.height}px · {media.fileSize ? `${(media.fileSize / 1024).toFixed(0)} KB` : ''}
+            {media.width}x{media.height}px · {media.fileSize ? `${(Number(media.fileSize) / 1024).toFixed(0)} KB` : ''}
           </div>
         </div>
 

@@ -2,18 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { Sparkles, Loader2, Save, Send } from 'lucide-react';
 import { Button, Input, Modal, useToastHelpers } from '@x-ear/ui-web';
 import { MARKETPLACE_CONFIGS, type MarketplaceConfig } from '../config/marketplaceFields';
-import type { MarketplaceListing, MarketplaceListingCreate, MarketplaceListingUpdate } from '@/api/client/marketplace-listings.client';
+import type { MarketplaceListingRead, MarketplaceListingCreate, MarketplaceListingUpdate } from '@/api/client/marketplace-listings.client';
 
 interface MarketplaceListingModalProps {
   isOpen: boolean;
   onClose: () => void;
   platform: string;
   integrationId: string;
-  existingListing?: MarketplaceListing | null;
+  existingListing?: MarketplaceListingRead | null;
   inventoryId: string;
   onSave: (data: MarketplaceListingCreate | MarketplaceListingUpdate) => Promise<void>;
   onPublish?: (listingId: string) => Promise<void>;
-  onAIFill?: (platform: string) => Promise<{ marketplaceTitle?: string; marketplaceDescription?: string; marketplacePrice?: number; listingData?: string } | undefined>;
+  onAIFill?: (platform: string) => Promise<{ marketplaceTitle?: string | null; marketplaceDescription?: string | null; marketplacePrice?: number | null; listingData?: string | null } | undefined>;
 }
 
 export const MarketplaceListingModal: React.FC<MarketplaceListingModalProps> = ({
@@ -29,7 +29,7 @@ export const MarketplaceListingModal: React.FC<MarketplaceListingModalProps> = (
   useEffect(() => {
     if (existingListing?.listingData) {
       try {
-        setFormData(JSON.parse(existingListing.listingData));
+        setFormData(JSON.parse(existingListing.listingData as string));
       } catch {
         setFormData({});
       }

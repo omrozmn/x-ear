@@ -27,9 +27,9 @@ import type {
 import type {
   HTTPValidationError,
   ListAdminScanQueueParams,
+  ResponseEnvelope,
   ResponseEnvelopeListScanQueueRead,
-  ResponseEnvelopeScanQueueRead,
-  SchemasBaseResponseEnvelope
+  ResponseEnvelopeScanQueueRead
 } from '.././schemas';
 
 import { adminApi } from '../../orval-mutator';
@@ -47,7 +47,7 @@ export const createAdminScanQueueInitDb = (
 ) => {
       
       
-      return adminApi<SchemasBaseResponseEnvelope>(
+      return adminApi<ResponseEnvelope>(
       {url: `/api/admin/scan-queue/init-db`, method: 'POST', signal
     },
       );

@@ -9,7 +9,6 @@
 export type ListReportPosMovementsParams = {
 /**
  * @minimum 1
- * @maximum 1000000
  */
 page?: number;
 /**
@@ -22,7 +21,4 @@ per_page?: number;
  * @maximum 365
  */
 days?: number;
-branch_id?: string | null;
-startDate?: string | null;
-endDate?: string | null;
 };

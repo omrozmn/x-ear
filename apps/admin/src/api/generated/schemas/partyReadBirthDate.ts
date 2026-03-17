@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type PartyReadBirthDate = unknown | null;
+export type PartyReadBirthDate = string | null;

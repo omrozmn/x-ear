@@ -5,6 +5,6 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SmsLogRead } from './smsLogRead';
+import type { SMSLogRead } from './sMSLogRead';
 
-export type SchemaRegistryResponseSmsLogRead = SmsLogRead | null;
+export type SchemaRegistryResponseSmsLogRead = SMSLogRead | null;

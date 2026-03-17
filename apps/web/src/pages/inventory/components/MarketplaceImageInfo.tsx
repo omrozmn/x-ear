@@ -1,10 +1,10 @@
 import React from 'react';
 import { ImageIcon, Video, CheckCircle, AlertCircle } from 'lucide-react';
 import { MARKETPLACE_CONFIGS } from '../config/marketplaceFields';
-import type { ProductMedia } from '@/api/client/product-media.client';
+import type { ProductMediaRead } from '@/api/client/product-media.client';
 
 interface MarketplaceImageInfoProps {
-  media: ProductMedia[];
+  media: ProductMediaRead[];
 }
 
 export const MarketplaceImageInfo: React.FC<MarketplaceImageInfoProps> = ({ media }) => {
@@ -19,7 +19,7 @@ export const MarketplaceImageInfo: React.FC<MarketplaceImageInfoProps> = ({ medi
           const meetsImages = imageCount >= 1 && imageCount <= config.maxImages;
           const meetsMinSize = media.every(m => {
             if (m.mediaType !== 'image') return true;
-            return (m.width || 0) >= config.minImageSize.w && (m.height || 0) >= config.minImageSize.h;
+            return (Number(m.width) || 0) >= config.minImageSize.w && (Number(m.height) || 0) >= config.minImageSize.h;
           });
           const ready = meetsImages && (imageCount === 0 || meetsMinSize);
 

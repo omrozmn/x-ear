@@ -13,8 +13,6 @@ import type { AddonUpdatePrice } from './addonUpdatePrice';
 import type { AddonUpdateCurrency } from './addonUpdateCurrency';
 import type { AddonUpdateUnitName } from './addonUpdateUnitName';
 import type { AddonUpdateLimitAmount } from './addonUpdateLimitAmount';
-import type { AddonUpdateSector } from './addonUpdateSector';
-import type { AddonUpdateCountryCode } from './addonUpdateCountryCode';
 import type { AddonUpdateIsActive } from './addonUpdateIsActive';
 
 /**
@@ -29,9 +27,5 @@ export interface AddonUpdate {
   currency?: AddonUpdateCurrency;
   unitName?: AddonUpdateUnitName;
   limitAmount?: AddonUpdateLimitAmount;
-  /** Sector code (hearing, pharmacy, hospital, hotel, beauty, general, medical, optic) */
-  sector?: AddonUpdateSector;
-  /** ISO 3166-1 alpha-2 country code */
-  countryCode?: AddonUpdateCountryCode;
   isActive?: AddonUpdateIsActive;
 }

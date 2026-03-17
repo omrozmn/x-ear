@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Trash2, Star, Download, Edit3, GripVertical } from 'lucide-react';
 import { Button } from '@x-ear/ui-web';
-import type { ProductMedia } from '@/api/client/product-media.client';
+import type { ProductMediaRead } from '@/api/client/product-media.client';
 
 interface ImageGalleryProps {
-  media: ProductMedia[];
+  media: ProductMediaRead[];
   onDelete: (mediaId: string) => void;
   onSetPrimary: (mediaId: string) => void;
-  onEdit: (media: ProductMedia) => void;
+  onEdit: (media: ProductMediaRead) => void;
   onReorder: (mediaIds: string[]) => void;
 }
 
@@ -64,8 +64,8 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
           {/* Image */}
           <div className="aspect-square bg-gray-100 dark:bg-gray-800">
             <img
-              src={item.url}
-              alt={item.altText || item.filename || 'Product image'}
+              src={item.url as string}
+              alt={item.altText as string || item.filename as string || 'Product image'}
               className="w-full h-full object-cover"
               loading="lazy"
             />
@@ -111,8 +111,8 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                 size="sm"
                 onClick={() => {
                   const a = document.createElement('a');
-                  a.href = item.url;
-                  a.download = item.filename || 'image';
+                  a.href = item.url as string;
+                  a.download = item.filename as string || 'image';
                   a.click();
                 }}
                 className="p-1.5 text-white hover:bg-white/20"

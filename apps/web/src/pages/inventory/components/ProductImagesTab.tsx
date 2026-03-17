@@ -3,8 +3,8 @@ import { Upload, Search, Sparkles, Loader2 } from 'lucide-react';
 import { Button, useToastHelpers } from '@x-ear/ui-web';
 import {
   useListProductMedia, useCreateProductMedia, useDeleteProductMedia,
-  useReorderProductMedia, getPresignedUrl, updateProductMedia,
-  type ProductMedia
+  useReorderProductMedia, getMediaPresignedUrl, updateProductMedia,
+  type ProductMediaRead
 } from '@/api/client/product-media.client';
 import { ImageGallery } from './ImageGallery';
 import { StockImageSearchPanel } from './StockImageSearchPanel';
@@ -19,14 +19,14 @@ interface ProductImagesTabProps {
 export const ProductImagesTab: React.FC<ProductImagesTabProps> = ({ inventoryId }) => {
   const [isStockSearchOpen, setIsStockSearchOpen] = useState(false);
   const [isAIGenerateOpen, setIsAIGenerateOpen] = useState(false);
-  const [studioMedia, setStudioMedia] = useState<ProductMedia | null>(null);
+  const [studioMedia, setStudioMedia] = useState<ProductMediaRead | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const toast = useToastHelpers();
 
   const { data: mediaData, refetch } = useListProductMedia(inventoryId);
-  const createMedia = useCreateProductMedia(inventoryId);
-  const deleteMedia = useDeleteProductMedia(inventoryId);
-  const reorderMedia = useReorderProductMedia(inventoryId);
+  const createMedia = useCreateProductMedia();
+  const deleteMedia = useDeleteProductMedia();
+  const reorderMedia = useReorderProductMedia();
 
   const media = mediaData?.data || [];
 
@@ -35,7 +35,7 @@ export const ProductImagesTab: React.FC<ProductImagesTabProps> = ({ inventoryId 
     try {
       for (const file of Array.from(files)) {
         // 1. Get presigned URL
-        const presignedRes = await getPresignedUrl(inventoryId, {
+        const presignedRes = await getMediaPresignedUrl(inventoryId, {
           filename: file.name,
           contentType: file.type,
         });
@@ -45,7 +45,7 @@ export const ProductImagesTab: React.FC<ProductImagesTabProps> = ({ inventoryId 
         // 2. Upload to S3
         if (presigned.fields) {
           const formData = new FormData();
-          Object.entries(presigned.fields).forEach(([k, v]) => formData.append(k, v));
+          Object.entries(presigned.fields).forEach(([k, v]) => formData.append(k, v as string));
           formData.append('file', file);
           await fetch(presigned.url, { method: 'POST', body: formData });
         } else {
@@ -77,16 +77,19 @@ export const ProductImagesTab: React.FC<ProductImagesTabProps> = ({ inventoryId 
           : s3Url;
 
         await createMedia.mutateAsync({
-          mediaType: file.type.startsWith('video/') ? 'video' : 'image',
-          url: fullUrl,
-          s3Key: presigned.s3Key,
-          filename: file.name,
-          mimeType: file.type,
-          fileSize: file.size,
-          width,
-          height,
-          isPrimary: media.length === 0,
-          source: 'upload',
+          inventoryId,
+          data: {
+            mediaType: file.type.startsWith('video/') ? 'video' : 'image',
+            url: fullUrl,
+            s3Key: presigned.s3Key,
+            filename: file.name,
+            mimeType: file.type,
+            fileSize: file.size,
+            width,
+            height,
+            isPrimary: media.length === 0,
+            source: 'upload',
+          },
         });
       }
       toast.success('Görseller yüklendi');
@@ -106,7 +109,7 @@ export const ProductImagesTab: React.FC<ProductImagesTabProps> = ({ inventoryId 
 
   const handleDelete = async (mediaId: string) => {
     try {
-      await deleteMedia.mutateAsync(mediaId);
+      await deleteMedia.mutateAsync({ inventoryId, mediaId });
       toast.success('Görsel silindi');
     } catch {
       toast.error('Silme başarısız');
@@ -125,7 +128,7 @@ export const ProductImagesTab: React.FC<ProductImagesTabProps> = ({ inventoryId 
 
   const handleReorder = async (mediaIds: string[]) => {
     try {
-      await reorderMedia.mutateAsync(mediaIds);
+      await reorderMedia.mutateAsync({ inventoryId, data: { mediaIds } });
     } catch {
       toast.error('Sıralama başarısız');
     }
@@ -134,20 +137,26 @@ export const ProductImagesTab: React.FC<ProductImagesTabProps> = ({ inventoryId 
   const handleImageProcessed = async (url: string, s3Key: string) => {
     // Add processed image as new media
     await createMedia.mutateAsync({
-      mediaType: 'image',
-      url,
-      s3Key,
-      source: 'upload',
+      inventoryId,
+      data: {
+        mediaType: 'image',
+        url,
+        s3Key,
+        source: 'upload',
+      },
     });
     setStudioMedia(null);
   };
 
   const handleAIImageGenerated = async (url: string, s3Key: string) => {
     await createMedia.mutateAsync({
-      mediaType: 'image',
-      url,
-      s3Key,
-      source: 'ai_generated',
+      inventoryId,
+      data: {
+        mediaType: 'image',
+        url,
+        s3Key,
+        source: 'ai_generated',
+      },
     });
     setIsAIGenerateOpen(false);
   };

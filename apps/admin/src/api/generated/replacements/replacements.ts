@@ -50,7 +50,7 @@ export const listPatientReplacements = (
       
       
       return adminApi<ResponseEnvelopeListReplacementRead>(
-      {url: `/api/parties/${partyId}/replacements`, method: 'GET', signal
+      {url: `/parties/${partyId}/replacements`, method: 'GET', signal
     },
       );
     }
@@ -60,7 +60,7 @@ export const listPatientReplacements = (
 
 export const getListPatientReplacementsQueryKey = (partyId?: string,) => {
     return [
-    `/api/parties/${partyId}/replacements`
+    `/parties/${partyId}/replacements`
     ] as const;
     }
 
@@ -144,7 +144,7 @@ export const createPatientReplacements = (
       
       
       return adminApi<ResponseEnvelopeReplacementRead>(
-      {url: `/api/parties/${partyId}/replacements`, method: 'POST',
+      {url: `/parties/${partyId}/replacements`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: replacementCreate, signal
     },
@@ -209,7 +209,7 @@ export const getReplacement = (
       
       
       return adminApi<ResponseEnvelopeReplacementRead>(
-      {url: `/api/replacements/${replacementId}`, method: 'GET', signal
+      {url: `/replacements/${replacementId}`, method: 'GET', signal
     },
       );
     }
@@ -219,7 +219,7 @@ export const getReplacement = (
 
 export const getGetReplacementQueryKey = (replacementId?: string,) => {
     return [
-    `/api/replacements/${replacementId}`
+    `/replacements/${replacementId}`
     ] as const;
     }
 
@@ -302,7 +302,7 @@ export const updateReplacementStatus = (
       
       
       return adminApi<ResponseEnvelopeReplacementRead>(
-      {url: `/api/replacements/${replacementId}/status`, method: 'PATCH',
+      {url: `/replacements/${replacementId}/status`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: replacementStatusUpdate
     },
@@ -368,7 +368,7 @@ export const createReplacementInvoice = (
       
       
       return adminApi<ResponseEnvelopeReplacementInvoiceResponse>(
-      {url: `/api/replacements/${replacementId}/invoice`, method: 'POST',
+      {url: `/replacements/${replacementId}/invoice`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: replacementInvoiceCreate, signal
     },
@@ -433,7 +433,7 @@ export const createReturnInvoiceSendToGib = (
       
       
       return adminApi<unknown>(
-      {url: `/api/return-invoices/${invoiceId}/send-to-gib`, method: 'POST', signal
+      {url: `/return-invoices/${invoiceId}/send-to-gib`, method: 'POST', signal
     },
       );
     }

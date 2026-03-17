@@ -7,7 +7,7 @@ import { CargoCredentialModal } from './CargoCredentialModal';
 import {
   useListCargoIntegrations, useCreateCargoIntegration,
   useUpdateCargoIntegration, useTestCargoIntegration,
-  type CargoIntegration
+  type CargoIntegrationRead
 } from '@/api/client/cargo-integrations.client';
 import { useListAdminMarketplaceIntegrations } from '@/api/generated';
 import { customInstance } from '@/api/orval-mutator';
@@ -24,7 +24,7 @@ export const ECommerceIntegrationSettings: React.FC = () => {
 
   // Cargo integrations
   const { data: cargoData, refetch: refetchCargo } = useListCargoIntegrations();
-  const cargoIntegrations = (cargoData?.data || []) as CargoIntegration[];
+  const cargoIntegrations = (cargoData?.data || []) as CargoIntegrationRead[];
 
   const createCargo = useCreateCargoIntegration();
   const updateCargo = useUpdateCargoIntegration();
@@ -88,23 +88,25 @@ export const ECommerceIntegrationSettings: React.FC = () => {
     const existing = getCargoIntegration(data.platform);
     if (existing) {
       await updateCargo.mutateAsync({
-        id: existing.id,
+        integrationId: existing.id,
         data: { apiKey: data.apiKey, apiSecret: data.apiSecret, customerId: data.customerId },
       });
     } else {
       await createCargo.mutateAsync({
-        platform: data.platform,
-        name: data.name,
-        apiKey: data.apiKey,
-        apiSecret: data.apiSecret,
-        customerId: data.customerId,
+        data: {
+          platform: data.platform,
+          name: data.name,
+          apiKey: data.apiKey,
+          apiSecret: data.apiSecret,
+          customerId: data.customerId,
+        },
       });
     }
     refetchCargo();
   };
 
   const handleTestCargo = async (id: string) => {
-    await testCargo.mutateAsync(id);
+    await testCargo.mutateAsync({ integrationId: id });
     refetchCargo();
   };
 

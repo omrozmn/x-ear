@@ -36,7 +36,7 @@ import { adminApi } from '../../orval-mutator';
  * @summary Process email unsubscribe request
  */
 export const processUnsubscribe = (
-    params?: ProcessUnsubscribeParams,
+    params: ProcessUnsubscribeParams,
  signal?: AbortSignal
 ) => {
       
@@ -58,7 +58,7 @@ export const getProcessUnsubscribeQueryKey = (params?: ProcessUnsubscribeParams,
     }
 
     
-export const getProcessUnsubscribeQueryOptions = <TData = Awaited<ReturnType<typeof processUnsubscribe>>, TError = void | HTTPValidationError>(params?: ProcessUnsubscribeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof processUnsubscribe>>, TError, TData>>, }
+export const getProcessUnsubscribeQueryOptions = <TData = Awaited<ReturnType<typeof processUnsubscribe>>, TError = void | HTTPValidationError>(params: ProcessUnsubscribeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof processUnsubscribe>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
@@ -81,7 +81,7 @@ export type ProcessUnsubscribeQueryError = void | HTTPValidationError
 
 
 export function useProcessUnsubscribe<TData = Awaited<ReturnType<typeof processUnsubscribe>>, TError = void | HTTPValidationError>(
- params: undefined |  ProcessUnsubscribeParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof processUnsubscribe>>, TError, TData>> & Pick<
+ params: ProcessUnsubscribeParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof processUnsubscribe>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof processUnsubscribe>>,
           TError,
@@ -91,7 +91,7 @@ export function useProcessUnsubscribe<TData = Awaited<ReturnType<typeof processU
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 export function useProcessUnsubscribe<TData = Awaited<ReturnType<typeof processUnsubscribe>>, TError = void | HTTPValidationError>(
- params?: ProcessUnsubscribeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof processUnsubscribe>>, TError, TData>> & Pick<
+ params: ProcessUnsubscribeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof processUnsubscribe>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof processUnsubscribe>>,
           TError,
@@ -101,7 +101,7 @@ export function useProcessUnsubscribe<TData = Awaited<ReturnType<typeof processU
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 export function useProcessUnsubscribe<TData = Awaited<ReturnType<typeof processUnsubscribe>>, TError = void | HTTPValidationError>(
- params?: ProcessUnsubscribeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof processUnsubscribe>>, TError, TData>>, }
+ params: ProcessUnsubscribeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof processUnsubscribe>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
@@ -109,7 +109,7 @@ export function useProcessUnsubscribe<TData = Awaited<ReturnType<typeof processU
  */
 
 export function useProcessUnsubscribe<TData = Awaited<ReturnType<typeof processUnsubscribe>>, TError = void | HTTPValidationError>(
- params?: ProcessUnsubscribeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof processUnsubscribe>>, TError, TData>>, }
+ params: ProcessUnsubscribeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof processUnsubscribe>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 

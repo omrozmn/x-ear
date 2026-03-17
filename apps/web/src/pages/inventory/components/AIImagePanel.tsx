@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { Button, Input, Modal, useToastHelpers } from '@x-ear/ui-web';
-import { useAIGenerateImage } from '@/api/client/image-processing.client';
+import { useAiGenerateImage } from '@/api/client/image-processing.client';
 
 interface AIImagePanelProps {
   isOpen: boolean;
@@ -22,7 +22,7 @@ export const AIImagePanel: React.FC<AIImagePanelProps> = ({
   const [prompt, setPrompt] = useState('');
   const [style, setStyle] = useState('product-photo');
   const toast = useToastHelpers();
-  const generateMutation = useAIGenerateImage();
+  const generateMutation = useAiGenerateImage();
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -32,8 +32,10 @@ export const AIImagePanel: React.FC<AIImagePanelProps> = ({
 
     try {
       const result = await generateMutation.mutateAsync({
-        prompt: prompt.trim(),
-        style,
+        data: {
+          prompt: prompt.trim(),
+          style,
+        },
       });
       if (result?.data) {
         onImageGenerated(result.data.url, result.data.s3Key);

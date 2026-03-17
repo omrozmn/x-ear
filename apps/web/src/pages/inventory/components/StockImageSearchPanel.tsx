@@ -23,7 +23,7 @@ export const StockImageSearchPanel: React.FC<StockImageSearchPanelProps> = ({
     query: searchQuery,
     provider,
     page,
-    perPage: 20,
+    per_page: 20,
   });
 
   const downloadMutation = useDownloadStockImage();
@@ -39,10 +39,12 @@ export const StockImageSearchPanel: React.FC<StockImageSearchPanelProps> = ({
   const handleDownload = async (imageId: string, imageUrl: string) => {
     try {
       await downloadMutation.mutateAsync({
-        provider,
-        imageId,
-        imageUrl,
-        inventoryId,
+        data: {
+          provider,
+          imageId,
+          imageUrl,
+          inventoryId,
+        },
       });
       toast.success('Görsel eklendi');
       onImageAdded();

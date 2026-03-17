@@ -9,7 +9,6 @@
 export type ListAdminNotificationTemplatesParams = {
 /**
  * @minimum 1
- * @maximum 1000000
  */
 page?: number;
 /**

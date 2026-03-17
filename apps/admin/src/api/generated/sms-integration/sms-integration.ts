@@ -33,7 +33,6 @@ import type {
   HTTPValidationError,
   HeaderStatusUpdate,
   ListSmAdminHeadersParams,
-  ListSmDocumentDownloadParams,
   ResponseEnvelopeListSmsHeaderRequestRead,
   ResponseEnvelopeListSmsPackageRead,
   ResponseEnvelopeListTargetAudienceRead,
@@ -842,19 +841,17 @@ export const useCreateSmDocumentUpload = <TError = HTTPValidationError,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * Download SMS document by type or get preview URL
+ * Download SMS document by type
  * @summary Download Sms Document
  */
 export const listSmDocumentDownload = (
     documentType: string,
-    params?: ListSmDocumentDownloadParams,
  signal?: AbortSignal
 ) => {
       
       
       return adminApi<unknown>(
-      {url: `/api/sms/documents/${documentType}/download`, method: 'GET',
-        params, signal
+      {url: `/api/sms/documents/${documentType}/download`, method: 'GET', signal
     },
       );
     }
@@ -862,25 +859,23 @@ export const listSmDocumentDownload = (
 
 
 
-export const getListSmDocumentDownloadQueryKey = (documentType?: string,
-    params?: ListSmDocumentDownloadParams,) => {
+export const getListSmDocumentDownloadQueryKey = (documentType?: string,) => {
     return [
-    `/api/sms/documents/${documentType}/download`, ...(params ? [params]: [])
+    `/api/sms/documents/${documentType}/download`
     ] as const;
     }
 
     
-export const getListSmDocumentDownloadQueryOptions = <TData = Awaited<ReturnType<typeof listSmDocumentDownload>>, TError = HTTPValidationError>(documentType: string,
-    params?: ListSmDocumentDownloadParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmDocumentDownload>>, TError, TData>>, }
+export const getListSmDocumentDownloadQueryOptions = <TData = Awaited<ReturnType<typeof listSmDocumentDownload>>, TError = HTTPValidationError>(documentType: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmDocumentDownload>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListSmDocumentDownloadQueryKey(documentType,params);
+  const queryKey =  queryOptions?.queryKey ?? getListSmDocumentDownloadQueryKey(documentType);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSmDocumentDownload>>> = ({ signal }) => listSmDocumentDownload(documentType,params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSmDocumentDownload>>> = ({ signal }) => listSmDocumentDownload(documentType, signal);
 
       
 
@@ -894,8 +889,7 @@ export type ListSmDocumentDownloadQueryError = HTTPValidationError
 
 
 export function useListSmDocumentDownload<TData = Awaited<ReturnType<typeof listSmDocumentDownload>>, TError = HTTPValidationError>(
- documentType: string,
-    params: undefined |  ListSmDocumentDownloadParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmDocumentDownload>>, TError, TData>> & Pick<
+ documentType: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmDocumentDownload>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof listSmDocumentDownload>>,
           TError,
@@ -905,8 +899,7 @@ export function useListSmDocumentDownload<TData = Awaited<ReturnType<typeof list
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 export function useListSmDocumentDownload<TData = Awaited<ReturnType<typeof listSmDocumentDownload>>, TError = HTTPValidationError>(
- documentType: string,
-    params?: ListSmDocumentDownloadParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmDocumentDownload>>, TError, TData>> & Pick<
+ documentType: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmDocumentDownload>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof listSmDocumentDownload>>,
           TError,
@@ -916,8 +909,7 @@ export function useListSmDocumentDownload<TData = Awaited<ReturnType<typeof list
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 export function useListSmDocumentDownload<TData = Awaited<ReturnType<typeof listSmDocumentDownload>>, TError = HTTPValidationError>(
- documentType: string,
-    params?: ListSmDocumentDownloadParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmDocumentDownload>>, TError, TData>>, }
+ documentType: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmDocumentDownload>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
@@ -925,12 +917,11 @@ export function useListSmDocumentDownload<TData = Awaited<ReturnType<typeof list
  */
 
 export function useListSmDocumentDownload<TData = Awaited<ReturnType<typeof listSmDocumentDownload>>, TError = HTTPValidationError>(
- documentType: string,
-    params?: ListSmDocumentDownloadParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmDocumentDownload>>, TError, TData>>, }
+ documentType: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmDocumentDownload>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getListSmDocumentDownloadQueryOptions(documentType,params,options)
+  const queryOptions = getListSmDocumentDownloadQueryOptions(documentType,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

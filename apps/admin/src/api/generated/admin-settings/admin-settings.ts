@@ -26,8 +26,8 @@ import type {
 
 import type {
   HTTPValidationError,
+  ResponseEnvelope,
   ResponseEnvelopeListSystemSettingRead,
-  SchemasBaseResponseEnvelope,
   SettingItem
 } from '.././schemas';
 
@@ -46,7 +46,7 @@ export const createAdminSettingInitDb = (
 ) => {
       
       
-      return adminApi<SchemasBaseResponseEnvelope>(
+      return adminApi<ResponseEnvelope>(
       {url: `/api/admin/settings/init-db`, method: 'POST', signal
     },
       );
@@ -202,7 +202,7 @@ export const updateAdminSettings = (
 ) => {
       
       
-      return adminApi<SchemasBaseResponseEnvelope>(
+      return adminApi<ResponseEnvelope>(
       {url: `/api/admin/settings`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: settingItem, signal
@@ -267,7 +267,7 @@ export const createAdminSettingCacheClear = (
 ) => {
       
       
-      return adminApi<SchemasBaseResponseEnvelope>(
+      return adminApi<ResponseEnvelope>(
       {url: `/api/admin/settings/cache/clear`, method: 'POST', signal
     },
       );
@@ -330,7 +330,7 @@ export const createAdminSettingBackup = (
 ) => {
       
       
-      return adminApi<SchemasBaseResponseEnvelope>(
+      return adminApi<ResponseEnvelope>(
       {url: `/api/admin/settings/backup`, method: 'POST', signal
     },
       );

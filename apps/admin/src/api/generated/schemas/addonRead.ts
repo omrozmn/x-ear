@@ -11,9 +11,6 @@ import type { AddonReadSlug } from './addonReadSlug';
 import type { AddonReadDescription } from './addonReadDescription';
 import type { AddonReadUnitName } from './addonReadUnitName';
 import type { AddonReadLimitAmount } from './addonReadLimitAmount';
-import type { AddonReadSector } from './addonReadSector';
-import type { AddonReadCountryCode } from './addonReadCountryCode';
-import type { AddonReadFeatures } from './addonReadFeatures';
 
 /**
  * Schema for reading an addon
@@ -31,7 +28,7 @@ export interface AddonRead {
   slug?: AddonReadSlug;
   /** Addon description */
   description?: AddonReadDescription;
-  /** Addon type (PER_USER, FLAT_FEE, USAGE_BASED) */
+  /** Addon type */
   addonType?: string;
   /** Addon price */
   price: number;
@@ -41,14 +38,8 @@ export interface AddonRead {
   unitName?: AddonReadUnitName;
   /** Limit amount */
   limitAmount?: AddonReadLimitAmount;
-  /** Sector code (hearing, pharmacy, hospital, hotel, beauty, general, medical, optic) */
-  sector?: AddonReadSector;
-  /** ISO 3166-1 alpha-2 country code */
-  countryCode?: AddonReadCountryCode;
   /** Is addon active */
   isActive?: boolean;
-  /** Addon features */
-  features?: AddonReadFeatures;
   /** Number of tenants using this addon */
   tenantCount?: number;
 }

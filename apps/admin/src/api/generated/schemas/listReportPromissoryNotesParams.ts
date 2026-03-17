@@ -11,7 +11,4 @@ export type ListReportPromissoryNotesParams = {
  * @minimum 1
  */
 days?: number;
-branch_id?: string | null;
-startDate?: string | null;
-endDate?: string | null;
 };

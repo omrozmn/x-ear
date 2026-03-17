@@ -9,7 +9,6 @@
 export type ListReportPromissoryNoteByPatientParams = {
 /**
  * @minimum 1
- * @maximum 1000000
  */
 page?: number;
 /**
@@ -18,7 +17,4 @@ page?: number;
  */
 per_page?: number;
 status?: string | null;
-branch_id?: string | null;
-startDate?: string | null;
-endDate?: string | null;
 };

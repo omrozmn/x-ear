@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, Plug } from 'lucide-react';
 import { Button, Input, Modal, useToastHelpers } from '@x-ear/ui-web';
-import type { CargoIntegration } from '@/api/client/cargo-integrations.client';
+import type { CargoIntegrationRead } from '@/api/client/cargo-integrations.client';
 
 interface CargoCredentialModalProps {
   isOpen: boolean;
   onClose: () => void;
   platform: string;
   platformName: string;
-  existingIntegration?: CargoIntegration | null;
+  existingIntegration?: CargoIntegrationRead | null;
   onSave: (data: { platform: string; name: string; apiKey: string; apiSecret: string; customerId: string }) => Promise<void>;
   onTest?: (id: string) => Promise<void>;
 }
@@ -26,7 +26,7 @@ export const CargoCredentialModal: React.FC<CargoCredentialModalProps> = ({
 
   useEffect(() => {
     if (existingIntegration) {
-      setCustomerId(existingIntegration.customerId || '');
+      setCustomerId(existingIntegration.customerId as string || '');
       setApiKey('');
       setApiSecret('');
     } else {

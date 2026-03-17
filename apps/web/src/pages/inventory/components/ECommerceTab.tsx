@@ -5,7 +5,7 @@ import { MARKETPLACE_CONFIGS } from '../config/marketplaceFields';
 import {
   useListMarketplaceListings, useCreateMarketplaceListing,
   useUpdateMarketplaceListing, useDeleteMarketplaceListing,
-  useAIAutoFillListings, type MarketplaceListing, type MarketplaceListingCreate,
+  useAiAutoFillListings, type MarketplaceListingRead, type MarketplaceListingCreate,
   type MarketplaceListingUpdate, type AIFillResponse
 } from '@/api/client/marketplace-listings.client';
 import { MarketplaceListingModal } from './MarketplaceListingModal';
@@ -24,21 +24,21 @@ export const ECommerceTab: React.FC<ECommerceTabProps> = ({ inventoryId, integra
   const toast = useToastHelpers();
 
   const { data: listingsData, refetch } = useListMarketplaceListings(inventoryId);
-  const createListing = useCreateMarketplaceListing(inventoryId);
-  const updateListing = useUpdateMarketplaceListing(inventoryId);
-  const deleteListing = useDeleteMarketplaceListing(inventoryId);
-  const aiAutoFill = useAIAutoFillListings(inventoryId);
+  const createListing = useCreateMarketplaceListing();
+  const updateListing = useUpdateMarketplaceListing();
+  const deleteListing = useDeleteMarketplaceListing();
+  const aiAutoFill = useAiAutoFillListings();
 
   const listings = listingsData?.data || [];
   const activeIntegrations = integrations.filter(i => i.isActive && i.status === 'connected');
 
-  const getListingForIntegration = (integrationId: string): MarketplaceListing | undefined =>
+  const getListingForIntegration = (integrationId: string): MarketplaceListingRead | undefined =>
     listings.find(l => l.integrationId === integrationId);
 
   const handleAIFillAll = async () => {
     setIsAIPreviewOpen(true);
     try {
-      const result = await aiAutoFill.mutateAsync(undefined);
+      const result = await aiAutoFill.mutateAsync({ inventoryId, data: {} });
       setAiResults(result?.data || []);
     } catch {
       toast.error('AI doldurma başarısız');
@@ -48,7 +48,7 @@ export const ECommerceTab: React.FC<ECommerceTabProps> = ({ inventoryId, integra
 
   const handleAIFillSingle = async (platform: string) => {
     try {
-      const result = await aiAutoFill.mutateAsync(platform);
+      const result = await aiAutoFill.mutateAsync({ inventoryId, data: { platform } });
       return result?.data?.[0];
     } catch {
       toast.error('AI doldurma başarısız');
@@ -64,6 +64,7 @@ export const ECommerceTab: React.FC<ECommerceTabProps> = ({ inventoryId, integra
       const existingListing = getListingForIntegration(integration.id);
       if (existingListing) {
         await updateListing.mutateAsync({
+          inventoryId,
           listingId: existingListing.id,
           data: {
             marketplaceTitle: result.marketplaceTitle,
@@ -74,10 +75,13 @@ export const ECommerceTab: React.FC<ECommerceTabProps> = ({ inventoryId, integra
         });
       } else {
         await createListing.mutateAsync({
-          integrationId: integration.id,
-          marketplaceTitle: result.marketplaceTitle,
-          marketplaceDescription: result.marketplaceDescription,
-          marketplacePrice: result.marketplacePrice,
+          inventoryId,
+          data: {
+            integrationId: integration.id,
+            marketplaceTitle: result.marketplaceTitle,
+            marketplaceDescription: result.marketplaceDescription,
+            marketplacePrice: result.marketplacePrice,
+          },
         });
       }
     }
@@ -89,9 +93,9 @@ export const ECommerceTab: React.FC<ECommerceTabProps> = ({ inventoryId, integra
     if (!selectedIntegrationId) return;
     const existingListing = getListingForIntegration(selectedIntegrationId);
     if (existingListing) {
-      await updateListing.mutateAsync({ listingId: existingListing.id, data: data as MarketplaceListingUpdate });
+      await updateListing.mutateAsync({ inventoryId, listingId: existingListing.id, data: data as MarketplaceListingUpdate });
     } else {
-      await createListing.mutateAsync(data as MarketplaceListingCreate);
+      await createListing.mutateAsync({ inventoryId, data: data as MarketplaceListingCreate });
     }
     refetch();
   };

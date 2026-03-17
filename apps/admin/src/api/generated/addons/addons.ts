@@ -28,7 +28,6 @@ import type {
   AddonCreate,
   AddonUpdate,
   HTTPValidationError,
-  ListAddonsParams,
   ResponseEnvelopeAddonRead,
   ResponseEnvelopeListAddonRead
 } from '.././schemas';
@@ -43,14 +42,13 @@ import { adminApi } from '../../orval-mutator';
  * @summary Get Addons
  */
 export const listAddons = (
-    params?: ListAddonsParams,
+    
  signal?: AbortSignal
 ) => {
       
       
       return adminApi<ResponseEnvelopeListAddonRead>(
-      {url: `/api/addons`, method: 'GET',
-        params, signal
+      {url: `/api/addons`, method: 'GET', signal
     },
       );
     }
@@ -58,23 +56,23 @@ export const listAddons = (
 
 
 
-export const getListAddonsQueryKey = (params?: ListAddonsParams,) => {
+export const getListAddonsQueryKey = () => {
     return [
-    `/api/addons`, ...(params ? [params]: [])
+    `/api/addons`
     ] as const;
     }
 
     
-export const getListAddonsQueryOptions = <TData = Awaited<ReturnType<typeof listAddons>>, TError = unknown>(params?: ListAddonsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAddons>>, TError, TData>>, }
+export const getListAddonsQueryOptions = <TData = Awaited<ReturnType<typeof listAddons>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAddons>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListAddonsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListAddonsQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAddons>>> = ({ signal }) => listAddons(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAddons>>> = ({ signal }) => listAddons(signal);
 
       
 
@@ -88,7 +86,7 @@ export type ListAddonsQueryError = unknown
 
 
 export function useListAddons<TData = Awaited<ReturnType<typeof listAddons>>, TError = unknown>(
- params: undefined |  ListAddonsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAddons>>, TError, TData>> & Pick<
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAddons>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof listAddons>>,
           TError,
@@ -98,7 +96,7 @@ export function useListAddons<TData = Awaited<ReturnType<typeof listAddons>>, TE
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 export function useListAddons<TData = Awaited<ReturnType<typeof listAddons>>, TError = unknown>(
- params?: ListAddonsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAddons>>, TError, TData>> & Pick<
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAddons>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof listAddons>>,
           TError,
@@ -108,7 +106,7 @@ export function useListAddons<TData = Awaited<ReturnType<typeof listAddons>>, TE
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 export function useListAddons<TData = Awaited<ReturnType<typeof listAddons>>, TError = unknown>(
- params?: ListAddonsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAddons>>, TError, TData>>, }
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAddons>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
@@ -116,11 +114,11 @@ export function useListAddons<TData = Awaited<ReturnType<typeof listAddons>>, TE
  */
 
 export function useListAddons<TData = Awaited<ReturnType<typeof listAddons>>, TError = unknown>(
- params?: ListAddonsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAddons>>, TError, TData>>, }
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAddons>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getListAddonsQueryOptions(params,options)
+  const queryOptions = getListAddonsQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

@@ -8,15 +8,9 @@
 import type { ReportPatientsResponseAgeDistribution } from './reportPatientsResponseAgeDistribution';
 import type { ReportPatientsResponseStatusDistribution } from './reportPatientsResponseStatusDistribution';
 import type { PatientSegments } from './patientSegments';
-import type { ReportPatientsResponseSummary } from './reportPatientsResponseSummary';
-import type { ReportPatientsResponseAcquisitionBreakdown } from './reportPatientsResponseAcquisitionBreakdown';
-import type { ReportPatientsResponseSegmentBreakdown } from './reportPatientsResponseSegmentBreakdown';
 
 export interface ReportPatientsResponse {
   ageDistribution: ReportPatientsResponseAgeDistribution;
   statusDistribution: ReportPatientsResponseStatusDistribution;
   patientSegments: PatientSegments;
-  summary?: ReportPatientsResponseSummary;
-  acquisitionBreakdown?: ReportPatientsResponseAcquisitionBreakdown;
-  segmentBreakdown?: ReportPatientsResponseSegmentBreakdown;
 }
