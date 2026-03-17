@@ -37,15 +37,53 @@ interface FeatureDef {
 }
 
 const FEATURE_HIERARCHY: FeatureDef[] = [
-    { key: 'patients', label: '👤 Hastalar', defaultMode: 'visible' },
+    {
+        key: 'patients', label: '👤 Hastalar / Müşteriler', defaultMode: 'visible',
+        children: [
+            { key: 'patients.devices', label: 'Cihazlar Sekmesi', defaultMode: 'visible' },
+            { key: 'patients.sales', label: 'Satışlar Sekmesi', defaultMode: 'visible' },
+            { key: 'patients.timeline', label: 'Zaman Çizelgesi', defaultMode: 'visible' },
+            { key: 'patients.documents', label: 'Belgeler Sekmesi', defaultMode: 'visible' },
+            { key: 'patients.hearing_tests', label: 'İşitme Testleri', defaultMode: 'visible' },
+            { key: 'patients.notes', label: 'Notlar Sekmesi', defaultMode: 'visible' },
+        ],
+    },
     { key: 'appointments', label: '📅 Randevular', defaultMode: 'visible' },
     { key: 'inventory', label: '📦 Envanter / Stok', defaultMode: 'visible' },
-    { key: 'suppliers', label: '🚛 Tedarikçiler', defaultMode: 'visible' },
+    {
+        key: 'suppliers', label: '🚛 Tedarikçiler', defaultMode: 'visible',
+        children: [
+            { key: 'suppliers.all', label: 'Tüm Tedarikçiler', defaultMode: 'visible' },
+            { key: 'suppliers.suggested', label: 'Önerilen Tedarikçiler', defaultMode: 'visible' },
+        ],
+    },
     { key: 'sales', label: '🛒 Satışlar', defaultMode: 'visible' },
     { key: 'purchases', label: '💳 Alışlar', defaultMode: 'visible' },
     { key: 'payments', label: '💰 Ödemeler', defaultMode: 'visible' },
-    { key: 'campaigns', label: '📢 Kampanyalar', defaultMode: 'visible' },
-    { key: 'website_builder', label: '🌐 Web Sitesi Yönetimi', defaultMode: 'visible' },
+    {
+        key: 'campaigns', label: '📢 Kampanyalar', defaultMode: 'visible',
+        children: [
+            { key: 'campaigns.sms', label: 'SMS Kampanyaları', defaultMode: 'visible' },
+            { key: 'campaigns.whatsapp', label: 'WhatsApp Kampanyaları', defaultMode: 'visible' },
+            { key: 'campaigns.email', label: 'E-posta Kampanyaları', defaultMode: 'visible' },
+        ],
+    },
+    {
+        key: 'website_builder', label: '🌐 Web Sitesi Yönetimi', defaultMode: 'visible',
+        children: [
+            { key: 'website_builder.content', label: 'İçerik Yönetimi', defaultMode: 'visible' },
+            { key: 'website_builder.appearance', label: 'Görünüm / Tasarım', defaultMode: 'visible' },
+            { key: 'website_builder.pages', label: 'Sayfa Yönetimi', defaultMode: 'visible' },
+            { key: 'website_builder.publishing', label: 'Yayınlama & Domain', defaultMode: 'visible' },
+            { key: 'website_builder.blog', label: 'Blog Modülü', defaultMode: 'visible' },
+            { key: 'website_builder.products', label: 'Ürün Kataloğu', defaultMode: 'visible' },
+            { key: 'website_builder.orders', label: 'Sipariş Yönetimi', defaultMode: 'visible' },
+            { key: 'website_builder.commerce', label: 'Ticaret Ayarları', defaultMode: 'visible' },
+            { key: 'website_builder.appointments', label: 'Randevu Formları', defaultMode: 'visible' },
+            { key: 'website_builder.chatbot', label: 'AI Chatbot', defaultMode: 'visible' },
+            { key: 'website_builder.marketplace', label: 'Pazaryeri Entegrasyonu', defaultMode: 'visible' },
+        ],
+    },
     {
         key: 'invoices', label: '🧾 Faturalar', defaultMode: 'visible',
         children: [
@@ -59,11 +97,27 @@ const FEATURE_HIERARCHY: FeatureDef[] = [
     {
         key: 'sgk', label: '🏥 SGK', defaultMode: 'visible',
         children: [
+            { key: 'sgk.documents', label: 'SGK Belgeleri', defaultMode: 'visible' },
             { key: 'sgk.upload', label: 'SGK Yükleme', defaultMode: 'visible' },
+            { key: 'sgk.downloads', label: 'İndirmeler', defaultMode: 'visible' },
+            { key: 'sgk.stats', label: 'İstatistikler', defaultMode: 'visible' },
+            { key: 'sgk.workflow', label: 'İş Akışı', defaultMode: 'visible' },
             { key: 'sgk.reports', label: 'Rapor Listesi', defaultMode: 'visible' },
         ],
     },
-    { key: 'reports', label: '📊 Raporlar', defaultMode: 'visible' },
+    {
+        key: 'reports', label: '📊 Raporlar', defaultMode: 'visible',
+        children: [
+            { key: 'reports.overview', label: 'Genel Bakış', defaultMode: 'visible' },
+            { key: 'reports.sales', label: 'Satış Raporları', defaultMode: 'visible' },
+            { key: 'reports.parties', label: 'Müşteri Raporları', defaultMode: 'visible' },
+            { key: 'reports.promissory', label: 'Senet Takibi', defaultMode: 'visible' },
+            { key: 'reports.remaining', label: 'Kalan Ödemeler', defaultMode: 'visible' },
+            { key: 'reports.pos_movements', label: 'POS Hareketleri', defaultMode: 'visible' },
+            { key: 'reports.report_tracking', label: 'Rapor Takibi', defaultMode: 'visible' },
+            { key: 'reports.activity', label: 'Aktivite Logları', defaultMode: 'visible' },
+        ],
+    },
     { key: 'uts', label: '🩺 ÜTS', defaultMode: 'visible' },
     { key: 'invoice_normalizer', label: '📒 Muhasebe', defaultMode: 'visible' },
     { key: 'cashflow', label: '💵 Nakit Akış', defaultMode: 'visible' },
@@ -71,14 +125,34 @@ const FEATURE_HIERARCHY: FeatureDef[] = [
     { key: 'automation', label: '⚙️ Otomasyon', defaultMode: 'visible' },
     { key: 'ai_chat', label: '🤖 AI Chat', defaultMode: 'visible' },
     {
+        key: 'personnel', label: '👥 Personel Yönetimi', defaultMode: 'visible',
+        children: [
+            { key: 'personnel.employees', label: 'Çalışanlar', defaultMode: 'visible' },
+            { key: 'personnel.leave', label: 'İzin Talepleri', defaultMode: 'visible' },
+            { key: 'personnel.documents', label: 'Personel Belgeleri', defaultMode: 'visible' },
+            { key: 'personnel.compensation', label: 'Ücret Kayıtları', defaultMode: 'visible' },
+        ],
+    },
+    {
+        key: 'settings', label: '⚙️ Ayarlar', defaultMode: 'visible',
+        children: [
+            { key: 'settings.company', label: 'Firma Bilgileri', defaultMode: 'visible' },
+            { key: 'settings.integration', label: 'Entegrasyon Ayarları', defaultMode: 'visible' },
+            { key: 'settings.team', label: 'Ekip Yönetimi', defaultMode: 'visible' },
+            { key: 'settings.parties', label: 'Müşteri Ayarları', defaultMode: 'visible' },
+            { key: 'settings.sgk', label: 'SGK & Satış Ayarları', defaultMode: 'visible' },
+            { key: 'settings.subscription', label: 'Abonelik', defaultMode: 'visible' },
+        ],
+    },
+    {
         key: 'barcode', label: '📊 Barkod Sistemi', defaultMode: 'visible',
         children: [
             { key: 'barcode.scanner', label: 'Barkod Okuyucu', defaultMode: 'visible' },
             { key: 'barcode.camera', label: 'Kamera ile Tarama', defaultMode: 'visible' },
-            { key: 'barcode.generator', label: 'Barkod Uretici', defaultMode: 'visible' },
-            { key: 'barcode.validation', label: 'Barkod Dogrulama', defaultMode: 'visible' },
-            { key: 'barcode.labels', label: 'Etiket Yazdirma', defaultMode: 'visible' },
-            { key: 'barcode.gs1', label: 'GS1/UDI Destegi', defaultMode: 'hidden' },
+            { key: 'barcode.generator', label: 'Barkod Üretici', defaultMode: 'visible' },
+            { key: 'barcode.validation', label: 'Barkod Doğrulama', defaultMode: 'visible' },
+            { key: 'barcode.labels', label: 'Etiket Yazdırma', defaultMode: 'visible' },
+            { key: 'barcode.gs1', label: 'GS1/UDI Desteği', defaultMode: 'hidden' },
         ],
     },
     { key: 'integrations_ui', label: '🔌 Entegrasyonlar', defaultMode: 'hidden' },

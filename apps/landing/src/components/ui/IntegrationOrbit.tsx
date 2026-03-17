@@ -66,9 +66,8 @@ function OrbitItem({ item, index, total, radius, duration, reverse, isActive, is
     <motion.div
       className="absolute left-1/2 top-1/2"
       style={{ width: 0, height: 0 }}
-      animate={{ rotate: reverse ? -360 : 360 }}
-      transition={{ duration, repeat: Infinity, ease: "linear", repeatType: "loop" }}
-      {...(isPaused ? { animate: undefined, style: { width: 0, height: 0 } } : {})}
+      animate={isPaused ? { rotate: 0 } : { rotate: reverse ? -360 : 360 }}
+      transition={isPaused ? { duration: 0 } : { duration, repeat: Infinity, ease: "linear", repeatType: "loop" }}
     >
       <motion.div
         className="absolute"
@@ -156,7 +155,7 @@ export function IntegrationOrbit() {
   const [activeId, setActiveId] = useState<string>(integrations[0].id);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const isPaused = hoveredId !== null;
-  const timerRef = useRef<ReturnType<typeof setInterval>>();
+  const timerRef = useRef<ReturnType<typeof setInterval>>(null);
 
   // Auto-cycle every 3s when nothing is hovered
   useEffect(() => {

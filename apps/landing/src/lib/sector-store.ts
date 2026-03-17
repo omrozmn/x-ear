@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 
-export type SectorId = "hearing" | "pharmacy" | "hospital" | "hotel" | "medical" | "optic" | "general";
+export type SectorId = "hearing" | "pharmacy" | "hospital" | "hotel" | "medical" | "optic" | "beauty" | "general";
 
 interface SectorState {
   sector: SectorId;

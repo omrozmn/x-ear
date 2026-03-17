@@ -833,8 +833,25 @@ const optic: SectorContent = {
   ],
 };
 
+// ─── Beauty (uses general as base with customized hero) ──
+const beauty: SectorContent = {
+  ...general,
+  hero: {
+    badge: { tr: "X-EAR v2.0 — Güzellik Salonları", en: "X-EAR v2.0 — Beauty Salons" },
+    h1_1: { tr: "Güzellik Salonunuzu", en: "Grow Your Beauty" },
+    h1_2: { tr: "Yapay Zeka ile Büyütün", en: "Salon with AI" },
+    desc: {
+      tr: "Randevu, müşteri, personel ve stok yönetimini tek platformda sunan yapay zeka destekli güzellik salonu CRM'i.",
+      en: "AI-powered beauty salon CRM with appointment, customer, staff and inventory management in one platform.",
+    },
+  },
+  painBadge: { tr: "Sektörün Gerçekleri", en: "Industry Realities" },
+  painH2_1: { tr: "Manuel Süreçler Sizi", en: "Manual Processes Are" },
+  painH2_2: { tr: "Yavaşlatıyor", en: "Slowing You Down" },
+};
+
 // ─── Registry ────────────────────────────────────────────
-const registry: Record<SectorId, SectorContent> = { hearing, pharmacy, hospital, hotel, medical, optic, general };
+const registry: Record<SectorId, SectorContent> = { hearing, pharmacy, hospital, hotel, medical, optic, beauty, general };
 
 export function getSectorContent(sector: SectorId): SectorContent {
   return registry[sector];

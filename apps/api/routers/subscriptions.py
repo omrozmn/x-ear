@@ -312,14 +312,61 @@ def complete_signup(
 
 # Core features always available (no plan restriction)
 ALL_FEATURE_DEFAULTS = {
-    'patients': True, 'appointments': True, 'inventory': True,
-    'suppliers': True, 'sales': True, 'purchases': True,
-    'payments': True, 'campaigns': True, 'website_builder': True,
-    'invoices': True, 'invoices.outgoing': True, 'invoices.incoming': True,
+    # Hastalar / Müşteriler
+    'patients': True,
+    'patients.devices': True, 'patients.sales': True, 'patients.timeline': True,
+    'patients.documents': True, 'patients.hearing_tests': True, 'patients.notes': True,
+    # Randevular
+    'appointments': True,
+    # Envanter
+    'inventory': True,
+    # Tedarikçiler
+    'suppliers': True, 'suppliers.all': True, 'suppliers.suggested': True,
+    # Satış & Alış & Ödeme
+    'sales': True, 'purchases': True, 'payments': True,
+    # Kampanyalar
+    'campaigns': True,
+    'campaigns.sms': True, 'campaigns.whatsapp': True, 'campaigns.email': True,
+    # Web Sitesi
+    'website_builder': True,
+    'website_builder.content': True, 'website_builder.appearance': True,
+    'website_builder.pages': True, 'website_builder.publishing': True,
+    'website_builder.blog': True, 'website_builder.products': True,
+    'website_builder.orders': True, 'website_builder.commerce': True,
+    'website_builder.appointments': True, 'website_builder.chatbot': True,
+    'website_builder.marketplace': True,
+    # Faturalar
+    'invoices': True,
+    'invoices.outgoing': True, 'invoices.incoming': True,
     'invoices.proformas': True, 'invoices.summary': True, 'invoices.new': True,
-    'sgk': True, 'sgk.upload': True, 'sgk.reports': True,
-    'reports': True, 'invoice_normalizer': True, 'cashflow': True,
-    'pos': True, 'automation': True, 'ai_chat': True, 'uts': True,
+    # SGK
+    'sgk': True,
+    'sgk.documents': True, 'sgk.upload': True, 'sgk.downloads': True,
+    'sgk.stats': True, 'sgk.workflow': True, 'sgk.reports': True,
+    # Raporlar
+    'reports': True,
+    'reports.overview': True, 'reports.sales': True, 'reports.parties': True,
+    'reports.promissory': True, 'reports.remaining': True, 'reports.pos_movements': True,
+    'reports.report_tracking': True, 'reports.activity': True,
+    # Diğer modüller
+    'uts': True, 'invoice_normalizer': True, 'cashflow': True,
+    'pos': True, 'automation': True, 'ai_chat': True,
+    # Personel
+    'personnel': True,
+    'personnel.employees': True, 'personnel.leave': True,
+    'personnel.documents': True, 'personnel.compensation': True,
+    # Ayarlar
+    'settings': True,
+    'settings.company': True, 'settings.integration': True,
+    'settings.team': True, 'settings.parties': True,
+    'settings.sgk': True, 'settings.subscription': True,
+    # Barkod
+    'barcode': True,
+    'barcode.scanner': True, 'barcode.camera': True, 'barcode.generator': True,
+    'barcode.validation': True, 'barcode.labels': True, 'barcode.gs1': False,
+    # E-Ticaret
+    'ecommerce': False,
+    # Gizli özellikler
     'integrations_ui': False, 'pricing_ui': False, 'security_ui': False,
 }
 
@@ -413,8 +460,9 @@ def get_enabled_features(
         else:
             features[key] = default_val
 
-    # Parent→child inheritance: if parent hidden, children hidden too
-    for parent_key in ['invoices', 'sgk']:
+    # Parent→child inheritance: if parent hidden, all children hidden too
+    parent_keys = [k for k in ALL_FEATURE_DEFAULTS if '.' not in k]
+    for parent_key in parent_keys:
         if not features.get(parent_key, True):
             for child_key in [k for k in features if k.startswith(parent_key + '.')]:
                 features[child_key] = False

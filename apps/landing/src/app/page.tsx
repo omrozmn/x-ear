@@ -5,6 +5,9 @@ import { TextReveal } from "@/components/ui/TextReveal";
 import { MagneticButton } from "@/components/ui/MagneticButton";
 import { SentientDemo } from "@/components/ui/SentientDemo";
 import { FeatureCards } from "@/components/ui/FeatureCards";
+import { FeatureShowcase } from "@/components/ui/FeatureShowcase";
+import { SpotlightDemo } from "@/components/ui/SpotlightDemo";
+import { IntegrationOrbit } from "@/components/ui/IntegrationOrbit";
 import { InteractiveRoi } from "@/components/ui/InteractiveRoi";
 import { SectorCards } from "@/components/ui/SectorCards";
 import { PainPoints } from "@/components/ui/PainPoints";
@@ -69,6 +72,15 @@ function HomeContent() {
 
         {/* Narrative DOM Layers - Sentient AI */}
         <SentientDemo />
+
+        {/* Feature Showcase - App Window Animations */}
+        <FeatureShowcase />
+
+        {/* Spotlight Demo - ⌘K Search */}
+        <SpotlightDemo />
+
+        {/* Integration Orbit - Ecosystem */}
+        <IntegrationOrbit />
 
         {/* Narrative DOM Layers - Ecosystem Cards */}
         <FeatureCards />

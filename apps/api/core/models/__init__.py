@@ -56,6 +56,9 @@ from .api_key import ApiKey
 from .integration_config import IntegrationConfig
 from .efatura_outbox import EFaturaOutbox
 from .marketplace import MarketplaceIntegration, MarketplaceProduct
+from .product_media import ProductMedia
+from .cargo_integration import CargoIntegration
+from .marketplace_listing import MarketplaceProductListing
 
 # Production & Operations
 from .production_order import ProductionOrder
