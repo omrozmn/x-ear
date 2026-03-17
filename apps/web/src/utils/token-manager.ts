@@ -15,8 +15,8 @@
 
 import { AUTH_TOKEN, REFRESH_TOKEN, AUTH_TOKEN_TIMESTAMP, CURRENT_TENANT_ID } from '../constants/storage-keys';
 
-// DEBUG: Install localStorage spy to catch who's deleting tokens
-if (typeof window !== 'undefined') {
+// DEBUG: Install localStorage spy to catch who's deleting tokens (dev only)
+if (typeof window !== 'undefined' && import.meta.env.DEV) {
   const originalRemoveItem = localStorage.removeItem.bind(localStorage);
   const originalClear = localStorage.clear.bind(localStorage);
 
@@ -177,11 +177,13 @@ class TokenManager {
    * Set both tokens (typically after login)
    */
   setTokens(accessToken: string, createAuthRefresh?: string | null): void {
-    console.log('[TokenManager] Setting tokens:', {
-      hasAccessToken: !!accessToken,
-      hasRefreshToken: !!createAuthRefresh,
-      accessPreview: accessToken?.substring(0, 30) + '...',
-    });
+    if (import.meta.env.DEV) {
+      console.log('[TokenManager] Setting tokens:', {
+        hasAccessToken: !!accessToken,
+        hasRefreshToken: !!createAuthRefresh,
+        accessPreview: accessToken?.substring(0, 30) + '...',
+      });
+    }
 
     // Update memory cache
     this._accessToken = accessToken;

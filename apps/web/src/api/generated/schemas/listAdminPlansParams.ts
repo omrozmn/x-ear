@@ -9,6 +9,7 @@
 export type ListAdminPlansParams = {
 /**
  * @minimum 1
+ * @maximum 1000000
  */
 page?: number;
 /**
@@ -19,4 +20,12 @@ limit?: number;
 type?: string | null;
 is_active?: string | null;
 is_public?: string | null;
+/**
+ * Filter by sector code
+ */
+sector?: string | null;
+/**
+ * Filter by country code
+ */
+countryCode?: string | null;
 };

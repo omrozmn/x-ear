@@ -9,6 +9,7 @@
 export type ListCommunicationHistoryParams = {
 /**
  * @minimum 1
+ * @maximum 1000000
  */
 page?: number;
 /**

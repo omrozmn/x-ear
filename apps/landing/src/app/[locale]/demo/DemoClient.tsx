@@ -27,7 +27,8 @@ export default function DemoClient() {
         setError(null);
 
         try {
-            const response = await fetch('http://localhost:5003/api/leads/public/submit', {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5003';
+            const response = await fetch(`${apiUrl}/api/leads/public/submit`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -7,6 +7,7 @@
  */
 import type { ChatResponseIntent } from './chatResponseIntent';
 import type { ChatResponseActionPlan } from './chatResponseActionPlan';
+import type { ChatResponseMatchedCapability } from './chatResponseMatchedCapability';
 import type { ChatResponseResponse } from './chatResponseResponse';
 import type { ChatResponseClarificationQuestion } from './chatResponseClarificationQuestion';
 
@@ -22,6 +23,8 @@ export interface ChatResponse {
   intent?: ChatResponseIntent;
   /** Generated action plan if applicable */
   action_plan?: ChatResponseActionPlan;
+  /** Matched capability with slots for UI rendering */
+  matched_capability?: ChatResponseMatchedCapability;
   /** Response message */
   response?: ChatResponseResponse;
   /** Whether clarification is needed */

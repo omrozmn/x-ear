@@ -226,10 +226,20 @@ def create_admission(db: Session, data: AdmissionCreate, tenant_id: str) -> Admi
     )
     db.add(admission)
 
-    # Mark bed as occupied if assigned
+    # Mark bed as occupied if assigned (with row-level lock to prevent race conditions)
     if data.bed_id:
-        bed = get_bed(db, data.bed_id, tenant_id)
+        bed = (
+            db.query(Bed)
+            .filter(Bed.id == data.bed_id, Bed.tenant_id == tenant_id)
+            .with_for_update()
+            .first()
+        )
         if bed:
+            if bed.status != "available":
+                db.rollback()
+                raise ValueError(
+                    f"Bed {data.bed_id} is not available (current status: {bed.status})."
+                )
             bed.status = "occupied"
             bed.current_patient_id = data.patient_id
 
@@ -590,7 +600,7 @@ def execute_nurse_order(
         return None
     order.executed_by = data.executed_by
     order.executed_at = data.executed_at or now_utc()
-    order.status = "completed"
+    order.status = "discontinued"
     if data.notes:
         existing = order.notes or ""
         order.notes = f"{existing}\n[Executed] {data.notes}".strip()

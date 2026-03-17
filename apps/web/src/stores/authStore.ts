@@ -86,7 +86,7 @@ interface AuthActions {
   resetPassword: (phone: string, otp: string, newPassword: string, captchaToken?: string) => Promise<void>;
   logout: () => void;
   refreshAuth: () => Promise<void>;
-  initializeAuth: () => Promise<void>;
+  initializeAuth: (retryCount?: number) => Promise<void>;
   checkSubscription: () => Promise<void>;
   lookupPhone: (identifier: string) => Promise<{ maskedPhone?: string; isPhoneInput: boolean }>;
 }
@@ -130,17 +130,19 @@ export const useAuthStore = create<AuthStore>()(
           error: null,
         });
 
-        // DEBUG: Verify tokens were written to both storages
-        console.log('[authStore.setAuth] Tokens stored:', {
-          zustandToken: token.substring(0, 30) + '...',
-          zustandRefresh: refreshToken?.substring(0, 30) + '...',
-          tokenManagerHasToken: !!tokenManager.accessToken,
-          tokenManagerHasRefresh: !!tokenManager.createAuthRefresh,
-          // Verify localStorage has both keys
-          canonicalTokenExists: !!localStorage.getItem('x-ear.auth.token@v1'),
-          canonicalRefreshExists: !!localStorage.getItem('x-ear.auth.refresh@v1'),
-          zustandPersistExists: !!localStorage.getItem('x-ear.auth.auth-storage-persist@v1')
-        });
+        // DEBUG: Verify tokens were written to both storages (dev only to prevent token leakage)
+        if (import.meta.env.DEV) {
+          console.log('[authStore.setAuth] Tokens stored:', {
+            zustandToken: token.substring(0, 30) + '...',
+            zustandRefresh: refreshToken?.substring(0, 30) + '...',
+            tokenManagerHasToken: !!tokenManager.accessToken,
+            tokenManagerHasRefresh: !!tokenManager.createAuthRefresh,
+            // Verify localStorage has both keys
+            canonicalTokenExists: !!localStorage.getItem('x-ear.auth.token@v1'),
+            canonicalRefreshExists: !!localStorage.getItem('x-ear.auth.refresh@v1'),
+            zustandPersistExists: !!localStorage.getItem('x-ear.auth.auth-storage-persist@v1')
+          });
+        }
 
         // Check subscription after auth set
         get().checkSubscription();
@@ -172,14 +174,16 @@ export const useAuthStore = create<AuthStore>()(
           // ignore storage errors
         }
 
-        // DEBUG: Verify all tokens were cleared
-        console.log('[authStore.clearAuth] Tokens cleared:', {
-          tokenManagerHasToken: !!tokenManager.accessToken,
-          tokenManagerHasRefresh: !!tokenManager.createAuthRefresh,
-          canonicalTokenExists: !!localStorage.getItem('x-ear.auth.token@v1'),
-          canonicalRefreshExists: !!localStorage.getItem('x-ear.auth.refresh@v1'),
-          zustandPersistExists: !!localStorage.getItem('x-ear.auth.auth-storage-persist@v1')
-        });
+        // DEBUG: Verify all tokens were cleared (dev only to prevent token leakage)
+        if (import.meta.env.DEV) {
+          console.log('[authStore.clearAuth] Tokens cleared:', {
+            tokenManagerHasToken: !!tokenManager.accessToken,
+            tokenManagerHasRefresh: !!tokenManager.createAuthRefresh,
+            canonicalTokenExists: !!localStorage.getItem('x-ear.auth.token@v1'),
+            canonicalRefreshExists: !!localStorage.getItem('x-ear.auth.refresh@v1'),
+            zustandPersistExists: !!localStorage.getItem('x-ear.auth.auth-storage-persist@v1')
+          });
+        }
       },
 
       setLoading: (loading: boolean) => {
@@ -298,18 +302,20 @@ export const useAuthStore = create<AuthStore>()(
                 maskedPhone: null,
               });
 
-              // DEBUG LOG
-              console.log('[authStore] Login successful, storing tokens via TokenManager:', {
-                hasAccessToken: !!newToken,
-                hasRefreshToken: !!refreshToken,
-                accessTokenPreview: newToken.substring(0, 50) + '...',
-                refreshTokenPreview: refreshToken ? refreshToken.substring(0, 50) + '...' : 'N/A',
-                user: {
-                  id: user.id,
-                  email: user.email,
-                  role: user.role
-                }
-              });
+              // DEBUG LOG - only in development to avoid leaking tokens in production
+              if (import.meta.env.DEV) {
+                console.log('[authStore] Login successful, storing tokens via TokenManager:', {
+                  hasAccessToken: !!newToken,
+                  hasRefreshToken: !!refreshToken,
+                  accessTokenPreview: newToken.substring(0, 50) + '...',
+                  refreshTokenPreview: refreshToken ? refreshToken.substring(0, 50) + '...' : 'N/A',
+                  user: {
+                    id: user.id,
+                    email: user.email,
+                    role: user.role
+                  }
+                });
+              }
 
               // Use TokenManager for token storage (single source of truth)
               tokenManager.setTokens(newToken, refreshToken || null);
@@ -679,7 +685,13 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      initializeAuth: async () => {
+      initializeAuth: async (retryCount = 0) => {
+        if (retryCount >= 1) {
+          // Bail out to prevent infinite recursion
+          set({ isInitialized: true, isAuthenticated: false });
+          return;
+        }
+
         const { setLoading, login, checkSubscription, clearAuth } = get();
 
         // Always validate token, don't trust persisted isAuthenticated
@@ -798,7 +810,7 @@ export const useAuthStore = create<AuthStore>()(
             // If refresh succeeded, retry initialization
             const newToken = tokenManager.accessToken;
             if (newToken && !tokenManager.isAccessTokenExpired()) {
-              return get().initializeAuth();
+              return get().initializeAuth(retryCount + 1);
             }
           } catch (e) {
             console.warn('[initializeAuth] Refresh failed:', e);

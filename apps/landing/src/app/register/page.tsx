@@ -104,8 +104,9 @@ function RegisterContent() {
                     localStorage.setItem('auth_token', token);
                 }
                 const redirectPath = searchParams.get('redirect');
-                if (redirectPath) {
-                    router.push(redirectPath);
+                const safeRedirect = redirectPath && redirectPath.startsWith('/') && !redirectPath.startsWith('//') ? redirectPath : null;
+                if (safeRedirect) {
+                    router.push(safeRedirect);
                 } else {
                     const checkoutUrl = sector && sector !== 'general'
                         ? `/checkout?sector=${sector}`

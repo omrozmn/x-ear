@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type DetailedPlanReadFeaturesAnyOf = {[key: string]: string};
+export type DetailedPlanReadFeaturesAnyOf = { [key: string]: unknown };

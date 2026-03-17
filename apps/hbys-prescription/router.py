@@ -503,7 +503,7 @@ class AIPairInteractionResponse(BaseModel):
     summary="AI: Check drug interactions in a prescription",
     tags=["HBYS - AI Drug Interactions"],
 )
-def ai_check_interactions(body: AIInteractionCheckRequest):
+def ai_check_interactions(body: AIInteractionCheckRequest, user: CurrentUser = Depends(get_current_user)):
     """
     Check all pairwise drug interactions in a prescription using AI.
     Returns interactions sorted by severity (most severe first).
@@ -524,7 +524,7 @@ def ai_check_interactions(body: AIInteractionCheckRequest):
     summary="AI: Check interaction between two specific drugs",
     tags=["HBYS - AI Drug Interactions"],
 )
-def ai_check_pair(drug_a: str, drug_b: str):
+def ai_check_pair(drug_a: str, drug_b: str, user: CurrentUser = Depends(get_current_user)):
     """
     Check the interaction between two specific drugs using AI.
     Returns interaction type, severity, confidence, and a Turkish explanation.

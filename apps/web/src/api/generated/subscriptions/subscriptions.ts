@@ -29,6 +29,7 @@ import type {
   HTTPValidationError,
   RegisterAndSubscribeRequest,
   ResponseEnvelopeCurrentSubscriptionResponse,
+  ResponseEnvelopeFeaturesResponse,
   ResponseEnvelopeSignupResponse,
   ResponseEnvelopeSubscriptionResponse,
   SubscribeRequest
@@ -170,6 +171,102 @@ export const useCreateSubscriptionCompleteSignup = <TError = HTTPValidationError
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * Return enabled feature flags for the current tenant's plan.
+
+Reads admin-configured flags from SystemSetting table (key='features').
+Each flag has mode='visible' or 'hidden', and optional plan restrictions.
+ * @summary Get Enabled Features
+ */
+export const listSubscriptionFeatures = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeFeaturesResponse>(
+      {url: `/api/subscriptions/features`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getListSubscriptionFeaturesQueryKey = () => {
+    return [
+    `/api/subscriptions/features`
+    ] as const;
+    }
+
+    
+export const getListSubscriptionFeaturesQueryOptions = <TData = Awaited<ReturnType<typeof listSubscriptionFeatures>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSubscriptionFeatures>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListSubscriptionFeaturesQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSubscriptionFeatures>>> = ({ signal }) => listSubscriptionFeatures(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSubscriptionFeatures>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type ListSubscriptionFeaturesQueryResult = NonNullable<Awaited<ReturnType<typeof listSubscriptionFeatures>>>
+export type ListSubscriptionFeaturesQueryError = unknown
+
+
+export function useListSubscriptionFeatures<TData = Awaited<ReturnType<typeof listSubscriptionFeatures>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSubscriptionFeatures>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listSubscriptionFeatures>>,
+          TError,
+          Awaited<ReturnType<typeof listSubscriptionFeatures>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useListSubscriptionFeatures<TData = Awaited<ReturnType<typeof listSubscriptionFeatures>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSubscriptionFeatures>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listSubscriptionFeatures>>,
+          TError,
+          Awaited<ReturnType<typeof listSubscriptionFeatures>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useListSubscriptionFeatures<TData = Awaited<ReturnType<typeof listSubscriptionFeatures>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSubscriptionFeatures>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get Enabled Features
+ */
+
+export function useListSubscriptionFeatures<TData = Awaited<ReturnType<typeof listSubscriptionFeatures>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSubscriptionFeatures>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getListSubscriptionFeaturesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
  * Get current subscription details
  * @summary Get Current
  */

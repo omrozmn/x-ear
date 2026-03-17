@@ -46,5 +46,6 @@ export function PermissionGate({
         return hasAccess ? <>{children}</> : <>{fallback}</>;
     }
 
-    return <>{children}</>;
+    // No permission specified — deny access by default
+    return <>{fallback}</>;
 }

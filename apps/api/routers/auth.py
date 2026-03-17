@@ -51,8 +51,9 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Auth"])
 
 # JWT Configuration
-SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'default-dev-secret-key-change-in-prod')
-ALGORITHM = "HS256"
+from core.security import get_jwt_secret, JWT_ALGORITHM
+SECRET_KEY = get_jwt_secret()
+ALGORITHM = JWT_ALGORITHM
 
 # OAuth2 scheme for token extraction
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
@@ -272,8 +273,9 @@ def verify_otp(
         # CRITICAL SECURITY: This backdoor must NEVER be active in production
         # Configured in core/dependencies.py (ENVIRONMENT=development)
         is_dev_env = os.getenv('ENVIRONMENT', 'production').lower() in ['development', 'test', 'testing']
-        
-        if str(otp) == '123456' and is_dev_env:
+        dev_otp_bypass_enabled = os.getenv('ENABLE_DEV_OTP_BYPASS', 'false').lower() in ('true', '1', 'yes')
+
+        if str(otp) == '123456' and is_dev_env and dev_otp_bypass_enabled:
             logger.info(f"Using dev OTP bypass for user_id={user_id}")
             stored = '123456'
         else:
@@ -396,7 +398,15 @@ async def reset_password(
                     ).model_dump(mode="json")
                 )
         else:
-            # If no captcha token provided, log warning but allow (for backward compatibility during migration)
+            env = os.getenv('ENVIRONMENT', 'production').lower()
+            if env in ('production', 'prod', 'staging'):
+                raise HTTPException(
+                    status_code=400,
+                    detail=ApiError(
+                        message="Güvenlik doğrulaması gereklidir.",
+                        code="CAPTCHA_REQUIRED"
+                    ).model_dump(mode="json")
+                )
             logger.warning(f"Password reset without captcha token for identifier: {identifier}")
         
         otp_store = get_otp_store()
@@ -888,171 +898,173 @@ def set_password(
         logger.error(f"Set password error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/auth/test/toggle-verification", include_in_schema=False)
-def toggle_verification(
-    verified: bool = Body(..., embed=True),
-    db_session: Session = Depends(get_db)
-):
-    """Test utility to toggle phone verification status"""
-    from models.user import User
-    # Only allow for specific test user
-    user = db_session.query(User).filter(User.phone == '+905551234567').first()
-    if user:
-        user.is_phone_verified = verified
-        db_session.commit()
-    return {"success": True}
+if os.getenv('ENVIRONMENT', 'production').lower() in ('development', 'test', 'testing'):
+
+    @router.post("/auth/test/toggle-verification", include_in_schema=False)
+    def toggle_verification(
+        verified: bool = Body(..., embed=True),
+        db_session: Session = Depends(get_db)
+    ):
+        """Test utility to toggle phone verification status"""
+        from models.user import User
+        # Only allow for specific test user
+        user = db_session.query(User).filter(User.phone == '+905551234567').first()
+        if user:
+            user.is_phone_verified = verified
+            db_session.commit()
+        return {"success": True}
 
 
-@router.post("/auth/test/prepare-otp-users", include_in_schema=False)
-def prepare_otp_users(db_session: Session = Depends(get_db)):
-    """Create/update deterministic OTP test users for UI and API E2E flows."""
-    now = datetime.now(timezone.utc)
-    tenant_row = db_session.execute(
-        text("SELECT id FROM tenants WHERE slug = :slug LIMIT 1"),
-        {"slug": "otp-test-tenant"},
-    ).first()
-
-    if tenant_row and tenant_row[0]:
-        tenant_id = str(tenant_row[0])
-    else:
-        tenant_id = str(uuid4())
-        db_session.execute(
-            text(
-                """
-                INSERT INTO tenants (
-                    id, name, slug, owner_email, billing_email, tenant_type, status,
-                    company_info, settings, created_at, updated_at
-                ) VALUES (
-                    :id, :name, :slug, :owner_email, :billing_email, :tenant_type, :status,
-                    :company_info, :settings, :created_at, :updated_at
-                )
-                ON CONFLICT(slug) DO UPDATE SET
-                    updated_at = excluded.updated_at
-                """
-            ),
-            {
-                "id": tenant_id,
-                "name": "OTP Test Tenant",
-                "slug": "otp-test-tenant",
-                "owner_email": "otp-test@x-ear.local",
-                "billing_email": "otp-test@x-ear.local",
-                "tenant_type": "B2B",
-                "status": "active",
-                "company_info": "{}",
-                "settings": "{}",
-                "created_at": now,
-                "updated_at": now,
-            },
-        )
+    @router.post("/auth/test/prepare-otp-users", include_in_schema=False)
+    def prepare_otp_users(db_session: Session = Depends(get_db)):
+        """Create/update deterministic OTP test users for UI and API E2E flows."""
+        now = datetime.now(timezone.utc)
         tenant_row = db_session.execute(
             text("SELECT id FROM tenants WHERE slug = :slug LIMIT 1"),
             {"slug": "otp-test-tenant"},
         ).first()
-        if not tenant_row or not tenant_row[0]:
-            raise HTTPException(status_code=500, detail="OTP test tenant could not be prepared")
-        tenant_id = str(tenant_row[0])
-    scenarios = [
-        {
-            "username": "unverified_phone_user",
-            "email": "unverified@test.com",
-            "phone": "5551234567",
-            "verified": False,
-            "password": "testpass123",
-            "first_name": "Unverified",
-            "last_name": "Phone",
-        },
-        {
-            "username": "no_phone_user",
-            "email": "nophone@test.com",
-            "phone": None,
-            "verified": False,
-            "password": "testpass123",
-            "first_name": "No",
-            "last_name": "Phone",
-        },
-        {
-            "username": "forgot_password_user",
-            "email": "forgot@test.com",
-            "phone": "5559876543",
-            "verified": True,
-            "password": "OldPass123!",
-            "first_name": "Forgot",
-            "last_name": "Password",
-        },
-        {
-            "username": "profile_phone_user",
-            "email": "profile@test.com",
-            "phone": "5558887777",
-            "verified": True,
-            "password": "testpass123",
-            "first_name": "Profile",
-            "last_name": "Phone",
-        },
-    ]
 
-    created_users: list[dict[str, str | None | bool]] = []
-    for scenario in scenarios:
-        probe_user = User()
-        probe_user.username = str(scenario["username"])
-        probe_user.email = str(scenario["email"])
-        probe_user.phone = scenario["phone"]
-        probe_user.first_name = str(scenario["first_name"])
-        probe_user.last_name = str(scenario["last_name"])
-        probe_user.role = 'tenant_admin'
-        probe_user.is_active = True
-        probe_user.is_phone_verified = bool(scenario["verified"])
-        probe_user.tenant_id = tenant_id
-        probe_user.set_password(str(scenario["password"]))
-
-        db_session.execute(
-            text(
-                """
-                INSERT INTO users (
-                    id, username, email, phone, password_hash, first_name, last_name, role,
-                    is_active, is_phone_verified, permissions_version, created_at, updated_at, tenant_id
-                ) VALUES (
-                    :id, :username, :email, :phone, :password_hash, :first_name, :last_name, :role,
-                    :is_active, :is_phone_verified, :permissions_version, :created_at, :updated_at, :tenant_id
-                )
-                ON CONFLICT(username) DO UPDATE SET
-                    email = excluded.email,
-                    phone = excluded.phone,
-                    password_hash = excluded.password_hash,
-                    first_name = excluded.first_name,
-                    last_name = excluded.last_name,
-                    role = excluded.role,
-                    is_active = excluded.is_active,
-                    is_phone_verified = excluded.is_phone_verified,
-                    permissions_version = excluded.permissions_version,
-                    updated_at = excluded.updated_at,
-                    tenant_id = excluded.tenant_id
-                """
-            ),
+        if tenant_row and tenant_row[0]:
+            tenant_id = str(tenant_row[0])
+        else:
+            tenant_id = str(uuid4())
+            db_session.execute(
+                text(
+                    """
+                    INSERT INTO tenants (
+                        id, name, slug, owner_email, billing_email, tenant_type, status,
+                        company_info, settings, created_at, updated_at
+                    ) VALUES (
+                        :id, :name, :slug, :owner_email, :billing_email, :tenant_type, :status,
+                        :company_info, :settings, :created_at, :updated_at
+                    )
+                    ON CONFLICT(slug) DO UPDATE SET
+                        updated_at = excluded.updated_at
+                    """
+                ),
+                {
+                    "id": tenant_id,
+                    "name": "OTP Test Tenant",
+                    "slug": "otp-test-tenant",
+                    "owner_email": "otp-test@x-ear.local",
+                    "billing_email": "otp-test@x-ear.local",
+                    "tenant_type": "B2B",
+                    "status": "active",
+                    "company_info": "{}",
+                    "settings": "{}",
+                    "created_at": now,
+                    "updated_at": now,
+                },
+            )
+            tenant_row = db_session.execute(
+                text("SELECT id FROM tenants WHERE slug = :slug LIMIT 1"),
+                {"slug": "otp-test-tenant"},
+            ).first()
+            if not tenant_row or not tenant_row[0]:
+                raise HTTPException(status_code=500, detail="OTP test tenant could not be prepared")
+            tenant_id = str(tenant_row[0])
+        scenarios = [
             {
-                "id": f"user_{uuid4().hex[:12]}",
-                "username": probe_user.username,
-                "email": probe_user.email,
-                "phone": probe_user.phone,
-                "password_hash": probe_user.password_hash,
-                "first_name": probe_user.first_name,
-                "last_name": probe_user.last_name,
-                "role": probe_user.role,
-                "is_active": probe_user.is_active,
-                "is_phone_verified": probe_user.is_phone_verified,
-                "permissions_version": 1,
-                "created_at": now,
-                "updated_at": now,
-                "tenant_id": tenant_id,
+                "username": "unverified_phone_user",
+                "email": "unverified@test.com",
+                "phone": "5551234567",
+                "verified": False,
+                "password": "testpass123",
+                "first_name": "Unverified",
+                "last_name": "Phone",
             },
-        )
-
-        created_users.append(
             {
-                "username": probe_user.username,
-                "phone": probe_user.phone,
-                "verified": probe_user.is_phone_verified,
-            }
-        )
+                "username": "no_phone_user",
+                "email": "nophone@test.com",
+                "phone": None,
+                "verified": False,
+                "password": "testpass123",
+                "first_name": "No",
+                "last_name": "Phone",
+            },
+            {
+                "username": "forgot_password_user",
+                "email": "forgot@test.com",
+                "phone": "5559876543",
+                "verified": True,
+                "password": "OldPass123!",
+                "first_name": "Forgot",
+                "last_name": "Password",
+            },
+            {
+                "username": "profile_phone_user",
+                "email": "profile@test.com",
+                "phone": "5558887777",
+                "verified": True,
+                "password": "testpass123",
+                "first_name": "Profile",
+                "last_name": "Phone",
+            },
+        ]
 
-    db_session.commit()
-    return {"success": True, "users": created_users}
+        created_users: list[dict[str, str | None | bool]] = []
+        for scenario in scenarios:
+            probe_user = User()
+            probe_user.username = str(scenario["username"])
+            probe_user.email = str(scenario["email"])
+            probe_user.phone = scenario["phone"]
+            probe_user.first_name = str(scenario["first_name"])
+            probe_user.last_name = str(scenario["last_name"])
+            probe_user.role = 'tenant_admin'
+            probe_user.is_active = True
+            probe_user.is_phone_verified = bool(scenario["verified"])
+            probe_user.tenant_id = tenant_id
+            probe_user.set_password(str(scenario["password"]))
+
+            db_session.execute(
+                text(
+                    """
+                    INSERT INTO users (
+                        id, username, email, phone, password_hash, first_name, last_name, role,
+                        is_active, is_phone_verified, permissions_version, created_at, updated_at, tenant_id
+                    ) VALUES (
+                        :id, :username, :email, :phone, :password_hash, :first_name, :last_name, :role,
+                        :is_active, :is_phone_verified, :permissions_version, :created_at, :updated_at, :tenant_id
+                    )
+                    ON CONFLICT(username) DO UPDATE SET
+                        email = excluded.email,
+                        phone = excluded.phone,
+                        password_hash = excluded.password_hash,
+                        first_name = excluded.first_name,
+                        last_name = excluded.last_name,
+                        role = excluded.role,
+                        is_active = excluded.is_active,
+                        is_phone_verified = excluded.is_phone_verified,
+                        permissions_version = excluded.permissions_version,
+                        updated_at = excluded.updated_at,
+                        tenant_id = excluded.tenant_id
+                    """
+                ),
+                {
+                    "id": f"user_{uuid4().hex[:12]}",
+                    "username": probe_user.username,
+                    "email": probe_user.email,
+                    "phone": probe_user.phone,
+                    "password_hash": probe_user.password_hash,
+                    "first_name": probe_user.first_name,
+                    "last_name": probe_user.last_name,
+                    "role": probe_user.role,
+                    "is_active": probe_user.is_active,
+                    "is_phone_verified": probe_user.is_phone_verified,
+                    "permissions_version": 1,
+                    "created_at": now,
+                    "updated_at": now,
+                    "tenant_id": tenant_id,
+                },
+            )
+
+            created_users.append(
+                {
+                    "username": probe_user.username,
+                    "phone": probe_user.phone,
+                    "verified": probe_user.is_phone_verified,
+                }
+            )
+
+        db_session.commit()
+        return {"success": True, "users": created_users}

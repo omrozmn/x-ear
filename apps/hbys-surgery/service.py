@@ -150,6 +150,20 @@ class SurgeryService:
                 "Must be planned, scheduled, or pre_op."
             )
 
+        # WHO Safety: sign-in checklist must be completed before surgery starts
+        checklist = (
+            db.query(SurgicalChecklist)
+            .filter(
+                SurgicalChecklist.surgery_id == surgery_id,
+                SurgicalChecklist.tenant_id == tenant_id,
+            )
+            .first()
+        )
+        if not checklist or checklist.sign_in_completed_at is None:
+            raise ValueError(
+                "Cannot start surgery: WHO Sign-In checklist must be completed first."
+            )
+
         surgery.status = SurgeryStatus.in_progress
         surgery.actual_start = datetime.now(timezone.utc)
         surgery.updated_at = datetime.now(timezone.utc)

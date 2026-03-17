@@ -21,14 +21,14 @@ from core.models.party import Party
 from core.models.sales import Sale
 from core.models.tenant import Tenant
 from core.models.admin_user import AdminUser
-import os
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
 # JWT Configuration
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "default-dev-secret-key-change-in-prod")
-ALGORITHM = "HS256"
+from core.security import get_jwt_secret, JWT_ALGORITHM
+SECRET_KEY = get_jwt_secret()
+ALGORITHM = JWT_ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = 480  # 8 hours
 REFRESH_TOKEN_EXPIRE_DAYS = 30
 

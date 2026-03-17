@@ -20734,6 +20734,687 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
       security:
       - OAuth2PasswordBearer: []
+  /api/inventory/{inventory_id}/media:
+    get:
+      tags:
+      - Product Media
+      operationId: listProductMedia
+      parameters:
+      - name: inventory_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    default: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductMediaRead'
+                  message:
+                    type: string
+                    nullable: true
+    post:
+      tags:
+      - Product Media
+      operationId: createProductMedia
+      parameters:
+      - name: inventory_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductMediaCreate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    default: true
+                  data:
+                    $ref: '#/components/schemas/ProductMediaRead'
+                  message:
+                    type: string
+                    nullable: true
+  /api/inventory/{inventory_id}/media/presigned:
+    post:
+      tags:
+      - Product Media
+      operationId: getMediaPresignedUrl
+      parameters:
+      - name: inventory_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PresignedUrlRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    default: true
+                  data:
+                    $ref: '#/components/schemas/PresignedUrlResponse'
+                  message:
+                    type: string
+                    nullable: true
+  /api/inventory/{inventory_id}/media/{media_id}:
+    put:
+      tags:
+      - Product Media
+      operationId: updateProductMedia
+      parameters:
+      - name: inventory_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: media_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductMediaUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    default: true
+                  data:
+                    $ref: '#/components/schemas/ProductMediaRead'
+                  message:
+                    type: string
+                    nullable: true
+    delete:
+      tags:
+      - Product Media
+      operationId: deleteProductMedia
+      parameters:
+      - name: inventory_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: media_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+  /api/inventory/{inventory_id}/media/reorder:
+    post:
+      tags:
+      - Product Media
+      operationId: reorderProductMedia
+      parameters:
+      - name: inventory_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductMediaReorder'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+  /api/image-processing/resize:
+    post:
+      tags:
+      - Image Processing
+      operationId: resizeImage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResizeRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    default: true
+                  data:
+                    $ref: '#/components/schemas/ImageProcessingResponse'
+                  message:
+                    type: string
+                    nullable: true
+  /api/image-processing/remove-bg:
+    post:
+      tags:
+      - Image Processing
+      operationId: removeBackground
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RemoveBgRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    default: true
+                  data:
+                    $ref: '#/components/schemas/ImageProcessingResponse'
+                  message:
+                    type: string
+                    nullable: true
+  /api/image-processing/ai-generate:
+    post:
+      tags:
+      - Image Processing
+      operationId: aiGenerateImage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AIGenerateRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    default: true
+                  data:
+                    $ref: '#/components/schemas/ImageProcessingResponse'
+                  message:
+                    type: string
+                    nullable: true
+  /api/image-processing/ai-edit:
+    post:
+      tags:
+      - Image Processing
+      operationId: aiEditImage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AIEditRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    default: true
+                  data:
+                    $ref: '#/components/schemas/ImageProcessingResponse'
+                  message:
+                    type: string
+                    nullable: true
+  /api/stock-images/search:
+    get:
+      tags:
+      - Stock Images
+      operationId: searchStockImages
+      parameters:
+      - name: query
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: provider
+        in: query
+        schema:
+          type: string
+          default: pexels
+      - name: page
+        in: query
+        schema:
+          type: integer
+          default: 1
+      - name: per_page
+        in: query
+        schema:
+          type: integer
+          default: 20
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    default: true
+                  data:
+                    $ref: '#/components/schemas/StockImageSearchResponse'
+                  message:
+                    type: string
+                    nullable: true
+  /api/stock-images/download:
+    post:
+      tags:
+      - Stock Images
+      operationId: downloadStockImage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockImageDownloadRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    default: true
+                  data:
+                    $ref: '#/components/schemas/ProductMediaRead'
+                  message:
+                    type: string
+                    nullable: true
+  /api/inventory/{inventory_id}/marketplace-listings:
+    get:
+      tags:
+      - Marketplace Listings
+      operationId: listMarketplaceListings
+      parameters:
+      - name: inventory_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    default: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MarketplaceListingRead'
+                  message:
+                    type: string
+                    nullable: true
+    post:
+      tags:
+      - Marketplace Listings
+      operationId: createMarketplaceListing
+      parameters:
+      - name: inventory_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarketplaceListingCreate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    default: true
+                  data:
+                    $ref: '#/components/schemas/MarketplaceListingRead'
+                  message:
+                    type: string
+                    nullable: true
+  /api/inventory/{inventory_id}/marketplace-listings/{listing_id}:
+    put:
+      tags:
+      - Marketplace Listings
+      operationId: updateMarketplaceListing
+      parameters:
+      - name: inventory_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: listing_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarketplaceListingUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    default: true
+                  data:
+                    $ref: '#/components/schemas/MarketplaceListingRead'
+                  message:
+                    type: string
+                    nullable: true
+    delete:
+      tags:
+      - Marketplace Listings
+      operationId: deleteMarketplaceListing
+      parameters:
+      - name: inventory_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: listing_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+  /api/inventory/{inventory_id}/marketplace-listings/ai-fill:
+    post:
+      tags:
+      - Marketplace Listings
+      operationId: aiAutoFillListings
+      parameters:
+      - name: inventory_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AIFillRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    default: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AIFillResponse'
+                  message:
+                    type: string
+                    nullable: true
+  /api/inventory/{inventory_id}/marketplace-listings/{listing_id}/publish:
+    post:
+      tags:
+      - Marketplace Listings
+      operationId: publishMarketplaceListing
+      parameters:
+      - name: inventory_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: listing_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+  /api/cargo-integrations:
+    get:
+      tags:
+      - Cargo Integrations
+      operationId: listCargoIntegrations
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    default: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CargoIntegrationRead'
+                  message:
+                    type: string
+                    nullable: true
+    post:
+      tags:
+      - Cargo Integrations
+      operationId: createCargoIntegration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CargoIntegrationCreate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    default: true
+                  data:
+                    $ref: '#/components/schemas/CargoIntegrationRead'
+                  message:
+                    type: string
+                    nullable: true
+  /api/cargo-integrations/{integration_id}:
+    put:
+      tags:
+      - Cargo Integrations
+      operationId: updateCargoIntegration
+      parameters:
+      - name: integration_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CargoIntegrationUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    default: true
+                  data:
+                    $ref: '#/components/schemas/CargoIntegrationRead'
+                  message:
+                    type: string
+                    nullable: true
+    delete:
+      tags:
+      - Cargo Integrations
+      operationId: deleteCargoIntegration
+      parameters:
+      - name: integration_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+  /api/cargo-integrations/{integration_id}/test:
+    post:
+      tags:
+      - Cargo Integrations
+      operationId: testCargoIntegration
+      parameters:
+      - name: integration_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
 components:
   schemas:
     AcquisitionTypeOption:
@@ -21008,7 +21689,8 @@ components:
           - type: string
           - type: 'null'
           title: Sector
-          description: Sector code (hearing, pharmacy, hospital, hotel, beauty, general, medical, optic)
+          description: Sector code (hearing, pharmacy, hospital, hotel, beauty, general,
+            medical, optic)
         countryCode:
           anyOf:
           - type: string
@@ -21174,7 +21856,8 @@ components:
           - type: string
           - type: 'null'
           title: Sector
-          description: Sector code (hearing, pharmacy, hospital, hotel, beauty, general, medical, optic)
+          description: Sector code (hearing, pharmacy, hospital, hotel, beauty, general,
+            medical, optic)
         countryCode:
           anyOf:
           - type: string
@@ -21252,7 +21935,8 @@ components:
           - type: string
           - type: 'null'
           title: Sector
-          description: Sector code (hearing, pharmacy, hospital, hotel, beauty, general, medical, optic)
+          description: Sector code (hearing, pharmacy, hospital, hotel, beauty, general,
+            medical, optic)
         countryCode:
           anyOf:
           - type: string
@@ -26164,7 +26848,8 @@ components:
           - type: string
           - type: 'null'
           title: Sector
-          description: Sector code (hearing, pharmacy, hospital, hotel, beauty, general, medical, optic)
+          description: Sector code (hearing, pharmacy, hospital, hotel, beauty, general,
+            medical, optic)
         countryCode:
           anyOf:
           - type: string
@@ -33799,7 +34484,8 @@ components:
           - type: string
           - type: 'null'
           title: Sector
-          description: Sector code (hearing, pharmacy, hospital, hotel, beauty, general, medical, optic)
+          description: Sector code (hearing, pharmacy, hospital, hotel, beauty, general,
+            medical, optic)
         countryCode:
           anyOf:
           - type: string
@@ -33957,7 +34643,8 @@ components:
           - type: string
           - type: 'null'
           title: Sector
-          description: Sector code (hearing, pharmacy, hospital, hotel, beauty, general, medical, optic)
+          description: Sector code (hearing, pharmacy, hospital, hotel, beauty, general,
+            medical, optic)
         countryCode:
           anyOf:
           - type: string
@@ -51392,6 +52079,823 @@ components:
       - tenantId
       title: UserCreate
       description: Schema for creating User
+    ProductMediaRead:
+      properties:
+        createdAt:
+          anyOf:
+          - format: date-time
+            type: string
+          - type: 'null'
+          default: null
+          description: Creation timestamp
+          title: Createdat
+        updatedAt:
+          anyOf:
+          - format: date-time
+            type: string
+          - type: 'null'
+          default: null
+          description: Last update timestamp
+          title: Updatedat
+        id:
+          description: Unique identifier for the resource
+          title: Id
+          type: string
+        mediaType:
+          default: image
+          title: Mediatype
+          type: string
+        url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Url
+        s3Key:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: S3Key
+        filename:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Filename
+        mimeType:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Mimetype
+        fileSize:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          default: null
+          title: Filesize
+        width:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          default: null
+          title: Width
+        height:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          default: null
+          title: Height
+        sortOrder:
+          default: 0
+          title: Sortorder
+          type: integer
+        isPrimary:
+          default: false
+          title: Isprimary
+          type: boolean
+        altText:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Alttext
+        source:
+          default: upload
+          title: Source
+          type: string
+        sourceId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Sourceid
+        marketplaceCompatibility:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Marketplacecompatibility
+        inventoryId:
+          title: Inventoryid
+          type: string
+      required:
+      - id
+      - inventoryId
+      title: ProductMediaRead
+      type: object
+    ProductMediaCreate:
+      properties:
+        mediaType:
+          default: image
+          title: Mediatype
+          type: string
+        url:
+          title: Url
+          type: string
+        s3Key:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: S3Key
+        filename:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Filename
+        mimeType:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Mimetype
+        fileSize:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          default: null
+          title: Filesize
+        width:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          default: null
+          title: Width
+        height:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          default: null
+          title: Height
+        isPrimary:
+          default: false
+          title: Isprimary
+          type: boolean
+        altText:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Alttext
+        source:
+          default: upload
+          title: Source
+          type: string
+        sourceId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Sourceid
+      required:
+      - url
+      title: ProductMediaCreate
+      type: object
+    ProductMediaUpdate:
+      properties:
+        altText:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Alttext
+        isPrimary:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          default: null
+          title: Isprimary
+        sortOrder:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          default: null
+          title: Sortorder
+      title: ProductMediaUpdate
+      type: object
+    ProductMediaReorder:
+      properties:
+        mediaIds:
+          items:
+            type: string
+          title: Mediaids
+          type: array
+      required:
+      - mediaIds
+      title: ProductMediaReorder
+      type: object
+    PresignedUrlRequest:
+      properties:
+        filename:
+          title: Filename
+          type: string
+        contentType:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Contenttype
+      required:
+      - filename
+      title: PresignedUrlRequest
+      type: object
+    PresignedUrlResponse:
+      properties:
+        url:
+          title: Url
+          type: string
+        fields:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          default: null
+          title: Fields
+        s3Key:
+          title: S3Key
+          type: string
+      required:
+      - url
+      - s3Key
+      title: PresignedUrlResponse
+      type: object
+    CargoIntegrationRead:
+      properties:
+        createdAt:
+          anyOf:
+          - format: date-time
+            type: string
+          - type: 'null'
+          default: null
+          description: Creation timestamp
+          title: Createdat
+        updatedAt:
+          anyOf:
+          - format: date-time
+            type: string
+          - type: 'null'
+          default: null
+          description: Last update timestamp
+          title: Updatedat
+        id:
+          description: Unique identifier for the resource
+          title: Id
+          type: string
+        platform:
+          title: Platform
+          type: string
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Name
+        customerId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Customerid
+        isActive:
+          default: true
+          title: Isactive
+          type: boolean
+        status:
+          default: disconnected
+          title: Status
+          type: string
+      required:
+      - id
+      - platform
+      title: CargoIntegrationRead
+      type: object
+    CargoIntegrationCreate:
+      properties:
+        platform:
+          title: Platform
+          type: string
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Name
+        apiKey:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Apikey
+        apiSecret:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Apisecret
+        customerId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Customerid
+        otherParams:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Otherparams
+      required:
+      - platform
+      title: CargoIntegrationCreate
+      type: object
+    CargoIntegrationUpdate:
+      properties:
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Name
+        apiKey:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Apikey
+        apiSecret:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Apisecret
+        customerId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Customerid
+        otherParams:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Otherparams
+        isActive:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          default: null
+          title: Isactive
+      title: CargoIntegrationUpdate
+      type: object
+    MarketplaceListingRead:
+      properties:
+        createdAt:
+          anyOf:
+          - format: date-time
+            type: string
+          - type: 'null'
+          default: null
+          description: Creation timestamp
+          title: Createdat
+        updatedAt:
+          anyOf:
+          - format: date-time
+            type: string
+          - type: 'null'
+          default: null
+          description: Last update timestamp
+          title: Updatedat
+        id:
+          description: Unique identifier for the resource
+          title: Id
+          type: string
+        listingData:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Listingdata
+        marketplaceTitle:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Marketplacetitle
+        marketplaceDescription:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Marketplacedescription
+        marketplacePrice:
+          anyOf:
+          - type: number
+          - type: 'null'
+          default: null
+          title: Marketplaceprice
+        marketplaceStock:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          default: null
+          title: Marketplacestock
+        marketplaceBarcode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Marketplacebarcode
+        marketplaceBrand:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Marketplacebrand
+        marketplaceCategoryId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Marketplacecategoryid
+        status:
+          default: draft
+          title: Status
+          type: string
+        inventoryId:
+          title: Inventoryid
+          type: string
+        integrationId:
+          title: Integrationid
+          type: string
+        remoteProductId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Remoteproductid
+        lastSyncedAt:
+          anyOf:
+          - format: date-time
+            type: string
+          - type: 'null'
+          default: null
+          title: Lastsyncedat
+        errorMessage:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Errormessage
+      required:
+      - id
+      - inventoryId
+      - integrationId
+      title: MarketplaceListingRead
+      type: object
+    MarketplaceListingCreate:
+      properties:
+        integrationId:
+          title: Integrationid
+          type: string
+        listingData:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Listingdata
+        marketplaceTitle:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Marketplacetitle
+        marketplaceDescription:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Marketplacedescription
+        marketplacePrice:
+          anyOf:
+          - type: number
+          - type: 'null'
+          default: null
+          title: Marketplaceprice
+        marketplaceStock:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          default: null
+          title: Marketplacestock
+        marketplaceBarcode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Marketplacebarcode
+        marketplaceBrand:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Marketplacebrand
+        marketplaceCategoryId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Marketplacecategoryid
+      required:
+      - integrationId
+      title: MarketplaceListingCreate
+      type: object
+    MarketplaceListingUpdate:
+      properties:
+        listingData:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Listingdata
+        marketplaceTitle:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Marketplacetitle
+        marketplaceDescription:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Marketplacedescription
+        marketplacePrice:
+          anyOf:
+          - type: number
+          - type: 'null'
+          default: null
+          title: Marketplaceprice
+        marketplaceStock:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          default: null
+          title: Marketplacestock
+        marketplaceBarcode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Marketplacebarcode
+        marketplaceBrand:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Marketplacebrand
+        marketplaceCategoryId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Marketplacecategoryid
+        status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Status
+      title: MarketplaceListingUpdate
+      type: object
+    AIFillRequest:
+      properties:
+        platform:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Platform
+      title: AIFillRequest
+      type: object
+    AIFillResponse:
+      properties:
+        platform:
+          title: Platform
+          type: string
+        marketplaceTitle:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Marketplacetitle
+        marketplaceDescription:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Marketplacedescription
+        marketplacePrice:
+          anyOf:
+          - type: number
+          - type: 'null'
+          default: null
+          title: Marketplaceprice
+        listingData:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Listingdata
+      required:
+      - platform
+      title: AIFillResponse
+      type: object
+    ResizeRequest:
+      properties:
+        s3Key:
+          title: S3Key
+          type: string
+        width:
+          title: Width
+          type: integer
+        height:
+          title: Height
+          type: integer
+        maintainAspect:
+          default: true
+          title: Maintainaspect
+          type: boolean
+      required:
+      - s3Key
+      - width
+      - height
+      title: ResizeRequest
+      type: object
+    RemoveBgRequest:
+      properties:
+        s3Key:
+          title: S3Key
+          type: string
+      required:
+      - s3Key
+      title: RemoveBgRequest
+      type: object
+    AIGenerateRequest:
+      properties:
+        prompt:
+          title: Prompt
+          type: string
+        style:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Style
+        width:
+          default: 1024
+          title: Width
+          type: integer
+        height:
+          default: 1024
+          title: Height
+          type: integer
+      required:
+      - prompt
+      title: AIGenerateRequest
+      type: object
+    AIEditRequest:
+      properties:
+        s3Key:
+          title: S3Key
+          type: string
+        prompt:
+          title: Prompt
+          type: string
+      required:
+      - s3Key
+      - prompt
+      title: AIEditRequest
+      type: object
+    ImageProcessingResponse:
+      properties:
+        url:
+          title: Url
+          type: string
+        s3Key:
+          title: S3Key
+          type: string
+        width:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          default: null
+          title: Width
+        height:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          default: null
+          title: Height
+        fileSize:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          default: null
+          title: Filesize
+      required:
+      - url
+      - s3Key
+      title: ImageProcessingResponse
+      type: object
+    StockImageSearchResponse:
+      properties:
+        results:
+          items:
+            $ref: '#/components/schemas/StockImageResult'
+          title: Results
+          type: array
+        total:
+          title: Total
+          type: integer
+        page:
+          title: Page
+          type: integer
+        perPage:
+          title: Perpage
+          type: integer
+      required:
+      - results
+      - total
+      - page
+      - perPage
+      title: StockImageSearchResponse
+      type: object
+    StockImageResult:
+      properties:
+        id:
+          title: Id
+          type: string
+        provider:
+          title: Provider
+          type: string
+        url:
+          title: Url
+          type: string
+        thumbnailUrl:
+          title: Thumbnailurl
+          type: string
+        width:
+          title: Width
+          type: integer
+        height:
+          title: Height
+          type: integer
+        photographer:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Photographer
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+          title: Description
+      required:
+      - id
+      - provider
+      - url
+      - thumbnailUrl
+      - width
+      - height
+      title: StockImageResult
+      type: object
+    StockImageDownloadRequest:
+      properties:
+        provider:
+          title: Provider
+          type: string
+        imageId:
+          title: Imageid
+          type: string
+        imageUrl:
+          title: Imageurl
+          type: string
+        inventoryId:
+          title: Inventoryid
+          type: string
+      required:
+      - provider
+      - imageId
+      - imageUrl
+      - inventoryId
+      title: StockImageDownloadRequest
+      type: object
   securitySchemes:
     OAuth2PasswordBearer:
       type: oauth2
@@ -51399,3 +52903,9 @@ components:
         password:
           scopes: {}
           tokenUrl: /api/auth/login
+tags:
+- name: Product Media
+- name: Image Processing
+- name: Stock Images
+- name: Marketplace Listings
+- name: Cargo Integrations

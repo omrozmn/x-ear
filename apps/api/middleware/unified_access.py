@@ -29,7 +29,6 @@ Kullanım:
 
 from __future__ import annotations
 
-import os
 import logging
 from dataclasses import dataclass, field
 from typing import Optional, Set, Any, Callable
@@ -44,8 +43,9 @@ from database import get_db, set_current_tenant_id
 
 logger = logging.getLogger(__name__)
 
-SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'default-dev-secret-key-change-in-prod')
-ALGORITHM = "HS256"
+from core.security import get_jwt_secret, JWT_ALGORITHM
+SECRET_KEY = get_jwt_secret()
+ALGORITHM = JWT_ALGORITHM
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
 

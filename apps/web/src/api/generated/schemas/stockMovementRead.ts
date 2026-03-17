@@ -13,6 +13,7 @@ import type { StockMovementReadTransactionId } from './stockMovementReadTransact
 import type { StockMovementReadNotes } from './stockMovementReadNotes';
 import type { StockMovementReadPartyId } from './stockMovementReadPartyId';
 import type { StockMovementReadPartyName } from './stockMovementReadPartyName';
+import type { StockMovementReadPrescriptionStatus } from './stockMovementReadPrescriptionStatus';
 
 export interface StockMovementRead {
   /** Creation timestamp */
@@ -31,4 +32,5 @@ export interface StockMovementRead {
   notes?: StockMovementReadNotes;
   partyId?: StockMovementReadPartyId;
   partyName?: StockMovementReadPartyName;
+  prescriptionStatus?: StockMovementReadPrescriptionStatus;
 }

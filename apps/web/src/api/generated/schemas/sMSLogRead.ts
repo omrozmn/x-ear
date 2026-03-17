@@ -5,30 +5,30 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SMSLogReadCreatedAt } from './sMSLogReadCreatedAt';
-import type { SMSLogReadUpdatedAt } from './sMSLogReadUpdatedAt';
-import type { SMSLogReadCampaignId } from './sMSLogReadCampaignId';
-import type { SMSLogReadPartyId } from './sMSLogReadPartyId';
-import type { SMSLogStatus } from './sMSLogStatus';
-import type { SMSLogReadSentAt } from './sMSLogReadSentAt';
-import type { SMSLogReadDeliveredAt } from './sMSLogReadDeliveredAt';
-import type { SMSLogReadErrorMessage } from './sMSLogReadErrorMessage';
-import type { SMSLogReadCost } from './sMSLogReadCost';
+import type { SmsLogReadCreatedAt } from './smsLogReadCreatedAt';
+import type { SmsLogReadUpdatedAt } from './smsLogReadUpdatedAt';
+import type { SmsLogReadCampaignId } from './smsLogReadCampaignId';
+import type { SmsLogReadPartyId } from './smsLogReadPartyId';
+import type { SmsLogStatus } from './smsLogStatus';
+import type { SmsLogReadSentAt } from './smsLogReadSentAt';
+import type { SmsLogReadDeliveredAt } from './smsLogReadDeliveredAt';
+import type { SmsLogReadErrorMessage } from './smsLogReadErrorMessage';
+import type { SmsLogReadCost } from './smsLogReadCost';
 
-export interface SMSLogRead {
+export interface SmsLogRead {
   /** Creation timestamp */
-  createdAt?: SMSLogReadCreatedAt;
+  createdAt?: SmsLogReadCreatedAt;
   /** Last update timestamp */
-  updatedAt?: SMSLogReadUpdatedAt;
+  updatedAt?: SmsLogReadUpdatedAt;
   /** Unique identifier for the resource */
   id: string;
-  campaignId?: SMSLogReadCampaignId;
-  partyId?: SMSLogReadPartyId;
+  campaignId?: SmsLogReadCampaignId;
+  partyId?: SmsLogReadPartyId;
   phoneNumber: string;
   message: string;
-  status: SMSLogStatus;
-  sentAt?: SMSLogReadSentAt;
-  deliveredAt?: SMSLogReadDeliveredAt;
-  errorMessage?: SMSLogReadErrorMessage;
-  cost?: SMSLogReadCost;
+  status: SmsLogStatus;
+  sentAt?: SmsLogReadSentAt;
+  deliveredAt?: SmsLogReadDeliveredAt;
+  errorMessage?: SmsLogReadErrorMessage;
+  cost?: SmsLogReadCost;
 }

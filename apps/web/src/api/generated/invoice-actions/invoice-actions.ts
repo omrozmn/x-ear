@@ -37,69 +37,6 @@ import { customInstance } from '../../orval-mutator';
 
 
 /**
- * Issue invoice and send to e-fatura outbox
- * @summary Issue Invoice
- */
-export const createInvoiceIssue = (
-    invoiceId: number,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<ResponseEnvelopeInvoiceIssueResponse>(
-      {url: `/api/invoices/${invoiceId}/issue`, method: 'POST', signal
-    },
-      );
-    }
-  
-
-
-export const getCreateInvoiceIssueMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createInvoiceIssue>>, TError,{invoiceId: number}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createInvoiceIssue>>, TError,{invoiceId: number}, TContext> => {
-
-const mutationKey = ['createInvoiceIssue'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createInvoiceIssue>>, {invoiceId: number}> = (props) => {
-          const {invoiceId} = props ?? {};
-
-          return  createInvoiceIssue(invoiceId,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CreateInvoiceIssueMutationResult = NonNullable<Awaited<ReturnType<typeof createInvoiceIssue>>>
-    
-    export type CreateInvoiceIssueMutationError = HTTPValidationError
-
-    /**
- * @summary Issue Invoice
- */
-export const useCreateInvoiceIssue = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createInvoiceIssue>>, TError,{invoiceId: number}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createInvoiceIssue>>,
-        TError,
-        {invoiceId: number},
-        TContext
-      > => {
-
-      const mutationOptions = getCreateInvoiceIssueMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
  * Create a copy of an invoice
  * @summary Copy Invoice
  */
@@ -159,6 +96,69 @@ export const useCreateInvoiceCopy = <TError = HTTPValidationError,
       > => {
 
       const mutationOptions = getCreateInvoiceCopyMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Issue invoice and send to e-fatura outbox
+ * @summary Issue Invoice
+ */
+export const createInvoiceIssue = (
+    invoiceId: number,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeInvoiceIssueResponse>(
+      {url: `/api/invoices/${invoiceId}/issue`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getCreateInvoiceIssueMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createInvoiceIssue>>, TError,{invoiceId: number}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createInvoiceIssue>>, TError,{invoiceId: number}, TContext> => {
+
+const mutationKey = ['createInvoiceIssue'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createInvoiceIssue>>, {invoiceId: number}> = (props) => {
+          const {invoiceId} = props ?? {};
+
+          return  createInvoiceIssue(invoiceId,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateInvoiceIssueMutationResult = NonNullable<Awaited<ReturnType<typeof createInvoiceIssue>>>
+    
+    export type CreateInvoiceIssueMutationError = HTTPValidationError
+
+    /**
+ * @summary Issue Invoice
+ */
+export const useCreateInvoiceIssue = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createInvoiceIssue>>, TError,{invoiceId: number}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createInvoiceIssue>>,
+        TError,
+        {invoiceId: number},
+        TContext
+      > => {
+
+      const mutationOptions = getCreateInvoiceIssueMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -226,7 +226,7 @@ export const useCreateInvoiceCopyCancel = <TError = HTTPValidationError,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * Serve invoice PDF
+ * Serve dynamically generated invoice PDF
  * @summary Serve Invoice Pdf
  */
 export const listInvoicePdf = (

@@ -20,9 +20,6 @@ import type { AuditEntryResponseErrorCode } from './auditEntryResponseErrorCode'
 import type { AuditEntryResponseErrorMessage } from './auditEntryResponseErrorMessage';
 import type { AuditEntryResponseIncidentTag } from './auditEntryResponseIncidentTag';
 
-/**
- * Single audit log entry.
- */
 export interface AuditEntryResponse {
   /** Audit log ID */
   id: string;

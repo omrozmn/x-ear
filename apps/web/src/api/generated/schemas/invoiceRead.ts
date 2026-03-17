@@ -34,6 +34,11 @@ import type { InvoiceReadHasGibXml } from './invoiceReadHasGibXml';
 import type { InvoiceReadGibPdfLink } from './invoiceReadGibPdfLink';
 import type { InvoiceReadBirfaturaSentAt } from './invoiceReadBirfaturaSentAt';
 import type { InvoiceReadBirfaturaApprovedAt } from './invoiceReadBirfaturaApprovedAt';
+import type { InvoiceReadTaxOffice } from './invoiceReadTaxOffice';
+import type { InvoiceReadReturnReferenceNumber } from './invoiceReadReturnReferenceNumber';
+import type { InvoiceReadReturnReferenceDate } from './invoiceReadReturnReferenceDate';
+import type { InvoiceReadRemoteMessage } from './invoiceReadRemoteMessage';
+import type { InvoiceReadMetadata } from './invoiceReadMetadata';
 
 /**
  * Schema for reading invoice data - matches Invoice.to_dict() output
@@ -70,4 +75,9 @@ export interface InvoiceRead {
   gibPdfLink?: InvoiceReadGibPdfLink;
   birfaturaSentAt?: InvoiceReadBirfaturaSentAt;
   birfaturaApprovedAt?: InvoiceReadBirfaturaApprovedAt;
+  taxOffice?: InvoiceReadTaxOffice;
+  returnReferenceNumber?: InvoiceReadReturnReferenceNumber;
+  returnReferenceDate?: InvoiceReadReturnReferenceDate;
+  remoteMessage?: InvoiceReadRemoteMessage;
+  metadata?: InvoiceReadMetadata;
 }

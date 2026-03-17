@@ -60,19 +60,23 @@ def create_stock(db: Session, data: PharmacyStockCreate, tenant_id: str) -> Phar
     return stock
 
 
-def get_stock(db: Session, stock_id: str) -> Optional[PharmacyStock]:
-    return db.query(PharmacyStock).filter(PharmacyStock.id == stock_id).first()
+def get_stock(db: Session, stock_id: str, tenant_id: Optional[str] = None) -> Optional[PharmacyStock]:
+    q = db.query(PharmacyStock).filter(PharmacyStock.id == stock_id)
+    if tenant_id:
+        q = q.filter(PharmacyStock.tenant_id == tenant_id)
+    return q.first()
 
 
 def list_stocks(
     db: Session,
+    tenant_id: str,
     medication_id: Optional[str] = None,
     is_narcotic: Optional[bool] = None,
     storage_conditions: Optional[str] = None,
     skip: int = 0,
     limit: int = 50,
 ) -> Tuple[List[PharmacyStock], int]:
-    q = db.query(PharmacyStock)
+    q = db.query(PharmacyStock).filter(PharmacyStock.tenant_id == tenant_id)
     if medication_id:
         q = q.filter(PharmacyStock.medication_id == medication_id)
     if is_narcotic is not None:
@@ -131,10 +135,18 @@ def create_dispensing(db: Session, data: PharmacyDispensingCreate, tenant_id: st
             .filter(
                 PharmacyStock.medication_id == data.medication_id,
                 PharmacyStock.lot_number == data.lot_number,
+                PharmacyStock.tenant_id == tenant_id,
             )
+            .with_for_update()
             .first()
         )
         if stock:
+            # Prevent dispensing expired medication
+            if stock.expiry_date and stock.expiry_date < date.today():
+                raise ValueError(
+                    f"Cannot dispense expired medication (lot {data.lot_number}, "
+                    f"expired {stock.expiry_date})"
+                )
             stock.quantity_on_hand = max(0, stock.quantity_on_hand - data.quantity_dispensed)
             # Record stock movement
             movement = StockMovement(
@@ -153,19 +165,23 @@ def create_dispensing(db: Session, data: PharmacyDispensingCreate, tenant_id: st
     return dispensing
 
 
-def get_dispensing(db: Session, dispensing_id: str) -> Optional[PharmacyDispensing]:
-    return db.query(PharmacyDispensing).filter(PharmacyDispensing.id == dispensing_id).first()
+def get_dispensing(db: Session, dispensing_id: str, tenant_id: Optional[str] = None) -> Optional[PharmacyDispensing]:
+    q = db.query(PharmacyDispensing).filter(PharmacyDispensing.id == dispensing_id)
+    if tenant_id:
+        q = q.filter(PharmacyDispensing.tenant_id == tenant_id)
+    return q.first()
 
 
 def list_dispensings(
     db: Session,
+    tenant_id: str,
     patient_id: Optional[str] = None,
     prescription_id: Optional[str] = None,
     status: Optional[str] = None,
     skip: int = 0,
     limit: int = 50,
 ) -> Tuple[List[PharmacyDispensing], int]:
-    q = db.query(PharmacyDispensing)
+    q = db.query(PharmacyDispensing).filter(PharmacyDispensing.tenant_id == tenant_id)
     if patient_id:
         q = q.filter(PharmacyDispensing.patient_id == patient_id)
     if prescription_id:
@@ -200,7 +216,9 @@ def process_return(
             .filter(
                 PharmacyStock.medication_id == dispensing.medication_id,
                 PharmacyStock.lot_number == dispensing.lot_number,
+                PharmacyStock.tenant_id == dispensing.tenant_id,
             )
+            .with_for_update()
             .first()
         )
         if stock:
@@ -338,12 +356,13 @@ def create_stock_movement(db: Session, data: StockMovementCreate, tenant_id: str
 
 def list_stock_movements(
     db: Session,
+    tenant_id: str,
     pharmacy_stock_id: Optional[str] = None,
     movement_type: Optional[str] = None,
     skip: int = 0,
     limit: int = 50,
 ) -> Tuple[List[StockMovement], int]:
-    q = db.query(StockMovement)
+    q = db.query(StockMovement).filter(StockMovement.tenant_id == tenant_id)
     if pharmacy_stock_id:
         q = q.filter(StockMovement.pharmacy_stock_id == pharmacy_stock_id)
     if movement_type:
@@ -357,7 +376,7 @@ def list_stock_movements(
 # Expiry Alerts
 # ---------------------------------------------------------------------------
 
-def get_expiry_alerts(db: Session, days_threshold: int = 30) -> ExpiryAlertResponse:
+def get_expiry_alerts(db: Session, tenant_id: str, days_threshold: int = 30) -> ExpiryAlertResponse:
     """Get expired and soon-to-expire medications."""
     today = date.today()
     threshold_date = today + timedelta(days=days_threshold)
@@ -365,7 +384,7 @@ def get_expiry_alerts(db: Session, days_threshold: int = 30) -> ExpiryAlertRespo
     # Expired
     expired_stocks = (
         db.query(PharmacyStock)
-        .filter(PharmacyStock.expiry_date < today, PharmacyStock.quantity_on_hand > 0)
+        .filter(PharmacyStock.tenant_id == tenant_id, PharmacyStock.expiry_date < today, PharmacyStock.quantity_on_hand > 0)
         .order_by(PharmacyStock.expiry_date.asc())
         .all()
     )
@@ -374,6 +393,7 @@ def get_expiry_alerts(db: Session, days_threshold: int = 30) -> ExpiryAlertRespo
     expiring_stocks = (
         db.query(PharmacyStock)
         .filter(
+            PharmacyStock.tenant_id == tenant_id,
             PharmacyStock.expiry_date >= today,
             PharmacyStock.expiry_date <= threshold_date,
             PharmacyStock.quantity_on_hand > 0,
@@ -420,11 +440,11 @@ def get_expiry_alerts(db: Session, days_threshold: int = 30) -> ExpiryAlertRespo
 # Narcotic Tracking
 # ---------------------------------------------------------------------------
 
-def get_narcotic_report(db: Session) -> NarcoticReportResponse:
+def get_narcotic_report(db: Session, tenant_id: str) -> NarcoticReportResponse:
     """Get all narcotic/controlled substance stock items."""
     narcotics = (
         db.query(PharmacyStock)
-        .filter(PharmacyStock.is_narcotic == True)  # noqa: E712
+        .filter(PharmacyStock.tenant_id == tenant_id, PharmacyStock.is_narcotic == True)  # noqa: E712
         .order_by(PharmacyStock.medication_id.asc())
         .all()
     )
@@ -452,11 +472,15 @@ def get_narcotic_report(db: Session) -> NarcoticReportResponse:
 def get_patient_medication_history(
     db: Session,
     patient_id: str,
+    tenant_id: str,
     skip: int = 0,
     limit: int = 50,
 ) -> Tuple[List[PatientMedicationHistoryItem], int]:
     """Get full medication dispensing history for a patient."""
-    q = db.query(PharmacyDispensing).filter(PharmacyDispensing.patient_id == patient_id)
+    q = db.query(PharmacyDispensing).filter(
+        PharmacyDispensing.patient_id == patient_id,
+        PharmacyDispensing.tenant_id == tenant_id,
+    )
     total = q.count()
     dispensings = q.order_by(PharmacyDispensing.dispensed_at.desc()).offset(skip).limit(limit).all()
 

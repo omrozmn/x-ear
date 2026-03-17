@@ -242,7 +242,7 @@ function FeatureItem({ text }: { text: string }) {
     return (
         <li className="flex items-start gap-3">
             <CheckCircle2 className="w-5 h-5 text-accent-blue shrink-0 mt-0.5" />
-            <span className="text-sm leading-tight" dangerouslySetInnerHTML={{ __html: text.replace(/(\d+)/g, "<span class='font-bold text-foreground'>$1</span>") }}></span>
+            <span className="text-sm leading-tight" dangerouslySetInnerHTML={{ __html: text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] || c)).replace(/(\d+)/g, "<span class='font-bold text-foreground'>$1</span>") }}></span>
         </li>
     );
 }

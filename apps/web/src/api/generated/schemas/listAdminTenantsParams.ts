@@ -9,7 +9,8 @@ import type { ProductCode } from './productCode';
 
 export type ListAdminTenantsParams = {
 page?: number;
-limit?: number;
+perPage?: number;
+limit?: number | null;
 status?: string;
 search?: string;
 product_code?: ProductCode | null;

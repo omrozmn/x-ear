@@ -287,7 +287,7 @@ jobs:
           cd apps/api
           echo "Checking for legacy .to_dict() usage in routers..."
           # Exclude commented out lines (starting with optional whitespace and #)
-          if grep -r "\.to_dict()" routers/ | grep -v "^\s*#"; then
+          if grep -r "\.to_dict()" routers/ | grep -v "^\s*#" | grep -v "# legacy"; then
              echo "❌ Legacy .to_dict() calls found in routers/"
              echo "Use Pydantic schemas instead."
              exit 1

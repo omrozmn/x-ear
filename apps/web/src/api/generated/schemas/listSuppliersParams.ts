@@ -9,11 +9,12 @@
 export type ListSuppliersParams = {
 /**
  * @minimum 1
+ * @maximum 1000000
  */
 page?: number;
 /**
  * @minimum 1
- * @maximum 100
+ * @maximum 200
  */
 per_page?: number;
 search?: string | null;

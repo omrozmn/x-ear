@@ -3,6 +3,7 @@ Laboratory Service
 Business logic for lab orders, test execution, result entry, and verification.
 Includes abnormal/critical value detection.
 """
+import asyncio
 import logging
 from datetime import datetime, timezone
 from typing import Optional, List, Tuple
@@ -10,6 +11,7 @@ from typing import Optional, List, Tuple
 from sqlalchemy.orm import Session, joinedload
 
 from hbys_common.database import gen_id, now_utc, unbound_session
+from hbys_common.events import event_bus
 
 from models.lab_order import LabOrder
 from models.lab_test import LabTest
@@ -93,6 +95,44 @@ def _detect_abnormal_critical(
     return is_abnormal, is_critical
 
 
+def _publish_critical_alert(test: "LabTest", result_value: str) -> None:
+    """Fire-and-forget critical lab result notification via event bus."""
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            loop.create_task(
+                event_bus.publish(
+                    "lab.critical_result",
+                    {
+                        "test_id": test.id,
+                        "lab_order_id": test.lab_order_id,
+                        "tenant_id": test.tenant_id,
+                        "test_definition_id": test.test_definition_id,
+                        "result_value": result_value,
+                        "loinc_code": test.loinc_code,
+                    },
+                    source_service="hbys-laboratory",
+                )
+            )
+        else:
+            loop.run_until_complete(
+                event_bus.publish(
+                    "lab.critical_result",
+                    {
+                        "test_id": test.id,
+                        "lab_order_id": test.lab_order_id,
+                        "tenant_id": test.tenant_id,
+                        "test_definition_id": test.test_definition_id,
+                        "result_value": result_value,
+                        "loinc_code": test.loinc_code,
+                    },
+                    source_service="hbys-laboratory",
+                )
+            )
+    except Exception as exc:
+        logger.error(f"Failed to publish critical lab alert for test {test.id}: {exc}")
+
+
 def _update_order_status(db: Session, order: LabOrder) -> None:
     """
     Recalculate the parent order status based on its child tests.
@@ -141,11 +181,24 @@ def create_lab_order(
     db.flush()
 
     # Add requested tests
+    patient_gender = getattr(data, "patient_gender", None)
     for test_req in data.tests:
         definition = db.query(TestDefinition).filter(
             TestDefinition.id == test_req.test_definition_id,
+            TestDefinition.tenant_id == tenant_id,
             TestDefinition.is_active == True,
         ).first()
+
+        # Select reference range based on patient gender
+        ref_low = None
+        ref_high = None
+        if definition:
+            if patient_gender and patient_gender.lower() in ("female", "f", "kadın", "k"):
+                ref_low = definition.ref_range_female_low
+                ref_high = definition.ref_range_female_high
+            else:
+                ref_low = definition.ref_range_male_low
+                ref_high = definition.ref_range_male_high
 
         lab_test = LabTest(
             id=gen_id("ltst"),
@@ -154,8 +207,8 @@ def create_lab_order(
             test_definition_id=test_req.test_definition_id,
             status="pending",
             result_unit=definition.unit if definition else None,
-            reference_range_low=definition.ref_range_male_low if definition else None,
-            reference_range_high=definition.ref_range_male_high if definition else None,
+            reference_range_low=ref_low,
+            reference_range_high=ref_high,
             loinc_code=definition.loinc_code if definition else None,
             notes=test_req.notes,
         )
@@ -166,18 +219,21 @@ def create_lab_order(
     return order
 
 
-def get_lab_order(db: Session, order_id: str) -> Optional[LabOrder]:
+def get_lab_order(db: Session, order_id: str, tenant_id: Optional[str] = None) -> Optional[LabOrder]:
     """Get a lab order by ID with its tests and definitions."""
-    return (
+    query = (
         db.query(LabOrder)
         .options(joinedload(LabOrder.tests).joinedload(LabTest.test_definition))
         .filter(LabOrder.id == order_id)
-        .first()
     )
+    if tenant_id:
+        query = query.filter(LabOrder.tenant_id == tenant_id)
+    return query.first()
 
 
 def list_lab_orders(
     db: Session,
+    tenant_id: Optional[str] = None,
     patient_id: Optional[str] = None,
     encounter_id: Optional[str] = None,
     status: Optional[str] = None,
@@ -190,6 +246,8 @@ def list_lab_orders(
         joinedload(LabOrder.tests)
     )
 
+    if tenant_id:
+        query = query.filter(LabOrder.tenant_id == tenant_id)
     if patient_id:
         query = query.filter(LabOrder.patient_id == patient_id)
     if encounter_id:
@@ -208,9 +266,13 @@ def update_lab_order(
     db: Session,
     order_id: str,
     data: LabOrderUpdate,
+    tenant_id: Optional[str] = None,
 ) -> Optional[LabOrder]:
     """Update a lab order's editable fields."""
-    order = db.query(LabOrder).filter(LabOrder.id == order_id).first()
+    query = db.query(LabOrder).filter(LabOrder.id == order_id)
+    if tenant_id:
+        query = query.filter(LabOrder.tenant_id == tenant_id)
+    order = query.first()
     if not order:
         return None
 
@@ -223,9 +285,12 @@ def update_lab_order(
     return order
 
 
-def cancel_lab_order(db: Session, order_id: str) -> Optional[LabOrder]:
+def cancel_lab_order(db: Session, order_id: str, tenant_id: Optional[str] = None) -> Optional[LabOrder]:
     """Cancel a lab order and all its pending tests."""
-    order = db.query(LabOrder).options(joinedload(LabOrder.tests)).filter(LabOrder.id == order_id).first()
+    query = db.query(LabOrder).options(joinedload(LabOrder.tests)).filter(LabOrder.id == order_id)
+    if tenant_id:
+        query = query.filter(LabOrder.tenant_id == tenant_id)
+    order = query.first()
     if not order:
         return None
     if order.status in ("completed", "cancelled"):
@@ -247,9 +312,13 @@ def collect_specimen(
     db: Session,
     order_id: str,
     data: SpecimenCollect,
+    tenant_id: Optional[str] = None,
 ) -> Optional[LabOrder]:
     """Record specimen collection for a lab order."""
-    order = db.query(LabOrder).filter(LabOrder.id == order_id).first()
+    query = db.query(LabOrder).filter(LabOrder.id == order_id)
+    if tenant_id:
+        query = query.filter(LabOrder.tenant_id == tenant_id)
+    order = query.first()
     if not order:
         return None
     if order.status not in ("ordered",):
@@ -277,14 +346,17 @@ def enter_test_result(
     data: LabTestResultEntry,
     patient_gender: Optional[str] = None,
     patient_age: Optional[int] = None,
+    tenant_id: Optional[str] = None,
 ) -> Optional[LabTest]:
     """Enter a result for a single lab test. Auto-detects abnormal/critical."""
-    test = (
+    query = (
         db.query(LabTest)
         .options(joinedload(LabTest.test_definition))
         .filter(LabTest.id == test_id)
-        .first()
     )
+    if tenant_id:
+        query = query.filter(LabTest.tenant_id == tenant_id)
+    test = query.first()
     if not test:
         return None
     if test.status in ("verified", "cancelled"):
@@ -313,6 +385,10 @@ def enter_test_result(
     test.is_abnormal = is_abnormal
     test.is_critical = is_critical
 
+    # Trigger critical lab alert notification
+    if is_critical:
+        _publish_critical_alert(test, data.result_value)
+
     # Update parent order status
     order = db.query(LabOrder).options(joinedload(LabOrder.tests)).filter(LabOrder.id == test.lab_order_id).first()
     if order:
@@ -327,9 +403,13 @@ def verify_test_result(
     db: Session,
     test_id: str,
     data: LabTestVerify,
+    tenant_id: Optional[str] = None,
 ) -> Optional[LabTest]:
     """Verify / approve a completed test result (pathologist sign-off)."""
-    test = db.query(LabTest).filter(LabTest.id == test_id).first()
+    query = db.query(LabTest).filter(LabTest.id == test_id)
+    if tenant_id:
+        query = query.filter(LabTest.tenant_id == tenant_id)
+    test = query.first()
     if not test:
         return None
     if test.status != "completed":

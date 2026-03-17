@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowLeft, Mail, Phone, CreditCard, CheckCircle2, AlertCircle, Lock, Plus, User as UserIcon, Loader2, Tag, Smartphone, MessageSquare, X } from "lucide-react";
-import { useState, Suspense, useEffect } from "react";
+import { useState, useRef, Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import Image from "next/image";
@@ -58,11 +58,23 @@ function CheckoutContent() {
     // Auth State
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+    // 3D Secure redirect state
+    const [redirecting, setRedirecting] = useState(false);
+    const threeDFormRef = useRef<HTMLDivElement>(null);
+
     // Addons & SMS Packages State
     const [addons, setAddons] = useState<any[]>([]);
     const [smsPackages, setSmsPackages] = useState<any[]>([]);
     const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
     const [selectedSmsPackageId, setSelectedSmsPackageId] = useState<string | null>(null);
+
+    // Check for error from 3D Secure callback redirect
+    useEffect(() => {
+        const urlError = searchParams.get("error");
+        if (urlError) {
+            setError(decodeURIComponent(urlError));
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -155,6 +167,24 @@ function CheckoutContent() {
             return;
         }
 
+        const rawCardNumber = cardData.number.replace(/\s/g, '');
+        if (!rawCardNumber || rawCardNumber.length < 13) {
+            setError("Lütfen geçerli bir kart numarası girin.");
+            return;
+        }
+        if (!cardData.name.trim()) {
+            setError("Lütfen kart üzerindeki ismi girin.");
+            return;
+        }
+        if (!cardData.expiry || cardData.expiry.length < 5) {
+            setError("Lütfen geçerli bir son kullanma tarihi girin.");
+            return;
+        }
+        if (!cardData.cvc || cardData.cvc.length < 3) {
+            setError("Lütfen geçerli bir CVC girin.");
+            return;
+        }
+
         setLoading(true);
         setError("");
 
@@ -164,7 +194,7 @@ function CheckoutContent() {
                 billing_interval: billingCycle.toUpperCase(),
                 addon_ids: selectedAddons,
                 sms_package_id: selectedSmsPackageId,
-                card_number: cardData.number || "4242424242424242" // mock fallback
+                card_number: cardData.number
             });
 
             const data = res.data;

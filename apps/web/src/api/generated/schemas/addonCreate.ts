@@ -9,6 +9,9 @@ import type { AddonCreateSlug } from './addonCreateSlug';
 import type { AddonCreateDescription } from './addonCreateDescription';
 import type { AddonCreateUnitName } from './addonCreateUnitName';
 import type { AddonCreateLimitAmount } from './addonCreateLimitAmount';
+import type { AddonCreateSector } from './addonCreateSector';
+import type { AddonCreateCountryCode } from './addonCreateCountryCode';
+import type { AddonCreateFeatures } from './addonCreateFeatures';
 
 /**
  * Schema for creating an addon
@@ -20,7 +23,7 @@ export interface AddonCreate {
   slug?: AddonCreateSlug;
   /** Addon description */
   description?: AddonCreateDescription;
-  /** Addon type */
+  /** Addon type (PER_USER, FLAT_FEE, USAGE_BASED) */
   addonType?: string;
   /** Addon price */
   price: number;
@@ -30,6 +33,12 @@ export interface AddonCreate {
   unitName?: AddonCreateUnitName;
   /** Limit amount */
   limitAmount?: AddonCreateLimitAmount;
+  /** Sector code (hearing, pharmacy, hospital, hotel, beauty, general, medical, optic) */
+  sector?: AddonCreateSector;
+  /** ISO 3166-1 alpha-2 country code */
+  countryCode?: AddonCreateCountryCode;
   /** Is addon active */
   isActive?: boolean;
+  /** Addon features */
+  features?: AddonCreateFeatures;
 }

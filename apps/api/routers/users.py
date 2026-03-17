@@ -57,6 +57,13 @@ class UserUpdate(BaseModel):
     role: Optional[str] = None
     password: Optional[str] = None
 
+class UserMeUpdate(BaseModel):
+    """Schema for self-profile updates - excludes role and password for security"""
+    first_name: Optional[str] = Field(None, alias="firstName")
+    last_name: Optional[str] = Field(None, alias="lastName")
+    email: Optional[str] = None
+    username: Optional[str] = None
+
 class PasswordChange(BaseModel):
     current_password: str = Field(..., alias="currentPassword")
     new_password: str = Field(..., alias="newPassword")
@@ -264,7 +271,7 @@ def get_me(
 
 @router.put("/users/me", operation_id="updateUserMe", response_model=ResponseEnvelope[UserRead])
 def update_me(
-    user_in: UserUpdate,
+    user_in: UserMeUpdate,
     access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):

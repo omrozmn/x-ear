@@ -7,11 +7,13 @@
  */
 import type { DetailedPlanReadCreatedAt } from './detailedPlanReadCreatedAt';
 import type { DetailedPlanReadUpdatedAt } from './detailedPlanReadUpdatedAt';
+import type { DetailedPlanReadSlug } from './detailedPlanReadSlug';
 import type { DetailedPlanReadDescription } from './detailedPlanReadDescription';
 import type { DetailedPlanReadFeatures } from './detailedPlanReadFeatures';
 import type { DetailedPlanReadMaxUsers } from './detailedPlanReadMaxUsers';
 import type { DetailedPlanReadMaxStorageGb } from './detailedPlanReadMaxStorageGb';
-import type { DetailedPlanReadSlug } from './detailedPlanReadSlug';
+import type { DetailedPlanReadSector } from './detailedPlanReadSector';
+import type { DetailedPlanReadCountryCode } from './detailedPlanReadCountryCode';
 
 /**
  * Schema for reading a plan
@@ -25,6 +27,7 @@ export interface DetailedPlanRead {
   id: string;
   /** Plan name */
   name: string;
+  slug?: DetailedPlanReadSlug;
   /** Plan description */
   description?: DetailedPlanReadDescription;
   /** Plan type */
@@ -39,11 +42,14 @@ export interface DetailedPlanRead {
   maxUsers?: DetailedPlanReadMaxUsers;
   /** Max storage in GB */
   maxStorageGb?: DetailedPlanReadMaxStorageGb;
+  /** Sector code (hearing, pharmacy, hospital, hotel, beauty, general, medical, optic) */
+  sector?: DetailedPlanReadSector;
+  /** ISO 3166-1 alpha-2 country code */
+  countryCode?: DetailedPlanReadCountryCode;
   /** Is plan active */
   isActive?: boolean;
   /** Is plan public */
   isPublic?: boolean;
-  slug?: DetailedPlanReadSlug;
   /** Number of tenants using this plan */
   tenantCount?: number;
 }

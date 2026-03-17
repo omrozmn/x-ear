@@ -486,7 +486,7 @@ export const useCreateCampaignSend = <TError = HTTPValidationError,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * List all campaigns (Admin)
+ * List all campaigns (Admin) - includes tenant information
  * @summary Admin Get Campaigns
  */
 export const listAdminCampaigns = (
@@ -495,7 +495,7 @@ export const listAdminCampaigns = (
 ) => {
       
       
-      return customInstance<ResponseEnvelopeListCampaignRead>(
+      return customInstance<unknown>(
       {url: `/api/admin/campaigns`, method: 'GET',
         params, signal
     },

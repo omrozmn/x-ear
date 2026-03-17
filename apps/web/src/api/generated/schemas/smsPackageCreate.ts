@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { SmsPackageCreateDescription } from './smsPackageCreateDescription';
+import type { SmsPackageCreateCountryCode } from './smsPackageCreateCountryCode';
 
 export interface SmsPackageCreate {
   name: string;
@@ -15,5 +16,7 @@ export interface SmsPackageCreate {
   /** */
   price: number;
   currency?: string;
+  /** ISO 3166-1 alpha-2 country code */
+  countryCode?: SmsPackageCreateCountryCode;
   isActive?: boolean;
 }

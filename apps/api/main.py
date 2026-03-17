@@ -100,7 +100,7 @@ app = FastAPI(
 )
 
 import schemas.parties
-print(f"DEBUG: schemas.parties loaded from: {schemas.parties.__file__}")
+logger.debug(f"schemas.parties loaded from: {schemas.parties.__file__}")
 
 # ============================================================================
 # Health & Readiness Endpoints (Observability)
@@ -227,29 +227,31 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
         status_code=500,
     )
 
-# Configure CORS for FastAPI 
-# (Flask CORS handles its own, but FastAPI needs its own for new routes)
-origins = [
-    "http://localhost:3000",
-    "http://localhost:8080",
-    "http://localhost:8081", 
-    "http://localhost:8082",
-    "http://localhost:5173",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:8080",
-    "http://127.0.0.1:8081",
-    "http://127.0.0.1:8082",
-    "http://127.0.0.1:5173"
-]
+# CORS Configuration
+_cors_env = os.getenv('CORS_ALLOWED_ORIGINS', '')
+if _cors_env:
+    origins = [o.strip() for o in _cors_env.split(',') if o.strip()]
+else:
+    # Development defaults only
+    origins = [
+        "http://localhost:3000",
+        "http://localhost:8080",
+        "http://localhost:8081",
+        "http://localhost:8082",
+        "http://localhost:5173",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:8080",
+        "http://127.0.0.1:8081",
+        "http://127.0.0.1:8082",
+        "http://127.0.0.1:5173"
+    ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_origin_regex=r"http(s)?://(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*", "Idempotency-Key", "X-Request-Id"],
-    # TODO: Add "sentry-trace" and "baggage" when Sentry is installed (GAP-L1)
     expose_headers=["X-Request-Id", "X-Response-Time", "X-Idempotency-Replayed"],
 )
 
@@ -386,6 +388,10 @@ app.include_router(plans.router, prefix="/api")  # Has /plans prefix built-in
 app.include_router(addons.router, prefix="/api")  # Has /addons prefix built-in
 app.include_router(subscriptions.router, prefix="/api")  # Has /subscriptions prefix built-in
 
+# KuveytTurk 3D Secure POS
+from routers import kuveytturk_checkout
+app.include_router(kuveytturk_checkout.router, prefix="/api")
+
 # Phase 4 migrated routers
 from routers import admin_settings, admin_roles, config
 app.include_router(admin_settings.router, prefix="/api")  # Has /admin/settings prefix built-in
@@ -512,10 +518,6 @@ async def tasks_alias():
 @app.get("/api/notes", tags=["Legacy"], include_in_schema=False)
 async def notes_alias():
     return RedirectResponse(url="/api/communications/history", status_code=307)
-
-@app.get("/api/documents", tags=["Legacy"], include_in_schema=False)
-async def documents_alias():
-    return RedirectResponse(url="/api/documents", status_code=307)
 
 if __name__ == "__main__":
     import uvicorn

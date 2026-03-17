@@ -5,12 +5,12 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SendSMSPartyId } from './sendSMSPartyId';
-import type { SendSMSCampaignId } from './sendSMSCampaignId';
+import type { SendSmsPartyId } from './sendSmsPartyId';
+import type { SendSmsCampaignId } from './sendSmsCampaignId';
 
-export interface SendSMS {
+export interface SendSms {
   phoneNumber: string;
   message: string;
-  partyId?: SendSMSPartyId;
-  campaignId?: SendSMSCampaignId;
+  partyId?: SendSmsPartyId;
+  campaignId?: SendSmsCampaignId;
 }

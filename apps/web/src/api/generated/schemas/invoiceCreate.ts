@@ -11,11 +11,15 @@ import type { InvoiceCreateDueDate } from './invoiceCreateDueDate';
 import type { InvoiceCreateCustomerName } from './invoiceCreateCustomerName';
 import type { InvoiceCreateCustomerTaxNumber } from './invoiceCreateCustomerTaxNumber';
 import type { InvoiceCreateCustomerAddress } from './invoiceCreateCustomerAddress';
-import type { InvoiceStatus } from './invoiceStatus';
+import type { SchemasInvoicesInvoiceStatus } from './schemasInvoicesInvoiceStatus';
 import type { InvoiceCreateNotes } from './invoiceCreateNotes';
 import type { InvoiceCreatePartyId } from './invoiceCreatePartyId';
 import type { InvoiceCreateSaleId } from './invoiceCreateSaleId';
 import type { InvoiceItemBase } from './invoiceItemBase';
+import type { InvoiceCreateTaxOffice } from './invoiceCreateTaxOffice';
+import type { InvoiceCreateReturnReferenceNumber } from './invoiceCreateReturnReferenceNumber';
+import type { InvoiceCreateReturnReferenceDate } from './invoiceCreateReturnReferenceDate';
+import type { InvoiceCreateMetadata } from './invoiceCreateMetadata';
 
 /**
  * Schema for creating an invoice
@@ -39,11 +43,16 @@ export interface InvoiceCreate {
   /** Total amount */
   totalAmount?: number;
   /** Invoice status */
-  status?: InvoiceStatus;
+  status?: SchemasInvoicesInvoiceStatus;
   /** Notes */
   notes?: InvoiceCreateNotes;
+  tenantId?: string;
   partyId?: InvoiceCreatePartyId;
   saleId?: InvoiceCreateSaleId;
   /** Invoice items */
   items?: InvoiceItemBase[];
+  taxOffice?: InvoiceCreateTaxOffice;
+  returnReferenceNumber?: InvoiceCreateReturnReferenceNumber;
+  returnReferenceDate?: InvoiceCreateReturnReferenceDate;
+  metadata?: InvoiceCreateMetadata;
 }

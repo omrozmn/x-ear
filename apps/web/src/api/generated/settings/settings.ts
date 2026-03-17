@@ -25,9 +25,15 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AutomationSettingsUpdate,
   HTTPValidationError,
+  ResponseEnvelopeAutomationSettingsResponse,
+  ResponseEnvelopeDictStrAny,
+  ResponseEnvelopePartySegmentsResponse,
   ResponseEnvelopePricingSettingsResponse,
   ResponseEnvelopeSystemSettingsResponse,
+  UpdateAnamnesisQuestionsBody,
+  UpdatePartySegmentsBody,
   UpdateSettingsBody
 } from '.././schemas';
 
@@ -286,4 +292,667 @@ export const useUpdateSettings = <TError = HTTPValidationError,
 
       return useMutation(mutationOptions, queryClient);
     }
+    /**
+ * Get party segments and acquisition types
+ * @summary Get Party Segments
+ */
+export const getPartySegments = (
     
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopePartySegmentsResponse>(
+      {url: `/api/settings/party-segments`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetPartySegmentsQueryKey = () => {
+    return [
+    `/api/settings/party-segments`
+    ] as const;
+    }
+
+    
+export const getGetPartySegmentsQueryOptions = <TData = Awaited<ReturnType<typeof getPartySegments>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPartySegments>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPartySegmentsQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPartySegments>>> = ({ signal }) => getPartySegments(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPartySegments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type GetPartySegmentsQueryResult = NonNullable<Awaited<ReturnType<typeof getPartySegments>>>
+export type GetPartySegmentsQueryError = unknown
+
+
+export function useGetPartySegments<TData = Awaited<ReturnType<typeof getPartySegments>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPartySegments>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPartySegments>>,
+          TError,
+          Awaited<ReturnType<typeof getPartySegments>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetPartySegments<TData = Awaited<ReturnType<typeof getPartySegments>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPartySegments>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPartySegments>>,
+          TError,
+          Awaited<ReturnType<typeof getPartySegments>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetPartySegments<TData = Awaited<ReturnType<typeof getPartySegments>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPartySegments>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get Party Segments
+ */
+
+export function useGetPartySegments<TData = Awaited<ReturnType<typeof getPartySegments>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPartySegments>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getGetPartySegmentsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Update party segments and acquisition types
+ * @summary Update Party Segments
+ */
+export const updatePartySegments = (
+    updatePartySegmentsBody: UpdatePartySegmentsBody,
+ ) => {
+      
+      
+      return customInstance<ResponseEnvelopePartySegmentsResponse>(
+      {url: `/api/settings/party-segments`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: updatePartySegmentsBody
+    },
+      );
+    }
+  
+
+
+export const getUpdatePartySegmentsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePartySegments>>, TError,{data: UpdatePartySegmentsBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updatePartySegments>>, TError,{data: UpdatePartySegmentsBody}, TContext> => {
+
+const mutationKey = ['updatePartySegments'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updatePartySegments>>, {data: UpdatePartySegmentsBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  updatePartySegments(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdatePartySegmentsMutationResult = NonNullable<Awaited<ReturnType<typeof updatePartySegments>>>
+    export type UpdatePartySegmentsMutationBody = UpdatePartySegmentsBody
+    export type UpdatePartySegmentsMutationError = HTTPValidationError
+
+    /**
+ * @summary Update Party Segments
+ */
+export const useUpdatePartySegments = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePartySegments>>, TError,{data: UpdatePartySegmentsBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updatePartySegments>>,
+        TError,
+        {data: UpdatePartySegmentsBody},
+        TContext
+      > => {
+
+      const mutationOptions = getUpdatePartySegmentsMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Get usage count for a specific segment or acquisition type
+ * @summary Get Segment Usage
+ */
+export const getSegmentUsage = (
+    segmentType: string,
+    value: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeDictStrAny>(
+      {url: `/api/settings/party-segments/usage/${segmentType}/${value}`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetSegmentUsageQueryKey = (segmentType?: string,
+    value?: string,) => {
+    return [
+    `/api/settings/party-segments/usage/${segmentType}/${value}`
+    ] as const;
+    }
+
+    
+export const getGetSegmentUsageQueryOptions = <TData = Awaited<ReturnType<typeof getSegmentUsage>>, TError = HTTPValidationError>(segmentType: string,
+    value: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSegmentUsage>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSegmentUsageQueryKey(segmentType,value);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSegmentUsage>>> = ({ signal }) => getSegmentUsage(segmentType,value, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(segmentType && value), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSegmentUsage>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type GetSegmentUsageQueryResult = NonNullable<Awaited<ReturnType<typeof getSegmentUsage>>>
+export type GetSegmentUsageQueryError = HTTPValidationError
+
+
+export function useGetSegmentUsage<TData = Awaited<ReturnType<typeof getSegmentUsage>>, TError = HTTPValidationError>(
+ segmentType: string,
+    value: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSegmentUsage>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSegmentUsage>>,
+          TError,
+          Awaited<ReturnType<typeof getSegmentUsage>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetSegmentUsage<TData = Awaited<ReturnType<typeof getSegmentUsage>>, TError = HTTPValidationError>(
+ segmentType: string,
+    value: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSegmentUsage>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSegmentUsage>>,
+          TError,
+          Awaited<ReturnType<typeof getSegmentUsage>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetSegmentUsage<TData = Awaited<ReturnType<typeof getSegmentUsage>>, TError = HTTPValidationError>(
+ segmentType: string,
+    value: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSegmentUsage>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get Segment Usage
+ */
+
+export function useGetSegmentUsage<TData = Awaited<ReturnType<typeof getSegmentUsage>>, TError = HTTPValidationError>(
+ segmentType: string,
+    value: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSegmentUsage>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getGetSegmentUsageQueryOptions(segmentType,value,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Get automation settings for current tenant
+ * @summary Get Automation Settings
+ */
+export const getAutomationSettings = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeAutomationSettingsResponse>(
+      {url: `/api/settings/automation`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetAutomationSettingsQueryKey = () => {
+    return [
+    `/api/settings/automation`
+    ] as const;
+    }
+
+    
+export const getGetAutomationSettingsQueryOptions = <TData = Awaited<ReturnType<typeof getAutomationSettings>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAutomationSettings>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAutomationSettingsQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAutomationSettings>>> = ({ signal }) => getAutomationSettings(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAutomationSettings>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type GetAutomationSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getAutomationSettings>>>
+export type GetAutomationSettingsQueryError = unknown
+
+
+export function useGetAutomationSettings<TData = Awaited<ReturnType<typeof getAutomationSettings>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAutomationSettings>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAutomationSettings>>,
+          TError,
+          Awaited<ReturnType<typeof getAutomationSettings>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetAutomationSettings<TData = Awaited<ReturnType<typeof getAutomationSettings>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAutomationSettings>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAutomationSettings>>,
+          TError,
+          Awaited<ReturnType<typeof getAutomationSettings>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetAutomationSettings<TData = Awaited<ReturnType<typeof getAutomationSettings>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAutomationSettings>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get Automation Settings
+ */
+
+export function useGetAutomationSettings<TData = Awaited<ReturnType<typeof getAutomationSettings>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAutomationSettings>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getGetAutomationSettingsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Update automation settings for current tenant
+ * @summary Update Automation Settings
+ */
+export const updateAutomationSettings = (
+    automationSettingsUpdate: AutomationSettingsUpdate,
+ ) => {
+      
+      
+      return customInstance<ResponseEnvelopeAutomationSettingsResponse>(
+      {url: `/api/settings/automation`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: automationSettingsUpdate
+    },
+      );
+    }
+  
+
+
+export const getUpdateAutomationSettingsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAutomationSettings>>, TError,{data: AutomationSettingsUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateAutomationSettings>>, TError,{data: AutomationSettingsUpdate}, TContext> => {
+
+const mutationKey = ['updateAutomationSettings'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAutomationSettings>>, {data: AutomationSettingsUpdate}> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateAutomationSettings(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateAutomationSettingsMutationResult = NonNullable<Awaited<ReturnType<typeof updateAutomationSettings>>>
+    export type UpdateAutomationSettingsMutationBody = AutomationSettingsUpdate
+    export type UpdateAutomationSettingsMutationError = HTTPValidationError
+
+    /**
+ * @summary Update Automation Settings
+ */
+export const useUpdateAutomationSettings = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAutomationSettings>>, TError,{data: AutomationSettingsUpdate}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updateAutomationSettings>>,
+        TError,
+        {data: AutomationSettingsUpdate},
+        TContext
+      > => {
+
+      const mutationOptions = getUpdateAutomationSettingsMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Get tenant-level anamnesis question templates
+ * @summary Get Anamnesis Questions
+ */
+export const getAnamnesisQuestions = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<unknown>(
+      {url: `/api/settings/anamnesis-questions`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetAnamnesisQuestionsQueryKey = () => {
+    return [
+    `/api/settings/anamnesis-questions`
+    ] as const;
+    }
+
+    
+export const getGetAnamnesisQuestionsQueryOptions = <TData = Awaited<ReturnType<typeof getAnamnesisQuestions>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAnamnesisQuestions>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAnamnesisQuestionsQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAnamnesisQuestions>>> = ({ signal }) => getAnamnesisQuestions(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAnamnesisQuestions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type GetAnamnesisQuestionsQueryResult = NonNullable<Awaited<ReturnType<typeof getAnamnesisQuestions>>>
+export type GetAnamnesisQuestionsQueryError = unknown
+
+
+export function useGetAnamnesisQuestions<TData = Awaited<ReturnType<typeof getAnamnesisQuestions>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAnamnesisQuestions>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAnamnesisQuestions>>,
+          TError,
+          Awaited<ReturnType<typeof getAnamnesisQuestions>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetAnamnesisQuestions<TData = Awaited<ReturnType<typeof getAnamnesisQuestions>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAnamnesisQuestions>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAnamnesisQuestions>>,
+          TError,
+          Awaited<ReturnType<typeof getAnamnesisQuestions>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetAnamnesisQuestions<TData = Awaited<ReturnType<typeof getAnamnesisQuestions>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAnamnesisQuestions>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get Anamnesis Questions
+ */
+
+export function useGetAnamnesisQuestions<TData = Awaited<ReturnType<typeof getAnamnesisQuestions>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAnamnesisQuestions>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getGetAnamnesisQuestionsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Update tenant-level anamnesis question templates
+ * @summary Update Anamnesis Questions
+ */
+export const updateAnamnesisQuestions = (
+    updateAnamnesisQuestionsBody: UpdateAnamnesisQuestionsBody,
+ ) => {
+      
+      
+      return customInstance<unknown>(
+      {url: `/api/settings/anamnesis-questions`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: updateAnamnesisQuestionsBody
+    },
+      );
+    }
+  
+
+
+export const getUpdateAnamnesisQuestionsMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAnamnesisQuestions>>, TError,{data: UpdateAnamnesisQuestionsBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateAnamnesisQuestions>>, TError,{data: UpdateAnamnesisQuestionsBody}, TContext> => {
+
+const mutationKey = ['updateAnamnesisQuestions'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAnamnesisQuestions>>, {data: UpdateAnamnesisQuestionsBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateAnamnesisQuestions(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateAnamnesisQuestionsMutationResult = NonNullable<Awaited<ReturnType<typeof updateAnamnesisQuestions>>>
+    export type UpdateAnamnesisQuestionsMutationBody = UpdateAnamnesisQuestionsBody
+    export type UpdateAnamnesisQuestionsMutationError = HTTPValidationError
+
+    /**
+ * @summary Update Anamnesis Questions
+ */
+export const useUpdateAnamnesisQuestions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAnamnesisQuestions>>, TError,{data: UpdateAnamnesisQuestionsBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updateAnamnesisQuestions>>,
+        TError,
+        {data: UpdateAnamnesisQuestionsBody},
+        TContext
+      > => {
+
+      const mutationOptions = getUpdateAnamnesisQuestionsMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Get default anamnesis questions (built-in odyoloji standards)
+ * @summary Get Anamnesis Defaults
+ */
+export const getAnamnesisDefaults = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<unknown>(
+      {url: `/api/settings/anamnesis-questions/defaults`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetAnamnesisDefaultsQueryKey = () => {
+    return [
+    `/api/settings/anamnesis-questions/defaults`
+    ] as const;
+    }
+
+    
+export const getGetAnamnesisDefaultsQueryOptions = <TData = Awaited<ReturnType<typeof getAnamnesisDefaults>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAnamnesisDefaults>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAnamnesisDefaultsQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAnamnesisDefaults>>> = ({ signal }) => getAnamnesisDefaults(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAnamnesisDefaults>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type GetAnamnesisDefaultsQueryResult = NonNullable<Awaited<ReturnType<typeof getAnamnesisDefaults>>>
+export type GetAnamnesisDefaultsQueryError = unknown
+
+
+export function useGetAnamnesisDefaults<TData = Awaited<ReturnType<typeof getAnamnesisDefaults>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAnamnesisDefaults>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAnamnesisDefaults>>,
+          TError,
+          Awaited<ReturnType<typeof getAnamnesisDefaults>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetAnamnesisDefaults<TData = Awaited<ReturnType<typeof getAnamnesisDefaults>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAnamnesisDefaults>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAnamnesisDefaults>>,
+          TError,
+          Awaited<ReturnType<typeof getAnamnesisDefaults>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetAnamnesisDefaults<TData = Awaited<ReturnType<typeof getAnamnesisDefaults>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAnamnesisDefaults>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get Anamnesis Defaults
+ */
+
+export function useGetAnamnesisDefaults<TData = Awaited<ReturnType<typeof getAnamnesisDefaults>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAnamnesisDefaults>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getGetAnamnesisDefaultsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+

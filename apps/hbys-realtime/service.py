@@ -143,9 +143,10 @@ async def dispatch_notification(
     elif notification.target_type == "all":
         sent_count = await manager.broadcast_tenant(tenant_id, payload)
 
-    # Update notification status
-    notification.status = "sent"
-    notification.sent_at = datetime.now(timezone.utc)
+    # Update notification status only if at least one recipient received it
+    if sent_count > 0:
+        notification.status = "sent"
+        notification.sent_at = datetime.now(timezone.utc)
     db.commit()
 
     logger.info(

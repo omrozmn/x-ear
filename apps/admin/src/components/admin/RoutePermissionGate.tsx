@@ -73,9 +73,13 @@ export function RoutePermissionGate({ children }: RoutePermissionGateProps) {
         ([prefix]) => currentPath === prefix || currentPath.startsWith(prefix + '/')
     );
 
-    // No permission requirement for this route
+    // Deny by default: routes without explicit permission mappings are blocked
     if (!requiredPermissions) {
-        return <>{children}</>;
+        // Allow only the root dashboard path for authenticated non-super-admin users
+        if (currentPath === '/' || currentPath === '/dashboard' || currentPath === '/unauthorized') {
+            return <>{children}</>;
+        }
+        return <Navigate to="/unauthorized" />;
     }
 
     const [, perms] = requiredPermissions;

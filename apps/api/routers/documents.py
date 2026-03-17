@@ -108,6 +108,10 @@ def add_patient_document(
         
         # Use original filename or generate safe filename
         file_name = request_data.file_name or f'document_{doc_id}'
+        # Sanitize filename to prevent path traversal
+        file_name = Path(file_name).name  # Strip directory components
+        if not file_name or file_name in ('.', '..'):
+            raise HTTPException(status_code=400, detail="Invalid file name")
         file_path = party_dir / f"{doc_id}_{file_name}"
         
         # Write file to disk
@@ -200,6 +204,9 @@ def get_patient_document(
         
         # Check if file exists on disk
         file_path = Path(STORAGE_BASE_PATH) / document.get('filePath', '')
+        # Prevent path traversal
+        if not file_path.resolve().is_relative_to(Path(STORAGE_BASE_PATH).resolve()):
+            raise HTTPException(status_code=400, detail="Invalid file path")
         if not file_path.exists():
             logger.error(f"Document file not found on disk: {file_path}")
             raise HTTPException(status_code=404, detail="Document file not found")
@@ -247,6 +254,9 @@ def delete_patient_document(
         
         # Delete file from disk
         file_path = Path(STORAGE_BASE_PATH) / document.get('filePath', '')
+        # Prevent path traversal
+        if not file_path.resolve().is_relative_to(Path(STORAGE_BASE_PATH).resolve()):
+            raise HTTPException(status_code=400, detail="Invalid file path")
         if file_path.exists():
             try:
                 os.remove(file_path)

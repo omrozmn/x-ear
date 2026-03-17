@@ -9,6 +9,7 @@
 export type ListActivityLogsParams = {
 /**
  * @minimum 1
+ * @maximum 1000000
  */
 page?: number;
 /**
@@ -17,6 +18,7 @@ page?: number;
  */
 limit?: number;
 tenant_id?: string | null;
+branch_id?: string | null;
 user_id?: string | null;
 action?: string | null;
 date_from?: string | null;

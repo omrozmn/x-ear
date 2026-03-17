@@ -23,7 +23,6 @@ Security Rules:
 - No fallback to request body/query parameters for tenant_id
 """
 
-import os
 import logging
 from typing import Optional
 
@@ -37,8 +36,9 @@ from core.database import set_tenant_context, reset_tenant_context, TenantContex
 logger = logging.getLogger(__name__)
 
 # JWT Configuration
-SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'default-dev-secret-key-change-in-prod')
-ALGORITHM = "HS256"
+from core.security import get_jwt_secret, JWT_ALGORITHM
+SECRET_KEY = get_jwt_secret()
+ALGORITHM = JWT_ALGORITHM
 
 # HTTP status codes
 HTTP_401_UNAUTHORIZED = 401

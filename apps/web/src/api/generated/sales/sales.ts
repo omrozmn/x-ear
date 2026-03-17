@@ -885,6 +885,99 @@ export const useCreatePartyDeviceAssignments = <TError = HTTPValidationError,
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * Get a single device assignment with full details.
+ * @summary Get Device Assignment
+ */
+export const getDeviceAssignment = (
+    assignmentId: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeDeviceAssignmentRead>(
+      {url: `/api/device-assignments/${assignmentId}`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetDeviceAssignmentQueryKey = (assignmentId?: string,) => {
+    return [
+    `/api/device-assignments/${assignmentId}`
+    ] as const;
+    }
+
+    
+export const getGetDeviceAssignmentQueryOptions = <TData = Awaited<ReturnType<typeof getDeviceAssignment>>, TError = HTTPValidationError>(assignmentId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDeviceAssignment>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDeviceAssignmentQueryKey(assignmentId);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeviceAssignment>>> = ({ signal }) => getDeviceAssignment(assignmentId, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(assignmentId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDeviceAssignment>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type GetDeviceAssignmentQueryResult = NonNullable<Awaited<ReturnType<typeof getDeviceAssignment>>>
+export type GetDeviceAssignmentQueryError = HTTPValidationError
+
+
+export function useGetDeviceAssignment<TData = Awaited<ReturnType<typeof getDeviceAssignment>>, TError = HTTPValidationError>(
+ assignmentId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDeviceAssignment>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDeviceAssignment>>,
+          TError,
+          Awaited<ReturnType<typeof getDeviceAssignment>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetDeviceAssignment<TData = Awaited<ReturnType<typeof getDeviceAssignment>>, TError = HTTPValidationError>(
+ assignmentId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDeviceAssignment>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDeviceAssignment>>,
+          TError,
+          Awaited<ReturnType<typeof getDeviceAssignment>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetDeviceAssignment<TData = Awaited<ReturnType<typeof getDeviceAssignment>>, TError = HTTPValidationError>(
+ assignmentId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDeviceAssignment>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get Device Assignment
+ */
+
+export function useGetDeviceAssignment<TData = Awaited<ReturnType<typeof getDeviceAssignment>>, TError = HTTPValidationError>(
+ assignmentId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDeviceAssignment>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getGetDeviceAssignmentQueryOptions(assignmentId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
  * Update a device assignment with full legacy logic:
 - Pricing recalculation when base_price, discount, sgk_scheme change
 - Sale totals sync after updates

@@ -9,4 +9,4 @@
 /**
  * Last update timestamp
  */
-export type SMTPConfigResponseUpdatedAt = string | null;
+export type SmtpConfigResponseUpdatedAt = string | null;

@@ -7,5 +7,5 @@
  */
 
 export type ListCommissionByAffiliateParams = {
-affiliate_id: number;
+affiliate_id?: number | null;
 };

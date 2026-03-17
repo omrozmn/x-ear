@@ -9,6 +9,7 @@
 export type ListAdminSmPackagesParams = {
 /**
  * @minimum 1
+ * @maximum 1000000
  */
 page?: number;
 /**
@@ -16,4 +17,8 @@ page?: number;
  * @maximum 100
  */
 limit?: number;
+/**
+ * Filter by country code
+ */
+countryCode?: string | null;
 };

@@ -1,8 +1,7 @@
 import axios, {
-    AxiosHeaders,
     AxiosRequestConfig,
-    type InternalAxiosRequestConfig,
 } from 'axios';
+import { apiClient as axiosInstance } from '../lib/api';
 
 /**
  * Retry configuration for failed requests
@@ -23,15 +22,7 @@ export const generateIdempotencyKey = (): string => {
     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 };
 
-/**
- * Create axios instance for Orval mutator
- * This is separate from api.ts to avoid import.meta issues during Orval generation
- */
-const axiosInstance = axios.create({
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
+// Uses the shared axios instance imported from ../lib/api
 
 type RequestConfigSummary = Pick<AxiosRequestConfig, 'url' | 'method'>;
 
@@ -39,12 +30,6 @@ interface ResponseEnvelope<T> {
     data: T;
     meta?: unknown;
     pagination?: unknown;
-}
-
-function ensureHeaders(config: InternalAxiosRequestConfig): AxiosHeaders {
-    const headers = AxiosHeaders.from(config.headers ?? {});
-    config.headers = headers;
-    return headers;
 }
 
 function hasResponseEnvelope<T>(value: unknown): value is ResponseEnvelope<T> {
@@ -79,58 +64,6 @@ function attachResponseMetadata<T>(payload: T, envelope: ResponseEnvelope<T>): T
 
     return payload;
 }
-
-// Request interceptor for auth token and idempotency
-axiosInstance.interceptors.request.use(
-    (config) => {
-        const headers = ensureHeaders(config);
-        const token = typeof localStorage !== 'undefined' ? localStorage.getItem('admin_token') : null;
-
-        if (token) {
-            headers.set('Authorization', `Bearer ${token}`);
-        }
-
-        // Add Idempotency-Key for write operations (POST, PUT, PATCH)
-        const method = config.method?.toUpperCase() || 'GET';
-        if (['POST', 'PUT', 'PATCH'].includes(method)) {
-            // Check if Idempotency-Key already exists
-            const existingKey = headers.get('Idempotency-Key');
-
-            if (!existingKey) {
-                const idempotencyKey = generateIdempotencyKey();
-                headers.set('Idempotency-Key', idempotencyKey);
-            }
-        }
-
-        return config;
-    },
-    (error) => Promise.reject(error)
-);
-
-// Response interceptor for global error handling (specifically 401)
-axiosInstance.interceptors.response.use(
-    (response) => response,
-    (error) => {
-        if (error.response?.status === 401) {
-            // Don't logout on login endpoint 401 (invalid credentials)
-            const isLoginRequest = typeof error.config?.url === 'string'
-                && error.config.url.includes('/auth/login');
-
-            if (!isLoginRequest) {
-                if (typeof localStorage !== 'undefined') {
-                    localStorage.removeItem('admin_token');
-                    localStorage.removeItem('admin_refresh_token');
-                    localStorage.removeItem('admin-auth-storage');
-
-                    if (!window.location.pathname.includes('/login')) {
-                        window.location.href = '/login';
-                    }
-                }
-            }
-        }
-        return Promise.reject(error);
-    }
-);
 
 /**
  * Calculate exponential backoff delay

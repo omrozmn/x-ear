@@ -26,15 +26,21 @@ import type {
 
 import type {
   BodyCreatePartyBulkUpload,
+  BulkEmailRequest,
+  BulkUpdateRequest,
   HTTPValidationError,
   ListPartiesParams,
   ListPartyCountParams,
   ListPartyExportParams,
   PartyCreate,
   PartyUpdate,
+  ResponseEnvelopeBulkEmailResponse,
+  ResponseEnvelopeBulkUpdateResponse,
+  ResponseEnvelopeListDict,
   ResponseEnvelopeListPartyRead,
   ResponseEnvelopePartyRead,
-  SchemasBaseResponseEnvelopeBulkUploadResponse1
+  SchemasBaseResponseEnvelopeBulkUploadResponse1,
+  SearchPartiesParams
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -390,6 +396,100 @@ export function useListPartyCount<TData = Awaited<ReturnType<typeof listPartyCou
 
 
 /**
+ * Search parties for selection (fuzzy search by name/phone)
+ * @summary Search Parties
+ */
+export const searchParties = (
+    params: SearchPartiesParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeListDict>(
+      {url: `/api/parties/search`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getSearchPartiesQueryKey = (params?: SearchPartiesParams,) => {
+    return [
+    `/api/parties/search`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getSearchPartiesQueryOptions = <TData = Awaited<ReturnType<typeof searchParties>>, TError = HTTPValidationError>(params: SearchPartiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchParties>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getSearchPartiesQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchParties>>> = ({ signal }) => searchParties(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchParties>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type SearchPartiesQueryResult = NonNullable<Awaited<ReturnType<typeof searchParties>>>
+export type SearchPartiesQueryError = HTTPValidationError
+
+
+export function useSearchParties<TData = Awaited<ReturnType<typeof searchParties>>, TError = HTTPValidationError>(
+ params: SearchPartiesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchParties>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchParties>>,
+          TError,
+          Awaited<ReturnType<typeof searchParties>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useSearchParties<TData = Awaited<ReturnType<typeof searchParties>>, TError = HTTPValidationError>(
+ params: SearchPartiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchParties>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchParties>>,
+          TError,
+          Awaited<ReturnType<typeof searchParties>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useSearchParties<TData = Awaited<ReturnType<typeof searchParties>>, TError = HTTPValidationError>(
+ params: SearchPartiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchParties>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Search Parties
+ */
+
+export function useSearchParties<TData = Awaited<ReturnType<typeof searchParties>>, TError = HTTPValidationError>(
+ params: SearchPartiesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchParties>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getSearchPartiesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
  * Get single patient
  * @summary Get Party
  */
@@ -673,6 +773,138 @@ export const useCreatePartyBulkUpload = <TError = HTTPValidationError,
       > => {
 
       const mutationOptions = getCreatePartyBulkUploadMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Bulk update multiple parties with the same changes.
+Returns success/failure count and individual results.
+ * @summary Bulk Update Parties
+ */
+export const bulkUpdateParties = (
+    bulkUpdateRequest: BulkUpdateRequest,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeBulkUpdateResponse>(
+      {url: `/api/parties/bulk-update`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: bulkUpdateRequest, signal
+    },
+      );
+    }
+  
+
+
+export const getBulkUpdatePartiesMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bulkUpdateParties>>, TError,{data: BulkUpdateRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof bulkUpdateParties>>, TError,{data: BulkUpdateRequest}, TContext> => {
+
+const mutationKey = ['bulkUpdateParties'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof bulkUpdateParties>>, {data: BulkUpdateRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  bulkUpdateParties(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type BulkUpdatePartiesMutationResult = NonNullable<Awaited<ReturnType<typeof bulkUpdateParties>>>
+    export type BulkUpdatePartiesMutationBody = BulkUpdateRequest
+    export type BulkUpdatePartiesMutationError = HTTPValidationError
+
+    /**
+ * @summary Bulk Update Parties
+ */
+export const useBulkUpdateParties = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bulkUpdateParties>>, TError,{data: BulkUpdateRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof bulkUpdateParties>>,
+        TError,
+        {data: BulkUpdateRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getBulkUpdatePartiesMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Send email to multiple parties.
+Returns success/failure count and individual results.
+ * @summary Bulk Email Parties
+ */
+export const bulkEmailParties = (
+    bulkEmailRequest: BulkEmailRequest,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeBulkEmailResponse>(
+      {url: `/api/parties/bulk-email`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: bulkEmailRequest, signal
+    },
+      );
+    }
+  
+
+
+export const getBulkEmailPartiesMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bulkEmailParties>>, TError,{data: BulkEmailRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof bulkEmailParties>>, TError,{data: BulkEmailRequest}, TContext> => {
+
+const mutationKey = ['bulkEmailParties'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof bulkEmailParties>>, {data: BulkEmailRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  bulkEmailParties(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type BulkEmailPartiesMutationResult = NonNullable<Awaited<ReturnType<typeof bulkEmailParties>>>
+    export type BulkEmailPartiesMutationBody = BulkEmailRequest
+    export type BulkEmailPartiesMutationError = HTTPValidationError
+
+    /**
+ * @summary Bulk Email Parties
+ */
+export const useBulkEmailParties = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bulkEmailParties>>, TError,{data: BulkEmailRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof bulkEmailParties>>,
+        TError,
+        {data: BulkEmailRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getBulkEmailPartiesMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

@@ -93,13 +93,13 @@ class VatanSMSProvider(SMSProvider):
                     get_config('username')
                     or os.getenv('VATANSMS_USERNAME')
                     or os.getenv('VATAN_API_ID')
-                    or '4ab531b6fd26fd9ba6010b0d'
+                    or None
                 )
                 password = (
                     get_config('password')
                     or os.getenv('VATANSMS_PASSWORD')
                     or os.getenv('VATAN_API_KEY')
-                    or '49b2001edbb1789e4e62f935'
+                    or None
                 )
                 sender = (
                     get_config('sender_id')
@@ -112,11 +112,11 @@ class VatanSMSProvider(SMSProvider):
                 db_session.close()
         except Exception as e:
             logger.warning(f"Could not fetch settings from DB: {e}")
-            # Fallback to env with hardcoded defaults from legacy script
+            # Fallback to env only - no hardcoded credentials
             return (
-                os.getenv('VATANSMS_USERNAME', os.getenv('VATAN_API_ID', '4ab531b6fd26fd9ba6010b0d')),
-                os.getenv('VATANSMS_PASSWORD', os.getenv('VATAN_API_KEY', '49b2001edbb1789e4e62f935')),
-                os.getenv('VATANSMS_SENDER', os.getenv('VATAN_SENDER', 'OZMN TIBCHZ'))
+                os.getenv('VATANSMS_USERNAME') or os.getenv('VATAN_API_ID'),
+                os.getenv('VATANSMS_PASSWORD') or os.getenv('VATAN_API_KEY'),
+                os.getenv('VATANSMS_SENDER') or os.getenv('VATAN_SENDER', 'OZMN TIBCHZ')
             )
     
     def is_configured(self) -> bool:
@@ -475,10 +475,11 @@ class CommunicationService:
         sms_provider = self.sms_providers[provider_name]
         
         if not sms_provider.is_configured():
-            # Fallback to mock provider
-            logger.warning(f"SMS provider {provider_name} not configured, falling back to mock")
-            sms_provider = self.sms_providers['mock']
-        
+            raise RuntimeError(
+                f"SMS provider '{provider_name}' is not configured. "
+                "Set VATANSMS_USERNAME and VATANSMS_PASSWORD environment variables."
+            )
+
         return sms_provider.send_sms(phone_number, message, **kwargs)
     
     def send_email(self, to_email: str, subject: str, body_text: str, 

@@ -6,16 +6,20 @@
  * OpenAPI spec version: 1.0.0
  */
 import {
+  useMutation,
   useQuery
 } from '@tanstack/react-query';
 import type {
   DataTag,
   DefinedInitialDataOptions,
   DefinedUseQueryResult,
+  MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult
 } from '@tanstack/react-query';
@@ -26,7 +30,8 @@ import type {
   ListAdminBirfaturaLogsParams,
   ResponseEnvelopeBirFaturaInvoicesResponse,
   ResponseEnvelopeBirFaturaLogsResponse,
-  ResponseEnvelopeBirFaturaStats
+  ResponseEnvelopeBirFaturaStats,
+  ResponseEnvelopeInvoiceSyncResponse
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -315,3 +320,130 @@ export function useListAdminBirfaturaLogs<TData = Awaited<ReturnType<typeof list
 
 
 
+/**
+ * Admin: Trigger invoice sync for a specific tenant
+ * @summary Admin Sync Invoices
+ */
+export const createAdminBirfaturaSync = (
+    tenantId: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeInvoiceSyncResponse>(
+      {url: `/api/admin/birfatura/sync/${tenantId}`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getCreateAdminBirfaturaSyncMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminBirfaturaSync>>, TError,{tenantId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminBirfaturaSync>>, TError,{tenantId: string}, TContext> => {
+
+const mutationKey = ['createAdminBirfaturaSync'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminBirfaturaSync>>, {tenantId: string}> = (props) => {
+          const {tenantId} = props ?? {};
+
+          return  createAdminBirfaturaSync(tenantId,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateAdminBirfaturaSyncMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminBirfaturaSync>>>
+    
+    export type CreateAdminBirfaturaSyncMutationError = HTTPValidationError
+
+    /**
+ * @summary Admin Sync Invoices
+ */
+export const useCreateAdminBirfaturaSync = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminBirfaturaSync>>, TError,{tenantId: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createAdminBirfaturaSync>>,
+        TError,
+        {tenantId: string},
+        TContext
+      > => {
+
+      const mutationOptions = getCreateAdminBirfaturaSyncMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Admin: Backfill invoice details for a specific tenant
+ * @summary Admin Backfill Invoices
+ */
+export const createAdminBirfaturaBackfill = (
+    tenantId: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<unknown>(
+      {url: `/api/admin/birfatura/backfill/${tenantId}`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getCreateAdminBirfaturaBackfillMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminBirfaturaBackfill>>, TError,{tenantId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminBirfaturaBackfill>>, TError,{tenantId: string}, TContext> => {
+
+const mutationKey = ['createAdminBirfaturaBackfill'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminBirfaturaBackfill>>, {tenantId: string}> = (props) => {
+          const {tenantId} = props ?? {};
+
+          return  createAdminBirfaturaBackfill(tenantId,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateAdminBirfaturaBackfillMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminBirfaturaBackfill>>>
+    
+    export type CreateAdminBirfaturaBackfillMutationError = HTTPValidationError
+
+    /**
+ * @summary Admin Backfill Invoices
+ */
+export const useCreateAdminBirfaturaBackfill = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminBirfaturaBackfill>>, TError,{tenantId: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createAdminBirfaturaBackfill>>,
+        TError,
+        {tenantId: string},
+        TContext
+      > => {
+
+      const mutationOptions = getCreateAdminBirfaturaBackfillMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    

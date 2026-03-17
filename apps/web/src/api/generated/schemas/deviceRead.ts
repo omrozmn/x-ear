@@ -11,6 +11,9 @@ import type { DeviceReadModel } from './deviceReadModel';
 import type { DeviceReadSerialNumber } from './deviceReadSerialNumber';
 import type { DeviceReadBarcode } from './deviceReadBarcode';
 import type { DeviceReadEar } from './deviceReadEar';
+import type { DeviceReadPrice } from './deviceReadPrice';
+import type { DeviceReadCost } from './deviceReadCost';
+import type { DeviceReadKdvRate } from './deviceReadKdvRate';
 import type { DeviceReadPartyId } from './deviceReadPartyId';
 import type { DeviceReadSaleId } from './deviceReadSaleId';
 import type { DeviceReadTenantId } from './deviceReadTenantId';
@@ -45,11 +48,11 @@ export interface DeviceRead {
   /** Device status */
   status?: string;
   /** Sale price */
-  price?: number;
+  price?: DeviceReadPrice;
   /** Cost price */
-  cost?: number;
+  cost?: DeviceReadCost;
   /** VAT rate */
-  kdvRate?: number;
+  kdvRate?: DeviceReadKdvRate;
   /** Device features */
   features?: string[];
   /** Warranty in months */

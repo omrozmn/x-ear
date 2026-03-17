@@ -45,8 +45,8 @@ export default function SetupPassword() {
             const res = await apiClient.post('/api/auth/set-password', { password });
             if (res.data.success) {
                 const webUrl = process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:8080';
-                const token = localStorage.getItem('auth_token');
-                window.location.href = `${webUrl}/login?token=${token}&action=setup_complete`;
+                // Token is already in localStorage - redirect without exposing it in URL
+                window.location.href = `${webUrl}/login?action=setup_complete`;
             } else {
                 setError(res.data.error || "Bir hata oluştu.");
             }

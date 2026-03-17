@@ -5,6 +5,7 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
+import type { SupplierUpdateTenantId } from './supplierUpdateTenantId';
 import type { SupplierUpdateName } from './supplierUpdateName';
 import type { SupplierUpdateCode } from './supplierUpdateCode';
 import type { SupplierUpdateContactName } from './supplierUpdateContactName';
@@ -22,6 +23,7 @@ import type { SupplierUpdateCountry } from './supplierUpdateCountry';
 import type { SupplierUpdatePostalCode } from './supplierUpdatePostalCode';
 import type { SupplierUpdateTaxNumber } from './supplierUpdateTaxNumber';
 import type { SupplierUpdateTaxOffice } from './supplierUpdateTaxOffice';
+import type { SupplierUpdateInstitutionNumber } from './supplierUpdateInstitutionNumber';
 import type { SupplierUpdatePaymentTerms } from './supplierUpdatePaymentTerms';
 import type { SupplierUpdateCurrency } from './supplierUpdateCurrency';
 import type { SupplierUpdateRating } from './supplierUpdateRating';
@@ -32,6 +34,8 @@ import type { SupplierUpdateNotes } from './supplierUpdateNotes';
  * Schema for updating a supplier
  */
 export interface SupplierUpdate {
+  /** Owner tenant ID */
+  tenantId?: SupplierUpdateTenantId;
   /** Frontend alias for companyName */
   name?: SupplierUpdateName;
   /** Frontend alias for companyCode */
@@ -52,6 +56,7 @@ export interface SupplierUpdate {
   postalCode?: SupplierUpdatePostalCode;
   taxNumber?: SupplierUpdateTaxNumber;
   taxOffice?: SupplierUpdateTaxOffice;
+  institutionNumber?: SupplierUpdateInstitutionNumber;
   paymentTerms?: SupplierUpdatePaymentTerms;
   currency?: SupplierUpdateCurrency;
   rating?: SupplierUpdateRating;

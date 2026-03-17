@@ -9,4 +9,4 @@
 /**
  * Creation timestamp
  */
-export type SMSLogReadCreatedAt = string | null;
+export type SmsLogReadCreatedAt = string | null;

@@ -28,12 +28,10 @@ import type {
   AdminLoginRequest,
   ApprovalActionRequest,
   CheckDeliverabilityAlertsParams,
-  CreateAdminUserRequest,
-  CreateTicketRequest,
   GetDeliverabilityMetricsParams,
   GetDeliverabilityTrendParams,
   HTTPValidationError,
-  ListAdminTicketsParams,
+  ImpersonateRequest,
   ListAdminUserAllParams,
   ListAdminUsersParams,
   ListBouncesParams,
@@ -41,33 +39,28 @@ import type {
   ListEmailApprovalsParams,
   ListUnsubscribesParams,
   ProcessFBLRequest,
-  ResponseEnvelope,
   ResponseEnvelopeAdminLoginResponse,
   ResponseEnvelopeAlertCheckResponse,
   ResponseEnvelopeApprovalListResponse,
   ResponseEnvelopeApprovalStatsResponse,
-  ResponseEnvelopeAvailableRolesResponse,
   ResponseEnvelopeBounceListResponse,
   ResponseEnvelopeBounceStatsResponse,
   ResponseEnvelopeComplaintListResponse,
   ResponseEnvelopeComplaintStatsResponse,
-  ResponseEnvelopeDebugPagePermissionResponse,
   ResponseEnvelopeDeliverabilityMetricsResponse,
-  ResponseEnvelopeListAdminUserRead,
-  ResponseEnvelopeListTicketRead,
+  ResponseEnvelopeImpersonateResponse,
+  ResponseEnvelopeSaleRead,
   ResponseEnvelopeSpamPreviewResponse,
+  ResponseEnvelopeSwitchTenantResponse,
   ResponseEnvelopeTrendResponse,
   ResponseEnvelopeUnsubscribeListResponse,
   ResponseEnvelopeUnsubscribeStatsResponse,
   ResponseEnvelopeUserRead,
-  RoutersAdminUpdateTenantUserRequest,
   SchemasBaseResponseEnvelopeDict,
   SchemasResponseResponseEnvelopeDict,
+  SchemasUsersUserCreate,
   SpamPreviewRequest,
-  SwitchRoleRequest,
-  SwitchTenantRequest,
-  TicketResponseRequest,
-  UpdateTicketRequest
+  SwitchTenantRequest
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -141,30 +134,30 @@ export const useCreateAdminAuthLogin = <TError = HTTPValidationError,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * Create admin user or tenant user
+ * Create a user (admin operation) - can specify tenant_id
  * @summary Create Admin User
  */
-export const createAdminUsers = (
-    createAdminUserRequest: CreateAdminUserRequest,
+export const createAdminUser = (
+    schemasUsersUserCreate: SchemasUsersUserCreate,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<ResponseEnvelope>(
+      return customInstance<ResponseEnvelopeUserRead>(
       {url: `/api/admin/users`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: createAdminUserRequest, signal
+      data: schemasUsersUserCreate, signal
     },
       );
     }
   
 
 
-export const getCreateAdminUsersMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminUsers>>, TError,{data: CreateAdminUserRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createAdminUsers>>, TError,{data: CreateAdminUserRequest}, TContext> => {
+export const getCreateAdminUserMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminUser>>, TError,{data: SchemasUsersUserCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminUser>>, TError,{data: SchemasUsersUserCreate}, TContext> => {
 
-const mutationKey = ['createAdminUsers'];
+const mutationKey = ['createAdminUser'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -174,10 +167,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminUsers>>, {data: CreateAdminUserRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminUser>>, {data: SchemasUsersUserCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createAdminUsers(data,)
+          return  createAdminUser(data,)
         }
 
         
@@ -185,29 +178,29 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateAdminUsersMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminUsers>>>
-    export type CreateAdminUsersMutationBody = CreateAdminUserRequest
-    export type CreateAdminUsersMutationError = HTTPValidationError
+    export type CreateAdminUserMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminUser>>>
+    export type CreateAdminUserMutationBody = SchemasUsersUserCreate
+    export type CreateAdminUserMutationError = HTTPValidationError
 
     /**
  * @summary Create Admin User
  */
-export const useCreateAdminUsers = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminUsers>>, TError,{data: CreateAdminUserRequest}, TContext>, }
+export const useCreateAdminUser = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminUser>>, TError,{data: SchemasUsersUserCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createAdminUsers>>,
+        Awaited<ReturnType<typeof createAdminUser>>,
         TError,
-        {data: CreateAdminUserRequest},
+        {data: SchemasUsersUserCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreateAdminUsersMutationOptions(options);
+      const mutationOptions = getCreateAdminUserMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * Get list of admin users
- * @summary Get Admin Users
+ * List all users (admin operation)
+ * @summary List Admin Users
  */
 export const listAdminUsers = (
     params?: ListAdminUsersParams,
@@ -215,7 +208,7 @@ export const listAdminUsers = (
 ) => {
       
       
-      return customInstance<ResponseEnvelopeListAdminUserRead>(
+      return customInstance<unknown>(
       {url: `/api/admin/users`, method: 'GET',
         params, signal
     },
@@ -279,7 +272,7 @@ export function useListAdminUsers<TData = Awaited<ReturnType<typeof listAdminUse
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
- * @summary Get Admin Users
+ * @summary List Admin Users
  */
 
 export function useListAdminUsers<TData = Awaited<ReturnType<typeof listAdminUsers>>, TError = HTTPValidationError>(
@@ -300,8 +293,8 @@ export function useListAdminUsers<TData = Awaited<ReturnType<typeof listAdminUse
 
 
 /**
- * Get list of ALL users from ALL tenants
- * @summary Get All Tenant Users
+ * List ALL tenant users from ALL tenants (admin operation)
+ * @summary List All Tenant Users
  */
 export const listAdminUserAll = (
     params?: ListAdminUserAllParams,
@@ -309,7 +302,7 @@ export const listAdminUserAll = (
 ) => {
       
       
-      return customInstance<ResponseEnvelope>(
+      return customInstance<unknown>(
       {url: `/api/admin/users/all`, method: 'GET',
         params, signal
     },
@@ -373,7 +366,7 @@ export function useListAdminUserAll<TData = Awaited<ReturnType<typeof listAdminU
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
- * @summary Get All Tenant Users
+ * @summary List All Tenant Users
  */
 
 export function useListAdminUserAll<TData = Awaited<ReturnType<typeof listAdminUserAll>>, TError = HTTPValidationError>(
@@ -394,19 +387,112 @@ export function useListAdminUserAll<TData = Awaited<ReturnType<typeof listAdminU
 
 
 /**
- * Update any tenant user (Admin Panel)
+ * Get user details (admin operation)
+ * @summary Get Admin User
+ */
+export const getAdminUser = (
+    userId: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeUserRead>(
+      {url: `/api/admin/users/${userId}`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetAdminUserQueryKey = (userId?: string,) => {
+    return [
+    `/api/admin/users/${userId}`
+    ] as const;
+    }
+
+    
+export const getGetAdminUserQueryOptions = <TData = Awaited<ReturnType<typeof getAdminUser>>, TError = HTTPValidationError>(userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUser>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminUserQueryKey(userId);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminUser>>> = ({ signal }) => getAdminUser(userId, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(userId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminUser>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type GetAdminUserQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminUser>>>
+export type GetAdminUserQueryError = HTTPValidationError
+
+
+export function useGetAdminUser<TData = Awaited<ReturnType<typeof getAdminUser>>, TError = HTTPValidationError>(
+ userId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUser>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAdminUser>>,
+          TError,
+          Awaited<ReturnType<typeof getAdminUser>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetAdminUser<TData = Awaited<ReturnType<typeof getAdminUser>>, TError = HTTPValidationError>(
+ userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUser>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAdminUser>>,
+          TError,
+          Awaited<ReturnType<typeof getAdminUser>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetAdminUser<TData = Awaited<ReturnType<typeof getAdminUser>>, TError = HTTPValidationError>(
+ userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUser>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get Admin User
+ */
+
+export function useGetAdminUser<TData = Awaited<ReturnType<typeof getAdminUser>>, TError = HTTPValidationError>(
+ userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUser>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getGetAdminUserQueryOptions(userId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Update any tenant user (admin operation)
  * @summary Update Any Tenant User
  */
 export const updateAdminUserAll = (
     userId: string,
-    routersAdminUpdateTenantUserRequest: RoutersAdminUpdateTenantUserRequest,
+    schemasUsersUserCreate: SchemasUsersUserCreate,
  ) => {
       
       
-      return customInstance<ResponseEnvelopeUserRead>(
+      return customInstance<unknown>(
       {url: `/api/admin/users/all/${userId}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: routersAdminUpdateTenantUserRequest
+      data: schemasUsersUserCreate
     },
       );
     }
@@ -414,8 +500,8 @@ export const updateAdminUserAll = (
 
 
 export const getUpdateAdminUserAllMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminUserAll>>, TError,{userId: string;data: RoutersAdminUpdateTenantUserRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateAdminUserAll>>, TError,{userId: string;data: RoutersAdminUpdateTenantUserRequest}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminUserAll>>, TError,{userId: string;data: SchemasUsersUserCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateAdminUserAll>>, TError,{userId: string;data: SchemasUsersUserCreate}, TContext> => {
 
 const mutationKey = ['updateAdminUserAll'];
 const {mutation: mutationOptions} = options ?
@@ -427,7 +513,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminUserAll>>, {userId: string;data: RoutersAdminUpdateTenantUserRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminUserAll>>, {userId: string;data: SchemasUsersUserCreate}> = (props) => {
           const {userId,data} = props ?? {};
 
           return  updateAdminUserAll(userId,data,)
@@ -439,18 +525,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type UpdateAdminUserAllMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminUserAll>>>
-    export type UpdateAdminUserAllMutationBody = RoutersAdminUpdateTenantUserRequest
+    export type UpdateAdminUserAllMutationBody = SchemasUsersUserCreate
     export type UpdateAdminUserAllMutationError = HTTPValidationError
 
     /**
  * @summary Update Any Tenant User
  */
 export const useUpdateAdminUserAll = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminUserAll>>, TError,{userId: string;data: RoutersAdminUpdateTenantUserRequest}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminUserAll>>, TError,{userId: string;data: SchemasUsersUserCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updateAdminUserAll>>,
         TError,
-        {userId: string;data: RoutersAdminUpdateTenantUserRequest},
+        {userId: string;data: SchemasUsersUserCreate},
         TContext
       > => {
 
@@ -459,124 +545,30 @@ export const useUpdateAdminUserAll = <TError = HTTPValidationError,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * Get support tickets
- * @summary Get Admin Tickets
+ * Impersonate a tenant - returns a token with tenant context
+ * @summary Impersonate Tenant
  */
-export const listAdminTickets = (
-    params?: ListAdminTicketsParams,
+export const createAdminImpersonate = (
+    impersonateRequest: ImpersonateRequest,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<ResponseEnvelopeListTicketRead>(
-      {url: `/api/admin/tickets`, method: 'GET',
-        params, signal
-    },
-      );
-    }
-  
-
-
-
-export const getListAdminTicketsQueryKey = (params?: ListAdminTicketsParams,) => {
-    return [
-    `/api/admin/tickets`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getListAdminTicketsQueryOptions = <TData = Awaited<ReturnType<typeof listAdminTickets>>, TError = HTTPValidationError>(params?: ListAdminTicketsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminTickets>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListAdminTicketsQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminTickets>>> = ({ signal }) => listAdminTickets(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminTickets>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
-}
-
-export type ListAdminTicketsQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminTickets>>>
-export type ListAdminTicketsQueryError = HTTPValidationError
-
-
-export function useListAdminTickets<TData = Awaited<ReturnType<typeof listAdminTickets>>, TError = HTTPValidationError>(
- params: undefined |  ListAdminTicketsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminTickets>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listAdminTickets>>,
-          TError,
-          Awaited<ReturnType<typeof listAdminTickets>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListAdminTickets<TData = Awaited<ReturnType<typeof listAdminTickets>>, TError = HTTPValidationError>(
- params?: ListAdminTicketsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminTickets>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listAdminTickets>>,
-          TError,
-          Awaited<ReturnType<typeof listAdminTickets>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListAdminTickets<TData = Awaited<ReturnType<typeof listAdminTickets>>, TError = HTTPValidationError>(
- params?: ListAdminTicketsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminTickets>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-/**
- * @summary Get Admin Tickets
- */
-
-export function useListAdminTickets<TData = Awaited<ReturnType<typeof listAdminTickets>>, TError = HTTPValidationError>(
- params?: ListAdminTicketsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminTickets>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
-
-  const queryOptions = getListAdminTicketsQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-
-/**
- * Create support ticket
- * @summary Create Admin Ticket
- */
-export const createAdminTickets = (
-    createTicketRequest: CreateTicketRequest,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<unknown>(
-      {url: `/api/admin/tickets`, method: 'POST',
+      return customInstance<ResponseEnvelopeImpersonateResponse>(
+      {url: `/api/admin/impersonate`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: createTicketRequest, signal
+      data: impersonateRequest, signal
     },
       );
     }
   
 
 
-export const getCreateAdminTicketsMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminTickets>>, TError,{data: CreateTicketRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createAdminTickets>>, TError,{data: CreateTicketRequest}, TContext> => {
+export const getCreateAdminImpersonateMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminImpersonate>>, TError,{data: ImpersonateRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminImpersonate>>, TError,{data: ImpersonateRequest}, TContext> => {
 
-const mutationKey = ['createAdminTickets'];
+const mutationKey = ['createAdminImpersonate'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -586,10 +578,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminTickets>>, {data: CreateTicketRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminImpersonate>>, {data: ImpersonateRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  createAdminTickets(data,)
+          return  createAdminImpersonate(data,)
         }
 
         
@@ -597,317 +589,28 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateAdminTicketsMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminTickets>>>
-    export type CreateAdminTicketsMutationBody = CreateTicketRequest
-    export type CreateAdminTicketsMutationError = HTTPValidationError
+    export type CreateAdminImpersonateMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminImpersonate>>>
+    export type CreateAdminImpersonateMutationBody = ImpersonateRequest
+    export type CreateAdminImpersonateMutationError = HTTPValidationError
 
     /**
- * @summary Create Admin Ticket
+ * @summary Impersonate Tenant
  */
-export const useCreateAdminTickets = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminTickets>>, TError,{data: CreateTicketRequest}, TContext>, }
+export const useCreateAdminImpersonate = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminImpersonate>>, TError,{data: ImpersonateRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createAdminTickets>>,
+        Awaited<ReturnType<typeof createAdminImpersonate>>,
         TError,
-        {data: CreateTicketRequest},
+        {data: ImpersonateRequest},
         TContext
       > => {
 
-      const mutationOptions = getCreateAdminTicketsMutationOptions(options);
+      const mutationOptions = getCreateAdminImpersonateMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * Update support ticket
- * @summary Update Admin Ticket
- */
-export const updateAdminTicket = (
-    ticketId: string,
-    updateTicketRequest: UpdateTicketRequest,
- ) => {
-      
-      
-      return customInstance<unknown>(
-      {url: `/api/admin/tickets/${ticketId}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: updateTicketRequest
-    },
-      );
-    }
-  
-
-
-export const getUpdateAdminTicketMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminTicket>>, TError,{ticketId: string;data: UpdateTicketRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateAdminTicket>>, TError,{ticketId: string;data: UpdateTicketRequest}, TContext> => {
-
-const mutationKey = ['updateAdminTicket'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminTicket>>, {ticketId: string;data: UpdateTicketRequest}> = (props) => {
-          const {ticketId,data} = props ?? {};
-
-          return  updateAdminTicket(ticketId,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type UpdateAdminTicketMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminTicket>>>
-    export type UpdateAdminTicketMutationBody = UpdateTicketRequest
-    export type UpdateAdminTicketMutationError = HTTPValidationError
-
-    /**
- * @summary Update Admin Ticket
- */
-export const useUpdateAdminTicket = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminTicket>>, TError,{ticketId: string;data: UpdateTicketRequest}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateAdminTicket>>,
-        TError,
-        {ticketId: string;data: UpdateTicketRequest},
-        TContext
-      > => {
-
-      const mutationOptions = getUpdateAdminTicketMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * Create response for support ticket
- * @summary Create Ticket Response
- */
-export const createAdminTicketResponses = (
-    ticketId: string,
-    ticketResponseRequest: TicketResponseRequest,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<unknown>(
-      {url: `/api/admin/tickets/${ticketId}/responses`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: ticketResponseRequest, signal
-    },
-      );
-    }
-  
-
-
-export const getCreateAdminTicketResponsesMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminTicketResponses>>, TError,{ticketId: string;data: TicketResponseRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createAdminTicketResponses>>, TError,{ticketId: string;data: TicketResponseRequest}, TContext> => {
-
-const mutationKey = ['createAdminTicketResponses'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminTicketResponses>>, {ticketId: string;data: TicketResponseRequest}> = (props) => {
-          const {ticketId,data} = props ?? {};
-
-          return  createAdminTicketResponses(ticketId,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CreateAdminTicketResponsesMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminTicketResponses>>>
-    export type CreateAdminTicketResponsesMutationBody = TicketResponseRequest
-    export type CreateAdminTicketResponsesMutationError = HTTPValidationError
-
-    /**
- * @summary Create Ticket Response
- */
-export const useCreateAdminTicketResponses = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminTicketResponses>>, TError,{ticketId: string;data: TicketResponseRequest}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createAdminTicketResponses>>,
-        TError,
-        {ticketId: string;data: TicketResponseRequest},
-        TContext
-      > => {
-
-      const mutationOptions = getCreateAdminTicketResponsesMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * Switch to a different role for debugging
- * @summary Debug Switch Role
- */
-export const createAdminDebugSwitchRole = (
-    switchRoleRequest: SwitchRoleRequest,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<unknown>(
-      {url: `/api/admin/debug/switch-role`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: switchRoleRequest, signal
-    },
-      );
-    }
-  
-
-
-export const getCreateAdminDebugSwitchRoleMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminDebugSwitchRole>>, TError,{data: SwitchRoleRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createAdminDebugSwitchRole>>, TError,{data: SwitchRoleRequest}, TContext> => {
-
-const mutationKey = ['createAdminDebugSwitchRole'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminDebugSwitchRole>>, {data: SwitchRoleRequest}> = (props) => {
-          const {data} = props ?? {};
-
-          return  createAdminDebugSwitchRole(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CreateAdminDebugSwitchRoleMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminDebugSwitchRole>>>
-    export type CreateAdminDebugSwitchRoleMutationBody = SwitchRoleRequest
-    export type CreateAdminDebugSwitchRoleMutationError = HTTPValidationError
-
-    /**
- * @summary Debug Switch Role
- */
-export const useCreateAdminDebugSwitchRole = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminDebugSwitchRole>>, TError,{data: SwitchRoleRequest}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createAdminDebugSwitchRole>>,
-        TError,
-        {data: SwitchRoleRequest},
-        TContext
-      > => {
-
-      const mutationOptions = getCreateAdminDebugSwitchRoleMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * Get all available roles for debugging
- * @summary Debug Available Roles
- */
-export const listAdminDebugAvailableRoles = (
-    
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<ResponseEnvelopeAvailableRolesResponse>(
-      {url: `/api/admin/debug/available-roles`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getListAdminDebugAvailableRolesQueryKey = () => {
-    return [
-    `/api/admin/debug/available-roles`
-    ] as const;
-    }
-
-    
-export const getListAdminDebugAvailableRolesQueryOptions = <TData = Awaited<ReturnType<typeof listAdminDebugAvailableRoles>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminDebugAvailableRoles>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListAdminDebugAvailableRolesQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminDebugAvailableRoles>>> = ({ signal }) => listAdminDebugAvailableRoles(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminDebugAvailableRoles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
-}
-
-export type ListAdminDebugAvailableRolesQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminDebugAvailableRoles>>>
-export type ListAdminDebugAvailableRolesQueryError = unknown
-
-
-export function useListAdminDebugAvailableRoles<TData = Awaited<ReturnType<typeof listAdminDebugAvailableRoles>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminDebugAvailableRoles>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listAdminDebugAvailableRoles>>,
-          TError,
-          Awaited<ReturnType<typeof listAdminDebugAvailableRoles>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListAdminDebugAvailableRoles<TData = Awaited<ReturnType<typeof listAdminDebugAvailableRoles>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminDebugAvailableRoles>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listAdminDebugAvailableRoles>>,
-          TError,
-          Awaited<ReturnType<typeof listAdminDebugAvailableRoles>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListAdminDebugAvailableRoles<TData = Awaited<ReturnType<typeof listAdminDebugAvailableRoles>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminDebugAvailableRoles>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-/**
- * @summary Debug Available Roles
- */
-
-export function useListAdminDebugAvailableRoles<TData = Awaited<ReturnType<typeof listAdminDebugAvailableRoles>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminDebugAvailableRoles>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
-
-  const queryOptions = getListAdminDebugAvailableRolesQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-
-/**
- * Switch to a different tenant context for debugging
+ * Switch to a different tenant context (admin impersonation)
  * @summary Debug Switch Tenant
  */
 export const createAdminDebugSwitchTenant = (
@@ -916,7 +619,7 @@ export const createAdminDebugSwitchTenant = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeSwitchTenantResponse>(
       {url: `/api/admin/debug/switch-tenant`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: switchTenantRequest, signal
@@ -972,7 +675,7 @@ export const useCreateAdminDebugSwitchTenant = <TError = HTTPValidationError,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * Exit tenant/role impersonation
+ * Exit tenant impersonation and return to normal admin mode
  * @summary Debug Exit Impersonation
  */
 export const createAdminDebugExitImpersonation = (
@@ -1035,17 +738,17 @@ export const useCreateAdminDebugExitImpersonation = <TError = unknown,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * Get permissions required for a specific page
- * @summary Debug Page Permissions
+ * Get sale details (admin operation - cross-tenant)
+ * @summary Get Admin Sale
  */
-export const getAdminDebugPagePermission = (
-    pageKey: string,
+export const getAdminSale = (
+    saleId: string,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<ResponseEnvelopeDebugPagePermissionResponse>(
-      {url: `/api/admin/debug/page-permissions/${pageKey}`, method: 'GET', signal
+      return customInstance<ResponseEnvelopeSaleRead>(
+      {url: `/api/admin/sales/${saleId}`, method: 'GET', signal
     },
       );
     }
@@ -1053,69 +756,69 @@ export const getAdminDebugPagePermission = (
 
 
 
-export const getGetAdminDebugPagePermissionQueryKey = (pageKey?: string,) => {
+export const getGetAdminSaleQueryKey = (saleId?: string,) => {
     return [
-    `/api/admin/debug/page-permissions/${pageKey}`
+    `/api/admin/sales/${saleId}`
     ] as const;
     }
 
     
-export const getGetAdminDebugPagePermissionQueryOptions = <TData = Awaited<ReturnType<typeof getAdminDebugPagePermission>>, TError = HTTPValidationError>(pageKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminDebugPagePermission>>, TError, TData>>, }
+export const getGetAdminSaleQueryOptions = <TData = Awaited<ReturnType<typeof getAdminSale>>, TError = HTTPValidationError>(saleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminSale>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminDebugPagePermissionQueryKey(pageKey);
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminSaleQueryKey(saleId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminDebugPagePermission>>> = ({ signal }) => getAdminDebugPagePermission(pageKey, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminSale>>> = ({ signal }) => getAdminSale(saleId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(pageKey), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminDebugPagePermission>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(saleId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminSale>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type GetAdminDebugPagePermissionQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminDebugPagePermission>>>
-export type GetAdminDebugPagePermissionQueryError = HTTPValidationError
+export type GetAdminSaleQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminSale>>>
+export type GetAdminSaleQueryError = HTTPValidationError
 
 
-export function useGetAdminDebugPagePermission<TData = Awaited<ReturnType<typeof getAdminDebugPagePermission>>, TError = HTTPValidationError>(
- pageKey: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminDebugPagePermission>>, TError, TData>> & Pick<
+export function useGetAdminSale<TData = Awaited<ReturnType<typeof getAdminSale>>, TError = HTTPValidationError>(
+ saleId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminSale>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminDebugPagePermission>>,
+          Awaited<ReturnType<typeof getAdminSale>>,
           TError,
-          Awaited<ReturnType<typeof getAdminDebugPagePermission>>
+          Awaited<ReturnType<typeof getAdminSale>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminDebugPagePermission<TData = Awaited<ReturnType<typeof getAdminDebugPagePermission>>, TError = HTTPValidationError>(
- pageKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminDebugPagePermission>>, TError, TData>> & Pick<
+export function useGetAdminSale<TData = Awaited<ReturnType<typeof getAdminSale>>, TError = HTTPValidationError>(
+ saleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminSale>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminDebugPagePermission>>,
+          Awaited<ReturnType<typeof getAdminSale>>,
           TError,
-          Awaited<ReturnType<typeof getAdminDebugPagePermission>>
+          Awaited<ReturnType<typeof getAdminSale>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminDebugPagePermission<TData = Awaited<ReturnType<typeof getAdminDebugPagePermission>>, TError = HTTPValidationError>(
- pageKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminDebugPagePermission>>, TError, TData>>, }
+export function useGetAdminSale<TData = Awaited<ReturnType<typeof getAdminSale>>, TError = HTTPValidationError>(
+ saleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminSale>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
- * @summary Debug Page Permissions
+ * @summary Get Admin Sale
  */
 
-export function useGetAdminDebugPagePermission<TData = Awaited<ReturnType<typeof getAdminDebugPagePermission>>, TError = HTTPValidationError>(
- pageKey: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminDebugPagePermission>>, TError, TData>>, }
+export function useGetAdminSale<TData = Awaited<ReturnType<typeof getAdminSale>>, TError = HTTPValidationError>(
+ saleId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminSale>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getGetAdminDebugPagePermissionQueryOptions(pageKey,options)
+  const queryOptions = getGetAdminSaleQueryOptions(saleId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -1567,7 +1270,7 @@ export function useListBounces<TData = Awaited<ReturnType<typeof listBounces>>, 
 
 
 /**
- * Get overall bounce statistics for tenant
+ * Get overall bounce statistics (cross-tenant for admin)
  * @summary Get bounce statistics
  */
 export const getBounceStats = (

@@ -74,8 +74,10 @@ export function LoginForm() {
         // Check for return URL in query params
         const urlParams = new URLSearchParams(window.location.search);
         const returnUrl = urlParams.get('redirect') || '/';
-        console.log('[LoginForm] Redirecting to:', returnUrl);
-        window.location.replace(returnUrl);
+        // Validate returnUrl to prevent open redirect
+        const safeReturnUrl = returnUrl && returnUrl.startsWith('/') && !returnUrl.startsWith('//') ? returnUrl : '/';
+        console.log('[LoginForm] Redirecting to:', safeReturnUrl);
+        window.location.replace(safeReturnUrl);
       } else {
         console.log('[LoginForm] OTP required, not redirecting');
       }

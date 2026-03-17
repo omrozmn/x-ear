@@ -11,13 +11,13 @@ from models.affiliate_user import AffiliateUser
 from services.affiliate_service import AffiliateService
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
-import os
 
 logger = logging.getLogger(__name__)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/affiliates/login", auto_error=False)
-SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'default-dev-secret-key-change-in-prod')
-ALGORITHM = "HS256"
+from core.security import get_jwt_secret, JWT_ALGORITHM
+SECRET_KEY = get_jwt_secret()
+ALGORITHM = JWT_ALGORITHM
 
 
 class AffiliateReferralSubscriptionRead(AppBaseModel):

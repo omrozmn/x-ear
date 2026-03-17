@@ -10,6 +10,7 @@ export type ListAdminPaymentPoTransactionsParams = {
 provider?: string | null;
 start_date?: string | null;
 end_date?: string | null;
+search?: string | null;
 /**
  * @minimum 1
  * @maximum 500

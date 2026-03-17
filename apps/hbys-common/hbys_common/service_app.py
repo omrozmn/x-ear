@@ -26,9 +26,13 @@ def create_hbys_app(
     )
 
     # CORS
+    cors_origins = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
+    cors_origins = [o.strip() for o in cors_origins if o.strip()]
+    if not cors_origins:
+        cors_origins = ["http://localhost:3000", "http://localhost:5173"]
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=os.getenv("CORS_ORIGINS", "*").split(","),
+        allow_origins=cors_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

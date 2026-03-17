@@ -5,27 +5,22 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { PhaseStatusResponse } from './phaseStatusResponse';
-import type { AiApiStatusKillSwitchStatusResponse } from './aiApiStatusKillSwitchStatusResponse';
-import type { UsageStatusResponse } from './usageStatusResponse';
-import type { ModelStatusResponse } from './modelStatusResponse';
+import type { AiPhaseStatus } from './aiPhaseStatus';
+import type { AiKillSwitchStatus } from './aiKillSwitchStatus';
+import type { AiUsageStatus } from './aiUsageStatus';
+import type { AiModelStatus } from './aiModelStatus';
 
 /**
- * Complete AI status response.
+ * Response schema for AI status endpoint (Nested for Frontend).
  */
-export interface AIStatusResponse {
+export interface AiStatusResponse {
   /** Whether AI is enabled */
   enabled: boolean;
-  /** Whether AI is currently available */
+  /** Overall availability for UI */
   available: boolean;
-  /** Phase status */
-  phase: PhaseStatusResponse;
-  /** Kill switch status */
-  kill_switch: AiApiStatusKillSwitchStatusResponse;
-  /** Usage status */
-  usage: UsageStatusResponse;
-  /** Model status */
-  model: ModelStatusResponse;
-  /** Status timestamp */
-  timestamp: string;
+  phase: AiPhaseStatus;
+  killSwitch: AiKillSwitchStatus;
+  usage: AiUsageStatus;
+  model: AiModelStatus;
+  timestamp?: string;
 }

@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 _default_sqlite_path = Path(__file__).resolve().parent.parent / "instance" / "xear_crm.db"
 # Use plain path (spaces handled correctly by driver, encoding breaks it)
 DATABASE_URL = os.getenv('DATABASE_URL', f"sqlite:///{_default_sqlite_path.as_posix()}")
-print(f"DEBUG: DATABASE_URL loaded in core.database: {DATABASE_URL}")
+logger.debug(f"DATABASE_URL loaded in core.database: {DATABASE_URL}")
 
 # Ensure instance directory exists for file-based sqlite
 try:
@@ -480,8 +480,8 @@ def receive_do_orm_execute(execute_state):
     
     # DEBUG: Log tenant filter application
     if not tenant_id:
-        logger.warning("⚠️ [TENANT FILTER] No tenant_id in context for SELECT query!")
-        return
+        logger.warning("⚠️ [TENANT FILTER] No tenant_id in context for SELECT query - blocking with __NONE__")
+        tenant_id = '__NONE__'
 
     from core.models.mixins import TenantScopedMixin
     

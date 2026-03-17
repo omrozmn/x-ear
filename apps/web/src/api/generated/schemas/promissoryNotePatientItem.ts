@@ -6,6 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { PromissoryNotePatientItemPhone } from './promissoryNotePatientItemPhone';
+import type { PromissoryNotePatientItemFirstDueDate } from './promissoryNotePatientItemFirstDueDate';
+import type { PromissoryNotePatientItemLastDueDate } from './promissoryNotePatientItemLastDueDate';
 
 export interface PromissoryNotePatientItem {
   partyId: string;
@@ -18,4 +20,6 @@ export interface PromissoryNotePatientItem {
   totalAmount: number;
   paidAmount: number;
   remainingAmount: number;
+  firstDueDate?: PromissoryNotePatientItemFirstDueDate;
+  lastDueDate?: PromissoryNotePatientItemLastDueDate;
 }

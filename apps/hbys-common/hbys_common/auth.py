@@ -12,7 +12,9 @@ from .database import set_current_tenant_id
 
 security = HTTPBearer(auto_error=False)
 
-JWT_SECRET = os.getenv("JWT_SECRET_KEY", "change-me-in-production")
+JWT_SECRET = os.getenv("JWT_SECRET_KEY")
+if not JWT_SECRET:
+    raise RuntimeError("JWT_SECRET_KEY environment variable must be set")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 
 
@@ -34,7 +36,8 @@ async def get_current_user(
 
     try:
         payload = jwt.decode(
-            credentials.credentials, JWT_SECRET, algorithms=[JWT_ALGORITHM]
+            credentials.credentials, JWT_SECRET, algorithms=[JWT_ALGORITHM],
+            options={"require": ["exp", "sub"]}
         )
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid or expired token")

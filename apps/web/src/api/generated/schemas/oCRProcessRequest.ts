@@ -5,14 +5,14 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { OCRProcessRequestImagePath } from './oCRProcessRequestImagePath';
-import type { OCRProcessRequestText } from './oCRProcessRequestText';
-import type { OCRProcessRequestOcrText } from './oCRProcessRequestOcrText';
+import type { OcrProcessRequestImagePath } from './ocrProcessRequestImagePath';
+import type { OcrProcessRequestText } from './ocrProcessRequestText';
+import type { OcrProcessRequestOcrText } from './ocrProcessRequestOcrText';
 
-export interface OCRProcessRequest {
-  imagePath?: OCRProcessRequestImagePath;
-  text?: OCRProcessRequestText;
-  ocrText?: OCRProcessRequestOcrText;
+export interface OcrProcessRequest {
+  imagePath?: OcrProcessRequestImagePath;
+  text?: OcrProcessRequestText;
+  ocrText?: OcrProcessRequestOcrText;
   type?: string;
   autoCrop?: boolean;
 }

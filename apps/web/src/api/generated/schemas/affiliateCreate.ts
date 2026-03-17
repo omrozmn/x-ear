@@ -5,7 +5,9 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
+import type { AffiliateCreateName } from './affiliateCreateName';
 import type { AffiliateCreatePhone } from './affiliateCreatePhone';
+import type { AffiliateCreateAccountHolderName } from './affiliateCreateAccountHolderName';
 import type { AffiliateCreateCompanyName } from './affiliateCreateCompanyName';
 import type { AffiliateCreateTaxNumber } from './affiliateCreateTaxNumber';
 import type { AffiliateCreateIban } from './affiliateCreateIban';
@@ -15,11 +17,13 @@ import type { AffiliateCreateIban } from './affiliateCreateIban';
  */
 export interface AffiliateCreate {
   /** Affiliate name */
-  name: string;
+  name?: AffiliateCreateName;
   /** Email */
   email: string;
   /** Phone number */
   phone?: AffiliateCreatePhone;
+  /** Account holder name */
+  accountHolderName?: AffiliateCreateAccountHolderName;
   /** Company name */
   companyName?: AffiliateCreateCompanyName;
   /** Tax number */

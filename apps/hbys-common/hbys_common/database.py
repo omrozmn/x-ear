@@ -73,6 +73,8 @@ class BaseModel(Base):
 
     created_at = Column(DateTime, default=now_utc)
     updated_at = Column(DateTime, default=now_utc, onupdate=now_utc)
+    created_by = Column(String(100), nullable=True)
+    updated_by = Column(String(100), nullable=True)
 
     @staticmethod
     def _format_datetime_utc(dt):

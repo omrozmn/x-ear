@@ -294,8 +294,8 @@ export const Users: React.FC = () => {
       setIsAddModalOpen(false);
 
       // Invalidate both queries to be safe
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users/all'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['tenant-users'] });
 
     } catch (error: unknown) {
       toast.error(getApiErrorMessage(error, 'Kullanıcı oluşturulamadı'));
@@ -336,8 +336,8 @@ export const Users: React.FC = () => {
 
       toast.success('Kullanıcı güncellendi');
       setIsEditModalOpen(false);
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users/all'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['tenant-users'] });
 
     } catch (error: unknown) {
       toast.error(getApiErrorMessage(error, 'Güncelleme başarısız'));
@@ -364,8 +364,8 @@ export const Users: React.FC = () => {
       });
       toast.success(`Kullanıcı ${!userToToggle.status ? 'aktif' : 'pasif'} duruma getirildi`);
       setConfirmModalOpen(false);
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users/all'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['tenant-users'] });
     } catch (error: unknown) {
       toast.error('Durum değiştirilemedi');
     } finally {

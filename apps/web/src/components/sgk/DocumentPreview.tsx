@@ -105,12 +105,22 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
     setImageRotation(0);
   };
 
+  // Escape HTML entities to prevent XSS
+  const escapeHtml = (str: string) =>
+    str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+  // Escape regex special characters to prevent ReDoS
+  const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
   // Handle OCR text highlighting
   const highlightOCRText = (text: string, searchTerm: string) => {
-    if (!searchTerm) return text;
-    
-    const regex = new RegExp(`(${searchTerm})`, 'gi');
-    return text.replace(regex, '<mark class="bg-yellow-200 px-1 rounded">$1</mark>');
+    // Escape HTML entities first to prevent XSS via OCR text or search term
+    const safeText = escapeHtml(text);
+    if (!searchTerm) return safeText;
+
+    const escapedTerm = escapeRegex(searchTerm);
+    const regex = new RegExp(`(${escapedTerm})`, 'gi');
+    return safeText.replace(regex, '<mark class="bg-yellow-200 px-1 rounded">$1</mark>');
   };
 
   // Get full OCR text
@@ -326,7 +336,7 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
                 <span>Kelime sayısı: {fullOCRText.split(/\s+/).filter(word => word.length > 0).length}</span>
                 {searchTerm && (
                   <span>
-                    Arama sonucu: {(fullOCRText.match(new RegExp(searchTerm, 'gi')) || []).length} eşleşme
+                    Arama sonucu: {(fullOCRText.match(new RegExp(escapeRegex(searchTerm), 'gi')) || []).length} eşleşme
                   </span>
                 )}
               </div>

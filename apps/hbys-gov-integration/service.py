@@ -2,9 +2,10 @@
 Government Integration Service - Orchestration Layer
 Provides retry logic, logging, and unified interface for all government system clients.
 """
+import asyncio
 import json
 import logging
-import time
+import re
 import uuid
 from datetime import datetime, timezone
 from typing import Optional, List, Tuple, Dict, Any, Callable
@@ -35,7 +36,12 @@ _teleradyoloji_client = TeleradyolojiClient()
 # Core execution helper with retry + logging
 # ---------------------------------------------------------------------------
 
-def _execute_with_retry(
+def _mask_tc_kimlik(text: str) -> str:
+    """Mask 11-digit TC kimlik numbers in text to prevent PII leakage in logs."""
+    return re.sub(r'\b\d{11}\b', '***MASKED***', text)
+
+
+async def _execute_with_retry(
     db: Session,
     tenant_id: str,
     system_name: str,
@@ -53,12 +59,13 @@ def _execute_with_retry(
     """
     correlation_id = correlation_id or str(uuid.uuid4())
 
+    request_data_raw = json.dumps(client_kwargs, ensure_ascii=False, default=str)
     log_entry = GovIntegrationLog(
         id=gen_id("gil"),
         tenant_id=tenant_id,
         system_name=system_name,
         operation=operation,
-        request_data=json.dumps(client_kwargs, ensure_ascii=False, default=str),
+        request_data=_mask_tc_kimlik(request_data_raw),
         status="pending",
         request_timestamp=now_utc(),
         retry_count=0,
@@ -85,7 +92,7 @@ def _execute_with_retry(
 
             logger.info(
                 "Gov call %s/%s succeeded on attempt %d (corr=%s)",
-                system_name, operation, attempt + 1, correlation_id,
+                system_name, operation, attempt + 1, _mask_tc_kimlik(correlation_id),
             )
 
             return {
@@ -101,10 +108,10 @@ def _execute_with_retry(
             last_error = str(exc)
             logger.warning(
                 "Gov call %s/%s failed attempt %d/%d: %s",
-                system_name, operation, attempt + 1, max_retries + 1, last_error,
+                system_name, operation, attempt + 1, max_retries + 1, _mask_tc_kimlik(last_error),
             )
             if attempt < max_retries:
-                time.sleep(delay)
+                await asyncio.sleep(delay)
                 delay *= RETRY_BACKOFF_FACTOR
 
     # All retries exhausted
@@ -116,7 +123,7 @@ def _execute_with_retry(
 
     logger.error(
         "Gov call %s/%s exhausted retries (corr=%s): %s",
-        system_name, operation, correlation_id, last_error,
+        system_name, operation, _mask_tc_kimlik(correlation_id), _mask_tc_kimlik(last_error),
     )
 
     return {
@@ -188,15 +195,15 @@ def get_integration_log(
 # Medula Operations
 # ===========================================================================
 
-def medula_login(db: Session, tenant_id: str, correlation_id: Optional[str] = None) -> Dict[str, Any]:
-    return _execute_with_retry(
+async def medula_login(db: Session, tenant_id: str, correlation_id: Optional[str] = None) -> Dict[str, Any]:
+    return await _execute_with_retry(
         db, tenant_id, "medula", "login",
         _medula_client.login, {},
         correlation_id=correlation_id,
     )
 
 
-def medula_provizyon_sorgula(
+async def medula_provizyon_sorgula(
     db: Session, tenant_id: str,
     tc_kimlik_no: str,
     provizyon_tipi: str = "N",
@@ -204,7 +211,7 @@ def medula_provizyon_sorgula(
     takip_no: Optional[str] = None,
     correlation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    return _execute_with_retry(
+    return await _execute_with_retry(
         db, tenant_id, "medula", "provizyonSorgula",
         _medula_client.provizyon_sorgula,
         {
@@ -217,13 +224,13 @@ def medula_provizyon_sorgula(
     )
 
 
-def medula_hasta_yatis(
+async def medula_hasta_yatis(
     db: Session, tenant_id: str,
     takip_no: str, tc_kimlik_no: str,
     yatis_tarihi: str, klinik_kodu: str, yatak_kodu: str,
     correlation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    return _execute_with_retry(
+    return await _execute_with_retry(
         db, tenant_id, "medula", "hastaYatis",
         _medula_client.hasta_yatis,
         {
@@ -237,12 +244,12 @@ def medula_hasta_yatis(
     )
 
 
-def medula_hasta_cikis(
+async def medula_hasta_cikis(
     db: Session, tenant_id: str,
     takip_no: str, cikis_tarihi: str, cikis_nedeni: str = "1",
     correlation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    return _execute_with_retry(
+    return await _execute_with_retry(
         db, tenant_id, "medula", "hastaCikis",
         _medula_client.hasta_cikis,
         {
@@ -254,14 +261,14 @@ def medula_hasta_cikis(
     )
 
 
-def medula_hizmet_kaydet(
+async def medula_hizmet_kaydet(
     db: Session, tenant_id: str,
     takip_no: str, sut_kodu: str, adet: int = 1,
     tarih: Optional[str] = None, doktor_tc: Optional[str] = None,
     tani_listesi: Optional[list] = None,
     correlation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    return _execute_with_retry(
+    return await _execute_with_retry(
         db, tenant_id, "medula", "hizmetKaydet",
         _medula_client.hizmet_kaydet,
         {
@@ -276,13 +283,13 @@ def medula_hizmet_kaydet(
     )
 
 
-def medula_fatura_bilgisi_kaydet(
+async def medula_fatura_bilgisi_kaydet(
     db: Session, tenant_id: str,
     takip_no: str, fatura_no: str, fatura_tarihi: str,
     toplam_tutar: float, kdv_tutari: float = 0.0,
     correlation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    return _execute_with_retry(
+    return await _execute_with_retry(
         db, tenant_id, "medula", "faturaBilgisiKaydet",
         _medula_client.fatura_bilgisi_kaydet,
         {
@@ -300,13 +307,13 @@ def medula_fatura_bilgisi_kaydet(
 # e-Nabiz Operations
 # ===========================================================================
 
-def enabiz_send_data_packet(
+async def enabiz_send_data_packet(
     db: Session, tenant_id: str,
     tc_kimlik_no: str, packet_type: str, data_entries: list,
     correlation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
     entries = [e if isinstance(e, dict) else e.model_dump() for e in data_entries]
-    return _execute_with_retry(
+    return await _execute_with_retry(
         db, tenant_id, "enabiz", "send_data_packet",
         _enabiz_client.send_data_packet,
         {"tc_kimlik_no": tc_kimlik_no, "packet_type": packet_type, "data_entries": entries},
@@ -314,12 +321,12 @@ def enabiz_send_data_packet(
     )
 
 
-def enabiz_query_patient_summary(
+async def enabiz_query_patient_summary(
     db: Session, tenant_id: str,
     tc_kimlik_no: str,
     correlation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    return _execute_with_retry(
+    return await _execute_with_retry(
         db, tenant_id, "enabiz", "query_patient_summary",
         _enabiz_client.query_patient_summary,
         {"tc_kimlik_no": tc_kimlik_no},
@@ -327,7 +334,7 @@ def enabiz_query_patient_summary(
     )
 
 
-def enabiz_send_vaccination(
+async def enabiz_send_vaccination(
     db: Session, tenant_id: str,
     tc_kimlik_no: str, vaccine_code: str, vaccine_name: str,
     dose_number: int, administration_date: str,
@@ -335,7 +342,7 @@ def enabiz_send_vaccination(
     administering_doctor_tc: Optional[str] = None,
     correlation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    return _execute_with_retry(
+    return await _execute_with_retry(
         db, tenant_id, "enabiz", "send_vaccination",
         _enabiz_client.send_vaccination,
         {
@@ -351,14 +358,14 @@ def enabiz_send_vaccination(
     )
 
 
-def enabiz_send_birth_notification(
+async def enabiz_send_birth_notification(
     db: Session, tenant_id: str,
     mother_tc: str, birth_date: str, birth_weight: float,
     gender: str, birth_type: str = "normal",
     hospital_name: Optional[str] = None,
     correlation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    return _execute_with_retry(
+    return await _execute_with_retry(
         db, tenant_id, "enabiz", "send_birth_notification",
         _enabiz_client.send_birth_notification,
         {
@@ -373,13 +380,13 @@ def enabiz_send_birth_notification(
     )
 
 
-def enabiz_send_death_notification(
+async def enabiz_send_death_notification(
     db: Session, tenant_id: str,
     tc_kimlik_no: str, death_date: str,
     death_cause_icd: str, death_place: str = "hastane",
     correlation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    return _execute_with_retry(
+    return await _execute_with_retry(
         db, tenant_id, "enabiz", "send_death_notification",
         _enabiz_client.send_death_notification,
         {
@@ -396,14 +403,14 @@ def enabiz_send_death_notification(
 # MHRS Operations
 # ===========================================================================
 
-def mhrs_sync_doctor_availability(
+async def mhrs_sync_doctor_availability(
     db: Session, tenant_id: str,
     doctor_tc: str, branch_code: str,
     availability_slots: list,
     correlation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
     slots = [s if isinstance(s, dict) else s.model_dump() for s in availability_slots]
-    return _execute_with_retry(
+    return await _execute_with_retry(
         db, tenant_id, "mhrs", "sync_doctor_availability",
         _mhrs_client.sync_doctor_availability,
         {"doctor_tc": doctor_tc, "branch_code": branch_code, "availability_slots": slots},
@@ -411,7 +418,7 @@ def mhrs_sync_doctor_availability(
     )
 
 
-def mhrs_get_appointments(
+async def mhrs_get_appointments(
     db: Session, tenant_id: str,
     start_date: str, end_date: str,
     doctor_tc: Optional[str] = None,
@@ -419,7 +426,7 @@ def mhrs_get_appointments(
     status: Optional[str] = None,
     correlation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    return _execute_with_retry(
+    return await _execute_with_retry(
         db, tenant_id, "mhrs", "get_appointments",
         _mhrs_client.get_appointments,
         {
@@ -433,12 +440,12 @@ def mhrs_get_appointments(
     )
 
 
-def mhrs_confirm_appointment(
+async def mhrs_confirm_appointment(
     db: Session, tenant_id: str,
     randevu_id: str, confirmation_note: Optional[str] = None,
     correlation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    return _execute_with_retry(
+    return await _execute_with_retry(
         db, tenant_id, "mhrs", "confirm_appointment",
         _mhrs_client.confirm_appointment,
         {"randevu_id": randevu_id, "confirmation_note": confirmation_note},
@@ -446,12 +453,12 @@ def mhrs_confirm_appointment(
     )
 
 
-def mhrs_cancel_appointment(
+async def mhrs_cancel_appointment(
     db: Session, tenant_id: str,
     randevu_id: str, cancel_reason: str = "kurum_talebi",
     correlation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    return _execute_with_retry(
+    return await _execute_with_retry(
         db, tenant_id, "mhrs", "cancel_appointment",
         _mhrs_client.cancel_appointment,
         {"randevu_id": randevu_id, "cancel_reason": cancel_reason},
@@ -463,12 +470,12 @@ def mhrs_cancel_appointment(
 # ITS Operations
 # ===========================================================================
 
-def its_verify_drug_barcode(
+async def its_verify_drug_barcode(
     db: Session, tenant_id: str,
     barcode: str, gtin: Optional[str] = None,
     correlation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    return _execute_with_retry(
+    return await _execute_with_retry(
         db, tenant_id, "its", "verify_drug_barcode",
         _its_client.verify_drug_barcode,
         {"barcode": barcode, "gtin": gtin},
@@ -476,13 +483,13 @@ def its_verify_drug_barcode(
     )
 
 
-def its_notify_dispensing(
+async def its_notify_dispensing(
     db: Session, tenant_id: str,
     barcode: str, patient_tc: str, prescription_id: str,
     dispensing_type: str = "hastane", quantity: int = 1,
     correlation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    return _execute_with_retry(
+    return await _execute_with_retry(
         db, tenant_id, "its", "notify_dispensing",
         _its_client.notify_dispensing,
         {
@@ -496,12 +503,12 @@ def its_notify_dispensing(
     )
 
 
-def its_query_drug_status(
+async def its_query_drug_status(
     db: Session, tenant_id: str,
     barcode: str,
     correlation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    return _execute_with_retry(
+    return await _execute_with_retry(
         db, tenant_id, "its", "query_drug_status",
         _its_client.query_drug_status,
         {"barcode": barcode},
@@ -513,7 +520,7 @@ def its_query_drug_status(
 # Teleradyoloji Operations
 # ===========================================================================
 
-def teleradyoloji_send_study(
+async def teleradyoloji_send_study(
     db: Session, tenant_id: str,
     patient_tc: str, study_uid: str, modality: str,
     body_part: str, study_description: str, accession_number: str,
@@ -522,7 +529,7 @@ def teleradyoloji_send_study(
     dicom_endpoint: Optional[str] = None,
     correlation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    return _execute_with_retry(
+    return await _execute_with_retry(
         db, tenant_id, "teleradyoloji", "send_study",
         _teleradyoloji_client.send_study,
         {
@@ -540,13 +547,13 @@ def teleradyoloji_send_study(
     )
 
 
-def teleradyoloji_query_status(
+async def teleradyoloji_query_status(
     db: Session, tenant_id: str,
     study_uid: Optional[str] = None,
     calisma_id: Optional[str] = None,
     correlation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    return _execute_with_retry(
+    return await _execute_with_retry(
         db, tenant_id, "teleradyoloji", "query_status",
         _teleradyoloji_client.query_status,
         {"study_uid": study_uid, "calisma_id": calisma_id},
@@ -554,13 +561,13 @@ def teleradyoloji_query_status(
     )
 
 
-def teleradyoloji_receive_report(
+async def teleradyoloji_receive_report(
     db: Session, tenant_id: str,
     study_uid: Optional[str] = None,
     calisma_id: Optional[str] = None,
     correlation_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    return _execute_with_retry(
+    return await _execute_with_retry(
         db, tenant_id, "teleradyoloji", "receive_report",
         _teleradyoloji_client.receive_report,
         {"study_uid": study_uid, "calisma_id": calisma_id},

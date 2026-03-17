@@ -29,6 +29,7 @@ import type {
   HTTPValidationError,
   ListPartyPaymentRecordsParams,
   ListPartyPromissoryNotesParams,
+  ListPaymentRecordsParams,
   PaymentRecordUpdate,
   PromissoryNoteUpdate,
   PromissoryNotesCreate,
@@ -111,6 +112,100 @@ export const useCreatePaymentRecords = <TError = HTTPValidationError,
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * List all payment records for the tenant
+ * @summary List Payment Records
+ */
+export const listPaymentRecords = (
+    params?: ListPaymentRecordsParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeListPaymentRecordRead>(
+      {url: `/api/payment-records`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getListPaymentRecordsQueryKey = (params?: ListPaymentRecordsParams,) => {
+    return [
+    `/api/payment-records`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getListPaymentRecordsQueryOptions = <TData = Awaited<ReturnType<typeof listPaymentRecords>>, TError = HTTPValidationError>(params?: ListPaymentRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPaymentRecords>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListPaymentRecordsQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPaymentRecords>>> = ({ signal }) => listPaymentRecords(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPaymentRecords>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type ListPaymentRecordsQueryResult = NonNullable<Awaited<ReturnType<typeof listPaymentRecords>>>
+export type ListPaymentRecordsQueryError = HTTPValidationError
+
+
+export function useListPaymentRecords<TData = Awaited<ReturnType<typeof listPaymentRecords>>, TError = HTTPValidationError>(
+ params: undefined |  ListPaymentRecordsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPaymentRecords>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listPaymentRecords>>,
+          TError,
+          Awaited<ReturnType<typeof listPaymentRecords>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useListPaymentRecords<TData = Awaited<ReturnType<typeof listPaymentRecords>>, TError = HTTPValidationError>(
+ params?: ListPaymentRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPaymentRecords>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listPaymentRecords>>,
+          TError,
+          Awaited<ReturnType<typeof listPaymentRecords>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useListPaymentRecords<TData = Awaited<ReturnType<typeof listPaymentRecords>>, TError = HTTPValidationError>(
+ params?: ListPaymentRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPaymentRecords>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary List Payment Records
+ */
+
+export function useListPaymentRecords<TData = Awaited<ReturnType<typeof listPaymentRecords>>, TError = HTTPValidationError>(
+ params?: ListPaymentRecordsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPaymentRecords>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getListPaymentRecordsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
  * Get all payment records for a party
  * @summary Get Party Payment Records
  */

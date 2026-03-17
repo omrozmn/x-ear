@@ -74,17 +74,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     tokenManager.setToken(currentToken);
 
                     if (!token && currentToken) {
-                        // Try to fetch real user profile, fallback to rehydrated user
+                        // Try to fetch real user profile; if that fails, clear auth and redirect
                         try {
                             const response = await adminApiInstance.get('/api/auth/me');
                             const profileUser = response.data?.data?.user || response.data?.user;
                             if (profileUser) {
                                 setAuth(mapAdminUser(profileUser), currentToken);
                             } else {
-                                setAuth(user || createRehydratedAdminUser(), currentToken);
+                                clearAuth();
+                                tokenManager.clearToken();
+                                tokenManager.clearRefreshToken();
+                                window.location.href = '/login';
+                                return;
                             }
                         } catch {
-                            setAuth(user || createRehydratedAdminUser(), currentToken);
+                            clearAuth();
+                            tokenManager.clearToken();
+                            tokenManager.clearRefreshToken();
+                            window.location.href = '/login';
+                            return;
                         }
                     }
                 } catch {
@@ -189,17 +197,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         </AuthContext.Provider>
     );
 };
-
-function createRehydratedAdminUser(): TypeAdminUser {
-    const now = new Date().toISOString();
-    return {
-        id: 'rehydrated',
-        email: '',
-        role: AdminRole.ADMIN,
-        is_active: true,
-        created_at: now,
-    };
-}
 
 function mapAdminUser(user: NonNullable<ResponseEnvelopeAdminLoginResponse['data']>['user']): TypeAdminUser {
     const now = new Date().toISOString();

@@ -10,4 +10,4 @@ import type { DetailedPlanReadFeaturesAnyOf } from './detailedPlanReadFeaturesAn
 /**
  * Plan features
  */
-export type DetailedPlanReadFeatures = DetailedPlanReadFeaturesAnyOf | null;
+export type DetailedPlanReadFeatures = DetailedPlanReadFeaturesAnyOf | unknown[] | null;

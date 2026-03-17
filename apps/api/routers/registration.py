@@ -30,8 +30,8 @@ def _is_nonprod_otp_env() -> bool:
 def _generate_registration_otp() -> str:
     if _is_nonprod_otp_env():
         return '123456'
-    now_ts = int(now_utc().timestamp())
-    return str(100000 + (now_ts % 900000))
+    import random
+    return str(random.randint(100000, 999999))
 
 
 def _should_skip_external_sms() -> bool:
@@ -116,11 +116,10 @@ def register_phone(
                 api_key = os.getenv('VATANSMS_PASSWORD') or os.getenv('VATAN_API_KEY')
                 sender = os.getenv('VATANSMS_SENDER') or os.getenv('VATAN_SENDER', 'OZMN TIBCHZ')
                 
-                # Fallbacks for dev
-                if not api_id:
-                    api_id = '4ab531b6fd26fd9ba6010b0d'
-                if not api_key:
-                    api_key = '49b2001edbb1789e4e62f935'
+                if not api_id or not api_key:
+                    raise RuntimeError(
+                        "SMS credentials not configured. Set VATANSMS_USERNAME and VATANSMS_PASSWORD environment variables."
+                    )
                 
                 if api_id and api_key:
                     sms_service = VatanSMSService(api_id, api_key, sender)

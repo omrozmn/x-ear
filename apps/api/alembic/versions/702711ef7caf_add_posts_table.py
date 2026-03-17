@@ -144,7 +144,15 @@ def upgrade() -> None:
         op.execute(f"ALTER TABLE device_assignments DROP COLUMN IF EXISTS {col}")
 
     # Create indexes idempotently
-    op.execute('CREATE INDEX IF NOT EXISTS ix_purchase_invoices_purchase_id ON purchase_invoices (purchase_id)')
+    # Only create index if column exists (may not on fresh DBs)
+    op.execute("""
+        DO $$ BEGIN
+            IF EXISTS (SELECT 1 FROM information_schema.columns
+                       WHERE table_name='purchase_invoices' AND column_name='purchase_id') THEN
+                EXECUTE 'CREATE INDEX IF NOT EXISTS ix_purchase_invoices_purchase_id ON purchase_invoices (purchase_id)';
+            END IF;
+        END $$;
+    """)
     op.execute('CREATE INDEX IF NOT EXISTS ix_purchases_purchase_date ON purchases (purchase_date)')
 
     # Foreign keys idempotently

@@ -20,6 +20,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
+from xml.sax.saxutils import escape as xml_escape
 
 logger = logging.getLogger(__name__)
 
@@ -128,8 +129,8 @@ def _build_erecete_giris_envelope(
         diagnosis_xml_parts.append(
             f"""
             <tani>
-                <taniKodu>{dx.code}</taniKodu>
-                <taniAdi>{dx.name}</taniAdi>
+                <taniKodu>{xml_escape(dx.code)}</taniKodu>
+                <taniAdi>{xml_escape(dx.name)}</taniAdi>
                 <anaTesBilgisi>{primary_flag}</anaTesBilgisi>
             </tani>"""
         )
@@ -142,15 +143,15 @@ def _build_erecete_giris_envelope(
         med_xml_parts.append(
             f"""
             <ilac>
-                <ilacKodu>{med.medication_code}</ilacKodu>
-                <ilacAdi>{med.medication_name}</ilacAdi>
-                <ilacDoz>{med.dosage}</ilacDoz>
-                <ilacFormu>{med.dosage_form}</ilacFormu>
-                <kullanimSikligi>{med.frequency}</kullanimSikligi>
+                <ilacKodu>{xml_escape(med.medication_code)}</ilacKodu>
+                <ilacAdi>{xml_escape(med.medication_name)}</ilacAdi>
+                <ilacDoz>{xml_escape(med.dosage)}</ilacDoz>
+                <ilacFormu>{xml_escape(med.dosage_form)}</ilacFormu>
+                <kullanimSikligi>{xml_escape(med.frequency)}</kullanimSikligi>
                 <kullanimSuresi>{med.duration_days}</kullanimSuresi>
                 <adet>{med.quantity}</adet>
                 <kutuAdet>{med.box_count}</kutuAdet>
-                <kullanimTarifi>{med.usage_instructions}</kullanimTarifi>
+                <kullanimTarifi>{xml_escape(med.usage_instructions)}</kullanimTarifi>
                 <muadilIzin>{generic_flag}</muadilIzin>
             </ilac>"""
         )
@@ -165,14 +166,14 @@ def _build_erecete_giris_envelope(
     <soapenv:Header/>
     <soapenv:Body>
         <ere:eReceteGirisIstegi>
-            <ere:tesisKodu>{request.tesis_kodu}</ere:tesisKodu>
-            <ere:kullaniciAdi>{creds.kullanici_adi}</ere:kullaniciAdi>
-            <ere:sifre>{creds.sifre}</ere:sifre>
-            <ere:doktorTcKimlikNo>{request.doctor_tc}</ere:doktorTcKimlikNo>
-            <ere:hastaTcKimlikNo>{request.patient_tc}</ere:hastaTcKimlikNo>
-            <ere:protokolNo>{request.protocol_no}</ere:protokolNo>
-            <ere:receteTuru>{recete_turu}</ere:receteTuru>
-            <ere:aciklama>{request.notes}</ere:aciklama>
+            <ere:tesisKodu>{xml_escape(request.tesis_kodu)}</ere:tesisKodu>
+            <ere:kullaniciAdi>{xml_escape(creds.kullanici_adi)}</ere:kullaniciAdi>
+            <ere:sifre>{xml_escape(creds.sifre)}</ere:sifre>
+            <ere:doktorTcKimlikNo>{xml_escape(request.doctor_tc)}</ere:doktorTcKimlikNo>
+            <ere:hastaTcKimlikNo>{xml_escape(request.patient_tc)}</ere:hastaTcKimlikNo>
+            <ere:protokolNo>{xml_escape(request.protocol_no)}</ere:protokolNo>
+            <ere:receteTuru>{xml_escape(recete_turu)}</ere:receteTuru>
+            <ere:aciklama>{xml_escape(request.notes)}</ere:aciklama>
             <ere:tanilar>{diagnoses_xml}
             </ere:tanilar>
             <ere:ilaclar>{medications_xml}
@@ -196,11 +197,11 @@ def _build_erecete_iptal_envelope(
     <soapenv:Header/>
     <soapenv:Body>
         <ere:eReceteIptalIstegi>
-            <ere:tesisKodu>{creds.tesis_kodu}</ere:tesisKodu>
-            <ere:kullaniciAdi>{creds.kullanici_adi}</ere:kullaniciAdi>
-            <ere:sifre>{creds.sifre}</ere:sifre>
-            <ere:eReceteNo>{medula_prescription_id}</ere:eReceteNo>
-            <ere:iptalNedeni>{cancel_reason}</ere:iptalNedeni>
+            <ere:tesisKodu>{xml_escape(creds.tesis_kodu)}</ere:tesisKodu>
+            <ere:kullaniciAdi>{xml_escape(creds.kullanici_adi)}</ere:kullaniciAdi>
+            <ere:sifre>{xml_escape(creds.sifre)}</ere:sifre>
+            <ere:eReceteNo>{xml_escape(medula_prescription_id)}</ere:eReceteNo>
+            <ere:iptalNedeni>{xml_escape(cancel_reason)}</ere:iptalNedeni>
         </ere:eReceteIptalIstegi>
     </soapenv:Body>
 </soapenv:Envelope>"""

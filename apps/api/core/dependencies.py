@@ -11,7 +11,6 @@ Migration:
 - require_admin_permission -> require_access(..., admin_only=True)
 - get_tenant_id -> access.tenant_id
 """
-import os
 from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -25,21 +24,9 @@ from core.database import get_db, set_current_tenant_id
 logger = logging.getLogger(__name__)
 
 # Config - JWT Security
-# In production, JWT_SECRET_KEY MUST be set via environment variable
-_env = os.getenv('ENVIRONMENT', 'development').lower()
-SECRET_KEY = os.getenv('JWT_SECRET_KEY')
-
-if not SECRET_KEY:
-    if _env in ('production', 'prod', 'staging'):
-        raise ValueError(
-            "CRITICAL: JWT_SECRET_KEY environment variable must be set in production! "
-            "Generate a secure key with: python -c \"import secrets; print(secrets.token_hex(32))\""
-        )
-    # Development-only fallback (will log warning)
-    SECRET_KEY = 'default-dev-secret-key-change-in-prod'
-    logger.warning("⚠️  Using development JWT key fallback. Set JWT_SECRET_KEY in production!")
-
-ALGORITHM = "HS256"
+from core.security import get_jwt_secret, JWT_ALGORITHM
+SECRET_KEY = get_jwt_secret()
+ALGORITHM = JWT_ALGORITHM
 
 # OAuth2 scheme
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)

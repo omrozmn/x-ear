@@ -12,4 +12,7 @@ export type ListReportPatientsParams = {
  * @maximum 365
  */
 days?: number;
+branch_id?: string | null;
+startDate?: string | null;
+endDate?: string | null;
 };

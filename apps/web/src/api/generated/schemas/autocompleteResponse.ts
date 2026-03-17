@@ -7,6 +7,7 @@
  */
 import type { EntityItem } from './entityItem';
 import type { Capability } from './capability';
+import type { AutocompleteResponseIntentType } from './autocompleteResponseIntentType';
 
 /**
  * Response containing entities and context-aware actions.
@@ -16,4 +17,6 @@ export interface AutocompleteResponse {
   entities?: EntityItem[];
   /** Available actions based on context */
   actions?: Capability[];
+  /** Heuristic-based intent separation */
+  intentType?: AutocompleteResponseIntentType;
 }

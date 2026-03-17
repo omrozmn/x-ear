@@ -7,7 +7,17 @@
  */
 
 export type ListAdminUserAllParams = {
+/**
+ * @minimum 1
+ * @maximum 1000000
+ */
 page?: number;
-limit?: number;
-search?: string;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+per_page?: number;
+search?: string | null;
+role?: string | null;
+status?: string | null;
 };

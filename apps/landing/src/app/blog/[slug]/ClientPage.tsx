@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import DOMPurify from "dompurify";
 import { useParams } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -190,7 +191,7 @@ export default function BlogDetailPage({ slug }: { slug: string }) {
                                      prose-li:text-zinc-600 dark:prose-li:text-zinc-300
                                      prose-img:rounded-2xl prose-img:shadow-xl
                                      prose-blockquote:border-l-accent-blue prose-blockquote:bg-accent-blue/5 prose-blockquote:px-6 prose-blockquote:py-2 prose-blockquote:rounded-r-xl prose-blockquote:font-medium prose-blockquote:text-zinc-700 dark:prose-blockquote:text-zinc-200"
-                            dangerouslySetInnerHTML={{ __html: post.content }}
+                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
                         />
                     </motion.div>
 

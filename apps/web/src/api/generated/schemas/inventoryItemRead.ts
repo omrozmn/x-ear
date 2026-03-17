@@ -7,10 +7,12 @@
  */
 import type { InventoryItemReadCreatedAt } from './inventoryItemReadCreatedAt';
 import type { InventoryItemReadUpdatedAt } from './inventoryItemReadUpdatedAt';
+import type { InventoryItemReadBrand } from './inventoryItemReadBrand';
 import type { InventoryItemReadModel } from './inventoryItemReadModel';
 import type { InventoryItemReadBarcode } from './inventoryItemReadBarcode';
 import type { InventoryItemReadStockCode } from './inventoryItemReadStockCode';
 import type { InventoryItemReadSupplier } from './inventoryItemReadSupplier';
+import type { InventoryItemReadPackageQuantity } from './inventoryItemReadPackageQuantity';
 import type { InventoryItemReadDescription } from './inventoryItemReadDescription';
 import type { InventoryItemReadDirection } from './inventoryItemReadDirection';
 import type { InventoryItemReadBranchId } from './inventoryItemReadBranchId';
@@ -25,13 +27,14 @@ export interface InventoryItemRead {
   /** Unique identifier for the resource */
   id: string;
   name: string;
-  brand: string;
+  brand?: InventoryItemReadBrand;
   model?: InventoryItemReadModel;
   category?: string;
   barcode?: InventoryItemReadBarcode;
   stockCode?: InventoryItemReadStockCode;
   supplier?: InventoryItemReadSupplier;
   unit?: string;
+  packageQuantity?: InventoryItemReadPackageQuantity;
   description?: InventoryItemReadDescription;
   availableInventory?: number;
   totalInventory?: number;

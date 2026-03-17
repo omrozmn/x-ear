@@ -5,7 +5,6 @@ GET /ai/audit - Query audit logs with filtering and pagination.
 """
 
 import logging
-import os
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -19,8 +18,9 @@ from ai.models.ai_audit_log import AIAuditLog, AuditEventType
 from database import get_db
 
 logger = logging.getLogger(__name__)
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "default-dev-secret-key-change-in-prod")
-ALGORITHM = "HS256"
+from core.security import get_jwt_secret, JWT_ALGORITHM
+SECRET_KEY = get_jwt_secret()
+ALGORITHM = JWT_ALGORITHM
 
 router = APIRouter(prefix="/ai", tags=["AI Audit"])
 

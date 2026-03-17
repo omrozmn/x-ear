@@ -25,15 +25,15 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  AIStatusResponse,
   AcknowledgeAlertApiAiAlertsAlertIdAcknowledgePost200,
+  AiStatusResponse,
   AlertsResponse,
   GetAlertsApiAiAlertsGetParams,
   GetCapabilitiesApiAiCapabilitiesGet200,
   GetMetricsApiAiMetricsGetParams,
   HTTPValidationError,
   HealthResponse,
-  SLAMetricsResponse,
+  SlaMetricsResponse,
   TriggerAlertCheckApiAiAlertsCheckPost200
 } from '.././schemas';
 
@@ -59,7 +59,7 @@ export const getStatusApiAiStatusGet = (
 ) => {
       
       
-      return customInstance<AIStatusResponse>(
+      return customInstance<AiStatusResponse>(
       {url: `/api/ai/status`, method: 'GET', signal
     },
       );
@@ -347,7 +347,7 @@ export const getMetricsApiAiMetricsGet = (
 ) => {
       
       
-      return customInstance<SLAMetricsResponse>(
+      return customInstance<SlaMetricsResponse>(
       {url: `/api/ai/metrics`, method: 'GET',
         params, signal
     },

@@ -28,7 +28,7 @@ import type {
   HTTPValidationError,
   ListAdminProductionOrdersParams,
   OrderStatusUpdate,
-  ResponseEnvelope
+  SchemasBaseResponseEnvelope
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -46,7 +46,7 @@ export const createAdminProductionInitDb = (
 ) => {
       
       
-      return customInstance<ResponseEnvelope>(
+      return customInstance<SchemasBaseResponseEnvelope>(
       {url: `/api/admin/production/init-db`, method: 'POST', signal
     },
       );
@@ -109,7 +109,7 @@ export const listAdminProductionOrders = (
 ) => {
       
       
-      return customInstance<ResponseEnvelope>(
+      return customInstance<SchemasBaseResponseEnvelope>(
       {url: `/api/admin/production/orders`, method: 'GET',
         params, signal
     },
@@ -203,7 +203,7 @@ export const updateAdminProductionOrderStatus = (
  ) => {
       
       
-      return customInstance<ResponseEnvelope>(
+      return customInstance<SchemasBaseResponseEnvelope>(
       {url: `/api/admin/production/orders/${orderId}/status`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: orderStatusUpdate

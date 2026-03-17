@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 from typing import Any, Optional
 
 from starlette.responses import Response
@@ -30,8 +29,9 @@ from config.permissions_map import get_permission_for_endpoint
 
 logger = logging.getLogger(__name__)
 
-SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'default-dev-secret-key-change-in-prod')
-ALGORITHM = "HS256"
+from core.security import get_jwt_secret, JWT_ALGORITHM
+SECRET_KEY = get_jwt_secret()
+ALGORITHM = JWT_ALGORITHM
 
 
 class AccessContextFromToken:

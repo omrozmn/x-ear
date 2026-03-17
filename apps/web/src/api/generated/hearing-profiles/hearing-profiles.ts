@@ -25,11 +25,10 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  EReceiptCreate,
-  EReceiptUpdate,
   HTTPValidationError,
-  HearingTestCreate,
-  HearingTestUpdate
+  HearingProfileCreate,
+  HearingProfileUpdate,
+  ResponseEnvelopeHearingProfileRead
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -38,17 +37,86 @@ import { customInstance } from '../../orval-mutator';
 
 
 /**
- * Get all hearing tests for a party
- * @summary List Hearing Tests
+ * Create or update a hearing profile for a party
+
+**Permission**: parties.edit
+ * @summary Create Hearing Profile
  */
-export const listHearingTests = (
+export const createHearingProfile = (
+    hearingProfileCreate: HearingProfileCreate,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeHearingProfileRead>(
+      {url: `/api/hearing-profiles`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: hearingProfileCreate, signal
+    },
+      );
+    }
+  
+
+
+export const getCreateHearingProfileMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createHearingProfile>>, TError,{data: HearingProfileCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createHearingProfile>>, TError,{data: HearingProfileCreate}, TContext> => {
+
+const mutationKey = ['createHearingProfile'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createHearingProfile>>, {data: HearingProfileCreate}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createHearingProfile(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateHearingProfileMutationResult = NonNullable<Awaited<ReturnType<typeof createHearingProfile>>>
+    export type CreateHearingProfileMutationBody = HearingProfileCreate
+    export type CreateHearingProfileMutationError = HTTPValidationError
+
+    /**
+ * @summary Create Hearing Profile
+ */
+export const useCreateHearingProfile = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createHearingProfile>>, TError,{data: HearingProfileCreate}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createHearingProfile>>,
+        TError,
+        {data: HearingProfileCreate},
+        TContext
+      > => {
+
+      const mutationOptions = getCreateHearingProfileMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Get hearing profile for a party
+
+**Permission**: parties.view
+ * @summary Get Hearing Profile
+ */
+export const getHearingProfile = (
     partyId: string,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<unknown>(
-      {url: `/api/parties/${partyId}/profiles/hearing/tests`, method: 'GET', signal
+      return customInstance<ResponseEnvelopeHearingProfileRead>(
+      {url: `/api/hearing-profiles/${partyId}`, method: 'GET', signal
     },
       );
     }
@@ -56,69 +124,69 @@ export const listHearingTests = (
 
 
 
-export const getListHearingTestsQueryKey = (partyId?: string,) => {
+export const getGetHearingProfileQueryKey = (partyId?: string,) => {
     return [
-    `/api/parties/${partyId}/profiles/hearing/tests`
+    `/api/hearing-profiles/${partyId}`
     ] as const;
     }
 
     
-export const getListHearingTestsQueryOptions = <TData = Awaited<ReturnType<typeof listHearingTests>>, TError = HTTPValidationError>(partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listHearingTests>>, TError, TData>>, }
+export const getGetHearingProfileQueryOptions = <TData = Awaited<ReturnType<typeof getHearingProfile>>, TError = HTTPValidationError>(partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHearingProfile>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListHearingTestsQueryKey(partyId);
+  const queryKey =  queryOptions?.queryKey ?? getGetHearingProfileQueryKey(partyId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listHearingTests>>> = ({ signal }) => listHearingTests(partyId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getHearingProfile>>> = ({ signal }) => getHearingProfile(partyId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(partyId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listHearingTests>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+   return  { queryKey, queryFn, enabled: !!(partyId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getHearingProfile>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
 }
 
-export type ListHearingTestsQueryResult = NonNullable<Awaited<ReturnType<typeof listHearingTests>>>
-export type ListHearingTestsQueryError = HTTPValidationError
+export type GetHearingProfileQueryResult = NonNullable<Awaited<ReturnType<typeof getHearingProfile>>>
+export type GetHearingProfileQueryError = HTTPValidationError
 
 
-export function useListHearingTests<TData = Awaited<ReturnType<typeof listHearingTests>>, TError = HTTPValidationError>(
- partyId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listHearingTests>>, TError, TData>> & Pick<
+export function useGetHearingProfile<TData = Awaited<ReturnType<typeof getHearingProfile>>, TError = HTTPValidationError>(
+ partyId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHearingProfile>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listHearingTests>>,
+          Awaited<ReturnType<typeof getHearingProfile>>,
           TError,
-          Awaited<ReturnType<typeof listHearingTests>>
+          Awaited<ReturnType<typeof getHearingProfile>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListHearingTests<TData = Awaited<ReturnType<typeof listHearingTests>>, TError = HTTPValidationError>(
- partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listHearingTests>>, TError, TData>> & Pick<
+export function useGetHearingProfile<TData = Awaited<ReturnType<typeof getHearingProfile>>, TError = HTTPValidationError>(
+ partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHearingProfile>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listHearingTests>>,
+          Awaited<ReturnType<typeof getHearingProfile>>,
           TError,
-          Awaited<ReturnType<typeof listHearingTests>>
+          Awaited<ReturnType<typeof getHearingProfile>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListHearingTests<TData = Awaited<ReturnType<typeof listHearingTests>>, TError = HTTPValidationError>(
- partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listHearingTests>>, TError, TData>>, }
+export function useGetHearingProfile<TData = Awaited<ReturnType<typeof getHearingProfile>>, TError = HTTPValidationError>(
+ partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHearingProfile>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
- * @summary List Hearing Tests
+ * @summary Get Hearing Profile
  */
 
-export function useListHearingTests<TData = Awaited<ReturnType<typeof listHearingTests>>, TError = HTTPValidationError>(
- partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listHearingTests>>, TError, TData>>, }
+export function useGetHearingProfile<TData = Awaited<ReturnType<typeof getHearingProfile>>, TError = HTTPValidationError>(
+ partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHearingProfile>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getListHearingTestsQueryOptions(partyId,options)
+  const queryOptions = getGetHearingProfileQueryOptions(partyId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 
@@ -131,31 +199,32 @@ export function useListHearingTests<TData = Awaited<ReturnType<typeof listHearin
 
 
 /**
- * Add a new hearing test to party
- * @summary Create Hearing Test
+ * Update hearing profile SGK info
+
+**Permission**: parties.edit
+ * @summary Update Hearing Profile
  */
-export const createHearingTest = (
+export const updateHearingProfile = (
     partyId: string,
-    hearingTestCreate: HearingTestCreate,
- signal?: AbortSignal
-) => {
+    hearingProfileUpdate: HearingProfileUpdate,
+ ) => {
       
       
-      return customInstance<unknown>(
-      {url: `/api/parties/${partyId}/profiles/hearing/tests`, method: 'POST',
+      return customInstance<ResponseEnvelopeHearingProfileRead>(
+      {url: `/api/hearing-profiles/${partyId}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: hearingTestCreate, signal
+      data: hearingProfileUpdate
     },
       );
     }
   
 
 
-export const getCreateHearingTestMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createHearingTest>>, TError,{partyId: string;data: HearingTestCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createHearingTest>>, TError,{partyId: string;data: HearingTestCreate}, TContext> => {
+export const getUpdateHearingProfileMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateHearingProfile>>, TError,{partyId: string;data: HearingProfileUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateHearingProfile>>, TError,{partyId: string;data: HearingProfileUpdate}, TContext> => {
 
-const mutationKey = ['createHearingTest'];
+const mutationKey = ['updateHearingProfile'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -165,10 +234,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createHearingTest>>, {partyId: string;data: HearingTestCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateHearingProfile>>, {partyId: string;data: HearingProfileUpdate}> = (props) => {
           const {partyId,data} = props ?? {};
 
-          return  createHearingTest(partyId,data,)
+          return  updateHearingProfile(partyId,data,)
         }
 
         
@@ -176,440 +245,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateHearingTestMutationResult = NonNullable<Awaited<ReturnType<typeof createHearingTest>>>
-    export type CreateHearingTestMutationBody = HearingTestCreate
-    export type CreateHearingTestMutationError = HTTPValidationError
+    export type UpdateHearingProfileMutationResult = NonNullable<Awaited<ReturnType<typeof updateHearingProfile>>>
+    export type UpdateHearingProfileMutationBody = HearingProfileUpdate
+    export type UpdateHearingProfileMutationError = HTTPValidationError
 
     /**
- * @summary Create Hearing Test
+ * @summary Update Hearing Profile
  */
-export const useCreateHearingTest = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createHearingTest>>, TError,{partyId: string;data: HearingTestCreate}, TContext>, }
+export const useUpdateHearingProfile = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateHearingProfile>>, TError,{partyId: string;data: HearingProfileUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createHearingTest>>,
+        Awaited<ReturnType<typeof updateHearingProfile>>,
         TError,
-        {partyId: string;data: HearingTestCreate},
+        {partyId: string;data: HearingProfileUpdate},
         TContext
       > => {
 
-      const mutationOptions = getCreateHearingTestMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * Update a hearing test
- * @summary Update Hearing Test
- */
-export const updateHearingTest = (
-    partyId: string,
-    testId: string,
-    hearingTestUpdate: HearingTestUpdate,
- ) => {
-      
-      
-      return customInstance<unknown>(
-      {url: `/api/parties/${partyId}/profiles/hearing/tests/${testId}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: hearingTestUpdate
-    },
-      );
-    }
-  
-
-
-export const getUpdateHearingTestMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateHearingTest>>, TError,{partyId: string;testId: string;data: HearingTestUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateHearingTest>>, TError,{partyId: string;testId: string;data: HearingTestUpdate}, TContext> => {
-
-const mutationKey = ['updateHearingTest'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateHearingTest>>, {partyId: string;testId: string;data: HearingTestUpdate}> = (props) => {
-          const {partyId,testId,data} = props ?? {};
-
-          return  updateHearingTest(partyId,testId,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type UpdateHearingTestMutationResult = NonNullable<Awaited<ReturnType<typeof updateHearingTest>>>
-    export type UpdateHearingTestMutationBody = HearingTestUpdate
-    export type UpdateHearingTestMutationError = HTTPValidationError
-
-    /**
- * @summary Update Hearing Test
- */
-export const useUpdateHearingTest = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateHearingTest>>, TError,{partyId: string;testId: string;data: HearingTestUpdate}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateHearingTest>>,
-        TError,
-        {partyId: string;testId: string;data: HearingTestUpdate},
-        TContext
-      > => {
-
-      const mutationOptions = getUpdateHearingTestMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * Delete a hearing test
- * @summary Delete Hearing Test
- */
-export const deleteHearingTest = (
-    partyId: string,
-    testId: string,
- ) => {
-      
-      
-      return customInstance<unknown>(
-      {url: `/api/parties/${partyId}/profiles/hearing/tests/${testId}`, method: 'DELETE'
-    },
-      );
-    }
-  
-
-
-export const getDeleteHearingTestMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteHearingTest>>, TError,{partyId: string;testId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteHearingTest>>, TError,{partyId: string;testId: string}, TContext> => {
-
-const mutationKey = ['deleteHearingTest'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteHearingTest>>, {partyId: string;testId: string}> = (props) => {
-          const {partyId,testId} = props ?? {};
-
-          return  deleteHearingTest(partyId,testId,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteHearingTestMutationResult = NonNullable<Awaited<ReturnType<typeof deleteHearingTest>>>
-    
-    export type DeleteHearingTestMutationError = HTTPValidationError
-
-    /**
- * @summary Delete Hearing Test
- */
-export const useDeleteHearingTest = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteHearingTest>>, TError,{partyId: string;testId: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteHearingTest>>,
-        TError,
-        {partyId: string;testId: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteHearingTestMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * Get all e-receipts for a party
- * @summary List Hearing Ereceipts
- */
-export const listHearingEReceipts = (
-    partyId: string,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<unknown>(
-      {url: `/api/parties/${partyId}/profiles/hearing/ereceipts`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getListHearingEReceiptsQueryKey = (partyId?: string,) => {
-    return [
-    `/api/parties/${partyId}/profiles/hearing/ereceipts`
-    ] as const;
-    }
-
-    
-export const getListHearingEReceiptsQueryOptions = <TData = Awaited<ReturnType<typeof listHearingEReceipts>>, TError = HTTPValidationError>(partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listHearingEReceipts>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListHearingEReceiptsQueryKey(partyId);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listHearingEReceipts>>> = ({ signal }) => listHearingEReceipts(partyId, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(partyId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listHearingEReceipts>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
-}
-
-export type ListHearingEReceiptsQueryResult = NonNullable<Awaited<ReturnType<typeof listHearingEReceipts>>>
-export type ListHearingEReceiptsQueryError = HTTPValidationError
-
-
-export function useListHearingEReceipts<TData = Awaited<ReturnType<typeof listHearingEReceipts>>, TError = HTTPValidationError>(
- partyId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listHearingEReceipts>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listHearingEReceipts>>,
-          TError,
-          Awaited<ReturnType<typeof listHearingEReceipts>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListHearingEReceipts<TData = Awaited<ReturnType<typeof listHearingEReceipts>>, TError = HTTPValidationError>(
- partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listHearingEReceipts>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listHearingEReceipts>>,
-          TError,
-          Awaited<ReturnType<typeof listHearingEReceipts>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useListHearingEReceipts<TData = Awaited<ReturnType<typeof listHearingEReceipts>>, TError = HTTPValidationError>(
- partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listHearingEReceipts>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-/**
- * @summary List Hearing Ereceipts
- */
-
-export function useListHearingEReceipts<TData = Awaited<ReturnType<typeof listHearingEReceipts>>, TError = HTTPValidationError>(
- partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listHearingEReceipts>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
-
-  const queryOptions = getListHearingEReceiptsQueryOptions(partyId,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-
-/**
- * Create a new e-receipt for party
- * @summary Create Hearing Ereceipt
- */
-export const createHearingEReceipt = (
-    partyId: string,
-    eReceiptCreate: EReceiptCreate,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<unknown>(
-      {url: `/api/parties/${partyId}/profiles/hearing/ereceipts`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: eReceiptCreate, signal
-    },
-      );
-    }
-  
-
-
-export const getCreateHearingEReceiptMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createHearingEReceipt>>, TError,{partyId: string;data: EReceiptCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createHearingEReceipt>>, TError,{partyId: string;data: EReceiptCreate}, TContext> => {
-
-const mutationKey = ['createHearingEReceipt'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createHearingEReceipt>>, {partyId: string;data: EReceiptCreate}> = (props) => {
-          const {partyId,data} = props ?? {};
-
-          return  createHearingEReceipt(partyId,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CreateHearingEReceiptMutationResult = NonNullable<Awaited<ReturnType<typeof createHearingEReceipt>>>
-    export type CreateHearingEReceiptMutationBody = EReceiptCreate
-    export type CreateHearingEReceiptMutationError = HTTPValidationError
-
-    /**
- * @summary Create Hearing Ereceipt
- */
-export const useCreateHearingEReceipt = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createHearingEReceipt>>, TError,{partyId: string;data: EReceiptCreate}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createHearingEReceipt>>,
-        TError,
-        {partyId: string;data: EReceiptCreate},
-        TContext
-      > => {
-
-      const mutationOptions = getCreateHearingEReceiptMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * Update an e-receipt
- * @summary Update Hearing Ereceipt
- */
-export const updateHearingEReceipt = (
-    partyId: string,
-    ereceiptId: string,
-    eReceiptUpdate: EReceiptUpdate,
- ) => {
-      
-      
-      return customInstance<unknown>(
-      {url: `/api/parties/${partyId}/profiles/hearing/ereceipts/${ereceiptId}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: eReceiptUpdate
-    },
-      );
-    }
-  
-
-
-export const getUpdateHearingEReceiptMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateHearingEReceipt>>, TError,{partyId: string;ereceiptId: string;data: EReceiptUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateHearingEReceipt>>, TError,{partyId: string;ereceiptId: string;data: EReceiptUpdate}, TContext> => {
-
-const mutationKey = ['updateHearingEReceipt'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateHearingEReceipt>>, {partyId: string;ereceiptId: string;data: EReceiptUpdate}> = (props) => {
-          const {partyId,ereceiptId,data} = props ?? {};
-
-          return  updateHearingEReceipt(partyId,ereceiptId,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type UpdateHearingEReceiptMutationResult = NonNullable<Awaited<ReturnType<typeof updateHearingEReceipt>>>
-    export type UpdateHearingEReceiptMutationBody = EReceiptUpdate
-    export type UpdateHearingEReceiptMutationError = HTTPValidationError
-
-    /**
- * @summary Update Hearing Ereceipt
- */
-export const useUpdateHearingEReceipt = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateHearingEReceipt>>, TError,{partyId: string;ereceiptId: string;data: EReceiptUpdate}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateHearingEReceipt>>,
-        TError,
-        {partyId: string;ereceiptId: string;data: EReceiptUpdate},
-        TContext
-      > => {
-
-      const mutationOptions = getUpdateHearingEReceiptMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * Delete an e-receipt
- * @summary Delete Hearing Ereceipt
- */
-export const deleteHearingEReceipt = (
-    partyId: string,
-    ereceiptId: string,
- ) => {
-      
-      
-      return customInstance<unknown>(
-      {url: `/api/parties/${partyId}/profiles/hearing/ereceipts/${ereceiptId}`, method: 'DELETE'
-    },
-      );
-    }
-  
-
-
-export const getDeleteHearingEReceiptMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteHearingEReceipt>>, TError,{partyId: string;ereceiptId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteHearingEReceipt>>, TError,{partyId: string;ereceiptId: string}, TContext> => {
-
-const mutationKey = ['deleteHearingEReceipt'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteHearingEReceipt>>, {partyId: string;ereceiptId: string}> = (props) => {
-          const {partyId,ereceiptId} = props ?? {};
-
-          return  deleteHearingEReceipt(partyId,ereceiptId,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteHearingEReceiptMutationResult = NonNullable<Awaited<ReturnType<typeof deleteHearingEReceipt>>>
-    
-    export type DeleteHearingEReceiptMutationError = HTTPValidationError
-
-    /**
- * @summary Delete Hearing Ereceipt
- */
-export const useDeleteHearingEReceipt = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteHearingEReceipt>>, TError,{partyId: string;ereceiptId: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteHearingEReceipt>>,
-        TError,
-        {partyId: string;ereceiptId: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteHearingEReceiptMutationOptions(options);
+      const mutationOptions = getUpdateHearingProfileMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

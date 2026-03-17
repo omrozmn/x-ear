@@ -1,12 +1,9 @@
-import axios from 'axios';
+import { apiClient } from '../lib/api';
 
 const LABEL_SERVICE_URL = import.meta.env.VITE_LABEL_SERVICE_URL || 'http://localhost:3050';
 
-const labelClient = axios.create({
-  baseURL: LABEL_SERVICE_URL,
-  headers: { 'Content-Type': 'application/json' },
-  timeout: 15000,
-});
+const labelClient = apiClient;
+const labelBaseURL = LABEL_SERVICE_URL;
 
 // --- Types ---
 
@@ -82,44 +79,40 @@ export interface RenderResult {
 
 export const labelService = {
   async listTemplates(): Promise<Template[]> {
-    const { data } = await labelClient.get<Template[]>('/api/v1/templates');
+    const { data } = await labelClient.get<Template[]>('/api/v1/templates', { baseURL: labelBaseURL });
     return data;
   },
 
   async getTemplate(id: string): Promise<Template> {
-    const { data } = await labelClient.get<Template>(`/api/v1/templates/${id}`);
+    const { data } = await labelClient.get<Template>(`/api/v1/templates/${id}`, { baseURL: labelBaseURL });
     return data;
   },
 
   async createTemplate(input: CreateTemplateInput): Promise<Template> {
-    const { data } = await labelClient.post<Template>('/api/v1/templates', input);
+    const { data } = await labelClient.post<Template>('/api/v1/templates', input, { baseURL: labelBaseURL });
     return data;
   },
 
   async updateTemplate(id: string, input: UpdateTemplateInput): Promise<Template> {
-    const { data } = await labelClient.put<Template>(`/api/v1/templates/${id}`, input);
+    const { data } = await labelClient.put<Template>(`/api/v1/templates/${id}`, input, { baseURL: labelBaseURL });
     return data;
   },
 
   async deleteTemplate(id: string): Promise<void> {
-    await labelClient.delete(`/api/v1/templates/${id}`);
+    await labelClient.delete(`/api/v1/templates/${id}`, { baseURL: labelBaseURL });
   },
 
   async publishTemplate(id: string): Promise<Template> {
-    const { data } = await labelClient.post<Template>(`/api/v1/templates/${id}/publish`);
+    const { data } = await labelClient.post<Template>(`/api/v1/templates/${id}/publish`, undefined, { baseURL: labelBaseURL });
     return data;
   },
 
   async renderPreview(req: RenderRequest): Promise<RenderResult> {
-    const { data } = await labelClient.post<RenderResult>('/api/v1/render', req);
+    const { data } = await labelClient.post<RenderResult>('/api/v1/render', req, { baseURL: labelBaseURL });
     return data;
   },
 
   getServiceUrl(): string {
     return LABEL_SERVICE_URL;
-  },
-
-  setServiceUrl(url: string): void {
-    labelClient.defaults.baseURL = url;
   },
 };

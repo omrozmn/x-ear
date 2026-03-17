@@ -7,4 +7,4 @@
  */
 import type { ResponseMeta } from './responseMeta';
 
-export type ResponseEnvelopeUnionSMTPConfigResponseNoneTypeMeta = ResponseMeta | null;
+export type ResponseEnvelopeUnionSmtpConfigResponseNoneTypeMeta = ResponseMeta | null;

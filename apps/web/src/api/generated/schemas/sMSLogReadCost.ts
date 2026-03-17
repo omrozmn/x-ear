@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SMSLogReadCost = number | null;
+export type SmsLogReadCost = number | null;

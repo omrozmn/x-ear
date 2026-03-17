@@ -1,12 +1,9 @@
-import axios from 'axios';
+import { apiClient } from '../lib/api';
 
 const BARCODE_SERVICE_URL = import.meta.env.VITE_BARCODE_SERVICE_URL || 'http://localhost:8090';
 
-const barcodeClient = axios.create({
-  baseURL: BARCODE_SERVICE_URL,
-  headers: { 'Content-Type': 'application/json' },
-  timeout: 15000,
-});
+const barcodeClient = apiClient;
+const barcodeBaseURL = BARCODE_SERVICE_URL;
 
 // --- Types ---
 
@@ -68,13 +65,14 @@ export interface HealthResponse {
 
 export const barcodeService = {
   async health(): Promise<HealthResponse> {
-    const { data } = await barcodeClient.get<HealthResponse>('/health');
+    const { data } = await barcodeClient.get<HealthResponse>('/health', { baseURL: barcodeBaseURL });
     return data;
   },
 
   async generate(req: GenerateBarcodeRequest): Promise<Blob> {
     const response = await barcodeClient.post('/api/v1/barcode/generate', req, {
       responseType: 'blob',
+      baseURL: barcodeBaseURL,
     });
     return response.data as Blob;
   },
@@ -83,15 +81,12 @@ export const barcodeService = {
     const { data } = await barcodeClient.post<ValidationResult>(
       '/api/v1/barcode/validate',
       req,
+      { baseURL: barcodeBaseURL },
     );
     return data;
   },
 
   getServiceUrl(): string {
     return BARCODE_SERVICE_URL;
-  },
-
-  setServiceUrl(url: string): void {
-    barcodeClient.defaults.baseURL = url;
   },
 };
