@@ -107,7 +107,14 @@ def upgrade() -> None:
                existing_type=sa.VARCHAR(length=36),
                type_=sa.String(length=50),
                existing_nullable=False)
-        batch_op.create_foreign_key('fk_bulk_import_batches_tenant', 'tenants', ['tenant_id'], ['id'], ondelete='CASCADE')
+    op.execute("""
+        DO $$ BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_bulk_import_batches_tenant') THEN
+                ALTER TABLE bulk_import_batches ADD CONSTRAINT fk_bulk_import_batches_tenant
+                    FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE;
+            END IF;
+        END $$;
+    """)
 
     # Wrap bulk_import_records
     with op.batch_alter_table('bulk_import_records', schema=None) as batch_op:
@@ -123,34 +130,36 @@ def upgrade() -> None:
                existing_type=sa.VARCHAR(length=36),
                type_=sa.String(length=100),
                existing_nullable=False)
-        batch_op.create_foreign_key('fk_bulk_import_records_tenant', 'tenants', ['tenant_id'], ['id'], ondelete='CASCADE')
+    op.execute("""
+        DO $$ BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_bulk_import_records_tenant') THEN
+                ALTER TABLE bulk_import_records ADD CONSTRAINT fk_bulk_import_records_tenant
+                    FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE;
+            END IF;
+        END $$;
+    """)
 
-    # Wrap device_assignments
-    with op.batch_alter_table('device_assignments', schema=None) as batch_op:
-        batch_op.drop_column('model')
-        batch_op.drop_column('barcode')
-        batch_op.drop_column('brand')
+    # Drop columns idempotently (may not exist on fresh DBs from initial schema)
+    for col in ['model', 'barcode', 'brand']:
+        op.execute(f"ALTER TABLE device_assignments DROP COLUMN IF EXISTS {col}")
 
-    # Wrap purchase_invoices
-    with op.batch_alter_table('purchase_invoices', schema=None) as batch_op:
-        batch_op.create_index(batch_op.f('ix_purchase_invoices_purchase_id'), ['purchase_id'], unique=False)
+    # Create indexes idempotently
+    op.execute('CREATE INDEX IF NOT EXISTS ix_purchase_invoices_purchase_id ON purchase_invoices (purchase_id)')
+    op.execute('CREATE INDEX IF NOT EXISTS ix_purchases_purchase_date ON purchases (purchase_date)')
 
-    # Wrap purchases
-    with op.batch_alter_table('purchases', schema=None) as batch_op:
-        batch_op.alter_column('id',
-               existing_type=sa.VARCHAR(length=50),
-               nullable=False)
-        batch_op.create_index(batch_op.f('ix_purchases_purchase_date'), ['purchase_date'], unique=False)
-        batch_op.create_foreign_key('fk_purchases_tenant', 'tenants', ['tenant_id'], ['id'], ondelete='CASCADE')
+    # Foreign keys idempotently
+    op.execute("""
+        DO $$ BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_purchases_tenant') THEN
+                ALTER TABLE purchases ADD CONSTRAINT fk_purchases_tenant
+                    FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE;
+            END IF;
+        END $$;
+    """)
 
-    # Wrap tenants
-    with op.batch_alter_table('tenants', schema=None) as batch_op:
-        batch_op.drop_column('tax_office')
-        batch_op.drop_column('phone')
-        batch_op.drop_column('email')
-        batch_op.drop_column('city')
-        batch_op.drop_column('address')
-        batch_op.drop_column('tax_number')
+    # Drop tenant columns idempotently
+    for col in ['tax_office', 'phone', 'email', 'city', 'address', 'tax_number']:
+        op.execute(f"ALTER TABLE tenants DROP COLUMN IF EXISTS {col}")
     # ### end Alembic commands ###
 
 

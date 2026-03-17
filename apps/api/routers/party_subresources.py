@@ -429,7 +429,7 @@ def list_party_ereceipts(
     )
 
     return ResponseEnvelope(
-        data=[r.to_dict() for r in receipts],
+        data=[r.to_dict() for r in receipts],  # legacy
         meta={"total": len(receipts), "partyId": party_id},
     )
 
@@ -482,7 +482,7 @@ def create_party_ereceipt(
     db.commit()
     db.refresh(ereceipt)
 
-    return ResponseEnvelope(data=ereceipt.to_dict())
+    return ResponseEnvelope(data=ereceipt.to_dict())  # legacy
 
 
 # --- Device Recommendation Engine ---
