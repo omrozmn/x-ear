@@ -773,7 +773,7 @@ export interface SpecialProfileDetailsData {
   otvCode?: string;
   otvRate?: number;
   otvAmount?: number;
-  patientName?: string;
+  patientName?: string; // legacy
   patientTaxId?: string;
 }
 

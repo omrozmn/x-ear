@@ -21,6 +21,26 @@ import {
 import Pagination from '@/components/ui/Pagination';
 import { useAdminResponsive } from '@/hooks';
 import { ResponsiveTable } from '@/components/responsive';
+import { PRODUCT_REGISTRY } from '@/config/productRegistry';
+
+const SECTOR_OPTIONS = Object.values(PRODUCT_REGISTRY)
+    .filter((c) => c.enabled)
+    .map((c) => ({ value: c.sector, label: c.name }))
+    .filter((item, i, arr) => arr.findIndex((s) => s.value === item.value) === i);
+
+const CATEGORY_OPTIONS = [
+    { value: '', label: 'Tüm Sektörler (Genel)' },
+    ...SECTOR_OPTIONS.map((s) => ({ value: s.value, label: s.label })),
+    { value: 'announcement', label: 'Duyurular' },
+    { value: 'ai', label: 'Yapay Zeka' },
+    { value: 'technology', label: 'Teknoloji' },
+    { value: 'dev-log', label: 'Geliştirici Günlüğü' },
+];
+
+function getCategoryLabel(value: string): string {
+    const found = CATEGORY_OPTIONS.find((c) => c.value === value);
+    return found?.label || value || 'Genel';
+}
 
 const AdminBlogPage: React.FC = () => {
     const { isMobile } = useAdminResponsive();
@@ -93,13 +113,20 @@ const AdminBlogPage: React.FC = () => {
         },
         {
             key: 'category',
-            header: 'Kategori',
+            header: 'Sektör / Kategori',
             mobileHidden: true,
-            render: (post: BlogPost) => (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                    {post.category || 'Genel'}
-                </span>
-            )
+            render: (post: BlogPost) => {
+                const isSector = SECTOR_OPTIONS.some((s) => s.value === post.category);
+                return (
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        isSector
+                            ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300'
+                            : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+                    }`}>
+                        {getCategoryLabel(post.category || '')}
+                    </span>
+                );
+            }
         },
         {
             key: 'status',
@@ -339,7 +366,7 @@ const PostModal = ({ post, onClose, onSuccess }: { post?: BlogPost, onClose: () 
         title: post?.title || '',
         slug: post?.slug || '',
         content: typeof post?.content === 'string' ? post.content : '',
-        category: post?.category || 'Duyurular',
+        category: post?.category || '',
         excerpt: typeof post?.excerpt === 'string' ? post.excerpt : '',
         imageUrl: typeof post?.imageUrl === 'string' ? post.imageUrl : '',
         metaTitle: typeof post?.metaTitle === 'string' ? post.metaTitle : '',
@@ -419,18 +446,17 @@ const PostModal = ({ post, onClose, onSuccess }: { post?: BlogPost, onClose: () 
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Kategori</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Sektör / Kategori</label>
                                 <select
                                     value={formData.category}
                                     onChange={e => setFormData({ ...formData, category: e.target.value })}
                                     className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                                 >
-                                    <option>Duyurular</option>
-                                    <option>Yapay Zeka</option>
-                                    <option>Teknoloji</option>
-                                    <option>Sektörel</option>
-                                    <option>Geliştirici Günlüğü</option>
+                                    {CATEGORY_OPTIONS.map((opt) => (
+                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                    ))}
                                 </select>
+                                <p className="mt-1 text-[10px] text-gray-400">Sektör seçerseniz o sektörün landing sayfasında görünür</p>
                             </div>
                             <div className="flex items-end pb-3">
                                 <label className="flex items-center gap-2 cursor-pointer group">

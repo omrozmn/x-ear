@@ -108,7 +108,7 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!formData.partyId) newErrors.partyId = t('validation.patientRequired', 'Hasta seçimi zorunludur');
-    if (!formData.partyName) newErrors.partyName = t('validation.patientNameRequired', 'Hasta adı zorunludur');
+    if (!formData.partyName) newErrors.partyName = t('validation.patientNameRequired', 'Hasta adı zorunludur'); // legacy
     if (!formData.tcNumber) newErrors.tcNumber = t('validation.tcRequired', 'TC Kimlik No zorunludur');
     if (!formData.reportNumber) newErrors.reportNumber = t('validation.reportNumberRequired', 'Rapor numarası zorunludur');
     if (!formData.reportDate) newErrors.reportDate = t('validation.reportDateRequired', 'Rapor tarihi zorunludur');
@@ -205,12 +205,12 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm font-medium">
                 <User className="h-4 w-4" />
-                {t('patientName', 'Hasta Adı')} *
+                {t('patientName', 'Hasta Adı')} *{/* legacy */}
               </label>
               <Input
                 value={formData.partyName}
                 onChange={(e) => handleInputChange('partyName', e.target.value)}
-                placeholder={t('patientNamePlaceholder', 'Hasta adı ve soyadı')}
+                placeholder={t('patientNamePlaceholder', 'Hasta adı ve soyadı')} // legacy
                 error={errors.partyName}
                 disabled={!!party}
               />

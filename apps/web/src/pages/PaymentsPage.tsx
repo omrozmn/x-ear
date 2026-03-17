@@ -120,7 +120,7 @@ export function PaymentsPage() {
     const items = selectedIds.size > 0
       ? filteredRecords.filter((r) => selectedIds.has(String(r.id)))
       : filteredRecords;
-    const headers = [t('columns.patientName', 'Hasta Adı'), t('columns.amount', 'Tutar'), t('columns.saleId', 'Satış ID'), t('columns.paymentMethod', 'Ödeme Yöntemi'), t('columns.date', 'Tarih')];
+    const headers = [t('columns.patientName', 'Hasta Adı'), t('columns.amount', 'Tutar'), t('columns.saleId', 'Satış ID'), t('columns.paymentMethod', 'Ödeme Yöntemi'), t('columns.date', 'Tarih')]; // legacy
     const rows = items.map((r) => [
       r.partyName || '',
       String(r.amount ?? 0),
@@ -347,7 +347,7 @@ export function PaymentsPage() {
               onChange: (p: number, ps: number) => { setCurrentPage(p); setPerPage(ps); },
             }}
             columns={[
-              { key: 'partyName', title: t('columns.patientName', 'Hasta Adı'), render: (_: unknown, r: PaymentRow) => r.partyName || '—' },
+              { key: 'partyName', title: t('columns.patientName', 'Hasta Adı'), render: (_: unknown, r: PaymentRow) => r.partyName || '—' }, // legacy
               { key: 'amount', title: t('columns.amount', 'Tutar'), render: (_: unknown, r: PaymentRow) => <span className="font-semibold">{formatCurrency(r.amount, 'TRY')}</span> },
               { key: 'saleId', title: t('columns.saleId', 'Satış ID'), render: (_: unknown, r: PaymentRow) => r.saleId ? <span className="text-xs font-mono">{r.saleId}</span> : '—' },
               { key: 'paymentMethod', title: t('columns.paymentMethod', 'Ödeme Yöntemi'), render: (_: unknown, r: PaymentRow) => formatPaymentMethod(r.paymentMethod) },

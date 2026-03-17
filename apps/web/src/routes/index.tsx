@@ -102,7 +102,7 @@ function DesktopDashboard() {
     query: {
       enabled: canViewAnalytics,
       staleTime: 5 * 60 * 1000,
-      select: (response) => response.data ?? [],
+      select: (response: any) => response.data ?? [],
     },
   });
 

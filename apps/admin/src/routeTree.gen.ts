@@ -18,8 +18,8 @@ import { Route as SupportRouteImport } from './routes/support'
 import { Route as SuppliersRouteImport } from './routes/suppliers'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RolesRouteImport } from './routes/roles'
-import { Route as PrintersRouteImport } from './routes/printers'
 import { Route as ProductionRouteImport } from './routes/production'
+import { Route as PrintersRouteImport } from './routes/printers'
 import { Route as PlansRouteImport } from './routes/plans'
 import { Route as PersonnelRouteImport } from './routes/personnel'
 import { Route as PaymentsRouteImport } from './routes/payments'
@@ -49,8 +49,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as IntegrationsIndexRouteImport } from './routes/integrations/index'
 import { Route as SmsPackagesRouteImport } from './routes/sms/packages'
 import { Route as SmsHeadersRouteImport } from './routes/sms/headers'
-import { Route as IntegrationsVatanSmsRouteImport } from './routes/integrations/vatan-sms'
 import { Route as LabelEditorTemplateIdRouteImport } from './routes/label-editor.$templateId'
+import { Route as IntegrationsVatanSmsRouteImport } from './routes/integrations/vatan-sms'
 import { Route as AffiliatesAffiliateIdRouteImport } from './routes/affiliates.$affiliateId'
 import { Route as IntegrationsEmailLogsRouteImport } from './routes/integrations/email/logs'
 import { Route as IntegrationsEmailConfigRouteImport } from './routes/integrations/email/config'
@@ -101,14 +101,14 @@ const RolesRoute = RolesRouteImport.update({
   path: '/roles',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PrintersRoute = PrintersRouteImport.update({
-  id: '/printers',
-  path: '/printers',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ProductionRoute = ProductionRouteImport.update({
   id: '/production',
   path: '/production',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrintersRoute = PrintersRouteImport.update({
+  id: '/printers',
+  path: '/printers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlansRoute = PlansRouteImport.update({
@@ -256,14 +256,14 @@ const SmsHeadersRoute = SmsHeadersRouteImport.update({
   path: '/sms/headers',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IntegrationsVatanSmsRoute = IntegrationsVatanSmsRouteImport.update({
-  id: '/integrations/vatan-sms',
-  path: '/integrations/vatan-sms',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const LabelEditorTemplateIdRoute = LabelEditorTemplateIdRouteImport.update({
   id: '/label-editor/$templateId',
   path: '/label-editor/$templateId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntegrationsVatanSmsRoute = IntegrationsVatanSmsRouteImport.update({
+  id: '/integrations/vatan-sms',
+  path: '/integrations/vatan-sms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AffiliatesAffiliateIdRoute = AffiliatesAffiliateIdRouteImport.update({
@@ -306,7 +306,6 @@ export interface FileRoutesByFullPath {
   '/features': typeof FeaturesRoute
   '/files': typeof FilesRoute
   '/inventory': typeof InventoryRoute
-  '/label-editor/$templateId': typeof LabelEditorTemplateIdRoute
   '/label-templates': typeof LabelTemplatesRoute
   '/login': typeof LoginRoute
   '/marketplaces': typeof MarketplacesRoute
@@ -329,6 +328,7 @@ export interface FileRoutesByFullPath {
   '/web-management-preview': typeof WebManagementPreviewRoute
   '/affiliates/$affiliateId': typeof AffiliatesAffiliateIdRoute
   '/integrations/vatan-sms': typeof IntegrationsVatanSmsRoute
+  '/label-editor/$templateId': typeof LabelEditorTemplateIdRoute
   '/sms/headers': typeof SmsHeadersRoute
   '/sms/packages': typeof SmsPackagesRoute
   '/integrations': typeof IntegrationsIndexRoute
@@ -354,7 +354,6 @@ export interface FileRoutesByTo {
   '/features': typeof FeaturesRoute
   '/files': typeof FilesRoute
   '/inventory': typeof InventoryRoute
-  '/label-editor/$templateId': typeof LabelEditorTemplateIdRoute
   '/label-templates': typeof LabelTemplatesRoute
   '/login': typeof LoginRoute
   '/marketplaces': typeof MarketplacesRoute
@@ -377,6 +376,7 @@ export interface FileRoutesByTo {
   '/web-management-preview': typeof WebManagementPreviewRoute
   '/affiliates/$affiliateId': typeof AffiliatesAffiliateIdRoute
   '/integrations/vatan-sms': typeof IntegrationsVatanSmsRoute
+  '/label-editor/$templateId': typeof LabelEditorTemplateIdRoute
   '/sms/headers': typeof SmsHeadersRoute
   '/sms/packages': typeof SmsPackagesRoute
   '/integrations': typeof IntegrationsIndexRoute
@@ -403,7 +403,6 @@ export interface FileRoutesById {
   '/features': typeof FeaturesRoute
   '/files': typeof FilesRoute
   '/inventory': typeof InventoryRoute
-  '/label-editor/$templateId': typeof LabelEditorTemplateIdRoute
   '/label-templates': typeof LabelTemplatesRoute
   '/login': typeof LoginRoute
   '/marketplaces': typeof MarketplacesRoute
@@ -426,6 +425,7 @@ export interface FileRoutesById {
   '/web-management-preview': typeof WebManagementPreviewRoute
   '/affiliates/$affiliateId': typeof AffiliatesAffiliateIdRoute
   '/integrations/vatan-sms': typeof IntegrationsVatanSmsRoute
+  '/label-editor/$templateId': typeof LabelEditorTemplateIdRoute
   '/sms/headers': typeof SmsHeadersRoute
   '/sms/packages': typeof SmsPackagesRoute
   '/integrations/': typeof IntegrationsIndexRoute
@@ -453,7 +453,6 @@ export interface FileRouteTypes {
     | '/features'
     | '/files'
     | '/inventory'
-    | '/label-editor/$templateId'
     | '/label-templates'
     | '/login'
     | '/marketplaces'
@@ -476,6 +475,7 @@ export interface FileRouteTypes {
     | '/web-management-preview'
     | '/affiliates/$affiliateId'
     | '/integrations/vatan-sms'
+    | '/label-editor/$templateId'
     | '/sms/headers'
     | '/sms/packages'
     | '/integrations'
@@ -501,7 +501,6 @@ export interface FileRouteTypes {
     | '/features'
     | '/files'
     | '/inventory'
-    | '/label-editor/$templateId'
     | '/label-templates'
     | '/login'
     | '/marketplaces'
@@ -524,6 +523,7 @@ export interface FileRouteTypes {
     | '/web-management-preview'
     | '/affiliates/$affiliateId'
     | '/integrations/vatan-sms'
+    | '/label-editor/$templateId'
     | '/sms/headers'
     | '/sms/packages'
     | '/integrations'
@@ -549,7 +549,6 @@ export interface FileRouteTypes {
     | '/features'
     | '/files'
     | '/inventory'
-    | '/label-editor/$templateId'
     | '/label-templates'
     | '/login'
     | '/marketplaces'
@@ -572,6 +571,7 @@ export interface FileRouteTypes {
     | '/web-management-preview'
     | '/affiliates/$affiliateId'
     | '/integrations/vatan-sms'
+    | '/label-editor/$templateId'
     | '/sms/headers'
     | '/sms/packages'
     | '/integrations/'
@@ -598,7 +598,6 @@ export interface RootRouteChildren {
   FeaturesRoute: typeof FeaturesRoute
   FilesRoute: typeof FilesRoute
   InventoryRoute: typeof InventoryRoute
-  LabelEditorTemplateIdRoute: typeof LabelEditorTemplateIdRoute
   LabelTemplatesRoute: typeof LabelTemplatesRoute
   LoginRoute: typeof LoginRoute
   MarketplacesRoute: typeof MarketplacesRoute
@@ -620,6 +619,7 @@ export interface RootRouteChildren {
   WebManagementRoute: typeof WebManagementRoute
   WebManagementPreviewRoute: typeof WebManagementPreviewRoute
   IntegrationsVatanSmsRoute: typeof IntegrationsVatanSmsRoute
+  LabelEditorTemplateIdRoute: typeof LabelEditorTemplateIdRoute
   SmsHeadersRoute: typeof SmsHeadersRoute
   SmsPackagesRoute: typeof SmsPackagesRoute
   IntegrationsIndexRoute: typeof IntegrationsIndexRoute
@@ -693,18 +693,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RolesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/printers': {
-      id: '/printers'
-      path: '/printers'
-      fullPath: '/printers'
-      preLoaderRoute: typeof PrintersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/production': {
       id: '/production'
       path: '/production'
       fullPath: '/production'
       preLoaderRoute: typeof ProductionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/printers': {
+      id: '/printers'
+      path: '/printers'
+      fullPath: '/printers'
+      preLoaderRoute: typeof PrintersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/plans': {
@@ -761,13 +761,6 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/label-editor/$templateId': {
-      id: '/label-editor/$templateId'
-      path: '/label-editor/$templateId'
-      fullPath: '/label-editor/$templateId'
-      preLoaderRoute: typeof LabelEditorTemplateIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/label-templates': {
@@ -917,6 +910,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SmsHeadersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/label-editor/$templateId': {
+      id: '/label-editor/$templateId'
+      path: '/label-editor/$templateId'
+      fullPath: '/label-editor/$templateId'
+      preLoaderRoute: typeof LabelEditorTemplateIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/integrations/vatan-sms': {
       id: '/integrations/vatan-sms'
       path: '/integrations/vatan-sms'
@@ -985,7 +985,6 @@ const rootRouteChildren: RootRouteChildren = {
   FeaturesRoute: FeaturesRoute,
   FilesRoute: FilesRoute,
   InventoryRoute: InventoryRoute,
-  LabelEditorTemplateIdRoute: LabelEditorTemplateIdRoute,
   LabelTemplatesRoute: LabelTemplatesRoute,
   LoginRoute: LoginRoute,
   MarketplacesRoute: MarketplacesRoute,
@@ -1007,6 +1006,7 @@ const rootRouteChildren: RootRouteChildren = {
   WebManagementRoute: WebManagementRoute,
   WebManagementPreviewRoute: WebManagementPreviewRoute,
   IntegrationsVatanSmsRoute: IntegrationsVatanSmsRoute,
+  LabelEditorTemplateIdRoute: LabelEditorTemplateIdRoute,
   SmsHeadersRoute: SmsHeadersRoute,
   SmsPackagesRoute: SmsPackagesRoute,
   IntegrationsIndexRoute: IntegrationsIndexRoute,

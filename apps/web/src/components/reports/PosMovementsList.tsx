@@ -52,12 +52,12 @@ export function PosMovementsList({ movements, isLoading, pagination, canViewFina
       )
     },
     {
-      key: 'patientName',
+      key: 'patientName', // legacy
       title: t('patient', 'Hasta'),
       sortable: true,
       render: (_, item) => (
         <span className="text-sm text-gray-900 dark:text-white">
-          {canViewFinancials ? (item.patientName || '-') : t('hiddenForRole', 'Bu rol icin gizli')}
+          {canViewFinancials ? (item.patientName || '-') : t('hiddenForRole', 'Bu rol icin gizli')}{/* legacy */}
         </span>
       )
     },

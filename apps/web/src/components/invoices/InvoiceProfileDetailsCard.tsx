@@ -102,7 +102,7 @@ export function InvoiceProfileDetailsCard({
       <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
         <h3 className="text-sm font-bold text-foreground mb-3">Hasta Bilgileri</h3>
         <div className="grid grid-cols-1 gap-3">
-          <Input type="text" label="Hasta Adı" value={data.patientName || ''} onChange={(e) => patch({ patientName: e.target.value })} />
+          <Input type="text" label="Hasta Adı" value={data.patientName || ''} onChange={(e) => patch({ patientName: e.target.value })} />{/* legacy */}
           <Input type="text" label="Hasta TCKN/VKN" value={data.patientTaxId || ''} onChange={(e) => patch({ patientTaxId: e.target.value })} />
         </div>
       </div>

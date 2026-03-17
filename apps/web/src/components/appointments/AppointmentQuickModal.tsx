@@ -157,7 +157,7 @@ export function AppointmentQuickModal({
           <VStack spacing="md">
             {/* Party Name */}
             <FormControl className="w-full">
-              <FormLabel>{t('patientName', 'Hasta Adı')} *</FormLabel>
+              <FormLabel>{t('patientName', 'Hasta Adı')} *</FormLabel>{/* legacy */}
               <Controller
                 name="partyName"
                 control={control}

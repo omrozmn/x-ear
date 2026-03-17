@@ -82,7 +82,7 @@ export function PurchasesPage() {
   }, [isMobile, debouncedSearch, statusFilter, dateFrom, dateTo]);
 
   const purchaseRows = useMemo<PurchaseTableRow[]>(() => {
-    const invoiceRows = invoiceList.map((invoice): PurchaseTableRow => ({
+    const invoiceRows = invoiceList.map((invoice: any): PurchaseTableRow => ({
       id: `invoice-${invoice.invoiceId}`,
       source: 'invoice',
       invoiceNumber: invoice.invoiceNumber || '',

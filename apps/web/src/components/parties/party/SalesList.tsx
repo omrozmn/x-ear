@@ -127,8 +127,8 @@ export const SalesList: React.FC<SalesListProps> = ({
 
   const renderPaymentMethods = (sale: SaleRead) => {
     if (sale.paymentRecords && sale.paymentRecords.length > 0) {
-      const paidRecords = sale.paymentRecords.filter((r) => (r.status || 'paid') === 'paid');
-      return paidRecords.map((record, index: number) => {
+      const paidRecords = sale.paymentRecords.filter((r: any) => (r.status || 'paid') === 'paid');
+      return paidRecords.map((record: any, index: number) => {
         const methodLabels: Record<string, string> = {
           'cash': 'Nakit',
           'card': 'Kart',
@@ -179,8 +179,8 @@ export const SalesList: React.FC<SalesListProps> = ({
     if (extendedSale.paidAmount !== undefined && extendedSale.paidAmount !== null) {
       return parseFloat(String(extendedSale.paidAmount)) || 0;
     } else if (sale.paymentRecords && sale.paymentRecords.length > 0) {
-      const paidRecords = sale.paymentRecords.filter((r) => (r.status || 'paid') === 'paid');
-      return paidRecords.reduce((sum: number, record) => sum + (record.amount || 0), 0);
+      const paidRecords = sale.paymentRecords.filter((r: any) => (r.status || 'paid') === 'paid');
+      return paidRecords.reduce((sum: number, record: any) => sum + (record.amount || 0), 0);
     }
     return 0;
   };

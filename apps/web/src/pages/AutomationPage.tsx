@@ -1,7 +1,7 @@
 import React from 'react';
 import { Bot, Zap, Clock, ShieldCheck, Activity } from 'lucide-react';
 import { Button } from '@x-ear/ui-web';
-import { useListAutomationStatus, useListAutomationLogs } from '../api/generated/aliases';
+import { useListAutomationStatus, useListAutomationLogs } from '../api/generated/automation/automation';
 import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 import { useIsMobile } from '@/hooks/useBreakpoint';
 import { MobileHeader } from '@/components/mobile/MobileHeader';

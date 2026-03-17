@@ -248,7 +248,7 @@ function AddOnsList() {
     }
     // Backend returns ResponseEnvelope: {success: true, data: [...]}
     // Orval unwraps to {data: [...]}
-    const addons = (Array.isArray(addonsData?.data) ? addonsData.data : []).filter((addon) => addon.isActive) as Addon[];
+    const addons = (Array.isArray(addonsData?.data) ? addonsData.data : []).filter((addon: any) => addon.isActive) as Addon[];
     if (addons.length === 0) return <div className="text-muted-foreground">{t('noAddOns', 'Mevcut eklenti bulunmuyor.')}</div>;
 
     return (

@@ -95,7 +95,7 @@ export const PrintQueueList = () => {
         <h3 className="text-sm font-medium text-gray-900">
           Yazdırma Kuyruğu ({items.length})
         </h3>
-        {items.some(item => item.status === 'pending') && (
+        {items.some((item: any) => item.status === 'pending') && (
           <button
             data-allow-raw="true"
             onClick={() => processQueue()}
@@ -118,7 +118,7 @@ export const PrintQueueList = () => {
       </div>
 
       <div className="space-y-2">
-        {items.map((item) => (
+        {items.map((item: any) => (
           <div
             key={item.id}
             className="rounded-2xl border border-gray-200 bg-white p-4 hover:shadow-sm transition-shadow"

@@ -69,7 +69,7 @@ export function InvoiceSettings() {
     const { data: tenantData, isLoading: loading } = useGetCurrentTenant();
     const updateMutation = useUpdateTenantSettings({
         mutation: {
-            onSuccess: (data) => {
+            onSuccess: (data: any) => {
                 // Update query cache with new data (optimistic update)
                 queryClient.setQueryData(['getCurrentTenant'], data);
                 console.log('✅ Mutation successful, cache updated:', data);
@@ -107,7 +107,7 @@ export function InvoiceSettings() {
                 console.log('🔧 Generated prefix from company name:', companyName, '→', prefix);
             }
             
-            setDefaultPrefix(prefix);
+            setDefaultPrefix(prefix ?? '');
             setDefaultExemptionCode(companyInfo.defaultExemptionCode || '');
             setDefaultSenderTag(invoiceSettings.defaultSenderTag || invoiceSettings.default_sender_tag || '');
             setApiKey(invoiceSettings.apiKey || invoiceSettings.api_key || '');

@@ -15,7 +15,7 @@ export const useCreatePaymentWithRefresh = () => {
   
   return useCreatePaymentRecords({
     mutation: {
-      onSuccess: (data, variables) => {
+      onSuccess: (data: any, variables: any) => {
         // Invalidate payment queries for the specific sale
         if (variables.data.saleId) {
           queryClient.invalidateQueries({

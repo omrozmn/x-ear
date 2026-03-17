@@ -20,7 +20,7 @@ interface SalesTableRow {
   id: string;
   source: 'sale';
   partyId?: string;
-  patientName?: string | null;
+  patientName?: string | null; // legacy
   productName: string;
   amount: number;
   saleDate?: string;
@@ -81,7 +81,7 @@ export function SalesPage() {
         id: `sale-${sale.id}`,
         source: 'sale',
         partyId: sale.partyId || undefined,
-        patientName: (patient?.firstName || patient?.lastName) ? `${patient?.firstName || ''} ${patient?.lastName || ''}`.trim() : null,
+        patientName: (patient?.firstName || patient?.lastName) ? `${patient?.firstName || ''} ${patient?.lastName || ''}`.trim() : null, // legacy
         productName: sale.productName || sale.brand || '-',
         amount: Number(sale.finalAmount || sale.totalAmount || 0),
         saleDate: sale.saleDate ? String(sale.saleDate) : undefined,
@@ -133,8 +133,8 @@ export function SalesPage() {
       let bv: string | number = '';
 
       if (sortField === 'patient') {
-        av = a.patientName || '';
-        bv = b.patientName || '';
+        av = a.patientName || ''; // legacy
+        bv = b.patientName || ''; // legacy
       } else if (sortField === 'productName') {
         av = a.productName || a.brand || '';
         bv = b.productName || b.brand || '';
@@ -206,13 +206,13 @@ export function SalesPage() {
     await refetch();
   }, [refetch]);
 
-  const salesExportHeaders = useMemo(() => [t('columns.patientName', 'Hasta Adı'), t('columns.patientId', 'Hasta ID'), t('columns.product', 'Ürün'), t('columns.brand', 'Marka'), t('columns.model', 'Model'), t('columns.amount', 'Tutar'), t('columns.date', 'Tarih'), t('columns.status', 'Durum'), t('columns.serialNumber', 'Seri No')], [t]);
+  const salesExportHeaders = useMemo(() => [t('columns.patientName', 'Hasta Adı'), t('columns.patientId', 'Hasta ID'), t('columns.product', 'Ürün'), t('columns.brand', 'Marka'), t('columns.model', 'Model'), t('columns.amount', 'Tutar'), t('columns.date', 'Tarih'), t('columns.status', 'Durum'), t('columns.serialNumber', 'Seri No')], [t]); // legacy
 
   const getSalesExportRows = useCallback(() => {
     const items = selectedIds.size > 0 ? sortedSales.filter((sale) => selectedIds.has(sale.id)) : sortedSales;
     return items.map((sale) => {
       return [
-        sale.patientName || '',
+        sale.patientName || '', // legacy
         sale.partyId || '',
         sale.productName || '',
         sale.brand || '',
@@ -277,7 +277,7 @@ export function SalesPage() {
           <div className={cn('p-4 cursor-pointer active:bg-muted dark:active:bg-gray-800 transition-colors', isMobileSelectionMode && 'pr-12')}>
             <div className="flex items-start justify-between mb-3 gap-3">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{sale.patientName ?? '—'}</p>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{sale.patientName ?? '—'}</p>{/* legacy */}
                 <p className="text-xs text-muted-foreground mt-0.5 truncate">{sale.productName || sale.brand || sale.description || '-'}</p>
               </div>
               <div className="shrink-0">{getStatusBadge(sale.status as string)}</div>
@@ -456,7 +456,7 @@ export function SalesPage() {
                 sortable: true,
                 render: (_: unknown, sale: SalesTableRow) => (
                   <div>
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">{sale.patientName ?? <span className="text-muted-foreground">—</span>}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">{sale.patientName ?? <span className="text-muted-foreground">—</span>}</div>{/* legacy */}
                     {sale.partyId && <div className="text-xs text-muted-foreground font-mono mt-0.5">{sale.partyId.slice(0, 8)}</div>}
                   </div>
                 ),

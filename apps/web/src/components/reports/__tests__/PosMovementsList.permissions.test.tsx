@@ -36,7 +36,7 @@ describe('PosMovementsList permissions', () => {
             amount: 2500,
             status: 'paid',
             posTransactionId: 'txn_123',
-            patientName: 'Ali Sahin',
+            patientName: 'Ali Sahin', // legacy
             saleId: 'sale_1',
           } as never,
         ]}

@@ -130,7 +130,7 @@ export const useSupplierProducts = (supplierName?: string): unknown => {
       query: {
         queryKey: getListInventoryQueryKey({ supplier: supplierName, per_page: 100 }),
         enabled: !!supplierName,
-        select: (data) => {
+        select: (data: any) => {
           // Unwrap ResponseEnvelope: { success, data: [...], meta, ... }
           const raw = data as Record<string, unknown>;
           let items: unknown[] = [];
