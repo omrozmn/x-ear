@@ -15,7 +15,7 @@ from uuid import uuid4
 from sqlalchemy import Column, String, Text, DateTime, Integer, Boolean, Index
 from sqlalchemy.dialects.postgresql import JSONB
 
-from database import Base, now_utc
+from core.database import Base, now_utc
 
 
 def _gen_id() -> str:

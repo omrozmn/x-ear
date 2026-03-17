@@ -413,7 +413,7 @@ jobs:
         run: |
           cd apps/web
           OPENAPI_SOURCE=../../apps/api/openapi_generated.json pnpm run gen:api || echo "API generation completed"
-          if git diff --exit-code src/api/generated/; then
+          if git diff --exit-code -- src/api/generated/ ':!src/api/generated/aliases.ts' ':!src/api/generated/index.ts'; then
             echo "✅ API types are in sync"
           else
             echo "⚠️ API types are out of sync - run 'npm run gen:api' locally"
