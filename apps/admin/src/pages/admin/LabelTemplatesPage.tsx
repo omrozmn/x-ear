@@ -5,7 +5,6 @@ import {
   Trash2,
   Eye,
   Upload,
-  Archive,
   RefreshCw,
   X,
   ChevronDown,
@@ -44,12 +43,6 @@ const COMPONENT_TYPE_OPTIONS: { value: ComponentType; label: string }[] = [
   { value: 'image', label: 'Gorsel' },
   { value: 'shape', label: 'Sekil' },
 ];
-
-interface TemplateFormData {
-  name: string;
-  layout: LayoutConfig;
-  components: ComponentConfig[];
-}
 
 const DEFAULT_LAYOUT: LayoutConfig = {
   width: 100,

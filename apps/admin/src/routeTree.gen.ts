@@ -27,6 +27,7 @@ import { Route as OcrQueueRouteImport } from './routes/ocr-queue'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as MarketplacesRouteImport } from './routes/marketplaces'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as LabelTemplatesRouteImport } from './routes/label-templates'
 import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as FilesRouteImport } from './routes/files'
 import { Route as FeaturesRouteImport } from './routes/features'
@@ -35,14 +36,13 @@ import { Route as CountriesRouteImport } from './routes/countries'
 import { Route as CampaignsRouteImport } from './routes/campaigns'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as BillingRouteImport } from './routes/billing'
+import { Route as BarcodesRouteImport } from './routes/barcodes'
 import { Route as AppointmentsRouteImport } from './routes/appointments'
 import { Route as ApiKeysRouteImport } from './routes/api-keys'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as AiRouteImport } from './routes/ai'
 import { Route as AffiliatesRouteImport } from './routes/affiliates'
 import { Route as AddonsRouteImport } from './routes/addons'
-import { Route as BarcodesRouteImport } from './routes/barcodes'
-import { Route as LabelTemplatesRouteImport } from './routes/label-templates'
 import { Route as ActivityLogsRouteImport } from './routes/activity-logs'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as IntegrationsIndexRouteImport } from './routes/integrations/index'
@@ -144,6 +144,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LabelTemplatesRoute = LabelTemplatesRouteImport.update({
+  id: '/label-templates',
+  path: '/label-templates',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InventoryRoute = InventoryRouteImport.update({
   id: '/inventory',
   path: '/inventory',
@@ -184,6 +189,11 @@ const BillingRoute = BillingRouteImport.update({
   path: '/billing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BarcodesRoute = BarcodesRouteImport.update({
+  id: '/barcodes',
+  path: '/barcodes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppointmentsRoute = AppointmentsRouteImport.update({
   id: '/appointments',
   path: '/appointments',
@@ -212,16 +222,6 @@ const AffiliatesRoute = AffiliatesRouteImport.update({
 const AddonsRoute = AddonsRouteImport.update({
   id: '/addons',
   path: '/addons',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BarcodesRoute = BarcodesRouteImport.update({
-  id: '/barcodes',
-  path: '/barcodes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LabelTemplatesRoute = LabelTemplatesRouteImport.update({
-  id: '/label-templates',
-  path: '/label-templates',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ActivityLogsRoute = ActivityLogsRouteImport.update({
@@ -786,18 +786,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/barcodes': {
-      id: '/barcodes'
-      path: '/barcodes'
-      fullPath: '/barcodes'
-      preLoaderRoute: typeof BarcodesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/billing': {
       id: '/billing'
       path: '/billing'
       fullPath: '/billing'
       preLoaderRoute: typeof BillingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/barcodes': {
+      id: '/barcodes'
+      path: '/barcodes'
+      fullPath: '/barcodes'
+      preLoaderRoute: typeof BarcodesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/appointments': {

@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, Button, FileUpload } from '@x-ear/ui-web';
 import { useUploadSgkDocuments } from '../../hooks/sgk/useSgkDocuments';
 import { X, FileImage, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
@@ -27,6 +28,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
   onUploadStart,
   onUploadComplete,
 }) => {
+  const { t: _t } = useTranslation('sgk');
   const [fileItems, setFileItems] = useState<FileItem[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);

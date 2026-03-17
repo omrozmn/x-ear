@@ -224,7 +224,7 @@ export function BranchesTab() {
                 columns={branchColumns}
                 loading={isLoading}
                 rowKey="id"
-                emptyText=t('noBranches', 'Henuz sube eklenmemis.')
+                emptyText={t('noBranches', 'Henuz sube eklenmemis.')}
             />
 
             {/* Create/Edit Modal */}

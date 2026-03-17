@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@x-ear/ui-web';
 import { X } from 'lucide-react';
 import type { SupplierFilters as SupplierFiltersType } from './supplier-search.types';
@@ -14,6 +15,7 @@ export function SupplierFilters({
   onFiltersChange, 
   onClearFilters 
 }: SupplierFiltersProps) {
+  const { t } = useTranslation('suppliers');
   const hasActiveFilters = Object.keys(filters || {}).length > 0;
 
   return (
@@ -22,7 +24,7 @@ export function SupplierFilters({
         {/* Status Filter */}
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">
-            Durum
+            {t('status', 'Durum')}
           </label>
           <div className="flex gap-2">
             <button
@@ -34,7 +36,7 @@ export function SupplierFilters({
                   : 'bg-card text-foreground border-border hover:bg-muted'
               } border`}
             >
-              Tümü
+              {t('all', 'Tümü')}
             </button>
             <button
               data-allow-raw="true"
@@ -45,7 +47,7 @@ export function SupplierFilters({
                   : 'bg-card text-foreground border-border hover:bg-muted'
               } border`}
             >
-              Aktif
+              {t('active', 'Aktif')}
             </button>
             <button
               data-allow-raw="true"
@@ -56,7 +58,7 @@ export function SupplierFilters({
                   : 'bg-card text-foreground border-border hover:bg-muted'
               } border`}
             >
-              Pasif
+              {t('inactive', 'Pasif')}
             </button>
           </div>
         </div>
@@ -64,13 +66,13 @@ export function SupplierFilters({
         {/* City Filter */}
         <div>
           <label htmlFor="city-filter" className="block text-sm font-medium text-foreground mb-2">
-            Şehir
+            {t('city', 'Şehir')}
           </label>
           <input
             data-allow-raw="true"
             id="city-filter"
             type="text"
-            placeholder="Şehir filtrele..."
+            placeholder={t('cityFilter', 'Şehir filtrele...')}
             value={filters?.city || ''}
             onChange={(e) => onFiltersChange({ ...(filters || {}), city: e.target.value || undefined })}
             className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
@@ -89,7 +91,7 @@ export function SupplierFilters({
             onClick={onClearFilters}
           >
             <X className="h-4 w-4 mr-2" />
-            Filtreleri Temizle
+            {t('clearFilters', 'Filtreleri Temizle')}
           </Button>
         </div>
       )}

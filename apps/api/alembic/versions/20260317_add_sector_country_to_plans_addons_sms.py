@@ -18,6 +18,7 @@ depends_on = None
 def upgrade():
     bind = op.get_bind()
     inspector = inspect(bind)
+    dialect = bind.dialect.name
 
     # --- plans table ---
     plans_cols = {c["name"] for c in inspector.get_columns("plans")}
@@ -26,15 +27,14 @@ def upgrade():
         op.add_column("plans", sa.Column("sector", sa.String(30), nullable=True))
 
     if "country_code" not in plans_cols:
-        op.add_column(
-            "plans",
-            sa.Column(
-                "country_code",
-                sa.String(2),
-                sa.ForeignKey("countries.code"),
-                nullable=True,
-            ),
-        )
+        if dialect == "sqlite":
+            # SQLite does not support ALTER ADD with FK constraint
+            op.add_column("plans", sa.Column("country_code", sa.String(2), nullable=True))
+        else:
+            op.add_column(
+                "plans",
+                sa.Column("country_code", sa.String(2), sa.ForeignKey("countries.code"), nullable=True),
+            )
 
     # --- addons table ---
     addons_cols = {c["name"] for c in inspector.get_columns("addons")}
@@ -43,33 +43,27 @@ def upgrade():
         op.add_column("addons", sa.Column("sector", sa.String(30), nullable=True))
 
     if "country_code" not in addons_cols:
-        op.add_column(
-            "addons",
-            sa.Column(
-                "country_code",
-                sa.String(2),
-                sa.ForeignKey("countries.code"),
-                nullable=True,
-            ),
-        )
+        if dialect == "sqlite":
+            op.add_column("addons", sa.Column("country_code", sa.String(2), nullable=True))
+        else:
+            op.add_column(
+                "addons",
+                sa.Column("country_code", sa.String(2), sa.ForeignKey("countries.code"), nullable=True),
+            )
 
     # --- sms_packages table ---
     sms_cols = {c["name"] for c in inspector.get_columns("sms_packages")}
 
     if "country_code" not in sms_cols:
-        op.add_column(
-            "sms_packages",
-            sa.Column(
-                "country_code",
-                sa.String(2),
-                sa.ForeignKey("countries.code"),
-                nullable=True,
-            ),
-        )
+        if dialect == "sqlite":
+            op.add_column("sms_packages", sa.Column("country_code", sa.String(2), nullable=True))
+        else:
+            op.add_column(
+                "sms_packages",
+                sa.Column("country_code", sa.String(2), sa.ForeignKey("countries.code"), nullable=True),
+            )
 
-    # Create indexes (safe for SQLite — wrapped in batch)
-    dialect = bind.dialect.name
-
+    # Create indexes (skip for SQLite dev — indexes defined in model for prod)
     if dialect != "sqlite":
         op.create_index("idx_plans_sector", "plans", ["sector"], if_not_exists=True)
         op.create_index("idx_plans_country_code", "plans", ["country_code"], if_not_exists=True)

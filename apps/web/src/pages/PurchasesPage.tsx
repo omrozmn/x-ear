@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, Button, DatePicker, Input, Select, DataTable } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
 import { ShoppingCart, Search, FileText, X, RefreshCw, Filter, CheckSquare, CreditCard, Square, Plus } from 'lucide-react';
@@ -35,6 +36,7 @@ interface PurchaseTableRow {
 }
 
 export function PurchasesPage() {
+  const { t } = useTranslation('purchases');
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [searchTerm, setSearchTerm] = useState('');
@@ -341,15 +343,15 @@ export function PurchasesPage() {
   return (
     <div className="p-6 space-y-6">
       <DesktopPageHeader
-        title="Alışlar"
-        description="Gelen faturalar ve manuel alış kayıtları"
+        title={t('pageTitle', 'Alışlar')}
+        description={t('pageDescription', 'Gelen faturalar ve manuel alış kayıtları')}
         icon={<ShoppingCart className="h-6 w-6" />}
         eyebrow={{ tr: 'Satın Alma', en: 'Purchasing' }}
         actions={(
           <>
             <Button variant="outline" className="flex items-center gap-2" onClick={() => navigate({ to: '/invoices/incoming' })}>
               <FileText size={18} />
-              Gelen Faturalar
+              {t('incomingInvoices', 'Gelen Faturalar')}
             </Button>
             <PermissionGate permission="invoices.documents.download.view">
               <ExportDropdown
@@ -360,13 +362,13 @@ export function PurchasesPage() {
             </PermissionGate>
             <Button variant="outline" className="flex items-center gap-2" onClick={handleRefresh}>
               <RefreshCw size={18} />
-              Yenile
+              {t('refresh', 'Yenile')}
             </Button>
             <div className="ml-auto">
               <PermissionGate permission="invoices.create">
                 <Button className="flex items-center gap-2" onClick={() => setShowNewPurchaseModal(true)}>
                   <Plus size={18} />
-                  Yeni Alış
+                  {t('newPurchase', 'Yeni Alış')}
                 </Button>
               </PermissionGate>
             </div>

@@ -155,7 +155,7 @@ export const StockUpdateModal: React.FC<StockUpdateModalProps> = ({
 
         {formData.quantity > 0 && product && (
           <Alert variant={formData.type === 'remove' && calculateNewStock() === 0 ? 'warning' : 'info'}>
-            <strong>{t('stock.current_stock')}:/strong> {calculateNewStock()} adet
+            <strong>{t('stock.current_stock')}:</strong> {calculateNewStock()} adet
             {formData.type === 'remove' && calculateNewStock() === 0 && (
               <div className="mt-1 text-sm">⚠️ Bu işlem sonrası stok sıfır olacak!</div>
             )}

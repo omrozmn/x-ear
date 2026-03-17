@@ -361,7 +361,7 @@ export function TeamMembersTab() {
                 columns={teamMemberColumns}
                 loading={loading}
                 rowKey="id"
-                emptyText=t('noTeamMembers', 'Henuz ekip uyesi eklenmemis.')
+                emptyText={t('noTeamMembers', 'Henuz ekip uyesi eklenmemis.')}
             />
 
             {/* Invite Modal */}

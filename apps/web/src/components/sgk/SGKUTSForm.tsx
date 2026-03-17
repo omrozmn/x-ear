@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Party } from '../../types/party/party-base.types';
 import { Button, Input, Select, Textarea } from '@x-ear/ui-web';
 
@@ -28,6 +29,7 @@ export const SGKUTSForm: React.FC<SGKUTSFormProps> = ({
   onSubmit,
   onCancel,
 }) => {
+  const { t } = useTranslation('sgk');
   const [formData, setFormData] = useState<UTSRegistrationData>({
     partyId: party.id || '',
     registrationType: '',

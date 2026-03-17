@@ -176,6 +176,8 @@ const Plans: React.FC = () => {
     maxUsers: 1,
     maxStorageGb: 1,
     features: [],
+    sector: '',
+    countryCode: '',
     isActive: true
   });
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, Button, Input } from '@x-ear/ui-web';
 import { Search, User, Check } from 'lucide-react';
 import { useParties } from '../../hooks/useParties';
@@ -20,6 +21,7 @@ const PartySearch: React.FC<PartySearchProps> = ({
   onSelect,
   ocrResult,
 }) => {
+  const { t } = useTranslation('sgk');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedParty, setSelectedParty] = useState<Party | null>(null);
   const { data: partiesData, isLoading } = useParties({});

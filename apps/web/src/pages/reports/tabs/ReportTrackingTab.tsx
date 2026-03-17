@@ -217,7 +217,7 @@ export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
                     data={data}
                     columns={columns}
                     rowKey="id"
-                    emptyText=t('noFilteredRecords', 'Filtrelere uygun kayıt bulunamadı')
+                    emptyText={t('noFilteredRecords', 'Filtrelere uygun kayıt bulunamadı')}
                     striped
                     hoverable
                     size="medium"

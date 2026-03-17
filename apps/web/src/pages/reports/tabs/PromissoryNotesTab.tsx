@@ -420,7 +420,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
                         data={byParty}
                         columns={byPartyColumns}
                         rowKey="partyId"
-                        emptyText=t('noActiveNotePatients', 'Aktif senedi olan hasta bulunamadı')
+                        emptyText={t('noActiveNotePatients', 'Aktif senedi olan hasta bulunamadı')}
                         striped
                         hoverable
                         size="medium"
@@ -487,7 +487,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
                                 columns={listColumns}
                                 loading={listLoading}
                                 rowKey="id"
-                                emptyText=t('noNotes', t('noNotes', 'Senet bulunamadı'))
+                                emptyText={t('noNotes', t('noNotes', 'Senet bulunamadı'))}
                                 striped
                                 hoverable
                                 size="medium"

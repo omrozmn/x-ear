@@ -373,8 +373,8 @@ export function ProformasPage() {
       ) : filteredRows.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-white py-16 text-center dark:bg-gray-900">
           <FileText className="mb-4 h-10 w-10 text-gray-300" />
-          <div className="text-lg font-medium text-gray-900 dark:text-white">{t(‘proformas.not_found’)}</div>
-          <div className="mt-1 text-sm text-muted-foreground">{t(‘proformas.not_found_description’)}</div>
+          <div className="text-lg font-medium text-gray-900 dark:text-white">{t('proformas.not_found')}</div>
+          <div className="mt-1 text-sm text-muted-foreground">{t('proformas.not_found_description')}</div>
         </div>
       ) : (
         <>

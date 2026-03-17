@@ -275,8 +275,8 @@ export const DesktopProfilePage: React.FC = () => {
     return (
         <div className="space-y-6 max-w-4xl mx-auto">
             <DesktopPageHeader
-                title=t('profileSettings', t('profileSettings', 'Profil Ayarları'))
-                description=t('profileDescription', t('profileDescription', 'Kişisel bilgilerinizi ve hesap güvenliğinizi yönetin.'))
+                title={t('profileSettings', t('profileSettings', 'Profil Ayarları'))}
+                description={t('profileDescription', t('profileDescription', 'Kişisel bilgilerinizi ve hesap güvenliğinizi yönetin.'))}
                 icon={<User className="w-6 h-6" />}
                 eyebrow={{ tr: 'Hesap', en: 'Account' }}
             />

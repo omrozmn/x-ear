@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, Button } from '@x-ear/ui-web';
 import { Camera, X, RotateCcw, Check, Zap, ZapOff, Focus, Lock, Unlock, ZoomIn } from 'lucide-react';
 
@@ -47,6 +48,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
   onCapture,
   maxImages = 10,
 }) => {
+  const { t: _t } = useTranslation('sgk');
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayCanvasRef = useRef<HTMLCanvasElement>(null);

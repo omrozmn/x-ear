@@ -184,7 +184,7 @@ export function SupplierList({
         onSort={(key) => onSort?.(key)}
         onRowClick={onSupplierClick}
         rowKey="id"
-        emptyText="Tedarikçi bulunamadı"
+        emptyText={t('noSuppliersFound', 'Tedarikçi bulunamadı')}
         pagination={pagination ? {
           ...pagination,
           showSizeChanger: true,

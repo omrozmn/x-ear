@@ -550,7 +550,10 @@ type DashboardMetrics = {
 function getDashboardMetrics(
     dashboardData: ResponseEnvelopeAdminDashboardMetrics | undefined
 ): DashboardMetrics {
-    const rawMetrics = asRecord(dashboardData?.data?.metrics);
+    // Orval mutator unwraps ResponseEnvelope, so dashboardData may be the inner payload directly
+    // Try multiple access paths: unwrapped (dashboardData.metrics) or wrapped (dashboardData.data.metrics)
+    const asRec = asRecord(dashboardData);
+    const rawMetrics = asRecord(asRec?.metrics) || asRecord((asRec?.data as Record<string, unknown>)?.metrics);
     return {
         overview: parseOverview(rawMetrics?.overview),
         revenue: parseRevenue(rawMetrics?.revenue),

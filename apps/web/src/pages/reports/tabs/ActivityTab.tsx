@@ -209,7 +209,7 @@ export function ActivityTab({ filters }: ActivityTabProps) {
                     columns={columns}
                     loading={isLoading}
                     rowKey="id"
-                    emptyText=t('noRecords', t('noRecords', 'Kayıt bulunamadı'))
+                    emptyText={t('noRecords', t('noRecords', 'Kayıt bulunamadı'))}
                     striped
                     hoverable
                     size="medium"

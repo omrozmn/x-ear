@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Building2, CheckCircle, XCircle, Info, ChevronDown, ChevronUp, FileText, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { DataTable } from '@x-ear/ui-web';
@@ -59,6 +60,7 @@ function PdfViewerModal({ blobUrl, title, onClose }: { blobUrl: string; title: s
 }
 
 export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepted }: SuggestedSuppliersListProps) {
+    const { t } = useTranslation('suppliers');
     const [expandedRow, setExpandedRow] = useState<number | null>(null);
     const [pdfModal, setPdfModal] = useState<{ blobUrl: string; title: string } | null>(null);
     const [invoiceLoading, setInvoiceLoading] = useState<string | null>(null);
@@ -116,7 +118,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
         return (
             <div className="flex items-center justify-center py-16">
                 <div className="h-8 w-8 rounded-full border-4 border-blue-500 border-t-transparent animate-spin" />
-                <span className="ml-3 text-sm text-muted-foreground">Önerilen tedarikçiler yükleniyor...</span>
+                <span className="ml-3 text-sm text-muted-foreground">{t('suggestedLoading', 'Önerilen tedarikçiler yükleniyor...')}</span>
             </div>
         );
     }
@@ -125,8 +127,8 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
         return (
             <div className="flex flex-col items-center justify-center py-16 text-center">
                 <Building2 className="w-10 h-10 text-gray-300 mb-3" />
-                <p className="text-sm font-medium text-muted-foreground">Henüz önerilen tedarikçi yok</p>
-                <p className="text-xs text-muted-foreground mt-1">Gelen faturalardan tedarikçiler otomatik eklenir</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('noSuggested', 'Henüz önerilen tedarikçi yok')}</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('suggestedAutoAdd', 'Gelen faturalardan tedarikçiler otomatik eklenir')}</p>
             </div>
         );
     }
@@ -223,7 +225,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
                                     className="inline-flex items-center gap-1 rounded-xl bg-green-600 px-3 py-2 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-60 transition-colors whitespace-nowrap"
                                 >
                                     <CheckCircle className="w-3.5 h-3.5" />
-                                    Listeme Ekle
+                                    {t('addToList', 'Listeme Ekle')}
                                 </button>
                                 <button
                                     data-allow-raw="true"

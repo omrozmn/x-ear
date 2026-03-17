@@ -22,6 +22,7 @@ import { useGetTenantCompany } from '@/api/client/tenant-users.client';
 import { normalizeCustomerTaxIdFields, normalizeCustomerTaxIdChange } from '../utils/customerTaxId';
 import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 import { HeaderBackButton } from '../components/layout/HeaderBackButton';
+import { useTranslation } from 'react-i18next';
 
 interface InvoiceFormData {
   invoiceType: string;
@@ -110,7 +111,7 @@ const DEFAULT_LINKED_OPTIONS: LinkedDocumentOptions = {
   linkedScenario: 'other',
 };
 
-const getDocumentKindText = (documentKind: DocumentKind) => documentKind === 'despatch' ? 'E-İrsaliye' : 'Fatura';
+const getDocumentKindText = (documentKind: DocumentKind, t?: (key: string) => string) => documentKind === 'despatch' ? (t ? t('common.e_despatch') : 'E-İrsaliye') : (t ? t('new_invoice.title_invoice') : 'Fatura');
 
 const sanitizeLinkedDocumentOptions = (value: unknown): LinkedDocumentOptions => {
   if (!value || typeof value !== 'object') return { ...DEFAULT_LINKED_OPTIONS };
@@ -198,6 +199,7 @@ const normalizeDraftPayload = (draft: Record<string, unknown>) => ({
 });
 
 export function NewInvoicePage() {
+  const { t } = useTranslation('invoices');
   const navigate = useNavigate();
   const location = useLocation();
   const search = useSearch({ from: '/invoices/new' });
@@ -249,7 +251,7 @@ export function NewInvoicePage() {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasUnsavedChanges && !isSaving) {
         e.preventDefault();
-        e.returnValue = 'Kaydedilmemiş değişiklikleriniz var. Sayfadan çıkmak istediğinize emin misiniz?';
+        e.returnValue = t('new_invoice.messages.unsaved_warning');
         return e.returnValue;
       }
     };
@@ -269,7 +271,7 @@ export function NewInvoicePage() {
         const fd = res.data?.data?.formData ?? res.data?.data?.form_data;
         if (fd) setFormData(prev => ({ ...prev, ...fd, ...normalizeCustomerTaxIdFields(fd) }));
       } catch {
-        toast.error('Taslak yüklenemedi');
+        toast.error(t('new_invoice.messages.draft_load_failed'));
       }
     };
     
@@ -349,8 +351,8 @@ export function NewInvoicePage() {
           }
           
           setBlockingAlert({
-            title: 'İstisna Sebebi Gerekli',
-            message: 'KDV %0 olan satırlar için varsayılan istisna sebebi tanımlı değil. Faturanız taslak olarak kaydedildi. Firma Ayarları > Fatura Numaralandırma bölümünden varsayılan istisna sebebini ayarlayıp tekrar deneyin.',
+            title: t('new_invoice.messages.exemption_required_title'),
+            message: t('new_invoice.messages.exemption_required_message'),
           });
           setIsSaving(false);
           return;
@@ -370,23 +372,23 @@ export function NewInvoicePage() {
       }
 
       if (!draftId) {
-        toast.error('Taslak kaydedilemedi');
+        toast.error(t('new_invoice.messages.draft_save_failed'));
         return;
       }
 
       // Step 2: Issue the draft (send to GİB)
       const issueRes: { data?: { data?: { message?: string } } } = await apiClient.post(`/api/invoices/draft/${draftId}/issue`);
-      const messages = [issueRes.data?.data?.message || `${getDocumentKindText(documentKind)} gönderildi`];
+      const messages = [issueRes.data?.data?.message || t('new_invoice.messages.invoice_sent', { type: getDocumentKindText(documentKind, t) })];
 
       if (linkedOptions.createLinkedDocument) {
         const linkedPayload = buildLinkedDocumentPayload(mergedInvoiceData, documentKind);
         const linkedDraftRes: { data?: { data?: { invoiceId?: number; invoice_id?: number } } } = await apiClient.post('/api/invoices/draft', { form_data: linkedPayload });
         const linkedDraftId = linkedDraftRes.data?.data?.invoiceId ?? linkedDraftRes.data?.data?.invoice_id;
         if (!linkedDraftId) {
-          throw new Error('Bağlı belge taslağı oluşturulamadı');
+          throw new Error(t('new_invoice.messages.linked_document_failed'));
         }
         const linkedIssueRes: { data?: { data?: { message?: string } } } = await apiClient.post(`/api/invoices/draft/${linkedDraftId}/issue`);
-        messages.push(linkedIssueRes.data?.data?.message || `${getDocumentKindText(documentKind === 'invoice' ? 'despatch' : 'invoice')} gönderildi`);
+        messages.push(linkedIssueRes.data?.data?.message || t('new_invoice.messages.invoice_sent', { type: getDocumentKindText(documentKind === 'invoice' ? 'despatch' : 'invoice', t) }));
       }
 
       toast.success(messages.join(' | '));
@@ -394,7 +396,7 @@ export function NewInvoicePage() {
       navigate({ to: '/invoices' });
     } catch (error: unknown) {
       const err = error as { response?: { data?: { detail?: string } }; message?: string };
-      const detail = err.response?.data?.detail || err.message || 'Fatura gönderilemedi';
+      const detail = err.response?.data?.detail || err.message || t('new_invoice.messages.invoice_send_failed');
       toast.error(detail);
       console.error('Error issuing invoice:', error);
     } finally {
@@ -413,7 +415,7 @@ export function NewInvoicePage() {
       };
       if (currentDraftId) {
         await apiClient.put(`/api/invoices/draft/${currentDraftId}`, payload);
-        toast.success('Taslak güncellendi');
+        toast.success(t('new_invoice.messages.draft_updated'));
       } else {
         const res: { data?: { data?: { invoice_id?: number; invoiceId?: number } } } = await apiClient.post('/api/invoices/draft', payload);
         const newId = res.data?.data?.invoice_id ?? res.data?.data?.invoiceId;
@@ -421,11 +423,11 @@ export function NewInvoicePage() {
           setCurrentDraftId(Number(newId));
           setHasUnsavedChanges(false); // Mark as saved
         }
-        toast.success('Taslak kaydedildi');
+        toast.success(t('new_invoice.messages.draft_saved'));
       }
       navigate({ to: '/invoices' });
     } catch (error) {
-      toast.error('Taslak kaydedilemedi');
+      toast.error(t('new_invoice.messages.draft_save_failed'));
       console.error('Error saving draft:', error);
     } finally {
       setIsSaving(false);
@@ -524,10 +526,10 @@ export function NewInvoicePage() {
         isOpen={showSaveDraftModal}
         onClose={handleCancelWithoutSaving}
         onConfirm={handleConfirmSaveDraft}
-        title="Taslak Kaydet"
-        message="Kaydedilmemiş değişiklikleriniz var. Taslak olarak kaydetmek ister misiniz?"
-        confirmText="Taslak Kaydet"
-        cancelText="Kaydetmeden Çık"
+        title={t('new_invoice.confirm_save_draft.title')}
+        message={t('new_invoice.confirm_save_draft.message')}
+        confirmText={t('new_invoice.confirm_save_draft.confirm')}
+        cancelText={t('new_invoice.confirm_save_draft.cancel')}
         variant="default"
       />
     </>
@@ -561,6 +563,7 @@ function InvoiceSidebar({
   activeLineEditor?: ActiveLineEditor;
   onCloseLineEditor?: () => void;
 }) {
+  const { t } = useTranslation('invoices');
   // Defensive local booleans to avoid ReferenceError if props are missing
   const _showSGKSection = !!showSGKSection;
   const _showExportSection = !!showExportSection;
@@ -590,8 +593,8 @@ function InvoiceSidebar({
       {_showSGKSection && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border shadow-sm">
           <div className="p-4 border-b border-border bg-primary/10">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white">SGK Fatura Bilgileri</h3>
-            <p className="text-xs text-muted-foreground mt-1">SGK faturası için gerekli bilgileri girin</p>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white">{ t('new_invoice.sections.sgk') }</h3>
+            <p className="text-xs text-muted-foreground mt-1">{ t('new_invoice.sections.sgk_description') }</p>
           </div>
           <div className="p-4">
             <SGKInvoiceSection
@@ -606,8 +609,8 @@ function InvoiceSidebar({
       {_showGovernmentSection && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border shadow-sm">
           <div className="p-4 border-b border-border bg-purple-50 dark:bg-purple-900/40">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white">Kamu Fatura Bilgileri</h3>
-            <p className="text-xs text-muted-foreground mt-1">Kamu kurumu faturası bilgileri</p>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white">{ t('new_invoice.sections.government') }</h3>
+            <p className="text-xs text-muted-foreground mt-1">{ t('new_invoice.sections.government_description') }</p>
           </div>
           <div className="p-4">
             <GovernmentSection
@@ -622,12 +625,12 @@ function InvoiceSidebar({
       {showIstisnaReason && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border p-4 shadow-sm">
           <div className="mb-3">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white">İstisna Sebebi</h3>
-            <p className="text-xs text-muted-foreground">Seçilen istisna için neden kodunu belirtiniz</p>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white">{ t('new_invoice.sections.exemption') }</h3>
+            <p className="text-xs text-muted-foreground">{ t('new_invoice.sections.exemption_description') }</p>
           </div>
           <div>
             <Select
-              label="İstisna Sebebi"
+              label={t('new_invoice.sections.exemption')}
               value={extendedData?.governmentExemptionReason as string || '0'}
               onChange={(e) => handlers?.handleExtendedFieldChange('governmentExemptionReason', e.target.value)}
               options={GOVERNMENT_EXEMPTION_REASONS}
@@ -641,7 +644,7 @@ function InvoiceSidebar({
       {_showExportSection && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border p-4 shadow-sm">
           <div className="mb-3">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white">İhracat Bilgileri</h3>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white">{ t('new_invoice.sections.export_details') }</h3>
           </div>
           <div>
             <ExportDetailsCard
@@ -655,10 +658,10 @@ function InvoiceSidebar({
       {/* Özel Matrah (sidebar) */}
       {_showSpecialBaseSection && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border p-4 shadow-sm">
-          <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3">Özel Matrah Bilgileri</h3>
+          <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3">{ t('new_invoice.sections.special_tax_base') }</h3>
           <div className="grid grid-cols-1 gap-3">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Özel Matrah Tutarı</label>
+              <label className="block text-sm font-medium text-foreground mb-1">{ t('new_invoice.sections.special_tax_amount') }</label>
               <Input
                 type="number"
                 step="0.01"
@@ -673,7 +676,7 @@ function InvoiceSidebar({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">KDV Oranı (%)</label>
+              <label className="block text-sm font-medium text-foreground mb-1">{ t('new_invoice.sections.vat_rate') }</label>
               <Input
                 type="number"
                 value={extendedData?.specialTaxBase?.taxRate || ''}
@@ -686,7 +689,7 @@ function InvoiceSidebar({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Açıklama</label>
+              <label className="block text-sm font-medium text-foreground mb-1">{ t('new_invoice.sections.description_label') }</label>
               <Input
                 type="text"
                 value={extendedData?.specialTaxBase?.description || ''}
@@ -695,7 +698,7 @@ function InvoiceSidebar({
                   description: e.target.value
                 })}
                 className="w-full"
-                placeholder="Özel matrah açıklaması"
+                placeholder={t('new_invoice.sections.special_tax_placeholder')}
               />
             </div>
           </div>
@@ -705,11 +708,11 @@ function InvoiceSidebar({
       {_showReturnSection && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border p-4 shadow-sm">
           <div className="mb-3">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white">İade Fatura Bilgileri</h3>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white">{ t('new_invoice.sections.return_invoice') }</h3>
           </div>
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">İade Fatura No</label>
+              <label className="block text-sm font-medium text-foreground mb-1">{ t('new_invoice.sections.return_invoice_no') }</label>
               <Input
                 data-testid="return-invoice-number"
                 type="text"
@@ -719,11 +722,11 @@ function InvoiceSidebar({
                   returnInvoiceNumber: e.target.value
                 })}
                 className="w-full"
-                placeholder="İade edilen fatura numarası"
+                placeholder={t('new_invoice.sections.return_invoice_no_placeholder')}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">İade Fatura Tarihi</label>
+              <label className="block text-sm font-medium text-foreground mb-1">{ t('new_invoice.sections.return_invoice_date') }</label>
               <DatePicker
                 data-testid="return-invoice-date"
                 value={extendedData?.returnInvoiceDetails?.returnInvoiceDate ? new Date(extendedData.returnInvoiceDetails.returnInvoiceDate) : null}
@@ -735,7 +738,7 @@ function InvoiceSidebar({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">İade Nedeni</label>
+              <label className="block text-sm font-medium text-foreground mb-1">{ t('new_invoice.sections.return_reason') }</label>
               <Input
                 data-testid="return-invoice-reason"
                 type="text"
@@ -745,7 +748,7 @@ function InvoiceSidebar({
                   returnReason: e.target.value
                 })}
                 className="w-full"
-                placeholder="İade nedeni"
+                placeholder={t('new_invoice.sections.return_reason_placeholder')}
               />
             </div>
           </div>
@@ -756,7 +759,7 @@ function InvoiceSidebar({
       {_showMedicalSection && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border p-4 shadow-sm">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white">İlaç/Tıbbi Cihaz</h3>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white">{ t('new_invoice.sections.medical') }</h3>
             <Button
               type="button"
               onClick={() => handlers?.setMedicalModalOpen?.(true)}
@@ -772,11 +775,11 @@ function InvoiceSidebar({
             <div className="bg-success/10 border border-green-200 rounded-2xl p-3">
               <div className="flex items-center gap-2">
                 <CheckCircle className="text-success" size={16} />
-                <p className="text-xs text-success">Tıbbi cihaz bilgileri kaydedildi</p>
+                <p className="text-xs text-success">{ t('new_invoice.sections.medical_saved') }</p>
               </div>
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground">Tıbbi cihaz detaylarını eklemek için butona tıklayın</p>
+            <p className="text-xs text-muted-foreground">{ t('new_invoice.sections.medical_hint') }</p>
           )}
         </div>
       )}
@@ -784,16 +787,16 @@ function InvoiceSidebar({
       {/* Özel İşlemler */}
       {handlers?.specialOperationsVisible && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border p-4 shadow-sm">
-          <h3 className="text-sm font-bold text-foreground mb-3">Özel İşlemler</h3>
+          <h3 className="text-sm font-bold text-foreground mb-3">{ t('new_invoice.sections.special_operations') }</h3>
           <div className="space-y-3">
             {/* Tevkifatlı Fatura Uyarısı */}
             {handlers?.isWithholdingType && (
               <div>
                 <div className="bg-primary/10 border border-blue-200 rounded-2xl p-3 mb-3">
                   <p className="text-xs text-blue-800 leading-relaxed">
-                    <span className="font-semibold">Tevkifatlı Fatura</span>
+                    <span className="font-semibold">{t('new_invoice.sections.withholding_title')}/span>
                     <br />
-                    Bu fatura tipi için tevkifat bilgileri zorunludur. Ürün satırlarında tevkifat kodu ve oranı belirtiniz.
+                    {t('new_invoice.sections.withholding_info')}
                   </p>
                 </div>
                 <WithholdingCard
@@ -821,14 +824,14 @@ function InvoiceSidebar({
             <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
             </svg>
-            <span className="text-sm font-semibold text-foreground">Fatura Açıklaması</span>
+            <span className="text-sm font-semibold text-foreground">{ t('new_invoice.sections.notes') }</span>
           </div>
         </div>
         <div className="p-4">
           <Textarea
             value={(extendedData?.notes as string) || ''}
             onChange={(e) => handlers?.handleExtendedFieldChange?.('notes', e.target.value)}
-            placeholder="Fatura ile ilgili notlarınızı buraya yazabilirsiniz... (ör. Değişim: Phonak Audeo Paradise P90, Garanti kapsamında)"
+            placeholder={t('new_invoice.sections.notes_placeholder')}
             rows={5}
             fullWidth
             className="w-full"
@@ -841,7 +844,7 @@ function InvoiceSidebar({
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-bold text-gray-900 dark:text-white">{activeLineEditor?.type === 'withholding' ? 'Tevkifat (Kalem)' : activeLineEditor?.type === 'special' ? 'Özel Matrah (Kalem)' : 'Tıbbi Cihaz (Kalem)'} #{(activeLineEditor?.index ?? 0) + 1}</h3>
-            <button data-allow-raw="true" onClick={onCloseLineEditor} className="text-sm text-muted-foreground">Kapat</button>
+            <button data-allow-raw="true" onClick={onCloseLineEditor} className="text-sm text-muted-foreground">{ t('common.close') }</button>
           </div>
           <div>
             {activeLineEditor?.type === 'withholding' && activeLineEditor.index !== undefined && extendedData && (
@@ -855,10 +858,10 @@ function InvoiceSidebar({
               />
             )}
             {activeLineEditor?.type === 'special' && (
-              <div className="text-sm text-muted-foreground">Özel matrah düzenleyici burada gösterilecek.</div>
+              <div className="text-sm text-muted-foreground">{ t('new_invoice.sections.special_editor_placeholder') }</div>
             )}
             {activeLineEditor?.type === 'medical' && (
-              <div className="text-sm text-muted-foreground">Tıbbi cihaz düzenleyici burada gösterilecek.</div>
+              <div className="text-sm text-muted-foreground">{ t('new_invoice.sections.medical_editor_placeholder') }</div>
             )}
           </div>
         </div>
@@ -911,6 +914,7 @@ function NewInvoicePageContent({
   isMobile?: boolean;
   blockingAlert?: BlockingAlert | null;
 }) {
+  const { t } = useTranslation('invoices');
   const navigate = useNavigate();
   const [openCustomer, setOpenCustomer] = useState(true);
   const [openDetails, setOpenDetails] = useState(true);
@@ -922,7 +926,7 @@ function NewInvoicePageContent({
     return (
       <MobileLayout showBottomNav={false} className="bg-gray-50 dark:bg-gray-950">
         <MobileHeader
-          title={`Yeni ${getDocumentKindText(documentKind)}`}
+          title={t('new_invoice.title_new', { type: getDocumentKindText(documentKind, t) })}
           onBack={handleCancel}
           className="top-[64px]"
           actions={
@@ -944,7 +948,7 @@ function NewInvoicePageContent({
               title={blockingAlert.title}
               message={blockingAlert.message}
               onRetry={() => navigate({ to: '/settings', search: { tab: 'integration' } })}
-              retryText="Fatura Ayarlarına Git"
+              retryText={t('new_invoice.form.go_to_settings')}
             />
           )}
 
@@ -962,7 +966,7 @@ function NewInvoicePageContent({
                 ) : (
                   <span className="inline-block w-3 h-3 rounded-full border-2 border-border" />
                 )}
-                <h3 className="font-bold text-base text-gray-900 dark:text-white">Fatura Alıcısı</h3>
+                <h3 className="font-bold text-base text-gray-900 dark:text-white">{ t('new_invoice.sections.customer') }</h3>
               </div>
               <ChevronDown
                 size={20}
@@ -1003,7 +1007,7 @@ function NewInvoicePageContent({
                 ) : (
                   <span className="inline-block w-2.5 h-2.5 rounded-full border-2 border-border" />
                 )}
-                <h3 className="font-bold text-gray-900 dark:text-white">Fatura Detayları</h3>
+                <h3 className="font-bold text-gray-900 dark:text-white">{ t('new_invoice.sections.details') }</h3>
               </div>
               <ChevronDown
                 size={20}
@@ -1036,7 +1040,7 @@ function NewInvoicePageContent({
                   onClick={() => setOpenSGK(v => !v)}
                   className="w-full flex items-center justify-between p-4 text-left bg-primary/10"
                 >
-                  <h3 className="text-sm font-bold text-blue-900 dark:text-blue-300 uppercase tracking-wider">SGK Bilgileri</h3>
+                  <h3 className="text-sm font-bold text-blue-900 dark:text-blue-300 uppercase tracking-wider">{ t('new_invoice.sections.sgk_mobile') }</h3>
                   <ChevronDown size={18} className={`text-blue-400 transition-transform duration-200${openSGK ? ' rotate-180' : ''}`} />
                 </button>
                 {openSGK && (
@@ -1058,7 +1062,7 @@ function NewInvoicePageContent({
                   onClick={() => setOpenGov(v => !v)}
                   className="w-full flex items-center justify-between p-4 text-left"
                 >
-                  <h3 className="font-bold text-gray-900 dark:text-white">Kamu Bilgileri</h3>
+                  <h3 className="font-bold text-gray-900 dark:text-white">{ t('new_invoice.sections.government_mobile') }</h3>
                   <ChevronDown size={18} className={`text-muted-foreground transition-transform duration-200${openGov ? ' rotate-180' : ''}`} />
                 </button>
                 {openGov && (
@@ -1096,10 +1100,10 @@ function NewInvoicePageContent({
                 ) : (
                   <span className="inline-block w-2.5 h-2.5 rounded-full border-2 border-border" />
                 )}
-                <h3 className="font-bold text-gray-900 dark:text-white">Ürün ve Hizmetler</h3>
+                <h3 className="font-bold text-gray-900 dark:text-white">{ t('new_invoice.sections.products') }</h3>
                 {(formData.items as unknown[])?.length > 0 && (
                   <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-semibold">
-                    {(formData.items as unknown[]).length} kalem
+                    {t('new_invoice.messages.n_items', { count: (formData.items as unknown[]).length })}
                   </span>
                 )}
               </div>
@@ -1140,7 +1144,7 @@ function NewInvoicePageContent({
               disabled={isSaving}
               className="flex-[2] min-h-[48px] rounded-xl bg-blue-600 text-white font-bold"
             >
-              {isSaving ? 'Kaydediliyor...' : 'Faturayı Kes'}
+              {isSaving ? t('common.saving') : t('new_invoice.form.create_invoice')}
             </Button>
           </div>
         </div>
@@ -1153,11 +1157,11 @@ function NewInvoicePageContent({
       <div className="px-4 pt-3 sm:px-6 lg:px-8">
         <div className="w-full max-w-[1600px] mx-auto">
           <DesktopPageHeader
-            leading={<HeaderBackButton label="Faturalara Dön" onClick={handleCancel} />}
-            title={`Yeni ${getDocumentKindText(documentKind)}`}
-            description="Fatura bilgilerini doldurun"
+            leading={<HeaderBackButton label={t('new_invoice.back_label')} onClick={handleCancel} />}
+            title={t('new_invoice.title_new', { type: getDocumentKindText(documentKind, t) })}
+            description={t('new_invoice.description')}
             icon={<Pill className="h-6 w-6" />}
-            eyebrow={{ tr: 'Belge Oluşturma', en: 'Document Creation' }}
+            eyebrow={{ tr: t('new_invoice.eyebrow'), en: 'Document Creation' }}
             actions={(
               <>
                 <Button
@@ -1184,7 +1188,7 @@ function NewInvoicePageContent({
                   disabled={isSaving}
                   className="px-6 py-2 premium-gradient tactile-press bg-primary text-primary-foreground shadow-sm"
                 >
-                  {isSaving ? 'Kaydediliyor...' : 'Fatura Oluştur'}
+                  {isSaving ? t('common.saving') : t('new_invoice.form.submit_invoice')}
                 </Button>
               </>
             )}
@@ -1220,7 +1224,7 @@ function NewInvoicePageContent({
                   title={blockingAlert.title}
                   message={blockingAlert.message}
                   onRetry={() => navigate({ to: '/settings', search: { tab: 'integration' } })}
-                  retryText="Firma Ayarlarına Git"
+                  retryText={t('new_invoice.form.go_to_company_settings')}
                 />
               </div>
             )}

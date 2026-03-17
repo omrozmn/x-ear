@@ -31,7 +31,6 @@ import Pagination from '@/components/ui/Pagination';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
 import { unwrapData } from '@/lib/orval-response';
-import { SectorCountryFilter, SectorCountryFormFields, getSectorLabel, getCountryLabel } from '@/components/ui/SectorCountryFilter';
 
 interface PaginationInfo {
     totalPages?: number;
@@ -153,6 +152,8 @@ const AddOns: React.FC = () => {
         addon_type: 'FLAT_FEE',
         is_active: true,
         currency: 'TRY',
+        sector: '',
+        countryCode: '',
     });
     const [isStatusModalOpen, setIsStatusModalOpen] = React.useState(false);
     const [statusAddon, setStatusAddon] = React.useState<AddOn | null>(null);
@@ -166,7 +167,9 @@ const AddOns: React.FC = () => {
                 description: addon.description || '',
                 addon_type: (addon.addonType || 'FLAT_FEE') as AddonType,
                 is_active: addon.isActive ?? true,
-                currency: addon.currency || 'TRY'
+                currency: addon.currency || 'TRY',
+                sector: (addon as unknown as Record<string, unknown>).sector as string || '',
+                countryCode: (addon as unknown as Record<string, unknown>).countryCode as string || '',
             });
         } else {
             setEditingAddon(null);
@@ -176,7 +179,9 @@ const AddOns: React.FC = () => {
                 description: '',
                 addon_type: 'FLAT_FEE',
                 is_active: true,
-                currency: 'TRY'
+                currency: 'TRY',
+                sector: '',
+                countryCode: ''
             });
         }
         setIsModalOpen(true);
