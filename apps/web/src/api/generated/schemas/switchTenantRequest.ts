@@ -7,6 +7,5 @@
  */
 
 export interface SwitchTenantRequest {
-  target_tenant_id?: string;
   targetTenantId?: string;
 }

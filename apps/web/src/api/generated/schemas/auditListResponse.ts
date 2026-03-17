@@ -7,6 +7,9 @@
  */
 import type { AuditEntryResponse } from './auditEntryResponse';
 
+/**
+ * Response for audit log list.
+ */
 export interface AuditListResponse {
   /** Audit entries */
   items: AuditEntryResponse[];

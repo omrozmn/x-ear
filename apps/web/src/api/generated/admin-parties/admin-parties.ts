@@ -25,104 +25,10 @@ import type {
   ListAdminPartiesParams,
   PartyDetailResponse,
   PartyListResponse,
-  ResponseEnvelopeListSaleRead,
-  SchemasBaseResponseEnvelope
+  ResponseEnvelope
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
-
-
-
-
-/**
- * Get single party detail
- * @summary Get Party Detail
- */
-export const getAdminPartyDetail = (
-    partyId: string,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<PartyDetailResponse>(
-      {url: `/api/admin/parties/${partyId}`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetAdminPartyDetailQueryKey = (partyId?: string,) => {
-    return [
-    `/api/admin/parties/${partyId}`
-    ] as const;
-    }
-
-    
-export const getGetAdminPartyDetailQueryOptions = <TData = Awaited<ReturnType<typeof getAdminPartyDetail>>, TError = HTTPValidationError>(partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminPartyDetail>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminPartyDetailQueryKey(partyId);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminPartyDetail>>> = ({ signal }) => getAdminPartyDetail(partyId, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(partyId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminPartyDetail>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
-}
-
-export type GetAdminPartyDetailQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminPartyDetail>>>
-export type GetAdminPartyDetailQueryError = HTTPValidationError
-
-
-export function useGetAdminPartyDetail<TData = Awaited<ReturnType<typeof getAdminPartyDetail>>, TError = HTTPValidationError>(
- partyId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminPartyDetail>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminPartyDetail>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminPartyDetail>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminPartyDetail<TData = Awaited<ReturnType<typeof getAdminPartyDetail>>, TError = HTTPValidationError>(
- partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminPartyDetail>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminPartyDetail>>,
-          TError,
-          Awaited<ReturnType<typeof getAdminPartyDetail>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetAdminPartyDetail<TData = Awaited<ReturnType<typeof getAdminPartyDetail>>, TError = HTTPValidationError>(
- partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminPartyDetail>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-/**
- * @summary Get Party Detail
- */
-
-export function useGetAdminPartyDetail<TData = Awaited<ReturnType<typeof getAdminPartyDetail>>, TError = HTTPValidationError>(
- partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminPartyDetail>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
-
-  const queryOptions = getGetAdminPartyDetailQueryOptions(partyId,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
 
 
 
@@ -222,6 +128,99 @@ export function useListAdminParties<TData = Awaited<ReturnType<typeof listAdminP
 
 
 /**
+ * Get single party detail
+ * @summary Get Party Detail
+ */
+export const getAdminParty = (
+    partyId: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PartyDetailResponse>(
+      {url: `/api/admin/parties/${partyId}`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetAdminPartyQueryKey = (partyId?: string,) => {
+    return [
+    `/api/admin/parties/${partyId}`
+    ] as const;
+    }
+
+    
+export const getGetAdminPartyQueryOptions = <TData = Awaited<ReturnType<typeof getAdminParty>>, TError = HTTPValidationError>(partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminParty>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminPartyQueryKey(partyId);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminParty>>> = ({ signal }) => getAdminParty(partyId, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(partyId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminParty>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
+}
+
+export type GetAdminPartyQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminParty>>>
+export type GetAdminPartyQueryError = HTTPValidationError
+
+
+export function useGetAdminParty<TData = Awaited<ReturnType<typeof getAdminParty>>, TError = HTTPValidationError>(
+ partyId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminParty>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAdminParty>>,
+          TError,
+          Awaited<ReturnType<typeof getAdminParty>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetAdminParty<TData = Awaited<ReturnType<typeof getAdminParty>>, TError = HTTPValidationError>(
+ partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminParty>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAdminParty>>,
+          TError,
+          Awaited<ReturnType<typeof getAdminParty>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+export function useGetAdminParty<TData = Awaited<ReturnType<typeof getAdminParty>>, TError = HTTPValidationError>(
+ partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminParty>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
+/**
+ * @summary Get Party Detail
+ */
+
+export function useGetAdminParty<TData = Awaited<ReturnType<typeof getAdminParty>>, TError = HTTPValidationError>(
+ partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminParty>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
+
+  const queryOptions = getGetAdminPartyQueryOptions(partyId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
  * Get devices for a party
  * @summary Get Party Devices
  */
@@ -231,7 +230,7 @@ export const listAdminPartyDevices = (
 ) => {
       
       
-      return customInstance<SchemasBaseResponseEnvelope>(
+      return customInstance<ResponseEnvelope>(
       {url: `/api/admin/parties/${partyId}/devices`, method: 'GET', signal
     },
       );
@@ -324,7 +323,7 @@ export const listAdminPartySales = (
 ) => {
       
       
-      return customInstance<ResponseEnvelopeListSaleRead>(
+      return customInstance<ResponseEnvelope>(
       {url: `/api/admin/parties/${partyId}/sales`, method: 'GET', signal
     },
       );
@@ -417,7 +416,7 @@ export const listAdminPartyTimeline = (
 ) => {
       
       
-      return customInstance<SchemasBaseResponseEnvelope>(
+      return customInstance<ResponseEnvelope>(
       {url: `/api/admin/parties/${partyId}/timeline`, method: 'GET', signal
     },
       );
@@ -510,7 +509,7 @@ export const listAdminPartyDocuments = (
 ) => {
       
       
-      return customInstance<SchemasBaseResponseEnvelope>(
+      return customInstance<ResponseEnvelope>(
       {url: `/api/admin/parties/${partyId}/documents`, method: 'GET', signal
     },
       );

@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SmsLogReadPartyId = string | null;
+export type SMSLogReadPartyId = string | null;

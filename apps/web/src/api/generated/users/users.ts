@@ -26,14 +26,12 @@ import type {
 
 import type {
   HTTPValidationError,
-  ImpersonationConsentUpdate,
   ListUsersParams,
   PasswordChange,
-  ResponseEnvelopeImpersonationConsentRead,
   ResponseEnvelopeListUserRead,
   ResponseEnvelopeUserMeRead,
   ResponseEnvelopeUserRead,
-  RoutersUsersUserCreate,
+  UserCreate,
   UserUpdate
 } from '.././schemas';
 
@@ -141,7 +139,7 @@ export function useListUsers<TData = Awaited<ReturnType<typeof listUsers>>, TErr
  * @summary Create User
  */
 export const createUsers = (
-    routersUsersUserCreate: RoutersUsersUserCreate,
+    userCreate: UserCreate,
  signal?: AbortSignal
 ) => {
       
@@ -149,7 +147,7 @@ export const createUsers = (
       return customInstance<ResponseEnvelopeUserRead>(
       {url: `/api/users`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: routersUsersUserCreate, signal
+      data: userCreate, signal
     },
       );
     }
@@ -157,8 +155,8 @@ export const createUsers = (
 
 
 export const getCreateUsersMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUsers>>, TError,{data: RoutersUsersUserCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createUsers>>, TError,{data: RoutersUsersUserCreate}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUsers>>, TError,{data: UserCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createUsers>>, TError,{data: UserCreate}, TContext> => {
 
 const mutationKey = ['createUsers'];
 const {mutation: mutationOptions} = options ?
@@ -170,7 +168,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createUsers>>, {data: RoutersUsersUserCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createUsers>>, {data: UserCreate}> = (props) => {
           const {data} = props ?? {};
 
           return  createUsers(data,)
@@ -182,18 +180,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type CreateUsersMutationResult = NonNullable<Awaited<ReturnType<typeof createUsers>>>
-    export type CreateUsersMutationBody = RoutersUsersUserCreate
+    export type CreateUsersMutationBody = UserCreate
     export type CreateUsersMutationError = HTTPValidationError
 
     /**
  * @summary Create User
  */
 export const useCreateUsers = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUsers>>, TError,{data: RoutersUsersUserCreate}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUsers>>, TError,{data: UserCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createUsers>>,
         TError,
-        {data: RoutersUsersUserCreate},
+        {data: UserCreate},
         TContext
       > => {
 
@@ -355,163 +353,6 @@ export const useUpdateUserMe = <TError = HTTPValidationError,
       > => {
 
       const mutationOptions = getUpdateUserMeMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * Get the current user's impersonation consent setting.
- * @summary Get Impersonation Consent
- */
-export const getUserMeImpersonationConsent = (
-    
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<ResponseEnvelopeImpersonationConsentRead>(
-      {url: `/api/users/me/impersonation-consent`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetUserMeImpersonationConsentQueryKey = () => {
-    return [
-    `/api/users/me/impersonation-consent`
-    ] as const;
-    }
-
-    
-export const getGetUserMeImpersonationConsentQueryOptions = <TData = Awaited<ReturnType<typeof getUserMeImpersonationConsent>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserMeImpersonationConsent>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUserMeImpersonationConsentQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUserMeImpersonationConsent>>> = ({ signal }) => getUserMeImpersonationConsent(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUserMeImpersonationConsent>>, TError, TData> & { queryKey: DataTag<QueryKey, TData> }
-}
-
-export type GetUserMeImpersonationConsentQueryResult = NonNullable<Awaited<ReturnType<typeof getUserMeImpersonationConsent>>>
-export type GetUserMeImpersonationConsentQueryError = unknown
-
-
-export function useGetUserMeImpersonationConsent<TData = Awaited<ReturnType<typeof getUserMeImpersonationConsent>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserMeImpersonationConsent>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUserMeImpersonationConsent>>,
-          TError,
-          Awaited<ReturnType<typeof getUserMeImpersonationConsent>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetUserMeImpersonationConsent<TData = Awaited<ReturnType<typeof getUserMeImpersonationConsent>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserMeImpersonationConsent>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUserMeImpersonationConsent>>,
-          TError,
-          Awaited<ReturnType<typeof getUserMeImpersonationConsent>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-export function useGetUserMeImpersonationConsent<TData = Awaited<ReturnType<typeof getUserMeImpersonationConsent>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserMeImpersonationConsent>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
-/**
- * @summary Get Impersonation Consent
- */
-
-export function useGetUserMeImpersonationConsent<TData = Awaited<ReturnType<typeof getUserMeImpersonationConsent>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserMeImpersonationConsent>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
-
-  const queryOptions = getGetUserMeImpersonationConsentQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-
-/**
- * Toggle impersonation consent for the current user.
- * @summary Update Impersonation Consent
- */
-export const updateUserMeImpersonationConsent = (
-    impersonationConsentUpdate: ImpersonationConsentUpdate,
- ) => {
-      
-      
-      return customInstance<ResponseEnvelopeImpersonationConsentRead>(
-      {url: `/api/users/me/impersonation-consent`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: impersonationConsentUpdate
-    },
-      );
-    }
-  
-
-
-export const getUpdateUserMeImpersonationConsentMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUserMeImpersonationConsent>>, TError,{data: ImpersonationConsentUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updateUserMeImpersonationConsent>>, TError,{data: ImpersonationConsentUpdate}, TContext> => {
-
-const mutationKey = ['updateUserMeImpersonationConsent'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateUserMeImpersonationConsent>>, {data: ImpersonationConsentUpdate}> = (props) => {
-          const {data} = props ?? {};
-
-          return  updateUserMeImpersonationConsent(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type UpdateUserMeImpersonationConsentMutationResult = NonNullable<Awaited<ReturnType<typeof updateUserMeImpersonationConsent>>>
-    export type UpdateUserMeImpersonationConsentMutationBody = ImpersonationConsentUpdate
-    export type UpdateUserMeImpersonationConsentMutationError = HTTPValidationError
-
-    /**
- * @summary Update Impersonation Consent
- */
-export const useUpdateUserMeImpersonationConsent = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUserMeImpersonationConsent>>, TError,{data: ImpersonationConsentUpdate}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateUserMeImpersonationConsent>>,
-        TError,
-        {data: ImpersonationConsentUpdate},
-        TContext
-      > => {
-
-      const mutationOptions = getUpdateUserMeImpersonationConsentMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

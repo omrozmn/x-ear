@@ -31,7 +31,7 @@ import type {
   PlanDetailResponse,
   PlanListResponse,
   PlanUpdate,
-  SchemasBaseResponseEnvelope
+  ResponseEnvelope
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -365,7 +365,7 @@ export const deleteAdminPlan = (
  ) => {
       
       
-      return customInstance<SchemasBaseResponseEnvelope>(
+      return customInstance<ResponseEnvelope>(
       {url: `/api/admin/plans/${planId}`, method: 'DELETE'
     },
       );

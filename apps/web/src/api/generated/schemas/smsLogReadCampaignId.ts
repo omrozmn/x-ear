@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SmsLogReadCampaignId = string | null;
+export type SMSLogReadCampaignId = string | null;

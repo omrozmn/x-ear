@@ -38,12 +38,4 @@ page?: number;
  * @maximum 100
  */
 page_size?: number;
-/**
- * Page size alias
- */
-limit?: number | null;
-/**
- * Offset alias
- */
-offset?: number | null;
 };

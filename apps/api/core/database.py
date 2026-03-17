@@ -426,7 +426,8 @@ def get_db_with_context(access: "UnifiedAccess" = None):
 
 # Initialize database tables
 def init_db():
-    """Create all tables"""
+    """Create all tables - imports all models first to register them with Base"""
+    import core.models  # noqa: F401 - ensures all models are in Base.metadata
     Base.metadata.create_all(bind=engine)
 
 

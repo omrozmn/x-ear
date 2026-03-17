@@ -34,7 +34,6 @@ import type { DeviceAssignmentReadSgkSupportType } from './deviceAssignmentReadS
 import type { DeviceAssignmentReadPaymentMethod } from './deviceAssignmentReadPaymentMethod';
 import type { DeviceAssignmentReadDiscountType } from './deviceAssignmentReadDiscountType';
 import type { DeviceAssignmentReadDiscountValue } from './deviceAssignmentReadDiscountValue';
-import type { DeviceAssignmentReadDiscountPercent } from './deviceAssignmentReadDiscountPercent';
 import type { DeviceAssignmentReadDownPayment } from './deviceAssignmentReadDownPayment';
 import type { DeviceAssignmentReadEarSide } from './deviceAssignmentReadEarSide';
 import type { DeviceAssignmentReadLoanerInventoryId } from './deviceAssignmentReadLoanerInventoryId';
@@ -80,7 +79,6 @@ export interface DeviceAssignmentRead {
   paymentMethod?: DeviceAssignmentReadPaymentMethod;
   discountType?: DeviceAssignmentReadDiscountType;
   discountValue?: DeviceAssignmentReadDiscountValue;
-  discountPercent?: DeviceAssignmentReadDiscountPercent;
   downPayment?: DeviceAssignmentReadDownPayment;
   earSide?: DeviceAssignmentReadEarSide;
   loanerInventoryId?: DeviceAssignmentReadLoanerInventoryId;

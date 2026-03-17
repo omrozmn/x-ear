@@ -5,18 +5,18 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { ResponseEnvelopeSmtpConfigResponseData } from './responseEnvelopeSmtpConfigResponseData';
-import type { ResponseEnvelopeSmtpConfigResponseMessage } from './responseEnvelopeSmtpConfigResponseMessage';
-import type { ResponseEnvelopeSmtpConfigResponseError } from './responseEnvelopeSmtpConfigResponseError';
-import type { ResponseEnvelopeSmtpConfigResponseMeta } from './responseEnvelopeSmtpConfigResponseMeta';
-import type { ResponseEnvelopeSmtpConfigResponseRequestId } from './responseEnvelopeSmtpConfigResponseRequestId';
+import type { ResponseEnvelopeSMTPConfigResponseData } from './responseEnvelopeSMTPConfigResponseData';
+import type { ResponseEnvelopeSMTPConfigResponseMessage } from './responseEnvelopeSMTPConfigResponseMessage';
+import type { ResponseEnvelopeSMTPConfigResponseError } from './responseEnvelopeSMTPConfigResponseError';
+import type { ResponseEnvelopeSMTPConfigResponseMeta } from './responseEnvelopeSMTPConfigResponseMeta';
+import type { ResponseEnvelopeSMTPConfigResponseRequestId } from './responseEnvelopeSMTPConfigResponseRequestId';
 
-export interface ResponseEnvelopeSmtpConfigResponse {
+export interface ResponseEnvelopeSMTPConfigResponse {
   success?: boolean;
-  data?: ResponseEnvelopeSmtpConfigResponseData;
-  message?: ResponseEnvelopeSmtpConfigResponseMessage;
-  error?: ResponseEnvelopeSmtpConfigResponseError;
-  meta?: ResponseEnvelopeSmtpConfigResponseMeta;
-  requestId?: ResponseEnvelopeSmtpConfigResponseRequestId;
+  data?: ResponseEnvelopeSMTPConfigResponseData;
+  message?: ResponseEnvelopeSMTPConfigResponseMessage;
+  error?: ResponseEnvelopeSMTPConfigResponseError;
+  meta?: ResponseEnvelopeSMTPConfigResponseMeta;
+  requestId?: ResponseEnvelopeSMTPConfigResponseRequestId;
   timestamp?: string;
 }

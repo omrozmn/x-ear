@@ -5,17 +5,17 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SmtpConfigResponseCreatedAt } from './smtpConfigResponseCreatedAt';
-import type { SmtpConfigResponseUpdatedAt } from './smtpConfigResponseUpdatedAt';
+import type { SMTPConfigResponseCreatedAt } from './sMTPConfigResponseCreatedAt';
+import type { SMTPConfigResponseUpdatedAt } from './sMTPConfigResponseUpdatedAt';
 
 /**
  * SMTP configuration (password excluded for security)
  */
-export interface SmtpConfigResponse {
+export interface SMTPConfigResponse {
   /** Creation timestamp */
-  createdAt?: SmtpConfigResponseCreatedAt;
+  createdAt?: SMTPConfigResponseCreatedAt;
   /** Last update timestamp */
-  updatedAt?: SmtpConfigResponseUpdatedAt;
+  updatedAt?: SMTPConfigResponseUpdatedAt;
   /** Unique identifier for the resource */
   id: string;
   /**

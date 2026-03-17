@@ -9,7 +9,7 @@
 /**
  * AI settings response.
  */
-export interface AiSettingsResponse {
+export interface AISettingsResponse {
   /** Whether AI is enabled */
   enabled: boolean;
   /** Current phase */

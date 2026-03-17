@@ -10,5 +10,5 @@ export type ProcessUnsubscribeParams = {
 /**
  * Unsubscribe token from email link
  */
-token?: string;
+token: string;
 };

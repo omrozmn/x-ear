@@ -5,15 +5,11 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { HearingTestCreateTestDate } from './hearingTestCreateTestDate';
-import type { HearingTestCreateConductedBy } from './hearingTestCreateConductedBy';
-import type { HearingTestCreateResults } from './hearingTestCreateResults';
-import type { HearingTestCreateNotes } from './hearingTestCreateNotes';
+import type { HearingTestCreateAudiologist } from './hearingTestCreateAudiologist';
+import type { HearingTestCreateAudiogramData } from './hearingTestCreateAudiogramData';
 
 export interface HearingTestCreate {
-  testDate?: HearingTestCreateTestDate;
-  testType?: string;
-  conductedBy?: HearingTestCreateConductedBy;
-  results?: HearingTestCreateResults;
-  notes?: HearingTestCreateNotes;
+  testDate: string;
+  audiologist?: HearingTestCreateAudiologist;
+  audiogramData?: HearingTestCreateAudiogramData;
 }

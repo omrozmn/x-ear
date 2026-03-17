@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hbys-common"
+version = "0.1.0"
+description = "Shared library for X-EAR HBYS microservices"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.109.0",
+    "sqlalchemy>=2.0.0",
+    "pydantic>=2.6.0",
+    "pydantic-settings>=2.1.0",
+    "uvicorn[standard]>=0.27.0",
+    "python-jose[cryptography]>=3.3.0",
+    "httpx>=0.27.0",
+    "redis>=5.0.0",
+    "alembic>=1.13.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["hbys_common*"]

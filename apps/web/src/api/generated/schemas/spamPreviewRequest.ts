@@ -14,7 +14,7 @@ export interface SpamPreviewRequest {
   /** Email subject */
   subject: string;
   /** Email body (plain text) */
-  bodyText: string;
+  body_text: string;
   /** Email body (HTML) */
-  bodyHtml?: SpamPreviewRequestBodyHtml;
+  body_html?: SpamPreviewRequestBodyHtml;
 }

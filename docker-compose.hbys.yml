@@ -1,0 +1,255 @@
+version: "3.9"
+
+x-hbys-common: &hbys-common
+  restart: unless-stopped
+  environment: &hbys-env
+    HBYS_DATABASE_URL: postgresql://hbys:hbys_password@hbys-postgres:5432/hbys
+    HBYS_REDIS_URL: redis://hbys-redis:6379/1
+    JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-me-in-production}
+    JWT_ALGORITHM: HS256
+    CORS_ORIGINS: "*"
+    HBYS_SQL_ECHO: "false"
+  depends_on:
+    hbys-postgres:
+      condition: service_healthy
+  networks:
+    - hbys-network
+
+services:
+  # ─── Infrastructure ───
+
+  hbys-postgres:
+    image: postgres:15-alpine
+    container_name: hbys-postgres
+    environment:
+      POSTGRES_USER: hbys
+      POSTGRES_PASSWORD: hbys_password
+      POSTGRES_DB: hbys
+    ports:
+      - "5433:5432"
+    volumes:
+      - hbys_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hbys"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hbys-network
+
+  hbys-redis:
+    image: redis:7-alpine
+    container_name: hbys-redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - hbys_redis_data:/data
+    networks:
+      - hbys-network
+
+  # ─── PACS / DICOM Server ───
+
+  orthanc:
+    image: orthancteam/orthanc:24.12.4
+    container_name: hbys-orthanc
+    ports:
+      - "4242:4242"   # DICOM
+      - "8042:8042"   # REST API
+    volumes:
+      - hbys_orthanc_data:/var/lib/orthanc/db
+    environment:
+      ORTHANC__REGISTERED_USERS: '{"admin": "orthanc"}'
+    networks:
+      - hbys-network
+
+  # ─── API Gateway ───
+
+  hbys-gateway:
+    image: nginx:alpine
+    container_name: hbys-gateway
+    ports:
+      - "8100:80"
+    volumes:
+      - ./apps/hbys-gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - hbys-clinical
+      - hbys-diagnosis
+      - hbys-prescription
+      - hbys-laboratory
+      - hbys-pharmacy
+      - hbys-imaging
+      - hbys-emergency
+      - hbys-surgery
+      - hbys-inpatient
+      - hbys-cdss
+      - hbys-fhir
+      - hbys-gov-integration
+      - hbys-realtime
+      - hbys-medical-device
+    networks:
+      - hbys-network
+
+  # ─── HBYS Microservices ───
+
+  hbys-clinical:
+    <<: *hbys-common
+    build:
+      context: ./apps
+      dockerfile: hbys-clinical/Dockerfile
+    container_name: hbys-clinical
+    ports:
+      - "8101:8101"
+
+  hbys-diagnosis:
+    <<: *hbys-common
+    build:
+      context: ./apps
+      dockerfile: hbys-diagnosis/Dockerfile
+    container_name: hbys-diagnosis
+    ports:
+      - "8102:8102"
+
+  hbys-prescription:
+    <<: *hbys-common
+    build:
+      context: ./apps
+      dockerfile: hbys-prescription/Dockerfile
+    container_name: hbys-prescription
+    ports:
+      - "8103:8103"
+    environment:
+      <<: *hbys-env
+      MEDULA_WSDL_URL: https://medeczane.sgk.gov.tr/eczanews/services/SaglikTesisiReceteIslemleri/wsdl/SaglikTesisiReceteIslemleri.wsdl
+      MEDULA_USERNAME: ${MEDULA_USERNAME:-}
+      MEDULA_PASSWORD: ${MEDULA_PASSWORD:-}
+
+  hbys-laboratory:
+    <<: *hbys-common
+    build:
+      context: ./apps
+      dockerfile: hbys-laboratory/Dockerfile
+    container_name: hbys-laboratory
+    ports:
+      - "8104:8104"
+
+  hbys-pharmacy:
+    <<: *hbys-common
+    build:
+      context: ./apps
+      dockerfile: hbys-pharmacy/Dockerfile
+    container_name: hbys-pharmacy
+    ports:
+      - "8105:8105"
+
+  hbys-imaging:
+    <<: *hbys-common
+    build:
+      context: ./apps
+      dockerfile: hbys-imaging/Dockerfile
+    container_name: hbys-imaging
+    ports:
+      - "8106:8106"
+    environment:
+      <<: *hbys-env
+      ORTHANC_URL: http://orthanc:8042
+      ORTHANC_USERNAME: admin
+      ORTHANC_PASSWORD: orthanc
+      OHIF_VIEWER_URL: http://localhost:3003
+    depends_on:
+      hbys-postgres:
+        condition: service_healthy
+      orthanc:
+        condition: service_started
+
+  hbys-emergency:
+    <<: *hbys-common
+    build:
+      context: ./apps
+      dockerfile: hbys-emergency/Dockerfile
+    container_name: hbys-emergency
+    ports:
+      - "8107:8107"
+
+  hbys-surgery:
+    <<: *hbys-common
+    build:
+      context: ./apps
+      dockerfile: hbys-surgery/Dockerfile
+    container_name: hbys-surgery
+    ports:
+      - "8108:8108"
+
+  hbys-inpatient:
+    <<: *hbys-common
+    build:
+      context: ./apps
+      dockerfile: hbys-inpatient/Dockerfile
+    container_name: hbys-inpatient
+    ports:
+      - "8109:8109"
+
+  hbys-cdss:
+    <<: *hbys-common
+    build:
+      context: ./apps
+      dockerfile: hbys-cdss/Dockerfile
+    container_name: hbys-cdss
+    ports:
+      - "8110:8110"
+
+  hbys-fhir:
+    <<: *hbys-common
+    build:
+      context: ./apps
+      dockerfile: hbys-fhir/Dockerfile
+    container_name: hbys-fhir
+    ports:
+      - "8111:8111"
+
+  hbys-gov-integration:
+    <<: *hbys-common
+    build:
+      context: ./apps
+      dockerfile: hbys-gov-integration/Dockerfile
+    container_name: hbys-gov-integration
+    ports:
+      - "8112:8112"
+    environment:
+      <<: *hbys-env
+      MEDULA_BASE_URL: https://medula.sgk.gov.tr
+      ENABIZ_BASE_URL: https://enabiz.gov.tr/api
+      MHRS_BASE_URL: https://mhrs.gov.tr/api
+      ITS_BASE_URL: https://its.gov.tr/api
+      TELERADYOLOJI_BASE_URL: https://teleradyoloji.saglik.gov.tr/api
+
+  hbys-realtime:
+    <<: *hbys-common
+    build:
+      context: ./apps
+      dockerfile: hbys-realtime/Dockerfile
+    container_name: hbys-realtime
+    ports:
+      - "8113:8113"
+    depends_on:
+      hbys-postgres:
+        condition: service_healthy
+      hbys-redis:
+        condition: service_started
+
+  hbys-medical-device:
+    <<: *hbys-common
+    build:
+      context: ./apps
+      dockerfile: hbys-medical-device/Dockerfile
+    container_name: hbys-medical-device
+    ports:
+      - "8114:8114"
+
+volumes:
+  hbys_postgres_data:
+  hbys_redis_data:
+  hbys_orthanc_data:
+
+networks:
+  hbys-network:
+    driver: bridge

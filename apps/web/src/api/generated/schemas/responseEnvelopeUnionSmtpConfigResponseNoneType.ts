@@ -5,18 +5,18 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { ResponseEnvelopeUnionSmtpConfigResponseNoneTypeData } from './responseEnvelopeUnionSmtpConfigResponseNoneTypeData';
-import type { ResponseEnvelopeUnionSmtpConfigResponseNoneTypeMessage } from './responseEnvelopeUnionSmtpConfigResponseNoneTypeMessage';
-import type { ResponseEnvelopeUnionSmtpConfigResponseNoneTypeError } from './responseEnvelopeUnionSmtpConfigResponseNoneTypeError';
-import type { ResponseEnvelopeUnionSmtpConfigResponseNoneTypeMeta } from './responseEnvelopeUnionSmtpConfigResponseNoneTypeMeta';
-import type { ResponseEnvelopeUnionSmtpConfigResponseNoneTypeRequestId } from './responseEnvelopeUnionSmtpConfigResponseNoneTypeRequestId';
+import type { ResponseEnvelopeUnionSMTPConfigResponseNoneTypeData } from './responseEnvelopeUnionSMTPConfigResponseNoneTypeData';
+import type { ResponseEnvelopeUnionSMTPConfigResponseNoneTypeMessage } from './responseEnvelopeUnionSMTPConfigResponseNoneTypeMessage';
+import type { ResponseEnvelopeUnionSMTPConfigResponseNoneTypeError } from './responseEnvelopeUnionSMTPConfigResponseNoneTypeError';
+import type { ResponseEnvelopeUnionSMTPConfigResponseNoneTypeMeta } from './responseEnvelopeUnionSMTPConfigResponseNoneTypeMeta';
+import type { ResponseEnvelopeUnionSMTPConfigResponseNoneTypeRequestId } from './responseEnvelopeUnionSMTPConfigResponseNoneTypeRequestId';
 
-export interface ResponseEnvelopeUnionSmtpConfigResponseNoneType {
+export interface ResponseEnvelopeUnionSMTPConfigResponseNoneType {
   success?: boolean;
-  data?: ResponseEnvelopeUnionSmtpConfigResponseNoneTypeData;
-  message?: ResponseEnvelopeUnionSmtpConfigResponseNoneTypeMessage;
-  error?: ResponseEnvelopeUnionSmtpConfigResponseNoneTypeError;
-  meta?: ResponseEnvelopeUnionSmtpConfigResponseNoneTypeMeta;
-  requestId?: ResponseEnvelopeUnionSmtpConfigResponseNoneTypeRequestId;
+  data?: ResponseEnvelopeUnionSMTPConfigResponseNoneTypeData;
+  message?: ResponseEnvelopeUnionSMTPConfigResponseNoneTypeMessage;
+  error?: ResponseEnvelopeUnionSMTPConfigResponseNoneTypeError;
+  meta?: ResponseEnvelopeUnionSMTPConfigResponseNoneTypeMeta;
+  requestId?: ResponseEnvelopeUnionSMTPConfigResponseNoneTypeRequestId;
   timestamp?: string;
 }

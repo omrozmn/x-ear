@@ -5,6 +5,6 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SchemasInvoicesInvoiceStatus } from './schemasInvoicesInvoiceStatus';
+import type { InvoiceStatus } from './invoiceStatus';
 
-export type InvoiceUpdateStatus = SchemasInvoicesInvoiceStatus | null;
+export type InvoiceUpdateStatus = InvoiceStatus | null;

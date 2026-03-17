@@ -9,8 +9,6 @@ import type { DetailedSmsPackageReadCreatedAt } from './detailedSmsPackageReadCr
 import type { DetailedSmsPackageReadUpdatedAt } from './detailedSmsPackageReadUpdatedAt';
 import type { DetailedSmsPackageReadDescription } from './detailedSmsPackageReadDescription';
 import type { DetailedSmsPackageReadPrice } from './detailedSmsPackageReadPrice';
-import type { DetailedSmsPackageReadCurrency } from './detailedSmsPackageReadCurrency';
-import type { DetailedSmsPackageReadCountryCode } from './detailedSmsPackageReadCountryCode';
 
 /**
  * Schema for reading an SMS package - matches SmsPackage.to_dict() output
@@ -26,9 +24,5 @@ export interface DetailedSmsPackageRead {
   description?: DetailedSmsPackageReadDescription;
   smsCount: number;
   price: DetailedSmsPackageReadPrice;
-  /** Currency */
-  currency?: DetailedSmsPackageReadCurrency;
-  /** ISO 3166-1 alpha-2 country code */
-  countryCode?: DetailedSmsPackageReadCountryCode;
   isActive?: boolean;
 }

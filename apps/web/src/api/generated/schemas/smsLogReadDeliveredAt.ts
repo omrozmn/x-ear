@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SmsLogReadDeliveredAt = string | null;
+export type SMSLogReadDeliveredAt = string | null;

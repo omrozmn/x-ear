@@ -9,7 +9,7 @@
 /**
  * Schema for creating SMTP configuration.
  */
-export interface SmtpConfigCreate {
+export interface SMTPConfigCreate {
   /**
    * SMTP server hostname or IP
    * @minLength 1

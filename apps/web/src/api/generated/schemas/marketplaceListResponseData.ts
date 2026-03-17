@@ -5,5 +5,6 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
+import type { MarketplaceListResponseDataAnyOf } from './marketplaceListResponseDataAnyOf';
 
-export type MarketplaceListResponseData = unknown[] | null;
+export type MarketplaceListResponseData = MarketplaceListResponseDataAnyOf | null;

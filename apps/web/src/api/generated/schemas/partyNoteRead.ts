@@ -11,8 +11,6 @@ import type { PartyNoteReadAppointmentId } from './partyNoteReadAppointmentId';
 import type { PartyNoteReadType } from './partyNoteReadType';
 import type { PartyNoteReadCategory } from './partyNoteReadCategory';
 import type { PartyNoteReadTitle } from './partyNoteReadTitle';
-import type { PartyNoteReadCreatedBy } from './partyNoteReadCreatedBy';
-import type { PartyNoteReadCreatedByName } from './partyNoteReadCreatedByName';
 
 /**
  * Schema for reading a party note - matches PatientNote.to_dict() output
@@ -32,6 +30,4 @@ export interface PartyNoteRead {
   title?: PartyNoteReadTitle;
   content: string;
   isPrivate?: boolean;
-  createdBy?: PartyNoteReadCreatedBy;
-  createdByName?: PartyNoteReadCreatedByName;
 }

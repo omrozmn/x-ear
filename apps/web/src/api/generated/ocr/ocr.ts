@@ -25,16 +25,13 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  BodyExtractAudiogramThresholds,
-  BodyUploadOcrDocument,
   CreateJobRequest,
   DebugNERRequest,
   EntityExtractionRequest,
   HTTPValidationError,
   ListOcrJobsParams,
-  OcrProcessRequest,
+  OCRProcessRequest,
   PatientExtractionRequest,
-  ResponseEnvelopeAudiogramThresholdResponse,
   ResponseEnvelopeListOcrJobRead,
   ResponseEnvelopeOcrDebugResponse,
   ResponseEnvelopeOcrEntitiesResponse,
@@ -44,8 +41,7 @@ import type {
   ResponseEnvelopeOcrPatientResponse,
   ResponseEnvelopeOcrProcessResponse,
   ResponseEnvelopeOcrSimilarityResponse,
-  SimilarityRequest,
-  UploadOcrDocumentParams
+  SimilarityRequest
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -54,75 +50,6 @@ import { customInstance } from '../../orval-mutator';
 
 
 /**
- * Upload and process a document (PDF/Image) for OCR
- * @summary Upload Document
- */
-export const uploadOcrDocument = (
-    bodyUploadOcrDocument: BodyUploadOcrDocument,
-    params?: UploadOcrDocumentParams,
- signal?: AbortSignal
-) => {
-      
-      const formData = new FormData();
-formData.append(`file`, bodyUploadOcrDocument.file)
-
-      return customInstance<ResponseEnvelopeOcrProcessResponse>(
-      {url: `/api/ocr/upload`, method: 'POST',
-      headers: {'Content-Type': 'multipart/form-data', },
-       data: formData,
-        params, signal
-    },
-      );
-    }
-  
-
-
-export const getUploadOcrDocumentMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadOcrDocument>>, TError,{data: BodyUploadOcrDocument;params?: UploadOcrDocumentParams}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof uploadOcrDocument>>, TError,{data: BodyUploadOcrDocument;params?: UploadOcrDocumentParams}, TContext> => {
-
-const mutationKey = ['uploadOcrDocument'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof uploadOcrDocument>>, {data: BodyUploadOcrDocument;params?: UploadOcrDocumentParams}> = (props) => {
-          const {data,params} = props ?? {};
-
-          return  uploadOcrDocument(data,params,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type UploadOcrDocumentMutationResult = NonNullable<Awaited<ReturnType<typeof uploadOcrDocument>>>
-    export type UploadOcrDocumentMutationBody = BodyUploadOcrDocument
-    export type UploadOcrDocumentMutationError = HTTPValidationError
-
-    /**
- * @summary Upload Document
- */
-export const useUploadOcrDocument = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadOcrDocument>>, TError,{data: BodyUploadOcrDocument;params?: UploadOcrDocumentParams}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof uploadOcrDocument>>,
-        TError,
-        {data: BodyUploadOcrDocument;params?: UploadOcrDocumentParams},
-        TContext
-      > => {
-
-      const mutationOptions = getUploadOcrDocumentMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
  * Health check endpoint (Public)
  * @summary Health Check
  */
@@ -346,7 +273,7 @@ export const useCreateOcrInitialize = <TError = unknown,
  * @summary Process Document
  */
 export const createOcrProcess = (
-    ocrProcessRequest: OcrProcessRequest,
+    oCRProcessRequest: OCRProcessRequest,
  signal?: AbortSignal
 ) => {
       
@@ -354,7 +281,7 @@ export const createOcrProcess = (
       return customInstance<ResponseEnvelopeOcrProcessResponse>(
       {url: `/api/ocr/process`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: ocrProcessRequest, signal
+      data: oCRProcessRequest, signal
     },
       );
     }
@@ -362,8 +289,8 @@ export const createOcrProcess = (
 
 
 export const getCreateOcrProcessMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOcrProcess>>, TError,{data: OcrProcessRequest}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createOcrProcess>>, TError,{data: OcrProcessRequest}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOcrProcess>>, TError,{data: OCRProcessRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createOcrProcess>>, TError,{data: OCRProcessRequest}, TContext> => {
 
 const mutationKey = ['createOcrProcess'];
 const {mutation: mutationOptions} = options ?
@@ -375,7 +302,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOcrProcess>>, {data: OcrProcessRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOcrProcess>>, {data: OCRProcessRequest}> = (props) => {
           const {data} = props ?? {};
 
           return  createOcrProcess(data,)
@@ -387,18 +314,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type CreateOcrProcessMutationResult = NonNullable<Awaited<ReturnType<typeof createOcrProcess>>>
-    export type CreateOcrProcessMutationBody = OcrProcessRequest
+    export type CreateOcrProcessMutationBody = OCRProcessRequest
     export type CreateOcrProcessMutationError = HTTPValidationError
 
     /**
  * @summary Process Document
  */
 export const useCreateOcrProcess = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOcrProcess>>, TError,{data: OcrProcessRequest}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOcrProcess>>, TError,{data: OCRProcessRequest}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createOcrProcess>>,
         TError,
-        {data: OcrProcessRequest},
+        {data: OCRProcessRequest},
         TContext
       > => {
 
@@ -918,72 +845,3 @@ export function useGetOcrJob<TData = Awaited<ReturnType<typeof getOcrJob>>, TErr
 
 
 
-/**
- * Extract hearing thresholds from an audiogram image.
-Detects red (right ear) and blue (left ear) markers at standard frequencies.
- * @summary Extract Audiogram
- */
-export const extractAudiogramThresholds = (
-    bodyExtractAudiogramThresholds: BodyExtractAudiogramThresholds,
- signal?: AbortSignal
-) => {
-      
-      const formData = new FormData();
-formData.append(`file`, bodyExtractAudiogramThresholds.file)
-
-      return customInstance<ResponseEnvelopeAudiogramThresholdResponse>(
-      {url: `/api/ocr/audiogram`, method: 'POST',
-      headers: {'Content-Type': 'multipart/form-data', },
-       data: formData, signal
-    },
-      );
-    }
-  
-
-
-export const getExtractAudiogramThresholdsMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractAudiogramThresholds>>, TError,{data: BodyExtractAudiogramThresholds}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof extractAudiogramThresholds>>, TError,{data: BodyExtractAudiogramThresholds}, TContext> => {
-
-const mutationKey = ['extractAudiogramThresholds'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof extractAudiogramThresholds>>, {data: BodyExtractAudiogramThresholds}> = (props) => {
-          const {data} = props ?? {};
-
-          return  extractAudiogramThresholds(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type ExtractAudiogramThresholdsMutationResult = NonNullable<Awaited<ReturnType<typeof extractAudiogramThresholds>>>
-    export type ExtractAudiogramThresholdsMutationBody = BodyExtractAudiogramThresholds
-    export type ExtractAudiogramThresholdsMutationError = HTTPValidationError
-
-    /**
- * @summary Extract Audiogram
- */
-export const useExtractAudiogramThresholds = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof extractAudiogramThresholds>>, TError,{data: BodyExtractAudiogramThresholds}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof extractAudiogramThresholds>>,
-        TError,
-        {data: BodyExtractAudiogramThresholds},
-        TContext
-      > => {
-
-      const mutationOptions = getExtractAudiogramThresholdsMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    

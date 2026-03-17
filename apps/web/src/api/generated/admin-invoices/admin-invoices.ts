@@ -30,7 +30,7 @@ import type {
   InvoiceDetailResponse,
   InvoiceListResponse,
   ListAdminInvoicesParams,
-  SchemasBaseResponseEnvelope
+  ResponseEnvelope
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -363,7 +363,7 @@ export const listAdminInvoicePdf = (
 ) => {
       
       
-      return customInstance<SchemasBaseResponseEnvelope>(
+      return customInstance<ResponseEnvelope>(
       {url: `/api/admin/invoices/${invoiceId}/pdf`, method: 'GET', signal
     },
       );

@@ -9,4 +9,4 @@
 /**
  * Creation timestamp
  */
-export type SmtpConfigResponseCreatedAt = string | null;
+export type SMTPConfigResponseCreatedAt = string | null;

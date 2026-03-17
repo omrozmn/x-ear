@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SendSmsPartyId = string | null;
+export type SendSMSPartyId = string | null;

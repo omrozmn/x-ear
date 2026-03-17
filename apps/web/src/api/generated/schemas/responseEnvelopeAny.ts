@@ -5,6 +5,7 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
+import type { ResponseEnvelopeAnyData } from './responseEnvelopeAnyData';
 import type { ResponseEnvelopeAnyMessage } from './responseEnvelopeAnyMessage';
 import type { ResponseEnvelopeAnyError } from './responseEnvelopeAnyError';
 import type { ResponseEnvelopeAnyMeta } from './responseEnvelopeAnyMeta';
@@ -12,7 +13,7 @@ import type { ResponseEnvelopeAnyRequestId } from './responseEnvelopeAnyRequestI
 
 export interface ResponseEnvelopeAny {
   success?: boolean;
-  data?: unknown;
+  data?: ResponseEnvelopeAnyData;
   message?: ResponseEnvelopeAnyMessage;
   error?: ResponseEnvelopeAnyError;
   meta?: ResponseEnvelopeAnyMeta;

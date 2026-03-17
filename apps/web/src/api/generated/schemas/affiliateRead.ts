@@ -7,9 +7,7 @@
  */
 import type { AffiliateReadCreatedAt } from './affiliateReadCreatedAt';
 import type { AffiliateReadUpdatedAt } from './affiliateReadUpdatedAt';
-import type { AffiliateReadName } from './affiliateReadName';
 import type { AffiliateReadPhone } from './affiliateReadPhone';
-import type { AffiliateReadAccountHolderName } from './affiliateReadAccountHolderName';
 import type { AffiliateReadCompanyName } from './affiliateReadCompanyName';
 import type { AffiliateReadTaxNumber } from './affiliateReadTaxNumber';
 import type { AffiliateReadIban } from './affiliateReadIban';
@@ -23,13 +21,14 @@ export interface AffiliateRead {
   createdAt?: AffiliateReadCreatedAt;
   /** Last update timestamp */
   updatedAt?: AffiliateReadUpdatedAt;
+  /** Unique identifier for the resource */
+  id: string;
   /** Affiliate name */
-  name?: AffiliateReadName;
+  name: string;
   /** Email */
   email: string;
   /** Phone number */
   phone?: AffiliateReadPhone;
-  accountHolderName?: AffiliateReadAccountHolderName;
   /** Company name */
   companyName?: AffiliateReadCompanyName;
   /** Tax number */
@@ -40,10 +39,8 @@ export interface AffiliateRead {
   commissionRate?: number;
   /** Is affiliate active */
   isActive?: boolean;
-  /** Unique identifier */
-  id: unknown;
   /** Referral code */
-  code: string;
+  referralCode: string;
   /** Total referrals */
   totalReferrals?: number;
   /** Total earnings */

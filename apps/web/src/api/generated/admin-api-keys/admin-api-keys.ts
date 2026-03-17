@@ -30,7 +30,7 @@ import type {
   ApiKeyListResponse,
   HTTPValidationError,
   ListAdminApiKeysParams,
-  SchemasBaseResponseEnvelope
+  ResponseEnvelope
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -48,7 +48,7 @@ export const createAdminApiKeyInitDb = (
 ) => {
       
       
-      return customInstance<SchemasBaseResponseEnvelope>(
+      return customInstance<ResponseEnvelope>(
       {url: `/api/admin/api-keys/init-db`, method: 'POST', signal
     },
       );
@@ -269,7 +269,7 @@ export const deleteAdminApiKey = (
  ) => {
       
       
-      return customInstance<SchemasBaseResponseEnvelope>(
+      return customInstance<ResponseEnvelope>(
       {url: `/api/admin/api-keys/${keyId}`, method: 'DELETE'
     },
       );

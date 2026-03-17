@@ -17,18 +17,11 @@ import type { TenantReadDescription } from './tenantReadDescription';
 import type { TenantReadTaxNumber } from './tenantReadTaxNumber';
 import type { TenantReadTaxOffice } from './tenantReadTaxOffice';
 import type { TenantStatus } from './tenantStatus';
-import type { TenantReadProductCode } from './tenantReadProductCode';
-import type { TenantReadCurrentPlan } from './tenantReadCurrentPlan';
-import type { TenantReadCurrentPlanId } from './tenantReadCurrentPlanId';
-import type { TenantReadSubscriptionStartDate } from './tenantReadSubscriptionStartDate';
-import type { TenantReadSubscriptionEndDate } from './tenantReadSubscriptionEndDate';
-import type { TenantReadFeatureUsage } from './tenantReadFeatureUsage';
+import type { ProductCode } from './productCode';
 import type { TenantReadPlanId } from './tenantReadPlanId';
 import type { TenantReadPlanName } from './tenantReadPlanName';
 import type { TenantReadSubscriptionEnd } from './tenantReadSubscriptionEnd';
 import type { TenantReadSettings } from './tenantReadSettings';
-import type { TenantReadMaxUsers } from './tenantReadMaxUsers';
-import type { TenantReadCurrentUsers } from './tenantReadCurrentUsers';
 
 /**
  * Schema for reading a tenant
@@ -61,17 +54,7 @@ export interface TenantRead {
   taxOffice?: TenantReadTaxOffice;
   status: TenantStatus;
   /** Product Code */
-  productCode?: TenantReadProductCode;
-  /** Current plan slug */
-  currentPlan?: TenantReadCurrentPlan;
-  /** Current plan ID */
-  currentPlanId?: TenantReadCurrentPlanId;
-  /** Subscription start date */
-  subscriptionStartDate?: TenantReadSubscriptionStartDate;
-  /** Subscription end date */
-  subscriptionEndDate?: TenantReadSubscriptionEndDate;
-  /** Feature usage tracking */
-  featureUsage?: TenantReadFeatureUsage;
+  productCode: ProductCode;
   planId?: TenantReadPlanId;
   planName?: TenantReadPlanName;
   subscriptionEnd?: TenantReadSubscriptionEnd;
@@ -80,6 +63,6 @@ export interface TenantRead {
   branchCount?: number;
   /** Tenant settings */
   settings?: TenantReadSettings;
-  maxUsers?: TenantReadMaxUsers;
-  currentUsers?: TenantReadCurrentUsers;
+  maxUsers: number;
+  currentUsers: number;
 }

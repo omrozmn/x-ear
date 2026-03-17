@@ -9,7 +9,6 @@
 export type ListReportRemainingPaymentsParams = {
 /**
  * @minimum 1
- * @maximum 1000000
  */
 page?: number;
 /**
@@ -22,6 +21,4 @@ branch_id?: string | null;
  * @minimum 0
  */
 min_amount?: number;
-startDate?: string | null;
-endDate?: string | null;
 };

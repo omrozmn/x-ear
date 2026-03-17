@@ -27,7 +27,6 @@ import type {
 import type {
   HTTPValidationError,
   ListAdminSmPackagesParams,
-  ListSmsPackagesParams,
   ResponseEnvelopeDetailedSmsPackageRead,
   ResponseEnvelopeListDetailedSmsPackageRead,
   ResponseEnvelopeListSmsPackageRead,
@@ -45,14 +44,13 @@ import { customInstance } from '../../orval-mutator';
  * @summary List Public Packages
  */
 export const listSmsPackages = (
-    params?: ListSmsPackagesParams,
+    
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<ResponseEnvelopeListSmsPackageRead>(
-      {url: `/api/sms-packages`, method: 'GET',
-        params, signal
+      {url: `/api/sms-packages`, method: 'GET', signal
     },
       );
     }
@@ -60,23 +58,23 @@ export const listSmsPackages = (
 
 
 
-export const getListSmsPackagesQueryKey = (params?: ListSmsPackagesParams,) => {
+export const getListSmsPackagesQueryKey = () => {
     return [
-    `/api/sms-packages`, ...(params ? [params]: [])
+    `/api/sms-packages`
     ] as const;
     }
 
     
-export const getListSmsPackagesQueryOptions = <TData = Awaited<ReturnType<typeof listSmsPackages>>, TError = unknown>(params?: ListSmsPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmsPackages>>, TError, TData>>, }
+export const getListSmsPackagesQueryOptions = <TData = Awaited<ReturnType<typeof listSmsPackages>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmsPackages>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListSmsPackagesQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListSmsPackagesQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSmsPackages>>> = ({ signal }) => listSmsPackages(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSmsPackages>>> = ({ signal }) => listSmsPackages(signal);
 
       
 
@@ -90,7 +88,7 @@ export type ListSmsPackagesQueryError = unknown
 
 
 export function useListSmsPackages<TData = Awaited<ReturnType<typeof listSmsPackages>>, TError = unknown>(
- params: undefined |  ListSmsPackagesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmsPackages>>, TError, TData>> & Pick<
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmsPackages>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof listSmsPackages>>,
           TError,
@@ -100,7 +98,7 @@ export function useListSmsPackages<TData = Awaited<ReturnType<typeof listSmsPack
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 export function useListSmsPackages<TData = Awaited<ReturnType<typeof listSmsPackages>>, TError = unknown>(
- params?: ListSmsPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmsPackages>>, TError, TData>> & Pick<
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmsPackages>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof listSmsPackages>>,
           TError,
@@ -110,7 +108,7 @@ export function useListSmsPackages<TData = Awaited<ReturnType<typeof listSmsPack
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 export function useListSmsPackages<TData = Awaited<ReturnType<typeof listSmsPackages>>, TError = unknown>(
- params?: ListSmsPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmsPackages>>, TError, TData>>, }
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmsPackages>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> }
 /**
@@ -118,11 +116,11 @@ export function useListSmsPackages<TData = Awaited<ReturnType<typeof listSmsPack
  */
 
 export function useListSmsPackages<TData = Awaited<ReturnType<typeof listSmsPackages>>, TError = unknown>(
- params?: ListSmsPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmsPackages>>, TError, TData>>, }
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSmsPackages>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> } {
 
-  const queryOptions = getListSmsPackagesQueryOptions(params,options)
+  const queryOptions = getListSmsPackagesQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData> };
 

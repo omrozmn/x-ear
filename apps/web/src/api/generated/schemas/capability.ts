@@ -11,18 +11,10 @@ import type { SlotConfig } from './slotConfig';
  * AI capability definition.
  */
 export interface Capability {
-  /** Internal unique capability identifier */
+  /** Human-readable capability name */
   name: string;
-  /** Turkish display name */
-  displayNameTr?: string;
-  /** English display name */
-  displayNameEn?: string;
-  /** Turkish description */
-  descriptionTr?: string;
-  /** English description */
-  descriptionEn?: string;
-  /** Legacy description (English) */
-  description?: string;
+  /** What this capability does */
+  description: string;
   /** Category grouping (e.g., 'Party Management') */
   category: string;
   /** Example user phrases that trigger this capability */

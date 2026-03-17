@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type ResponseEnvelopeSmtpConfigResponseMessage = string | null;
+export type ResponseEnvelopeSMTPConfigResponseMessage = string | null;

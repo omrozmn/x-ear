@@ -13,8 +13,6 @@ export type ListCashRecordsParams = {
  */
 limit?: number;
 status?: string | null;
-transaction_type?: string | null;
-record_type?: string | null;
 start_date?: string | null;
 end_date?: string | null;
 search?: string | null;

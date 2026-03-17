@@ -5,8 +5,6 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SlotConfigPromptTr } from './slotConfigPromptTr';
-import type { SlotConfigPromptEn } from './slotConfigPromptEn';
 import type { SlotConfigUiType } from './slotConfigUiType';
 import type { SlotConfigSourceEndpoint } from './slotConfigSourceEndpoint';
 import type { SlotConfigEnumOptions } from './slotConfigEnumOptions';
@@ -18,12 +16,8 @@ import type { SlotConfigValidationRules } from './slotConfigValidationRules';
 export interface SlotConfig {
   /** Parameter name matching the tool argument */
   name: string;
-  /** Legacy prompt (Turkish) */
-  prompt?: string;
-  /** Turkish prompt */
-  promptTr?: SlotConfigPromptTr;
-  /** English prompt */
-  promptEn?: SlotConfigPromptEn;
+  /** Question to ask the user */
+  prompt: string;
   /** UI component to render */
   uiType: SlotConfigUiType;
   /** API endpoint for search/options */

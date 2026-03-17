@@ -5,6 +5,6 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
-import type { SmtpConfigResponse } from './smtpConfigResponse';
+import type { SMTPConfigResponse } from './sMTPConfigResponse';
 
-export type ResponseEnvelopeSmtpConfigResponseData = SmtpConfigResponse | null;
+export type ResponseEnvelopeSMTPConfigResponseData = SMTPConfigResponse | null;

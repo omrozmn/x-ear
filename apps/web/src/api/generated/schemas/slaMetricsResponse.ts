@@ -13,7 +13,7 @@ import type { QuotaMetricsResponse } from './quotaMetricsResponse';
 /**
  * Complete SLA metrics response.
  */
-export interface SlaMetricsResponse {
+export interface SLAMetricsResponse {
   /** Metrics timestamp */
   timestamp: string;
   /** Aggregation window in minutes */

@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type ResponseEnvelopeUnionSmtpConfigResponseNoneTypeRequestId = string | null;
+export type ResponseEnvelopeUnionSMTPConfigResponseNoneTypeRequestId = string | null;

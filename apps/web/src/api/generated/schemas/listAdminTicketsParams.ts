@@ -7,17 +7,6 @@
  */
 
 export type ListAdminTicketsParams = {
-/**
- * @minimum 1
- * @maximum 1000000
- */
 page?: number;
-/**
- * @minimum 1
- * @maximum 100
- */
 limit?: number;
-status?: string | null;
-priority?: string | null;
-search?: string | null;
 };

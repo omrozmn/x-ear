@@ -7,52 +7,12 @@
  */
 import type { InventoryItemUpdateName } from './inventoryItemUpdateName';
 import type { InventoryItemUpdateBrand } from './inventoryItemUpdateBrand';
-import type { InventoryItemUpdateModel } from './inventoryItemUpdateModel';
-import type { InventoryItemUpdateCategory } from './inventoryItemUpdateCategory';
-import type { InventoryItemUpdateBarcode } from './inventoryItemUpdateBarcode';
-import type { InventoryItemUpdateStockCode } from './inventoryItemUpdateStockCode';
-import type { InventoryItemUpdateSupplier } from './inventoryItemUpdateSupplier';
-import type { InventoryItemUpdateUnit } from './inventoryItemUpdateUnit';
-import type { InventoryItemUpdatePackageQuantity } from './inventoryItemUpdatePackageQuantity';
-import type { InventoryItemUpdateDescription } from './inventoryItemUpdateDescription';
 import type { InventoryItemUpdateAvailableInventory } from './inventoryItemUpdateAvailableInventory';
-import type { InventoryItemUpdateTotalInventory } from './inventoryItemUpdateTotalInventory';
-import type { InventoryItemUpdateReorderLevel } from './inventoryItemUpdateReorderLevel';
-import type { InventoryItemUpdateUsedInventory } from './inventoryItemUpdateUsedInventory';
-import type { InventoryItemUpdateOnTrial } from './inventoryItemUpdateOnTrial';
 import type { InventoryItemUpdatePrice } from './inventoryItemUpdatePrice';
-import type { InventoryItemUpdateCost } from './inventoryItemUpdateCost';
-import type { InventoryItemUpdateVatRate } from './inventoryItemUpdateVatRate';
-import type { InventoryItemUpdatePriceIncludesKdv } from './inventoryItemUpdatePriceIncludesKdv';
-import type { InventoryItemUpdateCostIncludesKdv } from './inventoryItemUpdateCostIncludesKdv';
-import type { InventoryItemUpdateFeatures } from './inventoryItemUpdateFeatures';
-import type { InventoryItemUpdateDirection } from './inventoryItemUpdateDirection';
-import type { InventoryItemUpdateEar } from './inventoryItemUpdateEar';
-import type { InventoryItemUpdateWarranty } from './inventoryItemUpdateWarranty';
 
 export interface InventoryItemUpdate {
   name?: InventoryItemUpdateName;
   brand?: InventoryItemUpdateBrand;
-  model?: InventoryItemUpdateModel;
-  category?: InventoryItemUpdateCategory;
-  barcode?: InventoryItemUpdateBarcode;
-  stockCode?: InventoryItemUpdateStockCode;
-  supplier?: InventoryItemUpdateSupplier;
-  unit?: InventoryItemUpdateUnit;
-  packageQuantity?: InventoryItemUpdatePackageQuantity;
-  description?: InventoryItemUpdateDescription;
   availableInventory?: InventoryItemUpdateAvailableInventory;
-  totalInventory?: InventoryItemUpdateTotalInventory;
-  reorderLevel?: InventoryItemUpdateReorderLevel;
-  usedInventory?: InventoryItemUpdateUsedInventory;
-  onTrial?: InventoryItemUpdateOnTrial;
   price?: InventoryItemUpdatePrice;
-  cost?: InventoryItemUpdateCost;
-  vatRate?: InventoryItemUpdateVatRate;
-  priceIncludesKdv?: InventoryItemUpdatePriceIncludesKdv;
-  costIncludesKdv?: InventoryItemUpdateCostIncludesKdv;
-  features?: InventoryItemUpdateFeatures;
-  direction?: InventoryItemUpdateDirection;
-  ear?: InventoryItemUpdateEar;
-  warranty?: InventoryItemUpdateWarranty;
 }

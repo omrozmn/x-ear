@@ -7,7 +7,6 @@
  */
 import type { SmsProviderConfigReadDocumentsEmail } from './smsProviderConfigReadDocumentsEmail';
 import type { SmsProviderConfigReadApiUsername } from './smsProviderConfigReadApiUsername';
-import type { SmsProviderConfigReadDocuments } from './smsProviderConfigReadDocuments';
 import type { SmsProviderConfigReadDocumentsSubmittedAt } from './smsProviderConfigReadDocumentsSubmittedAt';
 
 export interface SmsProviderConfigRead {
@@ -19,6 +18,6 @@ export interface SmsProviderConfigRead {
   documentsSubmitted?: boolean;
   allDocumentsApproved?: boolean;
   tenantId: string;
-  documents?: SmsProviderConfigReadDocuments;
+  documents?: unknown[];
   documentsSubmittedAt?: SmsProviderConfigReadDocumentsSubmittedAt;
 }
