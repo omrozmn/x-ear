@@ -104,7 +104,8 @@ def register_phone(
         # Generate OTP
         code = _generate_registration_otp()
         
-        logger.info(f"Generating OTP for {phone}: {code}")
+        masked_phone = f"{phone[:4]}***{phone[-2:]}" if len(phone) > 6 else "***"
+        logger.info(f"Generating OTP for {masked_phone}")
         
         otp_store = get_otp_store()
         otp_store.set_otp(phone, code, ttl=300)
@@ -138,7 +139,7 @@ def register_phone(
                 raise
             except Exception as sms_error:
                 logger.error(f"Failed to send SMS: {sms_error}")
-                raise HTTPException(status_code=500, detail=f"SMS gönderilemedi: {str(sms_error)}")
+                raise HTTPException(status_code=500, detail="SMS gönderilemedi. Lütfen tekrar deneyin.")
         
         return ResponseEnvelope(message='OTP generated and sent')
         
@@ -146,7 +147,7 @@ def register_phone(
         raise
     except Exception as e:
         logger.error(f"Register phone error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/verify-registration-otp", operation_id="createVerifyRegistrationOtp", status_code=201, response_model=ResponseEnvelope[RegistrationVerifyResponse])
 def verify_registration_otp(
@@ -165,7 +166,8 @@ def verify_registration_otp(
         otp_store = get_otp_store()
         stored = otp_store.get_otp(phone)
         
-        logger.info(f"Verifying OTP for {phone}: received='{otp}', stored='{stored}'")
+        masked_phone = f"{phone[:4]}***{phone[-2:]}" if len(phone) > 6 else "***"
+        logger.info(f"Verifying OTP for {masked_phone}")
         
         if not stored:
             raise HTTPException(status_code=400, detail="OTP kodu geçersiz veya süresi dolmuş.")

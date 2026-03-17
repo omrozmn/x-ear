@@ -22,9 +22,11 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 
 logger = logging.getLogger(__name__)
 
-# In-memory cache (use Redis in production)
-_idempotency_cache: Dict[str, Dict[str, Any]] = {}
+# In-memory cache with hard cap (use Redis in production)
+from collections import OrderedDict
+_idempotency_cache: OrderedDict[str, Dict[str, Any]] = OrderedDict()
 CACHE_TTL_SECONDS = 3600  # 1 hour
+CACHE_MAX_SIZE = 5000  # Hard cap to prevent memory leaks
 
 # Paths to skip idempotency check
 SKIP_PATHS = [
@@ -45,7 +47,7 @@ SKIP_PATHS = [
 
 
 def _clean_expired_cache():
-    """Remove expired entries from cache"""
+    """Remove expired entries and enforce max size"""
     now = datetime.utcnow()
     expired_keys = [
         key for key, value in _idempotency_cache.items()
@@ -53,6 +55,9 @@ def _clean_expired_cache():
     ]
     for key in expired_keys:
         del _idempotency_cache[key]
+    # Evict oldest entries if over hard cap
+    while len(_idempotency_cache) > CACHE_MAX_SIZE:
+        _idempotency_cache.popitem(last=False)
 
 
 class IdempotencyMiddleware:

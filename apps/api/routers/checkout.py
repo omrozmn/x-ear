@@ -1,7 +1,11 @@
 """Checkout Router - FastAPI"""
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
+import hashlib
+import hmac
+import os
+import secrets
 import uuid
 import logging
 
@@ -21,10 +25,58 @@ from schemas.checkout import (
     PaymentConfirmRequest, PaymentConfirmResponse
 )
 
+# ─── Rate limiting for unauthenticated checkout ─────────────────
+_CHECKOUT_RATE: dict[str, list[float]] = {}  # ip -> list of timestamps
+_CHECKOUT_RATE_LIMIT = 10  # max requests per window
+_CHECKOUT_RATE_WINDOW = 300  # 5 minutes
+
+# ─── Session token store (use Redis in production) ──────────────
+_CHECKOUT_SESSION_TOKENS: dict[int, str] = {}  # payment_id -> token
+_CHECKOUT_SESSION_SECRET = os.getenv("CHECKOUT_SESSION_SECRET", secrets.token_hex(32))
+
+
+def _check_rate_limit(request: Request) -> None:
+    """Simple IP-based rate limiter for checkout endpoints."""
+    import time
+    client_ip = request.client.host if request.client else "unknown"
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        client_ip = forwarded.split(",")[0].strip()
+
+    now = time.time()
+    timestamps = _CHECKOUT_RATE.get(client_ip, [])
+    # Remove expired entries
+    timestamps = [t for t in timestamps if now - t < _CHECKOUT_RATE_WINDOW]
+    if len(timestamps) >= _CHECKOUT_RATE_LIMIT:
+        raise HTTPException(status_code=429, detail="Too many checkout requests. Please try again later.")
+    timestamps.append(now)
+    _CHECKOUT_RATE[client_ip] = timestamps
+
+
+def _generate_session_token(payment_id: int) -> str:
+    """Generate a signed session token for a checkout session."""
+    token = hmac.new(
+        _CHECKOUT_SESSION_SECRET.encode(),
+        f"{payment_id}".encode(),
+        hashlib.sha256,
+    ).hexdigest()
+    _CHECKOUT_SESSION_TOKENS[payment_id] = token
+    return token
+
+
+def _verify_session_token(payment_id: int, token: str) -> bool:
+    """Verify that the session token is valid for the given payment."""
+    expected = _CHECKOUT_SESSION_TOKENS.get(payment_id)
+    if not expected:
+        return False
+    return hmac.compare_digest(expected, token)
+
+
 @router.post("/session", operation_id="createCheckoutSession", response_model=ResponseEnvelope[CheckoutSessionResponse])
-async def create_checkout_session(data: CheckoutSessionCreate, db: Session = Depends(get_db)):
+async def create_checkout_session(data: CheckoutSessionCreate, request: Request, db: Session = Depends(get_db)):
     """Create checkout session for plan purchase"""
     try:
+        _check_rate_limit(request)
         if not data.plan_id or not data.company_name or not data.email:
             raise HTTPException(status_code=400, detail="Missing required fields")
         
@@ -70,10 +122,13 @@ async def create_checkout_session(data: CheckoutSessionCreate, db: Session = Dep
         db.add(payment)
         db.commit()
         
+        session_token = _generate_session_token(payment.id)
+
         return ResponseEnvelope(data=CheckoutSessionResponse(
             success=True,
             checkout_url=f"/checkout/success?payment_id={payment.id}",
-            payment_id=payment.id
+            payment_id=payment.id,
+            session_token=session_token,
         ))
     except HTTPException:
         raise
@@ -82,18 +137,32 @@ async def create_checkout_session(data: CheckoutSessionCreate, db: Session = Dep
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/confirm", operation_id="createCheckoutConfirm", response_model=ResponseEnvelope[PaymentConfirmResponse])
-async def confirm_payment(data: PaymentConfirmRequest, db: Session = Depends(get_db)):
+async def confirm_payment(data: PaymentConfirmRequest, request: Request, db: Session = Depends(get_db)):
     """Confirm payment"""
     try:
+        _check_rate_limit(request)
+
         payment = db.get(PaymentHistory, data.payment_id)
         if not payment:
             raise HTTPException(status_code=404, detail="Payment not found")
-        
+
         if payment.status == PaymentStatus.SUCCEEDED.value:
             return ResponseEnvelope(data=PaymentConfirmResponse(success=True, message="Already paid"))
-        
+
+        # Verify session token to prevent unauthorized confirmation
+        session_token = getattr(data, 'session_token', None) or request.headers.get("x-checkout-session-token")
+        if not session_token or not _verify_session_token(payment.id, session_token):
+            raise HTTPException(status_code=403, detail="Invalid or missing session token")
+
+        # Verify payment is still in PENDING status (not already failed/cancelled)
+        if payment.status != PaymentStatus.PENDING.value:
+            raise HTTPException(status_code=400, detail=f"Payment cannot be confirmed in status: {payment.status}")
+
         payment.status = PaymentStatus.SUCCEEDED.value
         payment.paid_at = datetime.utcnow()
+
+        # Clean up used session token
+        _CHECKOUT_SESSION_TOKENS.pop(payment.id, None)
         
         subscription = db.get(Subscription, payment.subscription_id)
         if subscription:

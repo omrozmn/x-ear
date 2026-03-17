@@ -27,11 +27,25 @@ class KuveytTurkConfig:
     """Configuration from environment variables."""
 
     def __init__(self):
-        self.merchant_id = os.getenv("KUVEYTTURK_MERCHANT_ID", "496")
-        self.customer_id = os.getenv("KUVEYTTURK_CUSTOMER_ID", "400235")
-        self.username = os.getenv("KUVEYTTURK_USERNAME", "apitest")
-        self.password = os.getenv("KUVEYTTURK_PASSWORD", "api123")
+        self.merchant_id = os.getenv("KUVEYTTURK_MERCHANT_ID")
+        self.customer_id = os.getenv("KUVEYTTURK_CUSTOMER_ID")
+        self.username = os.getenv("KUVEYTTURK_USERNAME")
+        self.password = os.getenv("KUVEYTTURK_PASSWORD")
         self.test_mode = os.getenv("KUVEYTTURK_TEST_MODE", "1") == "1"
+
+        missing = []
+        if not self.merchant_id:
+            missing.append("KUVEYTTURK_MERCHANT_ID")
+        if not self.customer_id:
+            missing.append("KUVEYTTURK_CUSTOMER_ID")
+        if not self.username:
+            missing.append("KUVEYTTURK_USERNAME")
+        if not self.password:
+            missing.append("KUVEYTTURK_PASSWORD")
+        if missing:
+            raise RuntimeError(
+                f"KuveytTurk credentials not configured. Missing env vars: {', '.join(missing)}"
+            )
 
         if self.test_mode:
             self.pay_gate_url = (
@@ -256,7 +270,7 @@ class KuveytTurkService:
         logger.info(f"KuveytTurk Request 1 → {self.config.pay_gate_url}")
         logger.debug(f"XML body: {xml_body}")
 
-        async with httpx.AsyncClient(timeout=30.0, verify=False) as client:
+        async with httpx.AsyncClient(timeout=30.0, verify=True) as client:
             response = await client.post(
                 self.config.pay_gate_url,
                 content=xml_body,
@@ -289,7 +303,7 @@ class KuveytTurkService:
 
         logger.info(f"KuveytTurk Request 2 → {self.config.provision_url}")
 
-        async with httpx.AsyncClient(timeout=30.0, verify=False) as client:
+        async with httpx.AsyncClient(timeout=30.0, verify=True) as client:
             response = await client.post(
                 self.config.provision_url,
                 content=xml_body,

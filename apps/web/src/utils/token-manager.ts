@@ -213,7 +213,9 @@ class TokenManager {
    * Update only access token (typically after refresh)
    */
   updateAccessToken(accessToken: string): void {
-    console.log('[TokenManager] Updating access token');
+    if (import.meta.env.DEV) {
+      console.log('[TokenManager] Updating access token');
+    }
 
     this._accessToken = accessToken;
     this._accessPayload = this.decodeToken(accessToken);
@@ -235,8 +237,10 @@ class TokenManager {
    * Clear all tokens (logout)
    */
   clearTokens(): void {
-    console.log('[TokenManager] Clearing all tokens');
-    console.trace('[TokenManager] clearTokens called from:');
+    if (import.meta.env.DEV) {
+      console.log('[TokenManager] Clearing all tokens');
+      console.trace('[TokenManager] clearTokens called from:');
+    }
 
     this._accessToken = null;
     this._createAuthRefresh = null;
@@ -290,7 +294,9 @@ class TokenManager {
           const value = localStorage.getItem(key);
           if (value) {
             accessToken = value;
-            console.log(`[TokenManager] Found access token in legacy key: ${key}`);
+            if (import.meta.env.DEV) {
+              console.log(`[TokenManager] Found access token in legacy key: ${key}`);
+            }
             break;
           }
         }
@@ -301,7 +307,9 @@ class TokenManager {
           const value = localStorage.getItem(key);
           if (value) {
             createAuthRefresh = value;
-            console.log(`[TokenManager] Found refresh token in legacy key: ${key}`);
+            if (import.meta.env.DEV) {
+              console.log(`[TokenManager] Found refresh token in legacy key: ${key}`);
+            }
             break;
           }
         }
@@ -315,7 +323,9 @@ class TokenManager {
         try {
           const raw = localStorage.getItem(ZUSTAND_PERSIST_KEY);
           if (raw) {
-            console.log('[TokenManager] Found Zustand persist storage, parsing...');
+            if (import.meta.env.DEV) {
+              console.log('[TokenManager] Found Zustand persist storage, parsing...');
+            }
             const parsed = JSON.parse(raw);
             
             // Zustand persist structure: { state: { token, refreshToken, user, ... }, version: 0 }
@@ -324,14 +334,20 @@ class TokenManager {
 
             if (!accessToken && zustandToken) {
               accessToken = zustandToken;
-              console.log(`[TokenManager] Found access token in Zustand persist storage`);
+              if (import.meta.env.DEV) {
+                console.log(`[TokenManager] Found access token in Zustand persist storage`);
+              }
             }
             if (!createAuthRefresh && zustandRefresh) {
               createAuthRefresh = zustandRefresh;
-              console.log(`[TokenManager] Found refresh token in Zustand persist storage`);
+              if (import.meta.env.DEV) {
+                console.log(`[TokenManager] Found refresh token in Zustand persist storage`);
+              }
             }
           } else {
-            console.log('[TokenManager] No Zustand persist storage found at key:', ZUSTAND_PERSIST_KEY);
+            if (import.meta.env.DEV) {
+              console.log('[TokenManager] No Zustand persist storage found at key:', ZUSTAND_PERSIST_KEY);
+            }
           }
         } catch (e) {
           console.error('[TokenManager] Failed to parse Zustand persist storage:', e);
@@ -348,11 +364,13 @@ class TokenManager {
         // Always write to canonical key to ensure consistency
         try {
           localStorage.setItem(this.ACCESS_TOKEN_KEY, accessToken);
-          console.log('[TokenManager] Wrote access token to canonical key');
+          if (import.meta.env.DEV) {
+            console.log('[TokenManager] Wrote access token to canonical key');
 
-          // Verify it was written
-          const verify = localStorage.getItem(this.ACCESS_TOKEN_KEY);
-          console.log('[TokenManager] Verification - token in localStorage:', !!verify, verify?.substring(0, 30));
+            // Verify it was written
+            const verify = localStorage.getItem(this.ACCESS_TOKEN_KEY);
+            console.log('[TokenManager] Verification - token in localStorage:', !!verify, verify?.substring(0, 30));
+          }
         } catch (e) {
           console.error('[TokenManager] Failed to write access token:', e);
         }
@@ -364,11 +382,13 @@ class TokenManager {
         // Always write to canonical key to ensure consistency
         try {
           localStorage.setItem(this.REFRESH_TOKEN_KEY, createAuthRefresh);
-          console.log('[TokenManager] Wrote refresh token to canonical key');
+          if (import.meta.env.DEV) {
+            console.log('[TokenManager] Wrote refresh token to canonical key');
 
-          // Verify it was written
-          const verify = localStorage.getItem(this.REFRESH_TOKEN_KEY);
-          console.log('[TokenManager] Verification - refresh token in localStorage:', !!verify, verify?.substring(0, 30));
+            // Verify it was written
+            const verify = localStorage.getItem(this.REFRESH_TOKEN_KEY);
+            console.log('[TokenManager] Verification - refresh token in localStorage:', !!verify, verify?.substring(0, 30));
+          }
         } catch (e) {
           console.error('[TokenManager] Failed to write refresh token:', e);
         }
@@ -378,12 +398,14 @@ class TokenManager {
       // TEMPORARILY DISABLED for debugging
       // this.cleanupLegacyKeys();
 
-      console.log('[TokenManager] Hydrated from storage:', {
-        hasAccessToken: !!this._accessToken,
-        hasRefreshToken: !!this._createAuthRefresh,
-        isExpired: this.isAccessTokenExpired(),
-        userId: this.getUserId(),
-      });
+      if (import.meta.env.DEV) {
+        console.log('[TokenManager] Hydrated from storage:', {
+          hasAccessToken: !!this._accessToken,
+          hasRefreshToken: !!this._createAuthRefresh,
+          isExpired: this.isAccessTokenExpired(),
+          userId: this.getUserId(),
+        });
+      }
 
     } catch (error) {
       console.error('[TokenManager] Failed to hydrate from storage:', error);
@@ -406,7 +428,9 @@ class TokenManager {
         localStorage.setItem(this.REFRESH_TOKEN_KEY, this._createAuthRefresh);
       }
 
-      console.log('[TokenManager] Persisted to storage');
+      if (import.meta.env.DEV) {
+        console.log('[TokenManager] Persisted to storage');
+      }
     } catch (error) {
       console.error('[TokenManager] Failed to persist to storage:', error);
     }
@@ -418,11 +442,13 @@ class TokenManager {
   private clearStorage(): void {
     if (typeof window === 'undefined') return;
 
-    console.log('[TokenManager] clearStorage called');
-    console.log('[TokenManager] Before clear - canonical keys:', {
-      accessToken: localStorage.getItem(this.ACCESS_TOKEN_KEY)?.substring(0, 30),
-      createAuthRefresh: localStorage.getItem(this.REFRESH_TOKEN_KEY)?.substring(0, 30),
-    });
+    if (import.meta.env.DEV) {
+      console.log('[TokenManager] clearStorage called');
+      console.log('[TokenManager] Before clear - canonical keys:', {
+        accessToken: localStorage.getItem(this.ACCESS_TOKEN_KEY)?.substring(0, 30),
+        createAuthRefresh: localStorage.getItem(this.REFRESH_TOKEN_KEY)?.substring(0, 30),
+      });
+    }
 
     try {
       // Clear canonical keys
@@ -438,7 +464,9 @@ class TokenManager {
       localStorage.removeItem(AUTH_TOKEN_TIMESTAMP);
       localStorage.removeItem(CURRENT_TENANT_ID);
 
-      console.log('[TokenManager] Cleared storage');
+      if (import.meta.env.DEV) {
+        console.log('[TokenManager] Cleared storage');
+      }
     } catch (error) {
       console.error('[TokenManager] Failed to clear storage:', error);
     }

@@ -45,6 +45,7 @@ from models.admin_user import AdminUser
 
 from database import get_db
 from utils.error_messages import get_error_message
+from utils.rate_limit import rate_limit
 
 logger = logging.getLogger(__name__)
 
@@ -273,44 +274,44 @@ def verify_otp(
         otp_store = get_otp_store()
 
         lookup_keys = [target_id]
-            if identifier:
-                lookup_keys.extend(
-                    [candidate for candidate in _phone_key_candidates(identifier) if candidate not in lookup_keys]
-                )
-            stored = None
-            for lookup_key in lookup_keys:
-                stored = otp_store.get_otp(lookup_key)
-                if stored:
-                    logger.info(f"OTP found with lookup_key={lookup_key}")
-                    break
-            
-            # If not found with target_id, try with user_id (for phone verification flow)
-            if not stored and user_id:
-                logger.info(f"OTP not found with target_id={target_id}, trying user_id={user_id}")
-                stored = otp_store.get_otp(user_id)
-                if stored:
-                    logger.info(f"OTP found with user_id={user_id}")
-                else:
-                    logger.warning(f"OTP not found with user_id={user_id} either")
-            
-            if not stored:
-                raise HTTPException(
-                    status_code=400,
-                    detail=ApiError(
-                        message="Invalid or expired OTP",
-                        code="OTP_EXPIRED"
-                    ).model_dump(mode="json")
-                )
-            
-            if str(otp) != str(stored):
-                raise HTTPException(
-                    status_code=400,
-                    detail=ApiError(
-                        message="Invalid OTP",
-                        code="OTP_INVALID"
-                    ).model_dump(mode="json")
-                )
-        
+        if identifier:
+            lookup_keys.extend(
+                [candidate for candidate in _phone_key_candidates(identifier) if candidate not in lookup_keys]
+            )
+        stored = None
+        for lookup_key in lookup_keys:
+            stored = otp_store.get_otp(lookup_key)
+            if stored:
+                logger.info(f"OTP found with lookup_key={lookup_key}")
+                break
+
+        # If not found with target_id, try with user_id (for phone verification flow)
+        if not stored and user_id:
+            logger.info(f"OTP not found with target_id={target_id}, trying user_id={user_id}")
+            stored = otp_store.get_otp(user_id)
+            if stored:
+                logger.info(f"OTP found with user_id={user_id}")
+            else:
+                logger.warning(f"OTP not found with user_id={user_id} either")
+
+        if not stored:
+            raise HTTPException(
+                status_code=400,
+                detail=ApiError(
+                    message="Invalid or expired OTP",
+                    code="OTP_EXPIRED"
+                ).model_dump(mode="json")
+            )
+
+        if str(otp) != str(stored):
+            raise HTTPException(
+                status_code=400,
+                detail=ApiError(
+                    message="Invalid OTP",
+                    code="OTP_INVALID"
+                ).model_dump(mode="json")
+            )
+
         # If authenticated, mark as verified and return full tokens
         if user_id:
             otp_store.delete_otp(target_id)
@@ -458,9 +459,10 @@ async def reset_password(
         raise
     except Exception as e:
         logger.error(f"Reset password error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/auth/login", operation_id="createAuthLogin", response_model=ResponseEnvelope[LoginResponse])
+@rate_limit(window_seconds=900, max_calls=10, key_prefix="login")
 def login(
     request_data: LoginRequest,
     db_session: Session = Depends(get_db)
@@ -475,7 +477,8 @@ def login(
         )
         password = request_data.password
         
-        logger.info(f"Login attempt - identifier: {identifier}")
+        masked = f"{identifier[:3]}***" if identifier and len(identifier) > 3 else "***"
+        logger.info(f"Login attempt - identifier: {masked}")
         
         if not identifier or not password:
             raise HTTPException(

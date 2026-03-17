@@ -14,8 +14,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Vatansms Configuration (same as in app.py)
-VATANSMS_USERNAME = os.getenv('VATANSMS_USERNAME', '4ab531b6fd26fd9ba6010b0d')
-VATANSMS_PASSWORD = os.getenv('VATANSMS_PASSWORD', '49b2001edbb1789e4e62f935')
+VATANSMS_USERNAME = os.getenv('VATANSMS_USERNAME')
+VATANSMS_PASSWORD = os.getenv('VATANSMS_PASSWORD')
+if not VATANSMS_USERNAME or not VATANSMS_PASSWORD:
+    raise RuntimeError("VATANSMS credentials not configured. Set VATANSMS_USERNAME and VATANSMS_PASSWORD env vars.")
 VATANSMS_SENDER = 'OZMN TIBCHZ'  # Approved sender name
 
 def send_test_otp(phone_number):

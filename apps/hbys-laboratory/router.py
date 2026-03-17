@@ -362,7 +362,7 @@ class AnalyzeLabsRequest(BaseModel):
     summary="Predict future lab values using AI",
     tags=["HBYS - Laboratory AI"],
 )
-def ai_predict_trend(body: PredictTrendRequest):
+def ai_predict_trend(body: PredictTrendRequest, user: CurrentUser = Depends(get_current_user)):
     results_dicts = [r.model_dump() for r in body.results]
     prediction = ai_service.predict_lab_trend(results_dicts, periods=body.periods)
     return ResponseEnvelope.ok(data=prediction)
@@ -374,7 +374,7 @@ def ai_predict_trend(body: PredictTrendRequest):
     summary="Detect anomalous lab results",
     tags=["HBYS - Laboratory AI"],
 )
-def ai_detect_anomalies(body: DetectAnomaliesRequest):
+def ai_detect_anomalies(body: DetectAnomaliesRequest, user: CurrentUser = Depends(get_current_user)):
     results_dicts = [r.model_dump() for r in body.results]
     try:
         anomalies = ai_service.detect_anomalies(
@@ -391,7 +391,7 @@ def ai_detect_anomalies(body: DetectAnomaliesRequest):
     summary="Comprehensive AI analysis of patient lab history",
     tags=["HBYS - Laboratory AI"],
 )
-def ai_analyze_labs(body: AnalyzeLabsRequest):
+def ai_analyze_labs(body: AnalyzeLabsRequest, user: CurrentUser = Depends(get_current_user)):
     results_dicts = [r.model_dump() for r in body.results]
     analysis = ai_service.analyze_patient_labs(results_dicts, test_code=body.test_code)
     return ResponseEnvelope.ok(data=analysis)

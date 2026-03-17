@@ -7,6 +7,7 @@ Flow:
   3. POST /api/payments/kuveytturk/callback/fail → FailUrl: redirect with error
 """
 
+import html as html_module
 import logging
 import os
 import json
@@ -397,13 +398,14 @@ def _create_subscription(db: Session, order_data: dict, provision_result: dict):
 def _redirect_html(url: str) -> HTMLResponse:
     """Return an HTML page that redirects via JavaScript (needed because
     bank POSTs to our callback, and we can't 302-redirect a POST)."""
+    safe_url = html_module.escape(url, quote=True)
     return HTMLResponse(
         content=f"""<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><title>Redirecting...</title></head>
 <body>
 <p>Redirecting...</p>
-<script>window.location.href = "{url}";</script>
+<script>window.location.href = "{safe_url}";</script>
 </body>
 </html>""",
         status_code=200,

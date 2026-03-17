@@ -8,6 +8,7 @@ import json
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any
 from xml.etree import ElementTree as ET
+from xml.sax.saxutils import escape as xml_escape
 
 from config import (
     MEDULA_WSDL_URL, MEDULA_TEST_WSDL_URL, MEDULA_USERNAME,
@@ -126,13 +127,13 @@ class MedulaClient:
         tedavi_tipi: A=Ayaktan, Y=Yatan
         """
         body_xml = f"""
-            <has:tcKimlikNo>{tc_kimlik_no}</has:tcKimlikNo>
-            <has:provizyonTipi>{provizyon_tipi}</has:provizyonTipi>
-            <has:tedaviTipi>{tedavi_tipi}</has:tedaviTipi>
-            <has:tesisKodu>{MEDULA_FACILITY_CODE}</has:tesisKodu>
+            <has:tcKimlikNo>{xml_escape(tc_kimlik_no)}</has:tcKimlikNo>
+            <has:provizyonTipi>{xml_escape(provizyon_tipi)}</has:provizyonTipi>
+            <has:tedaviTipi>{xml_escape(tedavi_tipi)}</has:tedaviTipi>
+            <has:tesisKodu>{xml_escape(MEDULA_FACILITY_CODE)}</has:tesisKodu>
         """
         if takip_no:
-            body_xml += f"<has:takipNo>{takip_no}</has:takipNo>"
+            body_xml += f"<has:takipNo>{xml_escape(takip_no)}</has:takipNo>"
 
         envelope = _build_soap_envelope("provizyonSorgula", body_xml)
         logger.info("Medula provizyon query for TC: %s***", tc_kimlik_no[:3])
@@ -165,12 +166,12 @@ class MedulaClient:
     ) -> Dict[str, Any]:
         """Register an inpatient admission with Medula."""
         body_xml = f"""
-            <has:takipNo>{takip_no}</has:takipNo>
-            <has:tcKimlikNo>{tc_kimlik_no}</has:tcKimlikNo>
-            <has:yatisTarihi>{yatis_tarihi}</has:yatisTarihi>
-            <has:klinikKodu>{klinik_kodu}</has:klinikKodu>
-            <has:yatakKodu>{yatak_kodu}</has:yatakKodu>
-            <has:tesisKodu>{MEDULA_FACILITY_CODE}</has:tesisKodu>
+            <has:takipNo>{xml_escape(takip_no)}</has:takipNo>
+            <has:tcKimlikNo>{xml_escape(tc_kimlik_no)}</has:tcKimlikNo>
+            <has:yatisTarihi>{xml_escape(yatis_tarihi)}</has:yatisTarihi>
+            <has:klinikKodu>{xml_escape(klinik_kodu)}</has:klinikKodu>
+            <has:yatakKodu>{xml_escape(yatak_kodu)}</has:yatakKodu>
+            <has:tesisKodu>{xml_escape(MEDULA_FACILITY_CODE)}</has:tesisKodu>
         """
         envelope = _build_soap_envelope("hastaYatis", body_xml)
         logger.info("Medula hastaYatis for takip: %s", takip_no)
@@ -196,10 +197,10 @@ class MedulaClient:
     ) -> Dict[str, Any]:
         """Register an inpatient discharge with Medula."""
         body_xml = f"""
-            <has:takipNo>{takip_no}</has:takipNo>
-            <has:cikisTarihi>{cikis_tarihi}</has:cikisTarihi>
-            <has:cikisNedeni>{cikis_nedeni}</has:cikisNedeni>
-            <has:tesisKodu>{MEDULA_FACILITY_CODE}</has:tesisKodu>
+            <has:takipNo>{xml_escape(takip_no)}</has:takipNo>
+            <has:cikisTarihi>{xml_escape(cikis_tarihi)}</has:cikisTarihi>
+            <has:cikisNedeni>{xml_escape(cikis_nedeni)}</has:cikisNedeni>
+            <has:tesisKodu>{xml_escape(MEDULA_FACILITY_CODE)}</has:tesisKodu>
         """
         envelope = _build_soap_envelope("hastaCikis", body_xml)
         logger.info("Medula hastaCikis for takip: %s", takip_no)

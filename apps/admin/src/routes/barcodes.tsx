@@ -2,12 +2,12 @@ import { lazy, Suspense } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import PageLoadingFallback from '../components/PageLoadingFallback'
 
-const BarcodeServicePage = lazy(() => import('../pages/admin/BarcodeServicePage'))
+const BarcodeAndPrintingPage = lazy(() => import('../pages/admin/BarcodeAndPrintingPage'))
 
 export const Route = createFileRoute('/barcodes')({
     component: () => (
         <Suspense fallback={<PageLoadingFallback />}>
-            <BarcodeServicePage />
+            <BarcodeAndPrintingPage />
         </Suspense>
     ),
 })

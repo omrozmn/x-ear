@@ -45,8 +45,8 @@ def mask_inventory_item(item: InventoryItem, access: UnifiedAccess) -> Inventory
 
 @router.get("/inventory", operation_id="listInventory", response_model=ResponseEnvelope[List[InventoryItemRead]])
 def get_all_inventory(
-    page: int = 1,
-    per_page: int = 20,
+    page: int = Query(1, ge=1),
+    per_page: int = Query(20, ge=1, le=100),
     category: Optional[str] = None,
     brand: Optional[str] = None,
     supplier: Optional[str] = None,

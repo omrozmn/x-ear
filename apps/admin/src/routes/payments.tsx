@@ -1,6 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
-import AdminPaymentsPage from '../pages/admin/AdminPaymentsPage'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/payments')({
-    component: AdminPaymentsPage,
+    beforeLoad: () => {
+        throw redirect({ to: '/billing' })
+    },
 })

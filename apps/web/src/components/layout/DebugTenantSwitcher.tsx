@@ -14,11 +14,38 @@ import { useAuthStore } from '../../stores/authStore';
 import { partyService } from '../../services/party.service';
 import { indexedDBManager } from '../../utils/indexeddb';
 
+// Extended tenant type with sector (backend sends it but Orval schema may not have it)
+interface TenantWithSector extends TenantRead {
+  sector?: string;
+}
+
 interface TenantListResponse {
   data: {
-    tenants: TenantRead[];
+    tenants: TenantWithSector[];
   };
 }
+
+const SECTOR_LABELS: Record<string, string> = {
+  hearing: 'Isitme',
+  pharmacy: 'Eczane',
+  hospital: 'Hastane',
+  medical: 'Medikal',
+  optic: 'Optik',
+  hotel: 'Otel',
+  beauty: 'Guzellik',
+  general: 'Genel',
+};
+
+const SECTOR_COLORS: Record<string, string> = {
+  hearing: '#3b82f6',
+  pharmacy: '#10b981',
+  hospital: '#ef4444',
+  medical: '#14b8a6',
+  optic: '#8b5cf6',
+  hotel: '#f97316',
+  beauty: '#ec4899',
+  general: '#6b7280',
+};
 
 interface SwitchTenantResponse {
   data: {
@@ -456,17 +483,42 @@ export const DebugTenantSwitcher: React.FC<DebugTenantSwitcherProps> = ({ darkMo
                     }}
                   >
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: isCurrentTenant ? '600' : '500', fontSize: '0.875rem' }}>
-                        {tenant.name}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span style={{ fontWeight: isCurrentTenant ? '600' : '500', fontSize: '0.875rem' }}>
+                          {tenant.name}
+                        </span>
+                        {(tenant as TenantWithSector).sector && (
+                          <span style={{
+                            fontSize: '0.6rem',
+                            fontWeight: '700',
+                            padding: '0.125rem 0.375rem',
+                            borderRadius: '0.25rem',
+                            backgroundColor: SECTOR_COLORS[(tenant as TenantWithSector).sector || ''] + '20',
+                            color: SECTOR_COLORS[(tenant as TenantWithSector).sector || ''] || '#6b7280',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em',
+                          }}>
+                            {SECTOR_LABELS[(tenant as TenantWithSector).sector || ''] || (tenant as TenantWithSector).sector}
+                          </span>
+                        )}
                       </div>
                       <div
                         style={{
                           fontSize: '0.7rem',
                           color: darkMode ? '#9ca3af' : '#6b7280',
                           marginTop: '0.125rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.375rem',
                         }}
                       >
-                        {tenant.ownerEmail} • {tenant.userCount || 0} users • {tenant.status}
+                        <span>{tenant.ownerEmail}</span>
+                        <span style={{ opacity: 0.5 }}>|</span>
+                        <span style={{ fontWeight: '600', color: darkMode ? '#60a5fa' : '#2563eb' }}>
+                          {tenant.userCount || 0} kullanici
+                        </span>
+                        <span style={{ opacity: 0.5 }}>|</span>
+                        <span>{tenant.currentPlan || tenant.status}</span>
                       </div>
                     </div>
                     {isCurrentTenant && (

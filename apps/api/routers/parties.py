@@ -74,8 +74,8 @@ def _mask_party_list_response(patients: list[Party], access: UnifiedAccess) -> l
 
 @router.get("/parties", operation_id="listParties", response_model=ResponseEnvelope[List[PartyRead]])
 def list_parties(
-    page: int = 1,
-    per_page: int = 20,
+    page: int = Query(1, ge=1),
+    per_page: int = Query(20, ge=1, le=100),
     search: Optional[str] = None,
     status_filter: Optional[str] = Query(None, alias="status"),
     city: Optional[str] = None,
@@ -779,29 +779,43 @@ async def bulk_update_parties(
                     ))
                     failure_count += 1
                     continue
-                
+
                 # Apply updates
                 update_data = request.updates.model_dump(exclude_unset=True, by_alias=False)
                 for key, value in update_data.items():
                     if hasattr(party, key):
                         setattr(party, key, value)
-                
-                db.commit()
+
                 results.append(BulkUpdateResult(
                     party_id=party_id,
                     success=True
                 ))
                 success_count += 1
-                
+
             except Exception as e:
                 logger.error(f"Failed to update party {party_id}: {e}")
+                db.rollback()
                 results.append(BulkUpdateResult(
                     party_id=party_id,
                     success=False,
-                    error=str(e)
+                    error="Update failed"
                 ))
                 failure_count += 1
+
+        # Single commit for all successful updates
+        if success_count > 0:
+            try:
+                db.commit()
+            except Exception as e:
+                logger.error(f"Bulk commit failed: {e}")
                 db.rollback()
+                # Mark all as failed
+                for r in results:
+                    if r.success:
+                        r.success = False
+                        r.error = "Batch commit failed"
+                        failure_count += 1
+                        success_count -= 1
         
         response_data = BulkUpdateResponse(
             success_count=success_count,

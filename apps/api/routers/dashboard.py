@@ -197,12 +197,14 @@ def get_dashboard(
             available_devices = 0
 
         try:
-            total_sales = tenant_scoped_query(access, Sale, db_session).all()
-            manual_income_records = tenant_scoped_query(access, PaymentRecord, db_session).filter(
+            sale_revenue = tenant_scoped_query(access, Sale, db_session).with_entities(
+                func.coalesce(func.sum(func.coalesce(Sale.final_amount, Sale.total_amount, 0)), 0)
+            ).scalar() or 0
+            manual_revenue = tenant_scoped_query(access, PaymentRecord, db_session).filter(
                 PaymentRecord.sale_id == None,
                 PaymentRecord.amount > 0
-            ).all()
-            estimated_revenue = sum_sale_amounts(total_sales) + sum_manual_income(manual_income_records)
+            ).with_entities(func.coalesce(func.sum(PaymentRecord.amount), 0)).scalar() or 0
+            estimated_revenue = float(sale_revenue) + float(manual_revenue)
         except Exception:
             estimated_revenue = 0.0
 
@@ -222,32 +224,32 @@ def get_dashboard(
             active_trials = 0
 
         try:
-            daily_sales = tenant_scoped_query(access, Sale, db_session).filter(
+            daily_sale_rev = tenant_scoped_query(access, Sale, db_session).filter(
                 Sale.sale_date >= today_start,
                 Sale.sale_date < today_end
-            ).all()
-            daily_manual_income = tenant_scoped_query(access, PaymentRecord, db_session).filter(
+            ).with_entities(func.coalesce(func.sum(func.coalesce(Sale.final_amount, Sale.total_amount, 0)), 0)).scalar() or 0
+            daily_manual_rev = tenant_scoped_query(access, PaymentRecord, db_session).filter(
                 PaymentRecord.sale_id == None,
                 PaymentRecord.amount > 0,
                 PaymentRecord.payment_date >= today_start,
                 PaymentRecord.payment_date < today_end
-            ).all()
-            daily_revenue = sum_sale_amounts(daily_sales) + sum_manual_income(daily_manual_income)
+            ).with_entities(func.coalesce(func.sum(PaymentRecord.amount), 0)).scalar() or 0
+            daily_revenue = float(daily_sale_rev) + float(daily_manual_rev)
         except Exception:
             daily_revenue = 0.0
 
         try:
-            monthly_sales = tenant_scoped_query(access, Sale, db_session).filter(
+            monthly_sale_rev = tenant_scoped_query(access, Sale, db_session).filter(
                 Sale.sale_date >= month_start,
                 Sale.sale_date < next_month
-            ).all()
-            monthly_manual_income = tenant_scoped_query(access, PaymentRecord, db_session).filter(
+            ).with_entities(func.coalesce(func.sum(func.coalesce(Sale.final_amount, Sale.total_amount, 0)), 0)).scalar() or 0
+            monthly_manual_rev = tenant_scoped_query(access, PaymentRecord, db_session).filter(
                 PaymentRecord.sale_id == None,
                 PaymentRecord.amount > 0,
                 PaymentRecord.payment_date >= month_start,
                 PaymentRecord.payment_date < next_month
-            ).all()
-            monthly_revenue = sum_sale_amounts(monthly_sales) + sum_manual_income(monthly_manual_income)
+            ).with_entities(func.coalesce(func.sum(PaymentRecord.amount), 0)).scalar() or 0
+            monthly_revenue = float(monthly_sale_rev) + float(monthly_manual_rev)
         except Exception:
             monthly_revenue = 0.0
 

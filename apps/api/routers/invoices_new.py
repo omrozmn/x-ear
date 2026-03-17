@@ -60,10 +60,17 @@ _reference_cache: dict[str, tuple[datetime, object]] = {}
 # ── PDF cache helpers ──────────────────────────────────────────────────────────
 _PDF_CACHE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "instance", "pdf_cache"))
 
+def _validate_birfatura_uuid(birfatura_uuid: str) -> None:
+    """Validate birfatura_uuid to prevent path traversal attacks."""
+    if not re.match(r'^[a-zA-Z0-9_-]+$', birfatura_uuid):
+        raise HTTPException(status_code=400, detail="Invalid UUID format")
+
+
 def _get_cached_pdf(invoice_id: int, birfatura_uuid: str | None) -> bytes | None:
     """Return cached PDF bytes if available, else None."""
     if not birfatura_uuid:
         return None
+    _validate_birfatura_uuid(birfatura_uuid)
     path = os.path.join(_PDF_CACHE_DIR, f"{birfatura_uuid}.pdf")
     if os.path.isfile(path):
         try:
@@ -78,6 +85,7 @@ def _get_cached_pdf(invoice_id: int, birfatura_uuid: str | None) -> bytes | None
 def _save_pdf_cache(birfatura_uuid: str, pdf_bytes: bytes) -> None:
     """Persist PDF bytes to disk cache."""
     try:
+        _validate_birfatura_uuid(birfatura_uuid)
         os.makedirs(_PDF_CACHE_DIR, exist_ok=True)
         path = os.path.join(_PDF_CACHE_DIR, f"{birfatura_uuid}.pdf")
         with open(path, "wb") as f:

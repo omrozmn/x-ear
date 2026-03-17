@@ -237,11 +237,15 @@ def get_user_notification_settings(
 @router.put("/notifications/settings", operation_id="updateNotificationSettings", response_model=ResponseEnvelope[NotificationSettings])
 def set_user_notification_settings(
     settings_in: NotificationSettingsUpdate,
+    access: UnifiedAccess = Depends(require_access()),
     db_session: Session = Depends(get_db)
 ):
     """Set user notification settings"""
     try:
-        user_id = settings_in.user_id
+        # Use authenticated user_id instead of trusting the request body
+        user_id = access.user_id
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Authentication required")
         prefs = settings_in.preferences or settings_in.settings
         
         if not prefs:

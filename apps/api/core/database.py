@@ -41,6 +41,17 @@ if DATABASE_URL.startswith('sqlite'):
     if ":memory:" in DATABASE_URL:
         _engine_kwargs["poolclass"] = StaticPool
     engine = create_engine(DATABASE_URL, **_engine_kwargs)
+
+    # Enable WAL mode and performance pragmas for SQLite
+    from sqlalchemy import event as sa_event
+    @sa_event.listens_for(engine, "connect")
+    def _set_sqlite_pragmas(dbapi_connection, connection_record):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.execute("PRAGMA busy_timeout=5000")
+        cursor.execute("PRAGMA cache_size=-20000")  # 20MB cache
+        cursor.close()
 else:
     # PostgreSQL with increased connection pool for testing
     engine = create_engine(

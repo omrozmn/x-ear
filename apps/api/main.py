@@ -250,8 +250,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*", "Idempotency-Key", "X-Request-Id"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Idempotency-Key", "X-Request-Id", "X-Tenant-Id"],
     expose_headers=["X-Request-Id", "X-Response-Time", "X-Idempotency-Replayed"],
 )
 
