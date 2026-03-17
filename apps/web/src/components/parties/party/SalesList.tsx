@@ -34,8 +34,8 @@ export const SalesList: React.FC<SalesListProps> = ({
   if (filteredSales.length === 0) {
     return (
       <div className="text-center py-12" role="status">
-        <DollarSign className="w-12 h-12 text-gray-400 mx-auto mb-4" aria-hidden="true" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
+        <DollarSign className="w-12 h-12 text-muted-foreground mx-auto mb-4" aria-hidden="true" />
+        <h3 className="text-lg font-medium text-foreground mb-2">
           {sales.length === 0
             ? 'Henüz satış yapılmamış'
             : hasActiveFilters
@@ -43,7 +43,7 @@ export const SalesList: React.FC<SalesListProps> = ({
               : 'Henüz satış kaydı bulunmuyor'
           }
         </h3>
-        <p className="text-gray-500">
+        <p className="text-muted-foreground">
           {sales.length === 0
             ? 'Bu hastaya henüz satış işlemi gerçekleştirilmemiş.'
             : hasActiveFilters
@@ -64,8 +64,8 @@ export const SalesList: React.FC<SalesListProps> = ({
     if (sale.devices && sale.devices.length > 0) {
       return sale.devices.map((d, index: number) => (
         <div key={index} className="mb-1">
-          <div className="font-medium text-gray-900">{d.name || d.model || 'Cihaz'}</div>
-          <div className="text-xs text-gray-600">Marka: {d.brand || '-'} | Model: {d.model || '-'}</div>
+          <div className="font-medium text-foreground">{d.name || d.model || 'Cihaz'}</div>
+          <div className="text-xs text-muted-foreground">Marka: {d.brand || '-'} | Model: {d.model || '-'}</div>
         </div>
       ));
     }
@@ -74,13 +74,13 @@ export const SalesList: React.FC<SalesListProps> = ({
     if (sale.productId) {
       return (
         <div className="mb-1">
-          <div className="font-medium text-gray-900">Ürün ID: {sale.productId}</div>
-          <div className="text-xs text-gray-600">Envanter ürünü</div>
+          <div className="font-medium text-foreground">Ürün ID: {sale.productId}</div>
+          <div className="text-xs text-muted-foreground">Envanter ürünü</div>
         </div>
       );
     }
 
-    return <div className="text-gray-500 text-sm">Ürün bilgisi yok</div>;
+    return <div className="text-muted-foreground text-sm">Ürün bilgisi yok</div>;
   };
 
   const renderBarcodeSerialInfo = (sale: SaleRead) => {
@@ -90,21 +90,21 @@ export const SalesList: React.FC<SalesListProps> = ({
           {sale.devices.map((device, index: number) => (
             <div key={index} className="text-sm">
               {device.barcode && (
-                <div className="font-mono text-xs bg-gray-100 px-1 rounded inline-block mb-1">
+                <div className="font-mono text-xs bg-muted px-1 rounded inline-block mb-1">
                   {device.barcode}
                 </div>
               )}
               {device.serialNumber && (
-                <div className="font-mono text-gray-900">{device.serialNumber}</div>
+                <div className="font-mono text-foreground">{device.serialNumber}</div>
               )}
               {device.serialNumberLeft && (
-                <div className="font-mono text-xs text-red-600">S: {device.serialNumberLeft}</div>
+                <div className="font-mono text-xs text-destructive">S: {device.serialNumberLeft}</div>
               )}
               {device.serialNumberRight && (
-                <div className="font-mono text-xs text-blue-600">L: {device.serialNumberRight}</div>
+                <div className="font-mono text-xs text-primary">L: {device.serialNumberRight}</div>
               )}
               {!device.barcode && !device.serialNumber && !device.serialNumberLeft && !device.serialNumberRight && (
-                <div className="text-xs text-gray-400">Seri yok</div>
+                <div className="text-xs text-muted-foreground">Seri yok</div>
               )}
             </div>
           ))}
@@ -117,7 +117,7 @@ export const SalesList: React.FC<SalesListProps> = ({
       return (
         <div>
           <div className="font-medium">{sale.productId}</div>
-          <div className="text-xs text-gray-600">Ürün Kodu</div>
+          <div className="text-xs text-muted-foreground">Ürün Kodu</div>
         </div>
       );
     }
@@ -161,15 +161,15 @@ export const SalesList: React.FC<SalesListProps> = ({
     if (paidAmount > 0 && remainingAmount > 0) {
       return <span className="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full">Kısmi Ödendi</span>;
     } else if (paidAmount > 0 && remainingAmount === 0) {
-      return <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Ödendi</span>;
+      return <span className="px-2 py-1 text-xs font-medium bg-success/10 text-success rounded-full">Ödendi</span>;
     }
 
     const badges: Record<string, React.ReactElement> = {
-      'paid': <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Ödendi</span>,
-      'pending': <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Beklemede</span>,
+      'paid': <span className="px-2 py-1 text-xs font-medium bg-success/10 text-success rounded-full">Ödendi</span>,
+      'pending': <span className="px-2 py-1 text-xs font-medium bg-warning/10 text-yellow-800 rounded-full">Beklemede</span>,
       'partial': <span className="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full">Kısmi Ödendi</span>,
-      'cancelled': <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">İptal edildi</span>,
-      'completed': <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">Tamamlandı</span>
+      'cancelled': <span className="px-2 py-1 text-xs font-medium bg-destructive/10 text-red-800 rounded-full">İptal edildi</span>,
+      'completed': <span className="px-2 py-1 text-xs font-medium bg-primary/10 text-blue-800 rounded-full">Tamamlandı</span>
     };
     return badges[status] || badges['pending'];
   };
@@ -220,9 +220,9 @@ export const SalesList: React.FC<SalesListProps> = ({
       key: '_saleId',
       title: 'Satış ID/Tarih',
       render: (_, sale) => (
-        <div className="text-sm text-gray-900">
+        <div className="text-sm text-foreground">
           <div className="font-medium">{sale.id}</div>
-          <div className="text-xs text-gray-600">
+          <div className="text-xs text-muted-foreground">
             {new Date(sale.saleDate || sale.createdAt || Date.now()).toLocaleDateString('tr-TR')}
           </div>
         </div>
@@ -231,12 +231,12 @@ export const SalesList: React.FC<SalesListProps> = ({
     {
       key: '_product',
       title: 'Ürün/Hizmet',
-      render: (_, sale) => <div className="text-sm text-gray-600">{renderDevicesSummary(sale)}</div>,
+      render: (_, sale) => <div className="text-sm text-muted-foreground">{renderDevicesSummary(sale)}</div>,
     },
     {
       key: '_barcode',
       title: 'Barkod/Seri No',
-      render: (_, sale) => <div className="text-sm font-medium text-gray-900">{renderBarcodeSerialInfo(sale)}</div>,
+      render: (_, sale) => <div className="text-sm font-medium text-foreground">{renderBarcodeSerialInfo(sale)}</div>,
     },
     {
       key: '_totalAmount',
@@ -244,7 +244,7 @@ export const SalesList: React.FC<SalesListProps> = ({
       align: 'right',
       render: (_, sale) => {
         const extendedSale = sale as unknown as ExtendedSaleRead;
-        return <span className="text-sm font-semibold text-gray-900">{formatCurrency(extendedSale.totalAmount || 0)}</span>;
+        return <span className="text-sm font-semibold text-foreground">{formatCurrency(extendedSale.totalAmount || 0)}</span>;
       },
     },
     {
@@ -254,7 +254,7 @@ export const SalesList: React.FC<SalesListProps> = ({
       render: (_, sale) => {
         const extendedSale = sale as unknown as ExtendedSaleRead;
         return (
-          <span className="text-sm font-semibold text-red-600">
+          <span className="text-sm font-semibold text-destructive">
             {extendedSale.discountAmount ? `-${formatCurrency(extendedSale.discountAmount)}` : formatCurrency(0)}
           </span>
         );
@@ -265,7 +265,7 @@ export const SalesList: React.FC<SalesListProps> = ({
       title: 'KDV Dahil Toplam',
       align: 'right',
       render: (_, sale) => (
-        <span className="text-sm font-semibold text-gray-900">{formatCurrency(calculateTotalWithVat(sale))}</span>
+        <span className="text-sm font-semibold text-foreground">{formatCurrency(calculateTotalWithVat(sale))}</span>
       ),
     },
     {
@@ -276,8 +276,8 @@ export const SalesList: React.FC<SalesListProps> = ({
         const paid = calculatePaidAmount(sale);
         return (
           <div>
-            <div className="text-sm font-semibold text-green-700">{formatCurrency(paid)}</div>
-            <div className="text-xs text-gray-600">{renderPaymentMethods(sale)}</div>
+            <div className="text-sm font-semibold text-success">{formatCurrency(paid)}</div>
+            <div className="text-xs text-muted-foreground">{renderPaymentMethods(sale)}</div>
           </div>
         );
       },
@@ -309,8 +309,8 @@ export const SalesList: React.FC<SalesListProps> = ({
           <Dropdown
             position="bottom-right"
             trigger={
-              <Button variant="ghost" size="sm" className="w-8 h-8 p-0 rounded-full border border-gray-200">
-                <MoreVertical className="w-4 h-4 text-gray-600" />
+              <Button variant="ghost" size="sm" className="w-8 h-8 p-0 rounded-full border border-border">
+                <MoreVertical className="w-4 h-4 text-muted-foreground" />
               </Button>
             }
             items={[

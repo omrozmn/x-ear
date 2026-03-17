@@ -16,7 +16,7 @@ export const FileUploadSection: React.FC<FileUploadSectionProps> = ({
   onUploadClick
 }) => {
   return (
-    <div className="bg-white rounded-2xl border p-6">
+    <div className="bg-card rounded-2xl border p-6">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-semibold">SGK Belgeleri</h3>
         <Button
@@ -33,21 +33,21 @@ export const FileUploadSection: React.FC<FileUploadSectionProps> = ({
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
         </div>
       ) : sgkDocuments.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-muted-foreground">
           <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
           <p>Henüz SGK belgesi yüklenmemiş</p>
         </div>
       ) : (
         <div className="space-y-3">
           {sgkDocuments.map((doc) => (
-            <div key={doc.id} className="border rounded-2xl p-4 hover:bg-gray-50 transition-colors">
+            <div key={doc.id} className="border rounded-2xl p-4 hover:bg-muted transition-colors">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-2">
-                    <h5 className="font-medium text-gray-900">{doc.filename}</h5>
+                    <h5 className="font-medium text-foreground">{doc.filename}</h5>
                     <StatusBadge status="approved" className="text-xs" />
                   </div>
-                  <div className="text-sm text-gray-600 space-y-1">
+                  <div className="text-sm text-muted-foreground space-y-1">
                     <p>Yüklenme: {new Date(doc.uploadedAt).toLocaleDateString('tr-TR')}</p>
                     <p>Durum: İşlendi</p>
                   </div>

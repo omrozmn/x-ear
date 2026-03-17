@@ -6,6 +6,7 @@ import { InventoryFormData, InventoryCategory, InventoryType, EarDirection, Inve
 import { FeatureTagInput } from './FeatureTagInput';
 import { SupplierAutocomplete } from './SupplierAutocomplete';
 import { BrandAutocomplete } from './BrandAutocomplete';
+import toast from 'react-hot-toast';
 
 interface ProductFormProps {
   isOpen: boolean;
@@ -188,11 +189,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
   const validateForm = (): boolean => {
     if (!formData.name.trim()) {
-      alert('Ürün adı gereklidir');
+      toast('Ürün adı gereklidir');
       return false;
     }
     if (!formData.brand.trim()) {
-      alert('Marka gereklidir');
+      toast('Marka gereklidir');
       return false;
     }
     return true;
@@ -210,7 +211,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       onClose();
     } catch (error) {
       console.error('Form submission error:', error);
-      alert('Kayıt sırasında hata oluştu');
+      toast.error('Kayıt sırasında hata oluştu');
     }
   };
 
@@ -220,7 +221,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between p-6 border-b border-border">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
             {mode === 'create' ? 'Yeni Ürün Ekle' : 'Ürün Düzenle'}
           </h2>
@@ -239,7 +240,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         <form onSubmit={handleSubmit} className="p-6 space-y-8">
           {/* Temel Bilgiler */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-b border-border pb-2">
               Temel Bilgiler
             </h3>
 
@@ -256,7 +257,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Ürün Adı *
                 </label>
                 <Input
@@ -281,7 +282,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Model
                 </label>
                 <Input
@@ -295,7 +296,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Barkod No
                 </label>
                 <Input
@@ -309,7 +310,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Cihaz Yönü
                 </label>
                 <div className="flex gap-4">
@@ -330,13 +331,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
           {/* Özellikler ve Tedarikçi */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-b border-border pb-2">
               Ek Bilgiler
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Özellikler
                 </label>
                 <FeatureTagInput
@@ -347,7 +348,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Tedarikçi
                 </label>
                 <SupplierAutocomplete
@@ -365,7 +366,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Seri Numaraları
                 </label>
                 <div className="flex items-center gap-2">
@@ -389,7 +390,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Açıklama
                 </label>
                 <Textarea
@@ -405,13 +406,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
           {/* Stok Bilgileri */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-b border-border pb-2">
               Stok Bilgileri
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Mevcut Stok
                 </label>
                 <Input
@@ -426,7 +427,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Minimum Stok
                 </label>
                 <Input
@@ -441,7 +442,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Denemede
                 </label>
                 <Input
@@ -459,13 +460,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
           {/* Fiyat Bilgileri */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-b border-border pb-2">
               Fiyat Bilgileri
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Birim Fiyat (₺)
                 </label>
                 <Input
@@ -491,7 +492,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   KDV Dahil Birim Fiyat (₺)
                 </label>
                 <Input
@@ -503,7 +504,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Toplam Stok Değeri (₺)
                 </label>
                 <Input
@@ -518,13 +519,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
           {/* Garanti Bilgileri */}
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 border-b border-border pb-2">
               Garanti Bilgileri
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Garanti Süresi (Ay)
                 </label>
                 <Input
@@ -540,7 +541,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   SGK Kodu
                 </label>
                 <Input
@@ -561,14 +562,14 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 onChange={(e) => handleInputChange('isMinistryTracked', e.target.checked)}
                 className="mr-2"
               />
-              <label htmlFor="isMinistryTracked" className="text-sm text-gray-700 dark:text-gray-300">
+              <label htmlFor="isMinistryTracked" className="text-sm text-foreground">
                 Bakanlık takipli ürün
               </label>
             </div>
           </div>
 
           {/* Form Actions */}
-          <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex justify-end gap-3 pt-6 border-t border-border">
             <Button
               type="button"
               variant="outline"

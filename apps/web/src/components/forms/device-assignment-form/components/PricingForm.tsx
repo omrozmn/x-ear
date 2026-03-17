@@ -2,6 +2,7 @@ import { useListSettings } from '@/api/client/settings.client';
 import React, { useCallback, useEffect, useState } from 'react';
 import { CreditCard, Calculator, DollarSign } from 'lucide-react';
 import { Input, Select } from '@x-ear/ui-web';
+import { useSector } from '@/hooks/useSector';
 
 export interface DeviceAssignment {
   listPrice?: number;
@@ -35,6 +36,9 @@ export const PricingForm: React.FC<PricingFormProps> = ({
   errors = {},
   showTrialPricing = false
 }) => {
+  const { isHearingSector, isModuleEnabled } = useSector();
+  const showSgk = isHearingSector() || isModuleEnabled('sgk');
+
   const updateFormData = useCallback((field: keyof DeviceAssignment, value: string | number | boolean | null) => {
     onFormDataChange({ [field]: value });
   }, [onFormDataChange]);
@@ -158,30 +162,30 @@ export const PricingForm: React.FC<PricingFormProps> = ({
     <div className="space-y-6">
       {/* Trial Pricing Section */}
       {showTrialPricing && (
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-4">
+        <div className="bg-primary/10 border border-blue-200 dark:border-blue-800 rounded-2xl p-4">
           <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-3 flex items-center">
             <Calculator className="w-4 h-4 mr-2" />
             Deneme Fiyatlandırması
           </h4>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-blue-700 dark:text-blue-300 mb-1">Deneme Liste Fiyatı</label>
+              <label className="block text-xs text-primary mb-1">Deneme Liste Fiyatı</label>
               <Input
                 type="number"
                 value={formData.trialListPrice || ''}
                 onChange={(e) => updateFormData('trialListPrice', parseFloat(e.target.value) || 0)}
                 placeholder="0.00"
-                className="text-sm border-blue-300 dark:border-blue-700 focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white"
+                className="text-sm border-blue-300 dark:border-blue-700 focus:ring-2 focus:ring-ring dark:bg-slate-800 dark:text-white"
               />
             </div>
             <div>
-              <label className="block text-xs text-blue-700 dark:text-blue-300 mb-1">Deneme Fiyatı</label>
+              <label className="block text-xs text-primary mb-1">Deneme Fiyatı</label>
               <Input
                 type="number"
                 value={formData.trialPrice || ''}
                 onChange={(e) => updateFormData('trialPrice', parseFloat(e.target.value) || 0)}
                 placeholder="0.00"
-                className="text-sm border-blue-300 dark:border-blue-700 focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white"
+                className="text-sm border-blue-300 dark:border-blue-700 focus:ring-2 focus:ring-ring dark:bg-slate-800 dark:text-white"
               />
             </div>
           </div>
@@ -199,7 +203,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* List Price */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Liste Fiyatı
             </label>
             <Input
@@ -210,13 +214,14 @@ export const PricingForm: React.FC<PricingFormProps> = ({
               className={`w-full dark:bg-slate-800 dark:text-white ${errors.listPrice ? 'border-red-300 dark:border-red-700' : ''}`}
             />
             {errors.listPrice && (
-              <p className="mt-1 text-sm text-red-600">{errors.listPrice}</p>
+              <p className="mt-1 text-sm text-destructive">{errors.listPrice}</p>
             )}
           </div>
 
-          {/* SGK Support */}
+          {/* SGK Support - only for hearing/optic sectors with SGK module */}
+          {showSgk && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               SGK Destek Türü
             </label>
             <Select
@@ -227,13 +232,14 @@ export const PricingForm: React.FC<PricingFormProps> = ({
               fullWidth
             />
           </div>
+          )}
         </div>
 
         {/* SGK Reduction Display */}
         {formData.sgkReduction && formData.sgkReduction > 0 && (
-          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-3">
+          <div className="bg-success/10 border border-green-200 dark:border-green-800 rounded-2xl p-3">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-green-700 dark:text-green-300">SGK Desteği:</span>
+              <span className="text-success">SGK Desteği:</span>
               <span className="font-medium text-green-900 dark:text-green-100">
                 -{formatCurrency(formData.sgkReduction)}
               </span>
@@ -244,7 +250,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
         {/* Discount Section - 2 columns, each input full width in its column */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               İndirim Türü
             </label>
             <Select
@@ -261,7 +267,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
 
           {formData.discountType !== 'none' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 İndirim Değeri
               </label>
               <Input
@@ -277,30 +283,30 @@ export const PricingForm: React.FC<PricingFormProps> = ({
 
         {/* Price Summary */}
         {formData.listPrice && formData.listPrice > 0 && (
-          <div className="bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl p-4">
+          <div className="bg-gray-50 dark:bg-slate-900 border border-border dark:border-slate-700 rounded-2xl p-4">
             <h5 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">Fiyat Özeti</h5>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Liste Fiyatı:</span>
+                <span className="text-muted-foreground">Liste Fiyatı:</span>
                 <span className="font-medium text-gray-900 dark:text-gray-100">{formatCurrency(formData.listPrice)}</span>
               </div>
               {/* NOTE: we intentionally do not duplicate a separate 'Seçilen SGK Desteği' row here.
                   The canonical SGK reduction is shown via `SGK Desteği` (from formData.sgkReduction)
                   and the scheme amount is only used for display elsewhere. */}
               {formData.sgkReduction && formData.sgkReduction > 0 && (
-                <div className="flex justify-between text-green-600 dark:text-green-400">
+                <div className="flex justify-between text-success">
                   <span>SGK Desteği:</span>
                   <span>-{formatCurrency(formData.sgkReduction)}</span>
                 </div>
               )}
               {typeof formData.kdvRate !== 'undefined' && formData.kdvRate !== null && (
-                <div className="flex justify-between text-gray-700 dark:text-gray-300">
+                <div className="flex justify-between text-foreground">
                   <span>KDV Oranı:</span>
                   <span className="font-medium">{`${formData.kdvRate}%`}</span>
                 </div>
               )}
               {formData.discountValue && formData.discountValue > 0 && (
-                <div className="flex justify-between text-blue-600 dark:text-blue-400">
+                <div className="flex justify-between text-primary">
                   <span>İndirim ({formData.discountType === 'percentage' ? '%' : '₺'}):</span>
                   <span>-{formData.discountType === 'percentage' ?
                     `${formData.discountValue}%` :
@@ -318,7 +324,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
               </div>
               {/* Show per-device (per-item) sale price when bilateral so user sees per-ear cost */}
               {formData.ear === 'both' && (
-                <div className="flex justify-between text-sm text-gray-700 dark:text-gray-300 mt-1">
+                <div className="flex justify-between text-sm text-foreground mt-1">
                   <span>Bilateral x 2</span>
                   <span className="font-medium">{formatCurrency(formData.salePrice ?? formData.listPrice)}</span>
                 </div>
@@ -339,7 +345,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Down Payment */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Ön Ödeme
             </label>
             <Input
@@ -353,7 +359,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
 
           {/* Payment Method */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Ödeme Yöntemi
             </label>
             <Select
@@ -374,9 +380,9 @@ export const PricingForm: React.FC<PricingFormProps> = ({
 
         {/* Remaining Amount Display */}
         {formData.remainingAmount !== undefined && (
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-3">
+          <div className="bg-primary/10 border border-blue-200 dark:border-blue-800 rounded-2xl p-3">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-blue-700 dark:text-blue-300">Kalan Tutar:</span>
+              <span className="text-primary">Kalan Tutar:</span>
               <span className="font-medium text-blue-900 dark:text-blue-100">
                 {formatCurrency(formData.remainingAmount)}
               </span>
@@ -386,7 +392,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
 
         {/* Installment Options */}
         {formData.paymentMethod === 'installment' && (
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-2xl p-4">
+          <div className="bg-warning/10 border border-yellow-200 dark:border-yellow-800 rounded-2xl p-4">
             <h5 className="text-sm font-medium text-yellow-900 dark:text-yellow-100 mb-3">Taksit Bilgileri</h5>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -418,7 +424,7 @@ export const PricingForm: React.FC<PricingFormProps> = ({
                   type="text"
                   value={formData.monthlyInstallment ? formatCurrency(formData.monthlyInstallment) : '₺0.00'}
                   readOnly
-                  className="text-sm border-yellow-300 dark:border-yellow-700 bg-yellow-100 dark:bg-yellow-900/40 dark:text-yellow-100"
+                  className="text-sm border-yellow-300 dark:border-yellow-700 bg-warning/10 dark:text-yellow-100"
                 />
               </div>
             </div>

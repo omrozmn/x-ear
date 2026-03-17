@@ -22,17 +22,17 @@ function DuplicateStatusBadge({ status }: { status: string }) {
   const config: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
     pending: {
       label: 'Bekliyor',
-      color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+      color: 'bg-warning/10 text-yellow-800 dark:text-yellow-400',
       icon: <Clock className="w-3 h-3" />,
     },
     merged: {
       label: 'Birleştirildi',
-      color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+      color: 'bg-success/10 text-success',
       icon: <CheckCircle className="w-3 h-3" />,
     },
     dismissed: {
       label: 'Reddedildi',
-      color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400',
+      color: 'bg-muted text-foreground/30',
       icon: <XCircle className="w-3 h-3" />,
     },
   };
@@ -52,10 +52,10 @@ function MatchScoreBar({ score }: { score: number }) {
   const color = pct >= 80 ? 'bg-green-500' : pct >= 50 ? 'bg-yellow-500' : 'bg-red-500';
   return (
     <div className="flex items-center gap-2">
-      <div className="flex-1 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+      <div className="flex-1 h-1.5 bg-accent rounded-full overflow-hidden">
         <div className={`h-full ${color} rounded-full`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-xs font-medium text-gray-600 dark:text-gray-400 w-8">{pct}%</span>
+      <span className="text-xs font-medium text-muted-foreground w-8">{pct}%</span>
     </div>
   );
 }
@@ -82,10 +82,10 @@ function PatientCompareCard({
   return (
     <div className={`p-4 rounded-xl border ${
       highlight
-        ? 'border-blue-300 bg-blue-50/50 dark:border-blue-700 dark:bg-blue-900/10'
-        : 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800'
+        ? 'border-blue-300 bg-primary/10/50 dark:border-blue-700'
+        : 'border-border bg-white dark:bg-gray-800'
     }`}>
-      <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-3">
+      <h4 className="text-xs font-semibold text-muted-foreground uppercase mb-3">
         {title}
       </h4>
       <div className="space-y-2">
@@ -94,8 +94,8 @@ function PatientCompareCard({
           if (!value) return null;
           return (
             <div key={key} className="flex items-center gap-2 text-sm">
-              <span className="text-gray-400">{icon}</span>
-              <span className="text-gray-500 dark:text-gray-400 w-24">{label}:</span>
+              <span className="text-muted-foreground">{icon}</span>
+              <span className="text-muted-foreground w-24">{label}:</span>
               <span className="font-medium text-gray-900 dark:text-white">{String(value)}</span>
             </div>
           );
@@ -120,24 +120,24 @@ function DuplicateRow({
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+    <div className="border border-border rounded-xl overflow-hidden">
       {/* Summary Row */}
       <button
         data-allow-raw="true"
         onClick={() => setExpanded(!expanded)}
-        className="w-full p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+        className="w-full p-4 flex items-center justify-between hover:bg-muted dark:hover:bg-gray-800/50 transition-colors"
       >
         <div className="flex items-center gap-4">
           <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0" />
           <div className="text-left">
             <p className="text-sm font-medium text-gray-900 dark:text-white">
               {duplicate.existingPatient?.firstName} {duplicate.existingPatient?.lastName}
-              <span className="text-gray-400 mx-2">↔</span>
+              <span className="text-muted-foreground mx-2">↔</span>
               {duplicate.importedPatient?.firstName} {duplicate.importedPatient?.lastName}
             </p>
             <div className="flex items-center gap-3 mt-1">
               <MatchScoreBar score={duplicate.matchScore || 0} />
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-muted-foreground">
                 {duplicate.matchReason || 'Benzer kayıt'}
               </span>
             </div>
@@ -145,13 +145,13 @@ function DuplicateRow({
         </div>
         <div className="flex items-center gap-2">
           <DuplicateStatusBadge status={duplicate.status} />
-          <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform ${expanded ? 'rotate-90' : ''}`} />
+          <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${expanded ? 'rotate-90' : ''}`} />
         </div>
       </button>
 
       {/* Expanded Details */}
       {expanded && (
-        <div className="px-4 pb-4 space-y-4 border-t border-gray-100 dark:border-gray-700">
+        <div className="px-4 pb-4 space-y-4 border-t border-border">
           <div className="grid grid-cols-2 gap-4 pt-4">
             <PatientCompareCard
               title="Mevcut Kayıt (CRM)"
@@ -234,7 +234,7 @@ export default function NoahDuplicatesCenter() {
             <Users className="w-5 h-5 text-amber-500" />
             Mükerrer Kayıt Merkezi
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Noah içe aktarımından gelen olası mükerrer kayıtları inceleyin
           </p>
         </div>
@@ -242,7 +242,7 @@ export default function NoahDuplicatesCenter() {
 
       {/* Filters */}
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+        <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
           {[
             { value: 'pending', label: 'Bekleyen' },
             { value: undefined, label: 'Tümü' },
@@ -256,7 +256,7 @@ export default function NoahDuplicatesCenter() {
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                 statusFilter === value
                   ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                  : 'text-muted-foreground hover:text-foreground dark:hover:text-gray-300'
               }`}
             >
               {label}
@@ -267,7 +267,7 @@ export default function NoahDuplicatesCenter() {
 
       {/* Content */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-12 text-gray-500">
+        <div className="flex items-center justify-center py-12 text-muted-foreground">
           <Loader2 className="w-5 h-5 animate-spin mr-2" />
           Yükleniyor...
         </div>
@@ -277,7 +277,7 @@ export default function NoahDuplicatesCenter() {
           <h3 className="text-base font-medium text-gray-900 dark:text-white mb-1">
             {statusFilter === 'pending' ? 'Bekleyen mükerrer kayıt yok' : 'Kayıt bulunamadı'}
           </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-muted-foreground">
             {statusFilter === 'pending'
               ? 'Tüm mükerrer kayıtlar çözümlendi.'
               : 'Seçilen filtreye uygun kayıt yok.'}
@@ -300,7 +300,7 @@ export default function NoahDuplicatesCenter() {
       {/* Pagination */}
       {meta && (meta.totalPages || 0) > 1 && (
         <div className="flex items-center justify-between pt-4">
-          <span className="text-sm text-gray-500 dark:text-gray-400">
+          <span className="text-sm text-muted-foreground">
             Toplam {meta.total || 0} kayıt
           </span>
           <div className="flex items-center gap-2">
@@ -312,7 +312,7 @@ export default function NoahDuplicatesCenter() {
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            <span className="text-sm text-gray-600 dark:text-gray-400">
+            <span className="text-sm text-muted-foreground">
               {page} / {meta.totalPages || 1}
             </span>
             <Button

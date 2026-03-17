@@ -16,20 +16,19 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   helperText,
   leftIcon,
   rightIcon,
-  fullWidth = false,
+  fullWidth = true,
   className = '',
   id,
   ...props
 }, ref) => {
-  // Generate stable ID only once per component instance
   const generatedId = useMemo(() => `input-${Math.random().toString(36).substr(2, 9)}`, []);
   const inputId = id || generatedId;
 
-  const baseClasses = 'block px-3 py-2 border rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-all focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseClasses = 'block px-3 py-2 border rounded-xl text-sm bg-card text-foreground transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed';
 
   const stateClasses = error
-    ? 'border-red-300 dark:border-red-500 focus:border-red-500 focus:ring-red-500'
-    : 'border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500';
+    ? 'border-destructive focus:border-destructive focus:ring-destructive'
+    : 'border-border focus:border-primary';
 
   const widthClasses = fullWidth ? 'w-full' : '';
 
@@ -52,10 +51,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   return (
     <div className={fullWidth ? 'w-full' : ''}>
       {label && (
-        <label
-          htmlFor={inputId}
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-        >
+        <label htmlFor={inputId} className="block text-sm font-medium text-foreground mb-1">
           {label}
         </label>
       )}
@@ -63,7 +59,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
       <div className="relative">
         {leftIcon && (
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
-            <span className="text-gray-400">{leftIcon}</span>
+            <span className="text-muted-foreground">{leftIcon}</span>
           </div>
         )}
 
@@ -76,27 +72,23 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
 
         {rightIcon && !error && (
           <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-            <span className="text-gray-400">{rightIcon}</span>
+            <span className="text-muted-foreground">{rightIcon}</span>
           </div>
         )}
 
         {error && (
           <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-            <AlertCircle className="w-5 h-5 text-red-500" />
+            <AlertCircle className="w-5 h-5 text-destructive" />
           </div>
         )}
       </div>
 
       {error && (
-        <p className="mt-1 text-sm text-red-600">
-          {error}
-        </p>
+        <p className="mt-1 text-sm text-destructive">{error}</p>
       )}
 
       {helperText && !error && (
-        <p className="mt-1 text-sm text-gray-500">
-          {helperText}
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">{helperText}</p>
       )}
     </div>
   );

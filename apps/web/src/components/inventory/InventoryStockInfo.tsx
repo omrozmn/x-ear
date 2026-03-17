@@ -42,14 +42,14 @@ export const InventoryStockInfo: React.FC<InventoryStockInfoProps> = ({ item }) 
           <div className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                <p className="text-sm text-muted-foreground mb-1">
                   Mevcut Stok
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {item.availableInventory}
                 </p>
               </div>
-              <Package className="w-8 h-8 text-blue-500" />
+              <Package className="w-8 h-8 text-primary" />
             </div>
           </div>
         </Card>
@@ -58,7 +58,7 @@ export const InventoryStockInfo: React.FC<InventoryStockInfoProps> = ({ item }) 
           <div className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                <p className="text-sm text-muted-foreground mb-1">
                   Min. Stok
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -74,17 +74,17 @@ export const InventoryStockInfo: React.FC<InventoryStockInfoProps> = ({ item }) 
           <div className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                <p className="text-sm text-muted-foreground mb-1">
                   Birim Fiyat
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   ₺{item.price.toFixed(2)}
                 </p>
               </div>
-              <DollarSign className="w-8 h-8 text-green-500" />
+              <DollarSign className="w-8 h-8 text-success" />
             </div>
             {item.vatIncludedPrice && (
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-muted-foreground mt-2">
                 KDV Dahil: ₺{item.vatIncludedPrice.toFixed(2)}
               </p>
             )}
@@ -95,7 +95,7 @@ export const InventoryStockInfo: React.FC<InventoryStockInfoProps> = ({ item }) 
           <div className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                <p className="text-sm text-muted-foreground mb-1">
                   Toplam Değer
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -118,7 +118,7 @@ export const InventoryStockInfo: React.FC<InventoryStockInfoProps> = ({ item }) 
             <div className="space-y-3">
               {item.totalInventory !== undefined && (
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                  <span className="text-sm text-muted-foreground">
                     Toplam Stok
                   </span>
                   <span className="font-medium text-gray-900 dark:text-white">
@@ -128,7 +128,7 @@ export const InventoryStockInfo: React.FC<InventoryStockInfoProps> = ({ item }) 
               )}
               {item.usedInventory !== undefined && (
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                  <span className="text-sm text-muted-foreground">
                     Kullanılan
                   </span>
                   <span className="font-medium text-gray-900 dark:text-white">
@@ -136,8 +136,8 @@ export const InventoryStockInfo: React.FC<InventoryStockInfoProps> = ({ item }) 
                   </span>
                 </div>
               )}
-              <div className="flex justify-between items-center pt-3 border-t border-gray-200 dark:border-gray-700">
-                <span className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex justify-between items-center pt-3 border-t border-border">
+                <span className="text-sm text-muted-foreground">
                   Kullanılabilir
                 </span>
                 <span className="font-bold text-gray-900 dark:text-white">

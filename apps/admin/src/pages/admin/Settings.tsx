@@ -139,7 +139,6 @@ const Settings: React.FC = () => {
       await updateSettings({ data: toSettingItems(data) });
       toast.success('Ayarlar başarıyla kaydedildi');
     } catch (error) {
-      console.error('Error saving settings:', error);
       toast.error(getErrorMessage(error));
     }
   };

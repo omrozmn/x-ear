@@ -40,6 +40,7 @@ class Supplier(BaseModel, TenantScopedMixin):
     # Address
     address = Column(Text)
     city = Column(String(100))
+    district = Column(String(100))
     country = Column(String(100), default='Türkiye')
     postal_code = Column(String(20))
     

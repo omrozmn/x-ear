@@ -34,10 +34,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   if (isInitializing) {
     // console.log('AuthProvider: Showing loading screen');
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-muted">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Yükleniyor...</p>
+          <p className="mt-4 text-muted-foreground">Yükleniyor...</p>
         </div>
       </div>
     );
@@ -72,10 +72,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       window.location.href = `/login?redirect=${returnUrl}`;
       // Show loading while redirecting
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="min-h-screen flex items-center justify-center bg-muted">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Redirecting to login...</p>
+            <p className="mt-4 text-muted-foreground">Redirecting to login...</p>
           </div>
         </div>
       );

@@ -73,7 +73,7 @@ export interface AIFeatureWrapperProps {
 function DefaultLoadingFallback(): React.ReactElement {
   return (
     <div
-      className="flex items-center justify-center p-4 text-gray-500"
+      className="flex items-center justify-center p-4 text-muted-foreground"
       role="status"
       aria-label="AI durumu kontrol ediliyor"
     >
@@ -157,40 +157,40 @@ function DefaultUnavailableFallback({
  * ```tsx
  * // Basic usage - checks general AI availability
  * <AIFeatureWrapper>
- *   <AIChatWidget />
+ * <AIChatWidget />
  * </AIFeatureWrapper>
  * 
  * // With capability check
  * <AIFeatureWrapper capability="chat">
- *   <AIChatWidget />
+ * <AIChatWidget />
  * </AIFeatureWrapper>
  * 
  * // With custom fallback
  * <AIFeatureWrapper 
- *   capability="actions"
- *   fallback={<p>AI aksiyonları şu anda kullanılamıyor.</p>}
+ * capability="actions"
+ * fallback={<p>AI aksiyonları şu anda kullanılamıyor.</p>}
  * >
- *   <AIActionPanel />
+ * <AIActionPanel />
  * </AIFeatureWrapper>
  * 
  * // With function fallback for dynamic content
  * <AIFeatureWrapper 
- *   capability="ocr"
- *   fallback={(reason, message) => (
- *     <CustomFallback reason={reason} message={message} />
- *   )}
+ * capability="ocr"
+ * fallback={(reason, message) => (
+ * <CustomFallback reason={reason} message={message} />
+ * )}
  * >
- *   <OCRScanner />
+ * <OCRScanner />
  * </AIFeatureWrapper>
  * 
  * // Hide completely when unavailable
  * <AIFeatureWrapper capability="chat" hideWhenUnavailable>
- *   <AIChatButton />
+ * <AIChatButton />
  * </AIFeatureWrapper>
  * 
  * // With party context requirement
  * <AIFeatureWrapper capability="actions" requirePartyContext>
- *   <PartyAIActions />
+ * <PartyAIActions />
  * </AIFeatureWrapper>
  * ```
  */

@@ -65,13 +65,13 @@ export const PublishingTab: React.FC<PublishingTabProps> = ({
                 <h3 className="text-lg font-semibold">Canliya Alma</h3>
                 <p className="mt-2 text-sm text-gray-300">Preview, publish ve rollback akislari bu sekmeden yonetilir.</p>
                 <div className="mt-4 flex flex-wrap gap-3">
-                    <button onClick={handlePreview} disabled={!workspace || isBusy('preview')} className="rounded-2xl bg-white px-4 py-2 text-sm font-medium text-gray-900 disabled:cursor-not-allowed disabled:opacity-60">
+                    <button onClick={handlePreview} disabled={!workspace || isBusy('preview') || isBusy('publish') || isBusy('rollback')} className="rounded-2xl bg-white px-4 py-2 text-sm font-medium text-gray-900 disabled:cursor-not-allowed disabled:opacity-60">
                         {isBusy('preview') ? 'Hazirlaniyor...' : 'Preview Ac'}
                     </button>
-                    <button onClick={handlePublish} disabled={!workspace || isBusy('publish')} className="rounded-2xl bg-emerald-400 px-4 py-2 text-sm font-medium text-gray-950 disabled:cursor-not-allowed disabled:opacity-60">
+                    <button onClick={handlePublish} disabled={!workspace || isBusy('publish') || isBusy('preview') || isBusy('rollback')} className="rounded-2xl bg-emerald-400 px-4 py-2 text-sm font-medium text-gray-950 disabled:cursor-not-allowed disabled:opacity-60">
                         {isBusy('publish') ? 'Publish...' : 'Publish Et'}
                     </button>
-                    <button onClick={handleRollback} disabled={!workspace || isBusy('rollback')} className="rounded-2xl bg-white/10 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+                    <button onClick={handleRollback} disabled={!workspace || isBusy('rollback') || isBusy('preview') || isBusy('publish')} className="rounded-2xl bg-white/10 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
                         {isBusy('rollback') ? 'Rollback...' : 'Rollback'}
                     </button>
                 </div>

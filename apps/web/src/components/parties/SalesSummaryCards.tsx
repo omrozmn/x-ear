@@ -52,11 +52,11 @@ export const SalesSummaryCards: React.FC<SalesSummaryCardsProps> = ({
       <Card className="dark:bg-gray-800 dark:border-gray-700">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 md:p-6 md:pb-2">
           <CardTitle className="text-xs md:text-sm font-medium dark:text-gray-200">Toplam Satış</CardTitle>
-          <DollarSign className="h-4 w-4 text-muted-foreground dark:text-gray-400" />
+          <DollarSign className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
           <div className="text-lg md:text-2xl font-bold dark:text-white">{canViewAmounts ? `₺${totalSales.toLocaleString()}` : maskedValue}</div>
-          <p className="text-[10px] md:text-xs text-muted-foreground dark:text-gray-400">
+          <p className="text-[10px] md:text-xs text-muted-foreground">
             {sales.length} satış
           </p>
         </CardContent>
@@ -65,11 +65,11 @@ export const SalesSummaryCards: React.FC<SalesSummaryCardsProps> = ({
       <Card className="dark:bg-gray-800 dark:border-gray-700">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 md:p-6 md:pb-2">
           <CardTitle className="text-xs md:text-sm font-medium dark:text-gray-200">SGK Kapsamı</CardTitle>
-          <Shield className="h-4 w-4 text-muted-foreground dark:text-gray-400" />
+          <Shield className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
-          <div className="text-lg md:text-2xl font-bold text-green-600 dark:text-green-400">{canViewAmounts ? `₺${totalSGKCoverage.toLocaleString()}` : maskedValue}</div>
-          <p className="text-[10px] md:text-xs text-muted-foreground dark:text-gray-400">
+          <div className="text-lg md:text-2xl font-bold text-success">{canViewAmounts ? `₺${totalSGKCoverage.toLocaleString()}` : maskedValue}</div>
+          <p className="text-[10px] md:text-xs text-muted-foreground">
             {canViewAmounts ? `${totalSales > 0 ? Math.round((totalSGKCoverage / totalSales) * 100) : 0}% kapsam` : maskedValue}
           </p>
         </CardContent>
@@ -78,11 +78,11 @@ export const SalesSummaryCards: React.FC<SalesSummaryCardsProps> = ({
       <Card className="dark:bg-gray-800 dark:border-gray-700">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 md:p-6 md:pb-2">
           <CardTitle className="text-xs md:text-sm font-medium dark:text-gray-200">Hasta Ödemesi</CardTitle>
-          <CreditCard className="h-4 w-4 text-muted-foreground dark:text-gray-400" />
+          <CreditCard className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
-          <div className="text-lg md:text-2xl font-bold text-blue-600 dark:text-blue-400">{canViewAmounts ? `₺${totalPartyPayment.toLocaleString()}` : maskedValue}</div>
-          <p className="text-[10px] md:text-xs text-muted-foreground dark:text-gray-400">
+          <div className="text-lg md:text-2xl font-bold text-primary">{canViewAmounts ? `₺${totalPartyPayment.toLocaleString()}` : maskedValue}</div>
+          <p className="text-[10px] md:text-xs text-muted-foreground">
             {canViewAmounts ? `Ödenen: ₺${totalPaid.toLocaleString()}` : maskedValue}
           </p>
         </CardContent>
@@ -91,13 +91,13 @@ export const SalesSummaryCards: React.FC<SalesSummaryCardsProps> = ({
       <Card className="dark:bg-gray-800 dark:border-gray-700">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 md:p-6 md:pb-2">
           <CardTitle className="text-xs md:text-sm font-medium dark:text-gray-200">Kalan Tutar</CardTitle>
-          <Clock className="h-4 w-4 text-muted-foreground dark:text-gray-400" />
+          <Clock className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
-          <div className={`text-lg md:text-2xl font-bold ${!canViewAmounts ? 'text-gray-400' : remainingAmount > 0 ? 'text-orange-600 dark:text-orange-400' : 'text-green-600 dark:text-green-400'}`}>
+          <div className={`text-lg md:text-2xl font-bold ${!canViewAmounts ? 'text-muted-foreground' : remainingAmount > 0 ? 'text-orange-600 dark:text-orange-400' : 'text-success'}`}>
             {canViewAmounts ? `₺${remainingAmount.toLocaleString()}` : maskedValue}
           </div>
-          <p className="text-[10px] md:text-xs text-muted-foreground dark:text-gray-400">
+          <p className="text-[10px] md:text-xs text-muted-foreground">
             {canViewAmounts ? (remainingAmount > 0 ? 'Bekleyen ödeme' : 'Tamamlandı') : 'Gizli'}
           </p>
         </CardContent>

@@ -12,6 +12,8 @@ import {
   Clock,
   StickyNote,
   Stethoscope,
+  Package,
+  Box,
 } from 'lucide-react';
 
 // Geçici olarak kendi Tabs bileşenini tanımlıyorum
@@ -47,7 +49,7 @@ const TabsList: React.FC<{
   onValueChange?: (value: string) => void;
 }> = ({ className, children, activeValue, onValueChange }) => {
   return (
-    <div className={`border-b border-gray-200 mb-6 ${className || ''}`}>
+    <div className={`border-b border-border mb-6 ${className || ''}`}>
       <nav className="-mb-px flex space-x-8" aria-label="Tabs">
         {React.Children.map(children, child =>
           React.isValidElement(child)
@@ -78,10 +80,10 @@ const TabsTrigger: React.FC<{
       className={`
         group inline-flex items-center py-6 px-1 border-b-2 font-medium text-sm whitespace-nowrap
         ${isActive
-          ? 'border-blue-500 text-blue-600'
+          ? 'border-blue-500 text-primary'
           : disabled
-            ? 'border-transparent text-gray-400 cursor-not-allowed'
-            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            ? 'border-transparent text-muted-foreground cursor-not-allowed'
+            : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
         }
         ${className || ''}
       `}
@@ -129,7 +131,14 @@ export const PartyTabs: React.FC<PartyTabsProps> = ({
 }) => {
   const { t } = useTranslation('patients');
   const { hasPermission, isSuperAdmin } = usePermissions();
-  const { isModuleEnabled } = useSector();
+  const { isModuleEnabled, isHearingSector, sector } = useSector();
+
+  // Sector-aware device icon
+  const getDeviceIcon = () => {
+    if (isHearingSector()) return <Headphones className="w-4 h-4" />;
+    if (sector === 'medical') return <Package className="w-4 h-4" />;
+    return <Box className="w-4 h-4" />;
+  };
 
   const canViewGeneral = isSuperAdmin || hasPermission('parties.detail.general.view');
   const canViewHearingTests = (isSuperAdmin || hasPermission('parties.detail.hearing_tests.view')) && isModuleEnabled('hearing_tests');
@@ -159,7 +168,7 @@ export const PartyTabs: React.FC<PartyTabsProps> = ({
     {
       id: 'devices',
       label: t('tabs.devices', 'Cihazlar'),
-      icon: <Headphones className="w-4 h-4" />,
+      icon: getDeviceIcon(),
       count: tabCounts?.devices ?? party.devices?.length ?? 0,
       disabled: false,
       hidden: !canViewDevices,
@@ -215,7 +224,7 @@ export const PartyTabs: React.FC<PartyTabsProps> = ({
             {tab.icon}
             <span className="hidden sm:inline">{tab.label}</span>
             {tab.count !== null && tab.count > 0 && (
-              <span className="ml-1 bg-blue-100 text-blue-800 text-xs rounded-full px-2 py-0.5">
+              <span className="ml-1 bg-primary/10 text-blue-800 text-xs rounded-full px-2 py-0.5">
                 {tab.count}
               </span>
             )}

@@ -55,7 +55,7 @@ const CommunicationTemplates: React.FC = () => {
     <div className="space-y-4">
       {/* Başlık ve Yeni Şablon Butonu */}
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium text-gray-900">İletişim Şablonları</h3>
+        <h3 className="text-lg font-medium text-foreground">İletişim Şablonları</h3>
         <Button>
           <Plus className="w-4 h-4 mr-2" />
           Yeni Şablon
@@ -66,11 +66,11 @@ const CommunicationTemplates: React.FC = () => {
       <Card className="p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Arama
             </label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Şablon ara..."
                 value={searchTerm}
@@ -81,7 +81,7 @@ const CommunicationTemplates: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Tip
             </label>
             <Select
@@ -97,7 +97,7 @@ const CommunicationTemplates: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Kategori
             </label>
             <Select
@@ -120,11 +120,11 @@ const CommunicationTemplates: React.FC = () => {
       {/* Şablonlar Listesi */}
       {filteredTemplates.length === 0 ? (
         <Card className="p-8 text-center">
-          <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-foreground mb-2">
             Şablon bulunamadı
           </h3>
-          <p className="text-gray-600 mb-4">
+          <p className="text-muted-foreground mb-4">
             Henüz oluşturulmuş şablon yok veya arama kriterlerinize uygun şablon bulunamadı.
           </p>
           <Button>
@@ -139,7 +139,7 @@ const CommunicationTemplates: React.FC = () => {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-3 mb-2">
-                    <h4 className="text-lg font-medium text-gray-900">{template.name}</h4>
+                    <h4 className="text-lg font-medium text-foreground">{template.name}</h4>
                     <Badge variant={template.type === 'sms' ? 'default' : 'secondary'}>
                       {template.type === 'sms' ? 'SMS' : 'E-posta'}
                     </Badge>
@@ -152,18 +152,18 @@ const CommunicationTemplates: React.FC = () => {
                   </div>
 
                   {template.subject && (
-                    <p className="text-sm text-gray-600 mb-2">
+                    <p className="text-sm text-muted-foreground mb-2">
                       <strong>Konu:</strong> {template.subject}
                     </p>
                   )}
 
-                  <p className="text-sm text-gray-700 line-clamp-2 mb-2">
+                  <p className="text-sm text-foreground line-clamp-2 mb-2">
                     {template.content}
                   </p>
 
                   {template.variables.length > 0 && (
                     <div className="flex items-center space-x-2 mb-2">
-                      <span className="text-xs text-gray-500">Değişkenler:</span>
+                      <span className="text-xs text-muted-foreground">Değişkenler:</span>
                       {template.variables.map((variable, index) => (
                         <Badge key={index} variant="secondary" className="text-xs">
                           {variable}
@@ -172,7 +172,7 @@ const CommunicationTemplates: React.FC = () => {
                     </div>
                   )}
 
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     Oluşturulma: {new Date(template.createdAt).toLocaleString('tr-TR')}
                   </p>
                 </div>

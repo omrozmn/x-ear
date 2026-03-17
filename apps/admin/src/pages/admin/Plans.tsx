@@ -170,6 +170,9 @@ const Plans: React.FC = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [newFeatName, setNewFeatName] = useState('');
+  const [newFeatKey, setNewFeatKey] = useState('');
+  const [newFeatLimit, setNewFeatLimit] = useState('');
 
   const handleOpenModal = (plan?: PlanRead) => {
     if (plan) {
@@ -249,7 +252,6 @@ const Plans: React.FC = () => {
       await queryClient.invalidateQueries({ queryKey: ['/admin/plans'] }); // Invalidate both possible keys
       setIsModalOpen(false);
     } catch (error: unknown) {
-      console.error('Plan save error:', error);
       toast.error(getApiErrorMessage(error, 'İşlem başarısız'));
     } finally {
       setIsSubmitting(false);
@@ -273,7 +275,6 @@ const Plans: React.FC = () => {
       await queryClient.invalidateQueries({ queryKey: ['/api/admin/plans'] });
       setIsToggleModalOpen(false);
     } catch (error: unknown) {
-      console.error('Toggle active error:', error);
       toast.error(getApiErrorMessage(error, 'Güncelleme başarısız'));
     } finally {
       setIsSubmitting(false);
@@ -290,7 +291,6 @@ const Plans: React.FC = () => {
       setSelectedPlanIds((prev) => prev.filter((id) => id !== deletingPlanId));
       setIsDeleteModalOpen(false);
     } catch (error: unknown) {
-      console.error('Delete plan error:', error);
       toast.error(getApiErrorMessage(error, 'Silme başarısız'));
     } finally {
       setIsSubmitting(false);
@@ -314,7 +314,6 @@ const Plans: React.FC = () => {
       toast.success(`${selectedPlanIds.length} plan silindi`);
       setSelectedPlanIds([]);
     } catch (error: unknown) {
-      console.error('Bulk delete plan error:', error);
       toast.error(getApiErrorMessage(error, 'Toplu silme başarısız'));
     } finally {
       setIsSubmitting(false);
@@ -671,35 +670,31 @@ const Plans: React.FC = () => {
                     <div className="grid grid-cols-12 gap-3 items-end">
                       <div className="col-span-4">
                         <label className="block text-xs font-medium text-gray-500 mb-1">İsim</label>
-                        <input id="new-feat-name" type="text" placeholder="Örn: SMS Hakkı" className="block w-full rounded border-gray-300 text-xs p-1.5 focus:border-blue-500 focus:ring-blue-500" />
+                        <input type="text" value={newFeatName} onChange={(e) => setNewFeatName(e.target.value)} placeholder="Örn: SMS Hakkı" className="block w-full rounded border-gray-300 text-xs p-1.5 focus:border-blue-500 focus:ring-blue-500" />
                       </div>
                       <div className="col-span-4">
                         <label className="block text-xs font-medium text-gray-500 mb-1">Key (Opsiyonel)</label>
-                        <input id="new-feat-key" type="text" placeholder="sms_limit" className="block w-full rounded border-gray-300 text-xs p-1.5 focus:border-blue-500 focus:ring-blue-500" />
+                        <input type="text" value={newFeatKey} onChange={(e) => setNewFeatKey(e.target.value)} placeholder="sms_limit" className="block w-full rounded border-gray-300 text-xs p-1.5 focus:border-blue-500 focus:ring-blue-500" />
                       </div>
                       <div className="col-span-2">
                         <label className="block text-xs font-medium text-gray-500 mb-1">Limit</label>
-                        <input id="new-feat-limit" type="number" placeholder="0" className="block w-full rounded border-gray-300 text-xs p-1.5 focus:border-blue-500 focus:ring-blue-500" />
+                        <input type="number" value={newFeatLimit} onChange={(e) => setNewFeatLimit(e.target.value)} placeholder="0" className="block w-full rounded border-gray-300 text-xs p-1.5 focus:border-blue-500 focus:ring-blue-500" />
                       </div>
                       <div className="col-span-2">
                         <button
                           type="button"
                           onClick={() => {
-                            const nameInput = document.getElementById('new-feat-name') as HTMLInputElement;
-                            const keyInput = document.getElementById('new-feat-key') as HTMLInputElement;
-                            const limitInput = document.getElementById('new-feat-limit') as HTMLInputElement;
-
-                            if (nameInput.value) {
+                            if (newFeatName) {
                               const newFeature = {
-                                name: nameInput.value,
-                                key: keyInput.value || nameInput.value.toLowerCase().replace(/ /g, '_'),
-                                limit: parseInt(limitInput.value) || 0,
+                                name: newFeatName,
+                                key: newFeatKey || newFeatName.toLowerCase().replace(/ /g, '_'),
+                                limit: parseInt(newFeatLimit) || 0,
                                 is_visible: true
                               };
                               setFormData({ ...formData, features: [...formData.features, newFeature] });
-                              nameInput.value = '';
-                              keyInput.value = '';
-                              limitInput.value = '';
+                              setNewFeatName('');
+                              setNewFeatKey('');
+                              setNewFeatLimit('');
                             } else {
                               toast.error('Özellik ismi gerekli');
                             }

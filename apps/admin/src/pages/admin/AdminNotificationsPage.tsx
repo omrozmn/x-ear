@@ -46,9 +46,8 @@ const AdminNotificationsPage: React.FC = () => {
             toast.success('Bildirim başarıyla gönderildi');
             setCustomTitle('');
             setCustomMessage('');
-        } catch (error) {
+        } catch {
             toast.error('Bildirim gönderilemedi');
-            console.error(error);
         }
     };
 

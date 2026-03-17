@@ -21,7 +21,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     }
 
     componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-        console.error('[ErrorBoundary] Uncaught error:', error, errorInfo);
+        if (import.meta.env.DEV) {
+            console.error('[ErrorBoundary] Uncaught error:', error, errorInfo);
+        }
     }
 
     render(): ReactNode {
@@ -80,7 +82,9 @@ export class RouteErrorBoundary extends Component<ErrorBoundaryProps, ErrorBound
     }
 
     componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-        console.error('[RouteErrorBoundary] Uncaught error:', error, errorInfo);
+        if (import.meta.env.DEV) {
+            console.error('[RouteErrorBoundary] Uncaught error:', error, errorInfo);
+        }
     }
 
     render(): ReactNode {

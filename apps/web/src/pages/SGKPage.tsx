@@ -112,24 +112,24 @@ export const SGKPage: React.FC = () => {
   };
 
   const getStatusColor = (status: string): string => {
-    if (status === 'rejected' || status === 'cancelled') return 'text-red-600';
-    if (status === 'approved' || status === 'completed') return 'text-green-600';
+    if (status === 'rejected' || status === 'cancelled') return 'text-destructive';
+    if (status === 'approved' || status === 'completed') return 'text-success';
     if (status === 'under_review' || status === 'submitted') return 'text-yellow-600';
     if (status === 'paid') return 'text-purple-600';
-    return 'text-gray-600';
+    return 'text-muted-foreground';
   };
 
   if (loading && !stats) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-lg text-gray-600">SGK verileri yükleniyor...</span>
+        <span className="ml-3 text-lg text-muted-foreground">SGK verileri yükleniyor...</span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <DesktopPageHeader
           title="SGK Yönetimi"
@@ -138,7 +138,7 @@ export const SGKPage: React.FC = () => {
           actions={stats ? (
             <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
               <div className="rounded-2xl border border-white/60 bg-white/70 px-4 py-3 text-center dark:border-white/10 dark:bg-white/5">
-                <div className="text-2xl font-bold text-blue-600 dark:text-blue-300">{stats.totalDocuments}</div>
+                <div className="text-2xl font-bold text-primary">{stats.totalDocuments}</div>
                 <div className="text-xs text-slate-500 dark:text-slate-400">Toplam Belge</div>
               </div>
               <div className="rounded-2xl border border-white/60 bg-white/70 px-4 py-3 text-center dark:border-white/10 dark:bg-white/5">
@@ -146,7 +146,7 @@ export const SGKPage: React.FC = () => {
                 <div className="text-xs text-slate-500 dark:text-slate-400">Bekleyen Onay</div>
               </div>
               <div className="rounded-2xl border border-white/60 bg-white/70 px-4 py-3 text-center dark:border-white/10 dark:bg-white/5">
-                <div className="text-2xl font-bold text-green-600 dark:text-green-300">{formatCurrency(stats.totalValue)}</div>
+                <div className="text-2xl font-bold text-success">{formatCurrency(stats.totalValue)}</div>
                 <div className="text-xs text-slate-500 dark:text-slate-400">Toplam Değer</div>
               </div>
               <div className="rounded-2xl border border-white/60 bg-white/70 px-4 py-3 text-center dark:border-white/10 dark:bg-white/5">
@@ -159,7 +159,7 @@ export const SGKPage: React.FC = () => {
       </div>
       {/* Error Banner */}
       {error && (
-        <div className="bg-red-50 border-l-4 border-red-400 p-4">
+        <div className="bg-destructive/10 border-l-4 border-red-400 p-4">
           <div className="flex">
             <div className="flex-shrink-0">
               <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -167,14 +167,14 @@ export const SGKPage: React.FC = () => {
               </svg>
             </div>
             <div className="ml-3">
-              <p className="text-sm text-red-700">{error}</p>
+              <p className="text-sm text-destructive">{error}</p>
             </div>
             <div className="ml-auto pl-3">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setError(null)}
-                className="text-red-400 hover:text-red-600"
+                className="text-red-400 hover:text-destructive"
               >
                 <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -185,7 +185,7 @@ export const SGKPage: React.FC = () => {
         </div>
       )}
       {/* Navigation Tabs */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-900 border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="-mb-px flex space-x-8">
             {[
@@ -200,8 +200,8 @@ export const SGKPage: React.FC = () => {
                 variant="ghost"
                 onClick={() => setActiveTab(tab.id as TabType)}
                 className={`${activeTab === tab.id
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-blue-500 text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
                   } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2`}
               >
                 {getTabIcon(tab.id as TabType)}
@@ -234,8 +234,8 @@ export const SGKPage: React.FC = () => {
 
         {activeTab === 'upload' && (
           <div className="max-w-2xl mx-auto">
-            <div className="bg-white shadow rounded-2xl p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-6">Yeni Belge Yükle</h2>
+            <div className="bg-card shadow rounded-2xl p-6">
+              <h2 className="text-lg font-medium text-foreground mb-6">Yeni Belge Yükle</h2>
               <SGKUpload
                 onUploadComplete={handleUploadComplete}
                 onUploadError={handleUploadError}
@@ -255,13 +255,13 @@ export const SGKPage: React.FC = () => {
           <div className="space-y-6">
             {selectedDocument ? (
               <div>
-                <div className="bg-white shadow rounded-2xl p-6 mb-6">
+                <div className="bg-card shadow rounded-2xl p-6 mb-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h2 className="text-lg font-medium text-gray-900">
+                      <h2 className="text-lg font-medium text-foreground">
                         İş Akışı: {selectedDocument.filename}
                       </h2>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted-foreground">
                         Belge ID: {selectedDocument.id}
                       </p>
                     </div>
@@ -270,7 +270,7 @@ export const SGKPage: React.FC = () => {
                         setSelectedDocument(null);
                         setSelectedWorkflow(null);
                       }}
-                      className="text-gray-400 hover:text-gray-600"
+                      className="text-muted-foreground hover:text-muted-foreground"
                       variant='default'>
                       <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -286,19 +286,19 @@ export const SGKPage: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="bg-white shadow rounded-2xl p-12">
+              <div className="bg-card shadow rounded-2xl p-12">
                 <div className="text-center">
-                  <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="mx-auto h-12 w-12 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                   </svg>
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">Belge seçilmedi</h3>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <h3 className="mt-2 text-sm font-medium text-foreground">Belge seçilmedi</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
                     İş akışını görüntülemek için bir belge seçin.
                   </p>
                   <div className="mt-6">
                     <Button
                       onClick={() => setActiveTab('documents')}
-                      className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-xl text-white premium-gradient tactile-press focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-xl text-white premium-gradient tactile-press focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring"
                       variant='default'>
                       Belgelere Git
                     </Button>
@@ -313,25 +313,25 @@ export const SGKPage: React.FC = () => {
           <div className="space-y-6">
             {/* Overview Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white overflow-hidden shadow rounded-2xl">
+              <div className="bg-card overflow-hidden shadow rounded-2xl">
                 <div className="p-5">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
-                      <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="h-6 w-6 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                     </div>
                     <div className="ml-5 w-0 flex-1">
                       <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">Toplam Belge</dt>
-                        <dd className="text-lg font-medium text-gray-900">{stats.totalDocuments}</dd>
+                        <dt className="text-sm font-medium text-muted-foreground truncate">Toplam Belge</dt>
+                        <dd className="text-lg font-medium text-foreground">{stats.totalDocuments}</dd>
                       </dl>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white overflow-hidden shadow rounded-2xl">
+              <div className="bg-card overflow-hidden shadow rounded-2xl">
                 <div className="p-5">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
@@ -341,15 +341,15 @@ export const SGKPage: React.FC = () => {
                     </div>
                     <div className="ml-5 w-0 flex-1">
                       <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">Bekleyen Onay</dt>
-                        <dd className="text-lg font-medium text-gray-900">{stats.pendingApprovals}</dd>
+                        <dt className="text-sm font-medium text-muted-foreground truncate">Bekleyen Onay</dt>
+                        <dd className="text-lg font-medium text-foreground">{stats.pendingApprovals}</dd>
                       </dl>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white overflow-hidden shadow rounded-2xl">
+              <div className="bg-card overflow-hidden shadow rounded-2xl">
                 <div className="p-5">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
@@ -359,15 +359,15 @@ export const SGKPage: React.FC = () => {
                     </div>
                     <div className="ml-5 w-0 flex-1">
                       <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">Toplam Değer</dt>
-                        <dd className="text-lg font-medium text-gray-900">{formatCurrency(stats.totalValue)}</dd>
+                        <dt className="text-sm font-medium text-muted-foreground truncate">Toplam Değer</dt>
+                        <dd className="text-lg font-medium text-foreground">{formatCurrency(stats.totalValue)}</dd>
                       </dl>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white overflow-hidden shadow rounded-2xl">
+              <div className="bg-card overflow-hidden shadow rounded-2xl">
                 <div className="p-5">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
@@ -377,8 +377,8 @@ export const SGKPage: React.FC = () => {
                     </div>
                     <div className="ml-5 w-0 flex-1">
                       <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">Onay Oranı</dt>
-                        <dd className="text-lg font-medium text-gray-900">{Math.round(stats.approvalRate)}%</dd>
+                        <dt className="text-sm font-medium text-muted-foreground truncate">Onay Oranı</dt>
+                        <dd className="text-lg font-medium text-foreground">{Math.round(stats.approvalRate)}%</dd>
                       </dl>
                     </div>
                   </div>
@@ -387,16 +387,16 @@ export const SGKPage: React.FC = () => {
             </div>
 
             {/* Document Types */}
-            <div className="bg-white shadow rounded-2xl">
+            <div className="bg-card shadow rounded-2xl">
               <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                <h3 className="text-lg leading-6 font-medium text-foreground mb-4">
                   Belge Türleri
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                   {Object.entries(stats.byType).map(([type, count]) => (
                     <div key={type} className="text-center">
-                      <div className="text-2xl font-bold text-blue-600">{count}</div>
-                      <div className="text-sm text-gray-500 capitalize">
+                      <div className="text-2xl font-bold text-primary">{count}</div>
+                      <div className="text-sm text-muted-foreground capitalize">
                         {type === 'recete' ? 'E-Reçete' :
                           type === 'rapor' ? 'Rapor' :
                             type === 'belge' ? 'Belge' :
@@ -411,9 +411,9 @@ export const SGKPage: React.FC = () => {
             </div>
 
             {/* Status Distribution */}
-            <div className="bg-white shadow rounded-2xl">
+            <div className="bg-card shadow rounded-2xl">
               <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                <h3 className="text-lg leading-6 font-medium text-foreground mb-4">
                   Durum Dağılımı
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
@@ -422,7 +422,7 @@ export const SGKPage: React.FC = () => {
                       <div className={`text-2xl font-bold ${getStatusColor(status)}`}>
                         {count}
                       </div>
-                      <div className="text-sm text-gray-500 capitalize">
+                      <div className="text-sm text-muted-foreground capitalize">
                         {status === 'draft' ? 'Taslak' :
                           status === 'submitted' ? 'Gönderildi' :
                             status === 'under_review' ? 'İnceleniyor' :

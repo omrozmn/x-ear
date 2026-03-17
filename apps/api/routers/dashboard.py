@@ -25,13 +25,38 @@ from database import get_db
 
 from schemas.audit import AuditLogRead
 from schemas.dashboard import (
-    DashboardData, DashboardKPIs, ChartData, 
+    DashboardData, DashboardKPIs, ChartData,
     RecentActivityResponse, BranchDistribution
 )
+from schemas.enums import SectorCode
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Dashboard"])
+
+
+def _resolve_tenant_sector(access: UnifiedAccess, db_session: Session) -> str:
+    """Resolve the sector for current tenant."""
+    tenant_id = access.tenant_id
+    if not tenant_id and access.user:
+        tenant_id = access.user.tenant_id
+    if tenant_id:
+        tenant = db_session.get(Tenant, tenant_id)
+        if tenant:
+            sector = getattr(tenant, 'sector', None) or SectorCode.from_product_code(
+                getattr(tenant, 'product_code', '') or ''
+            ).value
+            return sector
+    return 'hearing'
+
+
+def _get_enabled_modules(sector: str) -> list:
+    """Return enabled module IDs for a given sector."""
+    try:
+        from config.module_registry import get_enabled_module_ids
+        return list(get_enabled_module_ids(sector))
+    except Exception:
+        return []
 
 # --- Helper Functions ---
 
@@ -256,23 +281,35 @@ def get_dashboard(
         except Exception:
             recent_activity = []
 
+        # Resolve sector and enabled modules
+        sector = _resolve_tenant_sector(access, db_session)
+        enabled_modules = _get_enabled_modules(sector)
+        has_devices_module = 'devices' in enabled_modules
+
+        kpis = {
+            "totalPatients": total_patients,
+            "estimatedRevenue": estimated_revenue,
+            "todayAppointments": today_appointments,
+            "dailyRevenue": daily_revenue,
+            "pendingAppointments": pending_appointments,
+            "todaysAppointments": today_appointments,
+            "activePatients": total_patients,
+            "monthlyRevenue": monthly_revenue
+        }
+
+        # Conditional KPIs: only include device-related metrics when devices module is enabled
+        if has_devices_module:
+            kpis["totalDevices"] = total_devices
+            kpis["availableDevices"] = available_devices
+            kpis["activeTrials"] = active_trials
+            kpis["endingTrials"] = ending_trials
+
         return ResponseEnvelope(
             data={
-                "kpis": {
-                    "totalPatients": total_patients,
-                    "totalDevices": total_devices,
-                    "availableDevices": available_devices,
-                    "estimatedRevenue": estimated_revenue,
-                    "todayAppointments": today_appointments,
-                    "activeTrials": active_trials,
-                    "dailyRevenue": daily_revenue,
-                    "pendingAppointments": pending_appointments,
-                    "endingTrials": ending_trials,
-                    "todaysAppointments": today_appointments,
-                    "activePatients": total_patients,
-                    "monthlyRevenue": monthly_revenue
-                },
-                "recentActivity": recent_activity
+                "kpis": kpis,
+                "recentActivity": recent_activity,
+                "sector": sector,
+                "enabledModules": enabled_modules
             }
         )
     except Exception as e:

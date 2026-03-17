@@ -74,7 +74,7 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
 
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const searchTimeoutRef = useRef<NodeJS.Timeout>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Filter options based on search query
   useEffect(() => {

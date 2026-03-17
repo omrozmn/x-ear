@@ -61,8 +61,8 @@ export const SerialAutocomplete: React.FC<SerialAutocompleteProps> = ({
   };
 
   const colorClasses = {
-    blue: 'text-blue-700 dark:text-blue-300',
-    red: 'text-red-700 dark:text-red-300'
+    blue: 'text-primary',
+    red: 'text-destructive'
   };
 
   return (
@@ -89,13 +89,13 @@ export const SerialAutocomplete: React.FC<SerialAutocompleteProps> = ({
       {isOpen && filteredSerials.length > 0 && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-xl shadow-lg max-h-48 overflow-auto"
+          className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-border dark:border-slate-700 rounded-xl shadow-lg max-h-48 overflow-auto"
         >
           {filteredSerials.map((serial, index) => (
             <div
               key={index}
               onClick={() => handleSelect(serial)}
-              className="px-4 py-2 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
+              className="px-4 py-2 cursor-pointer hover:bg-primary/10 dark:hover:bg-blue-900/30 transition-colors"
             >
               <span className="text-sm text-gray-900 dark:text-gray-100 font-mono">{serial}</span>
             </div>

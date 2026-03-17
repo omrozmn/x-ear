@@ -76,13 +76,13 @@ export const SGKReportDetailModal: React.FC<SGKReportDetailModalProps> = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending':
-        return 'text-yellow-600 bg-yellow-100';
+        return 'text-yellow-600 bg-warning/10';
       case 'approved':
-        return 'text-green-600 bg-green-100';
+        return 'text-success bg-success/10';
       case 'rejected':
-        return 'text-red-600 bg-red-100';
+        return 'text-destructive bg-destructive/10';
       default:
-        return 'text-gray-600 bg-gray-100';
+        return 'text-muted-foreground bg-muted';
     }
   };
 
@@ -97,15 +97,15 @@ export const SGKReportDetailModal: React.FC<SGKReportDetailModalProps> = ({
       <div className="space-y-6">
         {/* Hasta Bilgileri */}
         {party && (
-          <div className="bg-gray-50 p-4 rounded-2xl">
-            <h4 className="font-medium text-gray-900 mb-2">Hasta Bilgileri</h4>
+          <div className="bg-muted p-4 rounded-2xl">
+            <h4 className="font-medium text-foreground mb-2">Hasta Bilgileri</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-gray-500">Ad Soyad:</span>
+                <span className="text-muted-foreground">Ad Soyad:</span>
                 <span className="ml-2 font-medium">{party.firstName} {party.lastName}</span>
               </div>
               <div>
-                <span className="text-gray-500">TC Kimlik No:</span>
+                <span className="text-muted-foreground">TC Kimlik No:</span>
                 <span className="ml-2 font-medium">{party.tcNumber}</span>
               </div>
             </div>
@@ -115,7 +115,7 @@ export const SGKReportDetailModal: React.FC<SGKReportDetailModalProps> = ({
         {/* Rapor Detayları */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h4 className="font-medium text-gray-900">Rapor Bilgileri</h4>
+            <h4 className="font-medium text-foreground">Rapor Bilgileri</h4>
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(mockReportDetail.status)}`}>
               {getStatusText(mockReportDetail.status)}
             </span>
@@ -124,49 +124,49 @@ export const SGKReportDetailModal: React.FC<SGKReportDetailModalProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-500">Rapor Türü</label>
-                <p className="text-gray-900">{mockReportDetail.reportType}</p>
+                <label className="block text-sm font-medium text-muted-foreground">Rapor Türü</label>
+                <p className="text-foreground">{mockReportDetail.reportType}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-500">Rapor Tarihi</label>
-                <p className="text-gray-900">{new Date(mockReportDetail.reportDate).toLocaleDateString('tr-TR')}</p>
+                <label className="block text-sm font-medium text-muted-foreground">Rapor Tarihi</label>
+                <p className="text-foreground">{new Date(mockReportDetail.reportDate).toLocaleDateString('tr-TR')}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-500">Doktor Adı</label>
-                <p className="text-gray-900">{mockReportDetail.doctorName}</p>
+                <label className="block text-sm font-medium text-muted-foreground">Doktor Adı</label>
+                <p className="text-foreground">{mockReportDetail.doctorName}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-500">Hastane</label>
-                <p className="text-gray-900">{mockReportDetail.hospitalName}</p>
+                <label className="block text-sm font-medium text-muted-foreground">Hastane</label>
+                <p className="text-foreground">{mockReportDetail.hospitalName}</p>
               </div>
             </div>
 
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-500">SGK Numarası</label>
-                <p className="text-gray-900">{mockReportDetail.sgkNumber}</p>
+                <label className="block text-sm font-medium text-muted-foreground">SGK Numarası</label>
+                <p className="text-foreground">{mockReportDetail.sgkNumber}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-500">Geçerlilik Tarihi</label>
-                <p className="text-gray-900">{new Date(mockReportDetail.validUntil).toLocaleDateString('tr-TR')}</p>
+                <label className="block text-sm font-medium text-muted-foreground">Geçerlilik Tarihi</label>
+                <p className="text-foreground">{new Date(mockReportDetail.validUntil).toLocaleDateString('tr-TR')}</p>
               </div>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-500 mb-2">Tanı</label>
-            <p className="text-gray-900 bg-gray-50 p-3 rounded-2xl">{mockReportDetail.diagnosis}</p>
+            <label className="block text-sm font-medium text-muted-foreground mb-2">Tanı</label>
+            <p className="text-foreground bg-muted p-3 rounded-2xl">{mockReportDetail.diagnosis}</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-500 mb-2">Öneriler</label>
-            <p className="text-gray-900 bg-gray-50 p-3 rounded-2xl">{mockReportDetail.recommendations}</p>
+            <label className="block text-sm font-medium text-muted-foreground mb-2">Öneriler</label>
+            <p className="text-foreground bg-muted p-3 rounded-2xl">{mockReportDetail.recommendations}</p>
           </div>
 
           {mockReportDetail.notes && (
             <div>
-              <label className="block text-sm font-medium text-gray-500 mb-2">Notlar</label>
-              <p className="text-gray-900 bg-gray-50 p-3 rounded-2xl">{mockReportDetail.notes}</p>
+              <label className="block text-sm font-medium text-muted-foreground mb-2">Notlar</label>
+              <p className="text-foreground bg-muted p-3 rounded-2xl">{mockReportDetail.notes}</p>
             </div>
           )}
         </div>

@@ -160,6 +160,8 @@ class DeviceStatus(str, Enum):
 class DeviceCategory(str, Enum):
     """Device category types"""
     HEARING_AID = 'hearing_aid'
+    MEDICAL_DEVICE = 'medical_device'
+    OPTICAL_PRODUCT = 'optical_product'
     BATTERY = 'battery'
     ACCESSORY = 'accessory'
     MAINTENANCE = 'maintenance'
@@ -182,8 +184,12 @@ class DeviceCategory(str, Enum):
             'aksesuar': cls.ACCESSORY,
             'maintenance': cls.MAINTENANCE,
             'bakım': cls.MAINTENANCE,
+            'medical_device': cls.MEDICAL_DEVICE,
+            'medikal': cls.MEDICAL_DEVICE,
+            'optical_product': cls.OPTICAL_PRODUCT,
+            'optik': cls.OPTICAL_PRODUCT,
         }
-        
+
         return mapping.get(value_lower, cls.HEARING_AID)
 
 
@@ -203,6 +209,8 @@ class SectorCode(str, Enum):
     HOTEL = "hotel"
     BEAUTY = "beauty"
     GENERAL = "general"
+    MEDICAL = "medical"
+    OPTIC = "optic"
 
     @classmethod
     def default(cls) -> "SectorCode":
@@ -217,6 +225,9 @@ class SectorCode(str, Enum):
             "xear_hospital": cls.HOSPITAL,
             "xear_hotel": cls.HOTEL,
             "xear_general": cls.GENERAL,
+            "xear_medical": cls.MEDICAL,
+            "xear_optic": cls.OPTIC,
+            "xear_beauty": cls.BEAUTY,
         }
         return mapping.get(product_code, cls.HEARING)
 
@@ -238,13 +249,16 @@ class ProductCode(str, Enum):
     XEAR_HOSPITAL = "xear_hospital"
     XEAR_GENERAL = "xear_general"
     XEAR_HOTEL = "xear_hotel"
+    XEAR_MEDICAL = "xear_medical"
+    XEAR_OPTIC = "xear_optic"
+    XEAR_BEAUTY = "xear_beauty"
     XCALP = "xcalp"
-    
+
     @classmethod
     def default(cls) -> "ProductCode":
         """Return the default product code for new tenants."""
         return cls.XEAR_HEARING
-    
+
     @classmethod
     def all_xear(cls) -> list["ProductCode"]:
         """Return all X-Ear product codes."""
@@ -254,6 +268,9 @@ class ProductCode(str, Enum):
             cls.XEAR_HOSPITAL,
             cls.XEAR_GENERAL,
             cls.XEAR_HOTEL,
+            cls.XEAR_MEDICAL,
+            cls.XEAR_OPTIC,
+            cls.XEAR_BEAUTY,
         ]
     
     @classmethod

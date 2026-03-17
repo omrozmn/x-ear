@@ -12,14 +12,14 @@ export const FormLabel: React.FC<FormLabelProps> = ({
   ...props 
 }) => {
   const classes = [
-    'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1',
+    'block text-sm font-medium text-foreground mb-1',
     className
   ].filter(Boolean).join(' ');
 
   return (
     <label className={classes} {...props}>
       {children}
-      {isRequired && <span className="text-red-500 ml-1">*</span>}
+      {isRequired && <span className="text-destructive ml-1">*</span>}
     </label>
   );
 };

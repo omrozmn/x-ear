@@ -20,7 +20,7 @@ export function SearchableSelect({
   value,
   onChange,
   options,
-  placeholder = 'Seçiniz...',
+  placeholder = 'Seciniz...',
   disabled = false,
   required = false,
   fullWidth = false,
@@ -31,16 +31,13 @@ export function SearchableSelect({
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Filter options based on search term
   const filteredOptions = options.filter(option =>
     option.label.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Get selected option label
   const selectedOption = options.find(opt => opt.value === value);
   const displayValue = selectedOption ? selectedOption.label : '';
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -55,7 +52,6 @@ export function SearchableSelect({
     }
   }, [isOpen]);
 
-  // Focus input when dropdown opens
   useEffect(() => {
     if (isOpen && inputRef.current) {
       inputRef.current.focus();
@@ -86,8 +82,8 @@ export function SearchableSelect({
   return (
     <div className={fullWidth ? 'w-full' : ''} ref={containerRef}>
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          {label} {required && <span className="text-red-500">*</span>}
+        <label className="block text-sm font-medium text-foreground mb-1">
+          {label} {required && <span className="text-destructive">*</span>}
         </label>
       )}
 
@@ -101,19 +97,19 @@ export function SearchableSelect({
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={disabled}
           className={`
-            w-full px-3 py-2 pr-10 text-left border rounded-2xl bg-white relative
-            ${error ? 'border-red-300' : 'border-gray-300'}
-            ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-gray-400 cursor-pointer'}
-            focus:outline-none focus:ring-2 focus:ring-blue-500
+            w-full px-3 py-2 pr-10 text-left border rounded-2xl bg-card text-card-foreground relative
+            ${error ? 'border-destructive' : 'border-border'}
+            ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-muted-foreground/50 cursor-pointer'}
+            focus:outline-none focus:ring-2 focus:ring-primary
           `}
         >
-          <span className={displayValue ? 'text-gray-900' : 'text-gray-400'}>
+          <span className={displayValue ? 'text-foreground' : 'text-muted-foreground'}>
             {displayValue || placeholder}
           </span>
           <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
             <ChevronDown
               size={16}
-              className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+              className={`text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`}
             />
           </div>
           {value && !disabled && (
@@ -127,7 +123,7 @@ export function SearchableSelect({
             >
               <X
                 size={16}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-muted-foreground hover:text-foreground"
               />
             </span>
           )}
@@ -135,11 +131,11 @@ export function SearchableSelect({
 
         {/* Dropdown */}
         {isOpen && (
-          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-2xl shadow-lg max-h-64 overflow-hidden">
+          <div className="absolute z-50 w-full mt-1 bg-popover text-popover-foreground border border-border rounded-2xl shadow-lg max-h-64 overflow-hidden">
             {/* Search Input */}
-            <div className="p-2 border-b border-gray-200">
+            <div className="p-2 border-b border-border">
               <div className="relative">
-                <Search size={16} className="absolute left-3 top-2.5 text-gray-400" />
+                <Search size={16} className="absolute left-3 top-2.5 text-muted-foreground" />
                 <input
                   data-allow-raw="true"
                   ref={inputRef}
@@ -147,7 +143,7 @@ export function SearchableSelect({
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Ara..."
-                  className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-9 pr-3 py-2 border border-border rounded-xl text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
             </div>
@@ -162,16 +158,16 @@ export function SearchableSelect({
                     type="button"
                     onClick={() => handleSelect(option.value)}
                     className={`
-                      w-full px-3 py-2 text-left text-sm hover:bg-gray-50
-                      ${option.value === value ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-900'}
+                      w-full px-3 py-2 text-left text-sm hover:bg-accent
+                      ${option.value === value ? 'bg-primary/10 text-primary font-medium' : 'text-foreground'}
                     `}
                   >
                     {option.label}
                   </button>
                 ))
               ) : (
-                <div className="px-3 py-2 text-sm text-gray-500 text-center">
-                  Sonuç bulunamadı
+                <div className="px-3 py-2 text-sm text-muted-foreground text-center">
+                  Sonuc bulunamadi
                 </div>
               )}
             </div>
@@ -180,7 +176,7 @@ export function SearchableSelect({
       </div>
 
       {error && (
-        <p className="mt-1 text-sm text-red-600">{error}</p>
+        <p className="mt-1 text-sm text-destructive">{error}</p>
       )}
     </div>
   );

@@ -155,22 +155,22 @@ export function BranchesTab() {
             key: 'address',
             title: 'Adres',
             render: (_, branch) => branch.address ? (
-                <div className="flex items-center text-sm text-gray-500">
-                    <MapPin className="w-4 h-4 mr-1 text-gray-400" />
+                <div className="flex items-center text-sm text-muted-foreground">
+                    <MapPin className="w-4 h-4 mr-1 text-muted-foreground" />
                     <span className="truncate max-w-[200px]">{branch.address}</span>
                 </div>
-            ) : <span className="text-sm text-gray-500">-</span>,
+            ) : <span className="text-sm text-muted-foreground">-</span>,
         },
         {
             key: 'contact',
             title: 'İletişim',
             render: (_, branch) => (
-                <div className="space-y-1 text-sm text-gray-500">
+                <div className="space-y-1 text-sm text-muted-foreground">
                     {branch.phone && (
-                        <div className="flex items-center"><Phone className="w-4 h-4 mr-1 text-gray-400" />{branch.phone}</div>
+                        <div className="flex items-center"><Phone className="w-4 h-4 mr-1 text-muted-foreground" />{branch.phone}</div>
                     )}
                     {branch.email && (
-                        <div className="flex items-center"><Mail className="w-4 h-4 mr-1 text-gray-400" />{branch.email}</div>
+                        <div className="flex items-center"><Mail className="w-4 h-4 mr-1 text-muted-foreground" />{branch.email}</div>
                     )}
                     {!branch.phone && !branch.email && '-'}
                 </div>
@@ -182,10 +182,10 @@ export function BranchesTab() {
             align: 'right',
             render: (_, branch) => (
                 <div className="flex justify-end">
-                    <Button variant="ghost" size="sm" onClick={() => openEditModal(branch)} className="text-blue-600 mr-2" title="Düzenle">
+                    <Button variant="ghost" size="sm" onClick={() => openEditModal(branch)} className="text-primary mr-2" title="Düzenle">
                         <Pencil className="w-5 h-5" />
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleDelete(branch.id)} className="text-gray-400 hover:text-red-600" title="Sil">
+                    <Button variant="ghost" size="sm" onClick={() => handleDelete(branch.id)} className="text-muted-foreground hover:text-destructive" title="Sil">
                         <Trash2 className="w-5 h-5" />
                     </Button>
                 </div>
@@ -211,7 +211,7 @@ export function BranchesTab() {
             />
 
             {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl flex items-center">
+                <div className="mb-6 p-4 bg-destructive/10 border border-red-200 text-destructive rounded-2xl flex items-center">
                     <AlertCircle className="w-5 h-5 mr-2" />
                     {error}
                 </div>
@@ -241,7 +241,7 @@ export function BranchesTab() {
                                     required
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    leftIcon={<Building2 className="w-5 h-5 text-gray-400" />}
+                                    leftIcon={<Building2 className="w-5 h-5 text-muted-foreground" />}
                                     placeholder="Örn: Merkez Şube"
                                     fullWidth
                                 />
@@ -264,7 +264,7 @@ export function BranchesTab() {
                                     type="text"
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                    leftIcon={<Phone className="w-5 h-5 text-gray-400" />}
+                                    leftIcon={<Phone className="w-5 h-5 text-muted-foreground" />}
                                     placeholder="0212..."
                                     fullWidth
                                 />
@@ -273,14 +273,14 @@ export function BranchesTab() {
                                     type="email"
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    leftIcon={<Mail className="w-5 h-5 text-gray-400" />}
+                                    leftIcon={<Mail className="w-5 h-5 text-muted-foreground" />}
                                     placeholder="sube@..."
                                     fullWidth
                                 />
                             </div>
 
                             {formError && (
-                                <div className="text-sm text-red-600 flex items-center p-2 bg-red-50 rounded-2xl border border-red-200">
+                                <div className="text-sm text-destructive flex items-center p-2 bg-destructive/10 rounded-2xl border border-red-200">
                                     <AlertTriangle className="w-4 h-4 mr-2 flex-shrink-0" />
                                     {formError}
                                 </div>
@@ -312,8 +312,8 @@ export function BranchesTab() {
             {confirmationModal.isOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-sm w-full p-6 transform transition-all">
-                        <div className={`flex items-center mb-4 ${confirmationModal.type === 'danger' ? 'text-red-600' :
-                            confirmationModal.type === 'warning' ? 'text-amber-500' : 'text-blue-600'
+                        <div className={`flex items-center mb-4 ${confirmationModal.type === 'danger' ? 'text-destructive' :
+                            confirmationModal.type === 'warning' ? 'text-amber-500' : 'text-primary'
                             }`}>
                             <AlertTriangle className="w-6 h-6 mr-2" />
                             <h3 className="text-lg font-bold text-gray-900 dark:text-white">
@@ -321,7 +321,7 @@ export function BranchesTab() {
                             </h3>
                         </div>
 
-                        <p className="text-gray-600 dark:text-gray-300 mb-6">
+                        <p className="text-muted-foreground mb-6">
                             {confirmationModal.message}
                         </p>
 

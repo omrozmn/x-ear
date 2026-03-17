@@ -129,12 +129,12 @@ export const MobileInvoicesPage: React.FC = () => {
 
     const getStatusColor = (status: string) => {
         switch (status?.toLowerCase()) {
-            case 'paid': return 'text-blue-700 bg-blue-50 border-blue-100';
+            case 'paid': return 'text-primary bg-primary/10 border-blue-100';
             case 'overdue': return 'text-orange-700 bg-orange-50 border-orange-100';
             case 'sent': return 'text-emerald-700 bg-emerald-50 border-emerald-100';
-            case 'cancelled': return 'text-red-700 bg-red-50 border-red-100';
-            case 'draft': return 'text-gray-600 bg-gray-50 border-gray-100';
-            default: return 'text-gray-600 bg-gray-50 border-gray-100';
+            case 'cancelled': return 'text-destructive bg-destructive/10 border-red-100';
+            case 'draft': return 'text-muted-foreground bg-muted border-border';
+            default: return 'text-muted-foreground bg-muted border-border';
         }
     };
 
@@ -238,10 +238,10 @@ export const MobileInvoicesPage: React.FC = () => {
                     actions={
                         isSelectionMode ? (
                             <div className="flex items-center gap-1">
-                                <Button variant="ghost" size="sm" onClick={toggleSelectAll} className="px-2 py-1 h-auto text-sm text-blue-600 font-medium">
+                                <Button variant="ghost" size="sm" onClick={toggleSelectAll} className="px-2 py-1 h-auto text-sm text-primary font-medium">
                                     {selectedIds.size === filteredInvoices.length && filteredInvoices.length > 0 ? 'Hiçbiri' : 'Tümünü Seç'}
                                 </Button>
-                                <Button variant="ghost" size="sm" onClick={handleCancelSelection} className="p-2 text-gray-600">
+                                <Button variant="ghost" size="sm" onClick={handleCancelSelection} className="p-2 text-muted-foreground">
                                     <X className="h-5 w-5" />
                                 </Button>
                             </div>
@@ -257,11 +257,11 @@ export const MobileInvoicesPage: React.FC = () => {
                             <Card className="p-3 md:p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Toplam Fatura</p>
-                                        <p className="text-lg md:text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{totalCount}</p>
+                                        <p className="text-xs md:text-sm text-muted-foreground">Toplam Fatura</p>
+                                        <p className="text-lg md:text-2xl font-bold text-primary mt-1">{totalCount}</p>
                                     </div>
-                                    <div className="p-2 md:p-3 bg-blue-100 dark:bg-blue-900/20 rounded-2xl">
-                                        <FileText className="text-blue-600 dark:text-blue-400 w-4 h-4 md:w-6 md:h-6" />
+                                    <div className="p-2 md:p-3 bg-primary/10 rounded-2xl">
+                                        <FileText className="text-primary w-4 h-4 md:w-6 md:h-6" />
                                     </div>
                                 </div>
                             </Card>
@@ -269,7 +269,7 @@ export const MobileInvoicesPage: React.FC = () => {
                             <Card className="p-3 md:p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Taslak</p>
+                                        <p className="text-xs md:text-sm text-muted-foreground">Taslak</p>
                                         <p className="text-lg md:text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{draftCount}</p>
                                     </div>
                                     <div className="p-2 md:p-3 bg-amber-100 dark:bg-amber-900/20 rounded-2xl">
@@ -281,18 +281,18 @@ export const MobileInvoicesPage: React.FC = () => {
                             <Card className="p-3 md:p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Gönderilen</p>
-                                        <p className="text-lg md:text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{formatCurrency(totalAmount, 'TRY')}</p>
+                                        <p className="text-xs md:text-sm text-muted-foreground">Gönderilen</p>
+                                        <p className="text-lg md:text-2xl font-bold text-success mt-1">{formatCurrency(totalAmount, 'TRY')}</p>
                                     </div>
-                                    <div className="p-2 md:p-3 bg-green-100 dark:bg-green-900/20 rounded-2xl">
-                                        <CreditCard className="text-green-600 dark:text-green-400 w-4 h-4 md:w-6 md:h-6" />
+                                    <div className="p-2 md:p-3 bg-success/10 rounded-2xl">
+                                        <CreditCard className="text-success w-4 h-4 md:w-6 md:h-6" />
                                     </div>
                                 </div>
                             </Card>
                         </div>
 
-                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 flex items-center gap-3">
-                            <CreditCard className="text-blue-600 dark:text-blue-400 flex-shrink-0" size={20} />
+                        <div className="bg-primary/10 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 flex items-center gap-3">
+                            <CreditCard className="text-primary flex-shrink-0" size={20} />
                             <p className="text-sm text-blue-800 dark:text-blue-300 flex-1">
                                 Bu sayfada GİB üzerinden gönderilmiş e-fatura ve e-irsaliyeleriniz listelenir.
                             </p>
@@ -302,7 +302,7 @@ export const MobileInvoicesPage: React.FC = () => {
                             <div className="flex flex-col gap-3">
                                 <div className="flex items-center gap-2">
                                     <div className="relative flex-1">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                                         <Input
                                             type="text"
                                             placeholder="Alıcı adı veya fatura no ara..."
@@ -354,10 +354,10 @@ export const MobileInvoicesPage: React.FC = () => {
                         ) : (
                             <div className="flex flex-col items-center justify-center py-20 text-center">
                                 <div className="bg-white dark:bg-gray-800 p-4 rounded-full shadow-sm mb-4">
-                                    <FileText className="h-8 w-8 text-gray-300 dark:text-gray-500" />
+                                    <FileText className="h-8 w-8 text-gray-300" />
                                 </div>
                                 <h3 className="text-lg font-medium text-gray-900 dark:text-white">Fatura Bulunamadı</h3>
-                                <p className="text-gray-500 text-sm mt-1">
+                                <p className="text-muted-foreground text-sm mt-1">
                                     Kriterlere uygun fatura yok.
                                 </p>
                             </div>
@@ -375,21 +375,21 @@ export const MobileInvoicesPage: React.FC = () => {
 
                 {selectedIds.size > 0 && isSelectionMode && (
                     <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-24px)] max-w-3xl">
-                        <div className="rounded-2xl border border-gray-200 bg-white/95 shadow-2xl backdrop-blur dark:border-gray-700 dark:bg-gray-800/95">
-                            <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+                        <div className="rounded-2xl border border-border bg-white/95 shadow-2xl backdrop-blur dark:bg-gray-800/95">
+                            <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border">
                                 <div>
                                     <p className="text-sm font-semibold text-gray-900 dark:text-white">{selectedIds.size} fatura seçildi</p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">Toplu işlem seçerek devam edebilirsin</p>
+                                    <p className="text-xs text-muted-foreground">Toplu işlem seçerek devam edebilirsin</p>
                                 </div>
-                                <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="h-9 rounded-xl px-3 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="h-9 rounded-xl px-3 text-muted-foreground hover:bg-muted dark:hover:bg-gray-700">
                                     <X className="w-4 h-4" />
                                 </Button>
                             </div>
                             <div className="grid grid-cols-2 gap-2 p-3">
-                                <Button variant="ghost" onClick={handleBulkExportCsv} className="flex items-center justify-center gap-2 rounded-xl bg-blue-50 px-3 py-3 text-sm font-semibold text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/30 h-auto">
+                                <Button variant="ghost" onClick={handleBulkExportCsv} className="flex items-center justify-center gap-2 rounded-xl bg-primary/10 px-3 py-3 text-sm font-semibold text-primary hover:bg-primary/10 dark:hover:bg-blue-900/30 h-auto">
                                     <Download className="w-4 h-4" /> CSV Aktar
                                 </Button>
-                                <Button variant="ghost" onClick={handleBulkDeleteDrafts} className="flex items-center justify-center gap-2 rounded-xl bg-red-50 px-3 py-3 text-sm font-semibold text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/30 h-auto">
+                                <Button variant="ghost" onClick={handleBulkDeleteDrafts} className="flex items-center justify-center gap-2 rounded-xl bg-destructive/10 px-3 py-3 text-sm font-semibold text-destructive hover:bg-destructive/10 dark:hover:bg-red-900/30 h-auto">
                                     <Trash2 className="w-4 h-4" /> Taslak Sil
                                 </Button>
                             </div>
@@ -416,7 +416,7 @@ export const MobileInvoicesPage: React.FC = () => {
                     style={{ height: '92vh' }}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                    <div className="flex items-center justify-between p-3 border-b border-border flex-shrink-0">
                         <h2 className="text-base font-semibold text-gray-900 dark:text-white truncate pr-3">{pdfModal.title}</h2>
                         <div className="flex items-center gap-2 flex-shrink-0">
                             <a
@@ -430,7 +430,7 @@ export const MobileInvoicesPage: React.FC = () => {
                             <Button
                                 variant="ghost"
                                 onClick={() => { URL.revokeObjectURL(pdfModal.blobUrl.split('#')[0]); setPdfModal(null); }}
-                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                                className="text-muted-foreground hover:text-muted-foreground dark:hover:text-gray-200"
                             >
                                 <X size={24} />
                             </Button>
@@ -479,18 +479,18 @@ function OutgoingInvoiceMobileCard({ invoice, onView, onDownload, getStatusColor
     const partyName = `${invoice.partyFirstName || ''} ${invoice.partyLastName || ''}`.trim() || 'Alıcı bilgisi yok';
 
     return (
-        <div className={cn('bg-white dark:bg-gray-900 rounded-xl border shadow-sm overflow-visible relative transition-all', isSelected ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 dark:border-blue-500' : 'border-gray-200 dark:border-gray-700')}>
+        <div className={cn('bg-white dark:bg-gray-900 rounded-xl border shadow-sm overflow-visible relative transition-all', isSelected ? 'border-blue-500 bg-primary/10/50 dark:border-blue-500' : 'border-border')}>
             {isSelectionMode && (
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
                     {isSelected ? (
-                        <CheckSquare className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                        <CheckSquare className="w-6 h-6 text-primary" />
                     ) : (
-                        <Square className="w-6 h-6 text-gray-300 dark:text-gray-600" />
+                        <Square className="w-6 h-6 text-gray-300" />
                     )}
                 </div>
             )}
             <div
-                className={cn('p-4 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800 transition-colors', isSelectionMode && 'pr-12')}
+                className={cn('p-4 cursor-pointer active:bg-muted dark:active:bg-gray-800 transition-colors', isSelectionMode && 'pr-12')}
                 onClick={() => {
                     triggerSelection();
                     if (isSelectionMode) {
@@ -503,7 +503,7 @@ function OutgoingInvoiceMobileCard({ invoice, onView, onDownload, getStatusColor
                 <div className="flex items-start justify-between mb-2">
                     <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{invoice.invoiceNumber || 'Fatura'}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">{partyName}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5 truncate">{partyName}</p>
                     </div>
                     <div className="flex items-center gap-2 ml-2 flex-shrink-0">
                         <span className={cn('text-[10px] px-2 py-1 rounded-full font-medium border shrink-0', getStatusColor(invoice.status || ''))}>
@@ -519,11 +519,11 @@ function OutgoingInvoiceMobileCard({ invoice, onView, onDownload, getStatusColor
                                 <MoreVertical className="w-4 h-4" />
                             </Button>
                             {menuOpen && (
-                                <div className="absolute right-0 top-8 z-50 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl">
-                                    <Button variant="ghost" fullWidth onClick={() => { setMenuOpen(false); onView(); }} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 justify-start h-auto">
+                                <div className="absolute right-0 top-8 z-50 w-48 bg-white dark:bg-gray-800 border border-border rounded-2xl shadow-xl">
+                                    <Button variant="ghost" fullWidth onClick={() => { setMenuOpen(false); onView(); }} className="flex items-center gap-2 px-4 py-3 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 justify-start h-auto">
                                         <Eye className="w-4 h-4" /> Görüntüle
                                     </Button>
-                                    <Button variant="ghost" fullWidth onClick={() => { setMenuOpen(false); onDownload(); }} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 justify-start h-auto">
+                                    <Button variant="ghost" fullWidth onClick={() => { setMenuOpen(false); onDownload(); }} className="flex items-center gap-2 px-4 py-3 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 justify-start h-auto">
                                         <Download className="w-4 h-4" /> PDF İndir
                                     </Button>
                                 </div>
@@ -535,7 +535,7 @@ function OutgoingInvoiceMobileCard({ invoice, onView, onDownload, getStatusColor
                     <span className="text-sm font-semibold text-gray-900 dark:text-white">
                         {formatCurrency(Number(invoice.totalAmount || 0), 'TRY')}
                     </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                    <span className="text-xs text-muted-foreground">
                         {invoice.invoiceDate ? formatDate(invoice.invoiceDate) : '-'}
                     </span>
                 </div>

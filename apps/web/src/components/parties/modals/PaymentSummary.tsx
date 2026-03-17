@@ -60,9 +60,9 @@ export const PaymentSummary: React.FC<PaymentSummaryProps> = ({ sale: rawSale, o
     <>
       {/* Payment Summary Card */}
       {hasPayments ? (
-        <div className="bg-green-50 p-4 rounded-2xl border border-green-200">
+        <div className="bg-success/10 p-4 rounded-2xl border border-green-200">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="font-medium text-gray-900 flex items-center">
+            <h4 className="font-medium text-foreground flex items-center">
               <CreditCard className="w-4 h-4 mr-2" />
               Ödeme Özeti
             </h4>
@@ -82,16 +82,16 @@ export const PaymentSummary: React.FC<PaymentSummaryProps> = ({ sale: rawSale, o
 
           <div className="space-y-2 text-sm">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-gray-600">Toplam:</span>
+              <span className="text-xs text-muted-foreground">Toplam:</span>
               <span className="text-base font-semibold">{formatCurrency(sale.totalAmount || 0)}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-xs text-gray-600">Ödenen:</span>
-              <span className="text-base font-semibold text-green-600">{formatCurrency(totalPaid)}</span>
+              <span className="text-xs text-muted-foreground">Ödenen:</span>
+              <span className="text-base font-semibold text-success">{formatCurrency(totalPaid)}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-xs text-gray-600">Kalan:</span>
-              <span className={`text-base font-semibold ${remainingBalance > 0 ? 'text-red-600' : 'text-green-600'}`}>
+              <span className="text-xs text-muted-foreground">Kalan:</span>
+              <span className={`text-base font-semibold ${remainingBalance > 0 ? 'text-destructive' : 'text-success'}`}>
                 {formatCurrency(remainingBalance)}
               </span>
             </div>
@@ -99,7 +99,7 @@ export const PaymentSummary: React.FC<PaymentSummaryProps> = ({ sale: rawSale, o
 
           {paymentRecords.length > 0 && (
             <div className="mt-3 pt-3 border-t border-green-300">
-              <div className="text-xs text-gray-600">
+              <div className="text-xs text-muted-foreground">
                 Son ödeme: {new Date(paymentRecords[paymentRecords.length - 1].paymentDate).toLocaleDateString('tr-TR')}
               </div>
             </div>
@@ -109,7 +109,7 @@ export const PaymentSummary: React.FC<PaymentSummaryProps> = ({ sale: rawSale, o
 
       {/* No Payments Warning */}
       {!hasPayments && sale.totalAmount && sale.totalAmount > 0 && (
-        <Alert className="bg-yellow-50 border-yellow-200 text-yellow-800">
+        <Alert className="bg-warning/10 border-yellow-200 text-yellow-800">
           <AlertCircle className="w-4 h-4" />
           <div className="flex items-center justify-between w-full">
             <span>Bu satış için henüz ödeme kaydı bulunmuyor.</span>

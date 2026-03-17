@@ -13,6 +13,27 @@ export const PRODUCT_REGISTRY = {
         creatable: true,
         sector: "pharmacy",
     },
+    xear_medical: {
+        name: "Medikal Firma",
+        badge: "teal",
+        enabled: true,
+        creatable: true,
+        sector: "medical",
+    },
+    xear_optic: {
+        name: "Optik Mağaza",
+        badge: "violet",
+        enabled: true,
+        creatable: true,
+        sector: "optic",
+    },
+    xear_beauty: {
+        name: "Güzellik Salonu",
+        badge: "pink",
+        enabled: true,
+        creatable: true,
+        sector: "beauty",
+    },
     xcalp: {
         name: "XCalp",
         badge: "purple",

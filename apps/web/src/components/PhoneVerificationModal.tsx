@@ -82,18 +82,18 @@ export const PhoneVerificationModal: React.FC = () => {
             closeOnOverlayClick={false}
         >
             <div className="flex flex-col items-center mb-6">
-                <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-4">
-                    <Phone className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                    <Phone className="w-6 h-6 text-primary" />
                 </div>
-                <p className="text-center text-gray-600">
+                <p className="text-center text-muted-foreground">
                     Hesabınızın güvenliği için telefon numaranızı doğrulamanız gerekmektedir.
                 </p>
             </div>
 
             <div className="space-y-4 mb-6">
                 {step === 'phone' ? (
-                    <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-center dark:border-gray-700 dark:bg-gray-800/60">
-                        <p className="text-xs font-medium uppercase tracking-[0.18em] text-gray-500">
+                    <div className="rounded-2xl border border-border bg-gray-50 p-4 text-center dark:bg-gray-800/60">
+                        <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                             Telefon Numarası
                         </p>
                         <div className="mx-auto mt-3 max-w-[280px]">
@@ -108,14 +108,14 @@ export const PhoneVerificationModal: React.FC = () => {
                                 fullWidth
                             />
                         </div>
-                        <p className="mt-3 text-xs text-gray-500">
+                        <p className="mt-3 text-xs text-muted-foreground">
                             Kodu bu numaraya göndereceğiz. Numara yanlışsa burada düzeltebilirsiniz.
                         </p>
                     </div>
                 ) : (
                     <div className="space-y-4">
-                        <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-center dark:border-gray-700 dark:bg-gray-800/60">
-                            <p className="text-xs font-medium uppercase tracking-[0.18em] text-gray-500">
+                        <div className="rounded-2xl border border-border bg-gray-50 p-4 text-center dark:bg-gray-800/60">
+                            <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                                 Doğrulama Kodu
                             </p>
                             <div className="mx-auto mt-3 max-w-[220px]">
@@ -131,13 +131,13 @@ export const PhoneVerificationModal: React.FC = () => {
                                     fullWidth
                                 />
                             </div>
-                            <p className="mt-3 text-xs text-gray-500">
-                                <span className="font-medium text-gray-700 dark:text-gray-200">{phoneNumber}</span> numaralı telefona gönderilen kodu giriniz.
+                            <p className="mt-3 text-xs text-muted-foreground">
+                                <span className="font-medium text-foreground">{phoneNumber}</span> numaralı telefona gönderilen kodu giriniz.
                             </p>
                         </div>
 
                         <div className="space-y-2 text-center">
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-muted-foreground">
                                 Numara hatalıysa değiştirip yeni doğrulama kodu gönderebilirsiniz.
                             </p>
                             <Button

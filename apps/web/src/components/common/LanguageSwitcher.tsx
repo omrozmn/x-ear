@@ -14,7 +14,7 @@ export const LanguageSwitcher: React.FC<{ className?: string }> = ({ className =
         <button
             data-allow-raw="true"
             onClick={toggleLanguage}
-            className={`flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-sm font-medium ${className}`}
+            className={`flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-muted dark:hover:bg-gray-800 transition-colors text-sm font-medium ${className}`}
             title={t('language.select')}
         >
             <Languages className="w-4 h-4" />

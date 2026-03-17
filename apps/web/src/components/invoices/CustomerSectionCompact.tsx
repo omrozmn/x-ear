@@ -515,41 +515,41 @@ export function CustomerSectionCompact({
   // SGK modu
   if (isSGK) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
-        <div className="p-4 border-b border-gray-200 bg-blue-50">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border shadow-sm">
+        <div className="p-4 border-b border-border bg-primary/10">
           <div className="flex items-center gap-2">
-            <User className="text-blue-600" size={16} />
-            <h3 className="text-sm font-bold text-gray-900">Fatura Alıcı</h3>
+            <User className="text-primary" size={16} />
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white">Fatura Alıcı</h3>
           </div>
         </div>
         <div className="p-4">
           <div className="space-y-3">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-foreground mb-1">
                 Alıcı Adı
               </label>
-              <div className="text-sm text-gray-900 font-medium">
+              <div className="text-sm text-gray-900 dark:text-white font-medium">
                 {SGK_CUSTOMER.name}
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-foreground mb-1">
                 Vergi No
               </label>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-muted-foreground">
                 {SGK_CUSTOMER.taxNumber}
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-foreground mb-1">
                 Adres
               </label>
-              <div className="text-xs text-gray-600 leading-relaxed">
+              <div className="text-xs text-muted-foreground leading-relaxed">
                 {SGK_CUSTOMER.address}
               </div>
             </div>
           </div>
-          <p className="mt-3 text-xs text-blue-600 bg-blue-50 p-2 rounded">
+          <p className="mt-3 text-xs text-primary bg-primary/10 p-2 rounded">
             SGK faturası için alıcı bilgisi sabittir.
           </p>
         </div>
@@ -559,19 +559,19 @@ export function CustomerSectionCompact({
 
   // Normal mod
   return (
-    <div ref={containerRef} className="bg-white rounded-2xl border border-gray-200 shadow-sm">
-      <div className="p-4 border-b border-gray-200 bg-gray-50">
+    <div ref={containerRef} className="bg-white dark:bg-gray-800 rounded-2xl border border-border shadow-sm">
+      <div className="p-4 border-b border-border bg-gray-50 dark:bg-gray-800/50">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <User className="text-gray-600" size={16} />
-            <h3 className="text-sm font-bold text-gray-900">Fatura Alıcısı</h3>
+            <User className="text-muted-foreground" size={16} />
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white">Fatura Alıcısı</h3>
           </div>
           {(customerName || customerFirstName || customerLastName || resolvedCustomerTaxId) && (
             <Button
               type="button"
               onClick={handleClearCustomer}
               variant="default"
-              className="text-xs px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700"
+              className="text-xs px-2 py-1 bg-destructive/10 hover:bg-red-200 text-destructive"
             >
               Alıcıyı Sil
             </Button>
@@ -582,8 +582,8 @@ export function CustomerSectionCompact({
         <div className="space-y-3">
           {/* TC / Vergi No - En Üstte */}
           <div className="relative">
-            <label className="block text-xs font-medium text-gray-700 mb-1">
-              TC / Vergi No <span className="text-red-500">*</span>
+            <label className="block text-xs font-medium text-foreground mb-1">
+              TC / Vergi No <span className="text-destructive">*</span>
             </label>
             <div className="relative">
               <Input
@@ -617,29 +617,29 @@ export function CustomerSectionCompact({
 
             {/* TC Arama Sonuçları */}
             {showResults && searchResults.length > 0 && activeSearchField === 'identifier' && (
-              <div ref={dropdownRef} className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-2xl shadow-lg max-h-48 overflow-y-auto">
+              <div ref={dropdownRef} className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 border border-border rounded-2xl shadow-lg max-h-48 overflow-y-auto">
                 {searchResults.map((result) => (
                   <Button
                     key={`${result.kind}:${result.id}`}
                     type="button"
                     onClick={() => handleSearchSelect(result)}
                     variant="ghost"
-                    className="w-full px-3 py-2 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                    className="w-full px-3 py-2 text-left hover:bg-muted dark:hover:bg-gray-600 border-b border-border last:border-b-0"
                   >
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">
                       {result.firstName} {result.lastName}
                     </div>
-                    <div className="text-[11px] text-gray-400">
+                    <div className="text-[11px] text-muted-foreground">
                       {result.kind === 'supplier' ? 'Tedarikçi' : 'Hasta'}
                     </div>
                     {result.tcNumber && (
-                      <div className="text-xs text-gray-500">TC: {result.tcNumber}</div>
+                      <div className="text-xs text-muted-foreground">TC: {result.tcNumber}</div>
                     )}
                     {result.taxNumber && (
-                      <div className="text-xs text-gray-500">VKN: {result.taxNumber}</div>
+                      <div className="text-xs text-muted-foreground">VKN: {result.taxNumber}</div>
                     )}
                     {result.phone && (
-                      <div className="text-xs text-gray-500">Tel: {result.phone}</div>
+                      <div className="text-xs text-muted-foreground">Tel: {result.phone}</div>
                     )}
                   </Button>
                 ))}
@@ -649,8 +649,8 @@ export function CustomerSectionCompact({
             {recipientLookup && (
               <div className={`mt-2 rounded-xl border px-3 py-2 text-xs ${
                 recipientLookup.isEfaturaUser
-                  ? 'border-blue-200 bg-blue-50 text-blue-800'
-                  : 'border-amber-200 bg-amber-50 text-amber-800'
+                  ? 'border-blue-200 dark:border-blue-800 bg-primary/10 text-blue-800 dark:text-blue-300'
+                  : 'border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300'
               }`}>
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-medium">
@@ -668,7 +668,7 @@ export function CustomerSectionCompact({
 
             {recipientLookup?.receiverTags?.length ? (
               <div className="mt-2">
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-foreground mb-1">
                   Alici Etiketi
                 </label>
                 <Select
@@ -699,8 +699,8 @@ export function CustomerSectionCompact({
 
           {identityType === 'company' ? (
             <div className="relative">
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                Unvan <span className="text-red-500">*</span>
+              <label className="block text-xs font-medium text-foreground mb-1">
+                Unvan <span className="text-destructive">*</span>
               </label>
               <Input
                 data-testid="invoice-customer-company-name-input"
@@ -724,8 +724,8 @@ export function CustomerSectionCompact({
           ) : (
             <div className="grid grid-cols-2 gap-2">
               <div className="relative">
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Ad <span className="text-red-500">*</span>
+                <label className="block text-xs font-medium text-foreground mb-1">
+                  Ad <span className="text-destructive">*</span>
                 </label>
                 <Input
                   data-testid="invoice-customer-first-name-input"
@@ -746,8 +746,8 @@ export function CustomerSectionCompact({
                 />
               </div>
               <div className="relative">
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Soyad <span className="text-red-500">*</span>
+                <label className="block text-xs font-medium text-foreground mb-1">
+                  Soyad <span className="text-destructive">*</span>
                 </label>
                 <Input
                   data-testid="invoice-customer-last-name-input"
@@ -774,29 +774,29 @@ export function CustomerSectionCompact({
                - Eğer TC araması yoksa, ad bloğu altında göster */}
           {showResults && searchResults.length > 0 && activeSearchField === 'name' && (
             <div ref={dropdownRef} className="relative">
-              <div className="absolute z-50 w-full bg-white border border-gray-300 rounded-2xl shadow-lg max-h-48 overflow-y-auto">
+              <div className="absolute z-50 w-full bg-white dark:bg-gray-700 border border-border rounded-2xl shadow-lg max-h-48 overflow-y-auto">
                 {searchResults.map((result) => (
                   <Button
                     key={`${result.kind}:${result.id}`}
                     type="button"
                     onClick={() => handleSearchSelect(result)}
                     variant="ghost"
-                    className="w-full px-3 py-2 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                    className="w-full px-3 py-2 text-left hover:bg-muted dark:hover:bg-gray-600 border-b border-border last:border-b-0"
                   >
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">
                       {result.firstName} {result.lastName}
                     </div>
-                    <div className="text-[11px] text-gray-400">
+                    <div className="text-[11px] text-muted-foreground">
                       {result.kind === 'supplier' ? 'Tedarikçi' : 'Hasta'}
                     </div>
                     {result.tcNumber && (
-                      <div className="text-xs text-gray-500">TC: {result.tcNumber}</div>
+                      <div className="text-xs text-muted-foreground">TC: {result.tcNumber}</div>
                     )}
                     {result.taxNumber && (
-                      <div className="text-xs text-gray-500">VKN: {result.taxNumber}</div>
+                      <div className="text-xs text-muted-foreground">VKN: {result.taxNumber}</div>
                     )}
                     {result.phone && (
-                      <div className="text-xs text-gray-500">Tel: {result.phone}</div>
+                      <div className="text-xs text-muted-foreground">Tel: {result.phone}</div>
                     )}
                   </Button>
                 ))}
@@ -839,7 +839,7 @@ export function CustomerSectionCompact({
 
           {/* Adres */}
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-medium text-foreground mb-1">
               Adres
             </label>
             <Textarea
@@ -848,14 +848,14 @@ export function CustomerSectionCompact({
               onChange={(e) => handleManualEdit('customerAddress', e.target.value)}
               placeholder="Fatura adresi"
               rows={2}
-              className="w-full text-sm px-3 py-2 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              className="w-full text-sm px-3 py-2 border border-border rounded-2xl focus:ring-2 focus:ring-ring focus:border-transparent resize-none"
             />
           </div>
 
           {showSuccessMessage && (
-            <div className="bg-green-50 border border-green-200 rounded-2xl p-2 flex items-center gap-2 animate-fade-in">
-              <CheckCircle className="text-green-600" size={14} />
-              <p className="text-xs text-green-800">
+            <div className="bg-success/10 border border-green-200 dark:border-green-800 rounded-2xl p-2 flex items-center gap-2 animate-fade-in">
+              <CheckCircle className="text-success" size={14} />
+              <p className="text-xs text-success">
                 Alici bulundu ve bilgiler dolduruldu
               </p>
             </div>

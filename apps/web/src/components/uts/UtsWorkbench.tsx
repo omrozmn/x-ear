@@ -261,7 +261,7 @@ export function UtsWorkbench() {
       {items.map((item) => (
         <div
           key={item.serialKey}
-          className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+          className="rounded-2xl border border-slate-200 bg-card p-4 shadow-sm"
         >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
@@ -314,7 +314,7 @@ export function UtsWorkbench() {
         </div>
       ))}
       {!items.length ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-card p-8 text-center text-sm text-slate-500">
           Bu sekmede kayit yok.
         </div>
       ) : null}
@@ -386,7 +386,7 @@ export function UtsWorkbench() {
         ) : null}
       </div>
 
-      <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-3xl border border-slate-200 bg-card p-4 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-2">
             <button
@@ -447,16 +447,16 @@ export function UtsWorkbench() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
           onMouseDown={(e) => { if (e.target === e.currentTarget) setInventoryConfirm(null); }}
         >
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl" onMouseDown={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Envantere Ekle</h3>
-            <p className="text-sm text-gray-500 mb-4">Ürün bilgilerini kontrol edin ve gerekirse düzenleyin.</p>
+          <div className="w-full max-w-md rounded-2xl bg-card p-6 shadow-xl" onMouseDown={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold text-foreground mb-4">Envantere Ekle</h3>
+            <p className="text-sm text-muted-foreground mb-4">Ürün bilgilerini kontrol edin ve gerekirse düzenleyin.</p>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Ürün Adı (UTS)</label>
-                <Input type="text" value={inventoryConfirm.productName} disabled className="bg-gray-50 text-gray-700 w-full" />
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Ürün Adı (UTS)</label>
+                <Input type="text" value={inventoryConfirm.productName} disabled className="bg-muted text-foreground w-full" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Marka</label>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Marka</label>
                 <Input
                   type="text"
                   value={inventoryConfirm.brand}
@@ -466,7 +466,7 @@ export function UtsWorkbench() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Model</label>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Model</label>
                 <Input
                   type="text"
                   value={inventoryConfirm.model}

@@ -183,7 +183,7 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-blue-600" />
+            <FileText className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-semibold">
               {mode === 'create' ? 'Yeni SGK Raporu Oluştur' : 'SGK Raporu Düzenle'}
             </h2>
@@ -288,9 +288,9 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
                 value={formData.validityDate}
                 onChange={() => { }} // Disabled but needed for component
                 disabled
-                className="bg-gray-50"
+                className="bg-muted"
               />
-              <p className="text-xs text-gray-500">Otomatik olarak 6 ay sonrası hesaplanır</p>
+              <p className="text-xs text-muted-foreground">Otomatik olarak 6 ay sonrası hesaplanır</p>
             </div>
           </div>
 

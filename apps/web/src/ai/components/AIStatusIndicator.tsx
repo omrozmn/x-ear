@@ -116,7 +116,7 @@ export function AIStatusIndicator({
 
       {/* Optional label */}
       {showLabel && (
-        <span className={`${labelSizeClass} text-gray-600`}>
+        <span className={`${labelSizeClass} text-muted-foreground`}>
           {label}
         </span>
       )}

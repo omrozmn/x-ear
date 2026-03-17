@@ -345,7 +345,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance }) => {
         <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
-                    <label className="text-xs font-semibold text-gray-600 dark:text-gray-300">Durum</label>
+                    <label className="text-xs font-semibold text-muted-foreground">Durum</label>
                     <Select
                         value={audienceFilters.status || ''}
                         onChange={(event) => setAudienceFilters((prev) => ({
@@ -361,7 +361,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance }) => {
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-semibold text-gray-600 dark:text-gray-300">Segment</label>
+                    <label className="text-xs font-semibold text-muted-foreground">Segment</label>
                     <Select
                         value={audienceFilters.segment || ''}
                         onChange={(event) => setAudienceFilters((prev) => ({
@@ -373,7 +373,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance }) => {
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-semibold text-gray-600 dark:text-gray-300">Kazanım Türü</label>
+                    <label className="text-xs font-semibold text-muted-foreground">Kazanım Türü</label>
                     <Select
                         value={audienceFilters.acquisitionType || ''}
                         onChange={(event) => setAudienceFilters((prev) => ({
@@ -385,7 +385,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance }) => {
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-semibold text-gray-600 dark:text-gray-300">Şube</label>
+                    <label className="text-xs font-semibold text-muted-foreground">Şube</label>
                     <Select
                         value={audienceFilters.branchId || ''}
                         onChange={(event) => setAudienceFilters((prev) => ({
@@ -403,7 +403,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance }) => {
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-semibold text-gray-600 dark:text-gray-300">Gönderici Başlığı</label>
+                    <label className="text-xs font-semibold text-muted-foreground">Gönderici Başlığı</label>
                     <Select
                         value={selectedHeader}
                         onChange={(event) => setSelectedHeader(event.target.value)}
@@ -418,7 +418,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance }) => {
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-semibold text-gray-600 dark:text-gray-300">Başlangıç Tarihi</label>
+                    <label className="text-xs font-semibold text-muted-foreground">Başlangıç Tarihi</label>
                     <DatePicker
                         value={audienceFilters.dateStart ? new Date(audienceFilters.dateStart) : null}
                         onChange={(date) => setAudienceFilters((prev) => ({
@@ -430,7 +430,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance }) => {
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-semibold text-gray-600 dark:text-gray-300">Bitiş Tarihi</label>
+                    <label className="text-xs font-semibold text-muted-foreground">Bitiş Tarihi</label>
                     <DatePicker
                         value={audienceFilters.dateEnd ? new Date(audienceFilters.dateEnd) : null}
                         onChange={(date) => setAudienceFilters((prev) => ({
@@ -443,7 +443,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance }) => {
                 </div>
             </div>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                <div className="text-sm text-muted-foreground flex items-center gap-2">
                     {partiesCountQuery.isFetching || countLoading ? (
                         <>
                             <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
@@ -466,7 +466,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance }) => {
                 </div>
             </div>
             {partiesCountQuery.isError && (
-                <p className="text-xs text-red-600 flex items-center gap-1">
+                <p className="text-xs text-destructive flex items-center gap-1">
                     <AlertTriangle className="w-3 h-3" /> Hedef kitle sayısı alınamadı.
                 </p>
             )}
@@ -476,7 +476,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance }) => {
     const renderExcelArea = () => (
         <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-3">
-                <p className="text-sm text-gray-600 dark:text-gray-400">Telefon sütunu içeren Excel dosyasını yükleyin.</p>
+                <p className="text-sm text-muted-foreground">Telefon sütunu içeren Excel dosyasını yükleyin.</p>
                 <Button variant="secondary" size="sm" className="flex items-center gap-1" onClick={handleTemplateDownload}>
                     <Download className="w-4 h-4" /> Örnek Excel
                 </Button>
@@ -497,8 +497,8 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance }) => {
                     onChange={handleFileChange}
                 />
             </div>
-            <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 p-4 space-y-2 text-sm bg-white dark:bg-gray-800">
-                <ul className="list-disc pl-5 text-gray-500 dark:text-gray-400 text-xs space-y-1">
+            <div className="rounded-2xl border border-dashed border-border p-4 space-y-2 text-sm bg-white dark:bg-gray-800">
+                <ul className="list-disc pl-5 text-muted-foreground text-xs space-y-1">
                     <li>"Telefon" başlıklı sütun zorunludur.</li>
                     <li>Önizleme ilk 8 satırı gösterir.</li>
                     <li>Geçerli telefonların sayısı kredi hesabına eklenir.</li>
@@ -509,17 +509,17 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance }) => {
                     </p>
                 )}
                 {excelError && (
-                    <p className="text-red-600 text-sm flex items-center gap-2">
+                    <p className="text-destructive text-sm flex items-center gap-2">
                         <AlertTriangle className="w-4 h-4" /> {excelError}
                     </p>
                 )}
                 {excelPreview && (
                     <div className="space-y-2 text-sm">
-                        <div className="flex items-center justify-between text-gray-700 dark:text-gray-300">
+                        <div className="flex items-center justify-between text-foreground">
                             <span>Satır sayısı</span>
                             <span className="font-medium">{formatNumber(excelPreview.totalRows)}</span>
                         </div>
-                        <div className="flex items-center justify-between text-gray-700 dark:text-gray-300">
+                        <div className="flex items-center justify-between text-foreground">
                             <span>Telefonu olan kayıt</span>
                             <span className="font-medium">{formatNumber(excelPreview.validPhoneCount)}</span>
                         </div>
@@ -555,7 +555,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance }) => {
                     <div className="flex flex-col gap-3">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">Hedef Kaynağı</p>
+                                <p className="text-sm text-muted-foreground">Hedef Kaynağı</p>
                                 <p className="text-xl font-semibold text-gray-900 dark:text-white">
                                     {mode === 'filters' ? 'Hasta Filtreleri' : 'Excel Listesi'}
                                 </p>
@@ -579,16 +579,16 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance }) => {
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Alıcı Sayısı</p>
+                                <p className="text-xs text-muted-foreground">Alıcı Sayısı</p>
                                 <p className="text-3xl font-semibold text-gray-900 dark:text-white">
                                     {recipients ? formatNumber(recipients) : '-'}
                                 </p>
-                                <p className="text-xs text-gray-400 dark:text-gray-500">
+                                <p className="text-xs text-muted-foreground">
                                     {mode === 'filters' ? 'Filtrelenen hastalar' : 'Telefonu bulunan satırlar'}
                                 </p>
                             </div>
                             <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Kaynak Detayı</p>
+                                <p className="text-xs text-muted-foreground">Kaynak Detayı</p>
                                 <p className="text-sm font-medium text-gray-900 dark:text-white">
                                     {mode === 'filters'
                                         ? `${Object.keys(normalizedParams).length === 0 ? 'Tüm hastalar' : 'Özel filtreler'}`
@@ -601,14 +601,14 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance }) => {
                     <div className="space-y-5">
                         {mode === 'filters' ? (
                             <>
-                                <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                                     <Users className="w-4 h-4 text-indigo-500 dark:text-indigo-400" /> Hedef Kitleler
                                 </div>
                                 {renderFilters()}
                             </>
                         ) : (
                             <>
-                                <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
+                                <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                                     <FileSpreadsheet className="w-4 h-4 text-indigo-500 dark:text-indigo-400" /> Excel Listesi
                                 </div>
                                 {renderExcelArea()}
@@ -625,22 +625,22 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance }) => {
                     </div>
                     <div className="space-y-3">
                         <div className="flex justify-between text-sm">
-                            <span className="text-gray-500 dark:text-gray-400">Toplam Alıcı</span>
+                            <span className="text-muted-foreground">Toplam Alıcı</span>
                             <span className="font-semibold dark:text-gray-200">{recipients ? formatNumber(recipients) : '-'}</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                            <span className="text-gray-500 dark:text-gray-400">SMS / Kişi</span>
+                            <span className="text-muted-foreground">SMS / Kişi</span>
                             <span className="font-semibold dark:text-gray-200">{smsSegments || '-'}</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                            <span className="text-gray-500 dark:text-gray-400">Gerekli Kredi</span>
+                            <span className="text-muted-foreground">Gerekli Kredi</span>
                             <span className="font-semibold dark:text-gray-200">{creditsNeeded ? formatNumber(creditsNeeded) : '-'}</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                            <span className="text-gray-500 dark:text-gray-400">Mevcut Kredi</span>
+                            <span className="text-muted-foreground">Mevcut Kredi</span>
                             <span className="font-semibold text-indigo-600 dark:text-indigo-400">{formatNumber(creditBalance)}</span>
                         </div>
-                        <div className={`flex items-center gap-2 px-3 py-2 rounded-2xl ${creditEnough ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
+                        <div className={`flex items-center gap-2 px-3 py-2 rounded-2xl ${creditEnough ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-destructive/10 text-destructive'}`}>
                             {creditEnough ? (
                                 <CheckCircle className="w-4 h-4" />
                             ) : (
@@ -661,7 +661,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance }) => {
                         <MessageSquare className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
                         <div>
                             <p className="text-lg font-semibold text-gray-900 dark:text-white">SMS Mesajı</p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Göndermek istediğiniz mesajı yazın</p>
+                            <p className="text-sm text-muted-foreground">Göndermek istediğiniz mesajı yazın</p>
                         </div>
                     </div>
                     {creditEnough && message.trim() ? (
@@ -673,7 +673,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance }) => {
 
                 {/* Dynamic Fields */}
                 <div className="space-y-2">
-                    <p className="text-xs font-medium text-gray-600 dark:text-gray-300">Dinamik Alanlar</p>
+                    <p className="text-xs font-medium text-muted-foreground">Dinamik Alanlar</p>
                     <div className="flex flex-wrap gap-2">
                         {DYNAMIC_FIELDS.map((field) => (
                             <button
@@ -703,7 +703,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance }) => {
 Örnek: Sayın {{AD}} {{SOYAD}}, randevunuzu hatırlatmak isteriz."
                     />
                     <div className="flex items-center justify-between">
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                        <p className="text-xs text-muted-foreground">
                             {message.length} karakter / {smsSegments || 0} SMS
                         </p>
                         <Button
@@ -738,25 +738,25 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance }) => {
                             <button
                                 data-allow-raw="true"
                                 onClick={() => setShowPreview(false)}
-                                className="p-1 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                className="p-1 rounded-2xl hover:bg-muted dark:hover:bg-gray-700 transition-colors"
                             >
-                                <X className="w-5 h-5 text-gray-500" />
+                                <X className="w-5 h-5 text-muted-foreground" />
                             </button>
                         </div>
                         <div className="p-4 space-y-4">
-                            <div className="bg-gray-100 dark:bg-gray-700 rounded-2xl p-4">
-                                <p className="text-xs text-gray-500 dark:text-gray-300 mb-2">
+                            <div className="bg-muted rounded-2xl p-4">
+                                <p className="text-xs text-muted-foreground mb-2">
                                     {mode === 'filters' && firstParty
                                         ? `İlk hasta: ${firstParty.firstName} ${firstParty.lastName}`
                                         : mode === 'excel' && excelPreview
                                             ? 'Excel listesinden ilk kayıt'
                                             : 'Örnek verilerle'}
                                 </p>
-                                <div className="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-sm border border-gray-200 dark:border-gray-600">
-                                    <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{getPreviewMessage}</p>
+                                <div className="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-sm border border-border">
+                                    <p className="text-sm text-foreground whitespace-pre-wrap">{getPreviewMessage}</p>
                                 </div>
                             </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                            <div className="text-xs text-muted-foreground space-y-1">
                                 <p>Karakter sayısı: {getPreviewMessage.length}</p>
                                 <p>SMS sayısı: {Math.max(1, Math.ceil(getPreviewMessage.length / SMS_SEGMENT_LENGTH))}</p>
                             </div>

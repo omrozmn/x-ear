@@ -152,7 +152,7 @@ export const ResponsiveCard: React.FC<ResponsiveCardProps> = ({
     <div
       className={`
         bg-white dark:bg-gray-800 
-        border border-gray-200 dark:border-gray-700 
+        border border-border 
         rounded-2xl shadow-sm 
         ${getPadding()} 
         ${className}

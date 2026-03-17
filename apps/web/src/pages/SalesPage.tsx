@@ -175,14 +175,14 @@ export function SalesPage() {
 
   const getStatusBadge = (status?: string | null) => {
     const styles: Record<string, string> = {
-      draft: 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400',
+      draft: 'bg-muted text-foreground/20',
       pending: 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300',
-      confirmed: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
-      completed: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300',
+      confirmed: 'bg-primary/10 text-blue-800 dark:text-blue-400',
+      completed: 'bg-success/10 text-success',
       delivered: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400',
       partial: 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300',
-      paid: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-      cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
+      paid: 'bg-success/10 text-success',
+      cancelled: 'bg-destructive/10 text-red-800 dark:text-red-400',
       manual: 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400',
     };
     const labels: Record<string, string> = {
@@ -250,10 +250,10 @@ export function SalesPage() {
       {mobileVisibleSales.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="bg-white dark:bg-gray-800 p-4 rounded-full shadow-sm mb-4">
-            <ShoppingCart className="h-8 w-8 text-gray-300 dark:text-gray-500" />
+            <ShoppingCart className="h-8 w-8 text-gray-300" />
           </div>
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">Satış kaydı bulunamadı</h3>
-          <p className="text-gray-500 text-sm mt-1">Kriterlere uygun satış yok.</p>
+          <p className="text-muted-foreground text-sm mt-1">Kriterlere uygun satış yok.</p>
         </div>
       ) : mobileVisibleSales.map((sale) => (
         <div
@@ -264,29 +264,29 @@ export function SalesPage() {
           }}
           className={cn(
             'bg-white dark:bg-gray-900 rounded-xl border shadow-sm overflow-visible relative transition-all',
-            selectedIds.has(String(sale.id)) ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 dark:border-blue-500' : 'border-gray-200 dark:border-gray-700'
+            selectedIds.has(String(sale.id)) ? 'border-blue-500 bg-primary/10/50 dark:border-blue-500' : 'border-border'
           )}
         >
           {isMobileSelectionMode && (
             <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
-              {selectedIds.has(String(sale.id)) ? <CheckSquare className="w-6 h-6 text-blue-600 dark:text-blue-400" /> : <Square className="w-6 h-6 text-gray-300 dark:text-gray-600" />}
+              {selectedIds.has(String(sale.id)) ? <CheckSquare className="w-6 h-6 text-primary" /> : <Square className="w-6 h-6 text-gray-300" />}
             </div>
           )}
-          <div className={cn('p-4 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800 transition-colors', isMobileSelectionMode && 'pr-12')}>
+          <div className={cn('p-4 cursor-pointer active:bg-muted dark:active:bg-gray-800 transition-colors', isMobileSelectionMode && 'pr-12')}>
             <div className="flex items-start justify-between mb-3 gap-3">
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{sale.patientName ?? '—'}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">{sale.productName || sale.brand || sale.description || '-'}</p>
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">{sale.productName || sale.brand || sale.description || '-'}</p>
               </div>
               <div className="shrink-0">{getStatusBadge(sale.status as string)}</div>
             </div>
-            <div className="border-t border-gray-100 dark:border-gray-800 pt-3 flex items-end justify-between gap-3">
+            <div className="border-t border-border pt-3 flex items-end justify-between gap-3">
               <div>
-                <p className="text-xs text-gray-400">Tarih</p>
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{sale.saleDate ? formatDate(String(sale.saleDate)) : '-'}</p>
+                <p className="text-xs text-muted-foreground">Tarih</p>
+                <p className="text-sm font-medium text-foreground">{sale.saleDate ? formatDate(String(sale.saleDate)) : '-'}</p>
               </div>
               <div className="text-right">
-                <p className="text-xs text-gray-400">Tutar</p>
+                <p className="text-xs text-muted-foreground">Tutar</p>
                 <p className="text-lg font-bold text-gray-900 dark:text-white">{protectedCurrency(Number(sale.amount || 0))}</p>
               </div>
             </div>
@@ -300,7 +300,7 @@ export function SalesPage() {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-gray-600 dark:text-gray-400">Satışlar yükleniyor...</span>
+        <span className="ml-3 text-muted-foreground">Satışlar yükleniyor...</span>
       </div>
     );
   }
@@ -341,11 +341,11 @@ export function SalesPage() {
         <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Toplam Satış</p>
-              <p className="text-lg md:text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{protectedCurrency(totalAmount)}</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Toplam Satış</p>
+              <p className="text-lg md:text-2xl font-bold text-primary mt-1">{protectedCurrency(totalAmount)}</p>
             </div>
-            <div className="p-2 md:p-3 bg-blue-100 dark:bg-blue-900/20 rounded-2xl">
-              <ShoppingCart className="text-blue-600 dark:text-blue-400 w-4 h-4 md:w-6 md:h-6" />
+            <div className="p-2 md:p-3 bg-primary/10 rounded-2xl">
+              <ShoppingCart className="text-primary w-4 h-4 md:w-6 md:h-6" />
             </div>
           </div>
         </Card>
@@ -353,7 +353,7 @@ export function SalesPage() {
         <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Toplam Kayıt</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Toplam Kayıt</p>
               <p className="text-lg md:text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">{totalCount}</p>
             </div>
             <div className="p-2 md:p-3 bg-purple-100 dark:bg-purple-900/20 rounded-2xl">
@@ -365,11 +365,11 @@ export function SalesPage() {
         <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Ortalama</p>
-              <p className="text-lg md:text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{protectedCurrency(averageAmount)}</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Ortalama</p>
+              <p className="text-lg md:text-2xl font-bold text-success mt-1">{protectedCurrency(averageAmount)}</p>
             </div>
-            <div className="p-2 md:p-3 bg-green-100 dark:bg-green-900/20 rounded-2xl">
-              <CreditCard className="text-green-600 dark:text-green-400 w-4 h-4 md:w-6 md:h-6" />
+            <div className="p-2 md:p-3 bg-success/10 rounded-2xl">
+              <CreditCard className="text-success w-4 h-4 md:w-6 md:h-6" />
             </div>
           </div>
         </Card>
@@ -379,7 +379,7 @@ export function SalesPage() {
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
               <Input
                 type="text"
                 placeholder="Hasta adı, ürün veya seri no ara..."
@@ -454,8 +454,8 @@ export function SalesPage() {
                 sortable: true,
                 render: (_: unknown, sale: SalesTableRow) => (
                   <div>
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">{sale.patientName ?? <span className="text-gray-400">—</span>}</div>
-                    {sale.partyId && <div className="text-xs text-gray-400 dark:text-gray-500 font-mono mt-0.5">{sale.partyId.slice(0, 8)}</div>}
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">{sale.patientName ?? <span className="text-muted-foreground">—</span>}</div>
+                    {sale.partyId && <div className="text-xs text-muted-foreground font-mono mt-0.5">{sale.partyId.slice(0, 8)}</div>}
                   </div>
                 ),
               },
@@ -505,8 +505,8 @@ export function SalesPage() {
       )}
 
       {selectedIds.size > 0 && (
-        <div className={`fixed ${isMobile ? 'bottom-24' : 'bottom-6'} left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl px-4 md:px-6 py-3 flex items-center gap-3 md:gap-4 w-[90%] md:w-auto overflow-x-auto whitespace-nowrap`}>
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{selectedIds.size} kayıt seçildi</span>
+        <div className={`fixed ${isMobile ? 'bottom-24' : 'bottom-6'} left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-border rounded-xl shadow-2xl px-4 md:px-6 py-3 flex items-center gap-3 md:gap-4 w-[90%] md:w-auto overflow-x-auto whitespace-nowrap`}>
+          <span className="text-sm font-medium text-foreground">{selectedIds.size} kayıt seçildi</span>
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
           <PermissionGate permission="sales.list.export.view">
             <ExportDropdown
@@ -516,12 +516,12 @@ export function SalesPage() {
               variant="ghost"
               label="Dışa Aktar"
               compact
-              iconClassName="text-blue-600"
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-colors h-auto"
+              iconClassName="text-primary"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/10 dark:hover:bg-blue-900/20 rounded-2xl transition-colors h-auto"
             />
           </PermissionGate>
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
-          <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors h-auto"><X className="w-4 h-4" /> Seçimi Kaldır</Button>
+          <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted dark:hover:bg-gray-700 rounded-2xl transition-colors h-auto"><X className="w-4 h-4" /> Seçimi Kaldır</Button>
         </div>
       )}
 

@@ -78,7 +78,7 @@ export const WithError: Story = {
         placeholder="john@example.com" 
         className="border-red-500 focus:border-red-500 focus:ring-red-500"
       />
-      <p className="text-red-500 text-sm mt-1">Please enter a valid email address</p>
+      <p className="text-destructive text-sm mt-1">Please enter a valid email address</p>
     </div>
   ),
 };
@@ -91,7 +91,7 @@ export const WithSuccess: Story = {
         placeholder="johndoe" 
         className="border-green-500 focus:border-green-500 focus:ring-green-500"
       />
-      <p className="text-green-500 text-sm mt-1">Username is available</p>
+      <p className="text-success text-sm mt-1">Username is available</p>
     </div>
   ),
 };
@@ -100,7 +100,7 @@ export const Required: Story = {
   render: () => (
     <div className="w-64">
       <label className="block text-sm font-medium mb-1">
-        Full Name <span className="text-red-500">*</span>
+        Full Name <span className="text-destructive">*</span>
       </label>
       <Input placeholder="John Doe" required />
     </div>

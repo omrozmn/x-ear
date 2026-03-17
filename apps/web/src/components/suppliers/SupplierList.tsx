@@ -64,11 +64,11 @@ export function SupplierList({
             <Building2 className="h-5 w-5 text-white" />
           </div>
           <div className="ml-4">
-            <div className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+            <div className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
               {supplier.companyName || supplier.name || 'İsimsiz'}
             </div>
             {supplier.companyCode && (
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-muted-foreground">
                 Kod: {supplier.companyCode}
               </div>
             )}
@@ -82,20 +82,20 @@ export function SupplierList({
       render: (_, supplier) => (
         <div className="space-y-1">
           {supplier.contactPerson && (
-            <div className="flex items-center text-sm text-gray-900">
-              <User className="h-4 w-4 mr-2 text-gray-400" />
+            <div className="flex items-center text-sm text-foreground">
+              <User className="h-4 w-4 mr-2 text-muted-foreground" />
               {supplier.contactPerson}
             </div>
           )}
           {supplier.phone && (
-            <div className="flex items-center text-sm text-gray-600">
-              <Phone className="h-4 w-4 mr-2 text-gray-400" />
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
               {supplier.phone}
             </div>
           )}
           {supplier.email && (
-            <div className="flex items-center text-sm text-gray-600">
-              <Mail className="h-4 w-4 mr-2 text-gray-400" />
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
               {supplier.email}
             </div>
           )}
@@ -108,11 +108,11 @@ export function SupplierList({
       render: (_, supplier) => (
         <>
           {supplier.city && (
-            <div className="flex items-center text-sm text-gray-900">
-              <MapPin className="h-4 w-4 mr-2 text-gray-400" />
+            <div className="flex items-center text-sm text-foreground">
+              <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
               {supplier.city}
               {supplier.country && supplier.country !== 'Türkiye' && (
-                <span className="text-gray-500">, {supplier.country}</span>
+                <span className="text-muted-foreground">, {supplier.country}</span>
               )}
             </div>
           )}

@@ -90,8 +90,8 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
       id: 'add-tag',
       name: 'Etiket Ekle',
       icon: Tag,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-100',
+      color: 'text-primary',
+      bgColor: 'bg-primary/10',
       description: 'Seçili hastalara etiket ekle',
       requiresInput: true,
       inputType: 'select',
@@ -118,8 +118,8 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
       id: 'send-sms',
       name: 'SMS Gönder',
       icon: MessageSquare,
-      color: 'text-green-600',
-      bgColor: 'bg-green-100',
+      color: 'text-success',
+      bgColor: 'bg-success/10',
       description: 'Seçili hastalara SMS gönder',
       requiresInput: true,
       inputType: 'textarea',
@@ -170,8 +170,8 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
       id: 'activate',
       name: 'Aktifleştir',
       icon: UserCheck,
-      color: 'text-green-600',
-      bgColor: 'bg-green-100',
+      color: 'text-success',
+      bgColor: 'bg-success/10',
       description: 'Seçili hastaları aktif duruma getir',
       requiresConfirmation: true,
       category: 'status',
@@ -182,7 +182,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
       name: 'Pasifleştir',
       icon: UserX,
       color: 'text-yellow-600',
-      bgColor: 'bg-yellow-100',
+      bgColor: 'bg-warning/10',
       description: 'Seçili hastaları pasif duruma getir',
       requiresConfirmation: true,
       category: 'status',
@@ -192,8 +192,8 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
       id: 'archive',
       name: 'Arşivle',
       icon: Archive,
-      color: 'text-gray-600',
-      bgColor: 'bg-gray-100',
+      color: 'text-muted-foreground',
+      bgColor: 'bg-muted',
       description: 'Seçili hastaları arşivle',
       requiresConfirmation: true,
       category: 'status',
@@ -235,8 +235,8 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
       id: 'delete',
       name: 'Sil',
       icon: Trash2,
-      color: 'text-red-600',
-      bgColor: 'bg-red-100',
+      color: 'text-destructive',
+      bgColor: 'bg-destructive/10',
       description: 'Seçili hastaları kalıcı olarak sil',
       requiresConfirmation: true,
       category: 'dangerous',
@@ -359,12 +359,12 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
     if (currentAction) {
       executeAction(currentAction, inputValue)
     }
-  }, [currentAction, inputValue, executeAction])  
+  }, [currentAction, inputValue, executeAction]) 
 
   if (selectedCount === 0) {
     return (
-      <div className={`bg-gray-50 border border-gray-200 rounded-2xl p-4 ${className}`}>
-        <div className="flex items-center justify-center text-gray-500">
+      <div className={`bg-muted border border-border rounded-2xl p-4 ${className}`}>
+        <div className="flex items-center justify-center text-muted-foreground">
           <CheckSquare className="w-5 h-5 mr-2" />
           <span>Toplu işlem yapmak için hasta seçin</span>
         </div>
@@ -373,12 +373,12 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
   }
 
   return (
-    <div className={`bg-white border border-gray-200 rounded-2xl shadow-sm ${className}`}>
+    <div className={`bg-card border border-border rounded-2xl shadow-sm ${className}`}>
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-200 bg-blue-50">
+      <div className="px-4 py-3 border-b border-border bg-primary/10">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <CheckSquare className="w-5 h-5 text-blue-600 mr-2" />
+            <CheckSquare className="w-5 h-5 text-primary mr-2" />
             <span className="font-medium text-blue-900">
               {selectedCount} hasta seçili
             </span>
@@ -387,7 +387,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
                 variant="ghost"
                 size="sm"
                 onClick={onSelectAll}
-                className="ml-3 text-blue-600 hover:text-blue-800"
+                className="ml-3 text-primary hover:text-blue-800"
                 disabled={disabled || loading}
               >
                 Tümünü seç ({totalParties})
@@ -410,7 +410,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
       <div className="p-4">
         {Object.entries(actionsByCategory).map(([category, actions]) => (
           <div key={category} className="mb-6 last:mb-0">
-            <h4 className="text-sm font-medium text-gray-700 mb-3">
+            <h4 className="text-sm font-medium text-foreground mb-3">
               {categoryLabels[category as keyof typeof categoryLabels]}
             </h4>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
@@ -432,8 +432,8 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
                         : 'hover:shadow-md hover:-translate-y-0.5'
                       }
                       ${isDangerous
-                        ? 'border-red-200 hover:border-red-300 hover:bg-red-50'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        ? 'border-red-200 hover:border-red-300 hover:bg-destructive/10'
+                        : 'border-border hover:border-border hover:bg-muted'
                       }
                     `}
                     title={action.description}
@@ -442,7 +442,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
                       <div className={`w-8 h-8 ${action.bgColor} rounded-full flex items-center justify-center mb-2`}>
                         <Icon className={`w-4 h-4 ${action.color}`} />
                       </div>
-                      <span className="text-xs font-medium text-gray-700 leading-tight">
+                      <span className="text-xs font-medium text-foreground leading-tight">
                         {action.name}
                       </span>
                     </div>
@@ -464,10 +464,10 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
       {/* Action Modal */}
       {showActionModal && currentAction && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4">
-            <div className="px-6 py-4 border-b border-gray-200">
+          <div className="bg-card rounded-2xl shadow-xl max-w-md w-full mx-4">
+            <div className="px-6 py-4 border-b border-border">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium text-gray-900">
+                <h3 className="text-lg font-medium text-foreground">
                   {currentAction.name}
                 </h3>
                 <Button
@@ -482,14 +482,14 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
             </div>
 
             <div className="px-6 py-4">
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm text-muted-foreground mb-4">
                 {currentAction.description}
               </p>
 
               {currentAction.category === 'dangerous' && (
-                <div className="bg-red-50 border border-red-200 rounded-2xl p-3 mb-4">
+                <div className="bg-destructive/10 border border-red-200 rounded-2xl p-3 mb-4">
                   <div className="flex items-center">
-                    <AlertTriangle className="w-5 h-5 text-red-600 mr-2" />
+                    <AlertTriangle className="w-5 h-5 text-destructive mr-2" />
                     <span className="text-sm font-medium text-red-800">
                       Bu işlem geri alınamaz!
                     </span>
@@ -497,7 +497,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
                 </div>
               )}
 
-              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 mb-4">
+              <div className="bg-primary/10 border border-blue-200 rounded-2xl p-3 mb-4">
                 <span className="text-sm text-blue-800">
                   <strong>{selectedCount}</strong> hasta etkilenecek
                 </span>
@@ -505,7 +505,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
 
               {currentAction.requiresInput && (
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     {currentAction.inputPlaceholder}
                   </label>
 
@@ -524,7 +524,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
                         disabled={isProcessing}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-border rounded-2xl focus:ring-2 focus:ring-ring focus:border-blue-500"
                       >
                         <option value="">Seçin...</option>
                         {currentAction.inputOptions?.map((option) => (
@@ -560,7 +560,7 @@ export const PartyBulkActions: React.FC<PartyBulkActionsProps> = ({
               )}
             </div>
 
-            <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+            <div className="px-6 py-4 border-t border-border flex justify-end space-x-3">
               <Button
                 variant="outline"
                 onClick={() => setShowActionModal(false)}

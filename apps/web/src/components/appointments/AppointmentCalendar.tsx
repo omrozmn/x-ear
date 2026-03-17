@@ -132,12 +132,12 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
       {/* View Switcher */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-2">
-          <div className="flex bg-gray-100 dark:bg-gray-800 rounded-2xl p-1">
+          <div className="flex bg-muted rounded-2xl p-1">
             <Button
               onClick={() => setCurrentView('month')}
               className={`px-3 py-1 text-sm font-medium rounded-xl transition-colors ${currentView === 'month'
                 ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                : 'text-muted-foreground hover:text-gray-900 dark:hover:text-white'
                 }`}
               variant='ghost'>
               {t('views.month')}
@@ -146,7 +146,7 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               onClick={() => setCurrentView('week')}
               className={`px-3 py-1 text-sm font-medium rounded-xl transition-colors ${currentView === 'week'
                 ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                : 'text-muted-foreground hover:text-gray-900 dark:hover:text-white'
                 }`}
               variant='ghost'>
               {t('views.week')}
@@ -155,7 +155,7 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               onClick={() => setCurrentView('day')}
               className={`px-3 py-1 text-sm font-medium rounded-xl transition-colors ${currentView === 'day'
                 ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                : 'text-muted-foreground hover:text-gray-900 dark:hover:text-white'
                 }`}
               variant='ghost'>
               {t('views.day')}
@@ -164,7 +164,7 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               onClick={() => setCurrentView('list')}
               className={`px-3 py-1 text-sm font-medium rounded-xl transition-colors ${currentView === 'list'
                 ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                : 'text-muted-foreground hover:text-gray-900 dark:hover:text-white'
                 }`}
               variant='ghost'>
               {t('views.list')}
@@ -178,7 +178,7 @@ export const AppointmentCalendar: React.FC<AppointmentCalendarProps> = ({
               setModalMode('create');
               setShowModal(true);
             }}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-ring"
             variant='default'>
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />

@@ -1,4 +1,6 @@
 import copy
+import uuid
+from datetime import date, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -11,6 +13,8 @@ from schemas.base import ApiError, ResponseEnvelope
 from schemas.personnel import (
     AdminPersonnelOverviewResponse,
     AdminPersonnelTenantSummary,
+    LeaveRequestAction,
+    LeaveRequestCreate,
     PersonnelCompensationRecord,
     PersonnelDocumentRecord,
     PersonnelEmployee,
@@ -294,6 +298,136 @@ def list_personnel_leave(
     tenant = _get_tenant(access, db)
     users = _list_tenant_users(access, db)
     return ResponseEnvelope(data=_build_leave_rows(users, tenant))
+
+
+@router.post("/personnel/leave", operation_id="createPersonnelLeave", response_model=ResponseEnvelope[PersonnelLeaveRecord])
+def create_personnel_leave(
+    payload: LeaveRequestCreate,
+    access: UnifiedAccess = Depends(require_access()),
+    db: Session = Depends(get_db),
+):
+    tenant = _get_tenant(access, db)
+    users = _list_tenant_users(access, db)
+
+    # Validate employee exists
+    employee = next((u for u in users if u.id == payload.employee_id), None)
+    if not employee:
+        raise HTTPException(
+            status_code=400,
+            detail=ApiError(message="Personel bulunamadi", code="EMPLOYEE_NOT_FOUND").model_dump(mode="json"),
+        )
+
+    # Validate dates
+    try:
+        start = date.fromisoformat(payload.start_date)
+        end = date.fromisoformat(payload.end_date)
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail=ApiError(message="Gecersiz tarih formati", code="INVALID_DATE").model_dump(mode="json"),
+        )
+    if end < start:
+        raise HTTPException(
+            status_code=400,
+            detail=ApiError(message="Bitis tarihi baslangictan once olamaz", code="INVALID_DATE_RANGE").model_dump(mode="json"),
+        )
+
+    # Validate leave type against policy
+    settings = _get_personnel_settings(tenant)
+    leave_types = settings.get("leavePolicy", {}).get("leaveTypes", [])
+    if leave_types and payload.leave_type not in leave_types:
+        raise HTTPException(
+            status_code=400,
+            detail=ApiError(message=f"Gecersiz izin turu: {payload.leave_type}", code="INVALID_LEAVE_TYPE").model_dump(mode="json"),
+        )
+
+    # Check overlapping leave
+    existing_records = (tenant.settings or {}).get("personnel_leave_records") or []
+    for rec in existing_records:
+        if rec.get("employeeId") == payload.employee_id and rec.get("status") != "Reddedildi":
+            rec_start = rec.get("startDate", "")
+            rec_end = rec.get("endDate", "")
+            try:
+                rs = date.fromisoformat(rec_start)
+                re_ = date.fromisoformat(rec_end)
+                if start <= re_ and end >= rs:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=ApiError(message="Bu tarih araliginda zaten bir izin talebi var", code="OVERLAPPING_LEAVE").model_dump(mode="json"),
+                    )
+            except ValueError:
+                pass
+
+    new_record = {
+        "id": f"leave_{uuid.uuid4().hex[:12]}",
+        "employeeId": payload.employee_id,
+        "employeeName": _employee_name(employee),
+        "leaveType": payload.leave_type,
+        "startDate": payload.start_date,
+        "endDate": payload.end_date,
+        "dayCount": payload.day_count,
+        "status": "Onay Bekliyor",
+        "approver": None,
+        "note": payload.note,
+        "createdAt": datetime.utcnow().isoformat(),
+    }
+
+    tenant_settings = tenant.settings or {}
+    records = tenant_settings.get("personnel_leave_records") or []
+    # Remove default placeholder records when real data comes in
+    records = [r for r in records if r.get("id") != "leave_default_1"]
+    records.append(new_record)
+    tenant_settings["personnel_leave_records"] = records
+    tenant.settings = tenant_settings
+    db.add(tenant)
+    db.commit()
+    db.refresh(tenant)
+
+    return ResponseEnvelope(data=PersonnelLeaveRecord.model_validate(new_record))
+
+
+@router.put("/personnel/leave/{leave_id}", operation_id="actionPersonnelLeave", response_model=ResponseEnvelope[PersonnelLeaveRecord])
+def action_personnel_leave(
+    leave_id: str,
+    payload: LeaveRequestAction,
+    access: UnifiedAccess = Depends(require_access()),
+    db: Session = Depends(get_db),
+):
+    tenant = _get_tenant(access, db)
+    tenant_settings = tenant.settings or {}
+    records = tenant_settings.get("personnel_leave_records") or []
+
+    record = next((r for r in records if r.get("id") == leave_id), None)
+    if not record:
+        raise HTTPException(
+            status_code=404,
+            detail=ApiError(message="Izin talebi bulunamadi", code="LEAVE_NOT_FOUND").model_dump(mode="json"),
+        )
+
+    if record.get("status") != "Onay Bekliyor":
+        raise HTTPException(
+            status_code=400,
+            detail=ApiError(message="Bu talep zaten islem gormus", code="ALREADY_PROCESSED").model_dump(mode="json"),
+        )
+
+    approver_name = _employee_name(access.user) if access.user else "Sistem"
+
+    if payload.action == "approve":
+        record["status"] = "Onaylandi"
+    else:
+        record["status"] = "Reddedildi"
+
+    record["approver"] = approver_name
+    record["actionReason"] = payload.reason
+    record["actionAt"] = datetime.utcnow().isoformat()
+
+    tenant_settings["personnel_leave_records"] = records
+    tenant.settings = tenant_settings
+    db.add(tenant)
+    db.commit()
+    db.refresh(tenant)
+
+    return ResponseEnvelope(data=PersonnelLeaveRecord.model_validate(record))
 
 
 @router.get("/personnel/documents", operation_id="listPersonnelDocuments", response_model=ResponseEnvelope[list[PersonnelDocumentRecord]])

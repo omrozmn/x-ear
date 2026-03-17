@@ -184,26 +184,26 @@ export function ConvertToPurchaseModal({
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="max-w-4xl max-h-[80vh] overflow-y-auto">
         <div className="flex items-center gap-2 mb-6">
-          <ShoppingCart className="text-green-600" size={24} />
+          <ShoppingCart className="text-success" size={24} />
           <h2 className="text-xl font-semibold">Faturaları Alışa Dönüştür</h2>
         </div>
 
         <div className="space-y-6">
           {/* Summary */}
-          <Card className="p-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+          <Card className="p-4 bg-primary/10 border-blue-200 dark:border-blue-800">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-medium text-blue-900 dark:text-blue-100">
                   {selectedInvoices.length} Fatura Seçildi
                 </h3>
-                <p className="text-sm text-blue-700 dark:text-blue-300">
+                <p className="text-sm text-primary">
                   Toplam Tutar: {formatCurrency(totalAmount, 'TRY')}
                 </p>
               </div>
               <div className="text-right">
                 <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="text-green-600" size={16} />
-                  <span className="text-green-600">{mappedCount} Eşleştirildi</span>
+                  <CheckCircle className="text-success" size={16} />
+                  <span className="text-success">{mappedCount} Eşleştirildi</span>
                 </div>
                 {mappedCount < selectedInvoices.length && (
                   <div className="flex items-center gap-2 text-sm mt-1">
@@ -231,11 +231,11 @@ export function ConvertToPurchaseModal({
                       <span className="font-medium text-gray-900 dark:text-white">
                         {invoice.invoiceNumber}
                       </span>
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-muted-foreground">
                         {formatCurrency(invoice.totalAmount, invoice.currency)}
                       </span>
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                    <div className="text-sm text-muted-foreground">
                       <div>Tedarikçi: {invoice.supplierName}</div>
                       {invoice.supplierTaxNumber && (
                         <div>VKN: {invoice.supplierTaxNumber}</div>

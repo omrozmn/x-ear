@@ -85,12 +85,9 @@ axiosInstance.interceptors.request.use(
     (config) => {
         const headers = ensureHeaders(config);
         const token = typeof localStorage !== 'undefined' ? localStorage.getItem('admin_token') : null;
-        console.log(`[Orval Request] ${config.url} - Token found: ${!!token}`);
 
         if (token) {
             headers.set('Authorization', `Bearer ${token}`);
-        } else {
-            console.warn(`[Orval Request] No token found for ${config.url}`);
         }
 
         // Add Idempotency-Key for write operations (POST, PUT, PATCH)
@@ -102,7 +99,6 @@ axiosInstance.interceptors.request.use(
             if (!existingKey) {
                 const idempotencyKey = generateIdempotencyKey();
                 headers.set('Idempotency-Key', idempotencyKey);
-                console.log(`[Orval Request] Added Idempotency-Key: ${idempotencyKey}`);
             }
         }
 
@@ -116,10 +112,6 @@ axiosInstance.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-
-
-
-
             // Don't logout on login endpoint 401 (invalid credentials)
             const isLoginRequest = typeof error.config?.url === 'string'
                 && error.config.url.includes('/auth/login');
@@ -128,7 +120,7 @@ axiosInstance.interceptors.response.use(
                 if (typeof localStorage !== 'undefined') {
                     localStorage.removeItem('admin_token');
                     localStorage.removeItem('admin_refresh_token');
-                    localStorage.removeItem('auth-storage');
+                    localStorage.removeItem('admin-auth-storage');
 
                     if (!window.location.pathname.includes('/login')) {
                         window.location.href = '/login';
@@ -190,15 +182,8 @@ async function retryRequest<T>(
     try {
         return await requestFn();
     } catch (error: unknown) {
-        const axiosError = axios.isAxiosError(error) ? error : undefined;
-
         // Don't retry if we've exceeded max attempts
         if (attempt >= RETRY_CONFIG.maxRetries) {
-            console.error(`Request failed after ${attempt} attempts:`, {
-                url: config.url,
-                method: config.method,
-                error: axiosError?.code || (error instanceof Error ? error.message : 'Unknown error')
-            });
             throw error;
         }
 
@@ -209,11 +194,6 @@ async function retryRequest<T>(
 
         // Calculate delay and wait
         const delay = calculateBackoffDelay(attempt);
-        console.warn(`Request failed (attempt ${attempt}/${RETRY_CONFIG.maxRetries}), retrying in ${delay}ms:`, {
-            url: config.url,
-            method: config.method,
-            error: axiosError?.code || (error instanceof Error ? error.message : 'Unknown error')
-        });
 
         await sleep(delay);
 

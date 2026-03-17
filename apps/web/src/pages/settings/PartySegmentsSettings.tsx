@@ -60,18 +60,18 @@ const CollapsibleSettingsSection: React.FC<{
 }> = ({ title, icon, defaultOpen = true, children }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-border">
       <button
         data-allow-raw="true"
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-6 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors rounded-2xl"
+        className="w-full p-6 flex items-center justify-between cursor-pointer hover:bg-muted dark:hover:bg-gray-700/50 transition-colors rounded-2xl"
       >
         <div className="flex items-center gap-3">
           {icon}
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
         </div>
-        {isOpen ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
+        {isOpen ? <ChevronUp className="w-5 h-5 text-muted-foreground" /> : <ChevronDown className="w-5 h-5 text-muted-foreground" />}
       </button>
       {isOpen && <div className="px-6 pb-6 border-t dark:border-gray-700">{children}</div>}
     </div>
@@ -515,7 +515,7 @@ export default function PartySegmentsSettings() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-500 dark:text-gray-400">Ayarlar yükleniyor...</p>
+          <p className="text-muted-foreground">Ayarlar yükleniyor...</p>
         </div>
       </div>
     );
@@ -535,13 +535,13 @@ export default function PartySegmentsSettings() {
       {/* Segments Section */}
       <CollapsibleSettingsSection
         title={t('party.segments_title', 'Hasta Segmentleri')}
-        icon={<Users className="w-5 h-5 text-gray-500" />}
+        icon={<Users className="w-5 h-5 text-muted-foreground" />}
         defaultOpen={true}
       >
         
         {/* Add New Segment */}
         <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-2xl">
-          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Yeni Segment Ekle</h4>
+          <h4 className="text-sm font-medium text-foreground mb-3">Yeni Segment Ekle</h4>
           <div className="flex gap-3">
             <input
               data-allow-raw="true"
@@ -550,7 +550,7 @@ export default function PartySegmentsSettings() {
               value={newSegmentLabel}
               onChange={(e) => setNewSegmentLabel(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddSegment()}
-              className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="flex-1 px-3 py-2 border border-border rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-ring focus:border-blue-500"
             />
             <Button
               onClick={handleAddSegment}
@@ -561,7 +561,7 @@ export default function PartySegmentsSettings() {
               {saving ? 'Kaydediliyor...' : 'Ekle'}
             </Button>
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+          <p className="text-xs text-muted-foreground mt-2">
             Değer otomatik oluşturulacak (örn: "Premium Müşteri" → "premium-musteri")
           </p>
         </div>
@@ -571,11 +571,11 @@ export default function PartySegmentsSettings() {
           {segments.map((segment) => (
             <div
               key={segment.value}
-              className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
+              className="flex items-center justify-between p-3 bg-gray-50/50 rounded-2xl hover:bg-muted dark:hover:bg-gray-900 transition-colors"
             >
               {editingSegment === segment.value ? (
                 <div className="flex items-center space-x-2 flex-1">
-                  <span className="text-sm font-mono text-gray-600 dark:text-gray-400 min-w-[120px]">
+                  <span className="text-sm font-mono text-muted-foreground min-w-[120px]">
                     {segment.value}
                   </span>
                   <input
@@ -583,7 +583,7 @@ export default function PartySegmentsSettings() {
                     type="text"
                     value={editLabel}
                     onChange={(e) => setEditLabel(e.target.value)}
-                    className="flex-1 px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                    className="flex-1 px-3 py-1 border border-border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
                     autoFocus
                   />
                   <Button
@@ -604,7 +604,7 @@ export default function PartySegmentsSettings() {
               ) : (
                 <>
                   <div className="flex items-center space-x-3">
-                    <span className="text-sm font-mono text-gray-600 dark:text-gray-400 min-w-[120px]">
+                    <span className="text-sm font-mono text-muted-foreground min-w-[120px]">
                       {segment.value}
                     </span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
@@ -625,7 +625,7 @@ export default function PartySegmentsSettings() {
                           size="sm"
                           variant="ghost"
                           onClick={() => handleDeleteSegment(segment.value)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         >
                           <span className="text-xs font-medium">Evet, Sil</span>
                         </Button>
@@ -633,7 +633,7 @@ export default function PartySegmentsSettings() {
                           size="sm"
                           variant="ghost"
                           onClick={handleCancelDeleteSegment}
-                          className="text-gray-600 hover:text-gray-700"
+                          className="text-muted-foreground hover:text-foreground"
                         >
                           <X className="w-4 h-4" />
                         </Button>
@@ -644,7 +644,7 @@ export default function PartySegmentsSettings() {
                         variant="ghost"
                         onClick={() => handleDeleteSegment(segment.value)}
                       >
-                        <Trash2 className="w-4 h-4 text-red-600" />
+                        <Trash2 className="w-4 h-4 text-destructive" />
                       </Button>
                     )}
                   </div>
@@ -658,13 +658,13 @@ export default function PartySegmentsSettings() {
       {/* Acquisition Types Section */}
       <CollapsibleSettingsSection
         title={t('party.acquisitions_title', 'Kazanim Turleri')}
-        icon={<Users className="w-5 h-5 text-gray-500" />}
+        icon={<Users className="w-5 h-5 text-muted-foreground" />}
         defaultOpen={true}
       >
         
         {/* Add New Acquisition */}
         <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-2xl">
-          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Yeni Kazanım Türü Ekle</h4>
+          <h4 className="text-sm font-medium text-foreground mb-3">Yeni Kazanım Türü Ekle</h4>
           <div className="flex gap-3">
             <input
               data-allow-raw="true"
@@ -673,7 +673,7 @@ export default function PartySegmentsSettings() {
               value={newAcquisitionLabel}
               onChange={(e) => setNewAcquisitionLabel(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddAcquisition()}
-              className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="flex-1 px-3 py-2 border border-border rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-ring focus:border-blue-500"
             />
             <Button
               onClick={handleAddAcquisition}
@@ -684,7 +684,7 @@ export default function PartySegmentsSettings() {
               {saving ? 'Kaydediliyor...' : 'Ekle'}
             </Button>
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+          <p className="text-xs text-muted-foreground mt-2">
             Değer otomatik oluşturulacak (örn: "İş Ortağı" → "is-ortagi")
           </p>
         </div>
@@ -694,11 +694,11 @@ export default function PartySegmentsSettings() {
           {acquisitions.map((acquisition) => (
             <div
               key={acquisition.value}
-              className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
+              className="flex items-center justify-between p-3 bg-gray-50/50 rounded-2xl hover:bg-muted dark:hover:bg-gray-900 transition-colors"
             >
               {editingAcquisition === acquisition.value ? (
                 <div className="flex items-center space-x-2 flex-1">
-                  <span className="text-sm font-mono text-gray-600 dark:text-gray-400 min-w-[120px]">
+                  <span className="text-sm font-mono text-muted-foreground min-w-[120px]">
                     {acquisition.value}
                   </span>
                   <input
@@ -706,7 +706,7 @@ export default function PartySegmentsSettings() {
                     type="text"
                     value={editLabel}
                     onChange={(e) => setEditLabel(e.target.value)}
-                    className="flex-1 px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                    className="flex-1 px-3 py-1 border border-border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
                     autoFocus
                   />
                   <Button
@@ -727,7 +727,7 @@ export default function PartySegmentsSettings() {
               ) : (
                 <>
                   <div className="flex items-center space-x-3">
-                    <span className="text-sm font-mono text-gray-600 dark:text-gray-400 min-w-[120px]">
+                    <span className="text-sm font-mono text-muted-foreground min-w-[120px]">
                       {acquisition.value}
                     </span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
@@ -748,7 +748,7 @@ export default function PartySegmentsSettings() {
                           size="sm"
                           variant="ghost"
                           onClick={() => handleDeleteAcquisition(acquisition.value)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         >
                           <span className="text-xs font-medium">Evet, Sil</span>
                         </Button>
@@ -756,7 +756,7 @@ export default function PartySegmentsSettings() {
                           size="sm"
                           variant="ghost"
                           onClick={handleCancelDeleteAcquisition}
-                          className="text-gray-600 hover:text-gray-700"
+                          className="text-muted-foreground hover:text-foreground"
                         >
                           <X className="w-4 h-4" />
                         </Button>
@@ -767,7 +767,7 @@ export default function PartySegmentsSettings() {
                         variant="ghost"
                         onClick={() => handleDeleteAcquisition(acquisition.value)}
                       >
-                        <Trash2 className="w-4 h-4 text-red-600" />
+                        <Trash2 className="w-4 h-4 text-destructive" />
                       </Button>
                     )}
                   </div>
@@ -781,40 +781,40 @@ export default function PartySegmentsSettings() {
       {/* Anamnesis Questions Section */}
       <CollapsibleSettingsSection
         title={t('anamnesis.title', 'Anamnez Sorulari')}
-        icon={<ClipboardList className="w-5 h-5 text-gray-500" />}
+        icon={<ClipboardList className="w-5 h-5 text-muted-foreground" />}
         defaultOpen={false}
       >
         <div className="pt-4 space-y-4">
           {useDefaults && anamnesisQuestions.length > 0 && (
-            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl text-sm text-blue-700 dark:text-blue-300">
+            <div className="p-3 bg-primary/10 rounded-xl text-sm text-primary">
               {t('anamnesis.defaults_info', 'Varsayılan odyoloji soruları gösteriliyor. Düzenleyebilir, silebilir veya yeni sorular ekleyebilirsiniz.')}
             </div>
           )}
           {useDefaults && anamnesisQuestions.length === 0 && (
-            <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl text-sm text-yellow-700 dark:text-yellow-300">
+            <div className="p-3 bg-warning/10 rounded-xl text-sm text-yellow-700 dark:text-yellow-300">
               {t('anamnesis.no_defaults', 'Varsayılan sorular yüklenemedi.')}
             </div>
           )}
 
           {/* Add New Question */}
           <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-2xl space-y-3">
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('anamnesis.add_question', 'Yeni Soru Ekle')}</h4>
+            <h4 className="text-sm font-medium text-foreground">{t('anamnesis.add_question', 'Yeni Soru Ekle')}</h4>
             <input
               data-allow-raw="true"
               type="text"
               placeholder={t('anamnesis.question_placeholder', 'Soru metni yazin...')}
               value={newQ.question}
               onChange={e => setNewQ(prev => ({ ...prev, question: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-ring"
             />
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t('anamnesis.category', 'Kategori')}</label>
+                <label className="block text-xs text-muted-foreground mb-1">{t('anamnesis.category', 'Kategori')}</label>
                 <select
                   data-allow-raw="true"
                   value={newQ.category}
                   onChange={e => setNewQ(prev => ({ ...prev, category: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                  className="w-full px-3 py-2 border border-border rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
                 >
                   {ANAMNESIS_CATEGORIES.map(c => (
                     <option key={c.value} value={c.value}>{c.label}</option>
@@ -822,12 +822,12 @@ export default function PartySegmentsSettings() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t('anamnesis.answer_type', 'Cevap Tipi')}</label>
+                <label className="block text-xs text-muted-foreground mb-1">{t('anamnesis.answer_type', 'Cevap Tipi')}</label>
                 <select
                   data-allow-raw="true"
                   value={newQ.type}
                   onChange={e => setNewQ(prev => ({ ...prev, type: e.target.value as 'text' | 'select' | 'multiselect' }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                  className="w-full px-3 py-2 border border-border rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
                 >
                   <option value="text">{t('anamnesis.type_text', 'Metin')}</option>
                   <option value="select">{t('anamnesis.type_select', 'Tek Secim')}</option>
@@ -835,13 +835,13 @@ export default function PartySegmentsSettings() {
                 </select>
               </div>
               <div className="flex items-end gap-3">
-                <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
                   <input
                     data-allow-raw="true"
                     type="checkbox"
                     checked={newQ.required}
                     onChange={e => setNewQ(prev => ({ ...prev, required: e.target.checked }))}
-                    className="rounded border-gray-300 dark:border-gray-600"
+                    className="rounded border-border"
                   />
                   {t('anamnesis.required', 'Zorunlu')}
                 </label>
@@ -850,7 +850,7 @@ export default function PartySegmentsSettings() {
 
             {newQ.type !== 'text' && (
               <div className="space-y-2">
-                <label className="block text-xs text-gray-500 dark:text-gray-400">{t('anamnesis.options', 'Secenekler')}</label>
+                <label className="block text-xs text-muted-foreground">{t('anamnesis.options', 'Secenekler')}</label>
                 <div className="flex gap-2">
                   <input
                     data-allow-raw="true"
@@ -864,7 +864,7 @@ export default function PartySegmentsSettings() {
                         setNewOption('');
                       }
                     }}
-                    className="flex-1 px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                    className="flex-1 px-3 py-1.5 border border-border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
                   />
                   <Button
                     size="sm"
@@ -883,13 +883,13 @@ export default function PartySegmentsSettings() {
                 {newQOptions.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {newQOptions.map((opt, i) => (
-                      <span key={i} className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-xs rounded-lg">
+                      <span key={i} className="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-blue-800 dark:text-blue-200 text-xs rounded-lg">
                         {opt}
                         <button
                           data-allow-raw="true"
                           type="button"
                           onClick={() => setNewQOptions(prev => prev.filter((_, idx) => idx !== i))}
-                          className="hover:text-red-500"
+                          className="hover:text-destructive"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -913,28 +913,28 @@ export default function PartySegmentsSettings() {
           {/* Questions List */}
           {anamnesisQuestions.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <h4 className="text-sm font-medium text-foreground">
                 {t('anamnesis.questions_list', 'Sorular')} ({anamnesisQuestions.length})
               </h4>
               {anamnesisQuestions.map(q => (
                 <div
                   key={q.id}
-                  className="flex items-start justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
+                  className="flex items-start justify-between p-3 bg-gray-50/50 rounded-xl hover:bg-muted dark:hover:bg-gray-900 transition-colors"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-medium text-gray-900 dark:text-white">{q.question}</span>
                       {q.required && (
-                        <span className="text-[10px] px-1.5 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded">
+                        <span className="text-[10px] px-1.5 py-0.5 bg-destructive/10 text-destructive rounded">
                           {t('anamnesis.required', 'Zorunlu')}
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      <span className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded">
+                    <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                      <span className="px-1.5 py-0.5 bg-accent rounded">
                         {ANAMNESIS_CATEGORIES.find(c => c.value === q.category)?.label || q.category}
                       </span>
-                      <span className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded">
+                      <span className="px-1.5 py-0.5 bg-accent rounded">
                         {q.type === 'text' ? t('anamnesis.type_text', 'Metin') : q.type === 'select' ? t('anamnesis.type_select', 'Tek Secim') : t('anamnesis.type_multiselect', 'Coklu Secim')}
                       </span>
                       {q.options && q.options.length > 0 && (
@@ -944,7 +944,7 @@ export default function PartySegmentsSettings() {
                     {q.options && q.options.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-1.5">
                         {q.options.map((o, i) => (
-                          <span key={i} className="text-[11px] px-1.5 py-0.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded">
+                          <span key={i} className="text-[11px] px-1.5 py-0.5 bg-primary/10 text-primary rounded">
                             {o}
                           </span>
                         ))}
@@ -958,14 +958,14 @@ export default function PartySegmentsSettings() {
                       onClick={() => handleToggleRequired(q.id)}
                       title={q.required ? t('anamnesis.make_optional', 'Opsiyonel yap') : t('anamnesis.make_required', 'Zorunlu yap')}
                     >
-                      {q.required ? <Check className="w-4 h-4 text-green-600" /> : <Check className="w-4 h-4 text-gray-400" />}
+                      {q.required ? <Check className="w-4 h-4 text-success" /> : <Check className="w-4 h-4 text-muted-foreground" />}
                     </Button>
                     <Button
                       size="sm"
                       variant="ghost"
                       onClick={() => handleDeleteAnamnesisQuestion(q.id)}
                     >
-                      <Trash2 className="w-4 h-4 text-red-600" />
+                      <Trash2 className="w-4 h-4 text-destructive" />
                     </Button>
                   </div>
                 </div>

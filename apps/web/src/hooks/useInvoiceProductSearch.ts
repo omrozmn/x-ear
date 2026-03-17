@@ -25,6 +25,7 @@ export interface InvoiceSearchResult {
   senderTaxNumber?: string | null;
   senderAddress?: string | null;
   senderCity?: string | null;
+  senderDistrict?: string | null;
   matchedItems: MatchedInvoiceItem[];
 }
 

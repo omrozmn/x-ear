@@ -123,6 +123,8 @@ export interface MarketplaceTabProps {
     setNewMarketplaceLabel: (v: string) => void;
     newMarketplaceUrl: string;
     setNewMarketplaceUrl: (v: string) => void;
+    marketplaceUrlError: string | null;
+    setMarketplaceUrlError: (v: string | null) => void;
     isBusy: (key: string) => boolean;
     handleAddMarketplaceLink: () => void;
     handleDeleteMarketplaceLink: (linkId: string) => void;
@@ -136,6 +138,8 @@ export const MarketplaceTab: React.FC<MarketplaceTabProps> = ({
     setNewMarketplaceLabel,
     newMarketplaceUrl,
     setNewMarketplaceUrl,
+    marketplaceUrlError,
+    setMarketplaceUrlError,
     isBusy,
     handleAddMarketplaceLink,
     handleDeleteMarketplaceLink,
@@ -180,7 +184,10 @@ export const MarketplaceTab: React.FC<MarketplaceTabProps> = ({
                         <option value="ciceksepeti">Ciceksepeti</option>
                     </select>
                     <input value={newMarketplaceLabel} onChange={(e) => setNewMarketplaceLabel(e.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="Etiket (orn: Trendyol Magaza)" />
-                    <input value={newMarketplaceUrl} onChange={(e) => setNewMarketplaceUrl(e.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="URL" />
+                    <div>
+                        <input value={newMarketplaceUrl} onChange={(e) => { setNewMarketplaceUrl(e.target.value); setMarketplaceUrlError(null); }} className={`w-full rounded-2xl border bg-white px-3 py-2 text-sm outline-none ${marketplaceUrlError ? 'border-rose-400' : 'border-gray-200'}`} placeholder="URL (https://...)" />
+                        {marketplaceUrlError && <p className="mt-1 text-xs text-rose-600">{marketplaceUrlError}</p>}
+                    </div>
                     <button onClick={handleAddMarketplaceLink} disabled={!newMarketplaceLabel.trim() || !newMarketplaceUrl.trim() || isBusy('add-marketplace')} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
                         <Plus className="mr-1 inline h-4 w-4" />{isBusy('add-marketplace') ? 'Ekleniyor...' : 'Kanal Ekle'}
                     </button>

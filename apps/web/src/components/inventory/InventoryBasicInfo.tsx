@@ -17,7 +17,7 @@ export const InventoryBasicInfo: React.FC<InventoryBasicInfoProps> = ({ item }) 
         
         <div className="space-y-4">
           <div>
-            <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="flex items-center text-sm font-medium text-foreground mb-2">
               <Tag className="w-4 h-4 mr-2" />
               Kategori
             </label>
@@ -25,7 +25,7 @@ export const InventoryBasicInfo: React.FC<InventoryBasicInfoProps> = ({ item }) 
           </div>
 
           <div>
-            <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="flex items-center text-sm font-medium text-foreground mb-2">
               <Hash className="w-4 h-4 mr-2" />
               Barkod
             </label>
@@ -33,7 +33,7 @@ export const InventoryBasicInfo: React.FC<InventoryBasicInfoProps> = ({ item }) 
           </div>
 
           <div>
-            <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="flex items-center text-sm font-medium text-foreground mb-2">
               <User className="w-4 h-4 mr-2" />
               Tedarikçi
             </label>
@@ -42,7 +42,7 @@ export const InventoryBasicInfo: React.FC<InventoryBasicInfoProps> = ({ item }) 
 
           {item.warranty && (
             <div>
-              <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="flex items-center text-sm font-medium text-foreground mb-2">
                 <Calendar className="w-4 h-4 mr-2" />
                 Garanti Süresi
               </label>
@@ -52,7 +52,7 @@ export const InventoryBasicInfo: React.FC<InventoryBasicInfoProps> = ({ item }) 
 
           {item.description && (
             <div>
-              <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="flex items-center text-sm font-medium text-foreground mb-2">
                 <FileText className="w-4 h-4 mr-2" />
                 Açıklama
               </label>
@@ -64,7 +64,7 @@ export const InventoryBasicInfo: React.FC<InventoryBasicInfoProps> = ({ item }) 
 
           {item.features && item.features.length > 0 && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Özellikler
               </label>
               <div className="flex flex-wrap gap-2">
@@ -77,12 +77,12 @@ export const InventoryBasicInfo: React.FC<InventoryBasicInfoProps> = ({ item }) 
             </div>
           )}
 
-          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+          <div className="pt-4 border-t border-border">
+            <p className="text-sm text-muted-foreground">
               Oluşturulma: {item.createdAt ? new Date(item.createdAt).toLocaleDateString('tr-TR') : '-'}
             </p>
             {item.lastUpdated && (
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 Son Güncelleme: {new Date(item.lastUpdated).toLocaleDateString('tr-TR')}
               </p>
             )}

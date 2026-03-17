@@ -64,7 +64,7 @@ export function PartiesTab({ filters }: PartiesTabProps) {
     if (isLoading) {
         return (
             <div className="flex justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
         );
     }
@@ -73,7 +73,7 @@ export function PartiesTab({ filters }: PartiesTabProps) {
         return (
             <div className="text-center py-12">
                 <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-4">Veriler yüklenirken hata oluştu</p>
+                <p className="text-muted-foreground mb-4">Veriler yüklenirken hata oluştu</p>
                 <Button onClick={() => refetch()} variant="outline" icon={<RefreshCw className="w-4 h-4" />}>
                     Tekrar Dene
                 </Button>
@@ -114,7 +114,7 @@ export function PartiesTab({ filters }: PartiesTabProps) {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Hasta Performansı</h3>
+                <h3 className="text-lg font-semibold text-foreground">Hasta Performansı</h3>
                 <TabExportButton filename="hasta-raporu" rows={exportRows} />
             </div>
 
@@ -128,10 +128,10 @@ export function PartiesTab({ filters }: PartiesTabProps) {
                 ].map((item) => {
                     const Icon = item.icon;
                     return (
-                        <div key={item.label} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5">
+                        <div key={item.label} className="rounded-xl border border-border bg-white dark:bg-gray-800 p-5">
                             <div className="flex items-center justify-between mb-3">
-                                <span className="text-sm text-gray-500 dark:text-gray-400">{item.label}</span>
-                                <Icon className="w-4 h-4 text-gray-400" />
+                                <span className="text-sm text-muted-foreground">{item.label}</span>
+                                <Icon className="w-4 h-4 text-muted-foreground" />
                             </div>
                             <p className="text-3xl font-semibold text-gray-900 dark:text-white">{item.value}</p>
                         </div>
@@ -140,14 +140,14 @@ export function PartiesTab({ filters }: PartiesTabProps) {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-border p-6">
                     <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Randevu Sonuçları</h4>
                     <div className="space-y-4">
                         {appointmentFlow.map((item) => (
                             <div key={item.label} className="flex items-center justify-between gap-4">
-                                <span className="text-gray-600 dark:text-gray-400">{item.label}</span>
+                                <span className="text-muted-foreground">{item.label}</span>
                                 <div className="flex items-center gap-3 w-40">
-                                    <div className="h-2 rounded-full bg-gray-100 dark:bg-gray-700 flex-1 overflow-hidden">
+                                    <div className="h-2 rounded-full bg-muted flex-1 overflow-hidden">
                                         <div
                                             className="h-full bg-blue-500 rounded-full"
                                             style={{ width: `${Math.min(100, item.value === 0 ? 0 : (item.value / Math.max(...appointmentFlow.map((flow) => flow.value), 1)) * 100)}%` }}
@@ -160,42 +160,42 @@ export function PartiesTab({ filters }: PartiesTabProps) {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-border p-6">
                     <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Hasta Kaynakları</h4>
                     <div className="space-y-4">
                         {topAcquisitionSources.length > 0 ? (
                             topAcquisitionSources.map(([source, count]) => (
                                 <div key={source} className="flex justify-between items-center">
-                                    <span className="text-gray-600 dark:text-gray-400">{humanizeLabel(source, ACQUISITION_LABELS)}</span>
+                                    <span className="text-muted-foreground">{humanizeLabel(source, ACQUISITION_LABELS)}</span>
                                     <span className="font-semibold text-gray-900 dark:text-white">{count}</span>
                                 </div>
                             ))
                         ) : (
-                            <p className="text-gray-400 text-sm">Veri bulunamadı</p>
+                            <p className="text-muted-foreground text-sm">Veri bulunamadı</p>
                         )}
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-border p-6">
                     <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Hasta Segmentleri</h4>
                     <div className="space-y-4">
                         {Object.entries(segmentBreakdown).length > 0 ? Object.entries(segmentBreakdown).map(([segment, count]) => (
                             <div key={segment} className="flex justify-between items-center">
-                                <span className="text-gray-600 dark:text-gray-400">{humanizeLabel(segment, SEGMENT_LABELS)}</span>
+                                <span className="text-muted-foreground">{humanizeLabel(segment, SEGMENT_LABELS)}</span>
                                 <span className="font-semibold text-gray-900 dark:text-white">{count}</span>
                             </div>
                         )) : (
-                            <p className="text-gray-400 text-sm">Veri bulunamadı</p>
+                            <p className="text-muted-foreground text-sm">Veri bulunamadı</p>
                         )}
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 lg:col-span-2">
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-border p-6 lg:col-span-2">
                     <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Yaş Dağılımı</h4>
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                         {Object.entries(ageDistribution).map(([label, count]) => (
                             <div key={label} className="rounded-lg bg-gray-50 dark:bg-gray-900/40 p-4 text-center">
-                                <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{label}</p>
+                                <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
                                 <p className="mt-2 text-2xl font-semibold text-gray-900 dark:text-white">{count}</p>
                             </div>
                         ))}

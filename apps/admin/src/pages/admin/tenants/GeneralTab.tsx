@@ -84,7 +84,6 @@ export const GeneralTab = ({ tenant, onUpdate }: GeneralTabProps) => {
             await queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
             onUpdate();
         } catch (error: unknown) {
-            console.error('Update tenant error:', error);
             const apiError = error as ApiErrorLike;
             const message = apiError.response?.data?.error?.message
                 || apiError.response?.data?.message

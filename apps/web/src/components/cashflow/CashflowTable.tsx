@@ -68,8 +68,8 @@ export function CashflowTable({
         <span
           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
             record.transactionType === 'income'
-              ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400'
-              : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400'
+              ? 'bg-success/10 text-success'
+              : 'bg-destructive/10 text-red-800 dark:text-red-400'
           }`}
         >
           {record.transactionType === 'income' ? (
@@ -105,8 +105,8 @@ export function CashflowTable({
         <span
           className={`text-sm font-medium ${
             record.transactionType === 'income'
-              ? 'text-green-600 dark:text-green-400'
-              : 'text-red-600 dark:text-red-400'
+              ? 'text-success'
+              : 'text-destructive'
           }`}
         >
           {record.transactionType === 'income' ? '+' : '-'}
@@ -125,7 +125,7 @@ export function CashflowTable({
             e.stopPropagation();
             onDeleteRecord(record);
           }}
-          className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+          className="text-destructive hover:text-destructive dark:hover:text-red-300 hover:bg-destructive/10 dark:hover:bg-red-900/20"
         >
           <Trash2 className="h-4 w-4 mr-1" />
           Sil

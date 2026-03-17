@@ -63,6 +63,7 @@
     "clsx": "^2.0.0",
     "date-fns": "^2.30.0",
     "fuse.js": "^7.1.0",
+    "html5-qrcode": "^2.3.8",
     "humps": "^2.0.1",
     "i18next": "^25.8.0",
     "i18next-browser-languagedetector": "^8.2.0",

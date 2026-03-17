@@ -270,7 +270,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
         <div className="flex-1 overflow-y-auto px-1">
           <div className="space-y-6 pb-6">
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+              <div className="bg-destructive/10 border border-red-200 rounded-xl p-4">
                 <div className="flex">
                   <div className="flex-shrink-0">
                     <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -279,7 +279,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                   </div>
                   <div className="ml-3">
                     <h3 className="text-sm font-medium text-red-800">{t('error_title')}</h3>
-                    <div className="mt-2 text-sm text-red-700">{error}</div>
+                    <div className="mt-2 text-sm text-destructive">{error}</div>
                   </div>
                 </div>
               </div>
@@ -288,7 +288,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Party Selection */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   {t('form.patient')}
                 </label>
                 <PartyAutocomplete
@@ -319,7 +319,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
 
               {/* Time */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   {t('form.time')}
                 </label>
                 <Select
@@ -335,13 +335,13 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                   className={`w-full ${errors.time ? 'border-red-300' : ''}`}
                 />
                 {errors.time && (
-                  <p className="mt-1 text-sm text-red-600">{errors.time}</p>
+                  <p className="mt-1 text-sm text-destructive">{errors.time}</p>
                 )}
               </div>
 
               {/* Duration */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   {t('form.duration')}
                 </label>
                 <Input
@@ -352,17 +352,17 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                   step="15"
                   value={formData.duration}
                   onChange={(e) => handleInputChange('duration', parseInt(e.target.value) || 0)}
-                  className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.duration ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring ${errors.duration ? 'border-red-300' : 'border-border'
                     }`}
                 />
                 {errors.duration && (
-                  <p className="mt-1 text-sm text-red-600">{errors.duration}</p>
+                  <p className="mt-1 text-sm text-destructive">{errors.duration}</p>
                 )}
               </div>
 
               {/* Type */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   {t('form.type')}
                 </label>
                 <Select
@@ -383,13 +383,13 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                   className={`w-full ${errors.type ? 'border-red-300' : ''}`}
                 />
                 {errors.type && (
-                  <p className="mt-1 text-sm text-red-600">{errors.type}</p>
+                  <p className="mt-1 text-sm text-destructive">{errors.type}</p>
                 )}
               </div>
 
               {/* Status - COMMENTED OUT */}
               {/* <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Durum
                 </label>
                 <Select
@@ -409,7 +409,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
 
               {/* Title - COMMENTED OUT */}
               {/* <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Başlık *
                 </label>
                 <Input
@@ -417,17 +417,17 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                   value={formData.title}
                   onChange={(e) => handleInputChange('title', e.target.value)}
                   placeholder="Randevu başlığı"
-                  className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.title ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring ${errors.title ? 'border-red-300' : 'border-border'
                     }`}
                 />
                 {errors.title && (
-                  <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+                  <p className="mt-1 text-sm text-destructive">{errors.title}</p>
                 )}
               </div> */}
 
               {/* Clinician - COMMENTED OUT */}
               {/* <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Doktor
                 </label>
                 <Input
@@ -435,13 +435,13 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                   value={formData.clinician}
                   onChange={(e) => handleInputChange('clinician', e.target.value)}
                   placeholder="Doktor adı"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
                 />
               </div> */}
 
               {/* Location - COMMENTED OUT */}
               {/* <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Lokasyon
                 </label>
                 <Input
@@ -449,13 +449,13 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                   value={formData.location}
                   onChange={(e) => handleInputChange('location', e.target.value)}
                   placeholder="Muayene odası, şube vb."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
                 />
               </div> */}
 
               {/* Notes */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   {t('form.notes')}
                 </label>
                 <Textarea
@@ -464,7 +464,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
                   onChange={(e) => handleInputChange('notes', e.target.value)}
                   placeholder={t('form.notes_placeholder')}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
             </div>
@@ -472,14 +472,14 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
         </div>
 
         {/* Form Actions - Sticky Footer */}
-        <div className="flex items-center justify-end space-x-4 pt-4 pb-2 border-t border-gray-200 bg-white sticky bottom-0 z-10 mt-auto">
+        <div className="flex items-center justify-end space-x-4 pt-4 pb-2 border-t border-border bg-card sticky bottom-0 z-10 mt-auto">
           {onCancel && (
             <Button
               data-testid="appointment-cancel-button"
               type="button"
               onClick={onCancel}
               disabled={isLoading}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+              className="px-4 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-xl hover:bg-muted focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring disabled:opacity-50"
               variant='default'>
               {t('form.cancel_btn')}
             </Button>

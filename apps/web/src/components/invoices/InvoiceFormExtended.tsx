@@ -234,6 +234,9 @@ export function InvoiceFormExtended({
       customerName: (initialData.customerName as string) || prev.customerName,
       customerId: (initialData.customerId as string) || prev.customerId,
       customerTaxId: (initialData.customerTaxId as string) || prev.customerTaxId,
+      customerAddress: (initialData.customerAddress as string) || prev.customerAddress,
+      customerCity: (initialData.customerCity as string) || prev.customerCity,
+      customerDistrict: (initialData.customerDistrict as string) || prev.customerDistrict,
       returnInvoiceDetails: (initialData.returnInvoiceDetails as ReturnInvoiceDetailsData | undefined) || prev.returnInvoiceDetails,
       notes: (initialData.notes as string | undefined) || prev.notes,
     }));
@@ -483,8 +486,8 @@ export function InvoiceFormExtended({
           <div className={isModal ? "flex-1" : "w-full"}>
             <div className="space-y-6 p-6">
               {/* Senaryo ve Fatura Tipi - Tek Kart */}
-              <div className="bg-white rounded-2xl shadow p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Senaryo ve Fatura Tipi</h3>
+              <div className="bg-card rounded-2xl shadow p-6">
+                <h3 className="text-lg font-semibold text-foreground mb-4">Senaryo ve Fatura Tipi</h3>
                 <div className={isModal ? "flex flex-col md:flex-row md:items-start md:gap-6" : "space-y-4"}>
                   <div className={isModal ? "flex-1 space-y-4" : "w-full"}>
                     <div className={isModal ? "space-y-4" : "grid grid-cols-1 md:grid-cols-2 gap-6"}>
@@ -506,7 +509,7 @@ export function InvoiceFormExtended({
                     {/* Invoice Prefix Selection - show if multiple prefixes exist */}
                     {invoicePrefixes.length > 1 && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-foreground mb-2">
                           Fatura Ön Eki
                         </label>
                         <Select
@@ -518,7 +521,7 @@ export function InvoiceFormExtended({
                           }))}
                           fullWidth
                         />
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           Fatura numarası bu ön ek ile oluşturulacak
                         </p>
                       </div>
@@ -527,7 +530,7 @@ export function InvoiceFormExtended({
                     {/* Informational cards (conditional) - reuse scenarioData state */}
                     <div className="mt-4 space-y-3">
                       {extendedData.scenarioData?.scenario && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+                        <div className="bg-primary/10 border border-blue-200 rounded-2xl p-4">
                           <div className="flex items-start">
                             <svg className="text-blue-400 mr-2 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zM11 10h2v6h-2v-6zm0-4h2v2h-2V6z" fill="currentColor" /></svg>
                             <div>
@@ -535,7 +538,7 @@ export function InvoiceFormExtended({
                                 {extendedData.scenarioData.scenarioName}
                                 {extendedData.scenarioData.currentScenarioType && ` - ${extendedData.scenarioData.currentScenarioType === '2' ? 'Temel' : 'Ticari'}`}
                               </h4>
-                              <p className="text-sm text-blue-700">
+                              <p className="text-sm text-primary">
                                 {extendedData.scenarioData.scenarioDescription}
                               </p>
                             </div>
@@ -586,10 +589,10 @@ export function InvoiceFormExtended({
                         <>
                           {/* SGK */}
                           {extendedData.invoiceType === '14' && (
-                            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
-                              <div className="p-4 border-b border-gray-200 bg-blue-50">
-                                <h3 className="text-sm font-bold text-gray-900">SGK Fatura Bilgileri</h3>
-                                <p className="text-xs text-gray-600 mt-1">SGK faturası için gerekli bilgileri girin</p>
+                            <div className="bg-card rounded-2xl border border-border shadow-sm">
+                              <div className="p-4 border-b border-border bg-primary/10">
+                                <h3 className="text-sm font-bold text-foreground">SGK Fatura Bilgileri</h3>
+                                <p className="text-xs text-muted-foreground mt-1">SGK faturası için gerekli bilgileri girin</p>
                               </div>
                               <div className="p-4">
                                 <SGKInvoiceSection
@@ -602,10 +605,10 @@ export function InvoiceFormExtended({
 
                           {/* Government */}
                           {extendedData.scenario === 'government' && (
-                            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
-                              <div className="p-4 border-b border-gray-200 bg-purple-50">
-                                <h3 className="text-sm font-bold text-gray-900">Kamu Fatura Bilgileri</h3>
-                                <p className="text-xs text-gray-600 mt-1">Kamu kurumu faturası bilgileri</p>
+                            <div className="bg-card rounded-2xl border border-border shadow-sm">
+                              <div className="p-4 border-b border-border bg-purple-50">
+                                <h3 className="text-sm font-bold text-foreground">Kamu Fatura Bilgileri</h3>
+                                <p className="text-xs text-muted-foreground mt-1">Kamu kurumu faturası bilgileri</p>
                               </div>
                               <div className="p-4">
                                 <GovernmentSection
@@ -621,10 +624,10 @@ export function InvoiceFormExtended({
 
                           {/* Istisna Sebebi */}
                           {extendedData.invoiceType === '13' && extendedData.scenario !== 'export' && extendedData.scenario !== 'government' && (
-                            <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
+                            <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
                               <div className="mb-3">
-                                <h3 className="text-sm font-bold text-gray-900">İstisna Sebebi</h3>
-                                <p className="text-xs text-gray-500">Seçilen istisna için neden kodunu belirtiniz</p>
+                                <h3 className="text-sm font-bold text-foreground">İstisna Sebebi</h3>
+                                <p className="text-xs text-muted-foreground">Seçilen istisna için neden kodunu belirtiniz</p>
                               </div>
                               <div>
                                 <Select
@@ -640,9 +643,9 @@ export function InvoiceFormExtended({
 
                           {/* Export */}
                           {extendedData.scenario === 'export' && (
-                            <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
+                            <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
                               <div className="mb-3">
-                                <h3 className="text-sm font-bold text-gray-900">İhracat Bilgileri</h3>
+                                <h3 className="text-sm font-bold text-foreground">İhracat Bilgileri</h3>
                               </div>
                               <div>
                                 <ExportDetailsCard
@@ -655,11 +658,11 @@ export function InvoiceFormExtended({
 
                           {/* Special Base */}
                           {['12', '19', '25', '33'].includes(String(extendedData.invoiceType)) && (
-                            <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
-                              <h3 className="text-sm font-bold text-gray-900 mb-3">Özel Matrah Bilgileri</h3>
+                            <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
+                              <h3 className="text-sm font-bold text-foreground mb-3">Özel Matrah Bilgileri</h3>
                               <div className="grid grid-cols-1 gap-3">
                                 <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">Özel Matrah Tutarı</label>
+                                  <label className="block text-sm font-medium text-foreground mb-1">Özel Matrah Tutarı</label>
                                   <Input
                                     type="number"
                                     step="0.01"
@@ -673,7 +676,7 @@ export function InvoiceFormExtended({
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">KDV Oranı (%)</label>
+                                  <label className="block text-sm font-medium text-foreground mb-1">KDV Oranı (%)</label>
                                   <Input
                                     type="number"
                                     value={extendedData.specialTaxBase?.taxRate || ''}
@@ -685,7 +688,7 @@ export function InvoiceFormExtended({
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">Açıklama</label>
+                                  <label className="block text-sm font-medium text-foreground mb-1">Açıklama</label>
                                   <Input
                                     type="text"
                                     value={extendedData.specialTaxBase?.description || ''}
@@ -702,13 +705,13 @@ export function InvoiceFormExtended({
 
                           {/* Return Invoice */}
                           {['15', '49', '50'].includes(String(extendedData.invoiceType)) && (
-                            <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
+                            <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
                               <div className="mb-3">
-                                <h3 className="text-sm font-bold text-gray-900">İade Fatura Bilgileri</h3>
+                                <h3 className="text-sm font-bold text-foreground">İade Fatura Bilgileri</h3>
                               </div>
                               <div className="space-y-3">
                                 <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">İade Fatura No</label>
+                                  <label className="block text-sm font-medium text-foreground mb-1">İade Fatura No</label>
                                   <Input
                                     data-testid="return-invoice-number"
                                     type="text"
@@ -732,7 +735,7 @@ export function InvoiceFormExtended({
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">İade Nedeni</label>
+                                  <label className="block text-sm font-medium text-foreground mb-1">İade Nedeni</label>
                                   <Input
                                     data-testid="return-invoice-reason"
                                     type="text"
@@ -750,9 +753,9 @@ export function InvoiceFormExtended({
 
                           {/* Medical Section */}
                           {extendedData.scenario === 'medical' && (
-                            <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
+                            <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
                               <div className="flex items-center justify-between mb-3">
-                                <h3 className="text-sm font-bold text-gray-900">İlaç/Tıbbi Cihaz</h3>
+                                <h3 className="text-sm font-bold text-foreground">İlaç/Tıbbi Cihaz</h3>
                                 <Button
                                   type="button"
                                   variant="secondary"
@@ -763,24 +766,24 @@ export function InvoiceFormExtended({
                                 </Button>
                               </div>
                               {extendedData.medicalDeviceData ? (
-                                <div className="bg-green-50 border border-green-200 rounded-2xl p-3">
+                                <div className="bg-success/10 border border-green-200 rounded-2xl p-3">
                                   <div className="flex items-center gap-2">
-                                    <svg className="text-green-600" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                                    <p className="text-xs text-green-800">Tıbbi cihaz bilgileri kaydedildi</p>
+                                    <svg className="text-success" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                                    <p className="text-xs text-success">Tıbbi cihaz bilgileri kaydedildi</p>
                                   </div>
                                 </div>
                               ) : (
-                                <p className="text-xs text-gray-500">Tıbbi cihaz detaylarını eklemek için butona tıklayın</p>
+                                <p className="text-xs text-muted-foreground">Tıbbi cihaz detaylarını eklemek için butona tıklayın</p>
                               )}
                             </div>
                           )}
 
                           {/* Special Operations / Withholding */}
                           {(['11', '18', '24', '32'].includes(String(extendedData.invoiceType))) && (
-                            <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
-                              <h3 className="text-sm font-bold text-gray-900 mb-3">Özel İşlemler</h3>
+                            <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
+                              <h3 className="text-sm font-bold text-foreground mb-3">Özel İşlemler</h3>
                               <div className="space-y-3">
-                                <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 mb-3">
+                                <div className="bg-primary/10 border border-blue-200 rounded-2xl p-3 mb-3">
                                   <p className="text-xs text-blue-800 leading-relaxed">
                                     <strong>Tevkifatlı Fatura</strong>
                                     <br />Bu fatura tipi için tevkifat bilgileri zorunludur. Ürün satırlarında tevkifat kodu ve oranı belirtiniz.
@@ -818,8 +821,8 @@ export function InvoiceFormExtended({
               />
 
               {/* Ek Bilgiler - moved to main column as its own card */}
-              <div className="bg-white rounded-2xl shadow p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Ek Bilgiler</h3>
+              <div className="bg-card rounded-2xl shadow p-6">
+                <h3 className="text-lg font-semibold text-foreground mb-4">Ek Bilgiler</h3>
                 <AdditionalInfoSection
                   documentKind={documentKind}
                   orderInfo={extendedData.orderInfo}
@@ -861,8 +864,8 @@ export function InvoiceFormExtended({
 
               {/* Notes / Açıklama (editable) */}
               {!mobileHiddenSections.includes('notes') && (
-              <div className="bg-white rounded-2xl shadow p-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Açıklama</label>
+              <div className="bg-card rounded-2xl shadow p-4">
+                <label className="block text-sm font-medium text-foreground mb-2">Açıklama</label>
                 <Textarea
                   value={extendedData.notes || ''}
                   onChange={(e) => handleExtendedFieldChange('notes', e.target.value)}
@@ -893,8 +896,8 @@ export function InvoiceFormExtended({
         )}
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center justify-end gap-3 p-6 border-t bg-white">
+      {/* Actions — hidden when parent provides onDataChange (e.g. inside InvoiceModalContent) */}
+      {!onDataChange && <div className="flex items-center justify-end gap-3 p-6 border-t bg-card">
         <Button type="button" variant="outline" onClick={onCancel} className="px-4 py-2">
           İptal
         </Button>
@@ -975,7 +978,7 @@ export function InvoiceFormExtended({
         }} className="px-4 py-2 bg-blue-600 text-white">
           {isLoading ? 'Kaydediliyor...' : 'Fatura Oluştur'}
         </Button>
-      </div>
+      </div>}
 
       {/* Modals */}
       <WithholdingModal

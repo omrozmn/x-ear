@@ -51,6 +51,49 @@ code {
   font-weight: 600;
 }
 
+/* Dark mode overrides for Ant Design */
+.dark .ant-menu-item-selected {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+}
+
+.dark .ant-table-thead > tr > th {
+  background-color: #1f2937;
+  color: #d1d5db;
+}
+
+.dark .ant-card {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+.dark .ant-statistic-title {
+  color: #9ca3af;
+}
+
+.dark .ant-statistic-content {
+  color: #f3f4f6;
+}
+
+.dark .ant-layout-sider {
+  background-color: #111827;
+}
+
+.dark .stat-card {
+  @apply bg-gray-800;
+}
+
+.dark .stat-value {
+  @apply text-white;
+}
+
+.dark .page-title {
+  @apply text-white;
+}
+
+.dark .page-description {
+  @apply text-gray-400;
+}
+
 /* Custom utility classes */
 .page-header {
   @apply mb-6 pb-4 border-b border-gray-200;
@@ -177,6 +220,11 @@ code {
   backdrop-filter: blur(12px) !important;
   -webkit-backdrop-filter: blur(12px) !important;
   border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+.dark .glass-morphism {
+  background: rgba(17, 24, 39, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
 @keyframes gradientShift {

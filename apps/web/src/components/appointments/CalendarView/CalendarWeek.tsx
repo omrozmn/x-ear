@@ -110,10 +110,10 @@ export const CalendarWeek: React.FC<CalendarWeekProps> = ({
       <div
         ref={setNodeRef}
         className={`
-          min-h-[60px] border-r border-b border-gray-200 dark:border-gray-700 p-1 transition-colors
-          ${isOver ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700' : ''}
-          ${isCurrentHour(day, slot.hour) ? 'bg-yellow-50 dark:bg-yellow-900/20' : ''}
-          hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer
+          min-h-[60px] border-r border-b border-border p-1 transition-colors
+          ${isOver ? 'bg-primary/10 border-blue-300 dark:border-blue-700' : ''}
+          ${isCurrentHour(day, slot.hour) ? 'bg-warning/10' : ''}
+          hover:bg-muted dark:hover:bg-gray-800 cursor-pointer
         `}
         onClick={() => onTimeSlotClick(day.date, slot.time)}
       >
@@ -121,7 +121,7 @@ export const CalendarWeek: React.FC<CalendarWeekProps> = ({
           {slotAppointments.map((appointment) => (
             <div
               key={appointment.id}
-              className="text-xs p-1 rounded bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/50"
+              className="text-xs p-1 rounded bg-primary/10 border border-blue-200 dark:border-blue-800 cursor-pointer hover:bg-primary/10 dark:hover:bg-blue-900/50"
               onClick={(e) => {
                 e.stopPropagation();
                 onAppointmentClick(appointment);
@@ -130,7 +130,7 @@ export const CalendarWeek: React.FC<CalendarWeekProps> = ({
               <div className="font-medium truncate text-gray-900 dark:text-gray-200">
                 {appointment.partyName || 'Hasta bilgisi yok'}
               </div>
-              <div className="text-gray-500 dark:text-gray-400">
+              <div className="text-muted-foreground">
                 {appointment.time}
               </div>
             </div>
@@ -146,7 +146,7 @@ export const CalendarWeek: React.FC<CalendarWeekProps> = ({
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between p-4 border-b border-border">
         <div className="flex items-center space-x-4">
           <Button
             variant="outline"
@@ -187,8 +187,8 @@ export const CalendarWeek: React.FC<CalendarWeekProps> = ({
       <div className="flex-1 overflow-auto">
         <div className="grid grid-cols-8 min-w-full">
           {/* Time column header */}
-          <div className="border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2">
-            <Text className="text-sm font-medium text-gray-600 dark:text-gray-400">Saat</Text>
+          <div className="border-r border-border bg-gray-50 dark:bg-gray-800 p-2">
+            <Text className="text-sm font-medium text-muted-foreground">Saat</Text>
           </div>
 
           {/* Day headers */}
@@ -196,15 +196,15 @@ export const CalendarWeek: React.FC<CalendarWeekProps> = ({
             <div
               key={day.date.toISOString()}
               className={`
-                border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2 text-center cursor-pointer
-                ${day.isToday ? 'bg-blue-50 dark:bg-blue-900/30' : ''}
+                border-r border-border bg-gray-50 dark:bg-gray-800 p-2 text-center cursor-pointer
+                ${day.isToday ? 'bg-primary/10' : ''}
               `}
               onClick={() => onDateChange(day.date)}
             >
               <Text className="text-sm font-medium dark:text-gray-300">
                 {format(day.date, 'EEE', { locale: tr })}
               </Text>
-              <Text className={`text-lg ${day.isToday ? 'text-blue-600 dark:text-blue-400 font-bold' : 'dark:text-white'}`}>
+              <Text className={`text-lg ${day.isToday ? 'text-primary font-bold' : 'dark:text-white'}`}>
                 {format(day.date, 'dd')}
               </Text>
             </div>
@@ -214,8 +214,8 @@ export const CalendarWeek: React.FC<CalendarWeekProps> = ({
           {timeSlots.map((slot) => (
             <React.Fragment key={slot.time}>
               {/* Time label */}
-              <div className="border-r border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-2 text-center">
-                <Text className="text-xs text-gray-600 dark:text-gray-400">{slot.time}</Text>
+              <div className="border-r border-b border-border bg-gray-50 dark:bg-gray-800 p-2 text-center">
+                <Text className="text-xs text-muted-foreground">{slot.time}</Text>
               </div>
 
               {/* Day cells */}

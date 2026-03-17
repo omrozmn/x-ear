@@ -139,7 +139,7 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
         </Alert>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">İşlem Türü</label>
+          <label className="block text-sm font-medium text-foreground mb-2">İşlem Türü</label>
           <div className="grid grid-cols-3 gap-2">
             {OPERATION_TYPES.map(op => (
               <button
@@ -149,12 +149,12 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
                 onClick={() => setOperationType(op.value)}
                 aria-pressed={operationType === op.value}
                 className={`flex items-center space-x-2 p-3 border rounded-xl text-sm focus:outline-none transition-colors ${operationType === op.value
-                  ? 'bg-blue-50 border-blue-300 dark:bg-blue-900/40 dark:border-blue-500'
+                  ? 'bg-primary/10 border-blue-300 dark:border-blue-500'
                   : 'bg-white hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700'
                   }`}
               >
-                <span className={`text-gray-700 dark:text-gray-300 ${operationType === op.value ? 'dark:text-white' : ''}`}>{op.icon}</span>
-                <span className={`text-left text-sm text-gray-800 dark:text-gray-200 ${operationType === op.value ? 'dark:text-white' : ''}`}>{op.label}</span>
+                <span className={`text-foreground ${operationType === op.value ? '' : ''}`}>{op.icon}</span>
+                <span className={`text-left text-sm text-foreground ${operationType === op.value ? '' : ''}`}>{op.label}</span>
               </button>
             ))}
           </div>
@@ -197,12 +197,12 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
               className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
             <div className="mt-3">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">KDV Oranı (%)</label>
+              <label className="block text-sm font-medium text-foreground mb-1">KDV Oranı (%)</label>
               <select
                 data-allow-raw="true"
                 value={formData.kdv}
                 onChange={(e) => setFormData(prev => ({ ...prev, kdv: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-ring dark:bg-gray-700 dark:text-white"
               >
                 <option value="">(Aynı bırak)</option>
                 <option value="0">0%</option>
@@ -271,14 +271,14 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
             </div>
             {formData.features.length > 0 && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Eklenecek Özellikler:
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {formData.features.map((feature, index) => (
                     <span
                       key={index}
-                      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200"
+                      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-blue-800 dark:text-blue-200"
                     >
                       {feature}
                       <Button
@@ -290,7 +290,7 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
                             features: prev.features.filter((_, i) => i !== index)
                           }));
                         }}
-                        className="ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-100 p-0 h-auto"
+                        className="ml-1 text-primary hover:text-blue-800 dark:hover:text-blue-100 p-0 h-auto"
                       >
                         ×
                       </Button>
@@ -309,7 +309,7 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
             variant="ghost"
             onClick={handleClose}
             disabled={isLoading}
-            className="text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
+            className="text-muted-foreground hover:bg-muted dark:hover:bg-gray-700"
           >
             İptal
           </Button>

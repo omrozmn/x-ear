@@ -179,12 +179,12 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
         {/* Tarih ve Saat */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Randevu Tarihi *
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Calendar className="w-4 h-4 text-gray-400" />
+                <Calendar className="w-4 h-4 text-muted-foreground" />
               </div>
               <DatePicker
                 value={formData.appointmentDate ? new Date(formData.appointmentDate) : null}
@@ -197,18 +197,18 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Randevu Saati *
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Clock className="w-4 h-4 text-gray-400" />
+                <Clock className="w-4 h-4 text-muted-foreground" />
               </div>
               <select
                 data-allow-raw="true"
                 value={formData.appointmentTime || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, appointmentTime: e.target.value }))}
-                className={`w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.appointmentTime ? 'border-red-300' : ''}`}
+                className={`w-full pl-10 pr-3 py-2 border border-border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-blue-500 ${errors.appointmentTime ? 'border-red-300' : ''}`}
               >
                 <option value="">Saat seçin...</option>
                 {generateTimeSlots().map((time) => (
@@ -218,7 +218,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
                 ))}
               </select>
               {errors.appointmentTime && (
-                <p className="mt-1 text-sm text-red-600">{errors.appointmentTime}</p>
+                <p className="mt-1 text-sm text-destructive">{errors.appointmentTime}</p>
               )}
             </div>
           </div>
@@ -226,12 +226,12 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
 
         {/* Doktor Seçimi */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-foreground mb-2">
             Doktor *
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <User className="w-4 h-4 text-gray-400" />
+              <User className="w-4 h-4 text-muted-foreground" />
             </div>
             <select
               data-allow-raw="true"
@@ -244,7 +244,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
                   doctorName: selectedDoctor ? selectedDoctor.name : ''
                 }));
               }}
-              className={`w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.doctorId ? 'border-red-300' : ''}`}
+              className={`w-full pl-10 pr-3 py-2 border border-border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-blue-500 ${errors.doctorId ? 'border-red-300' : ''}`}
             >
               <option value="">Doktor seçin...</option>
               {availableDoctors.map((doctor) => (
@@ -254,7 +254,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
               ))}
             </select>
             {errors.doctorId && (
-              <p className="mt-1 text-sm text-red-600">{errors.doctorId}</p>
+              <p className="mt-1 text-sm text-destructive">{errors.doctorId}</p>
             )}
           </div>
         </div>
@@ -262,14 +262,14 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
         {/* Randevu Türü ve Süre */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Randevu Türü *
             </label>
             <select
               data-allow-raw="true"
               value={formData.appointmentType || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, appointmentType: e.target.value as Appointment['appointmentType'] }))}
-              className={`w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.appointmentType ? 'border-red-300' : ''}`}
+              className={`w-full px-3 py-2 border border-border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-blue-500 ${errors.appointmentType ? 'border-red-300' : ''}`}
             >
               <option value="">Tür seçin...</option>
               <option value="consultation">Konsultasyon</option>
@@ -279,12 +279,12 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
               <option value="other">Diğer</option>
             </select>
             {errors.appointmentType && (
-              <p className="mt-1 text-sm text-red-600">{errors.appointmentType}</p>
+              <p className="mt-1 text-sm text-destructive">{errors.appointmentType}</p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Süre (dakika) *
             </label>
             <input
@@ -295,22 +295,22 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
               step="15"
               value={formData.duration || 30}
               onChange={(e) => setFormData(prev => ({ ...prev, duration: parseInt(e.target.value) }))}
-              className={`w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.duration ? 'border-red-300' : ''}`}
+              className={`w-full px-3 py-2 border border-border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-blue-500 ${errors.duration ? 'border-red-300' : ''}`}
             />
             {errors.duration && (
-              <p className="mt-1 text-sm text-red-600">{errors.duration}</p>
+              <p className="mt-1 text-sm text-destructive">{errors.duration}</p>
             )}
           </div>
         </div>
 
         {/* Konum */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Konum
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MapPin className="w-4 h-4 text-gray-400" />
+              <MapPin className="w-4 h-4 text-muted-foreground" />
             </div>
             <input
               data-allow-raw="true"
@@ -318,19 +318,19 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
               value={formData.location || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
               placeholder="Randevu yeri (örn: Klinik, Hastane)"
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full pl-10 pr-3 py-2 border border-border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-blue-500"
             />
           </div>
         </div>
 
         {/* Notlar */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Notlar
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 pt-3 flex items-start pointer-events-none">
-              <FileText className="w-4 h-4 text-gray-400" />
+              <FileText className="w-4 h-4 text-muted-foreground" />
             </div>
             <textarea
               data-allow-raw="true"
@@ -338,7 +338,7 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
               onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
               placeholder="Randevu ile ilgili notlar..."
               rows={3}
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full pl-10 pr-3 py-2 border border-border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-blue-500"
             />
           </div>
         </div>
@@ -346,14 +346,14 @@ export const AppointmentSchedulingForm: React.FC<AppointmentSchedulingFormProps>
         {/* Durum (sadece düzenleme modunda göster) */}
         {appointment && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Durum
             </label>
             <select
               data-allow-raw="true"
               value={formData.status || 'scheduled'}
               onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as Appointment['status'] }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-blue-500"
             >
               <option value="scheduled">Planlandı</option>
               <option value="confirmed">Onaylandı</option>

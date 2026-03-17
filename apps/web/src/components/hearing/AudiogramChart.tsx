@@ -16,7 +16,7 @@
  *   X = Frequency (Hz), logarithmic 125–8000
  *   Y = Hearing Level (dB HL), linear -10 to 120, top = better
  */
-import React, { useMemo, useCallback, useRef } from 'react';
+import React, { useMemo, useCallback, useRef, useState, useEffect } from 'react';
 
 // ── Types ────────────────────────────────────────────────
 export interface ThresholdData {
@@ -46,7 +46,7 @@ const FREQUENCIES = [125, 250, 500, 1000, 2000, 3000, 4000, 6000, 8000];
 const DB_MIN = -10;
 const DB_MAX = 120;
 
-const COLORS = {
+const COLORS_LIGHT = {
   right: '#DC2626',    // red-600
   left: '#2563EB',     // blue-600
   grid: '#E5E7EB',     // gray-200
@@ -54,6 +54,18 @@ const COLORS = {
   zeroLine: '#9CA3AF', // gray-400
   text: '#6B7280',     // gray-500
   title: '#374151',    // gray-700
+  bg: '#FFFFFF',
+} as const;
+
+const COLORS_DARK = {
+  right: '#F87171',    // red-400
+  left: '#60A5FA',     // blue-400
+  grid: '#374151',     // gray-700
+  gridMajor: '#4B5563', // gray-600
+  zeroLine: '#6B7280', // gray-500
+  text: '#9CA3AF',     // gray-400
+  title: '#D1D5DB',    // gray-300
+  bg: '#1F2937',       // gray-800
 } as const;
 
 // Hearing loss zones (dB HL ranges)
@@ -79,6 +91,16 @@ const AudiogramChart: React.FC<AudiogramChartProps> = ({
   onThresholdChange,
   onThresholdRemove,
 }) => {
+  const [isDark, setIsDark] = useState(() => typeof document !== 'undefined' && document.documentElement.classList.contains('dark'));
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+  const COLORS = isDark ? COLORS_DARK : COLORS_LIGHT;
+
   const width = compact ? 320 : 600;
   const height = compact ? 220 : 500;
   const pad = useMemo(
@@ -139,7 +161,7 @@ const AudiogramChart: React.FC<AudiogramChartProps> = ({
               key={`air-r-${f}`}
               cx={cx} cy={cy} r={r}
               stroke={color} strokeWidth={compact ? 1.5 : 2}
-              fill="white"
+              fill={COLORS.bg}
             />
           );
         }
@@ -292,7 +314,7 @@ const AudiogramChart: React.FC<AudiogramChartProps> = ({
         onContextMenu={handleContextMenu}
       >
         {/* Background */}
-        <rect x={0} y={0} width={width} height={height} fill="white" rx={compact ? 6 : 8} />
+        <rect x={0} y={0} width={width} height={height} fill={COLORS.bg} rx={compact ? 6 : 8} />
 
         {/* Hearing loss zones */}
         {ZONES.map(z => (

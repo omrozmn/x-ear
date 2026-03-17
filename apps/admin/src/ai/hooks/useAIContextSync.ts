@@ -143,7 +143,7 @@ export function useAIContextSync(): void {
 
     // If context changed, clear runtime store
     if (tenantChanged || partyChanged) {
-      console.log('[useAIContextSync] Context changed, clearing runtime store:', {
+      if (import.meta.env.DEV) console.log('[useAIContextSync] Context changed, clearing runtime store:', {
         previousTenant: prevContext.tenantId,
         newTenant: currentTenantId,
         previousParty: prevContext.partyId,

@@ -479,6 +479,10 @@ try:
     from ai.tools import bulk_import_tools
     from ai.tools import sgk_tools
     from ai.tools import finance_tools
+    from ai.tools import analytics_tool
+    from ai.tools import hearing_tools
+    from ai.tools import business_tools
+    from ai.tools import ocr_tools
 except ImportError:
     # Handle partial initialization or circular import gracefully during development
     pass

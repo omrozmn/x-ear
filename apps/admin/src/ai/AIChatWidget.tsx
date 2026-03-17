@@ -312,7 +312,7 @@ export function AIChatWidget({
       await sendMessage(message);
     } catch (error) {
       // Error is handled by useAIChat hook and displayed in chat
-      console.error('[AIChatWidget] Send error:', error);
+      if (import.meta.env.DEV) console.error('[AIChatWidget] Send error:', error);
     }
   }, [sendMessage]);
 
@@ -492,7 +492,6 @@ export function AIChatWidget({
                   <button data-allow-raw="true"
                     onClick={() => {
                       // Execute handoff or direct execution
-                      console.log('Confirmed in Chat');
                       // For now just reset or execute if possible
                       reset();
                     }}

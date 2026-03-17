@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from '@tanstack/react-router';
 import {
   Calendar,
@@ -30,6 +30,7 @@ import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { useDeleteParty, useUpdateParty } from '@/api/client/parties.client';
 import { partyApiService } from '../services/party/party-api.service';
 import { HeaderBackButton } from '../components/layout/HeaderBackButton';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 // import type { Party } from '../types/party'; // Type inferred from useParty hook
 
 
@@ -47,6 +48,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
   const [showTagModal, setShowTagModal] = useState(false);
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [, setShowReportModal] = useState(false); // Value unused, setter used in PartyHeader
+  const [confirmDelete, setConfirmDelete] = useState<{open: boolean}>({open: false});
 
   const { party, isLoading, error, refetch } = useParty(partyId);
   
@@ -97,21 +99,21 @@ export const DesktopPartyDetailsPage: React.FC = () => {
 
   // Format currency utility - kept for potential future use in this page
   // const formatCurrency = (amount?: number) => {
-  //   if (!amount) return '₺0';
-  //   return `₺${amount.toLocaleString('tr-TR')}`;
+  // if (!amount) return '₺0';
+  // return `₺${amount.toLocaleString('tr-TR')}`;
   // };
 
   const getStatusBadge = (status: string) => {
     const statusMap: Record<string, { label: string; className: string }> = {
-      ACTIVE: { label: 'Aktif', className: 'bg-green-100 text-green-800' },
-      active: { label: 'Aktif', className: 'bg-green-100 text-green-800' },
-      INACTIVE: { label: 'Pasif', className: 'bg-yellow-100 text-yellow-800' },
-      inactive: { label: 'Pasif', className: 'bg-yellow-100 text-yellow-800' },
-      TRIAL: { label: 'Deneme', className: 'bg-blue-100 text-blue-800' },
-      trial: { label: 'Deneme', className: 'bg-blue-100 text-blue-800' },
-      archived: { label: 'Arşiv', className: 'bg-gray-100 text-gray-800' },
+      ACTIVE: { label: 'Aktif', className: 'bg-success/10 text-success' },
+      active: { label: 'Aktif', className: 'bg-success/10 text-success' },
+      INACTIVE: { label: 'Pasif', className: 'bg-warning/10 text-yellow-800' },
+      inactive: { label: 'Pasif', className: 'bg-warning/10 text-yellow-800' },
+      TRIAL: { label: 'Deneme', className: 'bg-primary/10 text-blue-800' },
+      trial: { label: 'Deneme', className: 'bg-primary/10 text-blue-800' },
+      archived: { label: 'Arşiv', className: 'bg-muted text-foreground' },
     };
-    const statusInfo = statusMap[status] || { label: status, className: 'bg-gray-100 text-gray-800' };
+    const statusInfo = statusMap[status] || { label: status, className: 'bg-muted text-foreground' };
     return (
       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${statusInfo.className}`}>
         {statusInfo.label}
@@ -162,25 +164,20 @@ export const DesktopPartyDetailsPage: React.FC = () => {
     navigate({ to: '/parties' });
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!partyId || !party) {
       console.log('[DELETE] No partyId or party');
       return;
     }
-    
+
     console.log('[DELETE] Starting delete for party:', partyId);
-    
-    const confirmed = window.confirm(
-      `${party.firstName} ${party.lastName} isimli hastayı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`
-    );
-    
-    if (!confirmed) {
-      console.log('[DELETE] User cancelled');
-      return;
-    }
-    
+    setConfirmDelete({open: true});
+  };
+
+  const executeDelete = useCallback(async () => {
+    if (!partyId) return;
     console.log('[DELETE] User confirmed, calling mutation');
-    
+
     try {
       await deletePartyMutation.mutateAsync({ partyId });
       console.log('[DELETE] Mutation successful');
@@ -189,7 +186,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
       console.error('[DELETE] Error during deletion:', err);
       showError('Hasta silinirken bir hata oluştu');
     }
-  };
+  }, [partyId, deletePartyMutation, showError]);
 
   const renderContent = () => {
     if (!partyId) {
@@ -246,51 +243,51 @@ export const DesktopPartyDetailsPage: React.FC = () => {
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6 px-6">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border p-4">
             <div className="flex items-center space-x-2">
-              <Calendar className="h-5 w-5 text-blue-500" />
+              <Calendar className="h-5 w-5 text-primary" />
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Kayıt Tarihi</p>
+                <p className="text-sm text-muted-foreground">Kayıt Tarihi</p>
                 <p className="font-medium text-gray-900 dark:text-white">{formatDate(party.createdAt || undefined)}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border p-4">
             <div className="flex items-center space-x-2">
-              <Activity className="h-5 w-5 text-green-500" />
+              <Activity className="h-5 w-5 text-success" />
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Cihaz Sayısı</p>
+                <p className="text-sm text-muted-foreground">Cihaz Sayısı</p>
                 <p className="font-medium text-gray-900 dark:text-white">{tabCounts.devices}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border p-4">
             <div className="flex items-center space-x-2">
-              <CreditCard className="h-5 w-5 text-red-500" />
+              <CreditCard className="h-5 w-5 text-destructive" />
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Durum</p>
+                <p className="text-sm text-muted-foreground">Durum</p>
                 <div className="mt-1">{getStatusBadge(party.status ?? 'active')}</div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border p-4">
             <div className="flex items-center space-x-2">
               <Tag className="h-5 w-5 text-purple-500" />
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Segment</p>
+                <p className="text-sm text-muted-foreground">Segment</p>
                 <p className="font-medium text-gray-900 dark:text-white">{getSegmentText(party.segment || undefined)}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border p-4">
             <div className="flex items-center space-x-2">
               <Users className="h-5 w-5 text-orange-500" />
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Kazanım Türü</p>
+                <p className="text-sm text-muted-foreground">Kazanım Türü</p>
                 <p className="font-medium text-gray-900 dark:text-white">{getAcquisitionTypeText(party.acquisitionType || undefined)}</p>
               </div>
             </div>
@@ -363,6 +360,18 @@ export const DesktopPartyDetailsPage: React.FC = () => {
           }}
         />
       )}
+
+      {/* Delete Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDelete.open}
+        title="Hasta Silme Onayı"
+        description={party ? `${party.firstName} ${party.lastName} isimli hastayı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.` : 'Bu kaydı silmek istediğinizden emin misiniz?'}
+        onClose={() => setConfirmDelete({open: false})}
+        onConfirm={async () => { await executeDelete(); setConfirmDelete({open: false}); }}
+        confirmLabel="Sil"
+        cancelLabel="İptal"
+        variant="danger"
+      />
 
       {/* Note Modal */}
       {showNoteModal && party && (

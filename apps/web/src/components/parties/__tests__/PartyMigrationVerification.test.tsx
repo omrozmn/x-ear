@@ -21,7 +21,10 @@ const mockUsePartyReturn = {
     loadParty: vi.fn(),
 };
 
-// Mock the custom hook
+// Mock the custom hook - page imports from '../hooks/useParty'
+vi.mock('../../../hooks/useParty', () => ({
+    useParty: () => mockUsePartyReturn,
+}));
 vi.mock('../../../hooks/party/useParty', () => ({
     useParty: () => mockUsePartyReturn,
 }));
@@ -39,11 +42,40 @@ vi.mock('../../../hooks/party/usePartyTimeline', () => ({
 vi.mock('../../../hooks/party/usePartyDocuments', () => ({
     usePartyDocuments: () => ({ documents: [], isLoading: false })
 }));
+vi.mock('../../../hooks/party/usePartyHearingTests', () => ({
+    usePartyHearingTests: () => ({ hearingTests: [], isLoading: false })
+}));
 vi.mock('../../../hooks/useParties', () => ({
     useUpdateParty: () => ({ mutateAsync: vi.fn() })
 }));
+vi.mock('../../../hooks/usePartyEditModal', () => ({
+    usePartyEditModal: () => ({ isOpen: false, openModal: vi.fn(), closeModal: vi.fn(), partyToEdit: null })
+}));
 vi.mock('../../../components/GlobalErrorHandler', () => ({
     useGlobalError: () => ({ showError: vi.fn() }),
+    GlobalErrorProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+vi.mock('../../../hooks/useGlobalError', () => ({
+    useGlobalError: () => ({ showError: vi.fn() }),
+}));
+vi.mock('../../../contexts/GlobalErrorContext', () => ({
+    GlobalErrorProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+vi.mock('../../../contexts/GlobalErrorContextType', () => ({
+    GlobalErrorContext: { _currentValue: { showError: vi.fn(), error: null, clearError: vi.fn() } },
+}));
+vi.mock('@/api/client/parties.client', () => ({
+    useDeleteParty: () => ({ mutateAsync: vi.fn() }),
+    useUpdateParty: () => ({ mutateAsync: vi.fn() }),
+}));
+vi.mock('../../../services/party/party-api.service', () => ({
+    partyApiService: { updateParty: vi.fn() },
+}));
+vi.mock('../../layout/HeaderBackButton', () => ({
+    HeaderBackButton: () => <div>Back</div>,
+}));
+vi.mock('../../ui/ConfirmDialog', () => ({
+    ConfirmDialog: () => null,
 }));
 
 // Mock child components that strictly need isolation

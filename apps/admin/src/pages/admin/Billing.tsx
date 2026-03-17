@@ -147,7 +147,7 @@ const Billing: React.FC = () => {
       }
       window.open(pdfUrl, '_blank', 'noopener,noreferrer');
     } catch (error: unknown) {
-      console.error(error);
+      if (import.meta.env.DEV) console.error(error);
       toast.error('PDF indirilemedi');
     }
   };
@@ -197,14 +197,13 @@ const Billing: React.FC = () => {
   };
 
   const handleDeletePlanClick = async (id: string) => {
-    if (window.confirm('Bu planı silmek istediğinize emin misiniz?')) {
-      try {
-        await deletePlan({ planId: id });
-        await queryClient.invalidateQueries({ queryKey: ['/api/admin/plans'] });
-        toast.success('Plan silindi');
-      } catch (error: unknown) {
-        toast.error(getApiErrorMessage(error, 'Plan silinemedi'));
-      }
+    if (!window.confirm('Bu planı silmek istediğinize emin misiniz?')) return;
+    try {
+      await deletePlan({ planId: id });
+      await queryClient.invalidateQueries({ queryKey: ['/api/admin/plans'] });
+      toast.success('Plan silindi');
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, 'Plan silinemedi'));
     }
   };
 

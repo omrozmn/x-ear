@@ -36,7 +36,7 @@ export function NormalizerTemplateCard({ template, onNormalize, onMapping, onDel
                 {template.name}
               </h3>
               {template.description && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-1">
+                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
                   {template.description}
                 </p>
               )}
@@ -47,7 +47,7 @@ export function NormalizerTemplateCard({ template, onNormalize, onMapping, onDel
             size="sm"
             onClick={onDelete}
             title="Şablonu sil"
-            className="text-gray-400 hover:text-red-500"
+            className="text-muted-foreground hover:text-destructive"
           >
             <Trash2 className="w-4 h-4" />
           </Button>
@@ -56,7 +56,7 @@ export function NormalizerTemplateCard({ template, onNormalize, onMapping, onDel
 
       {/* Stats */}
       <div className="px-5 pb-3">
-        <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+        <div className="flex items-center gap-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <Columns className="w-3.5 h-3.5" />
             {template.columnCount} kolon
@@ -70,14 +70,14 @@ export function NormalizerTemplateCard({ template, onNormalize, onMapping, onDel
             {template.normalizationCount}
           </span>
         </div>
-        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5 flex items-center gap-1">
+        <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
           <Clock className="w-3 h-3" />
           {lastUsedText}
         </p>
       </div>
 
       {/* Actions */}
-      <div className="mt-auto border-t border-gray-100 dark:border-gray-700/50 p-3 flex gap-2">
+      <div className="mt-auto border-t border-border/50 p-3 flex gap-2">
         <Button
           variant="primary"
           size="sm"

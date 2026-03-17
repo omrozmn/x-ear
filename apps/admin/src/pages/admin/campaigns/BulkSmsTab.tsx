@@ -146,7 +146,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance }) => {
             });
             setMode('excel');
         } catch (error) {
-            console.error('Excel parse error', error);
+            if (import.meta.env.DEV) console.error('Excel parse error', error);
             setExcelError('Excel dosyası okunamadı. Lütfen dosya formatını kontrol edin.');
             setExcelPreview(null);
         } finally {

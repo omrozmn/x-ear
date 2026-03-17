@@ -112,15 +112,15 @@ export function ProductSearch({
   };
 
   const getStockStatus = (stock: number) => {
-    if (stock === 0) return { text: t('product.out_of_stock'), color: 'text-red-600' };
+    if (stock === 0) return { text: t('product.out_of_stock'), color: 'text-destructive' };
     if (stock < 5) return { text: t('product.stock_left', { count: stock }), color: 'text-orange-600' };
-    return { text: t('product.stock', { count: stock }), color: 'text-green-600' };
+    return { text: t('product.stock', { count: stock }), color: 'text-success' };
   };
 
   return (
     <div className={`relative ${className}`}>
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
         <Input
           ref={inputRef}
           type="text"
@@ -137,7 +137,7 @@ export function ProductSearch({
       {isOpen && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full bg-white border border-gray-300 rounded-2xl shadow-lg mt-1 max-h-80 overflow-y-auto"
+          className="absolute z-50 w-full bg-card border border-border rounded-2xl shadow-lg mt-1 max-h-80 overflow-y-auto"
         >
           {hasResults ? (
             <div className="py-1">
@@ -148,39 +148,39 @@ export function ProductSearch({
                   <div
                     key={product.id}
                     onClick={() => handleProductSelect(product)}
-                    className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                    className="px-4 py-3 hover:bg-muted cursor-pointer border-b border-border last:border-b-0"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <Package className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                          <h4 className="text-sm font-medium text-gray-900 truncate">
+                          <Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                          <h4 className="text-sm font-medium text-foreground truncate">
                             {product.name}
                           </h4>
-                          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                          <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
                             {Math.round(score * 100)}%
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-4 text-xs text-gray-600">
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Tag className="w-3 h-3" />
                             {product.brand} {product.model}
                           </span>
-                          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                          <span className="bg-primary/10 text-blue-800 px-2 py-1 rounded">
                             {getCategoryDisplayName(product.category)}
                           </span>
                         </div>
 
                         {product.description && (
-                          <p className="text-xs text-gray-500 mt-1 line-clamp-1">
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
                             {product.description}
                           </p>
                         )}
                       </div>
 
                       <div className="flex flex-col items-end gap-1 ml-4">
-                        <div className="flex items-center gap-1 text-sm font-medium text-gray-900">
+                        <div className="flex items-center gap-1 text-sm font-medium text-foreground">
                           <DollarSign className="w-3 h-3" />
                           {formatPrice(product.price)}
                         </div>
@@ -196,7 +196,7 @@ export function ProductSearch({
           ) : (
             <div className="px-4 py-8 text-center">
               <Package className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 {inputValue ? t('no_results') : t('type_to_search')}
               </p>
             </div>

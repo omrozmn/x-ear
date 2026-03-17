@@ -378,6 +378,11 @@ def get_enabled_features(
 
     plan_name = plan.name if plan else (getattr(tenant, 'current_plan', None) if tenant else None)
 
+    # Derive sector and country before feature evaluation
+    from config.module_registry import get_enabled_module_ids
+    tenant_sector = getattr(tenant, 'sector', None) or 'hearing'
+    tenant_country = getattr(tenant, 'country_code', None)
+
     # Build final feature map
     features: dict = {}
     for key, default_val in ALL_FEATURE_DEFAULTS.items():
@@ -395,6 +400,16 @@ def get_enabled_features(
                 features[key] = False
             else:
                 features[key] = True
+            # Check country restriction
+            allowed_countries = flag.get('countries', [])
+            if allowed_countries and features[key]:
+                if not tenant_country or tenant_country not in allowed_countries:
+                    features[key] = False
+            # Check sector restriction
+            allowed_sectors = flag.get('sectors', [])
+            if allowed_sectors and features[key]:
+                if tenant_sector not in allowed_sectors:
+                    features[key] = False
         else:
             features[key] = default_val
 
@@ -403,10 +418,6 @@ def get_enabled_features(
         if not features.get(parent_key, True):
             for child_key in [k for k in features if k.startswith(parent_key + '.')]:
                 features[child_key] = False
-
-    # Derive sector and enabled modules
-    from config.module_registry import get_enabled_module_ids
-    tenant_sector = getattr(tenant, 'sector', None) or 'hearing'
     enabled_module_ids = list(get_enabled_module_ids(tenant_sector))
 
     return ResponseEnvelope(data=FeaturesResponse(

@@ -52,12 +52,12 @@ function GlassPanel({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-[30px] border border-slate-200/80 bg-white/88 p-6 shadow-[0_20px_60px_-38px_rgba(15,23,42,0.28)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/46 dark:shadow-[0_24px_80px_-44px_rgba(2,6,23,0.9)]">
-      <div className="absolute inset-x-10 top-0 h-20 rounded-full bg-gradient-to-r from-sky-100/70 via-white/60 to-emerald-100/55 blur-3xl dark:from-sky-500/20 dark:via-slate-900/10 dark:to-emerald-500/20" />
+    <div className="relative overflow-hidden rounded-[30px] border border-border/80 bg-white/88 p-6 shadow-[0_20px_60px_-38px_rgba(15,23,42,0.28)] backdrop-blur-xl dark:border-white/10 dark:bg-gray-900/46 dark:shadow-[0_24px_80px_-44px_rgba(2,6,23,0.9)]">
+      <div className="absolute inset-x-10 top-0 h-20 rounded-full bg-gradient-to-r from-sky-100/70 via-white/60 to-emerald-100/55 blur-3xl dark:from-sky-500/20 dark:via-gray-900/10 dark:to-emerald-500/20" />
       <div className="relative mb-5 flex items-start justify-between gap-4">
         <div>
-          <h3 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">{title}</h3>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>
+          <h3 className="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">{title}</h3>
+          <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
         </div>
         <div className="rounded-2xl border border-white/50 bg-white/55 p-3 text-sky-700 backdrop-blur-md dark:border-white/10 dark:bg-white/10 dark:text-sky-300">
           {icon}
@@ -167,8 +167,8 @@ function DesktopDashboard() {
 
   if (error) {
     return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
-        <p className="text-red-600">Hata: {error}</p>
+      <div className="rounded-2xl border border-red-200 bg-destructive/10 p-4">
+        <p className="text-destructive">Hata: {error}</p>
       </div>
     );
   }
@@ -179,14 +179,14 @@ function DesktopDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[28px] border border-slate-200/80 bg-white/90 px-6 py-4 shadow-[0_18px_52px_-36px_rgba(15,23,42,0.22)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-900/44 dark:shadow-[0_20px_70px_-44px_rgba(2,6,23,0.85)]">
+      <div className="rounded-[28px] border border-border/80 bg-white/90 px-6 py-4 shadow-[0_18px_52px_-36px_rgba(15,23,42,0.22)] backdrop-blur-xl dark:border-white/10 dark:bg-gray-900/44 dark:shadow-[0_20px_70px_-44px_rgba(2,6,23,0.85)]">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             {showBranchSelector ? (
               <Select
                 value={selectedBranchId}
                 onChange={(e) => setSelectedBranchId(e.target.value)}
-                className="rounded-2xl border border-white/60 bg-white/70 px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-white/10 dark:bg-slate-900/55 dark:text-white"
+                className="rounded-2xl border border-white/60 bg-white/70 px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-ring dark:border-white/10 dark:bg-gray-900/55 dark:text-white"
                 options={[
                   { value: '', label: 'Tum Erisilebilir Subeler' },
                   ...availableBranches.map((branch) => ({
@@ -199,7 +199,7 @@ function DesktopDashboard() {
             <Select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value)}
-              className="rounded-2xl border border-white/60 bg-white/70 px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-white/10 dark:bg-slate-900/55 dark:text-white"
+              className="rounded-2xl border border-white/60 bg-white/70 px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-ring dark:border-white/10 dark:bg-gray-900/55 dark:text-white"
               options={[
                 { value: 'today', label: 'Bugun' },
                 { value: 'week', label: 'Son 1 Hafta' },
@@ -209,7 +209,7 @@ function DesktopDashboard() {
             />
             <Button
               onClick={() => window.location.reload()}
-              className="rounded-2xl border border-white/60 bg-white/65 p-2 text-gray-700 transition-colors hover:bg-white dark:border-white/10 dark:bg-white/10 dark:text-slate-200 dark:hover:bg-white/15"
+              className="rounded-2xl border border-white/60 bg-white/65 p-2 text-foreground transition-colors hover:bg-white dark:border-white/10 dark:bg-white/10 dark:hover:bg-white/15"
               variant="secondary"
             >
               <RefreshCw className="h-5 w-5" />
@@ -260,7 +260,7 @@ function DesktopDashboard() {
             subtitle="Secili subedeki hasta segment dagilimini tek bakista gorun"
             icon={<PieChart className="h-5 w-5" />}
           >
-            <div className="rounded-[26px] border border-slate-200/70 bg-white/78 p-5 backdrop-blur-md dark:border-white/10 dark:bg-slate-950/25">
+            <div className="rounded-[26px] border border-border/70 bg-white/78 p-5 backdrop-blur-md dark:border-white/10 dark:bg-gray-950/25">
               <PartyDistribution
                 selectedBranchId={selectedBranchId || undefined}
                 segmentOptions={segmentOptions}
@@ -284,25 +284,25 @@ function DesktopDashboard() {
             icon={<Activity className="h-5 w-5" />}
           >
             {!recentActivity || recentActivity.length === 0 ? (
-              <div className="flex min-h-64 items-center justify-center rounded-[26px] border border-slate-200/70 bg-white/78 text-slate-500 backdrop-blur-md dark:border-white/10 dark:bg-slate-950/25 dark:text-slate-400">
+              <div className="flex min-h-64 items-center justify-center rounded-[26px] border border-border/70 bg-white/78 text-muted-foreground backdrop-blur-md dark:border-white/10 dark:bg-gray-950/25">
                 Henuz son aktivite kaydi yok
               </div>
             ) : (
               <ul className="max-h-80 space-y-3 overflow-auto pr-1">
                 {recentActivity.map((act: Record<string, unknown>, idx: number) => (
-                  <li key={idx} className="rounded-[24px] border border-slate-200/70 bg-white/82 p-4 backdrop-blur-md transition-colors hover:bg-white dark:border-white/10 dark:bg-slate-950/28 dark:hover:bg-slate-900/42">
+                  <li key={idx} className="rounded-[24px] border border-border/70 bg-white/82 p-4 backdrop-blur-md transition-colors hover:bg-white dark:border-white/10 dark:bg-gray-950/28 dark:hover:bg-gray-900/42">
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">
-                        <div className="text-sm font-medium leading-6 text-slate-800 dark:text-slate-100">
+                        <div className="text-sm font-medium leading-6 text-foreground">
                           {formatActivitySentence(act)}
                         </div>
-                        <div className="mt-2 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                        <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
                           <span>{formatActivityTimeAgo(act)}</span>
-                          <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-600" />
+                          <span className="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-600" />
                           <span>{formatActivityTimestamp(act)}</span>
                         </div>
                       </div>
-                      <div className="rounded-full bg-slate-900/5 p-2 text-slate-400 dark:bg-white/10 dark:text-slate-300">
+                      <div className="rounded-full bg-gray-900/5 p-2 text-muted-foreground dark:bg-white/10">
                         <ChevronRight className="h-4 w-4" />
                       </div>
                     </div>
@@ -360,7 +360,7 @@ function PartyDistribution({
     });
   });
 
-  if (isLoading) return <div className="flex h-64 items-center justify-center text-slate-500">Dagilim yukleniyor...</div>;
+  if (isLoading) return <div className="flex h-64 items-center justify-center text-muted-foreground">Dagilim yukleniyor...</div>;
   if (isError) return <div className="flex h-64 items-center justify-center text-rose-500">Dagilim verisi alinamadi</div>;
 
   const chartData = Array.from(segments.entries())
@@ -374,7 +374,7 @@ function PartyDistribution({
 
   if (!chartData.length) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-[24px] border border-dashed border-white/45 bg-white/28 text-sm text-slate-500">
+      <div className="flex h-64 items-center justify-center rounded-[24px] border border-dashed border-white/45 bg-card/28 text-sm text-muted-foreground">
         Gosterilecek segment verisi bulunmuyor
       </div>
     );

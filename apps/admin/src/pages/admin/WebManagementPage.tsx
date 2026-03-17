@@ -144,6 +144,8 @@ const WebManagementPage: React.FC = () => {
                 setNewMarketplaceLabel={wm.setNewMarketplaceLabel}
                 newMarketplaceUrl={wm.newMarketplaceUrl}
                 setNewMarketplaceUrl={wm.setNewMarketplaceUrl}
+                marketplaceUrlError={wm.marketplaceUrlError}
+                setMarketplaceUrlError={wm.setMarketplaceUrlError}
                 isBusy={wm.isBusy}
                 handleAddMarketplaceLink={wm.handleAddMarketplaceLink}
                 handleDeleteMarketplaceLink={wm.handleDeleteMarketplaceLink}

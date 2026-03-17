@@ -6,11 +6,14 @@ Create Date: 2026-03-16
 """
 from alembic import op
 import sqlalchemy as sa
+from datetime import datetime
 
 revision = 'a1b2c3d4e5f6'
 down_revision = None
 branch_labels = None
 depends_on = None
+
+_NOW = datetime.utcnow().isoformat()
 
 SEED_COUNTRIES = [
     ('TR', 'Turkey', 'Türkiye', True, True, 'TRY', 'tr-TR', 'Europe/Istanbul', '+90', '🇹🇷', 'DD.MM.YYYY', 0),
@@ -26,9 +29,10 @@ SEED_COUNTRIES = [
 ]
 
 def upgrade() -> None:
-    # Create countries table (if not exists — table may already exist from metadata.create_all)
     conn = op.get_bind()
     inspector = sa.inspect(conn)
+
+    # Create countries table (if not exists)
     if 'countries' not in inspector.get_table_names():
         op.create_table(
             'countries',
@@ -49,35 +53,22 @@ def upgrade() -> None:
             sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.func.now()),
         )
 
-    # Seed countries
-    countries_table = sa.table(
-        'countries',
-        sa.column('code', sa.String),
-        sa.column('name', sa.String),
-        sa.column('native_name', sa.String),
-        sa.column('enabled', sa.Boolean),
-        sa.column('creatable', sa.Boolean),
-        sa.column('currency_code', sa.String),
-        sa.column('locale', sa.String),
-        sa.column('timezone', sa.String),
-        sa.column('phone_prefix', sa.String),
-        sa.column('flag_emoji', sa.String),
-        sa.column('date_format', sa.String),
-        sa.column('sort_order', sa.Integer),
-    )
-
-    op.bulk_insert(countries_table, [
-        {
+    # Seed countries using raw SQL (handles server_default correctly for SQLite)
+    for c in SEED_COUNTRIES:
+        conn.execute(sa.text(
+            "INSERT OR IGNORE INTO countries "
+            "(code, name, native_name, enabled, creatable, currency_code, locale, timezone, phone_prefix, flag_emoji, date_format, sort_order, created_at, updated_at) "
+            "VALUES (:code, :name, :native_name, :enabled, :creatable, :currency_code, :locale, :timezone, :phone_prefix, :flag_emoji, :date_format, :sort_order, :created_at, :updated_at)"
+        ), {
             'code': c[0], 'name': c[1], 'native_name': c[2],
             'enabled': c[3], 'creatable': c[4], 'currency_code': c[5],
             'locale': c[6], 'timezone': c[7], 'phone_prefix': c[8],
             'flag_emoji': c[9], 'date_format': c[10], 'sort_order': c[11],
-        }
-        for c in SEED_COUNTRIES
-    ])
+            'created_at': _NOW, 'updated_at': _NOW,
+        })
 
     # Add country_code to tenants (check if column already exists)
-    tenant_cols = [c['name'] for c in inspector.get_columns('tenants')]
+    tenant_cols = [col['name'] for col in inspector.get_columns('tenants')]
     if 'country_code' not in tenant_cols:
         with op.batch_alter_table('tenants') as batch_op:
             batch_op.add_column(sa.Column('country_code', sa.String(2), nullable=True, server_default='TR'))

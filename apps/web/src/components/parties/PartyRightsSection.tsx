@@ -55,7 +55,7 @@ const LoadingSpinner: React.FC<{ size?: 'sm' | 'md' | 'lg' }> = ({ size = 'md' }
   };
 
   return (
-    <Loader2 className={`${sizeClasses[size]} animate-spin text-blue-600`} />
+    <Loader2 className={`${sizeClasses[size]} animate-spin text-primary`} />
   );
 };
 
@@ -195,29 +195,29 @@ export const PartyRightsSection: React.FC<PartyRightsSectionProps> = ({ party, p
                         key === 'accessories' ? 'Aksesuarlar' :
                           key === 'maintenance' ? 'Bakım' : key}
                     </h5>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                    <span className="text-sm text-muted-foreground">
                       Son Güncelleme: {coverage.lastUpdate}
                     </span>
                   </div>
                   <div className="grid grid-cols-4 gap-4 text-sm">
                     <div>
-                      <span className="text-gray-600 dark:text-gray-400">Karşılama:</span>
+                      <span className="text-muted-foreground">Karşılama:</span>
                       <p className="font-medium dark:text-white">{coverage.percentage}%</p>
                     </div>
                     <div>
-                      <span className="text-gray-600 dark:text-gray-400">Maksimum:</span>
+                      <span className="text-muted-foreground">Maksimum:</span>
                       <p className="font-medium dark:text-white">₺{coverage.maxAmount}</p>
                     </div>
                     <div>
-                      <span className="text-gray-600 dark:text-gray-400">Kullanılan:</span>
+                      <span className="text-muted-foreground">Kullanılan:</span>
                       <p className="font-medium dark:text-white">₺{coverage.usedAmount}</p>
                     </div>
                     <div>
-                      <span className="text-gray-600 dark:text-gray-400">Kalan:</span>
-                      <p className="font-medium text-green-600 dark:text-green-400">₺{coverage.remainingAmount}</p>
+                      <span className="text-muted-foreground">Kalan:</span>
+                      <p className="font-medium text-success">₺{coverage.remainingAmount}</p>
                     </div>
                   </div>
-                  <div className="mt-2 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                  <div className="mt-2 bg-accent rounded-full h-2">
                     <div
                       className="bg-blue-600 dark:bg-blue-500 h-2 rounded-full"
                       style={{ width: `${(coverage.usedAmount / coverage.maxAmount) * 100}%` }}
@@ -236,11 +236,11 @@ export const PartyRightsSection: React.FC<PartyRightsSectionProps> = ({ party, p
                 <div key={index} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded">
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white">{activity.description}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{activity.date}</p>
+                    <p className="text-sm text-muted-foreground">{activity.date}</p>
                   </div>
                   <div className="text-right">
                     <p className="font-medium dark:text-white">₺{activity.amount}</p>
-                    <Badge className={activity.status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'}>
+                    <Badge className={activity.status === 'approved' ? 'bg-success/10 text-success' : 'bg-warning/10 text-yellow-800 dark:text-yellow-300'}>
                       {activity.status === 'approved' ? 'Onaylandı' : 'Beklemede'}
                     </Badge>
                   </div>
@@ -250,15 +250,15 @@ export const PartyRightsSection: React.FC<PartyRightsSectionProps> = ({ party, p
           </div>
 
           {/* Summary */}
-          <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-2xl">
+          <div className="bg-success/10 p-4 rounded-2xl">
             <h4 className="font-medium text-green-900 dark:text-green-100 mb-2">Toplam Hak Özeti</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-green-700 dark:text-green-300">Toplam Kullanılan:</span>
+                <span className="text-success">Toplam Kullanılan:</span>
                 <p className="text-lg font-semibold text-green-900 dark:text-green-100">₺{partyRightsData.totalUsed}</p>
               </div>
               <div>
-                <span className="text-green-700 dark:text-green-300">Toplam Kalan:</span>
+                <span className="text-success">Toplam Kalan:</span>
                 <p className="text-lg font-semibold text-green-900 dark:text-green-100">₺{partyRightsData.totalRemaining}</p>
               </div>
             </div>

@@ -33,20 +33,20 @@ import { unwrapArray } from '@/utils/response-unwrap';
 
 // SMS Automation Trigger Types
 type TriggerType =
-    | 'new_party'           // Yeni hasta kaydı
-    | 'device_sale'           // Cihaz satışı
-    | 'device_delivery'       // Cihaz teslimi
-    | 'promissory_created'    // Senet oluşturma
-    | 'promissory_reminder'   // Senet ödeme hatırlatma
-    | 'appointment_created'   // Randevu oluşturulduğunda
-    | 'appointment_reminder'  // Randevu hatırlatma
-    | 'appointment_day'       // Randevu günü sabahı
-    | 'trial_started'         // Deneme başladığında
-    | 'trial_ending'          // Deneme bitiş yaklaşırken
-    | 'birthday'              // Doğum günü
-    | 'control_reminder'      // Kontrol hatırlatma
-    | 'payment_received'      // Ödeme alındığında
-    | 'invoice_created';      // Fatura oluşturulduğunda
+    | 'new_party' // Yeni hasta kaydı
+    | 'device_sale' // Cihaz satışı
+    | 'device_delivery' // Cihaz teslimi
+    | 'promissory_created' // Senet oluşturma
+    | 'promissory_reminder' // Senet ödeme hatırlatma
+    | 'appointment_created' // Randevu oluşturulduğunda
+    | 'appointment_reminder' // Randevu hatırlatma
+    | 'appointment_day' // Randevu günü sabahı
+    | 'trial_started' // Deneme başladığında
+    | 'trial_ending' // Deneme bitiş yaklaşırken
+    | 'birthday' // Doğum günü
+    | 'control_reminder' // Kontrol hatırlatma
+    | 'payment_received' // Ödeme alındığında
+    | 'invoice_created'; // Fatura oluşturulduğunda
 
 interface AutomationRule {
     id: string;
@@ -447,8 +447,8 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ channel = 's
 
     // SMS segments calculation - kept for future use but not displayed
     // const smsSegments = formData.templateContent.length > 0
-    //     ? Math.max(1, Math.ceil(formData.templateContent.length / SMS_SEGMENT_LENGTH))
-    //     : 0;
+    // ? Math.max(1, Math.ceil(formData.templateContent.length / SMS_SEGMENT_LENGTH))
+    // : 0;
 
     const selectedTriggerConfig = TRIGGER_CONFIG[formData.trigger];
 
@@ -462,7 +462,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ channel = 's
                             <Zap className="w-5 h-5" />
                         </div>
                         <div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Aktif Otomasyon</p>
+                            <p className="text-xs text-muted-foreground">Aktif Otomasyon</p>
                             <p className="text-2xl font-semibold text-gray-900 dark:text-white">{activeCount}</p>
                         </div>
                     </div>
@@ -473,18 +473,18 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ channel = 's
                             <CheckCircle className="w-5 h-5" />
                         </div>
                         <div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Toplam Gönderim</p>
+                            <p className="text-xs text-muted-foreground">Toplam Gönderim</p>
                             <p className="text-2xl font-semibold text-gray-900 dark:text-white">{totalSent.toLocaleString('tr-TR')}</p>
                         </div>
                     </div>
                 </Card>
                 <Card className="p-4 dark:bg-gray-800 dark:border-gray-700">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                        <div className="p-2 rounded-full bg-muted text-muted-foreground">
                             <Settings className="w-5 h-5" />
                         </div>
                         <div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Toplam Kural</p>
+                            <p className="text-xs text-muted-foreground">Toplam Kural</p>
                             <p className="text-2xl font-semibold text-gray-900 dark:text-white">{rules.length}</p>
                         </div>
                     </div>
@@ -516,20 +516,20 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ channel = 's
                             <button
                                 data-allow-raw="true"
                                 type="button"
-                                className="w-full p-4 flex items-center justify-between bg-gray-50 hover:bg-gray-100 dark:bg-gray-800/50 dark:hover:bg-gray-800 transition-colors"
+                                className="w-full p-4 flex items-center justify-between bg-gray-50 hover:bg-muted/50 dark:hover:bg-gray-800 transition-colors"
                                 onClick={() => setExpandedCategory(isExpanded ? null : category)}
                             >
                                 <div className="flex items-center gap-3">
                                     <span className="font-semibold text-gray-900 dark:text-gray-100">{label}</span>
-                                    <span className="text-sm text-gray-500 dark:text-gray-400">({categoryRules.length} kural)</span>
+                                    <span className="text-sm text-muted-foreground">({categoryRules.length} kural)</span>
                                 </div>
-                                {isExpanded ? <ChevronUp className="w-5 h-5 text-gray-400 dark:text-gray-500" /> : <ChevronDown className="w-5 h-5 text-gray-400 dark:text-gray-500" />}
+                                {isExpanded ? <ChevronUp className="w-5 h-5 text-muted-foreground" /> : <ChevronDown className="w-5 h-5 text-muted-foreground" />}
                             </button>
 
                             {isExpanded && (
                                 <div className="p-4 space-y-3">
                                     {categoryRules.length === 0 ? (
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+                                        <p className="text-sm text-muted-foreground text-center py-4">
                                             Bu kategoride henüz otomasyon kuralı bulunmuyor.
                                         </p>
                                     ) : (
@@ -538,22 +538,22 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ channel = 's
                                             return (
                                                 <div
                                                     key={rule.id}
-                                                    className={`p-4 rounded-2xl border ${rule.isActive ? 'border-indigo-200 bg-indigo-50/50 dark:bg-indigo-900/20 dark:border-indigo-800' : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50'}`}
+                                                    className={`p-4 rounded-2xl border ${rule.isActive ? 'border-indigo-200 bg-indigo-50/50 dark:bg-indigo-900/20 dark:border-indigo-800' : 'border-border bg-gray-50 dark:bg-gray-800/50'}`}
                                                 >
                                                     <div className="flex items-start justify-between gap-4">
                                                         <div className="flex items-start gap-3 flex-1">
-                                                            <div className={`p-2 rounded-2xl ${rule.isActive ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400' : 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400'}`}>
+                                                            <div className={`p-2 rounded-2xl ${rule.isActive ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400' : 'bg-accent text-muted-foreground'}`}>
                                                                 {triggerConfig?.icon}
                                                             </div>
                                                             <div className="flex-1 min-w-0">
                                                                 <div className="flex items-center gap-2">
                                                                     <h4 className="font-medium text-gray-900 dark:text-white">{rule.name}</h4>
-                                                                    <span className={`px-2 py-0.5 text-xs rounded-full ${rule.isActive ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400'}`}>
+                                                                    <span className={`px-2 py-0.5 text-xs rounded-full ${rule.isActive ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-accent text-muted-foreground'}`}>
                                                                         {rule.isActive ? 'Aktif' : 'Pasif'}
                                                                     </span>
                                                                 </div>
-                                                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{triggerConfig?.label}</p>
-                                                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2 line-clamp-2">{rule.templateContent}</p>
+                                                                <p className="text-sm text-muted-foreground mt-1">{triggerConfig?.label}</p>
+                                                                <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{rule.templateContent}</p>
 
                                                                 {rule.timing && rule.timing.type !== 'immediate' && (
                                                                     <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-2 flex items-center gap-1">
@@ -563,7 +563,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ channel = 's
                                                                 )}
 
                                                                 {rule.stats && (
-                                                                    <div className="flex items-center gap-4 mt-3 text-xs text-gray-500 dark:text-gray-400">
+                                                                    <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
                                                                         <span>Gönderildi: {rule.stats.sent}</span>
                                                                         <span>İletildi: {rule.stats.delivered}</span>
                                                                         <span>Başarısız: {rule.stats.failed}</span>
@@ -600,7 +600,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ channel = 's
                                                                 variant="ghost"
                                                                 size="sm"
                                                                 onClick={() => handleDeleteRule(rule.id)}
-                                                                className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                                                                className="text-destructive hover:text-destructive dark:hover:text-red-300"
                                                                 title="Sil"
                                                             >
                                                                 <Trash2 className="w-4 h-4" />
@@ -613,8 +613,8 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ channel = 's
                                     )}
 
                                     {/* Available triggers for this category */}
-                                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Kullanılabilir tetikleyiciler:</p>
+                                    <div className="mt-4 pt-4 border-t border-border">
+                                        <p className="text-xs font-medium text-muted-foreground mb-2">Kullanılabilir tetikleyiciler:</p>
                                         <div className="flex flex-wrap gap-2">
                                             {Object.entries(TRIGGER_CONFIG)
                                                 .filter(([, config]) => config.category === category)
@@ -634,7 +634,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ channel = 's
                                                             });
                                                             setShowCreateModal(true);
                                                         }}
-                                                        className="inline-flex items-center gap-1 px-2 py-1 text-xs text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:border-indigo-300 dark:hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                                                        className="inline-flex items-center gap-1 px-2 py-1 text-xs text-muted-foreground bg-white dark:bg-gray-800 border border-border rounded-xl hover:border-indigo-300 dark:hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                                                     >
                                                         <Plus className="w-3 h-3" />
                                                         {config.label}
@@ -664,16 +664,16 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ channel = 's
                                         setShowCreateModal(false);
                                         setEditingRule(null);
                                     }}
-                                    className="p-1 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                    className="p-1 rounded-2xl hover:bg-muted dark:hover:bg-gray-700 transition-colors"
                                 >
-                                    <X className="w-5 h-5 text-gray-500" />
+                                    <X className="w-5 h-5 text-muted-foreground" />
                                 </button>
                             </div>
 
                             <div className="p-4 space-y-4 overflow-y-auto flex-1">
                                 {/* Trigger Selection */}
                                 <div>
-                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Tetikleyici</label>
+                                    <label className="text-sm font-medium text-foreground mb-1 block">Tetikleyici</label>
                                     <Select
                                         value={formData.trigger}
                                         onChange={(e) => {
@@ -690,12 +690,12 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ channel = 's
                                         }))}
                                         fullWidth
                                     />
-                                    <p className="text-xs text-gray-500 mt-1">{selectedTriggerConfig?.description}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">{selectedTriggerConfig?.description}</p>
                                 </div>
 
                                 {/* Rule Name */}
                                 <div>
-                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Kural Adı</label>
+                                    <label className="text-sm font-medium text-foreground mb-1 block">Kural Adı</label>
                                     <Input
                                         type="text"
                                         placeholder="Örn: Hoşgeldiniz Mesajı"
@@ -707,7 +707,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ channel = 's
 
                                 {/* Sender Header Selection */}
                                 <div>
-                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Gönderici Başlığı</label>
+                                    <label className="text-sm font-medium text-foreground mb-1 block">Gönderici Başlığı</label>
                                     <Select
                                         value={formData.headerId || ''}
                                         onChange={(e) => setFormData(prev => ({ ...prev, headerId: e.target.value }))}
@@ -720,13 +720,13 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ channel = 's
                                         fullWidth
                                         disabled={headersLoading}
                                     />
-                                    <p className="text-xs text-gray-500 mt-1">Sadece onaylı başlıklar gösterilir</p>
+                                    <p className="text-xs text-muted-foreground mt-1">Sadece onaylı başlıklar gösterilir</p>
                                 </div>
 
                                 {/* Timing Configuration */}
                                 <div className="grid grid-cols-3 gap-3">
                                     <div>
-                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Zamanlama</label>
+                                        <label className="text-sm font-medium text-foreground mb-1 block">Zamanlama</label>
                                         <Select
                                             value={formData.timing.type}
                                             onChange={(e) => setFormData(prev => ({
@@ -744,7 +744,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ channel = 's
                                     {formData.timing.type !== 'immediate' && (
                                         <>
                                             <div>
-                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Değer</label>
+                                                <label className="text-sm font-medium text-foreground mb-1 block">Değer</label>
                                                 <Input
                                                     type="number"
                                                     min={1}
@@ -757,7 +757,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ channel = 's
                                                 />
                                             </div>
                                             <div>
-                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Birim</label>
+                                                <label className="text-sm font-medium text-foreground mb-1 block">Birim</label>
                                                 <Select
                                                     value={formData.timing.unit || 'days'}
                                                     onChange={(e) => setFormData(prev => ({
@@ -778,7 +778,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ channel = 's
 
                                 {/* Dynamic Fields */}
                                 <div>
-                                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Dinamik Alanlar</p>
+                                    <p className="text-sm font-medium text-foreground mb-2">Dinamik Alanlar</p>
                                     <div className="flex flex-wrap gap-2">
                                         {selectedTriggerConfig?.dynamicFields.map((field) => (
                                             <button
@@ -797,9 +797,9 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ channel = 's
 
                                 {/* Message Template */}
                                 <div className="flex-1">
-                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                                    <label className="text-sm font-medium text-foreground mb-1 block">
                                         Mesaj Şablonu
-                                        <span className="text-gray-400 font-normal ml-2">({formData.templateContent.length} karakter)</span>
+                                        <span className="text-muted-foreground font-normal ml-2">({formData.templateContent.length} karakter)</span>
                                     </label>
                                     <Textarea
                                         ref={textareaRef}
@@ -808,7 +808,7 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ channel = 's
                                         className="w-full h-full min-h-[150px] resize-none"
                                         placeholder="Mesaj şablonunu buraya yazın..."
                                     />
-                                    <div className="flex items-center justify-between mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                    <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground">
                                         <span>
                                             {channelLabel} Sayısı: {Math.max(1, Math.ceil(formData.templateContent.length / SMS_SEGMENT_LENGTH))}
                                         </span>
@@ -857,19 +857,19 @@ export const SmsAutomationTab: React.FC<SmsAutomationTabProps> = ({ channel = 's
                                 <button
                                     data-allow-raw="true"
                                     onClick={() => setShowPreview(false)}
-                                    className="p-1 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                    className="p-1 rounded-2xl hover:bg-muted dark:hover:bg-gray-700 transition-colors"
                                 >
-                                    <X className="w-5 h-5 text-gray-500" />
+                                    <X className="w-5 h-5 text-muted-foreground" />
                                 </button>
                             </div>
                             <div className="p-4 space-y-4">
-                                <div className="bg-gray-100 dark:bg-gray-700 rounded-2xl p-4">
-                                    <p className="text-xs text-gray-500 dark:text-gray-300 mb-2">Örnek veri göserimi:</p>
-                                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-sm border border-gray-200 dark:border-gray-600">
-                                        <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{previewContent}</p>
+                                <div className="bg-muted rounded-2xl p-4">
+                                    <p className="text-xs text-muted-foreground mb-2">Örnek veri göserimi:</p>
+                                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-sm border border-border">
+                                        <p className="text-sm text-foreground whitespace-pre-wrap">{previewContent}</p>
                                     </div>
                                 </div>
-                                <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                                <div className="text-xs text-muted-foreground space-y-1">
                                     <p>Karakter sayısı: {previewContent.length}</p>
                                     <p>{channelLabel} segment sayısı: {Math.max(1, Math.ceil(previewContent.length / SMS_SEGMENT_LENGTH))}</p>
                                 </div>

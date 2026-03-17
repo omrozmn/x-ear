@@ -99,7 +99,7 @@ export function ExportDetailsModal({
       />
 
       {/* Sidebar */}
-      <div className="fixed right-0 top-0 h-full w-full md:w-[600px] bg-white shadow-2xl z-50 overflow-y-auto">
+      <div className="fixed right-0 top-0 h-full w-full md:w-[600px] bg-card shadow-2xl z-50 overflow-y-auto">
         <div className="h-full flex flex-col">
           {/* Header */}
           <div className="bg-green-600 text-white px-6 py-4 flex items-center justify-between">
@@ -130,7 +130,7 @@ export function ExportDetailsModal({
                     placeholder="GB123456789"
                     fullWidth
                   />
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     Gümrük beyanname numarasını giriniz
                   </p>
                 </div>
@@ -184,7 +184,7 @@ export function ExportDetailsModal({
                   placeholder="12345678"
                   fullWidth
                 />
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm text-muted-foreground">
                   Gümrük Tarife İstatistik Pozisyonu (8 haneli)
                 </p>
               </div>
@@ -240,14 +240,14 @@ export function ExportDetailsModal({
               </div>
 
               {/* Bilgilendirme */}
-              <div className="bg-green-50 border border-green-200 rounded-2xl p-4">
+              <div className="bg-success/10 border border-green-200 rounded-2xl p-4">
                 <div className="flex items-start">
                   <Info className="text-green-400 mr-2 flex-shrink-0" size={18} />
                   <div>
-                    <h4 className="text-sm font-medium text-green-800 mb-1">
+                    <h4 className="text-sm font-medium text-success mb-1">
                       İhracat Faturası Bilgilendirme
                     </h4>
-                    <p className="text-sm text-green-700">
+                    <p className="text-sm text-success">
                       İhracat faturaları için gümrük beyannamesi ve GTİP kodu zorunludur. 
                       Taşıma şekli ve teslim şartları (INCOTERMS) mutlaka belirtilmelidir.
                     </p>
@@ -258,12 +258,12 @@ export function ExportDetailsModal({
           </div>
 
           {/* Footer */}
-          <div className="border-t border-gray-200 px-6 py-4 bg-gray-50 flex justify-end gap-3">
+          <div className="border-t border-border px-6 py-4 bg-muted flex justify-end gap-3">
             <Button
               type="button"
               onClick={handleCancel}
               variant="default"
-              className="bg-gray-200 hover:bg-gray-300 text-gray-800"
+              className="bg-accent hover:bg-gray-300 text-foreground"
             >
               İptal
             </Button>

@@ -35,7 +35,7 @@ export function PosMovementsList({ movements, isLoading, pagination, canViewFina
       title: 'Tarih',
       sortable: true,
       render: (_, item) => (
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+        <span className="text-sm text-muted-foreground">
           {new Date(item.date).toLocaleString('tr-TR')}
         </span>
       )
@@ -44,7 +44,7 @@ export function PosMovementsList({ movements, isLoading, pagination, canViewFina
       key: 'posTransactionId',
       title: 'İşlem ID',
       render: (_, item) => (
-        <span className="text-xs font-mono text-gray-500 dark:text-gray-400">
+        <span className="text-xs font-mono text-muted-foreground">
           {canViewFinancials ? (item.posTransactionId || '-') : 'Bu rol icin gizli'}
         </span>
       )
@@ -73,7 +73,7 @@ export function PosMovementsList({ movements, isLoading, pagination, canViewFina
       key: 'installment',
       title: 'Taksit',
       render: (_, item) => (
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+        <span className="text-sm text-muted-foreground">
           {item.installment && item.installment > 1 ? `${item.installment} Taksit` : 'Tek Çekim'}
         </span>
       )
@@ -88,7 +88,7 @@ export function PosMovementsList({ movements, isLoading, pagination, canViewFina
             {item.status === 'paid' ? 'Başarılı' : 'Başarısız'}
           </Badge>
           {canViewFinancials && item.errorMessage && (
-            <p className="text-xs text-red-500 mt-1 max-w-[200px] truncate" title={item.errorMessage}>
+            <p className="text-xs text-destructive mt-1 max-w-[200px] truncate" title={item.errorMessage}>
               {item.errorMessage}
             </p>
           )}
@@ -99,7 +99,7 @@ export function PosMovementsList({ movements, isLoading, pagination, canViewFina
       key: 'saleId',
       title: 'Satış Ref',
       render: (_, item) => (
-        <span className="text-xs font-mono text-gray-500 dark:text-gray-400">
+        <span className="text-xs font-mono text-muted-foreground">
           {canViewFinancials ? (item.saleId || '-') : 'Bu rol icin gizli'}
         </span>
       )

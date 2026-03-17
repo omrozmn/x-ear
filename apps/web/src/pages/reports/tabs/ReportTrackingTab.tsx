@@ -67,7 +67,7 @@ export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
             render: (_, item) => (
                 <div>
                     <p className="font-medium text-gray-900 dark:text-white">{canViewDetails ? item.partyName : 'Bu rol icin gizli'}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{item.branchName || 'Şube yok'}</p>
+                    <p className="text-xs text-muted-foreground">{item.branchName || 'Şube yok'}</p>
                 </div>
             )
         },
@@ -77,7 +77,7 @@ export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
             render: (_, item) => (
                 <div>
                     <p className="font-medium text-gray-900 dark:text-white">{canViewDetails ? (item.deviceName || '-') : 'Bu rol icin gizli'}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{canViewDetails ? (item.serialNumber || 'Seri no yok') : 'Bu rol icin gizli'}</p>
+                    <p className="text-xs text-muted-foreground">{canViewDetails ? (item.serialNumber || 'Seri no yok') : 'Bu rol icin gizli'}</p>
                 </div>
             )
         },
@@ -85,7 +85,7 @@ export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
             key: 'reportStatus',
             title: 'Rapor Durumu',
             render: (_, item) => (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-blue-800 dark:text-blue-300">
                     {getStatusLabel(item.reportStatus)}
                 </span>
             )
@@ -96,7 +96,7 @@ export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
             render: (_, item) => (
                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                     item.deliveryStatus === 'delivered'
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                        ? 'bg-success/10 text-success'
                         : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
                 }`}>
                     {getStatusLabel(item.deliveryStatus)}
@@ -127,7 +127,7 @@ export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
     if (isLoading) {
         return (
             <div className="flex justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
         );
     }
@@ -136,7 +136,7 @@ export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
         return (
             <div className="text-center py-12">
                 <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-4">Rapor takibi verileri yüklenirken hata oluştu</p>
+                <p className="text-muted-foreground mb-4">Rapor takibi verileri yüklenirken hata oluştu</p>
                 <Button onClick={() => refetch()} variant="outline" icon={<RefreshCw className="w-4 h-4" />}>
                     Tekrar Dene
                 </Button>
@@ -147,20 +147,20 @@ export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-3">
-                <FileText className="w-5 h-5 text-blue-600" />
+                <FileText className="w-5 h-5 text-primary" />
                 <div className="flex-1">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Rapor Takibi</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Cihaz satışlarındaki rapor ve teslim durumlarını izleyin</p>
+                    <p className="text-sm text-muted-foreground">Cihaz satışlarındaki rapor ve teslim durumlarını izleyin</p>
                 </div>
                 <TabExportButton filename="rapor-takibi" rows={data as unknown as Array<Record<string, unknown>>} />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 rounded-xl border border-border bg-white dark:bg-gray-800 p-4">
                 <select
                     data-allow-raw="true"
                     value={reportStatus}
                     onChange={(e) => { setReportStatus(e.target.value); setPage(1); }}
-                    className="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900"
+                    className="px-3 py-2 text-sm rounded-lg border border-border bg-white dark:bg-gray-900"
                 >
                     <option value="all">Tüm Rapor Durumları</option>
                     <option value="pending">Rapor Beklemede</option>
@@ -172,7 +172,7 @@ export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
                     data-allow-raw="true"
                     value={deliveryStatus}
                     onChange={(e) => { setDeliveryStatus(e.target.value); setPage(1); }}
-                    className="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900"
+                    className="px-3 py-2 text-sm rounded-lg border border-border bg-white dark:bg-gray-900"
                 >
                     <option value="all">Tüm Teslim Durumları</option>
                     <option value="pending">Teslim Bekliyor</option>
@@ -184,7 +184,7 @@ export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
                     type="date"
                     value={startDate}
                     onChange={(e) => { setStartDate(e.target.value); setPage(1); }}
-                    className="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900"
+                    className="px-3 py-2 text-sm rounded-lg border border-border bg-white dark:bg-gray-900"
                 />
 
                 <input
@@ -192,12 +192,12 @@ export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
                     type="date"
                     value={endDate}
                     onChange={(e) => { setEndDate(e.target.value); setPage(1); }}
-                    className="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900"
+                    className="px-3 py-2 text-sm rounded-lg border border-border bg-white dark:bg-gray-900"
                 />
 
                 <div className="md:col-span-4">
-                    <div className="flex items-center gap-2 rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2">
-                        <Search className="w-4 h-4 text-gray-400" />
+                    <div className="flex items-center gap-2 rounded-lg border border-border px-3 py-2">
+                        <Search className="w-4 h-4 text-muted-foreground" />
                         <input
                             data-allow-raw="true"
                             type="text"
@@ -210,7 +210,7 @@ export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
                 </div>
             </div>
 
-            <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
+            <div className="rounded-xl border border-border bg-white dark:bg-gray-800 overflow-hidden">
                 <DataTable<ReportTrackingItem>
                     data={data}
                     columns={columns}
@@ -236,14 +236,14 @@ export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
                             <Button variant="ghost" onClick={() => setSelectedRow(null)} className="!w-auto !h-auto px-2 py-1">Kapat</Button>
                         </div>
                         <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div><span className="text-gray-500">Hasta</span><p className="font-medium">{canViewDetails ? (selectedRow.partyName || '-') : 'Bu rol icin gizli'}</p></div>
-                            <div><span className="text-gray-500">Şube</span><p className="font-medium">{selectedRow.branchName || '-'}</p></div>
-                            <div><span className="text-gray-500">Cihaz</span><p className="font-medium">{canViewDetails ? (selectedRow.deviceName || '-') : 'Bu rol icin gizli'}</p></div>
-                            <div><span className="text-gray-500">Seri No</span><p className="font-medium">{canViewDetails ? (selectedRow.serialNumber || '-') : 'Bu rol icin gizli'}</p></div>
-                            <div><span className="text-gray-500">Rapor Durumu</span><p className="font-medium">{getStatusLabel(selectedRow.reportStatus)}</p></div>
-                            <div><span className="text-gray-500">Teslim Durumu</span><p className="font-medium">{getStatusLabel(selectedRow.deliveryStatus)}</p></div>
-                            <div><span className="text-gray-500">Satış Tarihi</span><p className="font-medium">{selectedRow.saleDate ? new Date(selectedRow.saleDate).toLocaleString('tr-TR') : '-'}</p></div>
-                            <div><span className="text-gray-500">Kayıt Tarihi</span><p className="font-medium">{selectedRow.assignedDate ? new Date(selectedRow.assignedDate).toLocaleString('tr-TR') : '-'}</p></div>
+                            <div><span className="text-muted-foreground">Hasta</span><p className="font-medium">{canViewDetails ? (selectedRow.partyName || '-') : 'Bu rol icin gizli'}</p></div>
+                            <div><span className="text-muted-foreground">Şube</span><p className="font-medium">{selectedRow.branchName || '-'}</p></div>
+                            <div><span className="text-muted-foreground">Cihaz</span><p className="font-medium">{canViewDetails ? (selectedRow.deviceName || '-') : 'Bu rol icin gizli'}</p></div>
+                            <div><span className="text-muted-foreground">Seri No</span><p className="font-medium">{canViewDetails ? (selectedRow.serialNumber || '-') : 'Bu rol icin gizli'}</p></div>
+                            <div><span className="text-muted-foreground">Rapor Durumu</span><p className="font-medium">{getStatusLabel(selectedRow.reportStatus)}</p></div>
+                            <div><span className="text-muted-foreground">Teslim Durumu</span><p className="font-medium">{getStatusLabel(selectedRow.deliveryStatus)}</p></div>
+                            <div><span className="text-muted-foreground">Satış Tarihi</span><p className="font-medium">{selectedRow.saleDate ? new Date(selectedRow.saleDate).toLocaleString('tr-TR') : '-'}</p></div>
+                            <div><span className="text-muted-foreground">Kayıt Tarihi</span><p className="font-medium">{selectedRow.assignedDate ? new Date(selectedRow.assignedDate).toLocaleString('tr-TR') : '-'}</p></div>
                         </div>
                     </div>
                 </div>

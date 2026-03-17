@@ -14,7 +14,7 @@ export function HeaderBackButton({ label, onClick, className }: HeaderBackButton
       onClick={onClick}
       variant="ghost"
       className={cn(
-        'h-auto rounded-2xl px-0 py-0 text-sm font-medium text-slate-500 hover:bg-transparent hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-300',
+        'h-auto rounded-2xl px-0 py-0 text-sm font-medium text-slate-500 hover:bg-transparent hover:text-primary dark:text-slate-400 dark:hover:text-blue-300',
         className,
       )}
     >

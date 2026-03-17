@@ -38,7 +38,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                             <div className="text-xs font-medium text-gray-500">{item.label}</div>
                             <div className="mt-2 flex gap-2">
                                 <input
-                                    type="password"
+                                    type={item.key.includes('secret') || item.key.includes('api_key') || item.key.includes('access_key') ? 'password' : 'text'}
                                     value={platformSettingsDraft[item.key] ?? (platformSettings?.[item.key] as string) ?? ''}
                                     onChange={(e) => setPlatformSettingsDraft((prev) => ({ ...prev, [item.key]: e.target.value }))}
                                     className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none"
@@ -71,7 +71,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                             <div className="text-xs font-medium text-gray-500">{item.label}</div>
                             <div className="mt-2 flex gap-2">
                                 <input
-                                    type="password"
+                                    type={item.key.includes('secret') || item.key.includes('token') ? 'password' : 'text'}
                                     value={platformSettingsDraft[item.key] ?? (platformSettings?.[item.key] as string) ?? ''}
                                     onChange={(e) => setPlatformSettingsDraft((prev) => ({ ...prev, [item.key]: e.target.value }))}
                                     className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none"

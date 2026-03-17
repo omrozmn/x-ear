@@ -1,5 +1,4 @@
 import React from 'react';
-import type { AIDraftAnswers } from '@/lib/website-generator-client';
 import { aiQuestionGroups } from './types';
 
 export interface AiOnboardingPanelProps {

@@ -43,8 +43,8 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
     const movements = movementsResponse?.data || [];
 
     const getMovementIcon = (quantity: number) => {
-        if (quantity > 0) return <ArrowDownLeft className="w-4 h-4 text-green-600" />;
-        return <ArrowUpRight className="w-4 h-4 text-red-600" />;
+        if (quantity > 0) return <ArrowDownLeft className="w-4 h-4 text-success" />;
+        return <ArrowUpRight className="w-4 h-4 text-destructive" />;
     };
 
     const getMovementLabel = (type: string) => {
@@ -105,8 +105,8 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
 
     if (!movements || movements.length === 0) {
         return (
-            <div className="text-center py-12 bg-gray-50 rounded-2xl">
-                <p className="text-gray-500">Henüz stok hareketi bulunmuyor.</p>
+            <div className="text-center py-12 bg-muted rounded-2xl">
+                <p className="text-muted-foreground">Henüz stok hareketi bulunmuyor.</p>
             </div>
         );
     }
@@ -116,8 +116,8 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
             key: 'createdAt',
             title: 'Tarih',
             render: (_: unknown, record: StockMovement) => (
-                <div className="flex items-center gap-2 text-sm text-gray-500 whitespace-nowrap">
-                    <Calendar className="w-4 h-4 text-gray-400" />
+                <div className="flex items-center gap-2 text-sm text-muted-foreground whitespace-nowrap">
+                    <Calendar className="w-4 h-4 text-muted-foreground" />
                     {record.createdAt ? formatDate(record.createdAt) : '-'}
                 </div>
             )
@@ -127,7 +127,7 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
             title: 'İşlem',
             render: (_: unknown, record: StockMovement) => (
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap
-                    ${(record.quantity ?? 0) > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    ${(record.quantity ?? 0) > 0 ? 'bg-success/10 text-success' : 'bg-destructive/10 text-red-800'}`}>
                     {getMovementLabel(record.movementType ?? 'unknown')}
                 </span>
             )
@@ -136,9 +136,9 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
             key: 'quantity',
             title: 'Miktar',
             render: (_: unknown, record: StockMovement) => (
-                <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
+                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
                     {getMovementIcon(record.quantity ?? 0)}
-                    <span className={(record.quantity ?? 0) > 0 ? 'text-green-600' : 'text-red-600'}>
+                    <span className={(record.quantity ?? 0) > 0 ? 'text-success' : 'text-destructive'}>
                         {(record.quantity ?? 0) > 0 ? '+' : ''}{record.quantity ?? 0}
                     </span>
                 </div>
@@ -148,27 +148,27 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
             key: 'serialNumber',
             title: 'Seri No',
             render: (_: unknown, record: StockMovement) => (
-                <span className="text-sm text-gray-500 font-mono">{record.serialNumber || '-'}</span>
+                <span className="text-sm text-muted-foreground font-mono">{record.serialNumber || '-'}</span>
             )
         },
         {
             key: 'partyName',
             title: 'Açıklama',
             render: (_: unknown, record: StockMovement) => (
-                <span className="text-sm text-gray-600">{getMovementDescription(record)}</span>
+                <span className="text-sm text-muted-foreground">{getMovementDescription(record)}</span>
             )
         },
         {
             key: 'prescriptionStatus',
             title: 'Reçete',
             render: (_: unknown, record: StockMovement) => {
-                if (!record.prescriptionStatus) return <span className="text-sm text-gray-400">-</span>;
+                if (!record.prescriptionStatus) return <span className="text-sm text-muted-foreground">-</span>;
                 const statusLabels: Record<string, { label: string; className: string }> = {
-                    'raporlu': { label: 'Raporlu', className: 'bg-green-100 text-green-800' },
-                    'raporsuz': { label: 'Raporsuz', className: 'bg-gray-100 text-gray-700' },
-                    'bekleniyor': { label: 'Bekliyor', className: 'bg-yellow-100 text-yellow-800' },
+                    'raporlu': { label: 'Raporlu', className: 'bg-success/10 text-success' },
+                    'raporsuz': { label: 'Raporsuz', className: 'bg-muted text-foreground' },
+                    'bekleniyor': { label: 'Bekliyor', className: 'bg-warning/10 text-yellow-800' },
                 };
-                const info = statusLabels[record.prescriptionStatus] || { label: record.prescriptionStatus, className: 'bg-blue-100 text-blue-800' };
+                const info = statusLabels[record.prescriptionStatus] || { label: record.prescriptionStatus, className: 'bg-primary/10 text-blue-800' };
                 return (
                     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${info.className}`}>
                         {info.label}
@@ -180,8 +180,8 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
             key: 'createdBy',
             title: 'Kullanıcı',
             render: (_: unknown, record: StockMovement) => (
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <User className="w-4 h-4 text-gray-400" />
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <User className="w-4 h-4 text-muted-foreground" />
                     {record.createdBy || 'System'}
                 </div>
             )
@@ -191,7 +191,7 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
     return (
         <div className="space-y-4">
             {/* Filters */}
-            <div className="flex flex-wrap gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-200 items-end">
+            <div className="flex flex-wrap gap-4 p-4 bg-muted rounded-2xl border border-border items-end">
                 <div className="w-full sm:w-auto">
                     <DatePicker
                         label="Başlangıç Tarihi"
@@ -235,7 +235,7 @@ export const InventoryMovementsTable: React.FC<InventoryMovementsTableProps> = (
                             setEndDate('');
                             setPage(1);
                         }}
-                        className="px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-300 rounded-xl hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 h-[38px] mb-[2px]"
+                        className="px-4 py-2 text-sm font-medium text-destructive bg-card border border-red-300 rounded-xl hover:bg-destructive/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 h-[38px] mb-[2px]"
                     >
                         Filtreyi Temizle
                     </button>

@@ -27,7 +27,7 @@ const DocumentReviewStep: React.FC<DocumentReviewStepProps> = ({
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-medium">Belgeleri İnceleyin</h3>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             {successCount} başarılı{errorCount > 0 ? `, ${errorCount} hatalı` : ''}
           </p>
         </div>
@@ -59,7 +59,7 @@ const DocumentReviewStep: React.FC<DocumentReviewStepProps> = ({
             </div>
 
             {selectedDoc.edgeDetection && (
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <Scissors className="w-4 h-4" />
                   <span>Kenar Tespiti: %{Math.round(selectedDoc.edgeDetection.confidence * 100)}</span>
@@ -75,11 +75,11 @@ const DocumentReviewStep: React.FC<DocumentReviewStepProps> = ({
             {selectedDoc.ocrResult && (
               <div className="space-y-4">
                 {selectedDoc.ocrResult.ocr_text && (
-                  <div className="p-3 bg-gray-50 rounded-2xl">
+                  <div className="p-3 bg-muted rounded-2xl">
                     <div className="text-sm font-medium mb-2">Tespit Edilen Metin:</div>
                     <div className="text-sm whitespace-pre-wrap">{selectedDoc.ocrResult.ocr_text}</div>
                     {selectedDoc.ocrResult.confidence_score !== undefined && (
-                      <div className="text-xs text-gray-500 mt-2">
+                      <div className="text-xs text-muted-foreground mt-2">
                         Güven: %{Math.round(selectedDoc.ocrResult.confidence_score * 100)}
                       </div>
                     )}
@@ -87,13 +87,13 @@ const DocumentReviewStep: React.FC<DocumentReviewStepProps> = ({
                 )}
 
                 {selectedDoc.ocrResult.matched_party && (
-                  <div className="p-3 bg-blue-50 rounded-2xl">
+                  <div className="p-3 bg-primary/10 rounded-2xl">
                     <div className="text-sm font-medium mb-2">Hasta Bilgileri:</div>
                     <div className="text-sm space-y-1">
                       <div>İsim: {selectedDoc.ocrResult.matched_party.name}</div>
                       <div>TC: {selectedDoc.ocrResult.matched_party.tcNumber}</div>
                       {selectedDoc.ocrResult.matched_party.match_details?.confidence !== undefined && (
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-muted-foreground">
                           Güven: %{Math.round(selectedDoc.ocrResult.matched_party.match_details.confidence * 100)}
                         </div>
                       )}
@@ -102,12 +102,12 @@ const DocumentReviewStep: React.FC<DocumentReviewStepProps> = ({
                 )}
 
                 {selectedDoc.ocrResult.document_type && (
-                  <div className="p-3 bg-green-50 rounded-2xl">
+                  <div className="p-3 bg-success/10 rounded-2xl">
                     <div className="text-sm font-medium mb-2">Belge Türü:</div>
                     <div className="text-sm">
                       {selectedDoc.ocrResult.document_type}
                       {selectedDoc.ocrResult.confidence_score !== undefined && (
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-muted-foreground">
                           Güven: %{Math.round(selectedDoc.ocrResult.confidence_score * 100)}
                         </div>
                       )}
@@ -142,9 +142,9 @@ const DocumentReviewStep: React.FC<DocumentReviewStepProps> = ({
 
             {/* File Name Preview */}
             {selectedDoc.finalFileName && (
-              <div className="p-3 bg-gray-50 rounded-2xl">
+              <div className="p-3 bg-muted rounded-2xl">
                 <div className="text-sm font-medium mb-1">Dosya Adı:</div>
-                <div className="text-sm text-gray-600">{selectedDoc.finalFileName}</div>
+                <div className="text-sm text-muted-foreground">{selectedDoc.finalFileName}</div>
               </div>
             )}
           </div>

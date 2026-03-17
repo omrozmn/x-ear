@@ -35,7 +35,7 @@ export const DeviceSelectionList: React.FC<DeviceSelectionListProps> = ({
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <label className="block text-sm font-medium text-gray-700">
+        <label className="block text-sm font-medium text-foreground">
           Cihazlar *
         </label>
         <Button
@@ -49,15 +49,15 @@ export const DeviceSelectionList: React.FC<DeviceSelectionListProps> = ({
       </div>
 
       {devices.length === 0 ? (
-        <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-300 rounded-2xl">
+        <div className="text-center py-8 text-muted-foreground border-2 border-dashed border-border rounded-2xl">
           Henüz cihaz eklenmedi. Yukarıdaki butonu kullanarak cihaz ekleyin.
         </div>
       ) : (
         <div className="space-y-4">
           {devices.map((device, index) => (
-            <div key={device.id} className="border border-gray-200 rounded-2xl p-4 bg-gray-50">
+            <div key={device.id} className="border border-border rounded-2xl p-4 bg-muted">
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-medium text-gray-700">Cihaz {index + 1}</h4>
+                <h4 className="text-sm font-medium text-foreground">Cihaz {index + 1}</h4>
                 <Button
                   type="button"
                   variant="ghost"
@@ -70,7 +70,7 @@ export const DeviceSelectionList: React.FC<DeviceSelectionListProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {/* Device Name */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">
                     Cihaz Adı *
                   </label>
                   <Input
@@ -83,7 +83,7 @@ export const DeviceSelectionList: React.FC<DeviceSelectionListProps> = ({
 
                 {/* Brand */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">
                     Marka *
                   </label>
                   <Input
@@ -96,7 +96,7 @@ export const DeviceSelectionList: React.FC<DeviceSelectionListProps> = ({
 
                 {/* Model */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">
                     Model *
                   </label>
                   <Input
@@ -109,7 +109,7 @@ export const DeviceSelectionList: React.FC<DeviceSelectionListProps> = ({
 
                 {/* Ear */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">
                     Kulak *
                   </label>
                   <Select
@@ -124,7 +124,7 @@ export const DeviceSelectionList: React.FC<DeviceSelectionListProps> = ({
 
                 {/* Serial Number */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">
                     Seri Numarası
                   </label>
                   <Input
@@ -137,12 +137,12 @@ export const DeviceSelectionList: React.FC<DeviceSelectionListProps> = ({
 
                 {/* List Price */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">
                     Liste Fiyatı (TL) *
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                      <DollarSign className="w-3 h-3 text-gray-400" />
+                      <DollarSign className="w-3 h-3 text-muted-foreground" />
                     </div>
                     <Input
                       type="number"
@@ -157,12 +157,12 @@ export const DeviceSelectionList: React.FC<DeviceSelectionListProps> = ({
 
                 {/* Sale Price */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">
                     Satış Fiyatı (TL) *
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                      <DollarSign className="w-3 h-3 text-gray-400" />
+                      <DollarSign className="w-3 h-3 text-muted-foreground" />
                     </div>
                     <Input
                       type="number"
@@ -177,12 +177,12 @@ export const DeviceSelectionList: React.FC<DeviceSelectionListProps> = ({
 
                 {/* SGK Coverage */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">
                     SGK Karşılığı (TL)
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                      <DollarSign className="w-3 h-3 text-gray-400" />
+                      <DollarSign className="w-3 h-3 text-muted-foreground" />
                     </div>
                     <Input
                       type="number"
@@ -197,12 +197,12 @@ export const DeviceSelectionList: React.FC<DeviceSelectionListProps> = ({
 
                 {/* Party Responsible Amount */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">
                     Hasta Payı (TL)
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                      <DollarSign className="w-3 h-3 text-gray-400" />
+                      <DollarSign className="w-3 h-3 text-muted-foreground" />
                     </div>
                     <Input
                       type="number"
@@ -217,7 +217,7 @@ export const DeviceSelectionList: React.FC<DeviceSelectionListProps> = ({
 
                 {/* Discount Type */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">
                     İndirim Türü
                   </label>
                   <Select
@@ -234,7 +234,7 @@ export const DeviceSelectionList: React.FC<DeviceSelectionListProps> = ({
                 {/* Discount Value */}
                 {device.discountType && device.discountType !== 'none' && (
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                    <label className="block text-xs font-medium text-muted-foreground mb-1">
                       İndirim Değeri
                     </label>
                     <Input
@@ -250,7 +250,7 @@ export const DeviceSelectionList: React.FC<DeviceSelectionListProps> = ({
               </div>
 
               {errors?.[`devices.${index}`] && (
-                <div className="mt-2 text-red-600 text-xs">
+                <div className="mt-2 text-destructive text-xs">
                   {errors[`devices.${index}`]}
                 </div>
               )}
@@ -260,7 +260,7 @@ export const DeviceSelectionList: React.FC<DeviceSelectionListProps> = ({
       )}
 
       {errors?.devices && (
-        <div className="mt-2 text-red-600 text-xs">
+        <div className="mt-2 text-destructive text-xs">
           {errors.devices}
         </div>
       )}

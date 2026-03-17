@@ -193,7 +193,7 @@ export function ProformasPage() {
       render: (_, row) => (
         <div>
           <div className="font-medium text-gray-900 dark:text-white">{row.partyName}</div>
-          <div className="text-xs text-gray-500 dark:text-gray-400">{row.phone || row.partyId}</div>
+          <div className="text-xs text-muted-foreground">{row.phone || row.partyId}</div>
         </div>
       ),
     },
@@ -203,7 +203,7 @@ export function ProformasPage() {
       render: (_, row) => (
         <div>
           <div className="font-medium text-gray-900 dark:text-white">{row.proformaNumber || '-'}</div>
-          <div className="text-xs text-gray-500 dark:text-gray-400">{row.fileName}</div>
+          <div className="text-xs text-muted-foreground">{row.fileName}</div>
         </div>
       ),
     },
@@ -211,7 +211,7 @@ export function ProformasPage() {
       key: 'uploadDate',
       title: 'Tarih',
       render: (_, row) => (
-        <div className="text-sm text-gray-700 dark:text-gray-300">{formatDate(row.uploadDate)}</div>
+        <div className="text-sm text-foreground">{formatDate(row.uploadDate)}</div>
       ),
     },
     {
@@ -241,7 +241,7 @@ export function ProformasPage() {
             <ShoppingCart className="h-4 w-4 text-emerald-600" />
           </Button>
           <Button variant="ghost" size="sm" onClick={() => handleCreateInvoice(row)} title="Fatura Kes">
-            <Receipt className="h-4 w-4 text-blue-600" />
+            <Receipt className="h-4 w-4 text-primary" />
           </Button>
         </div>
       ),
@@ -251,23 +251,23 @@ export function ProformasPage() {
   const renderMobileCards = () => (
     <div className="space-y-3 md:hidden">
       {paginatedRows.map((row) => (
-        <div key={row.id} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900">
+        <div key={row.id} className="rounded-2xl border border-border bg-white p-4 shadow-sm dark:bg-gray-900">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="truncate font-semibold text-gray-900 dark:text-white">{row.partyName}</div>
-              <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">{row.proformaNumber || row.fileName}</div>
+              <div className="mt-1 text-xs text-muted-foreground">{row.proformaNumber || row.fileName}</div>
             </div>
-            <span className="rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-950/30 dark:text-blue-200">
+            <span className="rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
               {row.itemCount} kalem
             </span>
           </div>
-          <div className="mt-4 flex items-end justify-between gap-3 border-t border-gray-100 pt-3 dark:border-gray-800">
+          <div className="mt-4 flex items-end justify-between gap-3 border-t border-border pt-3">
             <div>
-              <div className="text-xs text-gray-400">Tarih</div>
-              <div className="text-sm font-medium text-gray-700 dark:text-gray-300">{formatDate(row.uploadDate)}</div>
+              <div className="text-xs text-muted-foreground">Tarih</div>
+              <div className="text-sm font-medium text-foreground">{formatDate(row.uploadDate)}</div>
             </div>
             <div className="text-right">
-              <div className="text-xs text-gray-400">Tutar</div>
+              <div className="text-xs text-muted-foreground">Tutar</div>
               <div className="text-lg font-bold text-gray-900 dark:text-white">{formatCurrency(row.grandTotal, 'TRY')}</div>
             </div>
           </div>
@@ -292,38 +292,47 @@ export function ProformasPage() {
 
   return (
     <div className="space-y-6 p-4 md:p-6">
-      <DesktopPageHeader
-        title="Proformalar"
-        description="Tüm hastalardaki proforma belgeleri"
-        icon={<FileText className="h-6 w-6" />}
-        eyebrow={{ tr: 'Fatura Yönetimi', en: 'Invoice Management' }}
-        actions={(
-          <>
-            <Button variant="outline" className="flex items-center gap-2" onClick={() => void loadProformas()}>
-              <RefreshCw className="h-4 w-4" />
-              Yenile
-            </Button>
-            <Button variant="outline" className="flex items-center gap-2" onClick={() => navigate({ to: '/invoices' })}>
-              <Download className="h-4 w-4" />
-              Giden Faturalar
-            </Button>
-          </>
-        )}
-      />
+      {isMobile ? (
+        <div className="flex items-center justify-between">
+          <h1 className="text-lg font-bold text-gray-900 dark:text-white">Proformalar</h1>
+          <Button variant="outline" size="sm" onClick={() => void loadProformas()}>
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+        </div>
+      ) : (
+        <DesktopPageHeader
+          title="Proformalar"
+          description="Tüm hastalardaki proforma belgeleri"
+          icon={<FileText className="h-6 w-6" />}
+          eyebrow={{ tr: 'Fatura Yönetimi', en: 'Invoice Management' }}
+          actions={(
+            <>
+              <Button variant="outline" className="flex items-center gap-2" onClick={() => void loadProformas()}>
+                <RefreshCw className="h-4 w-4" />
+                Yenile
+              </Button>
+              <Button variant="outline" className="flex items-center gap-2" onClick={() => navigate({ to: '/invoices' })}>
+                <Download className="h-4 w-4" />
+                Giden Faturalar
+              </Button>
+            </>
+          )}
+        />
+      )}
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-        <Card className="p-4">
-          <div className="text-sm text-gray-500 dark:text-gray-400">Toplam Proforma</div>
+        <Card className="p-3 md:p-4">
+          <div className="text-sm text-muted-foreground">Toplam Proforma</div>
           <div className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">{rows.length}</div>
         </Card>
         <Card className="p-4">
-          <div className="text-sm text-gray-500 dark:text-gray-400">Toplam Tutar</div>
+          <div className="text-sm text-muted-foreground">Toplam Tutar</div>
           <div className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
             {formatCurrency(rows.reduce((sum, row) => sum + row.grandTotal, 0), 'TRY')}
           </div>
         </Card>
         <Card className="p-4">
-          <div className="text-sm text-gray-500 dark:text-gray-400">Ortalama Kalem</div>
+          <div className="text-sm text-muted-foreground">Ortalama Kalem</div>
           <div className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
             {rows.length > 0 ? (rows.reduce((sum, row) => sum + row.itemCount, 0) / rows.length).toFixed(1) : '0'}
           </div>
@@ -333,7 +342,7 @@ export function ProformasPage() {
       <Card className="p-4 md:p-6">
         <div className="flex flex-col gap-3 md:flex-row">
           <div className="relative flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
@@ -360,10 +369,10 @@ export function ProformasPage() {
           <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600" />
         </div>
       ) : filteredRows.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white py-16 text-center dark:border-gray-700 dark:bg-gray-900">
-          <FileText className="mb-4 h-10 w-10 text-gray-300 dark:text-gray-600" />
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-white py-16 text-center dark:bg-gray-900">
+          <FileText className="mb-4 h-10 w-10 text-gray-300" />
           <div className="text-lg font-medium text-gray-900 dark:text-white">Proforma bulunamadı</div>
-          <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">Aktif API’de global proforma endpoint’i olmadığı için belge metadata’sından liste oluşturuluyor.</div>
+          <div className="mt-1 text-sm text-muted-foreground">Aktif API’de global proforma endpoint’i olmadığı için belge metadata’sından liste oluşturuluyor.</div>
         </div>
       ) : (
         <>

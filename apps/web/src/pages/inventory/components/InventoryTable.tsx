@@ -49,11 +49,11 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
 }) => {
   const getStockStatus = (item: InventoryItem) => {
     if (item.availableInventory === 0) {
-      return { label: 'Stok Yok', color: 'bg-red-100 text-red-800' };
+      return { label: 'Stok Yok', color: 'bg-destructive/10 text-red-800' };
     } else if (item.availableInventory <= item.reorderLevel) {
-      return { label: 'Düşük Stok', color: 'bg-yellow-100 text-yellow-800' };
+      return { label: 'Düşük Stok', color: 'bg-warning/10 text-yellow-800' };
     } else {
-      return { label: 'Stokta', color: 'bg-green-100 text-green-800' };
+      return { label: 'Stokta', color: 'bg-success/10 text-success' };
     }
   };
 
@@ -76,12 +76,12 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
       sortable: true,
       render: (_: unknown, item: InventoryItem) => (
         <div
-          className="text-sm font-medium text-gray-900 dark:text-white cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 hover:underline"
+          className="text-sm font-medium text-gray-900 dark:text-white cursor-pointer hover:text-primary dark:hover:text-blue-400 hover:underline"
           onClick={() => onView(item)}
         >
           {item.name}
           {item.description && (
-            <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">
+            <div className="text-sm text-muted-foreground truncate max-w-xs">
               {item.description}
             </div>
           )}
@@ -109,7 +109,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
       title: 'Kategori',
       sortable: true,
       render: (_: unknown, item: InventoryItem) => (
-        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-primary/10 text-blue-800">
           {getCategoryLabel(item.category)}
         </span>
       ),
@@ -129,7 +129,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
       render: (_: unknown, item: InventoryItem) => (
         <div className="flex flex-col">
           <span className="font-medium text-sm text-gray-900 dark:text-gray-100">{item.availableInventory}</span>
-          <span className="text-xs text-gray-500 dark:text-gray-400">/ {item.totalInventory}</span>
+          <span className="text-xs text-muted-foreground">/ {item.totalInventory}</span>
         </div>
       ),
     },
@@ -172,7 +172,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
           <Button
             variant="ghost"
             onClick={() => onView(item)}
-            className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 rounded hover:bg-blue-100 dark:hover:bg-blue-900/30"
+            className="text-primary hover:text-blue-900 dark:hover:text-blue-300 p-1 rounded hover:bg-primary/10 dark:hover:bg-blue-900/30"
             title="Detayları Görüntüle"
           >
             <Eye className="w-4 h-4" />
@@ -189,7 +189,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
             <Button
               variant="ghost"
               onClick={() => onDuplicate(item)}
-              className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 p-1 rounded hover:bg-green-100 dark:hover:bg-green-900/30"
+              className="text-success hover:text-green-900 dark:hover:text-green-300 p-1 rounded hover:bg-success/10 dark:hover:bg-green-900/30"
               title="Kopyala"
             >
               <Copy className="w-4 h-4" />
@@ -217,8 +217,8 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
               onClick={() => onToggleStatus(item)}
               className={`p-1 rounded ${
                 item.status === 'available'
-                  ? 'text-green-600 hover:text-green-900 hover:bg-green-100 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/30'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-800'
+                  ? 'text-success hover:text-green-900 hover:bg-success/10 dark:hover:text-green-300 dark:hover:bg-green-900/30'
+                  : 'text-muted-foreground hover:text-gray-900 hover:bg-muted dark:hover:text-gray-300 dark:hover:bg-gray-800'
               }`}
               title={item.status === 'available' ? 'Pasif Yap' : 'Aktif Yap'}
             >
@@ -232,7 +232,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
           <Button
             variant="ghost"
             onClick={() => onDelete(item)}
-            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30"
+            className="text-destructive hover:text-red-900 dark:hover:text-red-300 p-1 rounded hover:bg-destructive/10 dark:hover:bg-red-900/30"
             title="Sil"
           >
             <Trash2 className="w-4 h-4" />

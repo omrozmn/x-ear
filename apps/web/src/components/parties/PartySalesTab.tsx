@@ -87,8 +87,8 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
 
   // SGK states
   // const [sgkPartyInfo, setSgkPartyInfo] = useState<{
-  //   hasInsurance: boolean;
-  //   coveragePercentage: number;
+  // hasInsurance: boolean;
+  // coveragePercentage: number;
   // } | null>(null);
   // const [sgkLoading, setSgkLoading] = useState(false);
 
@@ -488,9 +488,9 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
 
   // Function to safely open modals that require a sale
   // const handleSaleAction = () => {
-  //   // This logic is tricky because the header buttons don't have a sale selected contextually
-  //   // So we just warn the user.
-  //   warning('Lütfen işlem yapmak istediğiniz satışı listeden seçiniz.');
+  // // This logic is tricky because the header buttons don't have a sale selected contextually
+  // // So we just warn the user.
+  // warning('Lütfen işlem yapmak istediğiniz satışı listeden seçiniz.');
   // };
 
   return (
@@ -534,7 +534,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
             <CardTitle>Satış Geçmişi</CardTitle>
             <div className="flex items-center space-x-2">
               {/* View Toggle Buttons - Commented out for now, forcing table view */}
-              {/* <div className="flex border border-gray-300 rounded-xl">
+              {/* <div className="flex border border-border rounded-xl">
                 <Button
                   variant={viewMode === 'table' ? 'default' : 'ghost'}
                   size="sm"
@@ -582,7 +582,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
         </CardHeader>
         <CardContent>
           {selectedSales.length > 0 && (
-            <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-900 dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-100">
+            <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-blue-100 bg-primary/10 px-4 py-3 text-sm text-blue-900 dark:border-blue-900/40 dark:text-blue-100">
               <span>{selectedSales.length} satış seçildi</span>
               <PermissionGate permission="invoices.create">
                 <Button onClick={handleCreateBulkInvoice} size="sm" className="premium-gradient tactile-press">
@@ -598,10 +598,10 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
           {salesLoading ? (
             <div className="text-center py-8">
               <Loading className="w-8 h-8 mx-auto mb-4" />
-              <p className="text-gray-500">Satış verileri yükleniyor...</p>
+              <p className="text-muted-foreground">Satış verileri yükleniyor...</p>
             </div>
           ) : salesError ? (
-            <div className="text-center py-8 text-red-600">
+            <div className="text-center py-8 text-destructive">
               <p>{salesError}</p>
               <Button
                 onClick={loadPartySales}
@@ -612,7 +612,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
               </Button>
             </div>
           ) : filteredSales.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-muted-foreground">
               Henüz satış kaydı bulunmuyor.
             </div>
           ) : (
@@ -656,7 +656,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
                 <Button
                   variant="ghost"
                   onClick={() => setShowNewSaleModal(false)}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 !p-1 !h-auto"
+                  className="text-muted-foreground hover:text-muted-foreground dark:hover:text-gray-300 !p-1 !h-auto"
                   aria-label="Kapat"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -850,7 +850,7 @@ export default function PartySalesTab({ party }: PartySalesTabProps) {
                   ×
                 </Button>
               </div>
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+              <div className="text-center py-8 text-muted-foreground">
                 Cihaz değişimi özelliği implementasyonu devam ediyor.
                 <br />
                 Legacy sistemdeki device replacement logic'i React'e taşınıyor.

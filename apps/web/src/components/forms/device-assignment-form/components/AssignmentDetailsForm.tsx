@@ -4,6 +4,7 @@ import { unwrapObject } from '@/utils/response-unwrap';
 import { Input, Select, DatePicker } from '@x-ear/ui-web';
 import { CheckCircle } from 'lucide-react';
 import type { InventoryItemRead } from '@/api/generated';
+import { useSector } from '@/hooks/useSector';
 
 export interface DeviceAssignment {
   id?: string;
@@ -75,6 +76,8 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
   onFormDataChange,
   errors = {}
 }) => {
+  const { isHearingSector } = useSector();
+
   const updateFormData = useCallback((field: keyof DeviceAssignment, value: string | number | boolean | null) => {
     onFormDataChange({ [field]: value });
   }, [onFormDataChange]);
@@ -135,7 +138,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
     setSelectedLoanerInventoryItem(device);
     onFormDataChange({
       loanerInventoryId: device.id,
-      loanerBrand: device.brand,
+      loanerBrand: device.brand as string | undefined,
       loanerModel: typeof device.model === 'string' ? device.model : undefined,
       loanerSerialNumber: undefined // Serial will be selected separately
     });
@@ -145,13 +148,13 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
 
   // Helper to get icon based on status - available for future use
   // const getStatusIcon = (status: string) => {
-  //   switch (status) {
-  //     case 'assigned': return <CheckCircle className="w-4 h-4 text-green-500" />;
-  //     case 'trial': return <Clock className="w-4 h-4 text-blue-500" />;
-  //     case 'returned': return <RotateCcw className="w-4 h-4 text-orange-500" />;
-  //     case 'defective': return <AlertCircle className="w-4 h-4 text-red-500" />;
-  //     default: return <CheckCircle className="w-4 h-4 text-gray-500" />;
-  //   }
+  // switch (status) {
+  // case 'assigned': return <CheckCircle className="w-4 h-4 text-success" />;
+  // case 'trial': return <Clock className="w-4 h-4 text-primary" />;
+  // case 'returned': return <RotateCcw className="w-4 h-4 text-orange-500" />;
+  // case 'defective': return <AlertCircle className="w-4 h-4 text-destructive" />;
+  // default: return <CheckCircle className="w-4 h-4 text-muted-foreground" />;
+  // }
   // };
 
   return (
@@ -159,7 +162,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
       {/* Assignment Information - 3 columns in one row: Sebep, Tarih, Atayan */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Atama Sebebi *
           </label>
           <Select
@@ -181,7 +184,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Atama Tarihi *
           </label>
           <DatePicker
@@ -193,7 +196,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Atayan Kişi
           </label>
           <Input
@@ -206,9 +209,10 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
         </div>
       </div>
 
-      {/* Ear Selection - Audiological view (R on left, L on right) */}
+      {/* Ear Selection - Only shown for hearing sector */}
+      {isHearingSector() && (
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label className="block text-sm font-medium text-foreground mb-2">
           Kulak Seçimi *
         </label>
         <div className="grid grid-cols-3 gap-3">
@@ -226,12 +230,12 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
               // Right ear - Red gradient
               gradientClass = isSelected
                 ? 'bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg ring-2 ring-red-300 dark:ring-red-700'
-                : 'bg-white border-2 border-red-300 text-red-600 hover:border-red-400 hover:bg-red-50 dark:bg-slate-800 dark:text-red-400 dark:border-red-700 dark:hover:bg-red-900/20';
+                : 'bg-white border-2 border-red-300 text-destructive hover:border-red-400 hover:bg-destructive/10 dark:bg-slate-800 dark:border-red-700 dark:hover:bg-red-900/20';
             } else if (ear.position === 'right') {
               // Left ear - Blue gradient
               gradientClass = isSelected
                 ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg ring-2 ring-blue-300 dark:ring-blue-700'
-                : 'bg-white border-2 border-blue-300 text-blue-600 hover:border-blue-400 hover:bg-blue-50 dark:bg-slate-800 dark:text-blue-400 dark:border-blue-700 dark:hover:bg-blue-900/20';
+                : 'bg-white border-2 border-blue-300 text-primary hover:border-blue-400 hover:bg-primary/10 dark:bg-slate-800 dark:border-blue-700 dark:hover:bg-blue-900/20';
             } else {
               // Bilateral - Red to Blue diagonal gradient (50-50 split)
               gradientClass = isSelected
@@ -258,14 +262,15 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
           })}
         </div>
         {errors.ear && (
-          <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.ear}</p>
+          <p className="mt-2 text-sm text-destructive">{errors.ear}</p>
         )}
       </div>
+      )}
 
       {/* Trial End Date */}
       {formData.status === 'trial' && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Deneme Bitiş Tarihi *
           </label>
           <DatePicker
@@ -280,7 +285,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
       {/* Return Date */}
       {formData.status === 'returned' && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             İade Tarihi
           </label>
           <DatePicker
@@ -294,7 +299,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
       {/* Device Condition */}
       {(formData.status === 'returned' || formData.status === 'defective') && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Cihaz Durumu
           </label>
           <Select
@@ -314,9 +319,9 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
       )}
 
       {/* Delivery & Report Status - Full width for consistency */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-slate-700">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border dark:border-slate-700">
         <div className="md:col-span-1">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Teslimat Durumu
           </label>
           <Select
@@ -334,7 +339,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
 
         {formData.reason === 'sale' && (
           <div className="md:col-span-1">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Rapor Durumu
             </label>
             <Select
@@ -353,13 +358,13 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
       </div>
 
       {/* Loaner Device Section */}
-      <div className="pt-4 border-t border-gray-200 dark:border-slate-700">
+      <div className="pt-4 border-t border-border dark:border-slate-700">
         <label className="flex items-center space-x-2 cursor-pointer mb-3">
           <Input
             type="checkbox"
             checked={formData.isLoaner || false}
             onChange={(e) => updateFormData('isLoaner', e.target.checked)}
-            className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+            className="w-4 h-4 text-primary rounded border-border focus:ring-ring dark:bg-gray-700"
           />
           <span className="font-medium text-gray-900 dark:text-gray-100">Emanet Cihaz Verildi</span>
         </label>
@@ -380,7 +385,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
 
               {/* Results Dropdown */}
               {showLoanerResults && loanerResults.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 max-h-60 overflow-y-auto">
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-border dark:border-slate-700 max-h-60 overflow-y-auto">
                   {loanerResults.map(device => {
                     const serials = device.availableSerials || [];
                     const stock = device.availableInventory ?? 0;
@@ -388,10 +393,10 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                       <div
                         key={device.id}
                         onClick={() => selectLoaner(device)}
-                        className="p-2 hover:bg-purple-50 dark:hover:bg-purple-900/30 cursor-pointer border-b border-gray-100 dark:border-slate-700 last:border-b-0"
+                        className="p-2 hover:bg-purple-50 dark:hover:bg-purple-900/30 cursor-pointer border-b border-border dark:border-slate-700 last:border-b-0"
                       >
                         <div className="font-medium text-sm text-gray-900 dark:text-gray-100">{device.brand} {device.model}</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                        <div className="text-xs text-muted-foreground">
                           {serials.length > 0 ? `SN: ${serials.slice(0, 3).join(', ')}${serials.length > 3 ? '...' : ''}` : 'Seri No Yok'} |
                           Stok: {stock}
                         </div>
@@ -405,7 +410,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
             {/* Marka + Model - 2 columns (1/2 each), full width in each column */}
             <div className="grid grid-cols-2 gap-3 mt-2">
               <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Marka</label>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Marka</label>
                 <Input
                   type="text"
                   value={formData.loanerBrand || ''}
@@ -415,7 +420,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Model</label>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Model</label>
                 <Input
                   type="text"
                   value={formData.loanerModel || ''}
@@ -428,7 +433,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
 
             {/* Seri No - Full width or 2 columns based on ear */}
             <div>
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Seri No</label>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Seri No</label>
               {formData.ear === 'both' ? (
                 <div className="grid grid-cols-2 gap-2">
                   {/* Right Side (Visual) -> Right Ear (Red) */}
@@ -443,11 +448,11 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                       className="w-full text-sm border-2 border-red-400 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-red-200 pr-8"
                     />
                     {activeSerialInput === 'right' && selectedLoanerInventoryItem && selectedLoanerInventoryItem.availableSerials && selectedLoanerInventoryItem.availableSerials.length > 0 && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-40 overflow-y-auto">
+                      <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-xl shadow-lg max-h-40 overflow-y-auto">
                         {selectedLoanerInventoryItem.availableSerials.map((sn: string) => (
                           <div
                             key={sn}
-                            className="px-3 py-2 hover:bg-purple-50 cursor-pointer text-sm text-gray-700"
+                            className="px-3 py-2 hover:bg-purple-50 cursor-pointer text-sm text-foreground"
                             onMouseDown={(e) => { e.preventDefault(); updateFormData('loanerSerialNumberRight', sn); setActiveSerialInput(null); }}
                           >
                             {sn}
@@ -455,7 +460,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                         ))}
                       </div>
                     )}
-                    <div className="absolute right-2 top-1.5 text-xs text-red-500 font-bold">R</div>
+                    <div className="absolute right-2 top-1.5 text-xs text-destructive font-bold">R</div>
                   </div>
 
                   {/* Left Side (Visual) -> Left Ear (Blue) */}
@@ -470,11 +475,11 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                       className="w-full text-sm border-2 border-blue-400 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-blue-200 pr-8"
                     />
                     {activeSerialInput === 'left' && selectedLoanerInventoryItem && selectedLoanerInventoryItem.availableSerials && selectedLoanerInventoryItem.availableSerials.length > 0 && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-40 overflow-y-auto">
+                      <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-xl shadow-lg max-h-40 overflow-y-auto">
                         {selectedLoanerInventoryItem.availableSerials.map((sn: string) => (
                           <div
                             key={sn}
-                            className="px-3 py-2 hover:bg-purple-50 cursor-pointer text-sm text-gray-700"
+                            className="px-3 py-2 hover:bg-purple-50 cursor-pointer text-sm text-foreground"
                             onMouseDown={(e) => { e.preventDefault(); updateFormData('loanerSerialNumberLeft', sn); setActiveSerialInput(null); }}
                           >
                             {sn}
@@ -482,7 +487,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                         ))}
                       </div>
                     )}
-                    <div className="absolute right-2 top-1.5 text-xs text-blue-500 font-bold">L</div>
+                    <div className="absolute right-2 top-1.5 text-xs text-primary font-bold">L</div>
                   </div>
                 </div>
               ) : (
@@ -496,15 +501,15 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
                     placeholder="Seri No"
                     className={`w-full text-sm border-2 dark:bg-slate-800 dark:text-white ${formData.ear === 'left' ? 'border-blue-400 focus:ring-blue-200' :
                       formData.ear === 'right' ? 'border-red-400 focus:ring-red-200' :
-                        'border-gray-300 dark:border-slate-600 focus:ring-gray-200'
+                        'border-border dark:border-slate-600 focus:ring-gray-200'
                       }`}
                   />
                   {activeSerialInput === 'single' && selectedLoanerInventoryItem && selectedLoanerInventoryItem.availableSerials && selectedLoanerInventoryItem.availableSerials.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-40 overflow-y-auto">
+                    <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-xl shadow-lg max-h-40 overflow-y-auto">
                       {selectedLoanerInventoryItem.availableSerials.map((sn: string) => (
                         <div
                           key={sn}
-                          className="px-3 py-2 hover:bg-purple-50 cursor-pointer text-sm text-gray-700"
+                          className="px-3 py-2 hover:bg-purple-50 cursor-pointer text-sm text-foreground"
                           onMouseDown={(e) => { e.preventDefault(); updateFormData('loanerSerialNumber', sn); setActiveSerialInput(null); }}
                         >
                           {sn}
@@ -517,7 +522,7 @@ export const AssignmentDetailsForm: React.FC<AssignmentDetailsFormProps> = ({
             </div>
 
             {formData.loanerInventoryId && (
-              <div className="text-xs text-green-600 flex items-center">
+              <div className="text-xs text-success flex items-center">
                 <CheckCircle className="w-3 h-3 mr-1" />
                 Envanterden seçildi
               </div>

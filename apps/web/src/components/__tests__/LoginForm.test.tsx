@@ -4,6 +4,27 @@ import userEvent from '@testing-library/user-event';
 import { render as customRender } from '../../test/utils';
 import { LoginForm } from '../LoginForm';
 import { useAuthStore } from '../../stores/authStore';
+import authTr from '../../locales/tr/auth.json';
+
+// Mock react-i18next to return actual Turkish translations
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      // Navigate nested keys (e.g. "errors.required_fields")
+      const parts = key.split('.');
+      let value: unknown = authTr;
+      for (const part of parts) {
+        if (value && typeof value === 'object') {
+          value = (value as Record<string, unknown>)[part];
+        } else {
+          return key;
+        }
+      }
+      return typeof value === 'string' ? value : key;
+    },
+    i18n: { language: 'tr', changeLanguage: vi.fn() },
+  }),
+}));
 
 // Mock the auth store
 vi.mock('../../stores/authStore');

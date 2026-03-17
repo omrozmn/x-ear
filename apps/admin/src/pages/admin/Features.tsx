@@ -19,6 +19,7 @@ type FeatureConfig = {
     mode: FeatureMode;
     plans: string[];
     countries: string[];
+    sectors: string[];
 };
 type FeatureMap = Record<string, FeatureConfig>;
 
@@ -74,13 +75,22 @@ const FEATURE_HIERARCHY: FeatureDef[] = [
     { key: 'security_ui', label: '🔒 Güvenlik', defaultMode: 'hidden' },
 ];
 
+const SECTOR_OPTIONS = [
+    { key: 'hearing', label: 'İşitme Merkezi', icon: '🦻' },
+    { key: 'pharmacy', label: 'Eczane', icon: '💊' },
+    { key: 'hospital', label: 'Hastane', icon: '🏥' },
+    { key: 'hotel', label: 'Otel', icon: '🏨' },
+    { key: 'beauty', label: 'Güzellik Merkezi', icon: '💆' },
+    { key: 'general', label: 'Genel', icon: '🏢' },
+];
+
 function buildDefaults(defs: FeatureDef[]): FeatureMap {
     const map: FeatureMap = {};
     for (const def of defs) {
-        map[def.key] = { mode: def.defaultMode, plans: [], countries: [] };
+        map[def.key] = { mode: def.defaultMode, plans: [], countries: [], sectors: [] };
         if (def.children) {
             for (const child of def.children) {
-                map[child.key] = { mode: child.defaultMode, plans: [], countries: [] };
+                map[child.key] = { mode: child.defaultMode, plans: [], countries: [], sectors: [] };
             }
         }
     }
@@ -255,7 +265,7 @@ const CountryModal: React.FC<{
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
                     <div>
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Ulke Secimi</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Ülke Seçimi</h3>
                         <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
                             {featureLabel} <span className="font-mono text-xs">({featureKey})</span>
                         </p>
@@ -268,14 +278,14 @@ const CountryModal: React.FC<{
                 {/* Info */}
                 <div className="px-4 pt-3">
                     <p className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-2">
-                        Hicbir ulke secilmezse bu ozellik <strong>tum ulkelere</strong> acik olur. Ulke secerseniz sadece o ulkelerdeki tenantlar erisebilir.
+                        Hiçbir ülke seçilmezse bu özellik <strong>tüm ülkelere</strong> açık olur. Ülke seçerseniz sadece o ülkelerdeki tenant'lar erişebilir.
                     </p>
                 </div>
 
                 {/* Quick actions */}
                 <div className="flex gap-2 px-4 pt-3">
                     <button onClick={selectAll} className="text-xs px-3 py-1 rounded-md border border-blue-200 dark:border-blue-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors">
-                        Tumunu Sec
+                        Tümünü Seç
                     </button>
                     <button onClick={clearAll} className="text-xs px-3 py-1 rounded-md border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                         Temizle
@@ -317,15 +327,121 @@ const CountryModal: React.FC<{
                 {/* Footer */}
                 <div className="flex items-center justify-between p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
                     <span className="text-sm text-gray-500 dark:text-gray-400">
-                        {selected.size === 0 ? 'Tum ulkeler' : `${selected.size} ulke secili`}
+                        {selected.size === 0 ? 'Tüm ülkeler' : `${selected.size} ülke seçili`}
                     </span>
                     <div className="flex gap-2">
                         <button onClick={onClose} className="px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                            Iptal
+                            İptal
                         </button>
                         <button
                             onClick={() => onSave(Array.from(selected))}
                             className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors font-medium"
+                        >
+                            Kaydet
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+/* ─── Sector Selection Modal ─── */
+const SectorModal: React.FC<{
+    featureLabel: string;
+    featureKey: string;
+    selectedSectors: string[];
+    onSave: (sectors: string[]) => void;
+    onClose: () => void;
+}> = ({ featureLabel, featureKey, selectedSectors, onSave, onClose }) => {
+    const [selected, setSelected] = useState<Set<string>>(new Set(selectedSectors));
+
+    const toggle = (key: string) => {
+        setSelected((prev) => {
+            const next = new Set(prev);
+            if (next.has(key)) next.delete(key); else next.add(key);
+            return next;
+        });
+    };
+
+    const selectAll = () => setSelected(new Set(SECTOR_OPTIONS.map((s) => s.key)));
+    const clearAll = () => setSelected(new Set());
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                {/* Header */}
+                <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
+                    <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Sektör Seçimi</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                            {featureLabel} <span className="font-mono text-xs">({featureKey})</span>
+                        </p>
+                    </div>
+                    <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <X className="w-5 h-5 text-gray-500" />
+                    </button>
+                </div>
+
+                {/* Info */}
+                <div className="px-4 pt-3">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-2">
+                        Hiçbir sektör seçilmezse bu özellik <strong>tüm sektörlere</strong> açık olur. Sektör seçerseniz sadece o sektörlerdeki tenant'lar erişebilir.
+                    </p>
+                </div>
+
+                {/* Quick actions */}
+                <div className="flex gap-2 px-4 pt-3">
+                    <button onClick={selectAll} className="text-xs px-3 py-1 rounded-md border border-purple-200 dark:border-purple-700 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-colors">
+                        Tümünü Seç
+                    </button>
+                    <button onClick={clearAll} className="text-xs px-3 py-1 rounded-md border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        Temizle
+                    </button>
+                </div>
+
+                {/* Sector list */}
+                <div className="p-4 space-y-2 max-h-64 overflow-y-auto">
+                    {SECTOR_OPTIONS.map((sector) => {
+                        const isSelected = selected.has(sector.key);
+                        return (
+                            <button
+                                key={sector.key}
+                                onClick={() => toggle(sector.key)}
+                                className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left ${
+                                    isSelected
+                                        ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 dark:border-purple-400'
+                                        : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                                }`}
+                            >
+                                <div className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 ${
+                                    isSelected
+                                        ? 'bg-purple-500 text-white'
+                                        : 'border-2 border-gray-300 dark:border-gray-500'
+                                }`}>
+                                    {isSelected && <Check className="w-3.5 h-3.5" />}
+                                </div>
+                                <span className="text-lg">{sector.icon}</span>
+                                <span className={`font-medium text-sm ${isSelected ? 'text-purple-700 dark:text-purple-300' : 'text-gray-700 dark:text-gray-300'}`}>
+                                    {sector.label}
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* Footer */}
+                <div className="flex items-center justify-between p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                        {selected.size === 0 ? 'Tüm sektörler' : `${selected.size} sektör seçili`}
+                    </span>
+                    <div className="flex gap-2">
+                        <button onClick={onClose} className="px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                            İptal
+                        </button>
+                        <button
+                            onClick={() => onSave(Array.from(selected))}
+                            className="px-4 py-2 text-sm rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors font-medium"
                         >
                             Kaydet
                         </button>
@@ -354,6 +470,7 @@ const Features: React.FC = () => {
     const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
     const [planModal, setPlanModal] = useState<{ featureKey: string; featureLabel: string } | null>(null);
     const [countryModal, setCountryModal] = useState<{ featureKey: string; featureLabel: string } | null>(null);
+    const [sectorModal, setSectorModal] = useState<{ featureKey: string; featureLabel: string } | null>(null);
 
     const toggleGroup = (key: string) => {
         setExpandedGroups((prev) => {
@@ -366,7 +483,7 @@ const Features: React.FC = () => {
     const handleUpdateFeature = async (key: string, patch: Partial<FeatureConfig>) => {
         if (!canToggle) return toast.error('Yetkiniz yok');
 
-        const currentFeature = features[key] || { mode: 'hidden', plans: [] };
+        const currentFeature = features[key] || { mode: 'hidden', plans: [], countries: [], sectors: [] };
         const nextFeature = { ...currentFeature, ...patch };
         const updatedFeatures = { ...features, [key]: nextFeature };
 
@@ -379,8 +496,7 @@ const Features: React.FC = () => {
             await updateSettings({ data: updates });
             toast.success('Güncellendi');
             await refetchFeatures();
-        } catch (e) {
-            console.error(e);
+        } catch {
             toast.error('Güncelleme başarısız');
         }
     };
@@ -395,10 +511,15 @@ const Features: React.FC = () => {
         setCountryModal(null);
     };
 
+    const handleSaveSectors = (featureKey: string, sectors: string[]) => {
+        handleUpdateFeature(featureKey, { sectors });
+        setSectorModal(null);
+    };
+
     const planNameById = (id: string) => plans.find((p) => p.id === id)?.name ?? id;
 
     const renderFeatureRow = (def: FeatureDef, isChild = false) => {
-        const v = features[def.key] || { mode: def.defaultMode, plans: [], countries: [] };
+        const v = features[def.key] || { mode: def.defaultMode, plans: [], countries: [], sectors: [] };
         const hasChildren = !isChild && def.children && def.children.length > 0;
         const isExpanded = expandedGroups.has(def.key);
         const parentHidden = isChild && features[def.key.split('.')[0]]?.mode === 'hidden';
@@ -448,6 +569,19 @@ const Features: React.FC = () => {
                                 </button>
                             )}
 
+                            {/* Sector info + button */}
+                            {v.mode === 'visible' && !parentHidden && (
+                                <button
+                                    onClick={() => setSectorModal({ featureKey: def.key, featureLabel: def.label })}
+                                    disabled={!canToggle}
+                                    className="text-xs px-2.5 py-1 rounded-md border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-purple-300 dark:hover:border-purple-600 transition-colors"
+                                >
+                                    {(v.sectors || []).length === 0
+                                        ? '🏢 Tüm sektörler'
+                                        : `🏢 ${v.sectors.length} sektör`}
+                                </button>
+                            )}
+
                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${modeBadge[v.mode]}`}>
                                 {v.mode === 'visible' ? 'Açık' : 'Kapalı'}
                             </span>
@@ -482,6 +616,20 @@ const Features: React.FC = () => {
                                 return (
                                     <span key={code} className="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-300 border border-green-200 dark:border-green-700">
                                         {config.flag} {code}
+                                    </span>
+                                );
+                            })}
+                        </div>
+                    )}
+
+                    {/* Selected sectors summary */}
+                    {v.mode === 'visible' && (v.sectors || []).length > 0 && !parentHidden && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                            {v.sectors.map((sectorKey) => {
+                                const sector = SECTOR_OPTIONS.find((s) => s.key === sectorKey);
+                                return (
+                                    <span key={sectorKey} className="text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-300 border border-purple-200 dark:border-purple-700">
+                                        {sector?.icon} {sector?.label || sectorKey}
                                     </span>
                                 );
                             })}
@@ -539,6 +687,17 @@ const Features: React.FC = () => {
                     onClose={() => setCountryModal(null)}
                 />
             )}
+
+            {/* Sector selection modal */}
+            {sectorModal && (
+                <SectorModal
+                    featureLabel={sectorModal.featureLabel}
+                    featureKey={sectorModal.featureKey}
+                    selectedSectors={features[sectorModal.featureKey]?.sectors || []}
+                    onSave={(sectors) => handleSaveSectors(sectorModal.featureKey, sectors)}
+                    onClose={() => setSectorModal(null)}
+                />
+            )}
         </div>
     );
 };
@@ -587,8 +746,11 @@ function parseFeatureMap(setting: SystemSettingRead | undefined): FeatureMap {
                 const countries = Array.isArray((value as { countries?: unknown }).countries)
                     ? (value as { countries: unknown[] }).countries.filter((c): c is string => typeof c === 'string')
                     : [];
+                const sectors = Array.isArray((value as { sectors?: unknown }).sectors)
+                    ? (value as { sectors: unknown[] }).sectors.filter((s): s is string => typeof s === 'string')
+                    : [];
 
-                return [[key, { mode, plans, countries }]];
+                return [[key, { mode, plans, countries, sectors }]];
             })
         );
     } catch {

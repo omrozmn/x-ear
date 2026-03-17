@@ -174,10 +174,10 @@ const LoadingSpinner = () => (
  * @example
  * ```tsx
  * <ChatInput 
- *   onSend={(message) => console.log('Sending:', message)}
- *   placeholder="Sorunuzu yazın..."
- *   disabled={!isAIAvailable}
- *   isLoading={isSending}
+ * onSend={(message) => console.log('Sending:', message)}
+ * placeholder="Sorunuzu yazın..."
+ * disabled={!isAIAvailable}
+ * isLoading={isSending}
  * />
  * ```
  */
@@ -267,7 +267,7 @@ export function ChatInput({
   return (
     <form
       onSubmit={handleSubmit}
-      className={`flex items-center gap-2 p-3 border-t border-gray-200 bg-white ${className}`}
+      className={`flex items-center gap-2 p-3 border-t border-border bg-card ${className}`}
     >
       {/* File Upload Button */}
       {onFileUpload && (
@@ -286,7 +286,7 @@ export function ChatInput({
             onClick={() => fileInputRef.current?.click()}
             className={`
               flex items-center justify-center p-2 rounded-full transition-colors
-              ${isUploading ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700'}
+              ${isUploading ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground'}
               disabled:opacity-50 disabled:cursor-not-allowed
             `}
             title="Dosya Yükle"
@@ -309,7 +309,7 @@ export function ChatInput({
             onClick={() => cameraInputRef.current?.click()}
             className={`
               flex items-center justify-center p-2 rounded-full transition-colors
-              bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700
+              bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground
               disabled:opacity-50 disabled:cursor-not-allowed
             `}
             title="Kamera ile Çek"
@@ -330,10 +330,10 @@ export function ChatInput({
         disabled={isDisabled}
         className={`
           flex-1 px-4 py-2 
-          border border-gray-300 rounded-full
-          text-sm text-gray-900 placeholder-gray-500
-          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-          disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed
+          border border-border rounded-full
+          text-sm text-foreground placeholder-muted-foreground
+          focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent
+          disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed
           transition-colors
         `}
         aria-label="Mesaj giriş alanı"
@@ -349,8 +349,8 @@ export function ChatInput({
           w-10 h-10 rounded-full
           transition-colors
           ${canSend
-            ? 'premium-gradient tactile-press text-white focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
-            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            ? 'premium-gradient tactile-press text-white focus:ring-2 focus:ring-ring focus:ring-offset-2'
+            : 'bg-muted text-muted-foreground cursor-not-allowed'
           }
           focus:outline-none
         `}

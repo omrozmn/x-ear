@@ -32,31 +32,31 @@ export const PricingSummary: React.FC<PricingSummaryProps> = ({
   };
 
   return (
-    <Card className="bg-gray-50 border-gray-200">
+    <Card className="bg-muted border-border">
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-3">
-          <Calculator className="w-4 h-4 text-blue-600" />
-          <h3 className="text-sm font-semibold text-gray-800">Fiyat Özeti</h3>
+          <Calculator className="w-4 h-4 text-primary" />
+          <h3 className="text-sm font-semibold text-foreground">Fiyat Özeti</h3>
         </div>
         
         <div className="space-y-2">
           <div className="flex justify-between items-center py-1">
-            <span className="text-xs text-gray-600">Liste Fiyatı:</span>
-            <span className="text-xs font-medium text-gray-800">
+            <span className="text-xs text-muted-foreground">Liste Fiyatı:</span>
+            <span className="text-xs font-medium text-foreground">
               {formatCurrency(totalListPrice)}
             </span>
           </div>
           
           <div className="flex justify-between items-center py-1">
-            <span className="text-xs text-gray-600">Satış Fiyatı:</span>
-            <span className="text-xs font-medium text-gray-800">
+            <span className="text-xs text-muted-foreground">Satış Fiyatı:</span>
+            <span className="text-xs font-medium text-foreground">
               {formatCurrency(totalSalePrice)}
             </span>
           </div>
           
           <div className="flex justify-between items-center py-1">
-            <span className="text-xs text-green-600">İndirim:</span>
-            <span className="text-xs font-medium text-green-600">
+            <span className="text-xs text-success">İndirim:</span>
+            <span className="text-xs font-medium text-success">
               -{formatCurrency(totalDiscount)}
               {discountType === 'percentage' && discountValue > 0 && (
                 <span className="ml-1 text-xs">(%{discountValue})</span>
@@ -66,24 +66,24 @@ export const PricingSummary: React.FC<PricingSummaryProps> = ({
           
           {totalVat > 0 && (
             <div className="flex justify-between items-center py-1">
-              <span className="text-xs text-gray-600">KDV:</span>
-              <span className="text-xs font-medium text-gray-800">
+              <span className="text-xs text-muted-foreground">KDV:</span>
+              <span className="text-xs font-medium text-foreground">
                 {formatCurrency(totalVat)}
               </span>
             </div>
           )}
           
           <div className="flex justify-between items-center py-1">
-            <span className="text-xs text-blue-600">SGK Desteği:</span>
-            <span className="text-xs font-medium text-blue-600">
+            <span className="text-xs text-primary">SGK Desteği:</span>
+            <span className="text-xs font-medium text-primary">
               {formatCurrency(totalSgkCoverage)}
             </span>
           </div>
           
-          <div className="border-t border-gray-300 pt-2 mt-2">
+          <div className="border-t border-border pt-2 mt-2">
             <div className="flex justify-between items-center">
-              <span className="text-sm font-semibold text-gray-800">Hasta Payı:</span>
-              <span className="text-sm font-bold text-red-600">
+              <span className="text-sm font-semibold text-foreground">Hasta Payı:</span>
+              <span className="text-sm font-bold text-destructive">
                 {formatCurrency(totalPartyPayment)}
               </span>
             </div>

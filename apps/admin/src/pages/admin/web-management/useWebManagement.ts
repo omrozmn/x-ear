@@ -92,7 +92,7 @@ export function useWebManagement() {
         newProductPrice: blogProducts.newProductPrice, setNewProductPrice: blogProducts.setNewProductPrice,
         newMarketplaceProvider: blogProducts.newMarketplaceProvider, setNewMarketplaceProvider: blogProducts.setNewMarketplaceProvider,
         newMarketplaceLabel: blogProducts.newMarketplaceLabel, setNewMarketplaceLabel: blogProducts.setNewMarketplaceLabel,
-        newMarketplaceUrl: blogProducts.newMarketplaceUrl, setNewMarketplaceUrl: blogProducts.setNewMarketplaceUrl,
+        newMarketplaceUrl: blogProducts.newMarketplaceUrl, setNewMarketplaceUrl: blogProducts.setNewMarketplaceUrl, marketplaceUrlError: blogProducts.marketplaceUrlError, setMarketplaceUrlError: blogProducts.setMarketplaceUrlError,
         visibleTabs, activeFeatureCount,
         pages: pageEditor.pages, menuItems: pageEditor.menuItems, previewChecks: pageEditor.previewChecks,
         sectionRegistry: core.sectionRegistry, selectedPage: pageEditor.selectedPage, previewTargets: pageEditor.previewTargets,

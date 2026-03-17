@@ -55,22 +55,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { mutateAsync: adminLogin } = useCreateAdminAuthLogin();
 
     useEffect(() => {
-        // Wait for store hydration
         if (!_hasHydrated) {
             return;
         }
 
-        // Check if token exists and is valid
         const initAuth = async () => {
             let currentToken = token;
 
-            // Fallback to localStorage if store is empty (e.g. before hydration or if persist failed)
             if (!currentToken) {
                 const storedToken = localStorage.getItem('admin_token');
                 if (storedToken) {
                     currentToken = storedToken;
-                    // We don't have user object here, but we can set token
-                    // Ideally we should fetch profile here
                 }
             }
 
@@ -78,18 +73,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 try {
                     tokenManager.setToken(currentToken);
 
-                    // If we recovered token from localStorage but store was empty, update store
                     if (!token && currentToken) {
-                        // We set user to null initially, ideally we should fetch profile here
-                        // But this ensures isAuthenticated becomes true
-                        setAuth(user || createRehydratedAdminUser(), currentToken);
-
-                        // Optional: Fetch profile to get real user data
-                        // const response = await adminApi.get('/admin/auth/me');
-                        // if (response.data.user) setAuth(response.data.user, currentToken);
+                        // Try to fetch real user profile, fallback to rehydrated user
+                        try {
+                            const response = await adminApiInstance.get('/api/admin/auth/me');
+                            const profileUser = response.data?.data?.user || response.data?.user;
+                            if (profileUser) {
+                                setAuth(mapAdminUser(profileUser), currentToken);
+                            } else {
+                                setAuth(user || createRehydratedAdminUser(), currentToken);
+                            }
+                        } catch {
+                            setAuth(user || createRehydratedAdminUser(), currentToken);
+                        }
                     }
-                } catch (error) {
-                    console.error('Auth recovery error:', error);
+                } catch {
                     clearAuth();
                     tokenManager.clearToken();
                 }
@@ -101,7 +99,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [token, clearAuth, _hasHydrated, setAuth, user]);
 
     const logout = useCallback(() => {
-        console.warn('[AuthContext] Logout called', new Error().stack);
         clearAuth();
         tokenManager.clearToken();
         tokenManager.clearRefreshToken();
@@ -114,9 +111,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!refreshToken || !isAuthenticated) return;
 
         try {
-            // BUG-010: Silent refresh using the backend refresh endpoint
-            // We use adminApiInstance directly to provide the custom Authorization header
-            const response = await adminApiInstance.post<ResponseEnvelopeRefreshTokenResponse>('/api/auth/refresh', {}, {
+            const response = await adminApiInstance.post<ResponseEnvelopeRefreshTokenResponse>('/api/admin/auth/refresh', {}, {
                 headers: {
                     'Authorization': `Bearer ${refreshToken}`
                 }
@@ -126,11 +121,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (newToken) {
                 if (user) setAuth(user, newToken);
                 tokenManager.setToken(newToken);
-                console.log('[Auth] Token silently refreshed');
             }
         } catch (error: unknown) {
-            console.error('[Auth] Silent refresh failed:', error);
-            // If refresh fails with 401/403, our refresh token is likely invalid/expired
             if (isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
                 logout();
             }
@@ -139,7 +131,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     useEffect(() => {
         if (isAuthenticated) {
-            // Refresh every 30 minutes (access tokens usually last ~8h, but refresh often to be safe)
             const interval = setInterval(silentRefresh, 30 * 60 * 1000);
             return () => clearInterval(interval);
         }
@@ -148,56 +139,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Cross-tab auth synchronization via storage event
     useEffect(() => {
         const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === 'admin_token') {
+            if (e.key === 'admin_token' || e.key === 'admin-auth-storage') {
                 if (!e.newValue) {
-                    // Token removed in another tab - logout
+                    clearAuth();
+                    tokenManager.clearToken();
+                    tokenManager.clearRefreshToken();
                     window.location.replace('/login');
-                } else if (!e.oldValue && e.newValue) {
-                    // Token added in another tab - reload to pick up new auth state
+                } else if (e.key === 'admin_token' && !e.oldValue && e.newValue) {
                     window.location.reload();
                 }
             }
         };
         window.addEventListener('storage', handleStorageChange);
         return () => window.removeEventListener('storage', handleStorageChange);
-    }, []);
+    }, [clearAuth]);
 
     const login = async (credentials: LoginCredentials & { mfa_token?: string }): Promise<LoginResult> => {
-        try {
-            const response = await adminLogin({ data: credentials });
-            const payload = unwrapLoginResponse(response);
+        const response = await adminLogin({ data: credentials });
+        const payload = unwrapLoginResponse(response);
 
-            console.log('Login response (unwrapped):', response);
-
-            // Handle MFA requirement
-            if (payload?.requires_mfa) {
-                return { requires_mfa: true };
-            }
-
-            // Response is already unwrapped by mutator: {token, user, refreshToken, requiresMfa}
-            if (payload?.token && payload.user) {
-                const currentUser = mapAdminUser(payload.user);
-                const currentToken = payload.token;
-                const refreshToken = payload.refresh_token;
-
-                setAuth(currentUser, currentToken);
-                tokenManager.setToken(currentToken);
-                if (refreshToken) tokenManager.setRefreshToken(refreshToken);
-
-                toast.success('Giriş başarılı');
-                return {
-                    user: currentUser,
-                    token: currentToken,
-                    tokens: { token: currentToken, refreshToken }
-                };
-            }
-
-            console.error('Unexpected login response format:', response);
-            throw new Error('Invalid login response format');
-        } catch (error: unknown) {
-            console.error('Login error:', error);
-            throw error;
+        // Handle MFA requirement
+        if (payload?.requires_mfa) {
+            return { requires_mfa: true };
         }
+
+        if (payload?.token && payload.user) {
+            const currentUser = mapAdminUser(payload.user);
+            const currentToken = payload.token;
+            const refreshToken = payload.refresh_token;
+
+            setAuth(currentUser, currentToken);
+            tokenManager.setToken(currentToken);
+            if (refreshToken) tokenManager.setRefreshToken(refreshToken);
+
+            toast.success('Giriş başarılı');
+            return {
+                user: currentUser,
+                token: currentToken,
+                tokens: { token: currentToken, refreshToken }
+            };
+        }
+
+        throw new Error('Invalid login response format');
     };
 
     return (

@@ -22,16 +22,16 @@ const CollapsibleCard: React.FC<CollapsibleCardProps> = ({ title, icon, defaultO
         data-allow-raw="true"
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-6 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors rounded-2xl"
+        className="w-full p-6 flex items-center justify-between cursor-pointer hover:bg-muted dark:hover:bg-gray-700/50 transition-colors rounded-2xl"
       >
         <div className="flex items-center gap-2">
           {icon}
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">{title}</h3>
         </div>
         {isOpen ? (
-          <ChevronUp className="w-5 h-5 text-gray-400" />
+          <ChevronUp className="w-5 h-5 text-muted-foreground" />
         ) : (
-          <ChevronDown className="w-5 h-5 text-gray-400" />
+          <ChevronDown className="w-5 h-5 text-muted-foreground" />
         )}
       </button>
       {isOpen && (
@@ -134,15 +134,15 @@ const AnamnesisCard: React.FC<{ partyId: string }> = ({ partyId }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
-        <span className="ml-2 text-sm text-gray-500">Yukluyor...</span>
+        <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+        <span className="ml-2 text-sm text-muted-foreground">Yukluyor...</span>
       </div>
     );
   }
 
   if (questions.length === 0) {
     return (
-      <div className="pt-4 text-center text-sm text-gray-500 dark:text-gray-400 py-8">
+      <div className="pt-4 text-center text-sm text-muted-foreground py-8">
         Henuz anamnez sorusu tanimlanmamis. Hasta Ayarlarindan soru ekleyebilirsiniz.
       </div>
     );
@@ -159,15 +159,15 @@ const AnamnesisCard: React.FC<{ partyId: string }> = ({ partyId }) => {
     <div className="pt-4 space-y-6">
       {Object.entries(grouped).map(([category, catQuestions]) => (
         <div key={category}>
-          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+          <h4 className="text-sm font-semibold text-foreground mb-3">
             {CATEGORY_LABELS[category] || category}
           </h4>
           <div className="space-y-3">
             {catQuestions.map(q => (
               <div key={q.id} className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3">
-                <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   {q.question}
-                  {q.required && <span className="text-red-500 ml-1">*</span>}
+                  {q.required && <span className="text-destructive ml-1">*</span>}
                 </label>
                 {q.type === 'text' && (
                   <Textarea
@@ -190,7 +190,7 @@ const AnamnesisCard: React.FC<{ partyId: string }> = ({ partyId }) => {
                         className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
                           q.answer === opt
                             ? 'bg-blue-600 text-white border-blue-600'
-                            : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-blue-400'
+                            : 'bg-white dark:bg-gray-800 text-foreground border-border hover:border-blue-400'
                         }`}
                       >
                         {opt}
@@ -211,7 +211,7 @@ const AnamnesisCard: React.FC<{ partyId: string }> = ({ partyId }) => {
                           className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
                             selected
                               ? 'bg-blue-600 text-white border-blue-600'
-                              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-blue-400'
+                              : 'bg-white dark:bg-gray-800 text-foreground border-border hover:border-blue-400'
                           }`}
                         >
                           {opt}
@@ -284,8 +284,8 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
     return (
       <div className="p-6 text-center">
         <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Hasta Bulunamadı</h3>
-        <p className="text-gray-500">Hasta bilgileri yüklenirken bir hata oluştu.</p>
+        <h3 className="text-lg font-medium text-foreground mb-2">Hasta Bulunamadı</h3>
+        <p className="text-muted-foreground">Hasta bilgileri yüklenirken bir hata oluştu.</p>
       </div>
     );
   }
@@ -334,36 +334,36 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
   return (
     <div className="space-y-6">
       {/* Personal Information */}
-      <CollapsibleCard title={t('overview.personal_info', 'Kisisel Bilgiler')} icon={<User className="w-5 h-5 text-gray-500" />} defaultOpen={true}>
+      <CollapsibleCard title={t('overview.personal_info', 'Kisisel Bilgiler')} icon={<User className="w-5 h-5 text-muted-foreground" />} defaultOpen={true}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
             <div className="flex items-center space-x-3">
-              <User className="w-5 h-5 text-gray-400" />
+              <User className="w-5 h-5 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Ad Soyad</p>
+                <p className="text-sm font-medium text-muted-foreground">Ad Soyad</p>
                 <p className="text-sm text-gray-900 dark:text-white">{party.firstName} {party.lastName}</p>
               </div>
             </div>
 
             <div className="flex items-center space-x-3">
-              <Phone className="w-5 h-5 text-gray-400" />
+              <Phone className="w-5 h-5 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Telefon</p>
+                <p className="text-sm font-medium text-muted-foreground">Telefon</p>
                 <p className="text-sm text-gray-900 dark:text-white">{getProtectedValue(party.phone, canViewContact)}</p>
               </div>
             </div>
 
             <div className="flex items-center space-x-3">
-              <Mail className="w-5 h-5 text-gray-400" />
+              <Mail className="w-5 h-5 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">E-posta</p>
+                <p className="text-sm font-medium text-muted-foreground">E-posta</p>
                 <p className="text-sm text-gray-900 dark:text-white">{getProtectedValue(party.email, canViewContact)}</p>
               </div>
             </div>
 
             <div className="flex items-center space-x-3">
-              <User className="w-5 h-5 text-gray-400" />
+              <User className="w-5 h-5 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Cinsiyet</p>
+                <p className="text-sm font-medium text-muted-foreground">Cinsiyet</p>
                 <p className="text-sm text-gray-900 dark:text-white">
                   {party.gender === 'M' || party.gender === 'm' ? 'Erkek' : party.gender === 'F' || party.gender === 'f' ? 'Kadin' : 'Belirtilmemis'}
                 </p>
@@ -371,17 +371,17 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
             </div>
 
             <div className="flex items-center space-x-3">
-              <Tag className="w-5 h-5 text-gray-400" />
+              <Tag className="w-5 h-5 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">TC Kimlik No</p>
+                <p className="text-sm font-medium text-muted-foreground">TC Kimlik No</p>
                 <p className="text-sm text-gray-900 dark:text-white">{getProtectedValue(party.tcNumber, canViewIdentity)}</p>
               </div>
             </div>
 
             <div className="flex items-center space-x-3">
-              <div className="w-5 h-5 text-gray-400" />
+              <div className="w-5 h-5 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Dogum Tarihi</p>
+                <p className="text-sm font-medium text-muted-foreground">Dogum Tarihi</p>
                 <p className="text-sm text-gray-900 dark:text-white">
                   {party.birthDate ? formatDate(party.birthDate) : 'Belirtilmemis'}
                 </p>
@@ -390,9 +390,9 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
 
             {party.branchId && party.branchId !== 'branch-1' && (
               <div className="flex items-center space-x-3">
-                <MapPin className="w-5 h-5 text-gray-400" />
+                <MapPin className="w-5 h-5 text-muted-foreground" />
                 <div>
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Sube</p>
+                  <p className="text-sm font-medium text-muted-foreground">Sube</p>
                   <p className="text-sm text-gray-900 dark:text-white">{party.branchId}</p>
                 </div>
               </div>
@@ -401,12 +401,12 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
       </CollapsibleCard>
 
       {/* Address Information */}
-      <CollapsibleCard title={t('overview.address_info', 'Adres Bilgileri')} icon={<MapPin className="w-5 h-5 text-gray-500" />} defaultOpen={true}>
+      <CollapsibleCard title={t('overview.address_info', 'Adres Bilgileri')} icon={<MapPin className="w-5 h-5 text-muted-foreground" />} defaultOpen={true}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
             <div className="flex items-center space-x-3">
-              <MapPin className="w-5 h-5 text-gray-400" />
+              <MapPin className="w-5 h-5 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Il</p>
+                <p className="text-sm font-medium text-muted-foreground">Il</p>
                 <p className="text-sm text-gray-900 dark:text-white">
                   {party.addressCity || 'Belirtilmemis'}
                 </p>
@@ -414,9 +414,9 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
             </div>
 
             <div className="flex items-center space-x-3">
-              <MapPin className="w-5 h-5 text-gray-400" />
+              <MapPin className="w-5 h-5 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Ilce</p>
+                <p className="text-sm font-medium text-muted-foreground">Ilce</p>
                 <p className="text-sm text-gray-900 dark:text-white">
                   {party.addressDistrict || 'Belirtilmemis'}
                 </p>
@@ -424,9 +424,9 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
             </div>
 
             <div className="flex items-start space-x-3 md:col-span-3">
-              <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
+              <MapPin className="w-5 h-5 text-muted-foreground mt-0.5" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Adres</p>
+                <p className="text-sm font-medium text-muted-foreground mb-1">Adres</p>
                 <p className="text-sm text-gray-900 dark:text-white">
                   {party.addressFull || 'Adres bilgisi bulunmuyor'}
                 </p>
@@ -436,7 +436,7 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
       </CollapsibleCard>
 
       {/* Additional Details */}
-      <CollapsibleCard title={t('overview.extra_info', 'Ek Bilgiler')} icon={<Tag className="w-5 h-5 text-gray-500" />} defaultOpen={false}>
+      <CollapsibleCard title={t('overview.extra_info', 'Ek Bilgiler')} icon={<Tag className="w-5 h-5 text-muted-foreground" />} defaultOpen={false}>
           <div className="space-y-4 pt-4">
             {!canViewNotes && (
               <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
@@ -446,12 +446,12 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
 
             {canViewNotes && party.notes && party.notes.length > 0 && (
               <div>
-                <p className="text-sm font-medium text-gray-500 mb-2">Son Notlar</p>
+                <p className="text-sm font-medium text-muted-foreground mb-2">Son Notlar</p>
                 <div className="space-y-2">
                   {party.notes.slice(0, 3).map((note) => (
                     <div key={note.id} className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded">
                       <p className="text-sm text-gray-900 dark:text-gray-200">{note.text}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      <p className="text-xs text-muted-foreground mt-1">
                         {note.author} - {formatDate(note.date)}
                       </p>
                     </div>
@@ -462,10 +462,10 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
 
             {party.tags && party.tags.length > 0 && (
               <div>
-                <p className="text-sm font-medium text-gray-500 mb-2">Etiketler</p>
+                <p className="text-sm font-medium text-muted-foreground mb-2">Etiketler</p>
                 <div className="flex flex-wrap gap-2">
                   {party.tags.map((tag, index) => (
-                    <span key={index} className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs rounded-full">
+                    <span key={index} className="px-2 py-1 bg-primary/10 text-blue-800 dark:text-blue-300 text-xs rounded-full">
                       {tag}
                     </span>
                   ))}
@@ -475,13 +475,13 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Kayit Tarihi</p>
+                <p className="text-sm font-medium text-muted-foreground">Kayit Tarihi</p>
                 <p className="text-sm text-gray-900 dark:text-white">
                   {party.createdAt ? formatDate(party.createdAt) : 'Bilinmiyor'}
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Son Guncelleme</p>
+                <p className="text-sm font-medium text-muted-foreground">Son Guncelleme</p>
                 <p className="text-sm text-gray-900 dark:text-white">
                   {party.updatedAt ? formatDate(party.updatedAt) : 'Bilinmiyor'}
                 </p>
@@ -491,7 +491,7 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
       </CollapsibleCard>
 
       {/* Hasta Öyküsü (Anamnesis) */}
-      <CollapsibleCard title={t('overview.anamnesis', 'Hasta Oykusu')} icon={<ClipboardList className="w-5 h-5 text-gray-500" />} defaultOpen={false}>
+      <CollapsibleCard title={t('overview.anamnesis', 'Hasta Oykusu')} icon={<ClipboardList className="w-5 h-5 text-muted-foreground" />} defaultOpen={false}>
         <AnamnesisCard partyId={party.id!} />
       </CollapsibleCard>
 
@@ -503,7 +503,7 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Başlık (Opsiyonel)
             </label>
             <Input
@@ -515,8 +515,8 @@ export const PartyOverviewTab: React.FC<PartyOverviewTabProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Not <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-foreground mb-1">
+              Not <span className="text-destructive">*</span>
             </label>
             <Textarea
               value={noteContent}

@@ -74,13 +74,13 @@ export const DeviceReplacementHistory: React.FC<DeviceReplacementHistoryProps> =
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
+        return <CheckCircle className="h-4 w-4 text-success" />;
       case 'pending_invoice':
         return <Clock className="h-4 w-4 text-yellow-500" />;
       case 'cancelled':
-        return <AlertCircle className="h-4 w-4 text-red-500" />;
+        return <AlertCircle className="h-4 w-4 text-destructive" />;
       default:
-        return <RefreshCw className="h-4 w-4 text-blue-500" />;
+        return <RefreshCw className="h-4 w-4 text-primary" />;
     }
   };
 
@@ -146,7 +146,7 @@ export const DeviceReplacementHistory: React.FC<DeviceReplacementHistoryProps> =
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center py-8 text-red-500">
+          <div className="flex items-center justify-center py-8 text-destructive">
             <AlertCircle className="h-6 w-6" />
             <span className="ml-2">{error}</span>
           </div>
@@ -256,7 +256,7 @@ export const DeviceReplacementHistory: React.FC<DeviceReplacementHistoryProps> =
                         <div className="mt-2 pt-2 border-t">
                           <div className="text-xs text-muted-foreground">
                             Fiyat Farkı:
-                            <span className={`ml-1 font-medium ${(replacement.priceDifference || 0) > 0 ? 'text-green-600' : 'text-red-600'
+                            <span className={`ml-1 font-medium ${(replacement.priceDifference || 0) > 0 ? 'text-success' : 'text-destructive'
                               }`}>
                               {(replacement.priceDifference || 0) > 0 ? '+' : ''}
                               {(replacement.priceDifference || 0).toLocaleString('tr-TR')} ₺
@@ -267,7 +267,7 @@ export const DeviceReplacementHistory: React.FC<DeviceReplacementHistoryProps> =
                     </div>
 
                     {replacement.notes && (
-                      <div className="text-sm text-muted-foreground bg-blue-50 p-2 rounded border-l-2 border-blue-200">
+                      <div className="text-sm text-muted-foreground bg-primary/10 p-2 rounded border-l-2 border-blue-200">
                         <FileText className="h-3 w-3 inline mr-1" />
                         {replacement.notes}
                       </div>

@@ -8,6 +8,9 @@ import SmsAutomationTab from './SmsAutomationTab';
 import WhatsAppTab from './WhatsAppTab';
 import EmailTab from './EmailTab';
 import { DesktopPageHeader } from '../../components/layout/DesktopPageHeader';
+import { useIsMobile } from '@/hooks/useBreakpoint';
+import { MobileHeader } from '@/components/mobile/MobileHeader';
+import { MobileLayout } from '@/components/mobile/MobileLayout';
 
 type ChannelTabId = 'sms' | 'whatsapp' | 'email';
 type TabId = 'single' | 'bulk' | 'automation';
@@ -27,19 +30,24 @@ const TABS: Tab[] = [
 export default function SmsPage() {
     const [activeChannel, setActiveChannel] = useState<ChannelTabId>('sms');
     const [activeTab, setActiveTab] = useState<TabId>('single');
+    const isMobile = useIsMobile();
 
     // Fetch SMS credit - shared across all tabs
     const { data: creditData, isLoading: creditLoading } = useListSmCredit();
     const creditBalance = (creditData as unknown as { data: { credit: number } })?.data?.credit ?? 0;
 
-    return (
-        <div className="p-6 max-w-7xl mx-auto space-y-6">
-            <DesktopPageHeader
-                title="Mesajlaşma Yönetimi"
-                description="SMS, WhatsApp ve e-posta kanallarini tek ekrandan yonetin"
-                icon={<MessageCircleMore className="w-6 h-6" />}
-                eyebrow={{ tr: 'İletişim', en: 'Messaging' }}
-            />
+    const pageContent = (
+        <div className={`${isMobile ? 'p-4' : 'p-6'} max-w-7xl mx-auto space-y-6`}>
+            {isMobile ? (
+                <MobileHeader title="Mesajlaşma" showBack={false} />
+            ) : (
+                <DesktopPageHeader
+                    title="Mesajlaşma Yönetimi"
+                    description="SMS, WhatsApp ve e-posta kanallarini tek ekrandan yonetin"
+                    icon={<MessageCircleMore className="w-6 h-6" />}
+                    eyebrow={{ tr: 'İletişim', en: 'Messaging' }}
+                />
+            )}
 
             <Card className="p-1 dark:bg-gray-800 dark:border-gray-700">
                 <nav className="flex space-x-1" aria-label="Messaging Channels">
@@ -47,43 +55,43 @@ export default function SmsPage() {
                         data-allow-raw="true"
                         onClick={() => setActiveChannel('sms')}
                         className={`
-                            flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-2xl transition-all
+                            flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-2xl transition-all min-h-[44px]
                             ${activeChannel === 'sms'
                                 ? 'bg-indigo-600 text-white shadow-sm dark:bg-indigo-500'
-                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200'
+                                : 'text-muted-foreground hover:bg-muted hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-gray-200'
                             }
                         `}
                     >
                         <MessageSquare className="w-4 h-4" />
-                        <span>SMS</span>
+                        {!isMobile && <span>SMS</span>}
                     </button>
                     <button
                         data-allow-raw="true"
                         onClick={() => setActiveChannel('whatsapp')}
                         className={`
-                            flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-2xl transition-all
+                            flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-2xl transition-all min-h-[44px]
                             ${activeChannel === 'whatsapp'
                                 ? 'bg-emerald-600 text-white shadow-sm dark:bg-emerald-500'
-                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200'
+                                : 'text-muted-foreground hover:bg-muted hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-gray-200'
                             }
                         `}
                     >
                         <MessageCircleMore className="w-4 h-4" />
-                        <span>WhatsApp</span>
+                        {!isMobile && <span>WhatsApp</span>}
                     </button>
                     <button
                         data-allow-raw="true"
                         onClick={() => setActiveChannel('email')}
                         className={`
-                            flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-2xl transition-all
+                            flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-2xl transition-all min-h-[44px]
                             ${activeChannel === 'email'
                                 ? 'bg-sky-600 text-white shadow-sm dark:bg-sky-500'
-                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200'
+                                : 'text-muted-foreground hover:bg-muted hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-gray-200'
                             }
                         `}
                     >
                         <MessageCircleMore className="w-4 h-4" />
-                        <span>Email</span>
+                        {!isMobile && <span>Email</span>}
                     </button>
                 </nav>
             </Card>
@@ -101,7 +109,7 @@ export default function SmsPage() {
                                         flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-2xl transition-all
                                         ${activeTab === tab.id
                                             ? 'bg-indigo-600 text-white shadow-sm dark:bg-indigo-500'
-                                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200'
+                                            : 'text-muted-foreground hover:bg-muted hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-gray-200'
                                         }
                                     `}
                                 >
@@ -129,4 +137,9 @@ export default function SmsPage() {
             )}
         </div>
     );
+
+    if (isMobile) {
+        return <MobileLayout>{pageContent}</MobileLayout>;
+    }
+    return pageContent;
 }

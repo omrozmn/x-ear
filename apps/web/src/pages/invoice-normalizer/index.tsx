@@ -64,7 +64,7 @@ export default function InvoiceNormalizerPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Muhasebe Dışa Aktarım
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Fatura tablolarını istediğiniz muhasebe formatına dönüştürün
           </p>
         </div>
@@ -81,11 +81,11 @@ export default function InvoiceNormalizerPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card variant="outlined" padding="md">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-blue-100 dark:bg-blue-900/30">
-              <FileSpreadsheet className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <div className="p-2.5 rounded-xl bg-primary/10">
+              <FileSpreadsheet className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Şablonlar</p>
+              <p className="text-sm text-muted-foreground">Şablonlar</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {totalTemplates}
               </p>
@@ -95,11 +95,11 @@ export default function InvoiceNormalizerPage() {
 
         <Card variant="outlined" padding="md">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-green-100 dark:bg-green-900/30">
-              <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+            <div className="p-2.5 rounded-xl bg-success/10">
+              <CheckCircle2 className="w-5 h-5 text-success" />
             </div>
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Toplam Dönüşüm</p>
+              <p className="text-sm text-muted-foreground">Toplam Dönüşüm</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {totalNormalizations}
               </p>
@@ -113,7 +113,7 @@ export default function InvoiceNormalizerPage() {
               <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">AI Eşleştirme</p>
+              <p className="text-sm text-muted-foreground">AI Eşleştirme</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">Aktif</p>
             </div>
           </div>
@@ -128,11 +128,11 @@ export default function InvoiceNormalizerPage() {
       ) : templates.length === 0 ? (
         <Card variant="outlined" padding="lg">
           <div className="text-center py-6">
-            <FileSpreadsheet className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+            <FileSpreadsheet className="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               Henüz şablon yok
             </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
+            <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
               Muhasebe sisteminize uygun bir örnek çıktı dosyası yükleyerek ilk şablonunuzu oluşturun.
             </p>
             <Button
@@ -163,15 +163,15 @@ export default function InvoiceNormalizerPage() {
             onClick={() => setShowCreateModal(true)}
             onKeyDown={(e) => e.key === 'Enter' && setShowCreateModal(true)}
             className="flex flex-col items-center justify-center gap-3 p-8
-              rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600
+              rounded-2xl border-2 border-dashed border-border
               hover:border-blue-400 dark:hover:border-blue-500
-              hover:bg-blue-50/50 dark:hover:bg-blue-900/10
+              hover:bg-primary/10/50 dark:hover:bg-blue-900/10
               transition-all duration-300 cursor-pointer min-h-[200px]"
           >
-            <div className="p-3 rounded-xl bg-gray-100 dark:bg-gray-800">
-              <Plus className="w-6 h-6 text-gray-400 dark:text-gray-500" />
+            <div className="p-3 rounded-xl bg-muted">
+              <Plus className="w-6 h-6 text-muted-foreground" />
             </div>
-            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            <span className="text-sm font-medium text-muted-foreground">
               Yeni Şablon Ekle
             </span>
           </div>

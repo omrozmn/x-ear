@@ -61,6 +61,7 @@ export const DeviceReplacementModal: React.FC<DeviceReplacementModalProps> = ({
     let supplierTaxNumber = '';
     let supplierAddress = '';
     let supplierCity = '';
+    let supplierDistrict = '';
 
     if (source?.type === 'invoice') {
       const item = source.matchedItem;
@@ -70,6 +71,7 @@ export const DeviceReplacementModal: React.FC<DeviceReplacementModalProps> = ({
       supplierTaxNumber = source.invoice.senderTaxNumber ?? '';
       supplierAddress = source.invoice.senderAddress ?? '';
       supplierCity = source.invoice.senderCity ?? '';
+      supplierDistrict = source.invoice.senderDistrict ?? '';
       returnInvoiceNumber = source.invoice.invoiceNumber ?? '';
       returnInvoiceDate = source.invoice.invoiceDate ?? '';
     } else if (source?.type === 'inventory') {
@@ -87,7 +89,7 @@ export const DeviceReplacementModal: React.FC<DeviceReplacementModalProps> = ({
     const total = taxBase; // KDV %0 olduğu için toplam = matrah
 
     return {
-      invoiceType: '50',   // İade faturası
+      invoiceType: '50', // İade faturası
       scenario: 'other',
       currency: 'TRY',
       customerId: '',
@@ -98,7 +100,7 @@ export const DeviceReplacementModal: React.FC<DeviceReplacementModalProps> = ({
       customerTaxId: supplierTaxNumber,
       customerAddress: supplierAddress,
       customerCity: supplierCity,
-      customerDistrict: '',
+      customerDistrict: supplierDistrict,
       items: [{
         id: `return-${Date.now()}`,
         name: productName,
@@ -200,7 +202,7 @@ export const DeviceReplacementModal: React.FC<DeviceReplacementModalProps> = ({
     setInvoiceDraft(null);
     // Fire the deferred replacement callback now that InvoiceModal is done
     if (pendingReplacementResult) {
-      onReplacementCreate(pendingReplacementResult as Parameters<typeof onReplacementCreate>[0]);
+      onReplacementCreate(pendingReplacementResult as unknown as Parameters<typeof onReplacementCreate>[0]);
       setPendingReplacementResult(null);
     }
     resetForm();
@@ -230,16 +232,16 @@ export const DeviceReplacementModal: React.FC<DeviceReplacementModalProps> = ({
       <div className="p-6">
         <div className="flex items-start justify-between mb-6">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-foreground">
               Cihaz Değişimi
             </h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               {party.name} - {device.brand} {device.model}
             </p>
           </div>
           <div className="flex items-center gap-3">
             {/* Step indicator */}
-            <div className="flex items-center gap-1 text-xs text-gray-400">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
               {(['1', '2'] as const).map((s, i) => (
                 <React.Fragment key={s}>
                   {i > 0 && <span className="mx-0.5">›</span>}
@@ -247,7 +249,7 @@ export const DeviceReplacementModal: React.FC<DeviceReplacementModalProps> = ({
                     className={`w-5 h-5 flex items-center justify-center rounded-full font-medium ${
                       Number(s) === step
                         ? 'bg-blue-600 text-white'
-                        : 'bg-blue-100 text-blue-600'
+                        : 'bg-primary/10 text-primary'
                     }`}
                   >
                     {s}
@@ -257,9 +259,10 @@ export const DeviceReplacementModal: React.FC<DeviceReplacementModalProps> = ({
             </div>
             {/* Close button */}
             <button
+              data-allow-raw="true"
               type="button"
               onClick={handleClose}
-              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-muted-foreground hover:bg-muted transition-colors"
               aria-label="Kapat"
             >
               <X className="h-4 w-4" />
@@ -268,16 +271,16 @@ export const DeviceReplacementModal: React.FC<DeviceReplacementModalProps> = ({
         </div>
 
         {state.error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-red-500" />
-            <span className="text-red-700">{state.error}</span>
+          <div className="mb-4 p-4 bg-destructive/10 border border-red-200 rounded-xl flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-destructive" />
+            <span className="text-destructive">{state.error}</span>
           </div>
         )}
 
         {state.success && (
-          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2">
-            <CheckCircle2 className="h-5 w-5 text-green-500" />
-            <span className="text-green-700">Cihaz değişimi başarıyla tamamlandı!</span>
+          <div className="mb-4 p-4 bg-success/10 border border-green-200 rounded-xl flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 text-success" />
+            <span className="text-success">Cihaz değişimi başarıyla tamamlandı!</span>
           </div>
         )}
 
@@ -285,13 +288,13 @@ export const DeviceReplacementModal: React.FC<DeviceReplacementModalProps> = ({
         {step === 1 && (
           <div className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Değişim Nedeni *
               </label>
               <select data-allow-raw="true"
                 value={formData.replacementReason}
                 onChange={(e) => updateFormData({ replacementReason: e.target.value })}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="block w-full px-3 py-2 border border-border rounded-xl shadow-sm focus:outline-none focus:ring-ring focus:border-blue-500 sm:text-sm"
               >
                 <option value="">Seçiniz</option>
                 <option value="malfunction">Arıza</option>

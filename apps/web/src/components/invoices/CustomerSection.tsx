@@ -177,18 +177,18 @@ export function CustomerSection({
   // SGK modu
   if (isSGK) {
     return (
-      <div className="bg-white rounded-2xl shadow p-6 mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Fatura Alıcı Bilgileri</h3>
+      <div className="bg-card rounded-2xl shadow p-6 mb-6">
+        <h3 className="text-lg font-semibold text-foreground mb-4">Fatura Alıcı Bilgileri</h3>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Alıcı Adı
             </label>
-            <div className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-2xl text-gray-700">
+            <div className="w-full px-4 py-3 bg-muted border border-border rounded-2xl text-foreground">
               {SGK_CUSTOMER_TEXT}
             </div>
-            <p className="mt-2 text-sm text-blue-600">
+            <p className="mt-2 text-sm text-primary">
               SGK faturası için alıcı bilgisi sabittir.
             </p>
           </div>
@@ -199,14 +199,14 @@ export function CustomerSection({
 
   // Normal mod
   return (
-    <div className="bg-white rounded-2xl shadow p-6 mb-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Fatura Alıcı Bilgileri</h3>
+    <div className="bg-card rounded-2xl shadow p-6 mb-6">
+      <h3 className="text-lg font-semibold text-foreground mb-4">Fatura Alıcı Bilgileri</h3>
 
       <div className="space-y-4">
         {/* Müşteri Arama */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Alıcı Adı <span className="text-red-500">*</span>
+          <label className="block text-sm font-medium text-foreground mb-2">
+            Alıcı Adı <span className="text-destructive">*</span>
           </label>
           <div className="flex gap-2">
             <div className="flex-1 relative">
@@ -221,24 +221,24 @@ export function CustomerSection({
 
               {/* Arama Sonuçları */}
               {searchResults.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
+                <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-2xl shadow-lg max-h-60 overflow-y-auto">
                   {searchResults.map((customer) => (
                     <Button
                       key={customer.id}
                       type="button"
                       onClick={() => handleCustomerSelect(customer)}
                       variant="ghost"
-                      className="w-full px-4 py-2 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                      className="w-full px-4 py-2 text-left hover:bg-muted border-b border-border last:border-b-0"
                     >
-                      <div className="font-medium text-gray-900">{customer.name}</div>
+                      <div className="font-medium text-foreground">{customer.name}</div>
                       {customer.taxNumber && (
-                        <div className="text-sm text-gray-500">VKN: {customer.taxNumber}</div>
+                        <div className="text-sm text-muted-foreground">VKN: {customer.taxNumber}</div>
                       )}
                       {customer.tcNumber && (
-                        <div className="text-sm text-gray-500">TC: {customer.tcNumber}</div>
+                        <div className="text-sm text-muted-foreground">TC: {customer.tcNumber}</div>
                       )}
                       {customer.isEInvoiceUser && (
-                        <span className="inline-block mt-1 px-2 py-0.5 text-xs bg-green-100 text-green-800 rounded">
+                        <span className="inline-block mt-1 px-2 py-0.5 text-xs bg-success/10 text-success rounded">
                           E-Fatura Mükellefi
                         </span>
                       )}
@@ -274,7 +274,7 @@ export function CustomerSection({
             </Button>
           </div>
           {errors.customerId && (
-            <p className="mt-1 text-sm text-red-600">{errors.customerId}</p>
+            <p className="mt-1 text-sm text-destructive">{errors.customerId}</p>
           )}
         </div>
 
@@ -291,7 +291,7 @@ export function CustomerSection({
               ]}
               fullWidth
             />
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-muted-foreground">
               E-Fatura mükellefi için PK etiket seçimi
             </p>
           </div>

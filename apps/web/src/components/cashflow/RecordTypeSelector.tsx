@@ -107,8 +107,8 @@ export function RecordTypeSelector({
                     ? 'bg-green-600 text-white ring-2 ring-green-600'
                     : 'bg-red-600 text-white ring-2 ring-red-600'
                   : transactionType === 'income'
-                    ? 'bg-green-100 text-green-900 hover:bg-green-200 dark:bg-green-900/35 dark:text-green-100 dark:hover:bg-green-900/50'
-                    : 'bg-red-100 text-red-900 hover:bg-red-200 dark:bg-red-900/35 dark:text-red-100 dark:hover:bg-red-900/50'
+                    ? 'bg-success/10 text-green-900 hover:bg-green-200 dark:text-green-100 dark:hover:bg-green-900/50'
+                    : 'bg-destructive/10 text-red-900 hover:bg-red-200 dark:text-red-100 dark:hover:bg-red-900/50'
                 }`}
             >
               <span>{RECORD_TYPE_LABELS[type as RecordType] || type}</span>
@@ -119,7 +119,7 @@ export function RecordTypeSelector({
                     e.stopPropagation();
                     handleRemoveType(type, transactionType as 'income' | 'expense');
                   }}
-                  className="ml-2 hover:text-red-600"
+                  className="ml-2 hover:text-destructive"
                 >
                   <X className="h-3 w-3" />
                 </button>

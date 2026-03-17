@@ -29,11 +29,11 @@ interface SuggestedSuppliersListProps {
 function PdfViewerModal({ blobUrl, title, onClose }: { blobUrl: string; title: string; onClose: () => void }) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
-            <div className="bg-white rounded-xl shadow-2xl flex flex-col w-[90vw] h-[85vh] max-w-5xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-                <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50">
+            <div className="bg-card rounded-xl shadow-2xl flex flex-col w-[90vw] h-[85vh] max-w-5xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center justify-between px-4 py-3 border-b bg-muted">
                     <div className="flex items-center gap-2 min-w-0">
-                        <FileText className="w-4 h-4 text-blue-500 shrink-0" />
-                        <span className="text-sm font-medium text-gray-800 truncate">{title}</span>
+                        <FileText className="w-4 h-4 text-primary shrink-0" />
+                        <span className="text-sm font-medium text-foreground truncate">{title}</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <a
@@ -43,8 +43,8 @@ function PdfViewerModal({ blobUrl, title, onClose }: { blobUrl: string; title: s
                         >
                             İndir
                         </a>
-                        <button data-allow-raw="true" onClick={onClose} className="p-1 rounded hover:bg-gray-200 transition-colors ml-1">
-                            <X className="w-5 h-5 text-gray-600" />
+                        <button data-allow-raw="true" onClick={onClose} className="p-1 rounded hover:bg-accent transition-colors ml-1">
+                            <X className="w-5 h-5 text-muted-foreground" />
                         </button>
                     </div>
                 </div>
@@ -116,7 +116,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
         return (
             <div className="flex items-center justify-center py-16">
                 <div className="h-8 w-8 rounded-full border-4 border-blue-500 border-t-transparent animate-spin" />
-                <span className="ml-3 text-sm text-gray-500">Önerilen tedarikçiler yükleniyor...</span>
+                <span className="ml-3 text-sm text-muted-foreground">Önerilen tedarikçiler yükleniyor...</span>
             </div>
         );
     }
@@ -125,8 +125,8 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
         return (
             <div className="flex flex-col items-center justify-center py-16 text-center">
                 <Building2 className="w-10 h-10 text-gray-300 mb-3" />
-                <p className="text-sm font-medium text-gray-500">Henüz önerilen tedarikçi yok</p>
-                <p className="text-xs text-gray-400 mt-1">Gelen faturalardan tedarikçiler otomatik eklenir</p>
+                <p className="text-sm font-medium text-muted-foreground">Henüz önerilen tedarikçi yok</p>
+                <p className="text-xs text-muted-foreground mt-1">Gelen faturalardan tedarikçiler otomatik eklenir</p>
             </div>
         );
     }
@@ -135,18 +135,18 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
         {
             key: '_invoiceNumber',
             title: 'Fatura No',
-            render: (_, inv) => <span className="font-mono text-gray-700">{inv.invoiceNumber || `#${inv.invoiceId}`}</span>,
+            render: (_, inv) => <span className="font-mono text-foreground">{inv.invoiceNumber || `#${inv.invoiceId}`}</span>,
         },
         {
             key: '_invoiceDate',
             title: 'Tarih',
-            render: (_, inv) => <span className="text-gray-600">{fmtDate(inv.invoiceDate)}</span>,
+            render: (_, inv) => <span className="text-muted-foreground">{fmtDate(inv.invoiceDate)}</span>,
         },
         {
             key: '_totalAmount',
             title: 'Tutar',
             align: 'right',
-            render: (_, inv) => <span className="font-semibold text-gray-800">{fmt(inv.totalAmount || 0)}</span>,
+            render: (_, inv) => <span className="font-semibold text-foreground">{fmt(inv.totalAmount || 0)}</span>,
         },
         {
             key: '_view',
@@ -159,7 +159,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
                     onClick={() => handleViewInvoice(inv)}
                     disabled={invoiceLoading === String(inv.invoiceId)}
                     title="Faturayı görüntüle"
-                    className="inline-flex items-center justify-center w-8 h-8 rounded text-blue-600 hover:bg-blue-200 disabled:opacity-50 transition-colors"
+                    className="inline-flex items-center justify-center w-8 h-8 rounded text-primary hover:bg-blue-200 disabled:opacity-50 transition-colors"
                 >
                     {invoiceLoading === String(inv.invoiceId)
                         ? <span className="block h-3 w-3 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
@@ -184,18 +184,18 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
 
             <div className="space-y-4">
                 {safeSuppliers.map((supplier) => (
-                    <div key={supplier.id} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+                    <div key={supplier.id} className="rounded-2xl border border-border bg-card p-4 shadow-sm">
                         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                             <div className="flex items-start gap-3">
-                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-50">
-                                    <Building2 className="h-5 w-5 text-blue-600" />
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                                    <Building2 className="h-5 w-5 text-primary" />
                                 </div>
                                 <div className="space-y-1">
-                                    <div className="font-medium text-gray-900">{supplier.companyName}</div>
-                                    <div className="text-xs text-gray-500">Vergi No: {supplier.taxNumber || '—'}</div>
-                                    <div className="flex flex-wrap gap-3 text-xs text-gray-500">
-                                        <span>Fatura: <span className="font-semibold text-blue-700">{supplier.invoiceCount ?? 0}</span></span>
-                                        <span>Toplam: <span className="font-semibold text-gray-800">{fmt(supplier.totalAmount || 0)}</span></span>
+                                    <div className="font-medium text-foreground">{supplier.companyName}</div>
+                                    <div className="text-xs text-muted-foreground">Vergi No: {supplier.taxNumber || '—'}</div>
+                                    <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                                        <span>Fatura: <span className="font-semibold text-primary">{supplier.invoiceCount ?? 0}</span></span>
+                                        <span>Toplam: <span className="font-semibold text-foreground">{fmt(supplier.totalAmount || 0)}</span></span>
                                         <span>İlk: {fmtDate(supplier.firstInvoiceDate)}</span>
                                         <span>Son: {supplier.lastInvoiceDate && supplier.lastInvoiceDate !== supplier.firstInvoiceDate ? fmtDate(supplier.lastInvoiceDate) : fmtDate(supplier.firstInvoiceDate)}</span>
                                     </div>
@@ -208,7 +208,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
                                     type="button"
                                     title="Fatura listesini göster"
                                     onClick={() => setExpandedRow(expandedRow === supplier.id ? null : supplier.id)}
-                                    className="inline-flex items-center gap-1 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+                                    className="inline-flex items-center gap-1 rounded-xl border border-border bg-card px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
                                 >
                                     <Info className="w-3.5 h-3.5" />
                                     Faturalar
@@ -231,7 +231,7 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
                                     title="Reddet"
                                     onClick={() => handleReject(supplier)}
                                     disabled={rejectMutation.isPending}
-                                    className="inline-flex items-center rounded-xl border border-red-200 px-3 py-2 text-xs text-red-500 hover:bg-red-50 disabled:opacity-60 transition-colors"
+                                    className="inline-flex items-center rounded-xl border border-red-200 px-3 py-2 text-xs text-destructive hover:bg-destructive/10 disabled:opacity-60 transition-colors"
                                 >
                                     <XCircle className="w-3.5 h-3.5" />
                                 </button>
@@ -239,9 +239,9 @@ export function SuggestedSuppliersList({ suppliers, isLoading, onSupplierAccepte
                         </div>
 
                         {expandedRow === supplier.id && (
-                            <div className="mt-4 rounded-xl bg-blue-50/60 p-3">
+                            <div className="mt-4 rounded-xl bg-primary/10/60 p-3">
                                 {!supplier.invoices?.length ? (
-                                    <p className="py-2 text-xs text-gray-500">Bu tedarikçi için fatura detayı yok.</p>
+                                    <p className="py-2 text-xs text-muted-foreground">Bu tedarikçi için fatura detayı yok.</p>
                                 ) : (
                                     <DataTable<SuggestedInvoice>
                                         data={supplier.invoices}

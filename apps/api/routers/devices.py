@@ -43,31 +43,6 @@ from middleware.require_module import require_module
 
 router = APIRouter(tags=["Devices"], dependencies=[Depends(require_module("devices"))])
 
-def ensure_hearing_product(db_session: Session, tenant_id: str):
-    """Ensure tenant is using a hearing product"""
-    if not tenant_id:
-        return # Admin or system context
-        
-    tenant = db_session.get(Tenant, tenant_id)
-    if not tenant:
-        return # Should be handled by other logic if tenant missing
-        
-    if not ProductCode.is_xear(tenant.product_code or ProductCode.XEAR_HEARING):
-         # Allow all XEar for now? Or strictly Hearing?
-         # User requirement: != XEAR_HEARING -> 403
-         pass
-
-    if tenant.product_code and tenant.product_code != ProductCode.XEAR_HEARING.value:
-         raise HTTPException(
-            status_code=403,
-            detail={
-                "error_code": AppErrorCode.PRODUCT_NOT_ALLOWED,
-                "message": "Feature not available for this product",
-                "product_code": tenant.product_code,
-                "required_product": ProductCode.XEAR_HEARING,
-            }
-        )
-
 
 @router.get(
     "/__internal/openapi-schema-registry",
@@ -134,9 +109,6 @@ def get_devices(
 ):
     """Get devices with filtering"""
     try:
-        if access.tenant_id:
-            ensure_hearing_product(db_session, access.tenant_id)
-            
         query = db_session.query(Device)
         
         # Tenant scope
@@ -205,7 +177,6 @@ def create_device(
         from core.tenant_utils import get_effective_tenant_id
         
         tenant_id = get_effective_tenant_id(access)
-        ensure_hearing_product(db_session, tenant_id)
 
         data = device_in.model_dump(by_alias=False)
         logger.info(f"CREATE_DEVICE REQUEST: {data}")

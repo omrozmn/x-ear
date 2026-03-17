@@ -11,50 +11,50 @@ export const PartyGeneralTab: React.FC<PartyGeneralTabProps> = ({ party }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Name */}
-      <div className="bg-white p-4 rounded-2xl shadow-sm border">
+      <div className="bg-card p-4 rounded-2xl shadow-sm border">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-600">Ad Soyad</p>
+            <p className="text-sm font-medium text-muted-foreground">Ad Soyad</p>
             <p className="text-lg font-semibold">{party.firstName || ''} {party.lastName || ''}</p>
           </div>
         </div>
       </div>
 
       {/* TC Number */}
-      <div className="bg-white p-4 rounded-2xl shadow-sm border">
+      <div className="bg-card p-4 rounded-2xl shadow-sm border">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-600">TC Kimlik No</p>
+            <p className="text-sm font-medium text-muted-foreground">TC Kimlik No</p>
             <p className="text-lg font-semibold">{party.tcNumber}</p>
           </div>
         </div>
       </div>
 
       {/* Phone */}
-      <div className="bg-white p-4 rounded-2xl shadow-sm border">
+      <div className="bg-card p-4 rounded-2xl shadow-sm border">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-600">Telefon</p>
+            <p className="text-sm font-medium text-muted-foreground">Telefon</p>
             <p className="text-lg font-semibold">{party.phone}</p>
           </div>
         </div>
       </div>
 
       {/* Email */}
-      <div className="bg-white p-4 rounded-2xl shadow-sm border">
+      <div className="bg-card p-4 rounded-2xl shadow-sm border">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-600">E-posta</p>
+            <p className="text-sm font-medium text-muted-foreground">E-posta</p>
             <p className="text-lg font-semibold">{party.email || '-'}</p>
           </div>
         </div>
       </div>
 
       {/* Birth Date */}
-      <div className="bg-white p-4 rounded-2xl shadow-sm border">
+      <div className="bg-card p-4 rounded-2xl shadow-sm border">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-600">Doğum Tarihi</p>
+            <p className="text-sm font-medium text-muted-foreground">Doğum Tarihi</p>
             <p className="text-lg font-semibold">
               {party.birthDate ? new Date(party.birthDate).toLocaleDateString('tr-TR') : '-'}
             </p>
@@ -63,10 +63,10 @@ export const PartyGeneralTab: React.FC<PartyGeneralTabProps> = ({ party }) => {
       </div>
 
       {/* Address */}
-      <div className="bg-white p-4 rounded-2xl shadow-sm border">
+      <div className="bg-card p-4 rounded-2xl shadow-sm border">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-600">Adres</p>
+            <p className="text-sm font-medium text-muted-foreground">Adres</p>
             <p className="text-lg font-semibold">
               {(() => {
                 // Handle address as object or string

@@ -355,7 +355,7 @@ export function InvoiceSettings() {
     return (
         <div className="space-y-6">
             {!isTenantAdmin && (
-                <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-2xl flex items-start gap-3">
+                <div className="p-4 bg-warning/10 border border-yellow-200 dark:border-yellow-800 rounded-2xl flex items-start gap-3">
                     <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
                     <p className="text-sm text-yellow-700 dark:text-yellow-300">
                         Fatura ayarlarını sadece Tenant Admin düzenleyebilir. Sadece görüntüleme modundasınız.
@@ -364,14 +364,14 @@ export function InvoiceSettings() {
             )}
 
             {/* BirFatura API Bilgileri */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border p-6">
                 <div className="flex items-center justify-between mb-6">
                     <div>
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                             <Key className="w-5 h-5" />
                             E-Fatura API Bilgileri
                         </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="text-sm text-muted-foreground mt-1">
                             E-Fatura entegrasyon sağlayıcınızdan aldığınız API ve Secret anahtarlarını girin
                         </p>
                     </div>
@@ -396,7 +396,7 @@ export function InvoiceSettings() {
 
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-foreground mb-2">
                             API Key
                         </label>
                         <div className="relative max-w-lg">
@@ -413,14 +413,14 @@ export function InvoiceSettings() {
                                 type="button"
                                 data-allow-raw="true"
                                 onClick={() => setShowApiKey(!showApiKey)}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-muted-foreground"
                             >
                                 {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             </button>
                         </div>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-foreground mb-2">
                             Secret Key
                         </label>
                         <div className="relative max-w-lg">
@@ -437,25 +437,25 @@ export function InvoiceSettings() {
                                 type="button"
                                 data-allow-raw="true"
                                 onClick={() => setShowSecretKey(!showSecretKey)}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-muted-foreground"
                             >
                                 {showSecretKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             </button>
                         </div>
                     </div>
                     {apiKey && secretKey && (
-                        <div className="flex items-center gap-2 text-green-600 dark:text-green-400 text-sm">
+                        <div className="flex items-center gap-2 text-success text-sm">
                             <div className="w-2 h-2 bg-green-500 rounded-full" />
                             API bilgileri tanımlı
                         </div>
                     )}
 
                     {/* Senkronizasyon */}
-                    <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div className="pt-4 border-t border-border">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Fatura Senkronizasyonu</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                <p className="text-sm font-medium text-foreground">Fatura Senkronizasyonu</p>
+                                <p className="text-xs text-muted-foreground mt-0.5">
                                     Gelen ve giden faturaları entegrasyon sağlayıcıdan çek
                                 </p>
                             </div>
@@ -481,8 +481,8 @@ export function InvoiceSettings() {
                         {syncResult && (
                             <div className={`mt-3 p-3 rounded-lg flex items-start gap-2 text-sm ${
                                 syncResult.success 
-                                    ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' 
-                                    : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
+                                    ? 'bg-success/10 text-success' 
+                                    : 'bg-destructive/10 text-destructive'
                             }`}>
                                 {syncResult.success 
                                     ? <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" /> 
@@ -496,13 +496,13 @@ export function InvoiceSettings() {
             </div>
 
             {/* Numaralandırma Ayarları */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border p-6">
                 <div className="flex items-center justify-between mb-6">
                     <div>
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                             Fatura Numaralandırma
                         </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="text-sm text-muted-foreground mt-1">
                             Fatura numaralarınız için ön ek tanımlayın
                         </p>
                     </div>
@@ -527,7 +527,7 @@ export function InvoiceSettings() {
 
                 {/* Varsayılan Ön Ek */}
                 <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                         Varsayılan Fatura Ön Eki
                     </label>
                     <Input
@@ -543,7 +543,7 @@ export function InvoiceSettings() {
                         className="max-w-xs font-mono text-lg"
                     />
                     <div className="mt-2 space-y-1">
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                        <p className="text-xs text-muted-foreground">
                             Örnek fatura numarası: <strong className="font-mono">{defaultPrefix.padEnd(3, '_')}2026000000001</strong> (16 karakter)
                         </p>
                         <p className="text-xs text-amber-600 dark:text-amber-400">
@@ -560,7 +560,7 @@ export function InvoiceSettings() {
                                 <Hash className="w-4 h-4" />
                                 Ek Fatura Ön Ekleri
                             </h4>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <p className="text-xs text-muted-foreground mt-1">
                                 Birden fazla ön ek tanımlayabilirsiniz. Fatura keserken hangisini kullanacağınızı seçersiniz.
                             </p>
                         </div>
@@ -577,7 +577,7 @@ export function InvoiceSettings() {
                     </div>
 
                     {additionalPrefixes.length === 0 ? (
-                        <div className="p-6 text-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-700">
+                        <div className="p-6 text-center text-muted-foreground bg-gray-50 dark:bg-gray-900/50 rounded-2xl border-2 border-dashed border-border">
                             <Hash className="w-10 h-10 mx-auto mb-2 opacity-50" />
                             <p className="text-sm">
                                 Henüz ek ön ek tanımlanmamış.
@@ -590,7 +590,7 @@ export function InvoiceSettings() {
                             {additionalPrefixes.map((prefix, index) => (
                                 <div
                                     key={index}
-                                    className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-200 dark:border-gray-700"
+                                    className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-border"
                                 >
                                     <div className="flex-1">
                                         <Input
@@ -603,7 +603,7 @@ export function InvoiceSettings() {
                                             className="font-mono text-lg"
                                         />
                                         {prefix.length > 0 && prefix.length < 3 && (
-                                            <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                                            <p className="text-xs text-destructive mt-1">
                                                 {3 - prefix.length} karakter daha gerekli
                                             </p>
                                         )}
@@ -613,7 +613,7 @@ export function InvoiceSettings() {
                                         size="sm"
                                         onClick={() => handleRemovePrefix(index)}
                                         disabled={!isTenantAdmin}
-                                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                        className="p-2 text-destructive hover:bg-destructive/10 dark:hover:bg-red-900/20"
                                         title="Sil"
                                     >
                                         <Trash2 className="w-4 h-4" />
@@ -624,12 +624,12 @@ export function InvoiceSettings() {
                     )}
                 </div>
 
-                <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <div className="mt-6 pt-6 border-t border-border">
                     <div className="mb-4">
                         <h4 className="text-sm font-medium text-gray-900 dark:text-white">
                             Varsayılan Gönderici Etiketi
                         </h4>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                             E-Fatura hesabınızda birden fazla GB etiketi varsa varsayılanı seçebilirsiniz.
                         </p>
                     </div>
@@ -662,7 +662,7 @@ export function InvoiceSettings() {
 
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-foreground mb-2">
                             Varsayılan İstisna Sebebi
                         </label>
                         {/* eslint-disable-next-line no-restricted-syntax */}
@@ -670,7 +670,7 @@ export function InvoiceSettings() {
                             value={defaultExemptionCode || '0'}
                             onChange={(e) => setDefaultExemptionCode(e.target.value)}
                             disabled={!isTenantAdmin}
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-amber-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
+                            className="w-full px-3 py-2 border border-border rounded-2xl bg-white text-gray-900 dark:text-white focus:ring-2 focus:ring-amber-500 focus:border-transparent disabled:bg-muted dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
                         >
                             {GOVERNMENT_EXEMPTION_REASONS.map((option) => (
                                 <option key={option.value} value={option.value}>
@@ -678,13 +678,13 @@ export function InvoiceSettings() {
                                 </option>
                             ))}
                         </select>
-                        <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+                        <p className="mt-2 text-xs text-muted-foreground">
                             Ürün satırında KDV %0 seçildiğinde ve özel istisna kodu girilmediyse bu değer XML'e yazılır.
                         </p>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-foreground mb-2">
                             Manuel Resmi İstisna Kodu
                         </label>
                         <Input
@@ -696,7 +696,7 @@ export function InvoiceSettings() {
                             maxLength={3}
                             className="max-w-xs"
                         />
-                        <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+                        <p className="mt-2 text-xs text-muted-foreground">
                             Listede aradığınız kod yoksa resmi istisna kodunu buraya elle girebilirsiniz.
                         </p>
                     </div>

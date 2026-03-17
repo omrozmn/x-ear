@@ -70,7 +70,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
         {isSingleItem ? (
           <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
             <h3 className="font-medium text-gray-900 dark:text-white">{items[0].name}</h3>
-            <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1 mt-2">
+            <div className="text-sm text-muted-foreground space-y-1 mt-2">
               <p>Model: {items[0].model}</p>
               <p>Marka: {items[0].brand}</p>
               <p>Stok: {items[0].availableInventory} adet</p>
@@ -84,7 +84,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
               {items.map((item, index) => (
                 <div key={item.id} className="flex justify-between text-sm dark:text-gray-300">
                   <span>{index + 1}. {item.name}</span>
-                  <span className="text-gray-500 dark:text-gray-500">{item.availableInventory} adet</span>
+                  <span className="text-muted-foreground">{item.availableInventory} adet</span>
                 </div>
               ))}
             </div>

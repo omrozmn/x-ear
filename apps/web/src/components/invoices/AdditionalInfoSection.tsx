@@ -41,8 +41,8 @@ export function AdditionalInfoSection({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow p-6 mb-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Ek Bilgiler</h3>
+    <div className="bg-card rounded-2xl shadow p-6 mb-6">
+      <h3 className="text-lg font-semibold text-foreground mb-4">Ek Bilgiler</h3>
       
       {/* Toggle Buttons */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
@@ -94,11 +94,11 @@ export function AdditionalInfoSection({
 
       {/* Sipariş Bilgisi */}
       {activeSection === 'order' && (
-        <div className="bg-gray-50 rounded-2xl p-4 animate-fade-in">
-          <h4 className="text-sm font-medium text-gray-900 mb-3">Sipariş Bilgileri</h4>
+        <div className="bg-muted rounded-2xl p-4 animate-fade-in">
+          <h4 className="text-sm font-medium text-foreground mb-3">Sipariş Bilgileri</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Sipariş Numarası
               </label>
               <Input
@@ -114,7 +114,7 @@ export function AdditionalInfoSection({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Sipariş Tarihi
               </label>
               <DatePicker
@@ -128,7 +128,7 @@ export function AdditionalInfoSection({
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Sipariş Notu
               </label>
               <Textarea
@@ -149,11 +149,11 @@ export function AdditionalInfoSection({
 
       {/* İrsaliye Bilgisi */}
       {activeSection === 'delivery' && (
-        <div className="bg-gray-50 rounded-2xl p-4 animate-fade-in">
-          <h4 className="text-sm font-medium text-gray-900 mb-3">İrsaliye Bilgileri</h4>
+        <div className="bg-muted rounded-2xl p-4 animate-fade-in">
+          <h4 className="text-sm font-medium text-foreground mb-3">İrsaliye Bilgileri</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 İrsaliye Numarası
               </label>
               <Input
@@ -169,7 +169,7 @@ export function AdditionalInfoSection({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 İrsaliye Tarihi
               </label>
               <DatePicker
@@ -183,7 +183,7 @@ export function AdditionalInfoSection({
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Teslim Alan
               </label>
               <Input
@@ -198,7 +198,7 @@ export function AdditionalInfoSection({
                 placeholder="Teslim alan kişi adı"
               />
             </div>
-            <div className="md:col-span-2 border-t border-gray-200 pt-4">
+            <div className="md:col-span-2 border-t border-border pt-4">
               <label className="flex items-start gap-3">
                 {/* eslint-disable-next-line no-restricted-syntax */}
                 <input
@@ -210,13 +210,13 @@ export function AdditionalInfoSection({
                     ...deliveryInfo,
                     createLinkedDocument: e.target.checked
                   } as DeliveryInfo)}
-                  className="mt-0.5 h-4 w-4 rounded border-gray-300"
+                  className="mt-0.5 h-4 w-4 rounded border-border"
                 />
                 <span>
-                  <span className="block text-sm font-medium text-gray-700">
+                  <span className="block text-sm font-medium text-foreground">
                     {documentKind === 'despatch' ? 'Bağlı fatura oluştur' : 'Bağlı e-irsaliye oluştur'}
                   </span>
-                  <span className="block text-xs text-gray-500">
+                  <span className="block text-xs text-muted-foreground">
                     {documentKind === 'despatch'
                       ? 'Bu e-irsaliye başarılı olduktan sonra bağlı fatura da oluşturulur.'
                       : 'Bu fatura başarılı olduktan sonra bağlı e-irsaliye de oluşturulur.'}
@@ -227,7 +227,7 @@ export function AdditionalInfoSection({
             {documentKind === 'despatch' && deliveryInfo?.createLinkedDocument && (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Bağlı Fatura Tipi
                   </label>
                   {/* eslint-disable-next-line no-restricted-syntax */}
@@ -239,7 +239,7 @@ export function AdditionalInfoSection({
                       ...deliveryInfo,
                       linkedInvoiceType: e.target.value
                     } as DeliveryInfo)}
-                    className="w-full rounded-2xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900"
+                    className="w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm text-foreground"
                   >
                     <option value="0">Satış Faturası</option>
                     <option value="13">İstisna</option>
@@ -257,7 +257,7 @@ export function AdditionalInfoSection({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Bağlı Fatura Senaryosu
                   </label>
                   {/* eslint-disable-next-line no-restricted-syntax */}
@@ -269,7 +269,7 @@ export function AdditionalInfoSection({
                       ...deliveryInfo,
                       linkedScenario: e.target.value
                     } as DeliveryInfo)}
-                    className="w-full rounded-2xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900"
+                    className="w-full rounded-2xl border border-border bg-card px-3 py-2 text-sm text-foreground"
                   >
                     <option value="other">Diğer</option>
                     <option value="export">İhracat</option>
@@ -285,11 +285,11 @@ export function AdditionalInfoSection({
 
       {/* Sevk Bilgisi */}
       {activeSection === 'shipment' && (
-        <div className="bg-gray-50 rounded-2xl p-4 animate-fade-in">
-          <h4 className="text-sm font-medium text-gray-900 mb-3">Sevk Bilgileri</h4>
+        <div className="bg-muted rounded-2xl p-4 animate-fade-in">
+          <h4 className="text-sm font-medium text-foreground mb-3">Sevk Bilgileri</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Sevk Tarihi
               </label>
               <DatePicker
@@ -303,7 +303,7 @@ export function AdditionalInfoSection({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Kargo Firması
               </label>
               <Input
@@ -319,7 +319,7 @@ export function AdditionalInfoSection({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Takip Numarası
               </label>
               <Input
@@ -335,7 +335,7 @@ export function AdditionalInfoSection({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Sevk Adresi
               </label>
               <Textarea
@@ -359,8 +359,8 @@ export function AdditionalInfoSection({
 
       {/* Banka Bilgisi */}
       {activeSection === 'bank' && (
-        <div className="bg-gray-50 rounded-2xl p-4 animate-fade-in">
-          <h4 className="text-sm font-medium text-gray-900 mb-3">Banka Hesap Bilgileri</h4>
+        <div className="bg-muted rounded-2xl p-4 animate-fade-in">
+          <h4 className="text-sm font-medium text-foreground mb-3">Banka Hesap Bilgileri</h4>
           <div className="mb-4">
             <label className="flex items-start gap-3">
               {/* eslint-disable-next-line no-restricted-syntax */}
@@ -376,17 +376,17 @@ export function AdditionalInfoSection({
                   iban: e.target.checked ? (companyBankDefaults?.iban || '') : (bankInfo?.iban || ''),
                   accountHolder: e.target.checked ? (companyBankDefaults?.accountHolder || '') : (bankInfo?.accountHolder || '')
                 })}
-                className="mt-0.5 h-4 w-4 rounded border-gray-300"
+                className="mt-0.5 h-4 w-4 rounded border-border"
               />
               <span>
-                <span className="block text-sm font-medium text-gray-700">Firma ayarlarındaki banka bilgilerini kullan</span>
-                <span className="block text-xs text-gray-500">İşaretlenirse şirket ayarlarındaki banka adı, IBAN ve hesap sahibi otomatik map edilir.</span>
+                <span className="block text-sm font-medium text-foreground">Firma ayarlarındaki banka bilgilerini kullan</span>
+                <span className="block text-xs text-muted-foreground">İşaretlenirse şirket ayarlarındaki banka adı, IBAN ve hesap sahibi otomatik map edilir.</span>
               </span>
             </label>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Banka Adı
               </label>
               <Input
@@ -402,7 +402,7 @@ export function AdditionalInfoSection({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Hesap Sahibi
               </label>
               <Input
@@ -418,7 +418,7 @@ export function AdditionalInfoSection({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Hesap Numarası
               </label>
               <Input
@@ -434,7 +434,7 @@ export function AdditionalInfoSection({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 IBAN
               </label>
               <Input
@@ -450,7 +450,7 @@ export function AdditionalInfoSection({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 SWIFT Kodu
               </label>
               <Input
@@ -471,11 +471,11 @@ export function AdditionalInfoSection({
 
       {/* Ödeme Koşulları */}
       {activeSection === 'payment' && (
-        <div className="bg-gray-50 rounded-2xl p-4 animate-fade-in">
-          <h4 className="text-sm font-medium text-gray-900 mb-3">Ödeme Koşulları</h4>
+        <div className="bg-muted rounded-2xl p-4 animate-fade-in">
+          <h4 className="text-sm font-medium text-foreground mb-3">Ödeme Koşulları</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Vade Tarihi
               </label>
               <DatePicker
@@ -490,12 +490,12 @@ export function AdditionalInfoSection({
                 placeholder="Tarih seçin"
                 className="w-full"
               />
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-muted-foreground">
                 Ödeme vade tarihi (opsiyonel)
               </p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Ödeme Vadesi (Gün)
               </label>
               <Input
@@ -511,7 +511,7 @@ export function AdditionalInfoSection({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Erken Ödeme İndirimi (%)
               </label>
               <Input
@@ -528,7 +528,7 @@ export function AdditionalInfoSection({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Geç Ödeme Cezası (%)
               </label>
               <Input
@@ -545,7 +545,7 @@ export function AdditionalInfoSection({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Ödeme Koşulu
               </label>
               <Input

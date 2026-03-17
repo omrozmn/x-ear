@@ -118,7 +118,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
         }
     ) => {
         if (!items.length) {
-            return <p className="text-gray-400 text-center py-8">Veri bulunamadı</p>;
+            return <p className="text-muted-foreground text-center py-8">Veri bulunamadı</p>;
         }
 
         return (
@@ -136,8 +136,8 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
                 />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {items.map((item) => (
-                        <div key={`${item.month}-${item.value}`} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 px-4 py-3">
-                            <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{getMonthName(item.month)}</p>
+                        <div key={`${item.month}-${item.value}`} className="rounded-xl border border-border bg-gray-50 dark:bg-gray-900/40 px-4 py-3">
+                            <p className="text-xs uppercase tracking-wide text-muted-foreground">{getMonthName(item.month)}</p>
                             <p className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{item.display(item.value)}</p>
                         </div>
                     ))}
@@ -159,7 +159,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
                 <>
                     <p className="font-medium text-gray-900 dark:text-white">{record.partyName}</p>
                     {canViewContact && record.phone && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
                             <Phone className="w-3 h-3" /> {record.phone}
                         </p>
                     )}
@@ -171,7 +171,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
             title: 'Toplam Senet',
             align: 'center',
             render: (_: unknown, record: ReportPromissoryNoteByParty) => (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-blue-800 dark:text-blue-300">
                     {record.totalNotes}
                 </span>
             )
@@ -180,7 +180,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
             key: 'firstDueDate',
             title: 'İlk Vade',
             render: (_: unknown, record: ReportPromissoryNoteByParty) => (
-                <span className="text-sm text-gray-700 dark:text-gray-300">
+                <span className="text-sm text-foreground">
                     {record.firstDueDate ? new Date(record.firstDueDate).toLocaleDateString('tr-TR') : '-'}
                 </span>
             )
@@ -189,7 +189,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
             key: 'lastDueDate',
             title: 'Son Vade',
             render: (_: unknown, record: ReportPromissoryNoteByParty) => (
-                <span className="text-sm text-gray-700 dark:text-gray-300">
+                <span className="text-sm text-foreground">
                     {record.lastDueDate ? new Date(record.lastDueDate).toLocaleDateString('tr-TR') : '-'}
                 </span>
             )
@@ -205,7 +205,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
             title: 'Kalan',
             align: 'right',
             render: (_: unknown, record: ReportPromissoryNoteByParty) => (
-                <span className="font-medium text-red-600">{formatProtectedCurrency(record.remainingAmount)}</span>
+                <span className="font-medium text-destructive">{formatProtectedCurrency(record.remainingAmount)}</span>
             )
         },
     ], []);
@@ -236,7 +236,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
             title: 'Kalan',
             align: 'right',
             render: (_: unknown, record: ReportPromissoryNoteListItem) => (
-                <span className="font-medium text-red-600 dark:text-red-400">
+                <span className="font-medium text-destructive">
                     {formatProtectedCurrency(record.remainingAmount)}
                 </span>
             )
@@ -252,10 +252,10 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
             title: 'Durum',
             render: (_: unknown, record: ReportPromissoryNoteListItem) => (
                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                    record.status === 'paid' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
-                    record.status === 'overdue' ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300' :
-                    record.status === 'partial' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
-                    'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
+                    record.status === 'paid' ? 'bg-success/10 text-success' :
+                    record.status === 'overdue' ? 'bg-destructive/10 text-red-800 dark:text-red-300' :
+                    record.status === 'partial' ? 'bg-warning/10 text-yellow-800 dark:text-yellow-300' :
+                    'bg-primary/10 text-blue-800 dark:text-blue-300'
                 }`}>
                     {record.status === 'paid' ? 'Ödendi' :
                      record.status === 'overdue' ? 'Vadesi Geçti' :
@@ -281,7 +281,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
     if (isLoading) {
         return (
             <div className="flex justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
         );
     }
@@ -290,7 +290,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
         return (
             <div className="text-center py-12">
                 <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-4">Veriler yüklenirken hata oluştu</p>
+                <p className="text-muted-foreground mb-4">Veriler yüklenirken hata oluştu</p>
                 <Button onClick={() => refetch()} variant="outline" icon={<RefreshCw className="w-4 h-4" />}>
                     Tekrar Dene
                 </Button>
@@ -301,7 +301,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Senet Raporları</h3>
+                <h3 className="text-lg font-semibold text-foreground">Senet Raporları</h3>
                 <div className="flex items-center gap-2">
                     <TabExportButton filename="senet-raporu" rows={byParty as unknown as Array<Record<string, unknown>>} />
                     <Button
@@ -322,7 +322,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
                             <Receipt className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                            <p className="text-sm text-blue-600 dark:text-blue-400">Toplam Senet</p>
+                            <p className="text-sm text-primary">Toplam Senet</p>
                             <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{notes?.summary?.totalNotes || 0}</p>
                         </div>
                     </div>
@@ -334,7 +334,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
                             <CreditCard className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                            <p className="text-sm text-green-600 dark:text-green-400">Tahsil Edilen</p>
+                            <p className="text-sm text-success">Tahsil Edilen</p>
                             <p className="text-2xl font-bold text-green-900 dark:text-green-100">{formatProtectedCurrency(notes?.summary?.totalCollected || 0)}</p>
                         </div>
                     </div>
@@ -358,7 +358,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
                             <AlertTriangle className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                            <p className="text-sm text-red-600 dark:text-red-400">Vadesi Geçmiş</p>
+                            <p className="text-sm text-destructive">Vadesi Geçmiş</p>
                             <p className="text-2xl font-bold text-red-900 dark:text-red-100">{notes?.summary?.overdueNotes || 0}</p>
                         </div>
                     </div>
@@ -368,7 +368,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
             {/* Monthly Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Monthly Note Count */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-border p-6">
                     <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Aylık Senet Sayısı</h4>
                     {renderMonthlyDonut(
                         (notes?.monthlyCounts || []).map((item) => ({
@@ -385,7 +385,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
                 </div>
 
                 {/* Monthly Revenue */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-border p-6">
                     <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Aylık Senet Tahsilatı</h4>
                     {renderMonthlyDonut(
                         (notes?.monthlyRevenue || []).map((item) => ({
@@ -404,14 +404,14 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
             </div>
 
             {/* Parties with Notes */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-border overflow-hidden">
+                <div className="px-6 py-4 border-b border-border">
                     <h4 className="text-md font-medium text-gray-900 dark:text-white">Hasta Bazlı Senet Özeti</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Aktif senedi olan hastalar</p>
+                    <p className="text-sm text-muted-foreground">Aktif senedi olan hastalar</p>
                 </div>
                 {partyLoading ? (
                     <div className="p-8 flex justify-center">
-                        <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+                        <Loader2 className="w-6 h-6 animate-spin text-primary" />
                     </div>
                 ) : (
                     <DataTable<ReportPromissoryNoteByParty>
@@ -433,19 +433,19 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
                         <div className="flex items-center justify-between p-4 border-b">
                             <div>
                                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Senet Listesi</h2>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">Tüm senetleri görüntüle ve filtrele</p>
+                                <p className="text-sm text-muted-foreground">Tüm senetleri görüntüle ve filtrele</p>
                             </div>
                             <Button
                                 onClick={() => setShowListModal(false)}
                                 variant="ghost"
-                                className="p-1 hover:bg-gray-100 rounded !w-auto !h-auto"
+                                className="p-1 hover:bg-muted rounded !w-auto !h-auto"
                             >
                                 <X className="w-5 h-5" />
                             </Button>
                         </div>
 
                         {/* Filter Tabs */}
-                        <div className="px-4 pt-3 border-b border-gray-200 dark:border-gray-700">
+                        <div className="px-4 pt-3 border-b border-border">
                             <div className="flex gap-2">
                                 {[
                                     { key: 'active', label: 'Aktif' },
@@ -458,8 +458,8 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
                                         onClick={() => { setListFilter(tab.key as "active" | "overdue" | "paid" | "all"); setListPage(1); }}
                                         variant="ghost"
                                         className={`px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors !w-auto !h-auto rounded-none rounded-t-md ${listFilter === tab.key
-                                            ? 'border-blue-500 text-blue-600 dark:text-blue-400 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/10'
-                                            : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                                            ? 'border-blue-500 text-primary dark:border-blue-400 bg-primary/10'
+                                            : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-gray-200'
                                             }`}
                                     >
                                         {tab.label}
@@ -468,14 +468,14 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
                             </div>
                         </div>
 
-                        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                        <div className="p-4 border-b border-border">
                             <input
                                 data-allow-raw="true"
                                 type="text"
                                 value={search}
                                 onChange={(e) => { setSearch(e.target.value); setListPage(1); }}
                                 placeholder="Hasta adı, telefon veya senet no ile ara"
-                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                className="w-full px-3 py-2 text-sm rounded-lg border border-border bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                             />
                         </div>
 
@@ -513,7 +513,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
                         <div className="flex items-center justify-between mb-4">
                             <div>
                                 <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Senet Detayı</h4>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                <p className="text-sm text-muted-foreground">
                                     {selectedNote.noteNumber || 'Numarasız senet'}
                                 </p>
                             </div>
@@ -528,33 +528,33 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                             <div>
-                                <span className="text-gray-500 dark:text-gray-400">Hasta</span>
+                                <span className="text-muted-foreground">Hasta</span>
                                 <p className="font-medium text-gray-900 dark:text-white">{selectedNote.party?.name || '-'}</p>
                             </div>
                             <div>
-                                <span className="text-gray-500 dark:text-gray-400">Telefon</span>
+                                <span className="text-muted-foreground">Telefon</span>
                                 <p className="font-medium text-gray-900 dark:text-white">{canViewContact ? (selectedNote.party?.phone || '-') : 'Bu rol icin gizli'}</p>
                             </div>
                             <div>
-                                <span className="text-gray-500 dark:text-gray-400">Senet Tutarı</span>
+                                <span className="text-muted-foreground">Senet Tutarı</span>
                                 <p className="font-medium text-gray-900 dark:text-white">{formatProtectedCurrency(selectedNote.amount)}</p>
                             </div>
                             <div>
-                                <span className="text-gray-500 dark:text-gray-400">Tahsil Edilen</span>
+                                <span className="text-muted-foreground">Tahsil Edilen</span>
                                 <p className="font-medium text-gray-900 dark:text-white">{formatProtectedCurrency(selectedNote.paidAmount)}</p>
                             </div>
                             <div>
-                                <span className="text-gray-500 dark:text-gray-400">Kalan Tutar</span>
-                                <p className="font-medium text-red-600 dark:text-red-400">{formatProtectedCurrency(selectedNote.remainingAmount)}</p>
+                                <span className="text-muted-foreground">Kalan Tutar</span>
+                                <p className="font-medium text-destructive">{formatProtectedCurrency(selectedNote.remainingAmount)}</p>
                             </div>
                             <div>
-                                <span className="text-gray-500 dark:text-gray-400">Vade Tarihi</span>
+                                <span className="text-muted-foreground">Vade Tarihi</span>
                                 <p className="font-medium text-gray-900 dark:text-white">
                                     {selectedNote.dueDate ? new Date(selectedNote.dueDate).toLocaleDateString('tr-TR') : '-'}
                                 </p>
                             </div>
                             <div className="md:col-span-2">
-                                <span className="text-gray-500 dark:text-gray-400">Durum</span>
+                                <span className="text-muted-foreground">Durum</span>
                                 <p className="font-medium text-gray-900 dark:text-white">
                                     {selectedNote.status === 'paid' ? 'Ödendi' :
                                      selectedNote.status === 'overdue' ? 'Vadesi Geçti' :

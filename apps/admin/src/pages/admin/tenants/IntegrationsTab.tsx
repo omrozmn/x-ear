@@ -101,8 +101,8 @@ export const IntegrationsTab = ({ tenant, onUpdate }: { tenant: ExtendedTenant; 
             try {
                 const response = await apiClient.get<SmsConfigResponse>(`/api/admin/tenants/${tenant.id}/sms-config`);
                 setSmsConfigData(response.data || null);
-            } catch (error: unknown) {
-                console.error('Failed to fetch SMS config:', error);
+            } catch {
+                // SMS config fetch is non-critical, silently ignore
             } finally {
                 setLoadingSmsConfig(false);
             }

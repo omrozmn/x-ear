@@ -31,7 +31,7 @@ const InventoryTable: React.FC<Props> = ({
       key: '_barcode',
       title: 'SKU',
       render: (_: unknown, item: InventoryItem) => (
-        <span className="text-sm text-gray-500 dark:text-gray-400">{item.barcode ?? '-'}</span>
+        <span className="text-sm text-muted-foreground">{item.barcode ?? '-'}</span>
       ),
     },
     {
@@ -55,9 +55,9 @@ const InventoryTable: React.FC<Props> = ({
       title: 'Durum',
       render: (_: unknown, item: InventoryItem) => (
         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-          item.status === 'available' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-          item.status === 'low_stock' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
-          'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+          item.status === 'available' ? 'bg-success/10 text-success' :
+          item.status === 'low_stock' ? 'bg-warning/10 text-yellow-800 dark:text-yellow-200' :
+          'bg-destructive/10 text-red-800 dark:text-red-200'
         }`}>
           {item.status === 'available' ? 'Mevcut' :
             item.status === 'low_stock' ? 'Düşük Stok' :

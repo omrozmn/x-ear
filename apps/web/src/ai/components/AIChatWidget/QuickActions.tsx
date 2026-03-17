@@ -16,13 +16,13 @@ export const QuickActions: React.FC<QuickActionProps> = ({ onAction }) => {
             label: t('ai.quickActions.newPatient', 'Yeni Hasta'),
             icon: UserPlus,
             message: t('ai.quickActions.newPatientMsg', 'Yeni hasta oluştur'),
-            color: 'bg-blue-100 text-blue-600 border-blue-200'
+            color: 'bg-primary/10 text-primary border-blue-200'
         },
         {
             label: t('ai.quickActions.newSale', 'Yeni Satış'),
             icon: ShoppingCart,
             message: t('ai.quickActions.newSaleMsg', 'Yeni satış başlat'),
-            color: 'bg-green-100 text-green-600 border-green-200'
+            color: 'bg-success/10 text-success border-green-200'
         },
         {
             label: t('ai.quickActions.appointments', 'Randevular'),
@@ -52,7 +52,7 @@ export const QuickActions: React.FC<QuickActionProps> = ({ onAction }) => {
 
     return (
         <div className="w-full px-2 mt-4">
-            <p className="text-xs font-semibold text-gray-500 mb-3 px-1 uppercase tracking-wider">{t('ai.quickActions.title', 'Hızlı İşlemler')}</p>
+            <p className="text-xs font-semibold text-muted-foreground mb-3 px-1 uppercase tracking-wider">{t('ai.quickActions.title', 'Hızlı İşlemler')}</p>
             <div className="grid grid-cols-2 gap-2">
                 {actions.map((action) => (
                     <button
@@ -62,12 +62,12 @@ export const QuickActions: React.FC<QuickActionProps> = ({ onAction }) => {
                         className={`flex flex-col items-center justify-center p-3 rounded-xl border ${action.color} bg-opacity-50 hover:bg-opacity-100 hover:shadow-sm transition-all duration-200`}
                     >
                         <action.icon size={20} className="mb-2" />
-                        <span className="text-xs font-medium text-gray-900">{action.label}</span>
+                        <span className="text-xs font-medium text-foreground">{action.label}</span>
                     </button>
                 ))}
             </div>
 
-            <p className="text-[10px] text-center text-gray-400 mt-4">
+            <p className="text-[10px] text-center text-muted-foreground mt-4">
                 {t('ai.quickActions.footer', 'veya aşağıya yazarak herhangi bir işlem yapabilirsiniz')}
             </p>
         </div>

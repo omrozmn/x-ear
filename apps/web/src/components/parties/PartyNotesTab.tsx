@@ -320,13 +320,13 @@ export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party }) => {
                         onClick={() => handleDeleteNote(note.id)}
                         variant="outline"
                         size="sm"
-                        className="text-red-600 hover:text-red-800"
+                        className="text-destructive hover:text-red-800"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                  <div className="text-xs text-muted-foreground">
                     {note.date ? new Date(note.date).toLocaleString('tr-TR') : ''}
                     <span> • Yazar: {note.author}</span>
                   </div>
@@ -335,7 +335,7 @@ export const PartyNotesTab: React.FC<PartyNotesTabProps> = ({ party }) => {
             </div>
           ))
         ) : (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+          <div className="text-center py-8 text-muted-foreground">
             <p>Henüz not bulunmamaktadır.</p>
           </div>
         )}

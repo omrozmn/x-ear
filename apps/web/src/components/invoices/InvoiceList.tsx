@@ -2,6 +2,7 @@ import { Button, Input, Checkbox } from '@x-ear/ui-web';
 import { Eye, Edit2, FileText, Truck, FilePlus } from 'lucide-react';
 import InvoiceBulkOperations from '../invoice/InvoiceBulkOperations';
 import { InvoicePreviewModal } from '../modals/InvoicePreviewModal';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { useState, useEffect } from 'react';
 import { Invoice, InvoiceFilters, InvoiceStatus } from '../../types/invoice';
 import { invoiceService } from '../../services/invoice.service';
@@ -34,6 +35,7 @@ export function InvoiceList({
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [confirmState, setConfirmState] = useState<{open: boolean, action?: () => void, description?: string}>({open: false});
 
   // Load invoices
   const loadInvoices = async (searchFilters?: InvoiceFilters) => {
@@ -164,30 +166,34 @@ export function InvoiceList({
     };
   }, [openMenuId]);
 
-  const handleDeleteInvoice = async (invoice: Invoice, event: React.MouseEvent) => {
+  const handleDeleteInvoice = (invoice: Invoice, event: React.MouseEvent) => {
     event.stopPropagation();
 
-    if (window.confirm(`${invoice.invoiceNumber} numaralı faturayı silmek istediğinizden emin misiniz?`)) {
-      try {
-        await invoiceService.deleteInvoice(invoice.id);
-        loadInvoices(); // Reload list
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Fatura silinirken hata oluştu');
+    setConfirmState({
+      open: true,
+      description: `${invoice.invoiceNumber} numaralı faturayı silmek istediğinizden emin misiniz?`,
+      action: async () => {
+        try {
+          await invoiceService.deleteInvoice(invoice.id);
+          loadInvoices(); // Reload list
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Fatura silinirken hata oluştu');
+        }
       }
-    }
+    });
   };
 
 
 
   const getStatusColor = (status: InvoiceStatus): string => {
     switch (status) {
-      case 'draft': return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300';
-      case 'sent': return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300';
-      case 'paid': return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300';
-      case 'overdue': return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
-      case 'cancelled': return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
-      case 'processing': return 'bg-yellow-100 dark:bg-yellow-900/10 text-yellow-800 dark:text-yellow-500 animate-pulse';
-      default: return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300';
+      case 'draft': return 'bg-muted text-foreground';
+      case 'sent': return 'bg-primary/10 text-blue-800 dark:text-blue-300';
+      case 'paid': return 'bg-success/10 text-success';
+      case 'overdue': return 'bg-destructive/10 text-red-800 dark:text-red-300';
+      case 'cancelled': return 'bg-destructive/10 text-red-800 dark:text-red-300';
+      case 'processing': return 'bg-warning/10 text-yellow-800 dark:text-yellow-500 animate-pulse';
+      default: return 'bg-muted text-foreground';
     }
   };
 
@@ -218,14 +224,14 @@ export function InvoiceList({
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2 text-gray-600 dark:text-gray-400">Faturalar yükleniyor...</span>
+        <span className="ml-2 text-muted-foreground">Faturalar yükleniyor...</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+      <div className="bg-destructive/10 border border-red-200 rounded-xl p-4">
         <div className="flex">
           <div className="flex-shrink-0">
             <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -234,7 +240,7 @@ export function InvoiceList({
           </div>
           <div className="ml-3">
             <h3 className="text-sm font-medium text-red-800">Hata</h3>
-            <div className="mt-2 text-sm text-red-700">{error}</div>
+            <div className="mt-2 text-sm text-destructive">{error}</div>
           </div>
         </div>
       </div>
@@ -261,7 +267,7 @@ export function InvoiceList({
             placeholder="Belge ara (numara, müşteri adı, vergi no...)"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-border dark:bg-gray-800 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
           />
         </div>
       </div>
@@ -269,7 +275,7 @@ export function InvoiceList({
       {/* Invoice List with headers */}
       <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-xl">
         {/* Header Row */}
-        <div className="hidden sm:grid grid-cols-5 gap-4 px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border-b dark:border-gray-700">
+        <div className="hidden sm:grid grid-cols-5 gap-4 px-6 py-3 text-xs font-semibold text-muted-foreground bg-gray-50 dark:bg-gray-800/50 border-b dark:border-gray-700">
           <div className="flex flex-col">
             <Checkbox
               checked={false}
@@ -277,7 +283,7 @@ export function InvoiceList({
               label="Tümünü seç"
               aria-label="Tümünü seç"
             />
-            <div className="mt-1 text-sm text-gray-500">Belge No</div>
+            <div className="mt-1 text-sm text-muted-foreground">Belge No</div>
           </div>
           <div>Müşteri</div>
           <div>Durum</div>
@@ -286,13 +292,13 @@ export function InvoiceList({
         </div>
         <ul className="divide-y divide-gray-200 dark:divide-gray-700">
           {invoices.length === 0 ? (
-            <li className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">Fatura bulunamadı</li>
+            <li className="px-6 py-8 text-center text-muted-foreground">Fatura bulunamadı</li>
           ) : (
             invoices.map((invoice) => {
               return (
                 <li
                   key={invoice.id}
-                  className={`px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors ${selectedInvoice?.id === invoice.id ? 'bg-blue-50 dark:bg-blue-900/30' : ''}`}
+                  className={`px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors ${selectedInvoice?.id === invoice.id ? 'bg-primary/10' : ''}`}
                   onClick={() => handleInvoiceClick(invoice)}
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 items-center">
@@ -305,13 +311,13 @@ export function InvoiceList({
                       />
                       <div>
                         <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{invoice.invoiceNumber}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(invoice.createdAt || '')}</p>
+                        <p className="text-xs text-muted-foreground">{formatDate(invoice.createdAt || '')}</p>
                       </div>
                     </div>
 
                     <div>
                       <div className="text-sm font-medium text-gray-900 dark:text-white">{invoice.partyName}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">{invoice.billingAddress?.taxNumber ? `VN: ${invoice.billingAddress?.taxNumber}` : invoice.partyPhone}</div>
+                      <div className="text-xs text-muted-foreground">{invoice.billingAddress?.taxNumber ? `VN: ${invoice.billingAddress?.taxNumber}` : invoice.partyPhone}</div>
                     </div>
 
                     <div>
@@ -320,13 +326,13 @@ export function InvoiceList({
 
                     <div className="text-left">
                       <p className="text-sm font-medium text-gray-900 dark:text-white">{formatCurrency(invoice.grandTotal || 0)}</p>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">{invoice.currency}</div>
+                      <div className="text-xs text-muted-foreground">{invoice.currency}</div>
                     </div>
 
                     <div className="flex items-center justify-end space-x-2">
                       {showActions && (
                         <div className="flex items-center space-x-2">
-                          <Button onClick={(e) => openPreview(invoice, e)} className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white p-1" variant='default' title="Önizle" aria-label="Önizle">
+                          <Button onClick={(e) => openPreview(invoice, e)} className="text-foreground hover:text-gray-900 dark:hover:text-white p-1" variant='default' title="Önizle" aria-label="Önizle">
                             <Eye size={16} />
                           </Button>
 
@@ -335,7 +341,7 @@ export function InvoiceList({
                           </Button>
 
                           {invoice.status === 'draft' && (
-                            <Button onClick={async (e) => { e.stopPropagation(); try { const res = await invoiceService.createInvoiceIssue(invoice.id); if (!res.success) { setError(res.error || 'Fatura kesme başarısız'); } else { await loadInvoices(); } } catch (err) { setError(err instanceof Error ? err.message : 'Fatura keserken hata'); } }} className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 p-1" variant='default' title="Fatura Kes" aria-label="Fatura Kes">
+                            <Button onClick={async (e) => { e.stopPropagation(); try { const res = await invoiceService.createInvoiceIssue(invoice.id); if (!res.success) { setError(res.error || 'Fatura kesme başarısız'); } else { await loadInvoices(); } } catch (err) { setError(err instanceof Error ? err.message : 'Fatura keserken hata'); } }} className="text-primary hover:text-blue-800 dark:hover:text-blue-300 p-1" variant='default' title="Fatura Kes" aria-label="Fatura Kes">
                               <FilePlus size={16} />
                             </Button>
                           )}
@@ -349,10 +355,10 @@ export function InvoiceList({
                                 } else {
                                   invoiceService.generateInvoicePdf(invoice.id).then(res => { if (res.success && res.data) invoiceService.previewPdfBlob(res.data); });
                                 }
-                              }} className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white p-1" variant='default' title="Fatura Aç" aria-label="Fatura Aç">
+                              }} className="text-foreground hover:text-gray-900 dark:hover:text-white p-1" variant='default' title="Fatura Aç" aria-label="Fatura Aç">
                                 <FileText size={16} />
                               </Button>
-                              <Button onClick={(e) => { e.stopPropagation(); const saleId = invoice.saleId || ''; invoiceService.generateSaleInvoicePdf(saleId); }} className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white p-1" variant='default' title="Kargo Aç" aria-label="Kargo Aç">
+                              <Button onClick={(e) => { e.stopPropagation(); const saleId = invoice.saleId || ''; invoiceService.generateSaleInvoicePdf(saleId); }} className="text-foreground hover:text-gray-900 dark:hover:text-white p-1" variant='default' title="Kargo Aç" aria-label="Kargo Aç">
                                 <Truck size={16} />
                               </Button>
                             </>
@@ -372,25 +378,25 @@ export function InvoiceList({
                             </Button>
 
                             {openMenuId === invoice.id && (
-                              <div data-invoice-menu className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-20">
+                              <div data-invoice-menu className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 border border-border rounded-xl shadow-lg z-20">
                                 <Button
                                   variant="ghost"
                                   onClick={(e) => { e.stopPropagation(); handleDeleteInvoice(invoice, e); setOpenMenuId(null); }}
-                                  className="w-full text-left px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                  className="w-full text-left px-3 py-2 text-sm text-destructive hover:bg-muted dark:hover:bg-gray-700"
                                 >
                                   Kaydı Sil
                                 </Button>
                                 <Button
                                   variant="ghost"
                                   onClick={async (e) => { e.stopPropagation(); try { await invoiceService.copyInvoice(invoice.id); await loadInvoices(); } catch (err) { setError(err instanceof Error ? err.message : 'Kopyalama hatası'); } finally { setOpenMenuId(null); } }}
-                                  className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                  className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700"
                                 >
                                   Kopyala
                                 </Button>
                                 <Button
                                   variant="ghost"
                                   onClick={async (e) => { e.stopPropagation(); try { await invoiceService.copyInvoiceWithCancellation(invoice.id); await loadInvoices(); } catch (err) { setError(err instanceof Error ? err.message : 'Kopyala+İptal hatası'); } finally { setOpenMenuId(null); } }}
-                                  className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                  className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700"
                                 >
                                   Kopyala ve İptal Et
                                 </Button>
@@ -413,28 +419,39 @@ export function InvoiceList({
           invoice={previewInvoice}
         />
       </div>
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={confirmState.open}
+        title="Silme Onayı"
+        description={confirmState.description || 'Bu kaydı silmek istediğinizden emin misiniz?'}
+        onClose={() => setConfirmState({open: false})}
+        onConfirm={() => { confirmState.action?.(); setConfirmState({open: false}); }}
+        confirmLabel="Sil"
+        cancelLabel="İptal"
+        variant="danger"
+      />
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 sm:px-6">
+        <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border-t border-border sm:px-6">
           <div className="flex-1 flex justify-between sm:hidden">
             <Button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-xl text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="relative inline-flex items-center px-4 py-2 border border-border text-sm font-medium rounded-xl text-foreground bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
               variant='default'>
               Önceki
             </Button>
             <Button
               onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-xl text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="ml-3 relative inline-flex items-center px-4 py-2 border border-border text-sm font-medium rounded-xl text-foreground bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
               variant='default'>
               Sonraki
             </Button>
           </div>
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm text-gray-700 dark:text-gray-400">
+              <p className="text-sm text-foreground">
                 Sayfa <span className="font-medium">{currentPage}</span> / <span className="font-medium">{totalPages}</span>
               </p>
             </div>
@@ -443,14 +460,14 @@ export function InvoiceList({
                 <Button
                   onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-border bg-white dark:bg-gray-700 text-sm font-medium text-muted-foreground hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                   variant='default'>
                   Önceki
                 </Button>
                 <Button
                   onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-border bg-white dark:bg-gray-700 text-sm font-medium text-muted-foreground hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                   variant='default'>
                   Sonraki
                 </Button>

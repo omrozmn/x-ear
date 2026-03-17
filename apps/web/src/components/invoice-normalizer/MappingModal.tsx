@@ -67,9 +67,9 @@ export function MappingModal({ templateId, onClose }: Props) {
   };
 
   const confidenceColor = (c: number) => {
-    if (c >= 0.9) return 'text-green-600 bg-green-100 dark:bg-green-900/30';
-    if (c >= 0.7) return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30';
-    return 'text-red-600 bg-red-100 dark:bg-red-900/30';
+    if (c >= 0.9) return 'text-success bg-success/10';
+    if (c >= 0.7) return 'text-yellow-600 bg-warning/10';
+    return 'text-destructive bg-destructive/10';
   };
 
   const customFooter = suggestions.length > 0 ? (
@@ -102,16 +102,16 @@ export function MappingModal({ templateId, onClose }: Props) {
         {/* Current mappings */}
         {currentMappings.length > 0 && suggestions.length === 0 && (
           <div>
-            <h4 className="text-xs font-medium text-gray-500 uppercase mb-2">
+            <h4 className="text-xs font-medium text-muted-foreground uppercase mb-2">
               Mevcut Mapping Kuralları
             </h4>
             <div className="space-y-1.5">
               {currentMappings.map((m: MappingRule) => (
                 <div key={m.id} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-700/50 text-sm">
-                  <span className="text-gray-600 dark:text-gray-300 font-mono">{m.sourcePattern}</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                  <span className="text-muted-foreground font-mono">{m.sourcePattern}</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                   <span className="text-gray-900 dark:text-white font-medium">{m.targetColumn}</span>
-                  {m.isConfirmed && <Check className="w-3.5 h-3.5 text-green-500 ml-auto" />}
+                  {m.isConfirmed && <Check className="w-3.5 h-3.5 text-success ml-auto" />}
                 </div>
               ))}
             </div>
@@ -120,10 +120,10 @@ export function MappingModal({ templateId, onClose }: Props) {
 
         {/* Upload for new suggestion */}
         <div>
-          <h4 className="text-xs font-medium text-gray-500 uppercase mb-2">
+          <h4 className="text-xs font-medium text-muted-foreground uppercase mb-2">
             Yeni Mapping Önerisi Al
           </h4>
-          <p className="text-xs text-gray-400 mb-3">
+          <p className="text-xs text-muted-foreground mb-3">
             Normalize etmek istediğiniz dosyayı yükleyin. AI kolon isimlerini analiz edip eşleştirme önerecek.
           </p>
           <div className="flex gap-2">
@@ -158,13 +158,13 @@ export function MappingModal({ templateId, onClose }: Props) {
         {/* Suggestions */}
         {suggestions.length > 0 && (
           <div>
-            <h4 className="text-xs font-medium text-gray-500 uppercase mb-2">
+            <h4 className="text-xs font-medium text-muted-foreground uppercase mb-2">
               AI Önerileri
             </h4>
             <div className="space-y-1.5">
               {suggestions.map((s, i) => (
                 <div key={i} className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-purple-50/50 dark:bg-purple-900/10 text-sm">
-                  <span className="text-gray-600 dark:text-gray-300 font-mono flex-1">
+                  <span className="text-muted-foreground font-mono flex-1">
                     {s.sourceColumn}
                   </span>
                   <ArrowRight className="w-3.5 h-3.5 text-purple-400 shrink-0" />

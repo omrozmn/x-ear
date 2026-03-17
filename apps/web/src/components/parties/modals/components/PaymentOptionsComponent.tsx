@@ -61,7 +61,7 @@ export const PaymentOptionsComponent: React.FC<PaymentOptionsComponentProps> = (
         <div className="space-y-3 pt-4 border-t">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Ödeme Yöntemi
               </label>
               <RadioGroup
@@ -74,7 +74,7 @@ export const PaymentOptionsComponent: React.FC<PaymentOptionsComponentProps> = (
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Satış Tarihi
               </label>
               <Input
@@ -90,7 +90,7 @@ export const PaymentOptionsComponent: React.FC<PaymentOptionsComponentProps> = (
           {paymentMethod === 'installment' && (
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Taksit Sayısı
                 </label>
                 <Input
@@ -103,7 +103,7 @@ export const PaymentOptionsComponent: React.FC<PaymentOptionsComponentProps> = (
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Faiz Oranı (%)
                 </label>
                 <Input
@@ -117,7 +117,7 @@ export const PaymentOptionsComponent: React.FC<PaymentOptionsComponentProps> = (
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Ön Ödeme
                 </label>
                 <Input
@@ -147,7 +147,7 @@ export const PaymentOptionsComponent: React.FC<PaymentOptionsComponentProps> = (
                 </div>
               </div>
 
-              <div className="p-3 bg-white border border-purple-200 rounded-xl">
+              <div className="p-3 bg-card border border-purple-200 rounded-xl">
                 <div className="text-sm text-purple-700 space-y-1">
                   <div className="flex justify-between">
                     <span>Toplam Tutar:</span>

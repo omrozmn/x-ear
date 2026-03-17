@@ -119,7 +119,6 @@ const SMTPConfig: React.FC = () => {
     } catch (error: unknown) {
       const errorMessage = getApiErrorMessage(error, 'SMTP ayarları kaydedilemedi');
       toast.error(errorMessage);
-      console.error('SMTP config save error:', error);
     }
   };
 
@@ -142,7 +141,6 @@ const SMTPConfig: React.FC = () => {
     } catch (error: unknown) {
       const errorMessage = getApiErrorMessage(error, 'Test e-postası gönderilemedi');
       toast.error(errorMessage);
-      console.error('Test email error:', error);
     }
   };
 

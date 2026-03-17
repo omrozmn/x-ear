@@ -137,15 +137,15 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
   const getPriorityIcon = (priority: string) => {
     switch (priority) {
       case 'low':
-        return <Info className="w-4 h-4 text-blue-500" />;
+        return <Info className="w-4 h-4 text-primary" />;
       case 'medium':
         return <Info className="w-4 h-4 text-yellow-500" />;
       case 'high':
         return <AlertTriangle className="w-4 h-4 text-orange-500" />;
       case 'critical':
-        return <AlertTriangle className="w-4 h-4 text-red-500" />;
+        return <AlertTriangle className="w-4 h-4 text-destructive" />;
       default:
-        return <Info className="w-4 h-4 text-gray-400" />;
+        return <Info className="w-4 h-4 text-muted-foreground" />;
     }
   };
 
@@ -180,7 +180,7 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
       <form onSubmit={handleSubmit} className="space-y-3">
         {/* İçerik */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Not İçeriği *
           </label>
           <Textarea
@@ -193,16 +193,16 @@ export const PartyNoteForm: React.FC<PartyNoteFormProps> = ({
           />
           <div className="flex justify-between items-center mt-1">
             {errors.content && (
-              <p className="text-xs text-red-600">{errors.content}</p>
+              <p className="text-xs text-destructive">{errors.content}</p>
             )}
-            <span className="text-xs text-gray-400 ml-auto">
+            <span className="text-xs text-muted-foreground ml-auto">
               {(formData.content?.length || 0)}/2000
             </span>
           </div>
         </div>
 
         {/* Form Actions */}
-        <div className="flex justify-end space-x-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex justify-end space-x-2 pt-3 border-t border-border">
           <Button
             type="button"
             variant="outline"

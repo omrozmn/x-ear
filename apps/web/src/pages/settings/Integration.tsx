@@ -217,10 +217,10 @@ export default function IntegrationSettings() {
         if (!doc) return null;
         const status = doc.status || 'uploaded';
         const badges: Record<string, { bg: string; text: string; label: string }> = {
-            uploaded: { bg: 'bg-blue-100 dark:bg-blue-800', text: 'text-blue-800 dark:text-blue-100', label: 'Yüklendi' },
-            sent: { bg: 'bg-yellow-100 dark:bg-yellow-800', text: 'text-yellow-800 dark:text-yellow-100', label: 'Gönderildi' },
+            uploaded: { bg: 'bg-primary/10', text: 'text-blue-800 dark:text-blue-100', label: 'Yüklendi' },
+            sent: { bg: 'bg-warning/10', text: 'text-yellow-800 dark:text-yellow-100', label: 'Gönderildi' },
             revision_requested: { bg: 'bg-orange-100 dark:bg-orange-800', text: 'text-orange-800 dark:text-orange-100', label: 'Revizyon İstendi' },
-            approved: { bg: 'bg-green-100 dark:bg-green-800', text: 'text-green-800 dark:text-green-100', label: 'Onaylandı' }
+            approved: { bg: 'bg-success/10', text: 'text-success', label: 'Onaylandı' }
         };
         const badge = badges[status] || badges.uploaded;
         return <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${badge.bg} ${badge.text}`}>{badge.label}</span>;
@@ -235,29 +235,29 @@ export default function IntegrationSettings() {
     return (
         <div className="space-y-6">
             <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
-                <Tabs.List className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
-                    <Tabs.Trigger value="sms" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'sms' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                <Tabs.List className="flex border-b border-border mb-6">
+                    <Tabs.Trigger value="sms" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'sms' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
                         <div className="flex items-center gap-2"><MessageSquare className="w-4 h-4" />SMS Entegrasyonu</div>
                     </Tabs.Trigger>
-                    <Tabs.Trigger value="whatsapp" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'whatsapp' ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                    <Tabs.Trigger value="whatsapp" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'whatsapp' ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
                         <div className="flex items-center gap-2"><MessageCircleMore className="w-4 h-4" />WhatsApp Entegrasyonu</div>
                     </Tabs.Trigger>
-                    <Tabs.Trigger value="invoice" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'invoice' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                    <Tabs.Trigger value="invoice" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'invoice' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
                         <div className="flex items-center gap-2"><Receipt className="w-4 h-4" />E-Fatura Ayarları</div>
                     </Tabs.Trigger>
-                    <Tabs.Trigger value="pos" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'pos' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                    <Tabs.Trigger value="pos" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'pos' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
                         <div className="flex items-center gap-2"><CreditCard className="w-4 h-4" />Online Ödeme (POS)</div>
                     </Tabs.Trigger>
-                    <Tabs.Trigger value="automation" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'automation' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                    <Tabs.Trigger value="automation" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'automation' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
                         <div className="flex items-center gap-2"><Zap className="w-4 h-4" />Otomasyon</div>
                     </Tabs.Trigger>
-                    <Tabs.Trigger value="uts" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'uts' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                    <Tabs.Trigger value="uts" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'uts' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
                         <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4" />UTS</div>
                     </Tabs.Trigger>
-                    <Tabs.Trigger value="noah" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'noah' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                    <Tabs.Trigger value="noah" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'noah' ? 'border-blue-600 text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
                         <div className="flex items-center gap-2"><Activity className="w-4 h-4" />Noah</div>
                     </Tabs.Trigger>
-                    <Tabs.Trigger value="sgk-login" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'sgk-login' ? 'border-red-600 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+                    <Tabs.Trigger value="sgk-login" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'sgk-login' ? 'border-red-600 text-destructive' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
                         <div className="flex items-center gap-2"><Shield className="w-4 h-4" />SGK Giriş</div>
                     </Tabs.Trigger>
                 </Tabs.List>
@@ -267,12 +267,12 @@ export default function IntegrationSettings() {
                     ) : (
                         <>
                             <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 px-6 py-4 rounded-xl border border-indigo-200 dark:border-indigo-800">
-                                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Kalan SMS Kredisi</div>
+                                <div className="text-sm text-muted-foreground mb-1">Kalan SMS Kredisi</div>
                                 <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{credit?.balance?.toLocaleString() || '0'}</div>
                             </div>
                             {documentsSubmitted && !allDocumentsApproved && (
-                                <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-2xl border border-green-200 dark:border-green-800">
-                                    <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
+                                <div className="p-4 bg-success/10 rounded-2xl border border-green-200 dark:border-green-800">
+                                    <div className="flex items-center gap-2 text-success">
                                         <CheckCircle className="w-5 h-5" />
                                         <p className="font-medium">Belgeleriniz gönderildi. SMS kullanımınız açıldığında bilgilendirileceksiniz.</p>
                                     </div>
@@ -286,12 +286,12 @@ export default function IntegrationSettings() {
                                     </div>
                                 </div>
                             )}
-                            <div className="border-b border-gray-200 dark:border-gray-700 mb-4">
+                            <div className="border-b border-border mb-4">
                                 <div className="flex gap-4">
                                     <Button
                                         variant="ghost"
                                         onClick={() => setSmsSubTab('docs')}
-                                        className={`px-4 py-2 text-sm font-medium border-b-2 rounded-none transition-colors ${smsSubTab === 'docs' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                                        className={`px-4 py-2 text-sm font-medium border-b-2 rounded-none transition-colors ${smsSubTab === 'docs' ? 'border-blue-600 text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                                     >
                                         Başvuru Belgeleri
                                     </Button>
@@ -299,7 +299,7 @@ export default function IntegrationSettings() {
                                         variant="ghost"
                                         onClick={() => setSmsSubTab('headers')}
                                         disabled={!allDocumentsApproved}
-                                        className={`px-4 py-2 text-sm font-medium border-b-2 rounded-none transition-colors ${smsSubTab === 'headers' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                                        className={`px-4 py-2 text-sm font-medium border-b-2 rounded-none transition-colors ${smsSubTab === 'headers' ? 'border-blue-600 text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                                     >
                                         SMS Başlıkları {!allDocumentsApproved && <span className="ml-1 text-xs">(Kilitli)</span>}
                                     </Button>
@@ -308,7 +308,7 @@ export default function IntegrationSettings() {
 
                             {smsSubTab === 'docs' && (
                                 <div className="space-y-4">
-                                    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
+                                    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border p-6">
                                         <SettingsSectionHeader
                                             className="mb-6"
                                             title="SMS Başvuru Belgeleri"
@@ -317,14 +317,14 @@ export default function IntegrationSettings() {
                                         />
                                         
                                         {/* Example Contract Section */}
-                                        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-200 dark:border-blue-800">
+                                        <div className="mb-6 p-4 bg-primary/10 rounded-2xl border border-blue-200 dark:border-blue-800">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex-1">
                                                     <h4 className="font-medium text-gray-900 dark:text-white mb-1 flex items-center gap-2">
-                                                        <FileText className="w-5 h-5 text-blue-600" />
+                                                        <FileText className="w-5 h-5 text-primary" />
                                                         Sözleşme Şablonları
                                                     </h4>
-                                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                    <p className="text-sm text-muted-foreground">
                                                         Boş sözleşmeyi indirip doldurun veya örnek sözleşmeyi inceleyerek nasıl doldurulacağını öğrenin.
                                                     </p>
                                                 </div>
@@ -332,7 +332,7 @@ export default function IntegrationSettings() {
                                                     <Button
                                                         variant="outline"
                                                         onClick={() => window.open('/documents/sms/contract-example.pdf', '_blank')}
-                                                        className="flex items-center gap-2 border-blue-300 text-blue-700 hover:bg-blue-100 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-900/30"
+                                                        className="flex items-center gap-2 border-blue-300 text-primary hover:bg-primary/10 dark:border-blue-700 dark:hover:bg-blue-900/30"
                                                     >
                                                         <Download className="w-4 h-4" />
                                                         Sözleşme İndir
@@ -340,7 +340,7 @@ export default function IntegrationSettings() {
                                                     <Button
                                                         variant="outline"
                                                         onClick={() => setShowContractExample(true)}
-                                                        className="flex items-center gap-2 border-blue-300 text-blue-700 hover:bg-blue-100 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-900/30"
+                                                        className="flex items-center gap-2 border-blue-300 text-primary hover:bg-primary/10 dark:border-blue-700 dark:hover:bg-blue-900/30"
                                                     >
                                                         <ExternalLink className="w-4 h-4" />
                                                         Örnek Sözleşme
@@ -355,9 +355,9 @@ export default function IntegrationSettings() {
                                                 const canUploadThis = canUpload(doc.id);
                                                 const isDisabled = documentsSubmitted && !canUploadThis;
                                                 return (
-                                                    <div key={doc.id} className={`flex items-center justify-between p-4 rounded-2xl border ${uploaded ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800' : 'bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700'} ${isDisabled ? 'opacity-60' : ''}`}>
+                                                    <div key={doc.id} className={`flex items-center justify-between p-4 rounded-2xl border ${uploaded ? 'bg-success/10 border-green-200 dark:border-green-800' : 'bg-gray-50 dark:bg-gray-900/50 border-border'} ${isDisabled ? 'opacity-60' : ''}`}>
                                                         <div className="flex items-center gap-3">
-                                                            <FileText className={`w-5 h-5 ${uploaded ? 'text-green-600' : 'text-gray-400'}`} />
+                                                            <FileText className={`w-5 h-5 ${uploaded ? 'text-success' : 'text-muted-foreground'}`} />
                                                             <div>
                                                                 <div className="font-medium text-gray-900 dark:text-white">{doc.label}</div>
                                                                 {uploaded && (
@@ -365,7 +365,7 @@ export default function IntegrationSettings() {
                                                                         <button
                                                                             data-allow-raw="true"
                                                                             onClick={() => handlePreviewDocument(doc.id)}
-                                                                            className="text-xs text-blue-600 hover:underline cursor-pointer flex items-center gap-1"
+                                                                            className="text-xs text-primary hover:underline cursor-pointer flex items-center gap-1"
                                                                             title="Önizle ve indir"
                                                                         >
                                                                             <Eye className="w-3 h-3" />
@@ -383,7 +383,7 @@ export default function IntegrationSettings() {
                                                                         variant="ghost"
                                                                         size="sm"
                                                                         onClick={() => handlePreviewDocument(doc.id)}
-                                                                        className="p-2 text-gray-600"
+                                                                        className="p-2 text-muted-foreground"
                                                                         title="Önizle"
                                                                     >
                                                                         <Eye className="w-4 h-4" />
@@ -393,7 +393,7 @@ export default function IntegrationSettings() {
                                                                             variant="ghost"
                                                                             size="sm"
                                                                             onClick={() => setDeleteConfirmDoc(doc.id)}
-                                                                            className="p-2 text-red-600"
+                                                                            className="p-2 text-destructive"
                                                                             disabled={isDeleting}
                                                                             title="Sil"
                                                                         >
@@ -450,10 +450,10 @@ export default function IntegrationSettings() {
                                             })}
                                         </div>
                                         {allDocsUploaded && !documentsSubmitted && (
-                                            <div className="mt-6 pt-6 border-t-2 border-gray-300 dark:border-gray-600">
-                                                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl mb-4">
+                                            <div className="mt-6 pt-6 border-t-2 border-border">
+                                                <div className="bg-primary/10 p-4 rounded-2xl mb-4">
                                                     <div className="flex items-start gap-2">
-                                                        <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                                                        <AlertCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                                                         <p className="text-sm text-blue-800 dark:text-blue-200">
                                                             Tüm belgeler yüklendi. Başvurunuzu onaya göndermek için aşağıdaki butona tıklayın.
                                                         </p>
@@ -479,14 +479,14 @@ export default function IntegrationSettings() {
                                             </div>
                                         )}
                                         {documentsSubmitted && !hasRevisionRequested && (
-                                            <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                                            <div className="mt-6 pt-6 border-t border-border">
                                                 <Button disabled className="w-full bg-gray-400 cursor-not-allowed">
                                                     <CheckCircle className="w-4 h-4 mr-2" />Belgeler Gönderildi
                                                 </Button>
                                             </div>
                                         )}
                                         {hasRevisionRequested && (
-                                            <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                                            <div className="mt-6 pt-6 border-t border-border">
                                                 <Button onClick={handleSubmitDocuments} disabled={isSubmitting} className="w-full">
                                                     {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
                                                     Belgeleri Tekrar Gönder
@@ -499,7 +499,7 @@ export default function IntegrationSettings() {
 
                             {smsSubTab === 'headers' && allDocumentsApproved && (
                                 <div className="space-y-4">
-                                    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
+                                    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border p-6">
                                         <SettingsSectionHeader
                                             className="mb-4"
                                             title="SMS Başlıkları"
@@ -527,23 +527,23 @@ export default function IntegrationSettings() {
                                             </div>
                                             {newHeaderType !== 'company_title' && (
                                                 <div className="mt-3">
-                                                    <label className="text-sm text-gray-600 dark:text-gray-400">Destekleyici Belge</label>
+                                                    <label className="text-sm text-muted-foreground">Destekleyici Belge</label>
                                                     <input data-allow-raw="true" type="file" ref={headerDocInputRef} onChange={(e) => setHeaderDocument(e.target.files?.[0] || null)} className="mt-1 block w-full text-sm" />
                                                 </div>
                                             )}
                                         </div>
                                         <div className="space-y-3">
                                             {headers.length === 0 ? (
-                                                <p className="text-gray-500 dark:text-gray-400 text-center py-8">Henüz SMS başlığı bulunmuyor.</p>
+                                                <p className="text-muted-foreground text-center py-8">Henüz SMS başlığı bulunmuyor.</p>
                                             ) : (
                                                 headers.map((h) => (
                                                     <div key={h.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/50 rounded-2xl">
                                                         <div>
                                                             <div className="font-medium text-gray-900 dark:text-white">{h.headerText}</div>
-                                                            <div className="text-xs text-gray-500">{HEADER_TYPES.find(t => t.value === h.headerType)?.label}</div>
+                                                            <div className="text-xs text-muted-foreground">{HEADER_TYPES.find(t => t.value === h.headerType)?.label}</div>
                                                         </div>
                                                         <div className="flex items-center gap-2">
-                                                            <span className={`px-2 py-1 rounded text-xs font-medium ${h.status === 'approved' ? 'bg-green-100 text-green-800' : h.status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                                                            <span className={`px-2 py-1 rounded text-xs font-medium ${h.status === 'approved' ? 'bg-success/10 text-success' : h.status === 'rejected' ? 'bg-destructive/10 text-red-800' : 'bg-warning/10 text-yellow-800'}`}>
                                                                 {h.status === 'approved' ? 'Onaylandı' : h.status === 'rejected' ? 'Reddedildi' : 'Beklemede'}
                                                             </span>
                                                             {h.isDefault && <span className="px-2 py-1 bg-indigo-100 text-indigo-800 rounded text-xs font-medium">Varsayılan</span>}
@@ -573,7 +573,7 @@ export default function IntegrationSettings() {
                 <Dialog.Portal>
                     <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50" />
                     <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-xl shadow-xl z-50 w-[90vw] max-w-4xl h-[80vh] flex flex-col">
-                        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center justify-between p-4 border-b border-border">
                             <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white">Belge Önizleme: {previewDoc?.filename}</Dialog.Title>
                             <Dialog.Close asChild>
                                 <Button variant="ghost" size="sm" className="p-2">
@@ -591,7 +591,7 @@ export default function IntegrationSettings() {
                 <Dialog.Portal>
                     <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50" />
                     <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-xl shadow-xl z-50 w-[90vw] max-w-4xl h-[80vh] flex flex-col">
-                        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center justify-between p-4 border-b border-border">
                             <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white">Örnek Sözleşme</Dialog.Title>
                             <Dialog.Close asChild>
                                 <Button variant="ghost" size="sm" className="p-2">
@@ -610,7 +610,7 @@ export default function IntegrationSettings() {
                     <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50" />
                     <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-xl shadow-xl z-50 w-full max-w-md p-6">
                         <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Belgeyi Sil</Dialog.Title>
-                        <p className="text-gray-600 dark:text-gray-400 mb-6">Bu belgeyi silmek istediğinizden emin misiniz?</p>
+                        <p className="text-muted-foreground mb-6">Bu belgeyi silmek istediğinizden emin misiniz?</p>
                         <div className="flex justify-end gap-3">
                             <Button variant="outline" onClick={() => setDeleteConfirmDoc(null)}>İptal</Button>
                             <Button variant="danger" onClick={() => deleteConfirmDoc && handleDeleteDocument(deleteConfirmDoc)}>Sil</Button>

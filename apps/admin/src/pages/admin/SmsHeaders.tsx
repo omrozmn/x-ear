@@ -89,9 +89,8 @@ export default function SMSHeadersPage() {
             setSelectedHeader(null);
             setRejectionReason('');
             refetch();
-        } catch (error) {
+        } catch {
             toast.error('İşlem başarısız');
-            console.error(error);
         }
     };
 

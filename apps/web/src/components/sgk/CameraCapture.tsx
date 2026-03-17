@@ -450,18 +450,18 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
   };
 
   const edgeStatusColor = {
-    searching: 'text-gray-400',
+    searching: 'text-muted-foreground',
     detected: 'text-yellow-500',
-    stable: 'text-green-500',
-    captured: 'text-green-600',
+    stable: 'text-success',
+    captured: 'text-success',
   };
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="Belge Fotografi Cek" size="lg">
       <div className="space-y-3">
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-2xl">
-            <p className="text-red-700 text-sm">{error}</p>
+          <div className="p-3 bg-destructive/10 border border-red-200 rounded-2xl">
+            <p className="text-destructive text-sm">{error}</p>
             <Button variant="outline" size="sm" onClick={retryCamera} className="mt-2">
               Tekrar Dene / Retry
             </Button>
@@ -515,7 +515,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
             )}
 
             {hasFocusControl && (
-              <Button variant="ghost" size="sm" onClick={toggleFocusLock} className={`rounded-full w-10 h-10 ${focusLocked ? 'bg-yellow-500/70 text-white' : 'bg-black/50 text-gray-400'}`} title={focusLocked ? 'Odak kilitli' : 'Odak serbest'}>
+              <Button variant="ghost" size="sm" onClick={toggleFocusLock} className={`rounded-full w-10 h-10 ${focusLocked ? 'bg-yellow-500/70 text-white' : 'bg-black/50 text-muted-foreground'}`} title={focusLocked ? 'Odak kilitli' : 'Odak serbest'}>
                 {focusLocked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
               </Button>
             )}
@@ -524,12 +524,12 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
               data-allow-raw="true"
               onClick={captureImage}
               disabled={!isStreaming || capturedImages.length >= maxImages}
-              className="bg-white text-black hover:bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center border-4 border-white/50 disabled:opacity-50 active:scale-95 transition-transform"
+              className="bg-card text-black hover:bg-muted rounded-full w-16 h-16 flex items-center justify-center border-4 border-white/50 disabled:opacity-50 active:scale-95 transition-transform"
             >
               <Camera className="w-7 h-7" />
             </button>
 
-            <Button variant="ghost" size="sm" onClick={() => setAutoCaptureEnabled(!autoCaptureEnabled)} className={`rounded-full w-10 h-10 ${autoCaptureEnabled ? 'bg-green-500/70 text-white' : 'bg-black/50 text-gray-400'}`} title={autoCaptureEnabled ? 'Otomatik cekim acik' : 'Otomatik cekim kapali'}>
+            <Button variant="ghost" size="sm" onClick={() => setAutoCaptureEnabled(!autoCaptureEnabled)} className={`rounded-full w-10 h-10 ${autoCaptureEnabled ? 'bg-green-500/70 text-white' : 'bg-black/50 text-muted-foreground'}`} title={autoCaptureEnabled ? 'Otomatik cekim acik' : 'Otomatik cekim kapali'}>
               <Focus className="w-4 h-4" />
             </Button>
 
@@ -543,6 +543,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col items-center gap-1">
               <ZoomIn className="w-4 h-4 text-white/70" />
               <input
+                data-allow-raw="true"
                 type="range"
                 min={1}
                 max={maxZoom}
@@ -580,7 +581,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({
         )}
 
         {/* Instructions */}
-        <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-2xl">
+        <div className="text-sm text-muted-foreground bg-muted p-3 rounded-2xl">
           <p className="font-medium mb-1">Kullanim:</p>
           <ul className="list-disc list-inside space-y-0.5 text-xs">
             <li>Belgeyi kamera alanina yerlestirin</li>

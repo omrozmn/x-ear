@@ -112,8 +112,20 @@ const Analytics: React.FC = () => {
   }));
 
   const handleExport = () => {
-    console.log('Exporting analytics data...');
-    // Implement export logic here
+    if (!data) return;
+    const exportData = {
+      overview: data.overview,
+      revenueTrend: data.revenueTrend,
+      topTenants: data.topTenants,
+      exportDate: new Date().toISOString(),
+    };
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `analytics-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const formatCurrency = (value: number) => {
@@ -152,10 +164,7 @@ const Analytics: React.FC = () => {
         <title>Raporlar - Admin Paneli</title>
       </Helmet>
 
-      {/* Debug Bar: Veri durumunu kontrol etmek için */}
-      <div className="bg-yellow-50 p-1 text-[10px] text-gray-400 text-center border-b border-yellow-100 font-mono">
-        DEBUG: Trend={data?.revenueTrend.length} | Plans={data?.planDistribution.length} | Engagement={data?.userEngagement.length} | Rev={data?.overview.totalRevenue}
-      </div>
+
 
       <div className={isMobile ? 'p-4 pb-safe max-w-7xl mx-auto space-y-6' : 'p-6 max-w-7xl mx-auto space-y-6'}>
         {/* Header */}

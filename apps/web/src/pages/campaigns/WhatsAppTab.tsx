@@ -283,7 +283,7 @@ export default function WhatsAppTab() {
               className={`flex-1 rounded-2xl px-4 py-3 text-sm font-medium transition-all ${
                 activeTab === tab.id
                   ? 'bg-emerald-600 text-white dark:bg-emerald-500'
-                  : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
+                  : 'text-muted-foreground hover:bg-muted dark:hover:bg-gray-700'
               }`}
             >
               <span className="inline-flex items-center gap-2">
@@ -302,7 +302,7 @@ export default function WhatsAppTab() {
               <MessageCircle className="h-5 w-5 text-emerald-600" />
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">WhatsApp Kanal Durumu</h3>
             </div>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            <p className="mt-1 text-sm text-muted-foreground">
               QR ile bağlama ve otomatik cevap ayarları artık `Ayarlar &gt; Entegrasyon &gt; WhatsApp Entegrasyonu` altında yönetiliyor.
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
@@ -313,10 +313,10 @@ export default function WhatsAppTab() {
               }`}>
                 {statusLabel}
               </span>
-              {session.bridgePid ? <span className="text-gray-500">PID: {session.bridgePid}</span> : null}
+              {session.bridgePid ? <span className="text-muted-foreground">PID: {session.bridgePid}</span> : null}
               {session.syncInProgress ? <span className="text-sky-600 dark:text-sky-400">Senkronize ediliyor</span> : null}
-              {session.lastSyncAt ? <span className="text-gray-500">Son sync: {new Date(session.lastSyncAt * 1000).toLocaleTimeString('tr-TR')}</span> : null}
-              {session.lastError ? <span className="text-red-600 dark:text-red-400">{session.lastError}</span> : null}
+              {session.lastSyncAt ? <span className="text-muted-foreground">Son sync: {new Date(session.lastSyncAt * 1000).toLocaleTimeString('tr-TR')}</span> : null}
+              {session.lastError ? <span className="text-destructive">{session.lastError}</span> : null}
             </div>
           </div>
 
@@ -398,7 +398,7 @@ export default function WhatsAppTab() {
               </div>
               <textarea data-allow-raw="true" value={bulkMessage} onChange={(event) => setBulkMessage(event.target.value)} className="min-h-[140px] w-full rounded-2xl border px-4 py-3" placeholder="Toplu WhatsApp mesajınız" />
             </div>
-            <div className="space-y-4 rounded-3xl border border-gray-200 bg-gray-50/70 p-4 dark:border-gray-800 dark:bg-gray-900/40">
+            <div className="space-y-4 rounded-3xl border border-border bg-gray-50/70 p-4 dark:bg-gray-900/40">
               <div>
                 <label className="mb-2 block text-sm font-medium">Hasta durumu</label>
                 <select data-allow-raw="true" value={bulkStatus} onChange={(event) => setBulkStatus(event.target.value)} className="w-full rounded-2xl border px-4 py-3">
@@ -418,8 +418,8 @@ export default function WhatsAppTab() {
                   <option value="vip">VIP</option>
                 </select>
               </div>
-              <div className="text-sm text-gray-500">Manuel numara listesi: {numbersCount} kayıt</div>
-              <div className="text-sm text-gray-500">Seçili hasta: {selectedPartyIds.length}</div>
+              <div className="text-sm text-muted-foreground">Manuel numara listesi: {numbersCount} kayıt</div>
+              <div className="text-sm text-muted-foreground">Seçili hasta: {selectedPartyIds.length}</div>
               <Button onClick={handleSendBulk} disabled={!session.connected || loadingAction !== null} className="w-full">
                 <Users className="mr-2 h-4 w-4" />
                 Toplu WhatsApp Gönder
@@ -440,17 +440,17 @@ export default function WhatsAppTab() {
               <History className="h-5 w-5 text-emerald-600" />
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">WhatsApp Sohbetleri ve Geçmiş</h3>
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="text-sm text-muted-foreground">
               Gelen mesajlar arka planda otomatik senkronize edilir.
             </div>
           </div>
           {chatThreads.length === 0 ? (
-            <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-gray-500">
+            <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
                 Henüz WhatsApp mesaj geçmişi yok.
             </div>
           ) : (
             <div className="grid gap-4 lg:grid-cols-[320px,minmax(0,1fr)]">
-              <div className="space-y-2 rounded-3xl border border-gray-200 bg-gray-50/70 p-3 dark:border-gray-800 dark:bg-gray-900/40">
+              <div className="space-y-2 rounded-3xl border border-border bg-gray-50/70 p-3 dark:bg-gray-900/40">
                 {chatThreads.map((thread) => {
                   const lastMessage = thread.messages[thread.messages.length - 1];
                   const isActive = selectedThread?.chatId === thread.chatId;
@@ -463,7 +463,7 @@ export default function WhatsAppTab() {
                       className={`w-full rounded-2xl border px-4 py-3 text-left transition-all ${
                         isActive
                           ? 'border-emerald-200 bg-white shadow-sm dark:border-emerald-800 dark:bg-gray-950'
-                          : 'border-transparent bg-transparent hover:border-gray-200 hover:bg-white dark:hover:border-gray-700 dark:hover:bg-gray-950/60'
+                          : 'border-transparent bg-transparent hover:border-border hover:bg-card dark:hover:border-gray-700 dark:hover:bg-gray-950/60'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -471,7 +471,7 @@ export default function WhatsAppTab() {
                           <div className="truncate font-medium text-gray-900 dark:text-white">
                             {thread.chatTitle}
                           </div>
-                          <div className="truncate text-xs text-gray-500">
+                          <div className="truncate text-xs text-muted-foreground">
                             {thread.phoneNumber || thread.chatId}
                           </div>
                         </div>
@@ -481,10 +481,10 @@ export default function WhatsAppTab() {
                           </span>
                         ) : null}
                       </div>
-                      <div className="mt-2 truncate text-sm text-gray-600 dark:text-gray-300">
+                      <div className="mt-2 truncate text-sm text-muted-foreground">
                         {lastMessage?.messageText || 'Mesaj yok'}
                       </div>
-                      <div className="mt-2 text-xs text-gray-400">
+                      <div className="mt-2 text-xs text-muted-foreground">
                         {thread.lastMessageAt ? new Date(thread.lastMessageAt).toLocaleString('tr-TR') : '-'}
                       </div>
                     </button>
@@ -492,14 +492,14 @@ export default function WhatsAppTab() {
                 })}
               </div>
 
-              <div className="rounded-3xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+              <div className="rounded-3xl border border-border bg-white dark:bg-gray-900">
                 {selectedThread ? (
                   <>
-                    <div className="border-b border-gray-200 px-5 py-4 dark:border-gray-800">
+                    <div className="border-b border-border px-5 py-4">
                       <div className="text-base font-semibold text-gray-900 dark:text-white">
                         {selectedThread.chatTitle}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-muted-foreground">
                         {selectedThread.phoneNumber || selectedThread.chatId}
                       </div>
                     </div>
@@ -512,13 +512,13 @@ export default function WhatsAppTab() {
                           <div
                             className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-sm ${
                               item.direction === 'inbound'
-                                ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100'
+                                ? 'bg-muted text-gray-900 dark:text-gray-100'
                                 : 'bg-emerald-600 text-white'
                             }`}
                           >
                             <div className="whitespace-pre-wrap text-sm">{item.messageText}</div>
                             <div className={`mt-2 text-[11px] ${
-                              item.direction === 'inbound' ? 'text-gray-500 dark:text-gray-400' : 'text-emerald-100'
+                              item.direction === 'inbound' ? 'text-muted-foreground' : 'text-emerald-100'
                             }`}>
                               {item.createdAt ? new Date(item.createdAt).toLocaleString('tr-TR') : '-'}
                             </div>

@@ -78,14 +78,14 @@ export const SerialNumberModal: React.FC<SerialNumberModalProps> = ({
     <Modal isOpen={isOpen} onClose={onClose} title={`Seri No Listesi - ${productName}`} size="xl">
       <div className="space-y-4">
         {/* Info */}
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-muted-foreground">
           Lütfen mevcut stok kadar seri girin. {filledCount > 0 && `✅ ${filledCount} adet seri numarası girildi.`}
         </p>
 
         {/* Search and Actions */}
         <div className="flex gap-3">
           <div className="flex-1 relative">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
             <Input
               type="text"
               placeholder="Seri no ara..."
@@ -104,14 +104,14 @@ export const SerialNumberModal: React.FC<SerialNumberModalProps> = ({
         </div>
 
         {/* Serial Inputs */}
-        <div className="max-h-96 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-2xl p-4">
+        <div className="max-h-96 overflow-y-auto border border-border rounded-2xl p-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {filteredSerials.map(({ index, serial, matches }) => (
               matches && (
                 <div key={index} className="flex items-center gap-2">
                   <div className="flex-1">
                     <div className="mb-1 flex items-center justify-between gap-2">
-                      <label className="block text-xs text-gray-600 dark:text-gray-400">
+                      <label className="block text-xs text-muted-foreground">
                         Seri #{index + 1}
                       </label>
                       <div className="flex items-center gap-2">
@@ -149,7 +149,7 @@ export const SerialNumberModal: React.FC<SerialNumberModalProps> = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="mt-5 p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                    className="mt-5 p-2 text-destructive hover:bg-destructive/10 dark:hover:bg-red-900/20 rounded"
                     onClick={() => clearSerial(index)}
                     title="Temizle"
                   >
@@ -162,7 +162,7 @@ export const SerialNumberModal: React.FC<SerialNumberModalProps> = ({
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex justify-end gap-3 pt-4 border-t border-border">
           <Button variant="outline" onClick={onClose}>
             İptal
           </Button>

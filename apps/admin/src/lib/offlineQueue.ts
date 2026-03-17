@@ -1,6 +1,6 @@
 /**
  * Offline Queue for Admin Panel
- * 
+ *
  * Queues failed requests when offline and processes them when back online.
  * Provides UI feedback through custom events.
  */
@@ -27,16 +27,14 @@ class OfflineQueue {
 
   constructor() {
     this.loadQueue();
-    
+
     // Process queue when coming back online
     window.addEventListener('online', () => {
-      console.log('[OfflineQueue] Network back online, processing queue...');
       this.processQueue();
     });
 
     // Check queue on page load
     if (navigator.onLine && this.queue.length > 0) {
-      console.log('[OfflineQueue] Page loaded with queued requests, processing...');
       this.processQueue();
     }
   }
@@ -49,10 +47,8 @@ class OfflineQueue {
       const stored = localStorage.getItem(this.storageKey);
       if (stored) {
         this.queue = JSON.parse(stored);
-        console.log(`[OfflineQueue] Loaded ${this.queue.length} queued requests`);
       }
-    } catch (error) {
-      console.error('[OfflineQueue] Failed to load queue:', error);
+    } catch {
       this.queue = [];
     }
   }
@@ -63,8 +59,8 @@ class OfflineQueue {
   private saveQueue() {
     try {
       localStorage.setItem(this.storageKey, JSON.stringify(this.queue));
-    } catch (error) {
-      console.error('[OfflineQueue] Failed to save queue:', error);
+    } catch {
+      // Storage full or unavailable - silently fail
     }
   }
 
@@ -85,18 +81,16 @@ class OfflineQueue {
     this.queue.push(request);
     this.saveQueue();
 
-    console.log(`[OfflineQueue] Request queued: ${request.method} ${request.url}`);
-
     // Dispatch event for UI feedback
-    window.dispatchEvent(new CustomEvent('admin:request-queued', { 
-      detail: { 
+    window.dispatchEvent(new CustomEvent('admin:request-queued', {
+      detail: {
         count: this.queue.length,
         request: {
           id: request.id,
           method: request.method,
           url: request.url
         }
-      } 
+      }
     }));
   }
 
@@ -104,23 +98,11 @@ class OfflineQueue {
    * Process all queued requests
    */
   async processQueue() {
-    if (this.processing) {
-      console.log('[OfflineQueue] Already processing queue');
-      return;
-    }
-
-    if (this.queue.length === 0) {
-      console.log('[OfflineQueue] Queue is empty');
-      return;
-    }
-
-    if (!navigator.onLine) {
-      console.log('[OfflineQueue] Still offline, cannot process queue');
+    if (this.processing || this.queue.length === 0 || !navigator.onLine) {
       return;
     }
 
     this.processing = true;
-    console.log(`[OfflineQueue] Processing ${this.queue.length} queued requests...`);
 
     const requests = [...this.queue];
     this.queue = [];
@@ -133,7 +115,7 @@ class OfflineQueue {
       try {
         // Dynamically import to avoid circular dependency
         const { adminApiInstance } = await import('./api');
-        
+
         await adminApiInstance({
           url: request.url,
           method: request.method,
@@ -142,7 +124,6 @@ class OfflineQueue {
         });
 
         successCount++;
-        console.log(`[OfflineQueue] ✅ Successfully processed: ${request.method} ${request.url}`);
 
         // Dispatch success event
         window.dispatchEvent(new CustomEvent('admin:request-processed', {
@@ -158,16 +139,12 @@ class OfflineQueue {
 
       } catch (error: unknown) {
         failCount++;
-        console.error(`[OfflineQueue] ❌ Failed to process: ${request.method} ${request.url}`, error);
 
         // Re-queue if still offline or retryable error
         if (!navigator.onLine || (request.retryCount < this.maxRetries && this.isRetryableError(error))) {
           request.retryCount++;
           this.queue.push(request);
-          console.log(`[OfflineQueue] Re-queued request (retry ${request.retryCount}/${this.maxRetries})`);
         } else {
-          console.error(`[OfflineQueue] Giving up on request after ${request.retryCount} retries`);
-          
           // Dispatch failure event
           window.dispatchEvent(new CustomEvent('admin:request-failed', {
             detail: {
@@ -185,8 +162,6 @@ class OfflineQueue {
 
     this.saveQueue();
     this.processing = false;
-
-    console.log(`[OfflineQueue] Processing complete: ${successCount} succeeded, ${failCount} failed, ${this.queue.length} re-queued`);
 
     // Dispatch completion event
     window.dispatchEvent(new CustomEvent('admin:queue-processed', {
@@ -236,7 +211,6 @@ class OfflineQueue {
   clearQueue() {
     this.queue = [];
     this.saveQueue();
-    console.log('[OfflineQueue] Queue cleared');
   }
 
   /**
@@ -247,7 +221,6 @@ class OfflineQueue {
     if (index !== -1) {
       this.queue.splice(index, 1);
       this.saveQueue();
-      console.log(`[OfflineQueue] Removed request: ${id}`);
     }
   }
 }

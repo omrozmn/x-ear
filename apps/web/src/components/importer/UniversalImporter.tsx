@@ -209,37 +209,43 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
     setIsProcessing(true);
     try {
       const rows = buildMappedRows();
-      // client-side validate all rows and collect errors
-      const allErrors: ImportError[] = [];
-      const validRows: RowData[] = [];
+      // Soft validation: collect warnings but send ALL rows (even with validation issues)
+      // Backend handles partial data gracefully - saves what it can, skips truly invalid rows
+      const allWarnings: ImportError[] = [];
+      const rowsToSend: RowData[] = [];
+
       for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        // Check if row has at least one non-empty value
+        const hasData = Object.values(row).some(v => v !== null && v !== undefined && String(v).trim() !== '');
+        if (!hasData) continue; // skip completely empty rows
+
+        // Validate but treat as warning, not blocker
         try {
-          const parsed = schema.parse(rows[i]) as RowData;
-          validRows.push(parsed);
+          schema.parse(row);
         } catch (e: unknown) {
           if (e && typeof e === 'object' && 'errors' in e) {
             const issues = (e as z.ZodError).errors.map((it) => `${it.path.join('.')}: ${it.message}`);
-            allErrors.push({ row: i + 1, issues });
-          } else {
-            allErrors.push({ row: i + 1, issues: [String(e)] });
+            allWarnings.push({ row: i + 1, issues });
           }
         }
+        // Always include the row — backend will save available fields
+        rowsToSend.push(row);
       }
 
-      // If there are validation errors, surface them but allow user to continue
-      if (allErrors.length > 0) {
-        setErrors(allErrors.slice(0, 50));
-        // still proceed to send validRows if any
+      // Show warnings but proceed with ALL rows
+      if (allWarnings.length > 0) {
+        setErrors(allWarnings.slice(0, 50));
       }
 
-      // Upload valid rows to backend as a CSV file using the parties bulk endpoint
+      // Upload ALL rows to backend — backend saves what it can
       let created = 0, updated = 0;
+      const allErrors: ImportError[] = [...allWarnings];
       try {
-        if (validRows.length > 0) {
-          const csv = Papa.unparse(validRows);
+        if (rowsToSend.length > 0) {
+          const csv = Papa.unparse(rowsToSend);
           const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
           const form = new FormData();
-          // Backend expects field name 'file'
           form.append('file', blob, 'import.csv');
 
           const endpoint = (uploadEndpoint && uploadEndpoint.length > 0) ? uploadEndpoint : '/api/parties/bulk-upload';
@@ -248,10 +254,8 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
           if (resp?.data) {
             created = resp.data.created || 0;
             updated = resp.data.updated || 0;
-            // Merge server-side reported errors (if any) with client-side validation errors
             const serverErrors = resp.data.errors || [];
             if (serverErrors.length > 0) {
-              // normalize to same shape as client errors
               const sErrors = serverErrors.map((it) => ({
                 row: it.row || it.index || 0,
                 issues: [it.error || JSON.stringify(it)]
@@ -267,7 +271,6 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
         onComplete?.(result);
       } catch (uploadErr) {
         console.error('Upload failed', uploadErr);
-        // Surface a generic error to the user via errors state
         setErrors(prev => [...prev, { row: 0, issues: [String(uploadErr)] }]);
         const result = { created, updated, errors: allErrors };
         setImportResult(result);
@@ -293,11 +296,11 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
 
   const renderMappingControls = () => (
     <div className="space-y-3">
-      <div className="text-sm text-gray-600">Başlık eşleştirmesi: CSV/XLS sütunlarını uygulama alanlarına eşleyin.</div>
+      <div className="text-sm text-muted-foreground">Başlık eşleştirmesi: CSV/XLS sütunlarını uygulama alanlarına eşleyin.</div>
       <div className="grid grid-cols-1 gap-2">
         {entityFields.map(f => (
           <div key={f.key} className="flex items-center space-x-2">
-            <div className="w-40 text-sm text-gray-700">{f.label}</div>
+            <div className="w-40 text-sm text-foreground">{f.label}</div>
             <Select
               value={mapping[f.key] || ''}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setMapping(prev => ({ ...prev, [f.key]: e.target.value }))}
@@ -314,7 +317,7 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
       <div className="space-y-4">
         {sampleDownloadUrl && (
           <div className="flex justify-end">
-            <a href={sampleDownloadUrl} download className="text-sm text-gray-600">Örnek dosya indir</a>
+            <a href={sampleDownloadUrl} download className="text-sm text-muted-foreground">Örnek dosya indir</a>
           </div>
         )}
 
@@ -323,8 +326,8 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
           {['Dosya Seç', 'Başlık Eşleştir', 'Önizleme', 'Yükle / Sonuçlar'].map((label, idx) => {
             const s = idx + 1;
             return (
-              <div key={s} className={`flex items-center space-x-2 ${step === s ? 'text-blue-600' : step > s ? 'text-green-600' : 'text-gray-500'}`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step === s ? 'bg-blue-100' : step > s ? 'bg-green-100' : 'bg-gray-100'}`}>
+              <div key={s} className={`flex items-center space-x-2 ${step === s ? 'text-primary' : step > s ? 'text-success' : 'text-muted-foreground'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step === s ? 'bg-primary/10' : step > s ? 'bg-success/10' : 'bg-muted'}`}>
                   <span className="text-sm font-medium">{s}</span>
                 </div>
                 <div className="text-sm font-medium">{label}</div>
@@ -336,9 +339,9 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
         {/* Step content */}
         {step === 1 && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Dosya Seç (.csv, .xlsx)</label>
+            <label className="block text-sm font-medium text-foreground mb-2">Dosya Seç (.csv, .xlsx)</label>
             <Input type="file" accept=".csv,.txt,.xlsx,.xls" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFile(e.target.files?.[0] || null)} />
-            <div className="text-sm text-gray-600 mt-2">{file ? `Seçili dosya: ${file.name} — ${fileRows.length} satır bulundu` : 'Lütfen bir CSV veya XLSX dosyası seçin'}</div>
+            <div className="text-sm text-muted-foreground mt-2">{file ? `Seçili dosya: ${file.name} — ${fileRows.length} satır bulundu` : 'Lütfen bir CSV veya XLSX dosyası seçin'}</div>
           </div>
         )}
 
@@ -398,7 +401,7 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
                 )}
               </div>
             ) : (
-              <div className="mt-3 text-sm text-gray-700">Hazırsanız verileri sunucuya yükleyin. Geçerli satırlar gönderilecek ve sonuç burada listelenecek.</div>
+              <div className="mt-3 text-sm text-foreground">Hazırsanız verileri sunucuya yükleyin. Geçerli satırlar gönderilecek ve sonuç burada listelenecek.</div>
             )}
           </div>
         )}

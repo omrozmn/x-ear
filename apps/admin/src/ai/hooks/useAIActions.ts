@@ -331,7 +331,7 @@ export function useCreateAction(options: UseAIActionsOptions = {}) {
       onCreateSuccess?.(plan);
     },
     onError: (error) => {
-      console.error('[useCreateAction] Error:', error);
+      if (import.meta.env.DEV) console.error('[useCreateAction] Error:', error);
       onCreateError?.(error);
     },
   });
@@ -395,7 +395,7 @@ export function useApproveAction(options: UseAIActionsOptions = {}) {
       onApproveSuccess?.(response);
     },
     onError: (error) => {
-      console.error('[useApproveAction] Error:', error);
+      if (import.meta.env.DEV) console.error('[useApproveAction] Error:', error);
       onApproveError?.(error);
     },
   });
@@ -496,7 +496,7 @@ export function useExecuteAction(options: UseAIActionsOptions = {}) {
       setIsExecuting(false);
       setExecutionProgress(null);
 
-      console.error('[useExecuteAction] Error:', error);
+      if (import.meta.env.DEV) console.error('[useExecuteAction] Error:', error);
       onExecuteError?.(error);
     },
   });

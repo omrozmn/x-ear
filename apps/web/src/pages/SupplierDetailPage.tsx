@@ -161,7 +161,7 @@ export function SupplierDetailPage() {
   if (error || !supplier) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Tedarikçi bulunamadı</h2>
+        <h2 className="text-xl font-semibold text-foreground mb-2">Tedarikçi bulunamadı</h2>
         <Button onClick={handleBack}>Geri Dön</Button>
       </div>
     );
@@ -171,7 +171,7 @@ export function SupplierDetailPage() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-muted p-6">
       {/* Header */}
       <div className="mb-6">
         <DesktopPageHeader
@@ -210,11 +210,11 @@ export function SupplierDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Info */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">İletişim Bilgileri</h3>
+          <div className="bg-card rounded-2xl shadow-sm border border-border p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4">İletişim Bilgileri</h3>
             <div className="space-y-4">
               {supplierData.contactPerson && (
-                <div className="flex items-center text-gray-600">
+                <div className="flex items-center text-muted-foreground">
                   <div className="w-8 flex-shrink-0">
                     <Building2 className="h-5 w-5" />
                   </div>
@@ -222,17 +222,17 @@ export function SupplierDetailPage() {
                 </div>
               )}
               {supplierData.email && (
-                <div className="flex items-center text-gray-600">
+                <div className="flex items-center text-muted-foreground">
                   <div className="w-8 flex-shrink-0">
                     <Mail className="h-5 w-5" />
                   </div>
-                  <a href={`mailto:${supplierData.email}`} className="text-sm hover:text-blue-600">
+                  <a href={`mailto:${supplierData.email}`} className="text-sm hover:text-primary">
                     {supplierData.email}
                   </a>
                 </div>
               )}
               {supplierData.phone && (
-                <div className="flex items-center text-gray-600">
+                <div className="flex items-center text-muted-foreground">
                   <div className="w-8 flex-shrink-0">
                     <Phone className="h-5 w-5" />
                   </div>
@@ -240,7 +240,7 @@ export function SupplierDetailPage() {
                 </div>
               )}
               {supplierData.institutionNumber && (
-                <div className="flex items-center text-gray-600">
+                <div className="flex items-center text-muted-foreground">
                   <div className="w-8 flex-shrink-0">
                     <CheckCircle2 className="h-5 w-5" />
                   </div>
@@ -248,17 +248,17 @@ export function SupplierDetailPage() {
                 </div>
               )}
               {supplierData.website && (
-                <div className="flex items-center text-gray-600">
+                <div className="flex items-center text-muted-foreground">
                   <div className="w-8 flex-shrink-0">
                     <Globe className="h-5 w-5" />
                   </div>
-                  <a href={supplierData.website} target="_blank" rel="noopener noreferrer" className="text-sm hover:text-blue-600">
+                  <a href={supplierData.website} target="_blank" rel="noopener noreferrer" className="text-sm hover:text-primary">
                     {supplierData.website}
                   </a>
                 </div>
               )}
               {(supplierData.address || supplierData.city) && (
-                <div className="flex items-start text-gray-600">
+                <div className="flex items-start text-muted-foreground">
                   <div className="w-8 flex-shrink-0 mt-0.5">
                     <MapPin className="h-5 w-5" />
                   </div>
@@ -270,24 +270,24 @@ export function SupplierDetailPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Finansal Bilgiler</h3>
+          <div className="bg-card rounded-2xl shadow-sm border border-border p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4">Finansal Bilgiler</h3>
             <div className="space-y-3">
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-sm text-gray-500">Vergi No</span>
-                <span className="text-sm font-medium text-gray-900">{supplierData.taxNumber || '-'}</span>
+              <div className="flex justify-between py-2 border-b border-border">
+                <span className="text-sm text-muted-foreground">Vergi No</span>
+                <span className="text-sm font-medium text-foreground">{supplierData.taxNumber || '-'}</span>
               </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-sm text-gray-500">Vergi Dairesi</span>
-                <span className="text-sm font-medium text-gray-900">{supplierData.taxOffice || '-'}</span>
+              <div className="flex justify-between py-2 border-b border-border">
+                <span className="text-sm text-muted-foreground">Vergi Dairesi</span>
+                <span className="text-sm font-medium text-foreground">{supplierData.taxOffice || '-'}</span>
               </div>
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-sm text-gray-500">Para Birimi</span>
-                <span className="text-sm font-medium text-gray-900">{supplierData.currency || 'TRY'}</span>
+              <div className="flex justify-between py-2 border-b border-border">
+                <span className="text-sm text-muted-foreground">Para Birimi</span>
+                <span className="text-sm font-medium text-foreground">{supplierData.currency || 'TRY'}</span>
               </div>
               <div className="flex justify-between py-2">
-                <span className="text-sm text-gray-500">Ödeme Koşulları</span>
-                <span className="text-sm font-medium text-gray-900">{supplierData.paymentTerms || '-'}</span>
+                <span className="text-sm text-muted-foreground">Ödeme Koşulları</span>
+                <span className="text-sm font-medium text-foreground">{supplierData.paymentTerms || '-'}</span>
               </div>
             </div>
           </div>
@@ -295,9 +295,9 @@ export function SupplierDetailPage() {
 
         {/* Right Column - Tabs */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 min-h-[500px]">
+          <div className="bg-card rounded-2xl shadow-sm border border-border min-h-[500px]">
             <Tabs defaultValue="products" className="w-full">
-              <div className="border-b border-gray-200 px-6">
+              <div className="border-b border-border px-6">
                 <TabsList className="bg-transparent border-b-0">
                   <TabsTrigger value="products" className="data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:shadow-none rounded-none px-4 py-3">
                     Ürünler
@@ -318,14 +318,14 @@ export function SupplierDetailPage() {
                       <Loading size="md" />
                     </div>
                   ) : productsError ? (
-                    <div className="text-red-500 text-center py-8">Ürünler yüklenirken hata oluştu.</div>
+                    <div className="text-destructive text-center py-8">Ürünler yüklenirken hata oluştu.</div>
                   ) : (() => {
                     const rawData = productsData as Record<string, unknown> | undefined;
                     const innerData = rawData?.data as Record<string, unknown> | undefined;
                     const products = (innerData?.products ?? innerData?.items ?? (Array.isArray(rawData?.data) ? rawData?.data : [])) as Array<Record<string, unknown>>;
                     if (!products || products.length === 0) {
                       return (
-                        <div className="text-center py-12 text-gray-500">
+                        <div className="text-center py-12 text-muted-foreground">
                           <p>Bu tedarikçiye ait ürün bulunamadı.</p>
                         </div>
                       );
@@ -335,7 +335,7 @@ export function SupplierDetailPage() {
                         key: 'name',
                         title: 'Ürün Adı',
                         render: (_, item) => (
-                          <span className="text-sm font-medium text-gray-900">
+                          <span className="text-sm font-medium text-foreground">
                             {(item.name as string) || (item.supplierProductName as string) || (item.supplier_product_name as string) || ((item.product as Record<string, unknown>)?.name as string) || '-'}
                           </span>
                         ),
@@ -344,7 +344,7 @@ export function SupplierDetailPage() {
                         key: 'code',
                         title: 'Kod',
                         render: (_, item) => (
-                          <span className="text-sm text-gray-500">
+                          <span className="text-sm text-muted-foreground">
                             {(item.stockCode as string) || (item.sku as string) || (item.supplierProductCode as string) || (item.supplier_product_code as string) || ((item.product as Record<string, unknown>)?.sku as string) || '-'}
                           </span>
                         ),
@@ -353,7 +353,7 @@ export function SupplierDetailPage() {
                         key: 'cost',
                         title: 'Maliyet',
                         render: (_, item) => (
-                          <span className="text-sm text-gray-500">
+                          <span className="text-sm text-muted-foreground">
                             {item.cost || item.unitCost || item.unit_cost || item.price ? `${item.cost || item.unitCost || item.unit_cost || item.price} ${(item.currency as string) || 'TRY'}` : '-'}
                           </span>
                         ),
@@ -362,7 +362,7 @@ export function SupplierDetailPage() {
                         key: 'leadTime',
                         title: 'Teslim Süresi',
                         render: (_, item) => (
-                          <span className="text-sm text-gray-500">
+                          <span className="text-sm text-muted-foreground">
                             {(item.leadTimeDays || item.lead_time_days) ? `${item.leadTimeDays || item.lead_time_days} Gün` : '-'}
                           </span>
                         ),
@@ -383,9 +383,9 @@ export function SupplierDetailPage() {
                       <Loading size="md" />
                     </div>
                   ) : itemsError ? (
-                    <div className="text-red-500 text-center py-8">Fatura ürünleri yüklenirken hata oluştu.</div>
+                    <div className="text-destructive text-center py-8">Fatura ürünleri yüklenirken hata oluştu.</div>
                   ) : !invoiceItemsData?.items?.length ? (
-                    <div className="text-center py-12 text-gray-500">
+                    <div className="text-center py-12 text-muted-foreground">
                       <p>Bu tedarikçiden gelen faturalarda ürün bulunamadı.</p>
                       <p className="text-xs mt-2">Fatura kalemleri henüz senkronize edilmemiş olabilir.</p>
                     </div>
@@ -398,10 +398,10 @@ export function SupplierDetailPage() {
                         sortable: true,
                         sortAccessor: (item) => item.productName,
                         render: (_, item) => (
-                          <div className="text-sm text-gray-900">
+                          <div className="text-sm text-foreground">
                             <div className="font-medium">{item.productName}</div>
                             {item.productCode && (
-                              <div className="text-xs text-gray-400">Kod: {item.productCode}</div>
+                              <div className="text-xs text-muted-foreground">Kod: {item.productCode}</div>
                             )}
                           </div>
                         ),
@@ -418,7 +418,7 @@ export function SupplierDetailPage() {
                             size="sm"
                             onClick={() => handleViewInvoicePdf(item.purchaseInvoiceId, item.invoiceNumber)}
                             disabled={invoiceLoading === item.invoiceNumber}
-                            className="h-auto p-0 text-blue-600 hover:text-blue-800 hover:bg-transparent hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+                            className="h-auto p-0 text-primary hover:text-blue-800 hover:bg-transparent hover:underline dark:hover:text-blue-300"
                           >
                             <FileText className="h-3.5 w-3.5" />
                             {invoiceLoading === item.invoiceNumber ? 'Yükleniyor...' : item.invoiceNumber}
@@ -445,7 +445,7 @@ export function SupplierDetailPage() {
                         sortable: true,
                         sortAccessor: (item) => Number(item.lineTotal),
                         render: (_, item) => (
-                          <span className="text-sm font-medium text-gray-900">
+                          <span className="text-sm font-medium text-foreground">
                             {Number(item.lineTotal).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺
                           </span>
                         ),
@@ -458,7 +458,7 @@ export function SupplierDetailPage() {
                           const isAdded = !!item.inventoryId || addedItemIds.has(item.id);
                           if (isAdded) {
                             return (
-                              <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-full px-2.5 py-1">
+                              <span className="inline-flex items-center gap-1 text-xs font-medium text-success bg-success/10 border border-green-200 rounded-full px-2.5 py-1">
                                 <CheckCircle2 className="h-3.5 w-3.5" />
                                 Envantere Eklendi
                               </span>
@@ -504,11 +504,11 @@ export function SupplierDetailPage() {
                 <TabsContent value="notes">
                   <div className="space-y-4">
                     {supplierData.notes ? (
-                      <div className="bg-yellow-50 p-4 rounded-2xl border border-yellow-100 text-sm text-gray-700">
+                      <div className="bg-warning/10 p-4 rounded-2xl border border-yellow-100 text-sm text-foreground">
                         {supplierData.notes}
                       </div>
                     ) : (
-                      <p className="text-gray-500 text-center">Not eklenmemiş.</p>
+                      <p className="text-muted-foreground text-center">Not eklenmemiş.</p>
                     )}
                   </div>
                 </TabsContent>
@@ -533,26 +533,26 @@ export function SupplierDetailPage() {
           onMouseDown={(e) => { if (e.target === e.currentTarget) setConfirmModal(null); }}
         >
           <div
-            className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6"
+            className="bg-card rounded-2xl shadow-xl w-full max-w-md p-6"
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Envantere Ekle</h3>
-            <p className="text-sm text-gray-500 mb-4">
+            <h3 className="text-lg font-semibold text-foreground mb-4">Envantere Ekle</h3>
+            <p className="text-sm text-muted-foreground mb-4">
               Ürün bilgilerini kontrol edin ve gerekirse düzenleyin.
             </p>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Ürün Adı (Faturadan)</label>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Ürün Adı (Faturadan)</label>
                 <Input
                   type="text"
                   value={confirmModal.item.productName}
                   disabled
                   fullWidth
-                  className="bg-gray-50 text-gray-700"
+                  className="bg-muted text-foreground"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Marka</label>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Marka</label>
                 <Input
                   type="text"
                   value={confirmModal.brand}
@@ -562,7 +562,7 @@ export function SupplierDetailPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Model</label>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Model</label>
                 <Input
                   type="text"
                   value={confirmModal.model}
@@ -573,23 +573,23 @@ export function SupplierDetailPage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Birim Fiyat</label>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">Birim Fiyat</label>
                   <Input
                     type="text"
                     value={`${Number(confirmModal.item.unitPrice).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺`}
                     disabled
                     fullWidth
-                    className="bg-gray-50 text-gray-500"
+                    className="bg-muted text-muted-foreground"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Fatura No</label>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">Fatura No</label>
                   <Input
                     type="text"
                     value={confirmModal.item.invoiceNumber}
                     disabled
                     fullWidth
-                    className="bg-gray-50 text-gray-500"
+                    className="bg-muted text-muted-foreground"
                   />
                 </div>
               </div>
@@ -617,14 +617,14 @@ export function SupplierDetailPage() {
           onClick={() => { URL.revokeObjectURL(pdfModal.blobUrl.split('#')[0]); setPdfModal(null); }}
         >
           <div
-            className="relative bg-white rounded-2xl shadow-xl w-full max-w-4xl flex flex-col"
+            className="relative bg-card rounded-2xl shadow-xl w-full max-w-4xl flex flex-col"
             style={{ height: '90vh' }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
+            <div className="flex items-center justify-between p-4 border-b border-border flex-shrink-0">
               <div className="flex items-center gap-2 min-w-0">
-                <FileText className="w-4 h-4 text-blue-500 shrink-0" />
-                <h2 className="text-lg font-semibold text-gray-900 truncate pr-4">{pdfModal.title}</h2>
+                <FileText className="w-4 h-4 text-primary shrink-0" />
+                <h2 className="text-lg font-semibold text-foreground truncate pr-4">{pdfModal.title}</h2>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <a
@@ -637,7 +637,7 @@ export function SupplierDetailPage() {
                 <Button
                   variant="ghost"
                   onClick={() => { URL.revokeObjectURL(pdfModal.blobUrl.split('#')[0]); setPdfModal(null); }}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-muted-foreground hover:text-muted-foreground"
                 >
                   <X size={24} />
                 </Button>

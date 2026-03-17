@@ -36,7 +36,7 @@ export const ActionProgress = () => {
         return (
             <div className="bg-card border border-green-200 dark:border-green-800 rounded-2xl p-4 shadow-sm animate-in fade-in duration-500">
                 <div className="flex items-start gap-3">
-                    <div className="mt-0.5 text-green-500">
+                    <div className="mt-0.5 text-success">
                         <CheckCircle2 size={20} />
                     </div>
                     <div className="flex-1">
@@ -80,7 +80,7 @@ export const ActionProgress = () => {
         return (
             <div className="bg-card border border-red-200 dark:border-red-800 rounded-2xl p-4 shadow-sm animate-in fade-in duration-300">
                 <div className="flex items-start gap-3">
-                    <div className="mt-0.5 text-red-500">
+                    <div className="mt-0.5 text-destructive">
                         <AlertCircle size={20} />
                     </div>
                     <div className="flex-1">
@@ -140,7 +140,7 @@ export const ActionProgress = () => {
                                             updateSlot(currentSlot!.name, opt);
                                             nextSlot();
                                         }}
-                                        className="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 text-xs font-semibold rounded hover:bg-blue-50 transition-colors"
+                                        className="px-3 py-1.5 bg-card border border-blue-200 text-primary text-xs font-semibold rounded hover:bg-primary/10 transition-colors"
                                     >
                                         {opt}
                                     </button>
@@ -161,14 +161,14 @@ export const ActionProgress = () => {
                                         }
                                     }}
                                 />
-                                <p className="text-[10px] text-gray-400">{t('ai.searchHint', "ID veya isim yazıp Enter'layın")}</p>
+                                <p className="text-[10px] text-muted-foreground">{t('ai.searchHint', "ID veya isim yazıp Enter'layın")}</p>
                             </div>
                         )}
                         {currentSlot.uiType === 'date' && (
                             <div className="relative group">
                                 <input data-allow-raw="true"
                                     type="date"
-                                    className="w-full pl-3 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-sm"
+                                    className="w-full pl-3 pr-4 py-2 bg-muted border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:bg-card transition-all shadow-sm"
                                     onChange={(e) => {
                                         updateSlot(currentSlot.name, e.target.value);
                                         nextSlot();
@@ -180,7 +180,7 @@ export const ActionProgress = () => {
                             <div className="relative group">
                                 <input data-allow-raw="true"
                                     type="number"
-                                    className="w-full pl-3 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-sm"
+                                    className="w-full pl-3 pr-4 py-2 bg-muted border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:bg-card transition-all shadow-sm"
                                     placeholder={t('ai.enterNumber', 'Sayı girin...')}
                                     autoFocus
                                     onKeyDown={(e) => {
@@ -195,7 +195,7 @@ export const ActionProgress = () => {
                         {currentSlot.uiType === 'text' && (
                             <div className="relative group">
                                 <input data-allow-raw="true"
-                                    className="w-full pl-3 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-sm"
+                                    className="w-full pl-3 pr-4 py-2 bg-muted border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:bg-card transition-all shadow-sm"
                                     placeholder={t('ai.startTyping', 'Yazmaya başlayın...')}
                                     autoFocus
                                     onKeyDown={(e) => {
@@ -215,7 +215,7 @@ export const ActionProgress = () => {
                                         updateSlot(currentSlot.name, true);
                                         nextSlot();
                                     }}
-                                    className="flex-1 px-3 py-2 bg-white border border-green-200 text-green-700 text-xs font-bold rounded-2xl hover:bg-green-50 transition-all shadow-sm"
+                                    className="flex-1 px-3 py-2 bg-card border border-green-200 text-success text-xs font-bold rounded-2xl hover:bg-success/10 transition-all shadow-sm"
                                 >
                                     {t('common.yes', 'Evet')}
                                 </button>
@@ -225,7 +225,7 @@ export const ActionProgress = () => {
                                         updateSlot(currentSlot.name, false);
                                         nextSlot();
                                     }}
-                                    className="flex-1 px-3 py-2 bg-white border border-red-200 text-red-700 text-xs font-bold rounded-2xl hover:bg-red-50 transition-all shadow-sm"
+                                    className="flex-1 px-3 py-2 bg-card border border-red-200 text-destructive text-xs font-bold rounded-2xl hover:bg-destructive/10 transition-all shadow-sm"
                                 >
                                     {t('common.no', 'Hayır')}
                                 </button>
@@ -235,7 +235,7 @@ export const ActionProgress = () => {
                             <div className="relative group">
                                 <input data-allow-raw="true"
                                     type="time"
-                                    className="w-full pl-3 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-sm"
+                                    className="w-full pl-3 pr-4 py-2 bg-muted border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:bg-card transition-all shadow-sm"
                                     onChange={(e) => {
                                         updateSlot(currentSlot.name, e.target.value);
                                         nextSlot();
@@ -244,7 +244,7 @@ export const ActionProgress = () => {
                             </div>
                         )}
                         {!['enum', 'entity_search', 'date', 'number', 'text', 'boolean', 'time'].includes(currentSlot.uiType as string) && (
-                            <div className="p-2 bg-blue-50 border border-blue-100 rounded text-xs text-blue-700 italic">
+                            <div className="p-2 bg-primary/10 border border-blue-100 rounded text-xs text-primary italic">
                                 {currentSlot.prompt} ({t('ai.type', 'Tip')}: {currentSlot.uiType as string}) {t('ai.comingSoon', 'yakında eklenecek.')}
                             </div>
                         )}
@@ -287,7 +287,7 @@ export const ActionProgress = () => {
                 <div className="flex flex-wrap gap-2 animate-in fade-in slide-in-from-bottom-2 delay-100 fill-mode-forwards opacity-0">
                     {patientLabel !== 'Seçilmedi' && (
                         <div className="flex items-center gap-1.5 px-2 py-1 bg-card border border-border rounded text-xs text-muted-foreground shadow-sm">
-                            <User size={12} className="text-blue-500" />
+                            <User size={12} className="text-primary" />
                             <span>{patientLabel}</span>
                         </div>
                     )}

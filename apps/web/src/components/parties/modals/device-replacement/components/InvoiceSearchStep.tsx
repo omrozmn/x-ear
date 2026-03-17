@@ -69,16 +69,17 @@ export const InvoiceSearchStep: React.FC<InvoiceSearchStepProps> = ({
     <div className="space-y-4">
       {/* Search input */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <input
+          data-allow-raw="true"
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Cihaz adını yazın... (örn. Helix RIC, Force 100)"
-          className="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full pl-10 pr-3 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
         />
         {isLoading && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 animate-pulse">
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground animate-pulse">
             Aranıyor…
           </span>
         )}
@@ -96,11 +97,12 @@ export const InvoiceSearchStep: React.FC<InvoiceSearchStepProps> = ({
 
       {/* Empty state */}
       {isEmpty && (
-        <p className="text-sm text-center text-gray-500 py-6">
+        <p className="text-sm text-center text-muted-foreground py-6">
           Eşleşen kayıt bulunamadı.{' '}
           <button
+            data-allow-raw="true"
             type="button"
-            className="text-blue-600 underline"
+            className="text-primary underline"
             onClick={() => onSelect({ type: 'inventory', item: { id: '', name: query, brand: '', model: '', price: 0 } as InventoryItem })}
           >
             Faturasız devam et
@@ -116,30 +118,31 @@ export const InvoiceSearchStep: React.FC<InvoiceSearchStepProps> = ({
               const inv = result.invoice;
               return (
                 <button
+                  data-allow-raw="true"
                   key={`inv-${inv.invoiceId}`}
                   type="button"
                   onClick={() => handleSelectInvoice(result)}
-                  className="w-full text-left p-3 rounded-xl border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-colors group"
+                  className="w-full text-left p-3 rounded-xl border border-border hover:border-blue-400 hover:bg-primary/10 transition-colors group"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      <FileText className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                      <FileText className="h-4 w-4 text-primary flex-shrink-0" />
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
+                        <p className="text-sm font-medium text-foreground truncate">
                           {inv.invoiceNumber}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted-foreground">
                           {inv.senderName} · {formatDate(inv.invoiceDate)}
                         </p>
                       </div>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-blue-500 flex-shrink-0 mt-0.5" />
+                    <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary flex-shrink-0 mt-0.5" />
                   </div>
                   <ul className="mt-1.5 pl-6 space-y-0.5">
                     {inv.matchedItems.map((item, i) => (
-                      <li key={i} className="text-xs text-gray-600">
+                      <li key={i} className="text-xs text-muted-foreground">
                         • {item.productName} ×{item.quantity}{' '}
-                        <span className="text-gray-400">
+                        <span className="text-muted-foreground">
                           — {formatCurrency(item.unitPrice)} / {item.unit ?? 'Adet'}
                         </span>
                       </li>
@@ -153,24 +156,25 @@ export const InvoiceSearchStep: React.FC<InvoiceSearchStepProps> = ({
             const inv_item = result.item;
             return (
               <button
+                data-allow-raw="true"
                 key={`inv-item-${idx}`}
                 type="button"
                 onClick={() => handleSelectInventory(result)}
-                className="w-full text-left p-3 rounded-xl border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-colors group"
+                className="w-full text-left p-3 rounded-xl border border-border hover:border-blue-400 hover:bg-primary/10 transition-colors group"
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    <Package className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                    <Package className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className="text-sm font-medium text-foreground truncate">
                         {inv_item.name}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-muted-foreground">
                         {inv_item.brand} {inv_item.model} · {formatCurrency(inv_item.price)}
                       </p>
                     </div>
                   </div>
-                  <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-blue-500 flex-shrink-0" />
+                  <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary flex-shrink-0" />
                 </div>
               </button>
             );
@@ -180,11 +184,12 @@ export const InvoiceSearchStep: React.FC<InvoiceSearchStepProps> = ({
 
       {/* Skip option — always visible when results exist */}
       {results.length > 0 && (
-        <p className="text-xs text-center text-gray-400">
+        <p className="text-xs text-center text-muted-foreground">
           ya da{' '}
           <button
+            data-allow-raw="true"
             type="button"
-            className="text-blue-600 underline"
+            className="text-primary underline"
             onClick={() => onSelect({ type: 'inventory', item: { id: '', name: query, brand: '', model: '', price: 0 } as InventoryItem })}
           >
             faturasız / manuel devam et

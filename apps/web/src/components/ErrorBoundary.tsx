@@ -56,24 +56,24 @@ export class ErrorBoundary extends Component<Props, State> {
 
       // Default error UI
       return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-6 text-center">
+        <div className="min-h-screen bg-muted flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-card rounded-2xl shadow-lg p-6 text-center">
             <div className="flex justify-center mb-4">
-              <AlertTriangle className="h-12 w-12 text-red-500" />
+              <AlertTriangle className="h-12 w-12 text-destructive" />
             </div>
 
-            <h1 className="text-xl font-semibold text-gray-900 mb-2">
+            <h1 className="text-xl font-semibold text-foreground mb-2">
               Bir Hata Oluştu
             </h1>
 
-            <p className="text-gray-600 mb-6">
+            <p className="text-muted-foreground mb-6">
               Üzgünüz, beklenmeyen bir hata oluştu. Lütfen sayfayı yenilemeyi deneyin.
             </p>
 
             {isDev() && this.state.error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-left">
+              <div className="mb-6 p-4 bg-destructive/10 border border-red-200 rounded-xl text-left">
                 <h3 className="text-sm font-medium text-red-800 mb-2">Hata Detayları:</h3>
-                <pre className="text-xs text-red-700 whitespace-pre-wrap overflow-auto max-h-32">
+                <pre className="text-xs text-destructive whitespace-pre-wrap overflow-auto max-h-32">
                   {this.state.error instanceof Error ? this.state.error.message : String(this.state.error)}
                   {this.state.errorInfo?.componentStack}
                 </pre>

@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Query
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 from core.database import get_db
@@ -30,19 +31,58 @@ async def list_opportunities(
     request: Request,
     status: Optional[str] = None,
     category: Optional[str] = None,
+    group_by: Optional[str] = Query(None, description="Group insights: 'type' or 'category'"),
+    role: Optional[str] = Query(None, description="Filter by user role: 'doctor', 'receptionist', 'admin'"),
     db: Session = Depends(get_db)
 ):
-    """List proactive opportunities for the tenant."""
+    """List proactive opportunities with optional grouping and role-based filtering."""
     ctx = await _get_user_context(request)
     query = db.query(AIOpportunity).filter(AIOpportunity.tenant_id == ctx["tenant_id"])
-    
+
     if status:
         query = query.filter(AIOpportunity.status == status)
     if category:
         query = query.filter(AIOpportunity.category == category)
-        
-    opportunities = query.order_by(AIOpportunity.impact_score.desc()).all()
-    
+
+    # Role-based filtering: different roles see different insight categories
+    ROLE_CATEGORIES = {
+        "doctor": ["patient_care", "PC-001", "PC-004", "PC-005", "PC-008", "PC-010"],
+        "clinician": ["patient_care", "operations"],
+        "receptionist": ["operations", "patient_care"],
+        "finance": ["financial"],
+        "admin": None,  # All categories
+    }
+    if role and role in ROLE_CATEGORIES:
+        allowed = ROLE_CATEGORIES[role]
+        if allowed:
+            query = query.filter(
+                or_(
+                    AIOpportunity.category.in_(allowed),
+                    AIOpportunity.type.in_(allowed),
+                )
+            )
+
+    opportunities = query.order_by(AIOpportunity.priority.desc(), AIOpportunity.impact_score.desc()).all()
+
+    # Grouping: collapse same-type insights into summary groups
+    if group_by == "type":
+        groups = {}
+        for opp in opportunities:
+            key = opp.type or opp.category
+            if key not in groups:
+                groups[key] = {"representative": opp, "count": 0, "entity_ids": []}
+            groups[key]["count"] += 1
+            groups[key]["entity_ids"].append(opp.entity_id)
+
+        grouped_results = []
+        for key, group in groups.items():
+            summary = group["representative"].to_summary_dict()
+            if group["count"] > 1:
+                summary["title"] = f"{summary.get('title', '')} (+{group['count'] - 1} benzer)"
+                summary["grouped_count"] = group["count"]
+            grouped_results.append(OpportunitySummary(**summary))
+        return ResponseEnvelope(data=grouped_results)
+
     return ResponseEnvelope(
         data=[OpportunitySummary(**opp.to_summary_dict()) for opp in opportunities]
     )

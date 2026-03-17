@@ -60,25 +60,25 @@ const ProcessingResults: React.FC<ProcessingResultsProps> = ({
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2 text-green-600">
+            <CardTitle className="text-sm font-medium flex items-center gap-2 text-success">
               <CheckCircle className="w-4 h-4" />
               Başarılı
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{successfulResults.length}</div>
+            <div className="text-2xl font-bold text-success">{successfulResults.length}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2 text-red-600">
+            <CardTitle className="text-sm font-medium flex items-center gap-2 text-destructive">
               <XCircle className="w-4 h-4" />
               Hata
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{errorResults.length}</div>
+            <div className="text-2xl font-bold text-destructive">{errorResults.length}</div>
           </CardContent>
         </Card>
       </div>
@@ -95,13 +95,13 @@ const ProcessingResults: React.FC<ProcessingResultsProps> = ({
             <CardContent className="space-y-3">
               {result.status === 'processed' ? (
                 <>
-                  <div className="flex items-center gap-2 text-green-600">
+                  <div className="flex items-center gap-2 text-success">
                     <CheckCircle className="w-4 h-4" />
                     <span className="text-sm">İşlendi</span>
                   </div>
 
                   {result.result?.matched_party ? (
-                    <div className="flex items-center gap-2 text-blue-600">
+                    <div className="flex items-center gap-2 text-primary">
                       <User className="w-4 h-4" />
                       <span className="text-sm">
                         {result.result.matched_party.party?.fullName || 'Hasta bulundu'}
@@ -122,12 +122,12 @@ const ProcessingResults: React.FC<ProcessingResultsProps> = ({
                     </Button>
                   )}
 
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-muted-foreground">
                     Tür: {result.result?.document_type || 'Belirlenemedi'}
                   </div>
 
                   {result.result?.pdf_generated && (
-                    <div className="text-xs text-green-600">
+                    <div className="text-xs text-success">
                       PDF oluşturuldu: {result.result.pdf_filename}
                     </div>
                   )}
@@ -143,11 +143,11 @@ const ProcessingResults: React.FC<ProcessingResultsProps> = ({
                 </>
               ) : (
                 <>
-                  <div className="flex items-center gap-2 text-red-600">
+                  <div className="flex items-center gap-2 text-destructive">
                     <XCircle className="w-4 h-4" />
                     <span className="text-sm">Hata</span>
                   </div>
-                  <div className="text-xs text-red-500">
+                  <div className="text-xs text-destructive">
                     {result.error}
                   </div>
                 </>

@@ -21,6 +21,8 @@ import settingsEn from './locales/en/settings.json';
 import settingsTr from './locales/tr/settings.json';
 import validationEn from './locales/en/validation.json';
 import validationTr from './locales/tr/validation.json';
+import personnelEn from './locales/en/personnel.json';
+import personnelTr from './locales/tr/personnel.json';
 
 // Sector terminology overlays
 import sectorHearingTr from './locales/tr/sectors/hearing.json';
@@ -29,12 +31,16 @@ import sectorHospitalTr from './locales/tr/sectors/hospital.json';
 import sectorHotelTr from './locales/tr/sectors/hotel.json';
 import sectorBeautyTr from './locales/tr/sectors/beauty.json';
 import sectorGeneralTr from './locales/tr/sectors/general.json';
+import sectorMedicalTr from './locales/tr/sectors/medical.json';
+import sectorOpticTr from './locales/tr/sectors/optic.json';
 import sectorHearingEn from './locales/en/sectors/hearing.json';
 import sectorPharmacyEn from './locales/en/sectors/pharmacy.json';
 import sectorHospitalEn from './locales/en/sectors/hospital.json';
 import sectorHotelEn from './locales/en/sectors/hotel.json';
 import sectorBeautyEn from './locales/en/sectors/beauty.json';
 import sectorGeneralEn from './locales/en/sectors/general.json';
+import sectorMedicalEn from './locales/en/sectors/medical.json';
+import sectorOpticEn from './locales/en/sectors/optic.json';
 
 // Define resources
 const resources = {
@@ -48,6 +54,7 @@ const resources = {
         finance: financeEn,
         settings: settingsEn,
         validation: validationEn,
+        personnel: personnelEn,
         // Sector namespaces
         sector_hearing: sectorHearingEn,
         sector_pharmacy: sectorPharmacyEn,
@@ -55,6 +62,8 @@ const resources = {
         sector_hotel: sectorHotelEn,
         sector_beauty: sectorBeautyEn,
         sector_general: sectorGeneralEn,
+        sector_medical: sectorMedicalEn,
+        sector_optic: sectorOpticEn,
     },
     tr: {
         common: commonTr,
@@ -66,6 +75,7 @@ const resources = {
         finance: financeTr,
         settings: settingsTr,
         validation: validationTr,
+        personnel: personnelTr,
         // Sector namespaces
         sector_hearing: sectorHearingTr,
         sector_pharmacy: sectorPharmacyTr,
@@ -73,6 +83,8 @@ const resources = {
         sector_hotel: sectorHotelTr,
         sector_beauty: sectorBeautyTr,
         sector_general: sectorGeneralTr,
+        sector_medical: sectorMedicalTr,
+        sector_optic: sectorOpticTr,
     },
 };
 

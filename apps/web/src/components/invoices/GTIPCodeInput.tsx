@@ -73,11 +73,11 @@ export function GTIPCodeInput({
                 maxLength={8}
             />
             <div className="mt-1 flex items-start justify-between">
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                     Gümrük Tarife İstatistik Pozisyonu (8 haneli)
                 </p>
                 {value && (
-                    <span className={`text-xs ${value.length === 8 ? 'text-green-600' : 'text-amber-600'}`}>
+                    <span className={`text-xs ${value.length === 8 ? 'text-success' : 'text-amber-600'}`}>
                         {value.length}/8
                     </span>
                 )}
@@ -94,10 +94,10 @@ export function GTIPCodeInput({
 
             {/* Geçerli GTİP Kodu Göstergesi */}
             {value && value.length === 8 && (
-                <div className="mt-2 bg-green-50 border border-green-200 rounded p-2">
+                <div className="mt-2 bg-success/10 border border-green-200 rounded p-2">
                     <div className="flex items-center">
-                        <CheckCircle className="text-green-600 mr-2" size={16} />
-                        <p className="text-xs text-green-700">
+                        <CheckCircle className="text-success mr-2" size={16} />
+                        <p className="text-xs text-success">
                             Geçerli GTİP kodu: <strong>{value}</strong>
                         </p>
                     </div>

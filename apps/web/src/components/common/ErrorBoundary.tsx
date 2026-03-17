@@ -61,19 +61,19 @@ class ErrorBoundaryBase extends Component<Props, State> {
         <div className="min-h-[400px] flex items-center justify-center p-6">
           <div className="text-center max-w-md">
             <div className="mb-6">
-              <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              <AlertTriangle className="w-16 h-16 text-destructive mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-foreground mb-2">
                 {t('error.title', { ns: 'common' })}
               </h2>
-              <p className="text-gray-600 mb-4">
+              <p className="text-muted-foreground mb-4">
                 {t('error.unexpected', { ns: 'common' })}
               </p>
             </div>
 
             {isDev() && this.state.error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl text-left">
+              <div className="mb-6 p-4 bg-destructive/10 border border-red-200 rounded-2xl text-left">
                 <h3 className="font-medium text-red-800 mb-2">{t('error.details', { ns: 'common' })}:</h3>
-                <pre className="text-xs text-red-700 overflow-auto max-h-32">
+                <pre className="text-xs text-destructive overflow-auto max-h-32">
                   {this.state.error.toString()}
                   {this.state.errorInfo?.componentStack}
                 </pre>

@@ -28,7 +28,7 @@ const integrations: IntegrationCard[] = [
         title: 'BirFatura',
         description: 'E-Fatura ve E-Arşiv entegrasyonu',
         icon: FileText,
-        href: '/integrations/vatan-sms',
+        href: '/billing',
         status: 'active',
     },
 ]

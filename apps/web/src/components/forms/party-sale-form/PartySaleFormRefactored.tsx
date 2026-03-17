@@ -163,14 +163,14 @@ const ProductDropdown: React.FC<ProductDropdownProps> = ({
                   variant="ghost"
                   size="sm"
                   onClick={handleClear}
-                  className="p-1 h-auto text-gray-400 hover:text-gray-600"
+                  className="p-1 h-auto text-muted-foreground hover:text-muted-foreground"
                 >
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </Button>
               )}
-              <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-4 h-4 text-muted-foreground" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
               </svg>
             </div>
@@ -181,30 +181,30 @@ const ProductDropdown: React.FC<ProductDropdownProps> = ({
       {/* Dropdown */}
       {
         isOpen && (
-          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
+          <div className="absolute z-50 w-full mt-1 bg-card border border-border rounded-2xl shadow-lg max-h-60 overflow-y-auto">
             {filteredProducts.length > 0 ? (
               filteredProducts.map((product) => (
                 <div
                   key={product.id}
                   onClick={() => handleProductSelect(product)}
-                  className="px-4 py-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                  className="px-4 py-3 cursor-pointer hover:bg-muted border-b border-border last:border-b-0"
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <div className="font-medium text-gray-900">{product.name}</div>
-                      <div className="text-sm text-gray-500">
+                      <div className="font-medium text-foreground">{product.name}</div>
+                      <div className="text-sm text-muted-foreground">
                         {product.category} • {product.brand}
                       </div>
                     </div>
                     <div className="text-right ml-4">
-                      <div className="font-medium text-gray-900">₺{product.price.toLocaleString()}</div>
-                      <div className="text-sm text-gray-500">Stok: {product.stock}</div>
+                      <div className="font-medium text-foreground">₺{product.price.toLocaleString()}</div>
+                      <div className="text-sm text-muted-foreground">Stok: {product.stock}</div>
                     </div>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="px-4 py-3 text-gray-500 text-center">
+              <div className="px-4 py-3 text-muted-foreground text-center">
                 <div className="text-sm">Ürün bulunamadı</div>
                 <div className="text-xs mt-1">Farklı anahtar kelimeler deneyin</div>
               </div>
@@ -412,7 +412,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
 
   // Calculate total amount
   // const totalAmount = useMemo(() => {
-  //   return pricingCalculation.finalAmount;
+  // return pricingCalculation.finalAmount;
   // }, [pricingCalculation]);
 
   // Sync collected amount with final amount strictly if not manually modified
@@ -566,7 +566,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4 bg-white rounded-2xl shadow-sm" data-testid="sale-form-container">
+    <div className="max-w-2xl mx-auto p-4 bg-card rounded-2xl shadow-sm" data-testid="sale-form-container">
 
       <form onSubmit={handleSubmit} className="space-y-4" data-testid="sale-form">
         {/* Product Selection */}
@@ -623,7 +623,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
                 data-testid="sale-form-quantity"
               />
               {selectedProduct?.unit === 'paket' && selectedProduct?.packageQuantity && (
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Toplam: {quantity * selectedProduct.packageQuantity} adet ({quantity} paket × {selectedProduct.packageQuantity} adet/paket)
                 </p>
               )}
@@ -722,7 +722,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
 
         {/* SGK Section - Only for Hearing Aids */}
         {isHearingAid && (
-          <div className="bg-gray-50 p-3 rounded-2xl">
+          <div className="bg-muted p-3 rounded-2xl">
             <Label className="mb-1">
               SGK Destek Türü
             </Label>
@@ -734,7 +734,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
               options={sgkSupportOptions}
             />
             {sgkSupportType && sgkFallbackValues[sgkSupportType] > 0 && (
-              <div className="text-xs text-green-600 mt-1">
+              <div className="text-xs text-success mt-1">
                 Tahmini SGK Desteği: ₺{sgkFallbackValues[sgkSupportType].toLocaleString('tr-TR')}
               </div>
             )}
@@ -743,7 +743,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
 
         {/* Battery SGK Section - Only for hearing_aid_battery and implant_battery */}
         {isSgkBattery && (
-          <div className="bg-green-50 p-3 rounded-2xl border border-green-200">
+          <div className="bg-success/10 p-3 rounded-2xl border border-green-200">
             <Label className="mb-2 text-green-900 font-semibold">
               Raporlu Pil SGK Bilgileri
             </Label>
@@ -790,7 +790,7 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
               const sgkWithKdv = scheme.coverage_amount * (1 + scheme.kdv_rate / 100);
               const earMul = batteryReportQuantity === 'bilateral' ? 2 : 1;
               return (
-                <div className="text-xs text-green-700 space-y-1">
+                <div className="text-xs text-success space-y-1">
                   <div>SGK Ödeme: ₺{scheme.coverage_amount.toLocaleString('tr-TR')} + %{scheme.kdv_rate} KDV = ₺{sgkWithKdv.toFixed(2)} / kulak</div>
                   <div className="font-semibold">Toplam SGK Düşümü: ₺{(sgkWithKdv * earMul).toFixed(2)}</div>
                 </div>
@@ -807,25 +807,25 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
 
         {/* Product Details Display */}
         {selectedProduct && (
-          <div className="bg-blue-50 p-3 rounded-2xl border border-blue-200">
+          <div className="bg-primary/10 p-3 rounded-2xl border border-blue-200">
             <h3 className="text-sm font-semibold text-blue-900 mb-2">Ürün Detayları</h3>
             <div className="grid grid-cols-3 gap-2 text-xs">
               <div>
-                <span className="font-medium text-blue-700">Marka:</span>
-                <span className="ml-1 text-blue-600 truncate block">{selectedProduct.brand || '-'}</span>
+                <span className="font-medium text-primary">Marka:</span>
+                <span className="ml-1 text-primary truncate block">{selectedProduct.brand || '-'}</span>
               </div>
               <div>
-                <span className="font-medium text-blue-700">Model:</span>
-                <span className="ml-1 text-blue-600 truncate block">{selectedProduct.name || '-'}</span>
+                <span className="font-medium text-primary">Model:</span>
+                <span className="ml-1 text-primary truncate block">{selectedProduct.name || '-'}</span>
               </div>
               <div>
-                <span className="font-medium text-blue-700">Liste Fiyatı:</span>
-                <span className="ml-1 text-blue-600">₺{selectedProduct.price.toLocaleString('tr-TR')}</span>
+                <span className="font-medium text-primary">Liste Fiyatı:</span>
+                <span className="ml-1 text-primary">₺{selectedProduct.price.toLocaleString('tr-TR')}</span>
               </div>
               <div>
-                <span className="font-medium text-blue-700">Stok:</span>
-                <span className={`ml-1 font-medium ${(selectedProduct.stock || 0) === 0 ? 'text-red-600' :
-                  (selectedProduct.stock || 0) <= 5 ? 'text-yellow-600' : 'text-green-600'
+                <span className="font-medium text-primary">Stok:</span>
+                <span className={`ml-1 font-medium ${(selectedProduct.stock || 0) === 0 ? 'text-destructive' :
+                  (selectedProduct.stock || 0) <= 5 ? 'text-yellow-600' : 'text-success'
                   }`}>
                   {selectedProduct.stock || 0}
                 </span>
@@ -838,46 +838,46 @@ export const PartySaleFormRefactored: React.FC<PartySaleFormProps> = ({
         {selectedProduct && (
           <div className="space-y-3">
             {/* Total Amount Breakdown */}
-            <div className="bg-blue-50 p-3 rounded-2xl border border-blue-200">
+            <div className="bg-primary/10 p-3 rounded-2xl border border-blue-200">
               <div className="flex justify-between items-center mb-2">
                 <span className="font-bold text-blue-900 text-base">Toplam Tutar</span>
-                <span className="font-bold text-blue-600 text-lg">₺{pricingCalculation.finalAmount.toLocaleString('tr-TR')}</span>
+                <span className="font-bold text-primary text-lg">₺{pricingCalculation.finalAmount.toLocaleString('tr-TR')}</span>
               </div>
 
               {/* Components Breakdown */}
               <div className="border-t border-blue-200 pt-2 space-y-1">
                 {/* Simplified breakdown */}
-                <div className="flex justify-between text-xs text-blue-700">
+                <div className="flex justify-between text-xs text-primary">
                   <span>Ara Toplam:</span>
                   <span>
                     ₺{pricingCalculation.basePrice.toLocaleString('tr-TR')}
                   </span>
                 </div>
-                <div className="flex justify-between text-xs text-blue-700">
+                <div className="flex justify-between text-xs text-primary">
                   <span>KDV (%{pricingCalculation.kdvRate}):</span>
                   <span>₺{pricingCalculation.kdvAmount.toLocaleString('tr-TR')}</span>
                 </div>
                 {/* Show discounted net amount if there is a discount */}
                 {pricingCalculation.discountAmount > 0 && (
-                  <div className="flex justify-between text-xs text-blue-700 font-medium">
+                  <div className="flex justify-between text-xs text-primary font-medium">
                     <span>Toplam (KDV Dahil):</span>
-                    <span className="line-through text-gray-400">₺{pricingCalculation.totalWithKdv.toLocaleString('tr-TR')}</span>
+                    <span className="line-through text-muted-foreground">₺{pricingCalculation.totalWithKdv.toLocaleString('tr-TR')}</span>
                   </div>
                 )}
                 {pricingCalculation.discountAmount > 0 && (
-                  <div className="flex justify-between text-xs text-blue-700">
+                  <div className="flex justify-between text-xs text-primary">
                     <span>İndirim{discountType === 'percentage' && ` (%${discountInput})`}:</span>
                     <span>-₺{pricingCalculation.discountAmount.toLocaleString('tr-TR')}</span>
                   </div>
                 )}
                 {pricingCalculation.sgkCoverage > 0 && !isSgkBattery && (
-                  <div className="flex justify-between text-xs text-green-700 font-medium">
+                  <div className="flex justify-between text-xs text-success font-medium">
                     <span>SGK Desteği:</span>
                     <span>-₺{pricingCalculation.sgkCoverage.toLocaleString('tr-TR')}</span>
                   </div>
                 )}
                 {pricingCalculation.batterySgkAmount > 0 && (
-                  <div className="flex justify-between text-xs text-green-700 font-medium">
+                  <div className="flex justify-between text-xs text-success font-medium">
                     <span>SGK Pil Rapor Düşümü:</span>
                     <span>-₺{pricingCalculation.batterySgkAmount.toLocaleString('tr-TR')}</span>
                   </div>

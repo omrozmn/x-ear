@@ -2,7 +2,7 @@ import { useEffect, useCallback, useState, useMemo, useRef } from 'react';
 import { useComposerStore } from '../../stores/composerStore';
 import { useSpotlightStore } from '../../stores/spotlightStore';
 import { useChatStore } from '../../ai/stores/chatStore';
-import { Search, Zap, User, Box, Check, X, Loader2, AlertCircle, FileText, Store, Shield } from 'lucide-react';
+import { Search, Zap, User, Box, Check, X, Loader2, AlertCircle, FileText, Store, Shield, Calendar, ShoppingCart, Package, Receipt, LifeBuoy, Megaphone } from 'lucide-react';
 import {
     useAutocompleteApiAiComposerAutocompleteGet,
     useExecuteToolApiAiComposerExecutePost,
@@ -199,10 +199,24 @@ export function ComposerOverlay() {
         return () => document.removeEventListener('keydown', handleKeyDown);
     }, [isOpen, setOpen, onClose]);
 
+    const entityRouteMap: Record<string, string> = {
+        patient: '/parties',
+        invoice: '/invoices',
+        device: '/inventory',
+        product: '/inventory',
+        supplier: '/suppliers',
+        appointment: '/appointments',
+        sale: '/sales',
+        order: '/orders',
+        promissory_note: '/promissory-notes',
+        ticket: '/tickets',
+        purchase_invoice: '/purchase-invoices',
+        campaign: '/campaigns',
+    };
+
     const handleSelectEntity = (entity: EntityItem) => {
-        // Default action: Navigate to detail page
-        const path = entity.type === 'patient' ? `/parties/${entity.id}` : `/inventory/${entity.id}`;
-        window.location.href = path; // Using window.location for simplicity, or navigate if available
+        const base = entityRouteMap[entity.type] || '/parties';
+        window.location.href = `${base}/${entity.id}`;
         onClose();
     };
 
@@ -277,21 +291,31 @@ export function ComposerOverlay() {
             className="fixed inset-0 z-[9999] bg-black/50 flex items-start justify-center pt-[10vh]"
             onClick={(e) => e.target === e.currentTarget && onClose()}
         >
-            <div className="w-[600px] bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col min-h-[100px] max-h-[80vh]">
+            <div className="w-[600px] bg-card rounded-xl shadow-2xl overflow-hidden flex flex-col min-h-[100px] max-h-[80vh]">
 
                 {/* Header / Input Area */}
-                <div className="p-4 border-b border-gray-100 flex items-center gap-2">
-                    <Search className="text-gray-400 w-5 h-5" />
+                <div className="p-4 border-b border-border flex items-center gap-2">
+                    <Search className="text-muted-foreground w-5 h-5" />
 
                     {/* Staged Entity Chips */}
                     <div className="flex gap-1 flex-wrap">
                         {stagedEntities.map(e => (
-                            <span key={e.id} className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-xl text-sm font-medium">
-                                {e.type === 'patient' && <User size={14} />}
-                                {e.type === 'device' && <Box size={14} />}
-                                {e.type === 'invoice' && <FileText size={14} />}
-                                {e.type === 'supplier' && <Store size={14} />}
-                                {e.type === 'user' && <Shield size={14} />}
+                            <span key={e.id} className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded-xl text-sm font-medium">
+                                {
+                                    {
+                                        patient: <User size={14} />,
+                                        device: <Box size={14} />,
+                                        invoice: <FileText size={14} />,
+                                        supplier: <Store size={14} />,
+                                        user: <Shield size={14} />,
+                                        appointment: <Calendar size={14} />,
+                                        sale: <ShoppingCart size={14} />,
+                                        order: <Package size={14} />,
+                                        promissory_note: <Receipt size={14} />,
+                                        ticket: <LifeBuoy size={14} />,
+                                        campaign: <Megaphone size={14} />,
+                                    }[e.type] || <Box size={14} />
+                                }
                                 {e.label}
                                 <Button
                                     onClick={() => removeStagedEntity(e.id)}
@@ -306,7 +330,7 @@ export function ComposerOverlay() {
                     </div>
 
                     <Input
-                        className="flex-1 outline-none text-lg placeholder:text-gray-400 border-0 focus:ring-0 shadow-none"
+                        className="flex-1 outline-none text-lg placeholder:text-muted-foreground border-0 focus:ring-0 shadow-none"
                         placeholder={stagedEntities.length > 0 ? "Bir işlem yazın..." : "Hasta, cihaz veya fatura ara..."}
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
@@ -329,7 +353,7 @@ export function ComposerOverlay() {
                         autoFocus
                     />
 
-                    <kbd className="hidden sm:inline-block px-2 py-1 text-xs text-gray-400 bg-gray-100 rounded">
+                    <kbd className="hidden sm:inline-block px-2 py-1 text-xs text-muted-foreground bg-muted rounded">
                         ESC
                     </kbd>
                 </div>
@@ -341,7 +365,7 @@ export function ComposerOverlay() {
                     {(mode === 'idle' || mode === 'context_locked') && (
                         <div>
                             {isLoading && (
-                                <div className="p-4 text-gray-400 text-sm flex items-center justify-center gap-2">
+                                <div className="p-4 text-muted-foreground text-sm flex items-center justify-center gap-2">
                                     <Loader2 className="w-4 h-4 animate-spin" />
                                     Aranıyor...
                                 </div>
@@ -350,32 +374,45 @@ export function ComposerOverlay() {
                             {/* Entities */}
                             {autocompleteData?.entities && autocompleteData.entities.length > 0 && (
                                 <div className="mb-3">
-                                    <div className="text-xs font-semibold text-gray-500 mb-1 px-2 uppercase tracking-wider">Varlıklar</div>
+                                    <div className="text-xs font-semibold text-muted-foreground mb-1 px-2 uppercase tracking-wider">Varlıklar</div>
                                     {autocompleteData.entities.map((e: EntityItem) => (
                                         <div
                                             key={e.id}
                                             onClick={() => handleSelectEntity(e)}
-                                            className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-2xl cursor-pointer transition-colors group"
+                                            className="flex items-center gap-3 p-2 hover:bg-accent rounded-2xl cursor-pointer transition-colors group"
                                         >
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center text-blue-600 relative">
-                                                {e.type === 'patient' ? <User size={18} /> : <Box size={18} />}
-                                                <span className="absolute -bottom-1 -right-1 px-1 bg-blue-100 text-blue-700 text-[10px] font-bold rounded border border-white">
-                                                    {e.type === 'patient' ? 'HASTA' : 'CİHAZ'}
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center text-primary relative">
+                                                {
+                                                    {
+                                                        patient: <User size={18} />,
+                                                        invoice: <FileText size={18} />,
+                                                        supplier: <Store size={18} />,
+                                                        appointment: <Calendar size={18} />,
+                                                        sale: <ShoppingCart size={18} />,
+                                                        order: <Package size={18} />,
+                                                        promissory_note: <Receipt size={18} />,
+                                                        ticket: <LifeBuoy size={18} />,
+                                                        purchase_invoice: <FileText size={18} />,
+                                                        campaign: <Megaphone size={18} />,
+                                                    }[e.type] || <Box size={18} />
+                                                }
+                                                <span className="absolute -bottom-1 -right-1 px-1 bg-primary/10 text-primary text-[10px] font-bold rounded border border-white">
+                                                    {(e.metadata?.entity_label as string) || (e.type === 'patient' ? 'HASTA' : e.type === 'invoice' ? 'FATURA' : 'CİHAZ')}
                                                 </span>
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="font-medium text-gray-900 truncate">{e.label}</div>
+                                                    <div className="font-medium text-foreground truncate">{e.label}</div>
                                                     {e.metadata?.tags && Array.isArray(e.metadata.tags) ?
                                                         (e.metadata.tags.filter((t): t is string => typeof t === 'string')).map((tag, i) => (
-                                                            <span key={i} className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full border border-gray-200 truncate max-w-[80px]">
+                                                            <span key={i} className="px-1.5 py-0.5 bg-muted text-muted-foreground text-[10px] rounded-full border border-border truncate max-w-[80px]">
                                                                 {tag}
                                                             </span>
                                                         ))
                                                         : null
                                                     }
                                                 </div>
-                                                <div className="text-xs text-gray-500 truncate">{e.subLabel || ''}</div>
+                                                <div className="text-xs text-muted-foreground truncate">{e.subLabel || ''}</div>
                                             </div>
 
                                             <Button
@@ -385,7 +422,7 @@ export function ComposerOverlay() {
                                                 }}
                                                 variant="ghost"
                                                 size="sm"
-                                                className="opacity-0 group-hover:opacity-100 bg-blue-50 text-blue-600 hover:bg-blue-100 p-2 h-auto"
+                                                className="opacity-0 group-hover:opacity-100 bg-primary/10 text-primary hover:bg-primary/10 p-2 h-auto"
                                                 title="AI İşlemine Ekle (Cmd+Enter)"
                                             >
                                                 <Zap size={16} />
@@ -398,12 +435,12 @@ export function ComposerOverlay() {
                             {/* Actions (Filtered by permissions) */}
                             {permittedActions.length > 0 && (
                                 <div className="mb-3">
-                                    <div className="text-xs font-semibold text-gray-500 mb-1 px-2 uppercase tracking-wider">İşlemler</div>
+                                    <div className="text-xs font-semibold text-muted-foreground mb-1 px-2 uppercase tracking-wider">İşlemler</div>
                                     {permittedActions.map((a: Capability) => (
                                         <div
                                             key={a.name}
                                             onClick={() => handleSelectAction(a)}
-                                            className="flex items-center gap-3 p-2 hover:bg-purple-50 rounded-2xl cursor-pointer group transition-colors"
+                                            className="flex items-center gap-3 p-2 hover:bg-purple-50 dark:hover:bg-purple-950/30 rounded-2xl cursor-pointer group transition-colors"
                                         >
                                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-50 to-purple-100 text-purple-600 flex items-center justify-center group-hover:from-purple-100 group-hover:to-purple-200 transition-colors relative">
                                                 <Zap size={18} />
@@ -424,10 +461,10 @@ export function ComposerOverlay() {
                             {!isLoading && query.length > 1 &&
                                 (!autocompleteData?.entities?.length) &&
                                 (!permittedActions.length) && (
-                                    <div className="p-4 text-center text-gray-500">
-                                        <AlertCircle className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                                    <div className="p-4 text-center text-muted-foreground">
+                                        <AlertCircle className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
                                         <p>İlgili kayıt bulunamadı.</p>
-                                        <p className="text-xs mt-1 text-gray-400">Yazdıklarınız AI işlem promptu olarak kullanılacaktır.</p>
+                                        <p className="text-xs mt-1 text-muted-foreground">Yazdıklarınız AI işlem promptu olarak kullanılacaktır.</p>
                                     </div>
                                 )}
                         </div>
@@ -435,14 +472,14 @@ export function ComposerOverlay() {
 
                     {/* Slot Filling Mode */}
                     {mode === 'slot_filling' && currentSlot && (
-                        <div className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border border-gray-200">
+                        <div className="p-4 bg-gradient-to-br from-muted/50 to-muted rounded-2xl border border-border">
 
                             {/* Vision Suggestions Area */}
                             {(isAnalyzing || suggestions.length > 0) && (
-                                <div className="mb-4 p-3 bg-blue-50/50 border border-blue-100 rounded-2xl">
+                                <div className="mb-4 p-3 bg-primary/10/50 border border-blue-100 rounded-2xl">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <Zap className="w-3 h-3 text-blue-600" />
-                                        <span className="text-xs font-semibold text-blue-700 uppercase tracking-wide">
+                                        <Zap className="w-3 h-3 text-primary" />
+                                        <span className="text-xs font-semibold text-primary uppercase tracking-wide">
                                             {isAnalyzing ? 'Yapay Zeka Analiz Ediyor...' : 'AI Önerileri'}
                                         </span>
                                         {isAnalyzing && <Loader2 className="w-3 h-3 animate-spin text-blue-400" />}
@@ -457,13 +494,13 @@ export function ComposerOverlay() {
                                                     onClick={() => applySuggestion(s)}
                                                     variant="outline"
                                                     size="sm"
-                                                    className="flex items-center gap-2 px-3 py-1.5 bg-white border border-blue-200 shadow-sm rounded-xl hover:border-blue-400 hover:shadow-md transition-all text-sm text-left group"
+                                                    className="flex items-center gap-2 px-3 py-1.5 bg-card border border-blue-200 shadow-sm rounded-xl hover:border-blue-400 hover:shadow-md transition-all text-sm text-left group"
                                                 >
                                                     <div className="flex flex-col">
-                                                        <span className="font-medium text-gray-900 group-hover:text-blue-700">
+                                                        <span className="font-medium text-foreground group-hover:text-primary">
                                                             {typeof s.value === 'object' && s.value !== null ? JSON.stringify(s.value) : String(s.value ?? '')}
                                                         </span>
-                                                        <span className="text-[10px] text-gray-400">
+                                                        <span className="text-[10px] text-muted-foreground">
                                                             {(s.confidence * 100).toFixed(0)}% • {s.source_file ? 'Dosyadan' : 'AI'}
                                                         </span>
                                                     </div>
@@ -471,20 +508,20 @@ export function ComposerOverlay() {
                                                 </Button>
                                             ))}
                                         {!isAnalyzing && suggestions.length === 0 && (
-                                            <span className="text-xs text-gray-400 italic">Bu alan için öneri bulunamadı.</span>
+                                            <span className="text-xs text-muted-foreground italic">Bu alan için öneri bulunamadı.</span>
                                         )}
                                     </div>
                                 </div>
                             )}
 
-                            <h3 className="text-lg font-medium mb-3 text-gray-900">{currentSlot.prompt}</h3>
+                            <h3 className="text-lg font-medium mb-3 text-foreground">{currentSlot.prompt}</h3>
 
                             {/* Entity Search Slot */}
                             {currentSlot.uiType === 'entity_search' && (
                                 <div className="relative">
                                     <div className="relative">
                                         <Input
-                                            className="w-full border p-2 pl-10 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="w-full border p-2 pl-10 rounded-2xl focus:ring-2 focus:ring-ring focus:border-transparent"
                                             placeholder="Ara..."
                                             value={slotSearchQuery}
                                             onChange={(e) => setSlotSearchQuery(e.target.value)}
@@ -493,24 +530,24 @@ export function ComposerOverlay() {
                                         />
                                     </div>
                                     {isSlotSearchLoading && (
-                                        <div className="mt-2 text-sm text-gray-400 flex items-center gap-1">
+                                        <div className="mt-2 text-sm text-muted-foreground flex items-center gap-1">
                                             <Loader2 className="w-3 h-3 animate-spin" /> Aranıyor...
                                         </div>
                                     )}
                                     {slotEntityData?.entities && slotEntityData.entities.length > 0 && (
-                                        <div className="mt-2 bg-white border rounded-2xl shadow-sm max-h-48 overflow-y-auto">
+                                        <div className="mt-2 bg-card border rounded-2xl shadow-sm max-h-48 overflow-y-auto">
                                             {slotEntityData.entities.map((e: EntityItem) => (
                                                 <div
                                                     key={e.id}
                                                     onClick={() => handleSlotEntitySelect(e)}
-                                                    className="flex items-center gap-2 p-2 hover:bg-blue-50 cursor-pointer"
+                                                    className="flex items-center gap-2 p-2 hover:bg-primary/10 dark:hover:bg-blue-950/30 cursor-pointer"
                                                 >
-                                                    <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                                                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                                                         {e.type === 'patient' ? <User size={12} /> : <Box size={12} />}
                                                     </div>
                                                     <div>
                                                         <div className="text-sm font-medium">{e.label}</div>
-                                                        <div className="text-xs text-gray-500">{e.subLabel}</div>
+                                                        <div className="text-xs text-muted-foreground">{e.subLabel}</div>
                                                     </div>
                                                 </div>
                                             ))}
@@ -522,7 +559,7 @@ export function ComposerOverlay() {
                             {/* Text Slot */}
                             {currentSlot.uiType === 'text' && (
                                 <Input
-                                    className="w-full border p-2 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full border p-2 rounded-2xl focus:ring-2 focus:ring-ring focus:border-transparent"
                                     autoFocus
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
@@ -537,7 +574,7 @@ export function ComposerOverlay() {
                             {currentSlot.uiType === 'number' && (
                                 <Input
                                     type="number"
-                                    className="w-full border p-2 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full border p-2 rounded-2xl focus:ring-2 focus:ring-ring focus:border-transparent"
                                     autoFocus
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
@@ -552,7 +589,7 @@ export function ComposerOverlay() {
                             {currentSlot.uiType === 'date' && (
                                 <Input
                                     type="date"
-                                    className="w-full border p-2 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full border p-2 rounded-2xl focus:ring-2 focus:ring-ring focus:border-transparent"
                                     autoFocus
                                     onChange={(e) => {
                                         updateSlot(currentSlot.name, e.target.value);
@@ -572,7 +609,7 @@ export function ComposerOverlay() {
                                                 nextSlot();
                                             }}
                                             variant="outline"
-                                            className="px-4 py-2 bg-white border border-gray-300 rounded-2xl hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors font-medium"
+                                            className="px-4 py-2 bg-card border border-border rounded-2xl hover:bg-primary/10 dark:hover:bg-blue-950/30 hover:border-blue-300 hover:text-primary transition-colors font-medium"
                                         >
                                             {opt}
                                         </Button>
@@ -582,13 +619,13 @@ export function ComposerOverlay() {
 
                             {/* File Upload Slot Specialty */}
                             {(currentSlot.uiType as string) === 'file' && (
-                                <div className="mt-4 flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-2xl bg-white hover:bg-gray-50 transition-colors">
+                                <div className="mt-4 flex flex-col items-center justify-center p-6 border-2 border-dashed border-border rounded-2xl bg-card hover:bg-accent transition-colors">
                                     <label className="cursor-pointer w-full flex flex-col items-center">
-                                        <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-3">
+                                        <div className="w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-3">
                                             <Box size={24} />
                                         </div>
-                                        <span className="text-sm font-medium text-gray-700">Dosya Seçin veya Sürükleyin</span>
-                                        <span className="text-xs text-gray-500 mt-1">PDF, JPG, PNG (Max 10MB)</span>
+                                        <span className="text-sm font-medium text-foreground">Dosya Seçin veya Sürükleyin</span>
+                                        <span className="text-xs text-muted-foreground mt-1">PDF, JPG, PNG (Max 10MB)</span>
 
                                         <Input
                                             type="file"
@@ -612,7 +649,7 @@ export function ComposerOverlay() {
                                 </div>
                             )}
 
-                            <div className="mt-4 text-xs text-gray-400">
+                            <div className="mt-4 text-xs text-muted-foreground">
                                 {currentSlot.uiType === 'entity_search' ? 'Listeden seçin' : 'Enter ile onaylayın'}
                             </div>
                         </div>
@@ -633,15 +670,15 @@ export function ComposerOverlay() {
                     {/* Confirmation Mode */}
                     {mode === 'confirmation' && selectedAction && (
                         <div className="p-4">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">İşlemi Onaylayın</h3>
+                            <h3 className="text-lg font-semibold text-foreground mb-4">İşlemi Onaylayın</h3>
 
-                            <div className="bg-gradient-to-br from-white to-gray-50 border rounded-2xl p-4 mb-4 shadow-sm">
+                            <div className="bg-gradient-to-br from-card to-muted/50 border rounded-2xl p-4 mb-4 shadow-sm">
                                 <div className="flex justify-between items-center mb-3 pb-3 border-b">
-                                    <span className="text-gray-500 text-sm">İşlem</span>
+                                    <span className="text-muted-foreground text-sm">İşlem</span>
                                     <span className="font-semibold text-purple-700">{selectedAction.name}</span>
                                 </div>
                                 <div className="flex justify-between items-center mb-3 pb-3 border-b">
-                                    <span className="text-gray-500 text-sm">Hedef</span>
+                                    <span className="text-muted-foreground text-sm">Hedef</span>
                                     <span className="font-medium">
                                         {context && context.length > 0
                                             ? context.map(c => c.label).join(', ')
@@ -658,7 +695,7 @@ export function ComposerOverlay() {
 
                                         return (
                                             <div key={k} className="flex justify-between items-center mb-2 text-sm">
-                                                <span className="text-gray-500 capitalize">{k.replace(/_/g, ' ')}</span>
+                                                <span className="text-muted-foreground capitalize">{k.replace(/_/g, ' ')}</span>
                                                 <span className="font-medium">{displayValue}</span>
                                             </div>
                                         );
@@ -670,14 +707,14 @@ export function ComposerOverlay() {
                                     onClick={handleSimulate}
                                     disabled={isExecuting}
                                     variant="outline"
-                                    className="px-4 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-2xl font-medium transition-colors disabled:opacity-50"
+                                    className="px-4 py-2 text-primary bg-primary/10 hover:bg-primary/10 rounded-2xl font-medium transition-colors disabled:opacity-50"
                                 >
                                     Simüle Et
                                 </Button>
                                 <Button
                                     onClick={reset}
                                     variant="ghost"
-                                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-2xl transition-colors"
+                                    className="px-4 py-2 text-muted-foreground hover:bg-accent rounded-2xl transition-colors"
                                 >
                                     İptal
                                 </Button>
@@ -706,9 +743,9 @@ export function ComposerOverlay() {
                     {/* Execution Result */}
                     {executionResult && (
                         <div className="p-4 text-center">
-                            <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 ${executionResult.status === 'success' ? 'bg-green-100 text-green-600' :
-                                executionResult.status === 'dry_run' ? 'bg-blue-100 text-blue-600' :
-                                    'bg-red-100 text-red-600'
+                            <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 ${executionResult.status === 'success' ? 'bg-success/10 text-success' :
+                                executionResult.status === 'dry_run' ? 'bg-primary/10 text-primary' :
+                                    'bg-destructive/10 text-destructive'
                                 }`}>
                                 {executionResult.status === 'error' ? (
                                     <AlertCircle size={28} />
@@ -716,19 +753,19 @@ export function ComposerOverlay() {
                                     <Check size={28} />
                                 )}
                             </div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-1">
+                            <h3 className="text-lg font-bold text-foreground mb-1">
                                 {executionResult.status === 'success' ? 'Başarılı!' :
                                     executionResult.status === 'dry_run' ? 'Simülasyon Tamamlandı' :
                                         'Hata'}
                             </h3>
-                            <p className="text-gray-600 mb-4">
+                            <p className="text-muted-foreground mb-4">
                                 {executionResult.status === 'success' ? 'İşlem başarıyla tamamlandı.' :
                                     executionResult.status === 'dry_run' ? 'Değişiklik yapılmadı.' :
                                         executionResult.error}
                             </p>
 
                             {executionResult.auditId && (
-                                <div className="text-xs text-gray-400 font-mono bg-gray-50 p-2 rounded inline-block mb-4">
+                                <div className="text-xs text-muted-foreground font-mono bg-muted p-2 rounded inline-block mb-4">
                                     Kayıt ID: {executionResult.auditId}
                                 </div>
                             )}

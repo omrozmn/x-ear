@@ -2,9 +2,9 @@
  * ExportDropdown — shared component for exporting table data.
  *
  * Shows a dropdown with:
- *  1. "CSV (Standart)" — direct CSV download
- *  2. Template list from invoice-normalizer — transforms data through the
- *     normalizer service before download.
+ * 1. "CSV (Standart)" — direct CSV download
+ * 2. Template list from invoice-normalizer — transforms data through the
+ * normalizer service before download.
  *
  * Uses @x-ear/ui-web Button only; dropdown is custom (no external UI lib).
  */
@@ -170,7 +170,7 @@ export function ExportDropdown({
       {isOpen && createPortal(
         <div
           ref={dropdownRef}
-          className="fixed z-[9999] w-64 rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 overflow-hidden"
+          className="fixed z-[9999] w-64 rounded-xl border border-border bg-white shadow-lg dark:bg-gray-800 overflow-hidden"
           style={{
             top: menuPos.openUp ? undefined : menuPos.top,
             bottom: menuPos.openUp ? window.innerHeight - menuPos.top + 4 : undefined,
@@ -181,13 +181,13 @@ export function ExportDropdown({
           <button
             data-allow-raw="true"
             type="button"
-            className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+            className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-muted dark:hover:bg-gray-700/50 transition-colors"
             onClick={handleStandardExport}
           >
-            <FileText className="w-4 h-4 text-gray-500 shrink-0" />
+            <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
             <div>
               <div className="font-medium text-gray-900 dark:text-gray-100">CSV (Standart)</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">
+              <div className="text-xs text-muted-foreground">
                 Orijinal formatta indir
               </div>
             </div>
@@ -195,19 +195,19 @@ export function ExportDropdown({
 
           {/* Divider */}
           {(loadingTemplates || templates.length > 0) && (
-            <div className="border-t border-gray-100 dark:border-gray-700" />
+            <div className="border-t border-border" />
           )}
 
           {/* Template header */}
           {(loadingTemplates || templates.length > 0) && (
-            <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+            <div className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Muhasebe Şablonları
             </div>
           )}
 
           {/* Loading state */}
           {loadingTemplates && (
-            <div className="flex items-center gap-2 px-4 py-3 text-sm text-gray-500">
+            <div className="flex items-center gap-2 px-4 py-3 text-sm text-muted-foreground">
               <Loader2 className="w-4 h-4 animate-spin" />
               Şablonlar yükleniyor…
             </div>
@@ -220,20 +220,20 @@ export function ExportDropdown({
                 data-allow-raw="true"
                 type="button"
                 key={t.id}
-                className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors disabled:opacity-50"
+                className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm hover:bg-muted dark:hover:bg-gray-700/50 transition-colors disabled:opacity-50"
                 disabled={exportingId !== null}
                 onClick={() => handleTemplateExport(t)}
               >
                 {exportingId === t.id ? (
-                  <Loader2 className="w-4 h-4 animate-spin text-blue-500 shrink-0" />
+                  <Loader2 className="w-4 h-4 animate-spin text-primary shrink-0" />
                 ) : (
-                  <FileSpreadsheet className="w-4 h-4 text-blue-500 shrink-0" />
+                  <FileSpreadsheet className="w-4 h-4 text-primary shrink-0" />
                 )}
                 <div className="min-w-0">
                   <div className="font-medium text-gray-900 dark:text-gray-100 truncate">
                     {t.name}
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                  <div className="text-xs text-muted-foreground">
                     {t.columnCount} kolon
                     {t.mappingCount > 0 && ` · ${t.mappingCount} mapping`}
                   </div>

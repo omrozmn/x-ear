@@ -69,9 +69,9 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
         return (
           <div className="space-y-1">
             <div className="text-sm">
-              <div className="font-medium text-gray-900">{sale.productName}</div>
+              <div className="font-medium text-foreground">{sale.productName}</div>
               {(sale.brand || sale.model) && (
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-muted-foreground">
                   {sale.brand} {sale.model}
                 </div>
               )}
@@ -79,7 +79,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
           </div>
         );
       }
-      return <span className="text-gray-500">Ürün/Hizmet</span>;
+      return <span className="text-muted-foreground">Ürün/Hizmet</span>;
     }
 
     // ✅ FIXED: Prioritize productName from sale, then smart fallback
@@ -87,10 +87,10 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
     const isBilateral = sale.devices.length === 2;
 
     // Get all available data
-    const saleProductName = sale.productName || '';  // e.g., "deneme" (from inventory.name)
-    const deviceName = firstDevice.name || '';  // e.g., "earnet force100" (brand + model)
-    const brand = firstDevice.brand || sale.brand || '';  // e.g., "earnet"
-    const model = firstDevice.model || sale.model || '';  // e.g., "force100"
+    const saleProductName = sale.productName || ''; // e.g., "deneme" (from inventory.name)
+    const deviceName = firstDevice.name || ''; // e.g., "earnet force100" (brand + model)
+    const brand = firstDevice.brand || sale.brand || ''; // e.g., "earnet"
+    const model = firstDevice.model || sale.model || ''; // e.g., "force100"
 
     // Build brand+model string
     const brandModel = `${brand} ${model}`.trim();
@@ -127,12 +127,12 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
     return (
       <div className="space-y-1">
         <div className="text-sm">
-          <div className="font-medium text-gray-900">
+          <div className="font-medium text-foreground">
             {title}
-            {isBilateral && <span className="ml-1 text-blue-600">(Bilateral)</span>}
+            {isBilateral && <span className="ml-1 text-primary">(Bilateral)</span>}
           </div>
           {subtitle && (
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-muted-foreground">
               {subtitle}
             </div>
           )}
@@ -143,7 +143,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
 
   const renderBarcodeSerialInfo = (sale: PartySale) => {
     if (!sale.devices || sale.devices.length === 0) {
-      return <span className="text-gray-500">-</span>;
+      return <span className="text-muted-foreground">-</span>;
     }
 
     // ✅ FIXED: Bilateral satışlarda tek barkod göster (User Request)
@@ -159,7 +159,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
         <div className="text-sm">
           {/* Tek barkod göster (bilateral olsa bile) */}
           {deviceData.barcode && (
-            <div className="font-mono text-[10px] bg-gray-100 px-1 rounded inline-block mb-1">
+            <div className="font-mono text-[10px] bg-muted px-1 rounded inline-block mb-1">
               {deviceData.barcode}
             </div>
           )}
@@ -169,14 +169,14 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
             // Bilateral satış - sol ve sağ seri numaralarını göster
             <div className="space-y-1">
               {deviceData.serialNumberLeft && (
-                <div className="text-xs text-gray-600 font-medium">
-                  <span className="text-[10px] text-gray-400 mr-1 italic">Sol:</span>
+                <div className="text-xs text-muted-foreground font-medium">
+                  <span className="text-[10px] text-muted-foreground mr-1 italic">Sol:</span>
                   {deviceData.serialNumberLeft}
                 </div>
               )}
               {sale.devices[1] && (sale.devices[1] as typeof firstDevice & { serialNumberRight?: string }).serialNumberRight && (
-                <div className="text-xs text-gray-600 font-medium">
-                  <span className="text-[10px] text-gray-400 mr-1 italic">Sağ:</span>
+                <div className="text-xs text-muted-foreground font-medium">
+                  <span className="text-[10px] text-muted-foreground mr-1 italic">Sağ:</span>
                   {(sale.devices[1] as typeof firstDevice & { serialNumberRight?: string }).serialNumberRight}
                 </div>
               )}
@@ -184,14 +184,14 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
           ) : (
             // Tek cihaz - standart seri numarası göster
             deviceData.serialNumber && (
-              <div className="text-xs text-gray-600 font-medium">
+              <div className="text-xs text-muted-foreground font-medium">
                 {deviceData.serialNumber} {deviceData.ear ? `(${deviceData.ear === 'left' ? 'Sol' : deviceData.ear === 'right' ? 'Sağ' : deviceData.ear})` : ''}
               </div>
             )
           )}
 
           {!deviceData.barcode && !deviceData.serialNumber && !deviceData.serialNumberLeft && !deviceData.serialNumberRight && (
-            <div className="text-xs text-gray-400 italic">Barkod/Seri No Yok</div>
+            <div className="text-xs text-muted-foreground italic">Barkod/Seri No Yok</div>
           )}
         </div>
       </div>
@@ -210,15 +210,15 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
 
   const renderStatusBadge = (status: string, paidAmount: number, remainingAmount: number) => {
     if (status === 'cancelled') {
-      return <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">İptal Edildi</span>;
+      return <span className="px-2 py-1 text-xs font-medium bg-destructive/10 text-red-800 rounded-full">İptal Edildi</span>;
     }
 
     if (remainingAmount <= 0) {
-      return <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Tamamlandı</span>;
+      return <span className="px-2 py-1 text-xs font-medium bg-success/10 text-success rounded-full">Tamamlandı</span>;
     }
 
     if (paidAmount > 0) {
-      return <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Kısmi Ödeme</span>;
+      return <span className="px-2 py-1 text-xs font-medium bg-warning/10 text-yellow-800 rounded-full">Kısmi Ödeme</span>;
     }
 
     return <span className="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full">Bekliyor</span>;
@@ -238,21 +238,21 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
       key: '_saleId',
       title: 'Satış ID/Tarih',
       render: (_, sale) => (
-        <div className="text-sm text-gray-900">
+        <div className="text-sm text-foreground">
           <div className="font-medium">{sale.id}</div>
-          <div className="text-xs text-gray-600">{formatDate(sale.saleDate)}</div>
+          <div className="text-xs text-muted-foreground">{formatDate(sale.saleDate)}</div>
         </div>
       ),
     },
     {
       key: '_product',
       title: 'Ürün/Hizmet',
-      render: (_, sale) => <div className="text-sm text-gray-600">{renderDevicesSummary(sale)}</div>,
+      render: (_, sale) => <div className="text-sm text-muted-foreground">{renderDevicesSummary(sale)}</div>,
     },
     {
       key: '_barcode',
       title: 'Barkod/Seri No',
-      render: (_, sale) => <div className="text-sm font-medium text-gray-900">{renderBarcodeSerialInfo(sale)}</div>,
+      render: (_, sale) => <div className="text-sm font-medium text-foreground">{renderBarcodeSerialInfo(sale)}</div>,
     },
     {
       key: '_listPrice',
@@ -260,7 +260,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
       align: 'right',
       render: (_, sale) => {
         const actualTotal = sale.actualListPriceTotal || sale.totalAmount || 0;
-        return <span className="text-sm font-semibold text-gray-900">{formatCurrency(actualTotal)}</span>;
+        return <span className="text-sm font-semibold text-foreground">{formatCurrency(actualTotal)}</span>;
       },
     },
     {
@@ -271,9 +271,9 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
         const discountAmount = sale.discountAmount || 0;
         const discountType = (sale.discountType as 'none' | 'percentage' | 'amount') || 'none';
         const discountValue = sale.discountValue || 0;
-        if (discountType === 'none' || discountAmount === 0) return <span className="text-sm text-gray-500">-</span>;
-        if (discountType === 'percentage') return <span className={`text-sm font-semibold ${discountAmount > 0 ? 'text-red-600' : 'text-gray-500'}`}>{`-${discountValue}% (${formatCurrency(discountAmount)})`}</span>;
-        return <span className={`text-sm font-semibold ${discountAmount > 0 ? 'text-red-600' : 'text-gray-500'}`}>{discountAmount > 0 ? `-${formatCurrency(discountAmount)}` : '-'}</span>;
+        if (discountType === 'none' || discountAmount === 0) return <span className="text-sm text-muted-foreground">-</span>;
+        if (discountType === 'percentage') return <span className={`text-sm font-semibold ${discountAmount > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>{`-${discountValue}% (${formatCurrency(discountAmount)})`}</span>;
+        return <span className={`text-sm font-semibold ${discountAmount > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>{discountAmount > 0 ? `-${formatCurrency(discountAmount)}` : '-'}</span>;
       },
     },
     {
@@ -282,7 +282,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
       align: 'right',
       render: (_, sale) => {
         const sgkAmount = sale.sgkCoverage || 0;
-        return <span className={`text-sm font-semibold ${sgkAmount > 0 ? 'text-blue-600' : 'text-gray-500'}`}>{sgkAmount > 0 ? '-' : ''}{formatCurrency(sgkAmount)}</span>;
+        return <span className={`text-sm font-semibold ${sgkAmount > 0 ? 'text-primary' : 'text-muted-foreground'}`}>{sgkAmount > 0 ? '-' : ''}{formatCurrency(sgkAmount)}</span>;
       },
     },
     {
@@ -290,7 +290,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
       title: 'Toplam Tutar',
       align: 'right',
       render: (_, sale) => (
-        <span className="text-sm font-semibold text-gray-900">{formatCurrency(calculateDisplayTotal(sale))}</span>
+        <span className="text-sm font-semibold text-foreground">{formatCurrency(calculateDisplayTotal(sale))}</span>
       ),
     },
     {
@@ -301,8 +301,8 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
         const paidAmount = sale.paidAmount || 0;
         return (
           <div>
-            <div className="text-sm font-semibold text-green-700">{formatCurrency(paidAmount)}</div>
-            <div className="text-xs text-gray-600">{renderPaymentMethods(sale)}</div>
+            <div className="text-sm font-semibold text-success">{formatCurrency(paidAmount)}</div>
+            <div className="text-xs text-muted-foreground">{renderPaymentMethods(sale)}</div>
           </div>
         );
       },
@@ -315,7 +315,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
         const displayTotal = calculateDisplayTotal(sale);
         const paidAmount = sale.paidAmount || 0;
         const remainingAmount = displayTotal - paidAmount;
-        return <span className={`text-sm font-semibold ${remainingAmount > 0 ? 'text-orange-700' : 'text-gray-500'}`}>{formatCurrency(remainingAmount)}</span>;
+        return <span className={`text-sm font-semibold ${remainingAmount > 0 ? 'text-orange-700' : 'text-muted-foreground'}`}>{formatCurrency(remainingAmount)}</span>;
       },
     },
     {
@@ -331,7 +331,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
           <div>
             {renderStatusBadge(sale.status, paidAmount, remainingAmount)}
             {hasInvoice && (
-              <span className="block mt-1 px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+              <span className="block mt-1 px-2 py-1 text-xs font-medium bg-success/10 text-success rounded-full">
                 Fatura Oluşturuldu
               </span>
             )}
@@ -354,13 +354,13 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
             <MoreVertical className="w-5 h-5" />
           </Button>
           {openMenuId === sale.id && (
-            <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
+            <div className="absolute right-0 mt-2 w-44 bg-card border border-border rounded-xl shadow-lg z-50">
               <div className="py-1">
                 <PermissionGate permission="invoices.create">
                   <button
                     data-allow-raw="true"
                     onClick={() => { if (sale.invoice) { onViewInvoice?.(sale); } else { onCreateInvoice?.(sale); } closeOverflowMenu(); }}
-                    className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-foreground hover:bg-muted"
                   >
                     <FileText className="w-4 h-4 mr-2" />
                     {sale.invoice ? 'Fatura Görüntüle' : 'Fatura Kes'}
@@ -370,7 +370,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                   <button
                     data-allow-raw="true"
                     onClick={() => { onManagePromissoryNotes?.(sale); closeOverflowMenu(); }}
-                    className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-foreground hover:bg-muted"
                   >
                     <Banknote className="w-4 h-4 mr-2" />
                     Senetler
@@ -380,7 +380,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                   <button
                     data-allow-raw="true"
                     onClick={() => { onCancelSale?.(sale); closeOverflowMenu(); }}
-                    className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                    className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-destructive hover:bg-muted"
                   >
                     <Ban className="w-4 h-4 mr-2" />
                     Satışı İptal Et
@@ -408,14 +408,14 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
     return (
       <div
         key={sale.id}
-        className={`bg-white border rounded-xl p-4 shadow-sm relative ${cancelledClass} transition-all active:scale-[0.98] cursor-pointer`}
+        className={`bg-card border rounded-xl p-4 shadow-sm relative ${cancelledClass} transition-all active:scale-[0.98] cursor-pointer`}
         onClick={() => onSaleClick?.(sale)}
       >
         {/* Header: Date, ID, and Context Menu */}
         <div className="flex justify-between items-start mb-3">
           <div>
-            <div className="text-xs text-gray-500 font-medium mb-0.5">{formatDate(sale.saleDate)}</div>
-            <div className="text-sm font-semibold text-gray-900">#{sale.id}</div>
+            <div className="text-xs text-muted-foreground font-medium mb-0.5">{formatDate(sale.saleDate)}</div>
+            <div className="text-sm font-semibold text-foreground">#{sale.id}</div>
           </div>
           <div className="flex items-center gap-2">
             {renderStatusBadge(sale.status, paidAmount, remainingAmount)}
@@ -430,7 +430,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                 <MoreVertical className="w-5 h-5" />
               </Button>
               {openMenuId === sale.id && (
-                <div className="absolute right-0 mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
+                <div className="absolute right-0 mt-1 w-44 bg-card border border-border rounded-xl shadow-lg z-50">
                     <div className="py-1">
                     <PermissionGate permission="invoices.create">
                       <Button
@@ -444,7 +444,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                           }
                           closeOverflowMenu();
                         }}
-                        className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-foreground hover:bg-muted"
                       >
                         <FileText className="w-4 h-4 mr-2" />
                         {hasInvoice ? 'Fatura Görüntüle' : 'Fatura Kes'}
@@ -458,7 +458,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                           onManagePromissoryNotes?.(sale);
                           closeOverflowMenu();
                         }}
-                        className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-foreground hover:bg-muted"
                       >
                         <Banknote className="w-4 h-4 mr-2" />
                         Senetler
@@ -472,7 +472,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
                           onCancelSale?.(sale);
                           closeOverflowMenu();
                         }}
-                        className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                        className="flex w-full items-center justify-start rounded-none px-4 py-2 text-sm text-destructive hover:bg-muted"
                       >
                         <Ban className="w-4 h-4 mr-2" />
                         Satışı İptal Et
@@ -486,56 +486,56 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
         </div>
 
         {/* Product & Device Details */}
-        <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 mb-3 space-y-2">
+        <div className="bg-muted p-3 rounded-lg border border-border mb-3 space-y-2">
           {renderDevicesSummary(sale)}
-          <div className="pt-2 border-t border-gray-200">
+          <div className="pt-2 border-t border-border">
             {renderBarcodeSerialInfo(sale)}
           </div>
         </div>
 
         {/* Financial Details */}
         <div className="space-y-2 text-sm">
-          <div className="flex justify-between items-center text-gray-600">
+          <div className="flex justify-between items-center text-muted-foreground">
             <span>Liste Fiyatı</span>
-            <span className="font-medium text-gray-900">{formatCurrency(actualTotal)}</span>
+            <span className="font-medium text-foreground">{formatCurrency(actualTotal)}</span>
           </div>
 
           {(discountAmount > 0 || sgkAmount > 0) && (
             <>
               {discountAmount > 0 && (
-                <div className="flex justify-between items-center text-gray-600">
+                <div className="flex justify-between items-center text-muted-foreground">
                   <span>İndirim</span>
-                  <span className="font-medium text-red-600">-{formatCurrency(discountAmount)}</span>
+                  <span className="font-medium text-destructive">-{formatCurrency(discountAmount)}</span>
                 </div>
               )}
               {sgkAmount > 0 && (
-                <div className="flex justify-between items-center text-gray-600">
+                <div className="flex justify-between items-center text-muted-foreground">
                   <span>SGK Desteği</span>
-                  <span className="font-medium text-blue-600">-{formatCurrency(sgkAmount)}</span>
+                  <span className="font-medium text-primary">-{formatCurrency(sgkAmount)}</span>
                 </div>
               )}
-              <div className="h-px bg-gray-100 my-1"></div>
+              <div className="h-px bg-muted my-1"></div>
             </>
           )}
 
           <div className="flex justify-between items-center">
-            <span className="font-medium text-gray-700">Toplam</span>
-            <span className="font-bold text-gray-900 text-base">{formatCurrency(displayTotal)}</span>
+            <span className="font-medium text-foreground">Toplam</span>
+            <span className="font-bold text-foreground text-base">{formatCurrency(displayTotal)}</span>
           </div>
 
           <div className="flex justify-between items-center">
-            <span className="text-gray-600">Alınan Ödeme</span>
+            <span className="text-muted-foreground">Alınan Ödeme</span>
             <div className="text-right">
-              <span className="font-semibold text-green-700">{formatCurrency(paidAmount)}</span>
+              <span className="font-semibold text-success">{formatCurrency(paidAmount)}</span>
               {paidAmount > 0 && (
-                <div className="text-[10px] text-gray-500 mt-0.5">{renderPaymentMethods(sale)}</div>
+                <div className="text-[10px] text-muted-foreground mt-0.5">{renderPaymentMethods(sale)}</div>
               )}
             </div>
           </div>
 
           {remainingAmount > 0 && (
-            <div className="flex justify-between items-center pt-1 border-t border-gray-100">
-              <span className="font-medium text-gray-700">Kalan</span>
+            <div className="flex justify-between items-center pt-1 border-t border-border">
+              <span className="font-medium text-foreground">Kalan</span>
               <span className="font-bold text-orange-600 text-base">{formatCurrency(remainingAmount)}</span>
             </div>
           )}
@@ -543,7 +543,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
 
         {hasInvoice && (
           <div className="mt-3">
-            <span className="inline-block px-2 py-1 text-[10px] font-medium bg-green-50 border border-green-200 text-green-700 rounded-md">
+            <span className="inline-block px-2 py-1 text-[10px] font-medium bg-success/10 border border-green-200 text-success rounded-md">
               Fatura Mevcut
             </span>
           </div>
@@ -565,7 +565,7 @@ export const SalesTableView: React.FC<SalesTableViewProps> = ({
 
   if (!sales || sales.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 bg-gray-50 border border-gray-100 rounded-xl text-gray-500">
+      <div className="flex flex-col items-center justify-center p-8 bg-muted border border-border rounded-xl text-muted-foreground">
         <FileText className="w-10 h-10 text-gray-300 mb-3" />
         <p className="font-medium">Henüz satış kaydı bulunmuyor</p>
       </div>

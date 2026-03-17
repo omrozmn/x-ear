@@ -210,24 +210,24 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
   // Durum ikonları
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'draft': return <FileText className="w-4 h-4 text-gray-500" />;
-      case 'scheduled': return <Clock className="w-4 h-4 text-blue-500" />;
+      case 'draft': return <FileText className="w-4 h-4 text-muted-foreground" />;
+      case 'scheduled': return <Clock className="w-4 h-4 text-primary" />;
       case 'sent': return <Send className="w-4 h-4 text-yellow-500" />;
-      case 'delivered': return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'failed': return <XCircle className="w-4 h-4 text-red-500" />;
-      default: return <AlertCircle className="w-4 h-4 text-gray-500" />;
+      case 'delivered': return <CheckCircle className="w-4 h-4 text-success" />;
+      case 'failed': return <XCircle className="w-4 h-4 text-destructive" />;
+      default: return <AlertCircle className="w-4 h-4 text-muted-foreground" />;
     }
   };
 
   // Durum renkleri
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'draft': return 'bg-gray-100 text-gray-800';
-      case 'scheduled': return 'bg-blue-100 text-blue-800';
-      case 'sent': return 'bg-yellow-100 text-yellow-800';
-      case 'delivered': return 'bg-green-100 text-green-800';
-      case 'failed': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'draft': return 'bg-muted text-foreground';
+      case 'scheduled': return 'bg-primary/10 text-blue-800';
+      case 'sent': return 'bg-warning/10 text-yellow-800';
+      case 'delivered': return 'bg-success/10 text-success';
+      case 'failed': return 'bg-destructive/10 text-red-800';
+      default: return 'bg-muted text-foreground';
     }
   };
 
@@ -331,9 +331,9 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
 
       // In a real implementation, these would be actual API calls
       // const [messagesData, templatesData, campaignsData] = await Promise.all([
-      //   fetchMessages(),
-      //   fetchTemplates(),
-      //   fetchCampaigns()
+      // fetchMessages(),
+      // fetchTemplates(),
+      // fetchCampaigns()
       // ]);
 
       success('Veriler başarıyla yüklendi');
@@ -458,8 +458,8 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">İletişim Merkezi</h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <h2 className="text-xl font-semibold text-foreground">İletişim Merkezi</h2>
+            <p className="text-sm text-muted-foreground mt-1">
               SMS, WhatsApp ve e-posta iletişimlerini yönetin
             </p>
           </div>
@@ -467,7 +467,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
           {/* Sync Status Indicator */}
           <div className="flex items-center space-x-2">
             {syncStatus.isOnline ? (
-              <div className="flex items-center text-green-600">
+              <div className="flex items-center text-success">
                 <Wifi className="h-4 w-4 mr-1" />
                 <span className="text-sm">Çevrimiçi</span>
               </div>
@@ -479,7 +479,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
             )}
 
             {syncStatus.isSyncing && (
-              <div className="flex items-center text-blue-600">
+              <div className="flex items-center text-primary">
                 <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
                 <span className="text-sm">Senkronize ediliyor...</span>
               </div>
@@ -532,11 +532,11 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
       <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
         <Card className="p-4">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-blue-100 rounded-2xl">
-              <MessageSquare className="w-5 h-5 text-blue-600" />
+            <div className="p-2 bg-primary/10 rounded-2xl">
+              <MessageSquare className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Toplam</p>
+              <p className="text-sm text-muted-foreground">Toplam</p>
               <p className="text-xl font-semibold">{stats.total}</p>
             </div>
           </div>
@@ -544,11 +544,11 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
 
         <Card className="p-4">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-yellow-100 rounded-2xl">
+            <div className="p-2 bg-warning/10 rounded-2xl">
               <Send className="w-5 h-5 text-yellow-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Gönderilen</p>
+              <p className="text-sm text-muted-foreground">Gönderilen</p>
               <p className="text-xl font-semibold">{stats.sent}</p>
             </div>
           </div>
@@ -556,11 +556,11 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
 
         <Card className="p-4">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-green-100 rounded-2xl">
-              <CheckCircle className="w-5 h-5 text-green-600" />
+            <div className="p-2 bg-success/10 rounded-2xl">
+              <CheckCircle className="w-5 h-5 text-success" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Teslim Edilen</p>
+              <p className="text-sm text-muted-foreground">Teslim Edilen</p>
               <p className="text-xl font-semibold">{stats.delivered}</p>
             </div>
           </div>
@@ -568,11 +568,11 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
 
         <Card className="p-4">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-red-100 rounded-2xl">
-              <XCircle className="w-5 h-5 text-red-600" />
+            <div className="p-2 bg-destructive/10 rounded-2xl">
+              <XCircle className="w-5 h-5 text-destructive" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Başarısız</p>
+              <p className="text-sm text-muted-foreground">Başarısız</p>
               <p className="text-xl font-semibold">{stats.failed}</p>
             </div>
           </div>
@@ -584,7 +584,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
               <Clock className="w-5 h-5 text-purple-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Zamanlanmış</p>
+              <p className="text-sm text-muted-foreground">Zamanlanmış</p>
               <p className="text-xl font-semibold">{stats.scheduled}</p>
             </div>
           </div>
@@ -596,7 +596,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
               <BarChart3 className="w-5 h-5 text-indigo-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Başarı Oranı</p>
+              <p className="text-sm text-muted-foreground">Başarı Oranı</p>
               <p className="text-xl font-semibold">%{stats.successRate}</p>
             </div>
           </div>
@@ -631,11 +631,11 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
             <Card className="p-4">
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Arama
                   </label>
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
                       placeholder="Mesaj ara..."
                       value={searchTerm}
@@ -646,7 +646,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Tip
                   </label>
                   <Select
@@ -662,7 +662,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Durum
                   </label>
                   <Select
@@ -680,7 +680,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Mesaj Tipi
                   </label>
                   <Select
@@ -697,7 +697,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Tarih Aralığı
                   </label>
                   <div className="flex space-x-2">
@@ -730,11 +730,11 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
                         <div className="flex items-center space-x-3 mb-2">
                           <div className="flex items-center space-x-2">
                             {message.type === 'sms' ? (
-                              <MessageSquare className="w-4 h-4 text-blue-500" />
+                              <MessageSquare className="w-4 h-4 text-primary" />
                             ) : message.type === 'whatsapp' ? (
                               <MessageCircle className="w-4 h-4 text-emerald-500" />
                             ) : (
-                              <Mail className="w-4 h-4 text-green-500" />
+                              <Mail className="w-4 h-4 text-success" />
                             )}
                             <span className="font-medium">{message.type.toUpperCase()}</span>
                           </div>
@@ -753,31 +753,31 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
 
                         <div className="space-y-1">
                           <div className="flex items-center space-x-2">
-                            <span className="text-sm text-gray-600">Konuşma:</span>
+                            <span className="text-sm text-muted-foreground">Konuşma:</span>
                             <span className="font-medium">
                               {message.recipientName || message.recipient}
                             </span>
                             {message.recipientName && (
-                              <span className="text-sm text-gray-500">({message.recipient})</span>
+                              <span className="text-sm text-muted-foreground">({message.recipient})</span>
                             )}
                           </div>
 
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs text-muted-foreground">
                             {thread.messages.length} mesaj
                           </div>
 
                           {message.subject && (
                             <div className="flex items-center space-x-2">
-                              <span className="text-sm text-gray-600">Konu:</span>
+                              <span className="text-sm text-muted-foreground">Konu:</span>
                               <span className="font-medium">{message.subject}</span>
                             </div>
                           )}
 
-                          <div className="text-sm text-gray-700 line-clamp-2">
+                          <div className="text-sm text-foreground line-clamp-2">
                             {message.content}
                           </div>
 
-                          <div className="flex items-center space-x-4 text-xs text-gray-500">
+                          <div className="flex items-center space-x-4 text-xs text-muted-foreground">
                             <span>Oluşturulma: {new Date(message.createdAt).toLocaleString('tr-TR')}</span>
                             {message.sentAt && (
                               <span>Gönderilme: {new Date(message.sentAt).toLocaleString('tr-TR')}</span>
@@ -819,11 +819,11 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
               </div>
             ) : (
               <Card className="p-8 text-center">
-                <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-foreground mb-2">
                   Mesaj bulunamadı
                 </h3>
-                <p className="text-gray-600 mb-4">
+                <p className="text-muted-foreground mb-4">
                   Henüz gönderilmiş mesaj yok veya filtre kriterlerine uygun mesaj bulunamadı.
                 </p>
                 <Button onClick={openComposeModal}>
@@ -851,11 +851,11 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
             </div>
 
             <Card className="p-8 text-center">
-              <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-foreground mb-2">
                 Kampanya bulunamadı
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-muted-foreground mb-4">
                 Henüz oluşturulmuş kampanya yok.
               </p>
               <Button onClick={() => campaignModal.openModal()}>
@@ -888,7 +888,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Kanal</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Kanal</label>
               <Select
                 value={composeType}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -909,7 +909,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Hasta Seç</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Hasta Seç</label>
               <Select
                 value={composePartyId}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleComposePartyChange(e.target.value)}
@@ -920,7 +920,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 {composeType === 'email' ? 'E-posta Adresi' : 'Telefon / WhatsApp Numarası'}
               </label>
               <Input
@@ -930,7 +930,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Alıcı Adı</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Alıcı Adı</label>
               <Input
                 value={composeRecipientName}
                 onChange={(e) => setComposeRecipientName(e.target.value)}
@@ -941,7 +941,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
 
           {composeType === 'email' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Konu</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Konu</label>
               <Input
                 value={composeSubject}
                 onChange={(e) => setComposeSubject(e.target.value)}
@@ -951,7 +951,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Mesaj</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Mesaj</label>
             <Textarea
               value={composeContent}
               onChange={(e) => setComposeContent(e.target.value)}
@@ -1005,7 +1005,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
               <p className="mt-1 whitespace-pre-wrap">{selectedMessage.content}</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+            <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
               <div><strong>Oluşturulma:</strong> {new Date(selectedMessage.createdAt).toLocaleString('tr-TR')}</div>
               {selectedMessage.sentAt && (
                 <div><strong>Gönderilme:</strong> {new Date(selectedMessage.sentAt).toLocaleString('tr-TR')}</div>
@@ -1018,7 +1018,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
               )}
             </div>
 
-            <div className="rounded-2xl border bg-gray-50 p-4 max-h-[420px] overflow-y-auto space-y-3">
+            <div className="rounded-2xl border bg-muted p-4 max-h-[420px] overflow-y-auto space-y-3">
               {selectedThreadMessages.map((message) => {
                 const isOutbound = message.messageType !== 'automated';
                 return (
@@ -1030,7 +1030,7 @@ export const CommunicationCenter: React.FC<CommunicationCenterProps> = ({ partie
                       className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                         isOutbound
                           ? 'bg-emerald-600 text-white'
-                          : 'bg-white text-gray-900 border'
+                          : 'bg-card text-foreground border'
                       }`}
                     >
                       <div className="text-xs opacity-80 mb-1">

@@ -42,7 +42,7 @@ export function TeamMembersList({ members, isLoading, pagination, onEdit, onDele
       title: 'E-posta',
       sortable: true,
       render: (_, member) => (
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+        <span className="text-sm text-muted-foreground">
           {member.email || '-'}
         </span>
       )
@@ -72,7 +72,7 @@ export function TeamMembersList({ members, isLoading, pagination, onEdit, onDele
       title: 'Son Aktivite',
       sortable: true,
       render: (_, member) => (
-        <span className="text-sm text-gray-500 dark:text-gray-400">
+        <span className="text-sm text-muted-foreground">
           {member.lastActive || '-'}
         </span>
       )

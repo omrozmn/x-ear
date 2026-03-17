@@ -83,7 +83,7 @@ export function PromissoryNotesList({ notes, isLoading, pagination }: Promissory
       title: 'Vade Tarihi',
       sortable: true,
       render: (_, note) => (
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+        <span className="text-sm text-muted-foreground">
           {note.dueDate ? formatDate(note.dueDate) : '-'}
         </span>
       )
@@ -92,7 +92,7 @@ export function PromissoryNotesList({ notes, isLoading, pagination }: Promissory
       key: 'bankName',
       title: 'Banka',
       render: (_, note) => (
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+        <span className="text-sm text-muted-foreground">
           {note.bankName || '-'}
         </span>
       )

@@ -115,15 +115,15 @@ export const SGKEReceiptModal: React.FC<SGKEReceiptModalProps> = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'draft':
-        return 'text-gray-600 bg-gray-100';
+        return 'text-muted-foreground bg-muted';
       case 'sent':
-        return 'text-blue-600 bg-blue-100';
+        return 'text-primary bg-primary/10';
       case 'approved':
-        return 'text-green-600 bg-green-100';
+        return 'text-success bg-success/10';
       case 'rejected':
-        return 'text-red-600 bg-red-100';
+        return 'text-destructive bg-destructive/10';
       default:
-        return 'text-gray-600 bg-gray-100';
+        return 'text-muted-foreground bg-muted';
     }
   };
 
@@ -139,42 +139,42 @@ export const SGKEReceiptModal: React.FC<SGKEReceiptModalProps> = ({
       key: 'name',
       title: 'İlaç/Malzeme',
       render: (_: unknown, med: SGKMedication) => (
-        <span className="text-sm text-gray-900">{med.name}</span>
+        <span className="text-sm text-foreground">{med.name}</span>
       ),
     },
     {
       key: 'dosage',
       title: 'Doz',
       render: (_: unknown, med: SGKMedication) => (
-        <span className="text-sm text-gray-500">{med.dosage}</span>
+        <span className="text-sm text-muted-foreground">{med.dosage}</span>
       ),
     },
     {
       key: 'quantity',
       title: 'Adet',
       render: (_: unknown, med: SGKMedication) => (
-        <span className="text-sm text-gray-500">{med.quantity}</span>
+        <span className="text-sm text-muted-foreground">{med.quantity}</span>
       ),
     },
     {
       key: '_unitPrice',
       title: 'Birim Fiyat',
       render: (_: unknown, med: SGKMedication) => (
-        <span className="text-sm text-gray-500">₺{med.unitPrice.toFixed(2)}</span>
+        <span className="text-sm text-muted-foreground">₺{med.unitPrice.toFixed(2)}</span>
       ),
     },
     {
       key: '_totalPrice',
       title: 'Toplam',
       render: (_: unknown, med: SGKMedication) => (
-        <span className="text-sm font-medium text-gray-900">₺{med.totalPrice.toFixed(2)}</span>
+        <span className="text-sm font-medium text-foreground">₺{med.totalPrice.toFixed(2)}</span>
       ),
     },
     {
       key: 'sgkCode',
       title: 'SGK Kodu',
       render: (_: unknown, med: SGKMedication) => (
-        <span className="text-sm text-gray-500">{med.sgkCode}</span>
+        <span className="text-sm text-muted-foreground">{med.sgkCode}</span>
       ),
     },
   ];
@@ -190,15 +190,15 @@ export const SGKEReceiptModal: React.FC<SGKEReceiptModalProps> = ({
       <div className="space-y-6">
         {/* Hasta Bilgileri */}
         {party && (
-          <div className="bg-gray-50 p-4 rounded-2xl">
-            <h4 className="font-medium text-gray-900 mb-2">Hasta Bilgileri</h4>
+          <div className="bg-muted p-4 rounded-2xl">
+            <h4 className="font-medium text-foreground mb-2">Hasta Bilgileri</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-gray-500">Ad Soyad:</span>
+                <span className="text-muted-foreground">Ad Soyad:</span>
                 <span className="ml-2 font-medium">{party.firstName} {party.lastName}</span>
               </div>
               <div>
-                <span className="text-gray-500">TC Kimlik No:</span>
+                <span className="text-muted-foreground">TC Kimlik No:</span>
                 <span className="ml-2 font-medium">{party.tcNumber}</span>
               </div>
             </div>
@@ -248,7 +248,7 @@ export const SGKEReceiptModal: React.FC<SGKEReceiptModalProps> = ({
 
         {/* Durum */}
         <div className="flex items-center justify-between">
-          <h4 className="font-medium text-gray-900">Reçete Durumu</h4>
+          <h4 className="font-medium text-foreground">Reçete Durumu</h4>
           <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(receiptData.status)}`}>
             {getStatusText(receiptData.status)}
           </span>
@@ -256,7 +256,7 @@ export const SGKEReceiptModal: React.FC<SGKEReceiptModalProps> = ({
 
         {/* İlaçlar */}
         <div>
-          <h4 className="font-medium text-gray-900 mb-3">İlaçlar ve Malzemeler</h4>
+          <h4 className="font-medium text-foreground mb-3">İlaçlar ve Malzemeler</h4>
           <DataTable<SGKMedication>
             data={receiptData.medications}
             columns={medicationColumns}
@@ -267,19 +267,19 @@ export const SGKEReceiptModal: React.FC<SGKEReceiptModalProps> = ({
         </div>
 
         {/* Ödeme Bilgileri */}
-        <div className="bg-blue-50 p-4 rounded-2xl">
+        <div className="bg-primary/10 p-4 rounded-2xl">
           <h4 className="font-medium text-blue-900 mb-3">Ödeme Bilgileri</h4>
           <div className="grid grid-cols-3 gap-4 text-sm">
             <div>
-              <span className="text-blue-600">Toplam Tutar:</span>
+              <span className="text-primary">Toplam Tutar:</span>
               <p className="font-medium text-blue-900">₺{receiptData.totalAmount.toFixed(2)}</p>
             </div>
             <div>
-              <span className="text-blue-600">SGK Karşılığı:</span>
+              <span className="text-primary">SGK Karşılığı:</span>
               <p className="font-medium text-blue-900">₺{receiptData.sgkCoverage.toFixed(2)}</p>
             </div>
             <div>
-              <span className="text-blue-600">Hasta Ödemesi:</span>
+              <span className="text-primary">Hasta Ödemesi:</span>
               <p className="font-medium text-blue-900">₺{receiptData.partyPayment.toFixed(2)}</p>
             </div>
           </div>

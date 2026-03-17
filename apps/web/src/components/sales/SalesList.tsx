@@ -61,7 +61,7 @@ export function SalesList({ sales, isLoading, pagination, onSort }: SalesListPro
             {getPatientName(sale)}
           </div>
           {sale.partyId && (
-            <div className="text-xs text-gray-400 dark:text-gray-500 font-mono mt-0.5">
+            <div className="text-xs text-muted-foreground font-mono mt-0.5">
               {sale.partyId.slice(0, 8)}
             </div>
           )}
@@ -73,7 +73,7 @@ export function SalesList({ sales, isLoading, pagination, onSort }: SalesListPro
       title: 'Ürün',
       sortable: true,
       render: (_, sale) => (
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+        <span className="text-sm text-muted-foreground">
           {sale.productName || sale.brand || '-'}
         </span>
       )
@@ -93,7 +93,7 @@ export function SalesList({ sales, isLoading, pagination, onSort }: SalesListPro
       title: 'Tarih',
       sortable: true,
       render: (_, sale) => (
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+        <span className="text-sm text-muted-foreground">
           {sale.saleDate ? formatDate(String(sale.saleDate)) : '-'}
         </span>
       )

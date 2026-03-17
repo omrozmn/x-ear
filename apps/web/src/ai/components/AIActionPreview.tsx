@@ -84,16 +84,16 @@ export interface AIActionPreviewProps {
  */
 const RISK_COLORS: Record<RiskLevel, { bg: string; text: string; border: string; badge: string }> = {
   low: {
-    bg: 'bg-green-50',
-    text: 'text-green-700',
+    bg: 'bg-success/10',
+    text: 'text-success',
     border: 'border-green-200',
-    badge: 'bg-green-100 text-green-800',
+    badge: 'bg-success/10 text-success',
   },
   medium: {
-    bg: 'bg-yellow-50',
+    bg: 'bg-warning/10',
     text: 'text-yellow-700',
     border: 'border-yellow-200',
-    badge: 'bg-yellow-100 text-yellow-800',
+    badge: 'bg-warning/10 text-yellow-800',
   },
   high: {
     bg: 'bg-orange-50',
@@ -102,10 +102,10 @@ const RISK_COLORS: Record<RiskLevel, { bg: string; text: string; border: string;
     badge: 'bg-orange-100 text-orange-800',
   },
   critical: {
-    bg: 'bg-red-50',
-    text: 'text-red-700',
+    bg: 'bg-destructive/10',
+    text: 'text-destructive',
     border: 'border-red-200',
-    badge: 'bg-red-100 text-red-800',
+    badge: 'bg-destructive/10 text-red-800',
   },
 };
 
@@ -123,11 +123,11 @@ const RISK_LABELS: Record<RiskLevel, string> = {
  * Step status colors and icons
  */
 const STEP_STATUS_CONFIG: Record<StepStatus, { color: string; icon: string; label: string }> = {
-  pending: { color: 'text-gray-400', icon: '○', label: 'Bekliyor' },
-  running: { color: 'text-blue-500', icon: '◐', label: 'Çalışıyor' },
-  success: { color: 'text-green-500', icon: '●', label: 'Tamamlandı' },
-  failed: { color: 'text-red-500', icon: '✕', label: 'Başarısız' },
-  skipped: { color: 'text-gray-400', icon: '○', label: 'Atlandı' },
+  pending: { color: 'text-muted-foreground', icon: '○', label: 'Bekliyor' },
+  running: { color: 'text-primary', icon: '◐', label: 'Çalışıyor' },
+  success: { color: 'text-success', icon: '●', label: 'Tamamlandı' },
+  failed: { color: 'text-destructive', icon: '✕', label: 'Başarısız' },
+  skipped: { color: 'text-muted-foreground', icon: '○', label: 'Atlandı' },
 };
 
 /**
@@ -197,8 +197,8 @@ function ActionStepItem({
     <div
       className={`
         relative flex items-start gap-3 p-3 rounded-2xl border transition-colors
-        ${isActive ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-200'}
-        ${status === 'failed' ? 'bg-red-50 border-red-200' : ''}
+        ${isActive ? 'bg-primary/10 border-blue-200 dark:border-blue-800' : 'bg-card border-border'}
+        ${status === 'failed' ? 'bg-destructive/10 border-red-200 dark:border-red-800' : ''}
       `.trim()}
     >
       {/* Step Number & Status Icon */}
@@ -206,7 +206,7 @@ function ActionStepItem({
         <span
           className={`
             w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium
-            ${isActive ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'}
+            ${isActive ? 'bg-blue-500 text-white' : 'bg-muted text-muted-foreground'}
             ${status === 'success' ? 'bg-green-500 text-white' : ''}
             ${status === 'failed' ? 'bg-red-500 text-white' : ''}
           `.trim()}
@@ -222,7 +222,7 @@ function ActionStepItem({
       {/* Step Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-medium text-gray-900 text-sm">
+          <span className="font-medium text-foreground text-sm">
             {step.toolName}
           </span>
           <RiskBadge level={step.riskLevel as RiskLevel} />
@@ -233,13 +233,13 @@ function ActionStepItem({
           )}
         </div>
 
-        <p className="mt-1 text-sm text-gray-600">
+        <p className="mt-1 text-sm text-muted-foreground">
           {step.description}
         </p>
 
         {/* Progress bar for running steps */}
         {status === 'running' && progress !== undefined && (
-          <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+          <div className="mt-2 w-full bg-muted rounded-full h-1.5">
             <div
               className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
@@ -250,10 +250,10 @@ function ActionStepItem({
         {/* Parameters preview (collapsed by default) */}
         {Object.keys(step.parameters).length > 0 && (
           <details className="mt-2">
-            <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-700">
+            <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
               Parametreler ({Object.keys(step.parameters).length})
             </summary>
-            <pre className="mt-1 p-2 bg-gray-50 rounded text-xs overflow-x-auto">
+            <pre className="mt-1 p-2 bg-muted rounded text-xs overflow-x-auto">
               {JSON.stringify(step.parameters, null, 2)}
             </pre>
           </details>
@@ -294,8 +294,8 @@ function ModeSelector({
           className={`
             flex-1 px-4 py-2 rounded-2xl border text-sm font-medium transition-colors
             ${value === option.value
-              ? 'bg-blue-50 border-blue-500 text-blue-700'
-              : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+              ? 'bg-primary/10 border-blue-500 text-primary'
+              : 'bg-card border-border text-foreground hover:bg-accent'
             }
             ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
           `.trim()}
@@ -319,12 +319,12 @@ function ExecutionProgressDisplay({ progress }: ExecutionProgressDisplayProps): 
   const percentage = Math.round((progress.currentStep / progress.totalSteps) * 100);
 
   return (
-    <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl">
+    <div className="p-4 bg-primary/10 border border-blue-200 rounded-2xl">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-blue-700">
+        <span className="text-sm font-medium text-primary">
           Çalışıyor: Adım {progress.currentStep} / {progress.totalSteps}
         </span>
-        <span className="text-sm text-blue-600">
+        <span className="text-sm text-primary">
           {percentage}%
         </span>
       </div>
@@ -334,7 +334,7 @@ function ExecutionProgressDisplay({ progress }: ExecutionProgressDisplayProps): 
           style={{ width: `${percentage}%` }}
         />
       </div>
-      <p className="mt-2 text-xs text-blue-600">
+      <p className="mt-2 text-xs text-primary">
         Durum: {progress.overallStatus === 'running' ? 'Çalışıyor...' : progress.overallStatus}
       </p>
     </div>
@@ -356,9 +356,9 @@ function ExecutionProgressDisplay({ progress }: ExecutionProgressDisplayProps): 
  * const { currentPlan } = useAIActions();
  * 
  * <AIActionPreview
- *   plan={currentPlan}
- *   onSimulate={(planId) => executeAction({ actionId: planId, mode: 'simulate' })}
- *   onExecute={(planId, token) => executeAction({ actionId: planId, mode: 'execute', approvalToken: token })}
+ * plan={currentPlan}
+ * onSimulate={(planId) => executeAction({ actionId: planId, mode: 'simulate' })}
+ * onExecute={(planId, token) => executeAction({ actionId: planId, mode: 'execute', approvalToken: token })}
  * />
  * ```
  */
@@ -447,7 +447,7 @@ export function AIActionPreview({
   return (
     <div
       className={`
-        bg-white rounded-2xl border shadow-sm overflow-hidden
+        bg-card rounded-2xl border shadow-sm overflow-hidden
         ${overallRiskColors.border}
         ${className}
       `.trim()}
@@ -456,21 +456,21 @@ export function AIActionPreview({
       <div className={`px-4 py-3 ${overallRiskColors.bg} border-b ${overallRiskColors.border}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h3 className="font-semibold text-gray-900">
+            <h3 className="font-semibold text-foreground">
               Aksiyon Planı
             </h3>
             <RiskBadge level={plan.overallRiskLevel} />
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span>{plan.steps.length} adım</span>
             {plan.status && (
               <span className={`
                 px-2 py-0.5 rounded text-xs font-medium
-                ${plan.status === 'approved' ? 'bg-green-100 text-green-800' : ''}
-                ${plan.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : ''}
-                ${plan.status === 'executing' ? 'bg-blue-100 text-blue-800' : ''}
-                ${plan.status === 'completed' ? 'bg-green-100 text-green-800' : ''}
-                ${plan.status === 'failed' ? 'bg-red-100 text-red-800' : ''}
+                ${plan.status === 'approved' ? 'bg-success/10 text-success' : ''}
+                ${plan.status === 'pending' ? 'bg-warning/10 text-yellow-800' : ''}
+                ${plan.status === 'executing' ? 'bg-primary/10 text-blue-800' : ''}
+                ${plan.status === 'completed' ? 'bg-success/10 text-success' : ''}
+                ${plan.status === 'failed' ? 'bg-destructive/10 text-red-800' : ''}
               `.trim()}>
                 {plan.status === 'pending' && 'Onay Bekliyor'}
                 {plan.status === 'approved' && 'Onaylandı'}
@@ -486,7 +486,7 @@ export function AIActionPreview({
 
         {/* Phase A Warning */}
         {isPhaseA && (
-          <p className="mt-2 text-sm text-blue-600">
+          <p className="mt-2 text-sm text-primary">
             ℹ️ AI öneri modunda. Aksiyonlar sadece simüle edilebilir.
           </p>
         )}
@@ -494,7 +494,7 @@ export function AIActionPreview({
 
       {/* Execution Progress (if executing) */}
       {isCurrentPlanExecuting && executionProgress && (
-        <div className="p-4 border-b border-gray-200">
+        <div className="p-4 border-b border-border">
           <ExecutionProgressDisplay progress={executionProgress} />
         </div>
       )}
@@ -521,7 +521,7 @@ export function AIActionPreview({
 
       {/* Actions Footer */}
       {showActions && (
-        <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 space-y-3">
+        <div className="px-4 py-3 bg-muted/50 border-t border-border space-y-3">
           {/* Mode Selector */}
           {showModeSelector && !isCurrentPlanExecuting && (
             <ModeSelector
@@ -594,7 +594,7 @@ export function AIActionPreview({
 
           {/* Phase A Info */}
           {isPhaseA && selectedMode === 'execute' && (
-            <p className="text-xs text-gray-500 text-center">
+            <p className="text-xs text-muted-foreground text-center">
               Uygulama modu Phase A'da kullanılamaz.
             </p>
           )}

@@ -137,7 +137,6 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
             resetForm();
             await queryClient.invalidateQueries({ queryKey: getListAdminTenantUsersQueryKey(tenantId, params) });
         } catch (error: unknown) {
-            console.error('Add user error:', error);
             toast.error(getApiErrorMessage(error, 'Kullanıcı eklenemedi'));
         } finally {
             setIsSubmitting(false);
@@ -165,7 +164,6 @@ export const UsersTab = ({ tenantId }: UsersTabProps) => {
             resetForm();
             await queryClient.invalidateQueries({ queryKey: getListAdminTenantUsersQueryKey(tenantId, params) });
         } catch (error: unknown) {
-            console.error('Update user error:', error);
             toast.error(getApiErrorMessage(error, 'Güncelleme başarısız'));
         } finally {
             setIsSubmitting(false);

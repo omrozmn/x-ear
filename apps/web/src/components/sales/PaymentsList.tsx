@@ -21,8 +21,8 @@ export function PaymentsList({ saleId }: PaymentsListProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8" data-testid="loading-spinner">
-        <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
-        <span className="ml-2 text-gray-600">Ödemeler yükleniyor...</span>
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <span className="ml-2 text-muted-foreground">Ödemeler yükleniyor...</span>
       </div>
     );
   }
@@ -30,14 +30,14 @@ export function PaymentsList({ saleId }: PaymentsListProps) {
   // Error state
   if (error) {
     return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+      <div className="rounded-2xl border border-red-200 bg-destructive/10 p-4">
         <div className="flex items-start">
-          <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
+          <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
           <div className="ml-3 flex-1">
             <h3 className="text-sm font-medium text-red-800">
               Ödemeler yüklenemedi
             </h3>
-            <p className="mt-1 text-sm text-red-700">
+            <p className="mt-1 text-sm text-destructive">
               {error instanceof Error ? error.message : 'Bir hata oluştu'}
             </p>
             <Button
@@ -60,12 +60,12 @@ export function PaymentsList({ saleId }: PaymentsListProps) {
   // Empty state
   if (payments.length === 0) {
     return (
-      <div className="rounded-2xl border border-gray-200 bg-gray-50 p-8 text-center">
-        <CreditCard className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-        <h3 className="text-sm font-medium text-gray-900 mb-1">
+      <div className="rounded-2xl border border-border bg-muted p-8 text-center">
+        <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+        <h3 className="text-sm font-medium text-foreground mb-1">
           Henüz ödeme kaydı yok
         </h3>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted-foreground">
           Bu satış için henüz ödeme kaydı bulunmamaktadır.
         </p>
       </div>
@@ -75,20 +75,20 @@ export function PaymentsList({ saleId }: PaymentsListProps) {
   // Success state - display payments
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-medium text-gray-900 mb-3">
+      <h3 className="text-sm font-medium text-foreground mb-3">
         Ödeme Kayıtları ({payments.length})
       </h3>
 
       {payments.map((payment: PaymentRecordRead) => (
         <div
           key={payment.id}
-          className="rounded-2xl border border-gray-200 bg-white p-4 hover:shadow-sm transition-shadow"
+          className="rounded-2xl border border-border bg-card p-4 hover:shadow-sm transition-shadow"
         >
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
-                <CreditCard className="h-4 w-4 text-gray-400" />
-                <span className="text-sm font-medium text-gray-900">
+                <CreditCard className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-foreground">
                   {payment.paymentMethod === 'cash' && 'Nakit'}
                   {payment.paymentMethod === 'card' && 'Kredi Kartı'}
                   {payment.paymentMethod === 'transfer' && 'Havale/EFT'}
@@ -98,9 +98,9 @@ export function PaymentsList({ saleId }: PaymentsListProps) {
 
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-gray-400" />
-                  <span className="text-gray-600">Tutar:</span>
-                  <span className="font-medium text-gray-900">
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Tutar:</span>
+                  <span className="font-medium text-foreground">
                     {new Intl.NumberFormat('tr-TR', {
                       style: 'currency',
                       currency: 'TRY', // Default for now
@@ -109,9 +109,9 @@ export function PaymentsList({ saleId }: PaymentsListProps) {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-gray-400" />
-                  <span className="text-gray-600">Tarih:</span>
-                  <span className="font-medium text-gray-900">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Tarih:</span>
+                  <span className="font-medium text-foreground">
                     {new Date(payment.paymentDate || payment.createdAt || '').toLocaleDateString('tr-TR')}
                   </span>
                 </div>
@@ -121,10 +121,10 @@ export function PaymentsList({ saleId }: PaymentsListProps) {
             <div>
               <span
                 className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${payment.status === 'completed' || payment.status === 'paid'
-                  ? 'bg-green-100 text-green-800'
+                  ? 'bg-success/10 text-success'
                   : payment.status === 'pending'
-                    ? 'bg-yellow-100 text-yellow-800'
-                    : 'bg-red-100 text-red-800'
+                    ? 'bg-warning/10 text-yellow-800'
+                    : 'bg-destructive/10 text-red-800'
                   }`}
               >
                 {payment.status === 'completed' || payment.status === 'paid' ? 'Tamamlandı' : ''}

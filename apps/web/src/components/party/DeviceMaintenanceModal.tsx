@@ -182,11 +182,11 @@ export const DeviceMaintenanceModal: React.FC<DeviceMaintenanceModalProps> = ({
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'text-red-600 bg-red-50';
+      case 'urgent': return 'text-destructive bg-destructive/10';
       case 'high': return 'text-orange-600 bg-orange-50';
-      case 'medium': return 'text-yellow-600 bg-yellow-50';
-      case 'low': return 'text-green-600 bg-green-50';
-      default: return 'text-gray-600 bg-gray-50';
+      case 'medium': return 'text-yellow-600 bg-warning/10';
+      case 'low': return 'text-success bg-success/10';
+      default: return 'text-muted-foreground bg-muted';
     }
   };
 
@@ -209,23 +209,23 @@ export const DeviceMaintenanceModal: React.FC<DeviceMaintenanceModalProps> = ({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Device Information */}
         {device && (
-          <div className="bg-gray-50 p-4 rounded-2xl">
-            <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
+          <div className="bg-muted p-4 rounded-2xl">
+            <h3 className="text-sm font-medium text-foreground mb-3 flex items-center">
               <Wrench className="w-4 h-4 mr-2" />
               Cihaz Bilgileri
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-gray-600">Cihaz:</span>
+                <span className="text-muted-foreground">Cihaz:</span>
                 <span className="ml-2 font-medium">{device.brand} {device.model}</span>
               </div>
               <div>
-                <span className="text-gray-600">Seri No:</span>
+                <span className="text-muted-foreground">Seri No:</span>
                 <span className="ml-2 font-medium">{device.serialNumber}</span>
               </div>
               {device.warrantyExpiry && (
                 <div className="col-span-2">
-                  <span className="text-gray-600">Garanti Bitiş:</span>
+                  <span className="text-muted-foreground">Garanti Bitiş:</span>
                   <span className="ml-2 font-medium">
                     {new Date(device.warrantyExpiry).toLocaleDateString('tr-TR')}
                   </span>
@@ -265,7 +265,7 @@ export const DeviceMaintenanceModal: React.FC<DeviceMaintenanceModalProps> = ({
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Bakım Açıklaması *
           </label>
           <Textarea
@@ -279,14 +279,14 @@ export const DeviceMaintenanceModal: React.FC<DeviceMaintenanceModalProps> = ({
         </div>
 
         {/* Scheduling */}
-        <div className="bg-blue-50 p-4 rounded-2xl">
-          <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center">
+        <div className="bg-primary/10 p-4 rounded-2xl">
+          <h3 className="text-sm font-medium text-foreground mb-3 flex items-center">
             <Calendar className="w-4 h-4 mr-2" />
             Planlama
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Planlanan Tarih *
               </label>
               <Input
@@ -298,7 +298,7 @@ export const DeviceMaintenanceModal: React.FC<DeviceMaintenanceModalProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Tahmini Süre (Gün) *
               </label>
               <Input
@@ -313,7 +313,7 @@ export const DeviceMaintenanceModal: React.FC<DeviceMaintenanceModalProps> = ({
             </div>
           </div>
           {getEstimatedEndDate() && (
-            <div className="mt-3 p-2 bg-blue-100 rounded text-sm text-blue-800">
+            <div className="mt-3 p-2 bg-primary/10 rounded text-sm text-blue-800">
               <Clock className="w-4 h-4 inline mr-1" />
               Tahmini bitiş tarihi: {getEstimatedEndDate()}
             </div>
@@ -323,7 +323,7 @@ export const DeviceMaintenanceModal: React.FC<DeviceMaintenanceModalProps> = ({
         {/* Cost and Technician */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+            <label className="block text-sm font-medium text-foreground mb-1 flex items-center">
               <DollarSign className="w-4 h-4 mr-1" />
               Tahmini Maliyet (₺)
             </label>
@@ -339,7 +339,7 @@ export const DeviceMaintenanceModal: React.FC<DeviceMaintenanceModalProps> = ({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+            <label className="block text-sm font-medium text-foreground mb-1 flex items-center">
               <User className="w-4 h-4 mr-1" />
               Teknisyen
             </label>
@@ -367,7 +367,7 @@ export const DeviceMaintenanceModal: React.FC<DeviceMaintenanceModalProps> = ({
 
         {/* Notes */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Notlar
           </label>
           <Textarea
@@ -381,10 +381,10 @@ export const DeviceMaintenanceModal: React.FC<DeviceMaintenanceModalProps> = ({
 
         {/* Error Display */}
         {errors.submit && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-xl">
+          <div className="p-3 bg-destructive/10 border border-red-200 rounded-xl">
             <div className="flex items-center">
-              <AlertTriangle className="w-4 h-4 text-red-500 mr-2" />
-              <span className="text-sm text-red-700">{errors.submit}</span>
+              <AlertTriangle className="w-4 h-4 text-destructive mr-2" />
+              <span className="text-sm text-destructive">{errors.submit}</span>
             </div>
           </div>
         )}

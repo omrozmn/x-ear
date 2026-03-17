@@ -48,7 +48,7 @@ export function PaymentsList({ payments, isLoading, pagination, onRowClick }: Pa
       title: 'Tarih',
       sortable: true,
       render: (_, payment) => (
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+        <span className="text-sm text-muted-foreground">
           {payment.date ? formatDate(payment.date) : '-'}
         </span>
       )
@@ -78,7 +78,7 @@ export function PaymentsList({ payments, isLoading, pagination, onRowClick }: Pa
       title: 'Ödeme Yöntemi',
       sortable: true,
       render: (_, payment) => (
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+        <span className="text-sm text-muted-foreground">
           {payment.paymentMethod || '-'}
         </span>
       )
@@ -87,7 +87,7 @@ export function PaymentsList({ payments, isLoading, pagination, onRowClick }: Pa
       key: 'reference',
       title: 'Referans',
       render: (_, payment) => (
-        <span className="text-xs font-mono text-gray-500 dark:text-gray-400">
+        <span className="text-xs font-mono text-muted-foreground">
           {payment.reference || '-'}
         </span>
       )

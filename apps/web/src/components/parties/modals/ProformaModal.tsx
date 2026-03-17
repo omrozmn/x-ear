@@ -535,10 +535,10 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
       <div className="w-full max-w-7xl overflow-hidden rounded-[28px] border border-slate-200 bg-slate-50 shadow-2xl max-h-[92vh]">
         <form onSubmit={handleSubmit}>
           {/* Header */}
-          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white/95 px-6 py-5 backdrop-blur">
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-card/95 px-6 py-5 backdrop-blur">
             <div className="flex items-center space-x-3">
-              <div className="rounded-2xl bg-blue-100 p-2">
-                <FileText className="w-6 h-6 text-blue-600" />
+              <div className="rounded-2xl bg-primary/10 p-2">
+                <FileText className="w-6 h-6 text-primary" />
               </div>
               <div>
                 <h2 className="text-xl font-bold text-slate-900">Proforma Hazırla</h2>
@@ -554,7 +554,7 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
               className="!h-auto rounded-2xl p-2 text-slate-700 transition-colors hover:bg-slate-100"
               aria-label="Kapat"
             >
-              <X className="w-6 h-6 text-gray-700" />
+              <X className="w-6 h-6 text-foreground" />
             </Button>
           </div>
 
@@ -574,23 +574,23 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
                 <Card className="border-0 shadow-sm ring-1 ring-slate-200">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg flex items-center">
-                      <User className="w-5 h-5 mr-2 text-gray-600" />
+                      <User className="w-5 h-5 mr-2 text-muted-foreground" />
                       Müşteri Bilgileri
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="font-medium text-gray-600">Ad Soyad:</span>
-                        <span className="text-gray-900">{party.firstName} {party.lastName}</span>
+                        <span className="font-medium text-muted-foreground">Ad Soyad:</span>
+                        <span className="text-foreground">{party.firstName} {party.lastName}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="font-medium text-gray-600">TC No:</span>
-                        <span className="text-gray-900">{party.tcNumber}</span>
+                        <span className="font-medium text-muted-foreground">TC No:</span>
+                        <span className="text-foreground">{party.tcNumber}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="font-medium text-gray-600">Telefon:</span>
-                        <span className="text-gray-900">{party.phone}</span>
+                        <span className="font-medium text-muted-foreground">Telefon:</span>
+                        <span className="text-foreground">{party.phone}</span>
                       </div>
                     </div>
                   </CardContent>
@@ -619,7 +619,7 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
                     <CardContent className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-sm font-medium text-foreground mb-2">
                             Miktar
                           </label>
                           <Input
@@ -632,7 +632,7 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-sm font-medium text-foreground mb-2">
                             Birim Fiyat (₺)
                           </label>
                           <Input
@@ -646,7 +646,7 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
                         </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-foreground mb-2">
                           İndirim (%)
                         </label>
                         <Input
@@ -675,13 +675,13 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
                 <Card className="border-0 shadow-sm ring-1 ring-slate-200">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg flex items-center">
-                      <Calendar className="w-5 h-5 mr-2 text-gray-600" />
+                      <Calendar className="w-5 h-5 mr-2 text-muted-foreground" />
                       Proforma Detayları
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-foreground mb-2">
                         Geçerlilik Tarihi
                       </label>
                       <Input
@@ -692,7 +692,7 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-foreground mb-2">
                         Şartlar ve Koşullar
                       </label>
                       <Textarea
@@ -703,7 +703,7 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-foreground mb-2">
                         Notlar
                       </label>
                       <Textarea
@@ -724,7 +724,7 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
                 <Card className="border-0 shadow-sm ring-1 ring-slate-200">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg flex items-center">
-                      <Calculator className="w-5 h-5 mr-2 text-gray-600" />
+                      <Calculator className="w-5 h-5 mr-2 text-muted-foreground" />
                       Ürün Listesi ({items.length} ürün)
                     </CardTitle>
                   </CardHeader>
@@ -736,32 +736,32 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
                     ) : (
                       <div className="space-y-3">
                         {items.map((item, index) => (
-                          <div key={index} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                          <div key={index} className="rounded-2xl border border-slate-200 bg-card p-4 shadow-sm">
                             <div className="flex justify-between items-start">
                               <div className="flex-1">
-                                <div className="font-medium text-gray-900">
+                                <div className="font-medium text-foreground">
                                   {item.product.name}
                                 </div>
-                                <div className="mt-1 text-sm text-gray-600">
+                                <div className="mt-1 text-sm text-muted-foreground">
                                   {item.product.brand} {item.product.model} • KDV %{item.product.vatRate ?? 18}
                                 </div>
-                                <div className="mt-2 text-sm text-gray-600">
+                                <div className="mt-2 text-sm text-muted-foreground">
                                   {item.quantity} x {formatCurrency(item.unitPrice)}
                                   {item.discountPercent > 0 && (
-                                    <span className="text-red-600 ml-2">
+                                    <span className="text-destructive ml-2">
                                       (-%{item.discountPercent})
                                     </span>
                                   )}
                                 </div>
                               </div>
                               <div className="text-right">
-                                <div className="font-bold text-gray-900">
+                                <div className="font-bold text-foreground">
                                   {formatCurrency(item.totalPrice + ((item.totalPrice * (item.product.vatRate ?? 18)) / 100))}
                                 </div>
                                 <Button
                                   type="button"
                                   onClick={() => removeItem(index)}
-                                  className="text-red-600 hover:text-red-800 text-sm mt-1"
+                                  className="text-destructive hover:text-red-800 text-sm mt-1"
                                 >
                                   Kaldır
                                 </Button>
@@ -814,7 +814,7 @@ export const ProformaModal: React.FC<ProformaModalProps> = ({
             )}
 
             {/* Form Actions */}
-            <div className="sticky bottom-0 mt-6 flex justify-end space-x-4 border-t border-slate-200 bg-white px-6 py-4">
+            <div className="sticky bottom-0 mt-6 flex justify-end space-x-4 border-t border-slate-200 bg-card px-6 py-4">
               <Button
                 type="button"
                 onClick={onClose}

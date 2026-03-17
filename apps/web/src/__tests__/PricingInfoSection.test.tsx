@@ -1,8 +1,16 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PricingInfoSection } from '../pages/inventory/components/PricingInfoSection';
 import { InventoryItem } from '../types/inventory';
+
+const createQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+    },
+  });
 
 describe('PricingInfoSection UI behavior', () => {
   const item: InventoryItem = {
@@ -34,19 +42,22 @@ describe('PricingInfoSection UI behavior', () => {
   };
 
   it('disables KDV controls when not in edit mode', () => {
+    const queryClient = createQueryClient();
     render(
-      <PricingInfoSection
-        item={item}
-        isEditMode={false}
-        editedItem={{}}
-        onEditChange={() => {}}
-        kdvRate={18}
-        onKdvRateChange={() => {}}
-        isPriceKdvIncluded={true}
-        onPriceKdvIncludedChange={() => {}}
-        isCostKdvIncluded={false}
-        onCostKdvIncludedChange={() => {}}
-      />
+      <QueryClientProvider client={queryClient}>
+        <PricingInfoSection
+          item={item}
+          isEditMode={false}
+          editedItem={{}}
+          onEditChange={() => {}}
+          kdvRate={18}
+          onKdvRateChange={() => {}}
+          isPriceKdvIncluded={true}
+          onPriceKdvIncludedChange={() => {}}
+          isCostKdvIncluded={false}
+          onCostKdvIncludedChange={() => {}}
+        />
+      </QueryClientProvider>
     );
 
     const checkboxes = screen.getAllByRole('checkbox');

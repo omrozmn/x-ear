@@ -188,19 +188,19 @@ export const DesktopProfilePage: React.FC = () => {
 
     // Show loading spinner while fetching
     if (isLoading) return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="flex items-center justify-center py-32">
             <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="mt-4 text-gray-600">Profil yükleniyor...</p>
+                <p className="mt-4 text-muted-foreground">Profil yükleniyor...</p>
             </div>
         </div>
     );
 
     // Show error if fetch failed
     if (isError) return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="flex items-center justify-center py-32">
             <div className="text-center">
-                <p className="text-red-600 mb-4">Profil bilgileri yüklenemedi</p>
+                <p className="text-destructive mb-4">Profil bilgileri yüklenemedi</p>
                 <button data-allow-raw="true"
                     onClick={() => window.location.reload()}
                     className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -291,11 +291,11 @@ export const DesktopProfilePage: React.FC = () => {
                     <CardContent>
                         <form onSubmit={handleUpdateProfile} className="space-y-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <label className="text-sm font-medium text-foreground">
                                     Kullanıcı Adı
                                 </label>
                                 <div className="relative">
-                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                     <Input
                                         value={username}
                                         onChange={(e) => setUsername(e.target.value)}
@@ -307,7 +307,7 @@ export const DesktopProfilePage: React.FC = () => {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <label className="text-sm font-medium text-foreground">
                                         Ad
                                     </label>
                                     <Input
@@ -324,7 +324,7 @@ export const DesktopProfilePage: React.FC = () => {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <label className="text-sm font-medium text-foreground">
                                         Soyad
                                     </label>
                                     <Input
@@ -340,11 +340,11 @@ export const DesktopProfilePage: React.FC = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <label className="text-sm font-medium text-foreground">
                                     E-posta Adresi
                                 </label>
                                 <div className="relative">
-                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                     <Input
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
@@ -355,11 +355,11 @@ export const DesktopProfilePage: React.FC = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <label className="text-sm font-medium text-foreground">
                                     Rol
                                 </label>
                                 <div className="relative">
-                                    <Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                     <Input
                                         value={user?.role || 'Kullanıcı'}
                                         disabled
@@ -390,12 +390,12 @@ export const DesktopProfilePage: React.FC = () => {
                         <CardContent>
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <label className="text-sm font-medium text-foreground">
                                         Telefon Numarası
                                     </label>
                                     <div className="flex gap-2">
                                         <div className="relative flex-1">
-                                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                             <Input
                                                 value={phone}
                                                 onChange={(e) => setPhone(e.target.value)}
@@ -430,7 +430,7 @@ export const DesktopProfilePage: React.FC = () => {
                                     {user?.isPhoneVerified && !isEditingPhone && (
                                         <div className="flex items-center gap-2 mt-1">
                                             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                            <span className="text-xs text-green-600 font-medium">Numaranız doğrulanmış</span>
+                                            <span className="text-xs text-success font-medium">Numaranız doğrulanmış</span>
                                         </div>
                                     )}
                                 </div>
@@ -439,7 +439,7 @@ export const DesktopProfilePage: React.FC = () => {
                                     <div className="space-y-2 pt-2 border-t">
                                         {showOtpInput && (
                                             <>
-                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                <label className="text-sm font-medium text-foreground">
                                                     Doğrulama Kodu
                                                 </label>
                                                 <div className="flex gap-2">
@@ -458,11 +458,11 @@ export const DesktopProfilePage: React.FC = () => {
                                                         Onayla
                                                     </Button>
                                                 </div>
-                                                <p className="text-xs text-gray-500">Telefonunuza gönderilen 6 haneli kodu giriniz.</p>
+                                                <p className="text-xs text-muted-foreground">Telefonunuza gönderilen 6 haneli kodu giriniz.</p>
                                             </>
                                         )}
                                         {isEditingPhone && !showOtpInput && (
-                                            <p className="text-xs text-gray-500">Yeni numaranızı girdikten sonra 'Doğrula' butonuna basınız.</p>
+                                            <p className="text-xs text-muted-foreground">Yeni numaranızı girdikten sonra 'Doğrula' butonuna basınız.</p>
                                         )}
                                     </div>
                                 )}
@@ -481,7 +481,7 @@ export const DesktopProfilePage: React.FC = () => {
                         <CardContent>
                             <form onSubmit={handleUpdatePassword} className="space-y-4">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <label className="text-sm font-medium text-foreground">
                                         Mevcut Şifre
                                     </label>
                                     <div className="relative">
@@ -496,7 +496,7 @@ export const DesktopProfilePage: React.FC = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <label className="text-sm font-medium text-foreground">
                                         Yeni Şifre
                                     </label>
                                     <div className="relative">
@@ -511,7 +511,7 @@ export const DesktopProfilePage: React.FC = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <label className="text-sm font-medium text-foreground">
                                         Yeni Şifre (Tekrar)
                                     </label>
                                     <div className="relative">
@@ -529,7 +529,7 @@ export const DesktopProfilePage: React.FC = () => {
                                     <button data-allow-raw="true"
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+                                        className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1"
                                     >
                                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                         {showPassword ? 'Şifreleri Gizle' : 'Şifreleri Göster'}
@@ -559,7 +559,7 @@ export const DesktopProfilePage: React.FC = () => {
                                     <p className="text-sm font-medium text-gray-900 dark:text-white">
                                         Platform yöneticisine erişim izni ver
                                     </p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    <p className="text-xs text-muted-foreground mt-1">
                                         Bu izni verdiğinizde, platform yöneticisi destek amacıyla hesabınıza erişebilir.
                                         İzni istediğiniz zaman geri alabilirsiniz.
                                     </p>
@@ -592,7 +592,7 @@ export const DesktopProfilePage: React.FC = () => {
                                     } ${impersonationLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
                                     <span
-                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                        className={`inline-block h-4 w-4 transform rounded-full bg-card transition-transform ${
                                             allowImpersonation ? 'translate-x-6' : 'translate-x-1'
                                         }`}
                                     />

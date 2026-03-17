@@ -717,20 +717,43 @@ async def bulk_upload_invoices(
                 i_date = parse_date(issue_date) or datetime.utcnow()
                 d_date = parse_date(due_date)
 
+                # Resolve party_id from TC, phone, or name
+                resolved_party = None
+                if patient_tc:
+                    resolved_party = db_session.query(Party).filter(
+                        Party.tc_number == patient_tc,
+                        Party.tenant_id == effective_tenant
+                    ).first()
+                if not resolved_party and patient_phone:
+                    resolved_party = db_session.query(Party).filter(
+                        Party.phone == patient_phone,
+                        Party.tenant_id == effective_tenant
+                    ).first()
+                if not resolved_party and party_name:
+                    parts = party_name.strip().split(' ', 1)
+                    if len(parts) == 2:
+                        resolved_party = db_session.query(Party).filter(
+                            Party.first_name == parts[0],
+                            Party.last_name == parts[1],
+                            Party.tenant_id == effective_tenant
+                        ).first()
+
                 if existing:
                     existing.patient_name = party_name or existing.patient_name
                     existing.patient_tc = patient_tc or existing.patient_tc
                     existing.currency = currency or existing.currency
+                    if resolved_party and not existing.party_id:
+                        existing.party_id = resolved_party.id
                     if i_date: existing.issue_date = i_date
                     if d_date: existing.due_date = d_date
-                    
+
                     if grand_total:
                         try: existing.grand_total = float(grand_total); existing.device_price = float(grand_total)
                         except: pass
-                    
+
                     if patient_phone:
                          existing.notes = (existing.notes or '') + "\\nPhone: " + str(patient_phone)
-                    
+
                     updated += 1
                 else:
                     new_inv = Invoice(
@@ -738,6 +761,7 @@ async def bulk_upload_invoices(
                         invoice_number=invoice_number,
                         patient_name=party_name,
                         patient_tc=patient_tc,
+                        party_id=resolved_party.id if resolved_party else None,
                         issue_date=i_date,
                         due_date=d_date,
                         currency=currency,

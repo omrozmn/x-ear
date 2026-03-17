@@ -43,7 +43,7 @@ function AgentStatusBadge({ status, lastSeenAt }: { status: string; lastSeenAt?:
 
   if (isOnline && isRecent) {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-success/10 text-success">
         <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
         Çevrimiçi
       </span>
@@ -51,14 +51,14 @@ function AgentStatusBadge({ status, lastSeenAt }: { status: string; lastSeenAt?:
   }
   if (isOnline) {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-warning/10 text-yellow-800 dark:text-yellow-400">
         <Clock className="w-3 h-3" />
         Son görülme: {lastSeenAt ? new Date(lastSeenAt).toLocaleString('tr-TR') : '—'}
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-destructive/10 text-red-800 dark:text-red-400">
       <WifiOff className="w-3 h-3" />
       Çevrimdışı
     </span>
@@ -103,10 +103,10 @@ export default function NoahConnectorSettings() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-            <Activity className="w-5 h-5 text-blue-500" />
+            <Activity className="w-5 h-5 text-primary" />
             Noah Connector
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Noah işitme cihazı yazılımından hasta verilerini otomatik aktarın
           </p>
         </div>
@@ -124,7 +124,7 @@ export default function NoahConnectorSettings() {
         </h3>
 
         {agentsLoading ? (
-          <div className="flex items-center gap-2 text-gray-500">
+          <div className="flex items-center gap-2 text-muted-foreground">
             <Loader2 className="w-4 h-4 animate-spin" />
             Yükleniyor...
           </div>
@@ -133,7 +133,7 @@ export default function NoahConnectorSettings() {
             {activeAgents.map((agent: AgentDevice) => (
               <div
                 key={agent.id}
-                className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700"
+                className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border border-border"
               >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
@@ -142,7 +142,7 @@ export default function NoahConnectorSettings() {
                     </span>
                     <AgentStatusBadge status={agent.status} lastSeenAt={agent.lastSeenAt ?? undefined} />
                   </div>
-                  <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <FolderOpen className="w-3 h-3" />
                       {agent.exportFolder || syncConfig.exportFolder}
@@ -153,7 +153,7 @@ export default function NoahConnectorSettings() {
                     </span>
                   </div>
                   {agent.noahInstallPath && (
-                    <div className="flex items-center gap-4 text-xs text-green-600 dark:text-green-400">
+                    <div className="flex items-center gap-4 text-xs text-success">
                       <span className="flex items-center gap-1">
                         <CheckCircle className="w-3 h-3" />
                         Noah algılandı: {agent.noahVersion ? `v${agent.noahVersion}` : agent.noahInstallPath}
@@ -165,12 +165,12 @@ export default function NoahConnectorSettings() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600">
-            <WifiOff className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+          <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-xl border-2 border-dashed border-border">
+            <WifiOff className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-sm text-muted-foreground mb-1">
               Bağlı agent bulunamadı
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-500 mb-4">
+            <p className="text-xs text-muted-foreground mb-4">
               Noah bilgisayarına agent kurarak başlayın
             </p>
           </div>
@@ -183,7 +183,7 @@ export default function NoahConnectorSettings() {
           <Shield className="w-4 h-4" />
           Agent Kaydı
         </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        <p className="text-sm text-muted-foreground mb-4">
           Noah bilgisayarına agent kurmak için tek kullanımlık kayıt tokeni oluşturun.
           Bu tokeni agent'a yapıştırarak güvenli bağlantı sağlayın.
         </p>
@@ -196,20 +196,20 @@ export default function NoahConnectorSettings() {
                   data-allow-raw="true"
                   readOnly
                   value={showToken ? enrollmentToken : '••••••••••••••••••••••••'}
-                  className="w-full px-3 py-2 pr-20 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-mono text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 pr-20 bg-gray-50 dark:bg-gray-800 border border-border rounded-lg text-sm font-mono text-gray-900 dark:text-white"
                 />
                 <div className="absolute right-1 top-1 flex gap-1">
                   <button
                     data-allow-raw="true"
                     onClick={() => setShowToken(!showToken)}
-                    className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
+                    className="p-1.5 hover:bg-accent dark:hover:bg-gray-700 rounded"
                   >
                     {showToken ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                   </button>
                   <button
                     data-allow-raw="true"
                     onClick={handleCopyToken}
-                    className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
+                    className="p-1.5 hover:bg-accent dark:hover:bg-gray-700 rounded"
                   >
                     <Copy className="w-3.5 h-3.5" />
                   </button>
@@ -247,7 +247,7 @@ export default function NoahConnectorSettings() {
         <div className="space-y-4">
           {/* Sync Mode */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Senkronizasyon Modu
             </label>
             <div className="grid grid-cols-3 gap-3">
@@ -277,23 +277,23 @@ export default function NoahConnectorSettings() {
                   onClick={() => setSyncConfig(prev => ({ ...prev, mode }))}
                   className={`p-3 rounded-xl border-2 text-left transition-all ${
                     syncConfig.mode === mode
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                      ? 'border-blue-500 bg-primary/10'
+                      : 'border-border hover:border-border'
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <span className={syncConfig.mode === mode ? 'text-blue-600' : 'text-gray-500'}>
+                    <span className={syncConfig.mode === mode ? 'text-primary' : 'text-muted-foreground'}>
                       {icon}
                     </span>
                     <span className={`text-sm font-medium ${
                       syncConfig.mode === mode
-                        ? 'text-blue-700 dark:text-blue-300'
-                        : 'text-gray-700 dark:text-gray-300'
+                        ? 'text-primary'
+                        : 'text-foreground'
                     }`}>
                       {label}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{desc}</p>
+                  <p className="text-xs text-muted-foreground">{desc}</p>
                 </button>
               ))}
             </div>
@@ -302,7 +302,7 @@ export default function NoahConnectorSettings() {
           {/* Sync Interval — only visible for auto/scheduled */}
           {syncConfig.mode !== 'manual' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Kontrol Aralığı
               </label>
               <div className="flex items-center gap-3">
@@ -310,7 +310,7 @@ export default function NoahConnectorSettings() {
                   data-allow-raw="true"
                   value={syncConfig.intervalMinutes}
                   onChange={e => setSyncConfig(prev => ({ ...prev, intervalMinutes: Number(e.target.value) }))}
-                  className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-white"
+                  className="px-3 py-2 bg-white dark:bg-gray-800 border border-border rounded-lg text-sm text-gray-900 dark:text-white"
                 >
                   <option value={1}>Her 1 dakika</option>
                   <option value={5}>Her 5 dakika</option>
@@ -318,7 +318,7 @@ export default function NoahConnectorSettings() {
                   <option value={30}>Her 30 dakika</option>
                   <option value={60}>Her 1 saat</option>
                 </select>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-xs text-muted-foreground">
                   Agent bu aralıkta yeni dosya kontrol eder
                 </span>
               </div>
@@ -327,23 +327,23 @@ export default function NoahConnectorSettings() {
 
           {/* Export Folder */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Export Klasörü
             </label>
             <div className="flex items-center gap-2">
               <div className="flex-1 relative">
-                <FolderOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <FolderOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
                   data-allow-raw="true"
                   value={syncConfig.exportFolder}
                   onChange={e => setSyncConfig(prev => ({ ...prev, exportFolder: e.target.value }))}
-                  className="w-full pl-9 pr-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-mono text-gray-900 dark:text-white"
+                  className="w-full pl-9 pr-3 py-2 bg-white dark:bg-gray-800 border border-border rounded-lg text-sm font-mono text-gray-900 dark:text-white"
                   placeholder="C:\XEAR\noah_exports\"
                 />
               </div>
             </div>
-            <div className="mt-2 p-3 bg-green-50 dark:bg-green-900/10 rounded-lg border border-green-200 dark:border-green-800">
-              <p className="text-xs text-green-700 dark:text-green-400 flex items-center gap-1.5">
+            <div className="mt-2 p-3 bg-success/10 rounded-lg border border-green-200 dark:border-green-800">
+              <p className="text-xs text-success flex items-center gap-1.5">
                 <CheckCircle className="w-3.5 h-3.5 flex-shrink-0" />
                 <span>
                   <strong>Otomatik algılama:</strong> Agent ilk çalıştığında Noah kurulum yolunu
@@ -380,7 +380,7 @@ export default function NoahConnectorSettings() {
               <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
               <div className="flex-1">
                 <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">X-Ear Agent'ı İndirip Kurun</h4>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                <p className="text-xs text-muted-foreground mb-2">
                   Noah'ın kurulu olduğu <strong>Windows bilgisayarına</strong> X-Ear Agent kurulum dosyasını indirin ve çalıştırın.
                   Agent sistem tepsisinde (saat yanında) çalışır, Noah kurulumunuzu otomatik algılar.
                 </p>
@@ -389,7 +389,7 @@ export default function NoahConnectorSettings() {
                     <Download className="w-3.5 h-3.5 mr-1.5" />
                     Agent İndir (Windows)
                   </Button>
-                  <span className="text-xs text-gray-400">.exe · ~15 MB</span>
+                  <span className="text-xs text-muted-foreground">.exe · ~15 MB</span>
                 </div>
               </div>
             </div>
@@ -399,7 +399,7 @@ export default function NoahConnectorSettings() {
               <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
               <div className="flex-1">
                 <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">Kayıt Tokeni ile Bağlayın</h4>
-                <p className="text-xs text-gray-600 dark:text-gray-400">
+                <p className="text-xs text-muted-foreground">
                   Aşağıdaki <strong>"Kayıt Tokeni Oluştur"</strong> butonuna tıklayın → oluşan tokeni kopyalayın →
                   Agent penceresine yapıştırın. Bağlantı otomatik kurulur. <em>(Token tek kullanımlıktır, 10 dk geçerli)</em>
                 </p>
@@ -411,17 +411,17 @@ export default function NoahConnectorSettings() {
               <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
               <div className="flex-1">
                 <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">Noah'tan Hasta Verilerini Aktarın</h4>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                <p className="text-xs text-muted-foreground mb-2">
                   Noah programında:
                 </p>
                 <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-blue-200 dark:border-blue-800 text-xs space-y-1.5">
-                  <p className="text-gray-700 dark:text-gray-300">
-                    <strong>Toplu export:</strong> Noah → <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">File</code> → <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">Export Patients</code> → tüm hastaları veya seçilenleri seç → <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">.nhax</code> formatında kaydet
+                  <p className="text-foreground">
+                    <strong>Toplu export:</strong> Noah → <code className="bg-muted px-1 rounded">File</code> → <code className="bg-muted px-1 rounded">Export Patients</code> → tüm hastaları veya seçilenleri seç → <code className="bg-muted px-1 rounded">.nhax</code> formatında kaydet
                   </p>
-                  <p className="text-gray-700 dark:text-gray-300">
-                    <strong>Tekli export:</strong> Hasta kartı → <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">Export</code> butonu → <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">.nhax</code> veya <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">.xml</code> olarak kaydet
+                  <p className="text-foreground">
+                    <strong>Tekli export:</strong> Hasta kartı → <code className="bg-muted px-1 rounded">Export</code> butonu → <code className="bg-muted px-1 rounded">.nhax</code> veya <code className="bg-muted px-1 rounded">.xml</code> olarak kaydet
                   </p>
-                  <p className="text-gray-500 dark:text-gray-400 italic">
+                  <p className="text-muted-foreground italic">
                     Dosyayı export klasörüne kaydetmeniz yeterli — Agent dosyayı algılayıp verileri otomatik CRM'e aktarır.
                   </p>
                 </div>
@@ -429,8 +429,8 @@ export default function NoahConnectorSettings() {
             </div>
           </div>
 
-          <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/15 rounded-lg border border-green-200 dark:border-green-800">
-            <p className="text-xs text-green-700 dark:text-green-400 flex items-start gap-1.5">
+          <div className="mt-4 p-3 bg-success/10 rounded-lg border border-green-200 dark:border-green-800">
+            <p className="text-xs text-success flex items-start gap-1.5">
               <CheckCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
               <span>
                 <strong>Sonrasında:</strong> Yeni export dosyaları otomatik algılanır ve CRM'e aktarılır.
@@ -444,16 +444,16 @@ export default function NoahConnectorSettings() {
 
       {/* ── Quick Reference (when agent is connected) ── */}
       {hasAgent && (
-        <Card className="p-4 bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700">
+        <Card className="p-4 bg-gray-50 dark:bg-gray-800/50 border-border">
           <details className="group">
-            <summary className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer flex items-center gap-2 select-none">
-              <FileText className="w-4 h-4 text-gray-400 group-open:rotate-90 transition-transform" />
+            <summary className="text-sm font-medium text-foreground cursor-pointer flex items-center gap-2 select-none">
+              <FileText className="w-4 h-4 text-muted-foreground group-open:rotate-90 transition-transform" />
               Noah'tan export nasıl alınır?
             </summary>
-            <div className="mt-3 pl-5 text-xs text-gray-600 dark:text-gray-400 space-y-1.5">
+            <div className="mt-3 pl-5 text-xs text-muted-foreground space-y-1.5">
               <p><strong>Toplu:</strong> Noah → File → Export Patients → hastaları seç → .nhax olarak kaydet</p>
               <p><strong>Tekli:</strong> Hasta kartı → Export → .nhax veya .xml olarak kaydet</p>
-              <p className="text-gray-400 italic">Export klasörüne kaydedilen dosyalar otomatik algılanır ve CRM'e aktarılır.</p>
+              <p className="text-muted-foreground italic">Export klasörüne kaydedilen dosyalar otomatik algılanır ve CRM'e aktarılır.</p>
             </div>
           </details>
         </Card>
@@ -467,15 +467,15 @@ export default function NoahConnectorSettings() {
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { icon: <Users className="w-5 h-5 text-blue-500" />, label: 'Hasta Bilgileri', desc: 'Ad, TC, telefon, adres' },
-            { icon: <BarChart3 className="w-5 h-5 text-green-500" />, label: 'Odyogram', desc: 'Hava/kemik yolu eşikleri' },
+            { icon: <Users className="w-5 h-5 text-primary" />, label: 'Hasta Bilgileri', desc: 'Ad, TC, telefon, adres' },
+            { icon: <BarChart3 className="w-5 h-5 text-success" />, label: 'Odyogram', desc: 'Hava/kemik yolu eşikleri' },
             { icon: <Headphones className="w-5 h-5 text-purple-500" />, label: 'Cihaz Bilgisi', desc: 'Marka, model, seri no' },
             { icon: <Wrench className="w-5 h-5 text-orange-500" />, label: 'Fitting', desc: 'Ayar tarihi, kulak, tip' },
           ].map(({ icon, label, desc }) => (
-            <div key={label} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div key={label} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-border">
               <div className="mb-1">{icon}</div>
               <div className="text-xs font-medium text-gray-900 dark:text-white">{label}</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">{desc}</div>
+              <div className="text-xs text-muted-foreground">{desc}</div>
             </div>
           ))}
         </div>

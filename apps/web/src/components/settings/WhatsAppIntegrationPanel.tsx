@@ -137,7 +137,7 @@ export default function WhatsAppIntegrationPanel() {
               <QrCode className="h-5 w-5 text-emerald-600" />
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">WhatsApp QR Bağlantısı</h3>
             </div>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            <p className="mt-1 text-sm text-muted-foreground">
               Kullanıcı burada QR taratır. Session açıldıktan sonra toplu gönderim, tekli mesaj, inbox sync ve AI cevap akışları çalışır.
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
@@ -148,10 +148,10 @@ export default function WhatsAppIntegrationPanel() {
               }`}>
                 {statusLabel}
               </span>
-              {session.bridgePid ? <span className="text-gray-500">PID: {session.bridgePid}</span> : null}
+              {session.bridgePid ? <span className="text-muted-foreground">PID: {session.bridgePid}</span> : null}
               {session.syncInProgress ? <span className="text-sky-600 dark:text-sky-400">Senkronize ediliyor</span> : null}
-              {session.lastSyncAt ? <span className="text-gray-500">Son sync: {new Date(session.lastSyncAt * 1000).toLocaleTimeString('tr-TR')}</span> : null}
-              {session.lastError ? <span className="text-red-600 dark:text-red-400">{session.lastError}</span> : null}
+              {session.lastSyncAt ? <span className="text-muted-foreground">Son sync: {new Date(session.lastSyncAt * 1000).toLocaleTimeString('tr-TR')}</span> : null}
+              {session.lastError ? <span className="text-destructive">{session.lastError}</span> : null}
             </div>
           </div>
 
@@ -175,8 +175,8 @@ export default function WhatsAppIntegrationPanel() {
 
         {session.qrCode ? (
           <div className="mt-6 flex flex-col items-center gap-4 rounded-3xl border border-dashed border-emerald-300 bg-emerald-50/60 px-6 py-8 text-center dark:border-emerald-800 dark:bg-emerald-900/10">
-            <img src={session.qrCode} alt="WhatsApp QR" className="h-72 w-72 rounded-2xl bg-white p-3 shadow-sm" />
-            <p className="max-w-md text-sm text-gray-600 dark:text-gray-300">
+            <img src={session.qrCode} alt="WhatsApp QR" className="h-72 w-72 rounded-2xl bg-card p-3 shadow-sm" />
+            <p className="max-w-md text-sm text-muted-foreground">
               Telefonunuzdan WhatsApp &gt; Bağlı Cihazlar &gt; Cihaz Bağla ile taratın.
             </p>
           </div>
@@ -194,7 +194,7 @@ export default function WhatsAppIntegrationPanel() {
         </div>
 
         <div className="grid gap-4 lg:grid-cols-2">
-          <label className="space-y-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="space-y-2 text-sm font-medium text-foreground">
             AI Hedef Telefon
             <input
               data-allow-raw="true"
@@ -204,7 +204,7 @@ export default function WhatsAppIntegrationPanel() {
               placeholder="90532..."
             />
           </label>
-          <label className="space-y-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="space-y-2 text-sm font-medium text-foreground">
             Varsayılan Ülke Kodu
             <input
               data-allow-raw="true"
@@ -216,18 +216,18 @@ export default function WhatsAppIntegrationPanel() {
           </label>
         </div>
 
-        <label className="mt-4 flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label className="mt-4 flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium text-foreground">
           <input
             data-allow-raw="true"
             type="checkbox"
             checked={config.autoReplyEnabled}
             onChange={(event) => setConfig((prev) => ({ ...prev, autoReplyEnabled: event.target.checked }))}
-            className="h-4 w-4 rounded border-gray-300 text-emerald-600"
+            className="h-4 w-4 rounded border-border text-emerald-600"
           />
           AI otomatik cevap aktif
         </label>
 
-        <label className="mt-4 block space-y-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label className="mt-4 block space-y-2 text-sm font-medium text-foreground">
           AI Otomatik Cevap Promptu
           <textarea
             data-allow-raw="true"

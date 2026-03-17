@@ -212,8 +212,7 @@ const FileManager: React.FC = () => {
             toast.success('Dosya yüklendi', { id: toastId });
             queryClient.invalidateQueries({ queryKey: ['/api/upload/files'] });
             setPage(1);
-        } catch (error) {
-            console.error(error);
+        } catch {
             toast.error('Dosya yüklenemedi', { id: toastId });
         }
     };
@@ -236,8 +235,7 @@ const FileManager: React.FC = () => {
             setOcrResult(data);
             setIsModalOpen(true);
             toast.success('OCR tamamlandı', { id: toastId });
-        } catch (error) {
-            console.error(error);
+        } catch {
             toast.error('OCR hatası', { id: toastId });
         }
     };
@@ -252,8 +250,7 @@ const FileManager: React.FC = () => {
             toast.success('Dosya silindi', { id: toastId });
             setSelectedFileKeys((prev) => prev.filter((item) => item !== key));
             queryClient.invalidateQueries({ queryKey: ['/api/upload/files'] });
-        } catch (error) {
-            console.error(error);
+        } catch {
             toast.error('Dosya silinemedi', { id: toastId });
         }
     };
@@ -279,8 +276,7 @@ const FileManager: React.FC = () => {
             toast.success('Secili dosyalar silindi', { id: toastId });
             setSelectedFileKeys([]);
             queryClient.invalidateQueries({ queryKey: ['/api/upload/files'] });
-        } catch (error) {
-            console.error(error);
+        } catch {
             toast.error('Toplu silme tamamlanamadi', { id: toastId });
         }
     };

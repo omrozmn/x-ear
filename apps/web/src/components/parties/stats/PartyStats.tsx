@@ -93,8 +93,8 @@ export const PartyStats: React.FC<PartyStatsProps> = ({
         name: 'Toplam Hasta',
         value: totalParties,
         icon: Users,
-        color: 'text-blue-600',
-        bgColor: 'bg-blue-100',
+        color: 'text-primary',
+        bgColor: 'bg-primary/10',
         trend: showTrends ? calculateTrend(totalParties, totalParties * 0.95) : undefined
       },
       {
@@ -102,8 +102,8 @@ export const PartyStats: React.FC<PartyStatsProps> = ({
         name: 'Aktif Hastalar',
         value: activeParties,
         icon: UserCheck,
-        color: 'text-green-600',
-        bgColor: 'bg-green-100',
+        color: 'text-success',
+        bgColor: 'bg-success/10',
         trend: showTrends ? calculateTrend(activeParties, activeParties * 0.92) : undefined
       },
       {
@@ -111,8 +111,8 @@ export const PartyStats: React.FC<PartyStatsProps> = ({
         name: 'Pasif Hastalar',
         value: inactiveParties,
         icon: UserX,
-        color: 'text-red-600',
-        bgColor: 'bg-red-100',
+        color: 'text-destructive',
+        bgColor: 'bg-destructive/10',
         trend: showTrends ? calculateTrend(inactiveParties, inactiveParties * 1.1) : undefined,
         priority: inactiveParties > totalParties * 0.3 ? 'high' : 'low'
       },
@@ -145,7 +145,7 @@ export const PartyStats: React.FC<PartyStatsProps> = ({
           value: pendingTasks,
           icon: Clock,
           color: 'text-yellow-600',
-          bgColor: 'bg-yellow-100',
+          bgColor: 'bg-warning/10',
           priority: pendingTasks > 10 ? 'high' : 'low'
         },
         {
@@ -194,10 +194,10 @@ export const PartyStats: React.FC<PartyStatsProps> = ({
   }
 
   const getTrendColor = (direction: 'up' | 'down' | 'neutral', isPositive: boolean = true) => {
-    if (direction === 'neutral') return 'text-gray-500'
+    if (direction === 'neutral') return 'text-muted-foreground'
     
     const isGoodTrend = (direction === 'up' && isPositive) || (direction === 'down' && !isPositive)
-    return isGoodTrend ? 'text-green-600' : 'text-red-600'
+    return isGoodTrend ? 'text-success' : 'text-destructive'
   }
 
   const getPriorityIndicator = (priority?: 'high' | 'medium' | 'low') => {
@@ -214,15 +214,15 @@ export const PartyStats: React.FC<PartyStatsProps> = ({
     return (
       <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 ${className}`}>
         {[...Array(showExtendedStats ? 8 : 4)].map((_, index) => (
-          <div key={index} className="bg-white overflow-hidden shadow rounded-2xl animate-pulse">
+          <div key={index} className="bg-card overflow-hidden shadow rounded-2xl animate-pulse">
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-gray-200 rounded"></div>
+                  <div className="w-8 h-8 bg-accent rounded"></div>
                 </div>
                 <div className="ml-5 w-0 flex-1">
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+                  <div className="h-4 bg-accent rounded w-3/4 mb-2"></div>
+                  <div className="h-6 bg-accent rounded w-1/2"></div>
                 </div>
               </div>
             </div>
@@ -237,11 +237,11 @@ export const PartyStats: React.FC<PartyStatsProps> = ({
       {/* Header with refresh info */}
       {autoRefresh && (
         <div className="flex items-center justify-between mb-4">
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-muted-foreground">
             Son güncelleme: {lastUpdated.toLocaleTimeString('tr-TR')}
           </div>
           {isRefreshing && (
-            <div className="flex items-center text-sm text-blue-600">
+            <div className="flex items-center text-sm text-primary">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
               Güncelleniyor...
             </div>
@@ -258,7 +258,7 @@ export const PartyStats: React.FC<PartyStatsProps> = ({
           return (
             <div 
               key={stat.id} 
-              className="bg-white overflow-hidden shadow rounded-2xl hover:shadow-md transition-all duration-200 relative"
+              className="bg-card overflow-hidden shadow rounded-2xl hover:shadow-md transition-all duration-200 relative"
             >
               {getPriorityIndicator(stat.priority)}
               
@@ -271,15 +271,15 @@ export const PartyStats: React.FC<PartyStatsProps> = ({
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">
+                      <dt className="text-sm font-medium text-muted-foreground truncate">
                         {stat.name}
                       </dt>
                       <dd className="flex items-baseline">
-                        <div className="text-lg font-semibold text-gray-900">
+                        <div className="text-lg font-semibold text-foreground">
                           {stat.value.toLocaleString('tr-TR')}
                         </div>
                         {stat.target && (
-                          <div className="ml-2 text-xs text-gray-500">
+                          <div className="ml-2 text-xs text-muted-foreground">
                             / {stat.target}
                           </div>
                         )}
@@ -299,7 +299,7 @@ export const PartyStats: React.FC<PartyStatsProps> = ({
                     {/* Progress Bar for targets */}
                     {stat.target && (
                       <div className="mt-2">
-                        <div className="w-full bg-gray-200 rounded-full h-1">
+                        <div className="w-full bg-accent rounded-full h-1">
                           <div 
                             className={`h-1 rounded-full ${stat.color.replace('text-', 'bg-')}`}
                             style={{ width: `${Math.min((stat.value / stat.target) * 100, 100)}%` }}

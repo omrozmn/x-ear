@@ -1,6 +1,7 @@
 import React from 'react';
 import { PartyDevice } from '../../types/party';
 import { Edit, Trash2, RefreshCw } from 'lucide-react';
+import { useSector } from '../../hooks/useSector';
 
 interface PartyDeviceCardProps {
   device: PartyDevice;
@@ -62,6 +63,9 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
     return methods[method || ''] || method || '-';
   };
 
+  const { isHearingSector } = useSector();
+  const showEarInfo = isHearingSector();
+
   // Audiological view: Right=Red, Left=Blue
   const getEarStyle = (ear: string) => {
     const earLower = ear?.toLowerCase();
@@ -71,16 +75,16 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
       case 'sol':
         return {
           border: 'border-l-4 border-l-blue-500',
-          bg: 'bg-blue-50 dark:bg-blue-900/20',
-          badge: 'bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-900/50 dark:text-blue-300 dark:border-blue-700'
+          bg: 'bg-primary/10',
+          badge: 'bg-primary/10 text-primary border-blue-300 dark:border-blue-700'
         };
       case 'right':
       case 'r':
       case 'sağ':
         return {
           border: 'border-l-4 border-l-red-500',
-          bg: 'bg-red-50 dark:bg-red-900/20',
-          badge: 'bg-red-100 text-red-700 border-red-300 dark:bg-red-900/50 dark:text-red-300 dark:border-red-700'
+          bg: 'bg-destructive/10',
+          badge: 'bg-destructive/10 text-destructive border-red-300 dark:border-red-700'
         };
       case 'both':
       case 'b':
@@ -90,13 +94,13 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
         return {
           border: 'border-l-4 border-l-gray-400',
           bg: 'bg-gray-50 dark:bg-gray-800',
-          badge: 'bg-gray-100 text-gray-700 border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'
+          badge: 'bg-muted text-foreground border-border'
         };
       default:
         return {
           border: 'border-l-4 border-l-gray-400',
           bg: 'bg-gray-50 dark:bg-gray-800',
-          badge: 'bg-gray-100 text-gray-700 border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'
+          badge: 'bg-muted text-foreground border-border'
         };
     }
   };
@@ -116,7 +120,7 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
       {isCancelled && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
           <div className="w-full h-1 bg-red-500 transform rotate-12"></div>
-          <div className="absolute text-red-600 font-bold text-2xl bg-white px-4 py-1 rounded border-2 border-red-500">
+          <div className="absolute text-destructive font-bold text-2xl bg-card px-4 py-1 rounded border-2 border-red-500">
             İPTAL EDİLDİ
           </div>
         </div>
@@ -133,12 +137,12 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
             <div className="flex flex-wrap gap-1.5 md:gap-2 mt-1">
               {/* Delivery Status */}
               {deliveryStatus === 'pending' && !isCancelled && (
-                <span className="inline-flex items-center px-1.5 md:px-2 py-0.5 rounded text-[10px] md:text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300 dark:border-yellow-800">
+                <span className="inline-flex items-center px-1.5 md:px-2 py-0.5 rounded text-[10px] md:text-xs font-medium bg-warning/10 text-yellow-800 border border-yellow-200 dark:text-yellow-300 dark:border-yellow-800">
                   Teslim Bekliyor
                 </span>
               )}
               {deliveryStatus === 'delivered' && !isCancelled && (
-                <span className="inline-flex items-center px-1.5 md:px-2 py-0.5 rounded text-[10px] md:text-xs font-medium bg-green-100 text-green-800 border border-green-200 dark:bg-green-900/50 dark:text-green-300 dark:border-green-800">
+                <span className="inline-flex items-center px-1.5 md:px-2 py-0.5 rounded text-[10px] md:text-xs font-medium bg-success/10 text-success border border-green-200 dark:border-green-800">
                   Teslim Edildi
                 </span>
               )}
@@ -153,19 +157,21 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
               {/* Report Status Badge */}
               {device.reason?.toLowerCase() === 'sale' && !isCancelled && (reportStatus !== 'none') && (
                 <span className={`inline-flex items-center px-1.5 md:px-2 py-0.5 rounded text-[10px] md:text-xs font-medium border
-                  ${['raporlu', 'received', 'has_report', 'true'].includes(reportStatus) ? 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/50 dark:text-green-300 dark:border-green-800' :
-                    ['bekleniyor', 'pending'].includes(reportStatus) ? 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300 dark:border-yellow-800' :
-                      'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'}`}>
+                  ${['raporlu', 'received', 'has_report', 'true'].includes(reportStatus) ? 'bg-success/10 text-success border-green-200 dark:border-green-800' :
+                    ['bekleniyor', 'pending'].includes(reportStatus) ? 'bg-warning/10 text-yellow-800 border-yellow-200 dark:text-yellow-300 dark:border-yellow-800' :
+                      'bg-muted text-foreground border-border'}`}>
                   {['raporlu', 'received', 'has_report', 'true'].includes(reportStatus) ? 'Rapor Teslim Alındı' :
                     ['bekleniyor', 'pending'].includes(reportStatus) ? 'Rapor Bekleniyor' : 'Raporsuz'}
                 </span>
               )}
             </div>
           </div>
+          {showEarInfo && (
           <span className={`px-2 py-0.5 md:py-1 rounded text-[10px] md:text-xs font-medium border ${earStyle.badge} self-start md:self-auto`}>
             {displaySide === 'left' || device.earSide === 'LEFT' || device.ear === 'left' ? 'Sol' :
               displaySide === 'right' || device.earSide === 'RIGHT' || device.ear === 'right' ? 'Sağ' : 'Bilateral'}
           </span>
+          )}
         </div>
       </div>
 
@@ -173,20 +179,20 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
       <div className="px-3 md:px-4 py-2 md:py-3 space-y-2 text-xs md:text-sm">
         <div className="grid grid-cols-2 gap-x-2 md:gap-x-4 gap-y-2">
           <div>
-            <span className="text-gray-500 dark:text-gray-400 block text-[10px] md:text-xs mb-0.5">Atama ID:</span>
+            <span className="text-muted-foreground block text-[10px] md:text-xs mb-0.5">Atama ID:</span>
             <p className="font-medium text-gray-900 dark:text-gray-200 font-mono text-[10px] md:text-xs truncate">
               {device.assignmentUid || '-'}
               {device.reason?.toLowerCase() === 'sale' && device.saleId && (
-                <span className="text-[9px] md:text-[10px] text-gray-500 ml-1">({device.saleId})</span>
+                <span className="text-[9px] md:text-[10px] text-muted-foreground ml-1">({device.saleId})</span>
               )}
             </p>
           </div>
           <div>
-            <span className="text-gray-500 dark:text-gray-400 block text-[10px] md:text-xs mb-0.5">Barkod No:</span>
+            <span className="text-muted-foreground block text-[10px] md:text-xs mb-0.5">Barkod No:</span>
             <p className="font-medium text-gray-900 dark:text-gray-200 font-mono text-[11px] md:text-sm truncate">{device.barcode || '-'}</p>
           </div>
           <div>
-            <span className="text-gray-500 dark:text-gray-400 block text-[10px] md:text-xs mb-0.5">Seri No:</span>
+            <span className="text-muted-foreground block text-[10px] md:text-xs mb-0.5">Seri No:</span>
             <p className="font-medium text-gray-900 dark:text-gray-200 font-mono text-[11px] md:text-sm truncate">
               {/* For bilateral cards, show the correct serial based on ear side */}
               {(() => {
@@ -216,11 +222,11 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
 
 
           <div>
-            <span className="text-gray-500 dark:text-gray-400 block text-[10px] md:text-xs mb-0.5">Atama Nedeni:</span>
+            <span className="text-muted-foreground block text-[10px] md:text-xs mb-0.5">Atama Nedeni:</span>
             <p className="font-medium text-gray-900 dark:text-gray-200">{getReasonText(device.reason)}</p>
           </div>
           <div>
-            <span className="text-gray-500 dark:text-gray-400 block text-[10px] md:text-xs mb-0.5">Atama Tarihi:</span>
+            <span className="text-muted-foreground block text-[10px] md:text-xs mb-0.5">Atama Tarihi:</span>
             <p className="font-medium text-gray-900 dark:text-gray-200">{formatDate(device.assignedDate || device.createdAt || device.created_at)}</p>
           </div>
 
@@ -228,11 +234,11 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
           {device.reason?.toLowerCase() === 'sale' && (
             <>
               <div>
-                <span className="text-gray-500 dark:text-gray-400 block text-[10px] md:text-xs mb-0.5">Liste Fiyatı:</span>
+                <span className="text-muted-foreground block text-[10px] md:text-xs mb-0.5">Liste Fiyatı:</span>
                 <p className="font-medium text-gray-900 dark:text-gray-200">{formatCurrency(device.listPrice)}</p>
               </div>
               <div>
-                <span className="text-gray-500 dark:text-gray-400 block text-[10px] md:text-xs mb-0.5">Satış Fiyatı:</span>
+                <span className="text-muted-foreground block text-[10px] md:text-xs mb-0.5">Satış Fiyatı:</span>
                 <p className="font-medium text-gray-900 dark:text-gray-200">
                   {(() => {
                     // Prefer showing per-unit sale price for the card.
@@ -276,8 +282,8 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
 
                   return (
                     <div>
-                      <span className="text-gray-500 dark:text-gray-400 block text-[10px] md:text-xs mb-0.5">SGK Desteği:</span>
-                      <p className="font-medium text-green-600 dark:text-green-400">{formatCurrency(perEarSgk)}</p>
+                      <span className="text-muted-foreground block text-[10px] md:text-xs mb-0.5">SGK Desteği:</span>
+                      <p className="font-medium text-success">{formatCurrency(perEarSgk)}</p>
                     </div>
                   );
                 }
@@ -286,14 +292,14 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
               })()}
 
               <div>
-                <span className="text-gray-500 dark:text-gray-400 block text-[10px] md:text-xs mb-0.5">Ödeme Yöntemi:</span>
+                <span className="text-muted-foreground block text-[10px] md:text-xs mb-0.5">Ödeme Yöntemi:</span>
                 <p className="font-medium text-gray-900 dark:text-gray-200">{getPaymentMethodText(device.paymentMethod)}</p>
               </div>
 
               {/* Down Payment / Peşinat - Always show for sales */}
               <div>
-                <span className="text-gray-500 dark:text-gray-400 block text-[10px] md:text-xs mb-0.5">Ön Ödeme:</span>
-                <p className="font-medium text-blue-600 dark:text-blue-400">
+                <span className="text-muted-foreground block text-[10px] md:text-xs mb-0.5">Ön Ödeme:</span>
+                <p className="font-medium text-primary">
                   {formatCurrency(legacyDownPayment)}
                 </p>
               </div>
@@ -302,7 +308,7 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
 
           {device.assignedBy && (
             <div>
-              <span className="text-gray-500 dark:text-gray-400 block text-[10px] md:text-xs mb-0.5">Atayan:</span>
+              <span className="text-muted-foreground block text-[10px] md:text-xs mb-0.5">Atayan:</span>
               <p className="font-medium text-gray-900 dark:text-gray-200">{device.assignedBy}</p>
             </div>
           )}
@@ -312,8 +318,8 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
           <div className="pt-2 border-t text-[11px] md:text-xs">
             {device.notes && (
               <>
-                <span className="text-gray-500 dark:text-gray-400 block mb-0.5">Notlar:</span>
-                <p className="text-gray-700 dark:text-gray-300 md:mt-1 hover:whitespace-normal truncate md:overflow-visible">{device.notes}</p>
+                <span className="text-muted-foreground block mb-0.5">Notlar:</span>
+                <p className="text-foreground md:mt-1 hover:whitespace-normal truncate md:overflow-visible">{device.notes}</p>
               </>
             )}
 
@@ -369,7 +375,7 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
 
         <button data-allow-raw="true"
           onClick={() => onEdit?.(device)}
-          className="px-2 md:px-3 py-1 md:py-1.5 text-[11px] md:text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl md:rounded-2xl transition-colors flex items-center gap-1"
+          className="px-2 md:px-3 py-1 md:py-1.5 text-[11px] md:text-sm font-medium text-primary hover:bg-primary/10 dark:hover:bg-blue-900/20 rounded-xl md:rounded-2xl transition-colors flex items-center gap-1"
           title="Düzenle"
         >
           <Edit className="w-3.5 h-3.5 md:w-4 md:h-4" />
@@ -385,7 +391,7 @@ export const PartyDeviceCard: React.FC<PartyDeviceCardProps> = ({
         </button>
         <button data-allow-raw="true"
           onClick={() => onCancel?.(device)}
-          className="px-2 md:px-3 py-1 md:py-1.5 text-[11px] md:text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl md:rounded-2xl transition-colors flex items-center gap-1"
+          className="px-2 md:px-3 py-1 md:py-1.5 text-[11px] md:text-sm font-medium text-destructive hover:bg-destructive/10 dark:hover:bg-red-900/20 rounded-xl md:rounded-2xl transition-colors flex items-center gap-1"
           title="İptal Et"
           disabled={isCancelled}
         >

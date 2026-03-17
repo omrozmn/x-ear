@@ -88,12 +88,12 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
   )
 
   return (
-    <div className={`bg-white border border-gray-200 rounded-2xl ${className}`}>
-      <div className="px-4 py-3 border-b border-gray-200">
+    <div className={`bg-card border border-border rounded-2xl ${className}`}>
+      <div className="px-4 py-3 border-b border-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Bookmark className="h-5 w-5 text-gray-400" />
-            <h3 className="text-sm font-medium text-gray-900">Kayıtlı Görünümler</h3>
+            <Bookmark className="h-5 w-5 text-muted-foreground" />
+            <h3 className="text-sm font-medium text-foreground">Kayıtlı Görünümler</h3>
           </div>
           
           {hasActiveFilters && (
@@ -112,8 +112,8 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
         {savedViews.length === 0 ? (
           <div className="text-center py-6">
             <Bookmark className="mx-auto h-8 w-8 text-gray-300 mb-2" />
-            <p className="text-sm text-gray-500">Henüz kayıtlı görünüm yok</p>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-sm text-muted-foreground">Henüz kayıtlı görünüm yok</p>
+            <p className="text-xs text-muted-foreground mt-1">
               Filtre uygulayıp kaydet butonuna tıklayın
             </p>
           </div>
@@ -122,7 +122,7 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
             {savedViews.map((view) => (
               <div
                 key={view.id}
-                className="group flex items-center justify-between p-2 rounded hover:bg-gray-50"
+                className="group flex items-center justify-between p-2 rounded hover:bg-muted"
               >
                 <div className="flex-1 min-w-0">
                   {editingView?.id === view.id ? (
@@ -138,25 +138,25 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
                           setEditingView(null)
                         }
                       }}
-                      className="w-full text-sm font-medium text-gray-900 bg-transparent border-none outline-none focus:ring-1 focus:ring-indigo-500 rounded px-1"
+                      className="w-full text-sm font-medium text-foreground bg-transparent border-none outline-none focus:ring-1 focus:ring-indigo-500 rounded px-1"
                       autoFocus
                     />
                   ) : (
                     <div className="flex items-center space-x-2">
                       <button data-allow-raw="true"
                         onClick={() => applyView(view)}
-                        className="text-sm font-medium text-gray-900 hover:text-indigo-600 truncate"
+                        className="text-sm font-medium text-foreground hover:text-indigo-600 truncate"
                       >
                         {view.name}
                       </button>
                       {view.isDefault && (
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-blue-800">
                           Varsayılan
                         </span>
                       )}
                     </div>
                   )}
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     {Object.keys(view.filters).length} filtre • {view.createdAt}
                   </p>
                 </div>
@@ -164,7 +164,7 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
                 <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button data-allow-raw="true"
                     onClick={() => applyView(view)}
-                    className="p-1 text-gray-400 hover:text-indigo-600 rounded"
+                    className="p-1 text-muted-foreground hover:text-indigo-600 rounded"
                     title="Görünümü uygula"
                   >
                     <Eye className="h-3 w-3" />
@@ -172,7 +172,7 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
                   
                   <button data-allow-raw="true"
                     onClick={() => setEditingView(view)}
-                    className="p-1 text-gray-400 hover:text-gray-600 rounded"
+                    className="p-1 text-muted-foreground hover:text-muted-foreground rounded"
                     title="Düzenle"
                   >
                     <Edit2 className="h-3 w-3" />
@@ -181,7 +181,7 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
                   {!view.isDefault && (
                     <button data-allow-raw="true"
                       onClick={() => deleteView(view.id)}
-                      className="p-1 text-gray-400 hover:text-red-600 rounded"
+                      className="p-1 text-muted-foreground hover:text-destructive rounded"
                       title="Sil"
                     >
                       <Trash2 className="h-3 w-3" />
@@ -196,9 +196,9 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
 
       {/* Save Dialog */}
       {showSaveDialog && (
-        <div className="border-t border-gray-200 p-3">
+        <div className="border-t border-border p-3">
           <div className="space-y-2">
-            <label className="block text-xs font-medium text-gray-700">
+            <label className="block text-xs font-medium text-foreground">
               Görünüm Adı
             </label>
             <input data-allow-raw="true"
@@ -206,7 +206,7 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
               value={newViewName}
               onChange={(e) => setNewViewName(e.target.value)}
               placeholder="Örn: Aktif İstanbul Hastaları"
-              className="block w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+              className="block w-full px-2 py-1 text-sm border border-border rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
               autoFocus
             />
             <div className="flex justify-end space-x-2 pt-1">
@@ -215,7 +215,7 @@ export const PartySavedViews: React.FC<PartySavedViewsProps> = ({
                   setShowSaveDialog(false)
                   setNewViewName('')
                 }}
-                className="px-2 py-1 text-xs text-gray-600 hover:text-gray-800"
+                className="px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
               >
                 İptal
               </button>

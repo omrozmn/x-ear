@@ -207,19 +207,117 @@ def _store_and_log_whatsapp_message(
 
 
 async def _generate_auto_reply(tenant_id: str, chat_title: str, message_text: str, prompt_prefix: str) -> str:
-    refiner = get_intent_refiner()
-    result = await refiner.refine_intent(
-        user_message=f"{prompt_prefix}\n\nHasta mesaji: {message_text}",
-        tenant_id=tenant_id,
-        user_id="whatsapp_auto_reply",
-        context={"channel": "whatsapp", "chat_title": chat_title},
-        language="tr",
-    )
-    if result.intent and result.intent.conversational_response:
-        return result.intent.conversational_response
-    if result.clarification_question:
-        return result.clarification_question
-    return "Mesajinizi aldim. En kisa surede size donus yapacagim."
+    """
+    Generate AI auto-reply using the FULL AI pipeline.
+
+    Flow: intent_refiner → entity_resolver → tool_execution → response_formatter
+    This means WhatsApp users can actually DO things:
+    - "Yarın randevum var mı?" → DB query → real answer
+    - "Stok durumu ne?" → low_stock_alerts tool → formatted response
+    - "Mehmet Kaya'nın bilgileri" → entity resolve → party summary
+    """
+    db = SessionLocal()
+    try:
+        # 1. Get sector context
+        from ai.services.sector_context import get_sector_context
+        sector_ctx = get_sector_context(db, tenant_id)
+        ai_desc = sector_ctx.get("ai_context", {}).get("system_description_tr", "CRM sistemi")
+        party_term = sector_ctx.get("party_term", "müşteri")
+
+        if not prompt_prefix or "X-Ear" in prompt_prefix:
+            prompt_prefix = f"Sen {ai_desc} adına kibar, kısa ve yardımcı bir WhatsApp asistanısın."
+
+        # 2. Classify intent
+        refiner = get_intent_refiner()
+        result = await refiner.refine_intent(
+            user_message=f"{prompt_prefix}\n\n{party_term.capitalize()} mesaji: {message_text}",
+            tenant_id=tenant_id,
+            user_id="whatsapp_auto_reply",
+            context={"channel": "whatsapp", "chat_title": chat_title, "sector": sector_ctx},
+            language="tr",
+        )
+
+        if not result.is_success or not result.intent:
+            return result.clarification_question or "Mesajınızı aldım. En kısa sürede dönüş yapacağım."
+
+        # 3. Entity resolution (if party name mentioned)
+        entities = result.intent.entities or {}
+        if entities.get("party_name") and not entities.get("party_id"):
+            try:
+                from ai.services.entity_resolver import get_entity_resolver
+                resolver = get_entity_resolver(db)
+                resolution = resolver.resolve_party(entities["party_name"], tenant_id)
+                if resolution.resolved and resolution.entity:
+                    entities["party_id"] = resolution.entity.entity_id
+                elif resolution.needs_clarification:
+                    return resolution.clarification_message
+            except Exception:
+                pass
+
+        # 4. Execute tool based on intent (read-only operations only for WhatsApp)
+        from ai.services.response_formatter import get_response_formatter
+        formatter = get_response_formatter(locale="tr")
+        intent_type = str(result.intent.intent_type.value) if result.intent.intent_type else ""
+        action_type = entities.get("action_type") or entities.get("query_type") or ""
+
+        tool_result = None
+        tool_id = None
+
+        # Map common WhatsApp queries to tools
+        if action_type in ("appointments_list", "check_appointment_availability") or "randevu" in message_text.lower():
+            tool_id = "listAppointments"
+            from ai.tools import get_tool_registry
+            registry = get_tool_registry()
+            tool_result = registry.execute_tool(
+                tool_id="listAppointments",
+                parameters={"tenant_id": tenant_id, "party_id": entities.get("party_id"), "per_page": 5},
+                mode="simulate",
+            )
+
+        elif action_type in ("party_view", "get_party_comprehensive_summary") and entities.get("party_id"):
+            tool_id = "get_party_comprehensive_summary"
+            from ai.tools import get_tool_registry
+            registry = get_tool_registry()
+            tool_result = registry.execute_tool(
+                tool_id="get_party_comprehensive_summary",
+                parameters={"party_id": entities["party_id"]},
+                mode="simulate",
+            )
+
+        elif "stok" in message_text.lower() or action_type == "get_low_stock_alerts":
+            tool_id = "get_low_stock_alerts"
+            from ai.tools import get_tool_registry
+            registry = get_tool_registry()
+            tool_result = registry.execute_tool(
+                tool_id="get_low_stock_alerts",
+                parameters={"tenant_id": tenant_id},
+                mode="simulate",
+            )
+
+        elif "bugün" in message_text.lower() or "özet" in message_text.lower():
+            from ai.services.daily_briefing import generate_daily_briefing, format_briefing
+            briefing = generate_daily_briefing(db, tenant_id, locale="tr")
+            return format_briefing(briefing, locale="tr")
+
+        # 5. Format response
+        if tool_result and tool_id:
+            return formatter.format(
+                tool_id=tool_id,
+                result=tool_result.result if tool_result.result else {},
+                success=tool_result.success,
+                error=tool_result.error,
+            )
+
+        # Fallback to conversational response
+        if result.intent.conversational_response:
+            return result.intent.conversational_response
+        return "Mesajınızı aldım. En kısa sürede dönüş yapacağım."
+
+    except Exception as e:
+        logger.error(f"WhatsApp AI reply failed: {e}")
+        return "Mesajınızı aldım. En kısa sürede dönüş yapacağım."
+    finally:
+        db.close()
 
 
 async def sync_whatsapp_inbox_for_tenant(tenant_id: str, limit: int = 10) -> dict:
@@ -522,3 +620,94 @@ async def list_inbox(
         .all()
     )
     return ResponseEnvelope(data=[WhatsAppInboxMessage.model_validate(item, from_attributes=True).model_dump(by_alias=True) for item in items])
+
+
+# =============================================================================
+# Incoming Webhook — Real-time WhatsApp → AI
+# =============================================================================
+
+@router.post("/webhook", operation_id="whatsappWebhookReceive")
+async def webhook_receive(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """
+    Incoming webhook for WhatsApp messages.
+
+    Third-party WhatsApp providers (WAHA, Baileys, etc.) can POST
+    incoming messages here for real-time AI processing.
+
+    Expected payload:
+    {
+        "tenant_id": "...",
+        "phone": "905321234567",
+        "message": "Yarın randevum var mı?",
+        "chat_id": "...",
+        "message_id": "..."
+    }
+    """
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+
+    tenant_id = body.get("tenant_id")
+    phone = body.get("phone") or body.get("from")
+    message_text = body.get("message") or body.get("text") or body.get("body", "")
+    chat_id = body.get("chat_id") or phone
+    message_id = body.get("message_id") or body.get("id")
+
+    if not tenant_id or not phone or not message_text:
+        raise HTTPException(status_code=400, detail="Missing required fields: tenant_id, phone, message")
+
+    # Verify tenant exists
+    from models.tenant import Tenant
+    tenant = db.query(Tenant).filter(Tenant.id == tenant_id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    # Store incoming message
+    stored = _store_and_log_whatsapp_message(
+        db=db,
+        tenant_id=tenant_id,
+        chat_id=chat_id,
+        chat_title=phone,
+        phone_number=phone,
+        message_text=message_text,
+        direction="inbound",
+        external_message_id=message_id,
+    )
+
+    # Check if auto-reply is enabled
+    auto_reply_enabled = _get_config_value(db, tenant_id, "auto_reply_enabled", "false") == "true"
+    reply_text = None
+
+    if auto_reply_enabled:
+        auto_reply_prompt = _get_config_value(db, tenant_id, "auto_reply_prompt", "").strip()
+        reply_text = await _generate_auto_reply(tenant_id, phone, message_text, auto_reply_prompt)
+
+        # Send reply via WhatsApp
+        try:
+            manager = get_whatsapp_session_manager()
+            manager.send_reply_to_chat(tenant_id, chat_id, reply_text)
+            _store_and_log_whatsapp_message(
+                db=db,
+                tenant_id=tenant_id,
+                chat_id=chat_id,
+                chat_title=phone,
+                phone_number=phone,
+                message_text=reply_text,
+                direction="outbound",
+                external_message_id=f"auto-{message_id}" if message_id else None,
+                initiated_by="whatsapp_webhook_ai",
+            )
+        except Exception as exc:
+            logger.error("WhatsApp webhook auto-reply failed: %s", exc)
+
+    db.commit()
+    return {
+        "status": "received",
+        "message_stored": stored is not None,
+        "auto_reply_sent": reply_text is not None,
+        "reply_preview": reply_text[:100] if reply_text else None,
+    }

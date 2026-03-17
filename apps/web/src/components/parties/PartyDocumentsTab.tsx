@@ -475,21 +475,21 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId, p
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
+        return <CheckCircle className="w-4 h-4 text-success" />;
       case 'processing':
         return <Clock className="w-4 h-4 text-yellow-500" />;
       case 'error':
-        return <AlertCircle className="w-4 h-4 text-red-500" />;
+        return <AlertCircle className="w-4 h-4 text-destructive" />;
       default:
-        return <Clock className="w-4 h-4 text-gray-500" />;
+        return <Clock className="w-4 h-4 text-muted-foreground" />;
     }
   };
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      completed: 'bg-green-100 text-green-800',
-      processing: 'bg-yellow-100 text-yellow-800',
-      error: 'bg-red-100 text-red-800'
+      completed: 'bg-success/10 text-success',
+      processing: 'bg-warning/10 text-yellow-800',
+      error: 'bg-destructive/10 text-red-800'
     };
 
     const labels = {
@@ -499,7 +499,7 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId, p
     };
 
     return (
-      <Badge className={variants[status as keyof typeof variants] || 'bg-gray-100 text-gray-800'}>
+      <Badge className={variants[status as keyof typeof variants] || 'bg-muted text-foreground'}>
         {labels[status as keyof typeof labels] || status}
       </Badge>
     );
@@ -553,19 +553,19 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId, p
               {/* Drag and Drop Area */}
               <div
                 className={`border-2 border-dashed rounded-2xl p-8 text-center transition-colors ${dragActive
-                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
-                  : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 dark:bg-gray-700/50'
+                  ? 'border-blue-500 bg-primary/10'
+                  : 'border-border hover:border-gray-400 dark:hover:border-gray-500 dark:bg-gray-700/50'
                   }`}
                 onDragEnter={handleDragEnter}
                 onDragLeave={handleDragLeave}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
               >
-                <Upload className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                   Dosyaları buraya sürükleyin veya seçin
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                <p className="text-sm text-muted-foreground mb-4">
                   PDF, JPG, PNG, DOC, DOCX formatları desteklenir
                 </p>
                 <input
@@ -597,9 +597,9 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId, p
                     {selectedFiles.map((file, index) => (
                       <div key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded">
                         <div className="flex items-center space-x-2">
-                          <FileText className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                          <FileText className="w-4 h-4 text-muted-foreground" />
                           <span className="text-sm dark:text-gray-200">{file.name}</span>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-muted-foreground">
                             ({(file.size / 1024 / 1024).toFixed(2)} MB)
                           </span>
                         </div>
@@ -626,7 +626,7 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId, p
                         <span>{fileId.split('_')[0]}</span>
                         <span>{progress}%</span>
                       </div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                      <div className="w-full bg-accent rounded-full h-2">
                         <div
                           className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                           style={{ width: `${progress}%` }}
@@ -640,7 +640,7 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId, p
               {/* Document Type and Notes */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Belge Türü
                   </label>
                   <Select
@@ -659,7 +659,7 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId, p
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Notlar (Opsiyonel)
                   </label>
                   <Input
@@ -713,7 +713,7 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId, p
       {/* Search and Filter */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="relative flex-1">
-          <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Belge ara..."
             value={searchTerm}
@@ -740,7 +740,7 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId, p
       {isLoading ? (
         <div className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-500">Dokümanlar yükleniyor...</p>
+          <p className="mt-2 text-muted-foreground">Dokümanlar yükleniyor...</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -748,11 +748,11 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId, p
             <Card key={doc.id} className="hover:shadow-md transition-shadow dark:bg-gray-800 dark:border-gray-700">
               <CardContent className="p-4">
                 <div className="flex items-start space-x-3 mb-3">
-                  <FileText className="w-8 h-8 text-blue-600 dark:text-blue-500 flex-shrink-0" />
+                  <FileText className="w-8 h-8 text-primary flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-gray-900 dark:text-white truncate">{doc.name}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">{doc.type}</p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">
+                    <p className="text-sm text-muted-foreground capitalize">{doc.type}</p>
+                    <p className="text-xs text-muted-foreground">
                       {formatFileSize(doc.size)} • {formatDate(doc.uploadDate)}
                     </p>
                   </div>
@@ -803,7 +803,7 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId, p
                     onClick={() => confirmDelete(doc.id)}
                     variant="outline"
                     size="sm"
-                    className="text-red-600 hover:text-red-800"
+                    className="text-destructive hover:text-red-800"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -812,7 +812,7 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId, p
             </Card>
           ))}
           {filteredDocuments.length === 0 && (
-            <div className="col-span-full text-center py-8 text-gray-500">
+            <div className="col-span-full text-center py-8 text-muted-foreground">
               <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
               <p>
                 {searchTerm || selectedDocumentType !== 'all'
@@ -831,20 +831,20 @@ export const PartyDocumentsTab: React.FC<PartyDocumentsTabProps> = ({ partyId, p
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full mx-4">
             <div className="p-6">
               <div className="flex items-center space-x-3 mb-4">
-                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                  <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
+                  <AlertCircle className="w-6 h-6 text-destructive" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     Dokümanı Sil
                   </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-muted-foreground">
                     Bu işlem geri alınamaz
                   </p>
                 </div>
               </div>
               
-              <p className="text-gray-700 dark:text-gray-300 mb-6">
+              <p className="text-foreground mb-6">
                 Bu dokümanı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve doküman kalıcı olarak silinecektir.
               </p>
               

@@ -14,7 +14,16 @@ vi.mock('@tanstack/react-router', () => ({
 vi.mock('../../hooks/usePermissions', () => ({
     usePermissions: () => ({
         hasPermission: () => true,
-        isLoading: false
+        hasAnyPermission: () => true,
+        hasAllPermissions: () => true,
+        canAccessCategory: () => true,
+        getCategoryPermissions: () => [],
+        permissions: ['*'],
+        role: 'admin',
+        isSuperAdmin: true,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
     })
 }));
 

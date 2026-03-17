@@ -149,7 +149,7 @@ export function UtsOperationsPanel() {
 
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(360px,1fr)]">
-      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="rounded-3xl border border-slate-200 bg-card p-6 shadow-sm">
         <div className="flex items-center gap-2 text-slate-900">
           <Search className="h-5 w-5 text-sky-600" />
           <h2 className="text-lg font-semibold">Tekil Urun Sorgulama</h2>
@@ -166,7 +166,7 @@ export function UtsOperationsPanel() {
               value={productNumber}
               onChange={(event) => setProductNumber(event.target.value)}
               placeholder="8682549130640"
-              className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
+              className="w-full rounded-2xl border border-slate-300 bg-card px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
             />
           </label>
           <label className="space-y-2">
@@ -176,7 +176,7 @@ export function UtsOperationsPanel() {
               value={serialNumber}
               onChange={(event) => setSerialNumber(event.target.value)}
               placeholder="25LD8494"
-              className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
+              className="w-full rounded-2xl border border-slate-300 bg-card px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
             />
           </label>
           <label className="space-y-2">
@@ -186,7 +186,7 @@ export function UtsOperationsPanel() {
               value={lotBatchNumber}
               onChange={(event) => setLotBatchNumber(event.target.value)}
               placeholder="Lot bazli urunlerde zorunlu"
-              className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
+              className="w-full rounded-2xl border border-slate-300 bg-card px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
             />
           </label>
         </div>
@@ -223,7 +223,7 @@ export function UtsOperationsPanel() {
                 variant="ghost"
                 onClick={() => setSelectedItem(item)}
                 className={`h-auto w-full rounded-3xl border p-4 text-left transition ${
-                  isSelected ? 'border-sky-500 bg-sky-50' : 'border-slate-200 bg-white hover:border-sky-300'
+                  isSelected ? 'border-sky-500 bg-sky-50' : 'border-slate-200 bg-card hover:border-sky-300'
                 }`}
               >
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
@@ -249,7 +249,7 @@ export function UtsOperationsPanel() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="rounded-3xl border border-slate-200 bg-card p-6 shadow-sm">
         <div className="flex items-center gap-2 text-slate-900">
           <SendHorizontal className="h-5 w-5 text-emerald-600" />
           <h2 className="text-lg font-semibold">Verme Bildirimi</h2>
@@ -286,7 +286,7 @@ export function UtsOperationsPanel() {
               value={recipientInstitutionNumber}
               onChange={(event) => setRecipientInstitutionNumber(event.target.value)}
               placeholder="2667269055837"
-              className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
+              className="w-full rounded-2xl border border-slate-300 bg-card px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
             />
           </label>
           <label className="space-y-2">
@@ -296,7 +296,7 @@ export function UtsOperationsPanel() {
               value={documentNumber}
               onChange={(event) => setDocumentNumber(event.target.value)}
               placeholder="UTS-VERME-001"
-              className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
+              className="w-full rounded-2xl border border-slate-300 bg-card px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
             />
           </label>
           <label className="space-y-2">
@@ -307,7 +307,7 @@ export function UtsOperationsPanel() {
               min={1}
               value={quantity}
               onChange={(event) => setQuantity(event.target.value)}
-              className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
+              className="w-full rounded-2xl border border-slate-300 bg-card px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
             />
           </label>
         </div>

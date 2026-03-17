@@ -12,21 +12,21 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className = ''
     switch (status) {
       case 'Kaydedildi':
       case 'saved':
-        return { color: 'bg-blue-100 text-blue-800', icon: CheckCircle, text: 'Kaydedildi' };
+        return { color: 'bg-primary/10 text-blue-800', icon: CheckCircle, text: 'Kaydedildi' };
       case 'Teslim Edildi':
       case 'delivered':
-        return { color: 'bg-green-100 text-green-800', icon: CheckCircle, text: 'Teslim Edildi' };
+        return { color: 'bg-success/10 text-success', icon: CheckCircle, text: 'Teslim Edildi' };
       case 'Beklemede':
       case 'pending':
-        return { color: 'bg-yellow-100 text-yellow-800', icon: Clock, text: 'Beklemede' };
+        return { color: 'bg-warning/10 text-yellow-800', icon: Clock, text: 'Beklemede' };
       case 'rejected':
-        return { color: 'bg-red-100 text-red-800', icon: AlertCircle, text: 'Reddedildi' };
+        return { color: 'bg-destructive/10 text-red-800', icon: AlertCircle, text: 'Reddedildi' };
       case 'processing':
-        return { color: 'bg-blue-100 text-blue-800', icon: RefreshCw, text: 'İşleniyor' };
+        return { color: 'bg-primary/10 text-blue-800', icon: RefreshCw, text: 'İşleniyor' };
       case 'expired':
-        return { color: 'bg-red-100 text-red-800', icon: AlertCircle, text: 'Süresi Dolmuş' };
+        return { color: 'bg-destructive/10 text-red-800', icon: AlertCircle, text: 'Süresi Dolmuş' };
       default:
-        return { color: 'bg-gray-100 text-gray-800', icon: AlertCircle, text: 'Bilinmiyor' };
+        return { color: 'bg-muted text-foreground', icon: AlertCircle, text: 'Bilinmiyor' };
     }
   };
 

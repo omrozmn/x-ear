@@ -69,7 +69,7 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
     if (isLoading) {
         return (
             <div className="flex justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
         );
     }
@@ -78,7 +78,7 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
         return (
             <div className="text-center py-12">
                 <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-4">Veriler yüklenirken hata oluştu</p>
+                <p className="text-muted-foreground mb-4">Veriler yüklenirken hata oluştu</p>
                 <Button onClick={() => refetch()} variant="outline" icon={<RefreshCw className="w-4 h-4" />}>
                     Tekrar Dene
                 </Button>
@@ -99,7 +99,7 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
                 <div>
                     <p className="font-medium">{party.partyName}</p>
                     {canViewContact && party.phone && (
-                        <p className="text-xs text-gray-500 flex items-center gap-1">
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
                             <Phone className="w-3 h-3" /> {party.phone}
                         </p>
                     )}
@@ -114,7 +114,7 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
             title: 'Satış Sayısı',
             align: 'center',
             render: (_, party) => (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-muted text-foreground">
                     {party.saleCount}
                 </span>
             ),
@@ -129,20 +129,20 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
             key: 'paidAmount',
             title: 'Ödenen',
             align: 'right',
-            render: (_, party) => <span className="text-green-600">{formatProtectedCurrency(party.paidAmount)}</span>,
+            render: (_, party) => <span className="text-success">{formatProtectedCurrency(party.paidAmount)}</span>,
         },
         {
             key: 'remainingAmount',
             title: 'Kalan',
             align: 'right',
-            render: (_, party) => <span className="font-bold text-red-600">{formatProtectedCurrency(party.remainingAmount)}</span>,
+            render: (_, party) => <span className="font-bold text-destructive">{formatProtectedCurrency(party.remainingAmount)}</span>,
         },
     ];
 
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Kalan Ödemeler & Kasa Özeti</h3>
+                <h3 className="text-lg font-semibold text-foreground">Kalan Ödemeler & Kasa Özeti</h3>
                 <TabExportButton filename="kalan-odemeler" rows={payments as unknown as Array<Record<string, unknown>>} />
             </div>
 
@@ -154,11 +154,11 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
                             <TrendingUp className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <p className="text-sm text-green-600 dark:text-green-400">Toplam Gelir</p>
+                            <p className="text-sm text-success">Toplam Gelir</p>
                             <p className="text-2xl font-bold text-green-900 dark:text-green-100">
                                 {formatProtectedCurrency(cashflow?.totalRevenue || 0)}
                             </p>
-                            <p className="text-xs text-green-600 dark:text-green-400">{filters.dateRange.start} - {filters.dateRange.end}</p>
+                            <p className="text-xs text-success">{filters.dateRange.start} - {filters.dateRange.end}</p>
                         </div>
                     </div>
                 </div>
@@ -169,11 +169,11 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
                             <CreditCard className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <p className="text-sm text-red-600 dark:text-red-400">Toplam Gider</p>
+                            <p className="text-sm text-destructive">Toplam Gider</p>
                             <p className="text-2xl font-bold text-red-900 dark:text-red-100">
                                 {formatProtectedCurrency(cashflow?.totalExpenses || 0)}
                             </p>
-                            <p className="text-xs text-red-600 dark:text-red-400">{filters.dateRange.start} - {filters.dateRange.end}</p>
+                            <p className="text-xs text-destructive">{filters.dateRange.start} - {filters.dateRange.end}</p>
                         </div>
                     </div>
                 </div>
@@ -184,11 +184,11 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
                             <Wallet className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <p className="text-sm text-blue-600 dark:text-blue-400">Net Nakit</p>
+                            <p className="text-sm text-primary">Net Nakit</p>
                             <p className={`text-2xl font-bold ${(cashflow?.netCash || 0) >= 0 ? 'text-green-900 dark:text-green-100' : 'text-red-900 dark:text-red-100'}`}>
                                 {formatProtectedCurrency(cashflow?.netCash || 0)}
                             </p>
-                            <p className="text-xs text-blue-600 dark:text-blue-400">{filters.dateRange.start} - {filters.dateRange.end}</p>
+                            <p className="text-xs text-primary">{filters.dateRange.start} - {filters.dateRange.end}</p>
                         </div>
                     </div>
                 </div>
@@ -216,11 +216,11 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
             </div>
 
             {/* Filters */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-border p-4">
                 <div className="flex items-center gap-4">
-                    <Filter className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                    <Filter className="w-5 h-5 text-muted-foreground" />
                     <div>
-                        <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Minimum Tutar</label>
+                        <label className="text-xs text-muted-foreground block mb-1">Minimum Tutar</label>
                         <Select
                             className="px-3 py-1.5 text-sm"
                             value={String(minAmount)}
@@ -238,10 +238,10 @@ export function RemainingPaymentsTab({ filters }: RemainingPaymentsTabProps) {
             </div>
 
             {/* Parties with Remaining Payments */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-border overflow-hidden">
+                <div className="px-6 py-4 border-b border-border">
                     <h4 className="text-md font-medium text-gray-900 dark:text-white">Kalan Ödemeler - Hasta Listesi</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Ödemesi kalan hastalar</p>
+                    <p className="text-sm text-muted-foreground">Ödemesi kalan hastalar</p>
                 </div>
 
                 <DataTable<RemainingPaymentItem>

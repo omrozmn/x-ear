@@ -116,13 +116,13 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
 
       {state.success && (
         <Alert variant="success" className="mb-4">
-          <CheckCircle className="w-4 h-4 text-green-600" />
-          <span className="text-green-800">Satış başarıyla güncellendi!</span>
+          <CheckCircle className="w-4 h-4 text-success" />
+          <span className="text-success">Satış başarıyla güncellendi!</span>
         </Alert>
       )}
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200 mb-6">
+      <div className="border-b border-border mb-6">
         <nav className="-mb-px flex space-x-8">
           <Button
             variant="ghost"
@@ -130,8 +130,8 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
             className={`
               !py-4 !px-1 border-b-2 font-medium text-sm flex items-center gap-2 rounded-none !bg-transparent h-auto
               ${activeTab === 'details'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-blue-500 text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
               }
             `}
           >
@@ -144,8 +144,8 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
             className={`
               !py-4 !px-1 border-b-2 font-medium text-sm flex items-center gap-2 rounded-none !bg-transparent h-auto
               ${activeTab === 'payments'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-blue-500 text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
               }
             `}
           >
@@ -158,8 +158,8 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
             className={`
               !py-4 !px-1 border-b-2 font-medium text-sm flex items-center gap-2 rounded-none !bg-transparent h-auto
               ${activeTab === 'notes'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-blue-500 text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
               }
             `}
           >
@@ -189,8 +189,8 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
             <div className="space-y-6">
               {/* Combined Payment & Price Summary Card */}
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl border border-blue-200 shadow-sm">
-                <h4 className="font-semibold text-gray-900 mb-4 flex items-center text-lg">
-                  <CreditCard className="w-5 h-5 mr-2 text-blue-600" />
+                <h4 className="font-semibold text-foreground mb-4 flex items-center text-lg">
+                  <CreditCard className="w-5 h-5 mr-2 text-primary" />
                   Fiyat ve Ödeme Özeti
                 </h4>
 
@@ -198,7 +198,7 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
                 <div className="space-y-3 mb-4 pb-4 border-b border-blue-200">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-gray-600 block mb-1">Liste Fiyatı (birim)</label>
+                      <label className="text-xs text-muted-foreground block mb-1">Liste Fiyatı (birim)</label>
                       <Input
                         type="number"
                         value={formData.listPrice === 0 ? '' : formData.listPrice}
@@ -209,7 +209,7 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-gray-600 block mb-1">İndirim Türü</label>
+                      <label className="text-xs text-muted-foreground block mb-1">İndirim Türü</label>
                       <Select
                         value={formData.discountType || 'amount'}
                         onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateFormData({ discountType: e.target.value as 'none' | 'percentage' | 'amount' })}
@@ -225,15 +225,15 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-gray-600 block mb-1">Toplam Liste Fiyatı</label>
-                      <div className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded bg-gray-50 text-gray-700">
+                      <label className="text-xs text-muted-foreground block mb-1">Toplam Liste Fiyatı</label>
+                      <div className="w-full px-2 py-1.5 text-sm border border-border rounded bg-muted text-foreground">
                         {formData.listPrice > 0 ? new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(
                           formData.ear === 'both' ? formData.listPrice * 2 : formData.listPrice
                         ) : '₺0,00'}
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs text-gray-600 block mb-1">İndirim Değeri</label>
+                      <label className="text-xs text-muted-foreground block mb-1">İndirim Değeri</label>
                       <Input
                         type="number"
                         value={formData.discountValue === 0 ? '' : formData.discountValue}
@@ -248,7 +248,7 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-gray-600 block mb-1">SGK Destek Türü</label>
+                      <label className="text-xs text-muted-foreground block mb-1">SGK Destek Türü</label>
                       <Select
                         value={formData.sgkScheme || ''}
                         onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -288,7 +288,7 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-gray-600 block mb-1">Ön Ödeme</label>
+                      <label className="text-xs text-muted-foreground block mb-1">Ön Ödeme</label>
                       <Input
                         type="number"
                         value={formData.downPayment === 0 ? '' : formData.downPayment}
@@ -304,7 +304,7 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
                   {isSgkBattery && (
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs text-gray-600 block mb-1">Rapor Adet Kapsamı</label>
+                        <label className="text-xs text-muted-foreground block mb-1">Rapor Adet Kapsamı</label>
                         <Select
                           value={batteryReportQuantity}
                           onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setBatteryReportQuantity(e.target.value as 'per_ear' | 'bilateral')}
@@ -321,8 +321,8 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-gray-600 block mb-1">SGK Pil Tutarı</label>
-                        <div className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded bg-green-50 text-green-700">
+                        <label className="text-xs text-muted-foreground block mb-1">SGK Pil Tutarı</label>
+                        <div className="w-full px-2 py-1.5 text-sm border border-border rounded bg-success/10 text-success">
                           {(() => {
                             const schemeKey = formData.category === 'hearing_aid_battery' ? 'hearing_aid_battery' : 'implant_battery';
                             const scheme = batterySgkSettings[schemeKey];
@@ -342,36 +342,36 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
                 {/* Payment Summary */}
                 <div className="space-y-2">
                   {/* Price Calculation Breakdown */}
-                  <div className="mb-3 px-2 py-2 bg-blue-50 rounded text-[11px] space-y-0.5">
+                  <div className="mb-3 px-2 py-2 bg-primary/10 rounded text-[11px] space-y-0.5">
                     {/* List Price */}
                     {formData.listPrice > 0 && (
-                      <div className="flex justify-between text-gray-700">
+                      <div className="flex justify-between text-foreground">
                         <span>
                           Liste Fiyatı (birim)
-                          {sale.kdvRate != null && <span className="text-gray-400 ml-1">(KDV %{sale.kdvRate})</span>}
+                          {sale.kdvRate != null && <span className="text-muted-foreground ml-1">(KDV %{sale.kdvRate})</span>}
                           :
                         </span>
                         <span className="font-medium">
                           {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(formData.listPrice)}
-                          {formData.ear === 'both' && <span className="text-blue-600 ml-1">x2</span>}
+                          {formData.ear === 'both' && <span className="text-primary ml-1">x2</span>}
                         </span>
                       </div>
                     )}
 
                     {/* SGK Deduction (shown before discount per correct calculation order) */}
                     {calculatedPricing.sgkReduction > 0 && !isSgkBattery && (
-                      <div className="flex justify-between text-gray-700">
+                      <div className="flex justify-between text-foreground">
                         <span>SGK Desteği:</span>
-                        <span className="font-medium text-green-600">
+                        <span className="font-medium text-success">
                           -{new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(calculatedPricing.sgkReduction)}
                         </span>
                       </div>
                     )}
                     {/* Battery SGK Deduction */}
                     {(calculatedPricing.batterySgkAmount ?? 0) > 0 && (
-                      <div className="flex justify-between text-gray-700">
+                      <div className="flex justify-between text-foreground">
                         <span>SGK Pil Rapor Düşümü:</span>
-                        <span className="font-medium text-green-600">
+                        <span className="font-medium text-success">
                           -{new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(calculatedPricing.batterySgkAmount ?? 0)}
                         </span>
                       </div>
@@ -379,9 +379,9 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
 
                     {/* Discount */}
                     {formData.discountValue > 0 && formData.discountType !== 'none' && (
-                      <div className="flex justify-between text-gray-700">
+                      <div className="flex justify-between text-foreground">
                         <span>İndirim {formData.discountType === 'percentage' ? `(%${formData.discountValue})` : ''}:</span>
-                        <span className="font-medium text-red-600">
+                        <span className="font-medium text-destructive">
                           -{new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(
                             formData.discountType === 'percentage'
                               ? (formData.listPrice - (calculatedPricing.sgkReduction / (formData.ear === 'both' ? 2 : 1))) * (formData.ear === 'both' ? 2 : 1) * (formData.discountValue / 100)
@@ -393,7 +393,7 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
 
                     {/* KDV Amount (only shown when there's a KDV amount) */}
                     {sale.kdvAmount != null && sale.kdvAmount > 0 && (
-                      <div className="flex justify-between text-gray-500 pt-1 border-t border-blue-200">
+                      <div className="flex justify-between text-muted-foreground pt-1 border-t border-blue-200">
                         <span>KDV (%{sale.kdvRate || 20}):</span>
                         <span className="font-medium">
                           +{new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(sale.kdvAmount || 0)}
@@ -403,20 +403,20 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-700 font-medium">Toplam Tutar:</span>
-                    <span className="text-lg font-bold text-gray-900">
+                    <span className="text-sm text-foreground font-medium">Toplam Tutar:</span>
+                    <span className="text-lg font-bold text-foreground">
                       {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(calculatedPricing.totalAmount || 0)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-700 font-medium">Ödenen:</span>
-                    <span className="text-lg font-bold text-green-600">
+                    <span className="text-sm text-foreground font-medium">Ödenen:</span>
+                    <span className="text-lg font-bold text-success">
                       {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(sale.paidAmount || 0)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center pt-2 border-t border-blue-200">
-                    <span className="text-sm text-gray-700 font-medium">Kalan:</span>
-                    <span className={`text-lg font-bold ${calculatedPricing.totalAmount - (sale.paidAmount || 0) > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                    <span className="text-sm text-foreground font-medium">Kalan:</span>
+                    <span className={`text-lg font-bold ${calculatedPricing.totalAmount - (sale.paidAmount || 0) > 0 ? 'text-destructive' : 'text-success'}`}>
                       {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(Math.max(0, calculatedPricing.totalAmount - (sale.paidAmount || 0)))}
                     </span>
                   </div>
@@ -424,8 +424,8 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
               </div>
 
               {/* Notes Field - Below Price Summary */}
-              <div className="bg-white p-4 rounded-2xl border border-gray-200">
-                <label className="text-sm font-medium text-gray-700 block mb-2">Notlar</label>
+              <div className="bg-card p-4 rounded-2xl border border-border">
+                <label className="text-sm font-medium text-foreground block mb-2">Notlar</label>
                 <Textarea
                   value={formData.notes}
                   onChange={(e) => updateFormData({ notes: e.target.value })}
@@ -440,7 +440,7 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
           {/* Footer Actions */}
           <div className="flex items-center justify-between pt-6 border-t">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">Durum:</span>
+              <span className="text-sm text-muted-foreground">Durum:</span>
               <Select
                 value={state.saleStatus}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateState({ saleStatus: e.target.value })}

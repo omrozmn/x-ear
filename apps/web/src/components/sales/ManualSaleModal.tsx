@@ -114,7 +114,7 @@ export function ManualSaleModal({ isOpen, isLoading = false, onClose, onSubmit }
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5 p-6">
-          {error ? <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200">{error}</div> : null}
+          {error ? <div className="rounded-2xl border border-red-200 bg-destructive/10 px-4 py-3 text-sm text-destructive dark:border-red-800">{error}</div> : null}
 
           <div>
             <label className="mb-2 block text-sm font-semibold text-slate-800 dark:text-slate-300">Hasta *</label>
@@ -158,7 +158,7 @@ export function ManualSaleModal({ isOpen, isLoading = false, onClose, onSubmit }
               rows={3}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm shadow-slate-200/60 placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-50 dark:placeholder:text-slate-500"
+              className="w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm shadow-slate-200/60 placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-ring/20 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-50 dark:placeholder:text-slate-500"
               placeholder="Satış notu"
             />
           </div>

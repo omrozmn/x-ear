@@ -343,7 +343,7 @@ const CampaignsPage: React.FC = () => {
         <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
-                    <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Durum</label>
+                    <label className="text-xs font-semibold text-muted-foreground">Durum</label>
                     <Select
                         value={audienceFilters.status || ''}
                         onChange={(event) => setAudienceFilters((prev) => ({
@@ -359,7 +359,7 @@ const CampaignsPage: React.FC = () => {
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Segment</label>
+                    <label className="text-xs font-semibold text-muted-foreground">Segment</label>
                     <Select
                         value={audienceFilters.segment || ''}
                         onChange={(event) => setAudienceFilters((prev) => ({
@@ -371,7 +371,7 @@ const CampaignsPage: React.FC = () => {
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Kazanım Türü</label>
+                    <label className="text-xs font-semibold text-muted-foreground">Kazanım Türü</label>
                     <Select
                         value={audienceFilters.acquisitionType || ''}
                         onChange={(event) => setAudienceFilters((prev) => ({
@@ -383,7 +383,7 @@ const CampaignsPage: React.FC = () => {
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-semibold text-gray-600 dark:text-gray-400">Şube</label>
+                    <label className="text-xs font-semibold text-muted-foreground">Şube</label>
                     <Select
                         value={audienceFilters.branchId || ''}
                         onChange={(event) => setAudienceFilters((prev) => ({
@@ -401,7 +401,7 @@ const CampaignsPage: React.FC = () => {
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-semibold text-gray-600 dark:text-gray-300">Başlangıç Tarihi</label>
+                    <label className="text-xs font-semibold text-muted-foreground">Başlangıç Tarihi</label>
                     <DatePicker
                         value={audienceFilters.dateStart ? new Date(audienceFilters.dateStart) : null}
                         onChange={(date) => setAudienceFilters((prev) => ({
@@ -413,7 +413,7 @@ const CampaignsPage: React.FC = () => {
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-semibold text-gray-600 dark:text-gray-300">Bitiş Tarihi</label>
+                    <label className="text-xs font-semibold text-muted-foreground">Bitiş Tarihi</label>
                     <DatePicker
                         value={audienceFilters.dateEnd ? new Date(audienceFilters.dateEnd) : null}
                         onChange={(date) => setAudienceFilters((prev) => ({
@@ -426,7 +426,7 @@ const CampaignsPage: React.FC = () => {
                 </div>
             </div>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                <div className="text-sm text-muted-foreground flex items-center gap-2">
                     {partiesCountQuery.isFetching ? (
                         <>
                             <Loader2 className="w-4 h-4 animate-spin text-indigo-500 dark:text-indigo-400" />
@@ -449,7 +449,7 @@ const CampaignsPage: React.FC = () => {
                 </div>
             </div>
             {partiesCountQuery.isError && (
-                <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                <p className="text-xs text-destructive flex items-center gap-1">
                     <AlertTriangle className="w-3 h-3" /> Hedef kitle sayısı alınamadı.
                 </p>
             )}
@@ -459,7 +459,7 @@ const CampaignsPage: React.FC = () => {
     const renderExcelArea = () => (
         <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-3">
-                <p className="text-sm text-gray-600 dark:text-gray-400">Telefon sütunu içeren Excel dosyasını yükleyin.</p>
+                <p className="text-sm text-muted-foreground">Telefon sütunu içeren Excel dosyasını yükleyin.</p>
                 <Button variant="secondary" size="sm" className="flex items-center gap-1" onClick={handleTemplateDownload}>
                     <Download className="w-4 h-4" /> Örnek Excel
                 </Button>
@@ -480,8 +480,8 @@ const CampaignsPage: React.FC = () => {
                     onChange={handleFileChange}
                 />
             </div>
-            <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 p-4 space-y-2 text-sm bg-white dark:bg-gray-800">
-                <ul className="list-disc pl-5 text-gray-500 dark:text-gray-400 text-xs space-y-1">
+            <div className="rounded-2xl border border-dashed border-border p-4 space-y-2 text-sm bg-white dark:bg-gray-800">
+                <ul className="list-disc pl-5 text-muted-foreground text-xs space-y-1">
                     <li>"Telefon" başlıklı sütun zorunludur.</li>
                     <li>Önizleme ilk 8 satırı gösterir.</li>
                     <li>Geçerli telefonların sayısı kredi hesabına eklenir.</li>
@@ -492,17 +492,17 @@ const CampaignsPage: React.FC = () => {
                     </p>
                 )}
                 {excelError && (
-                    <p className="text-red-600 text-sm flex items-center gap-2">
+                    <p className="text-destructive text-sm flex items-center gap-2">
                         <AlertTriangle className="w-4 h-4" /> {excelError}
                     </p>
                 )}
                 {excelPreview && (
                     <div className="space-y-2 text-sm">
-                        <div className="flex items-center justify-between text-gray-700">
+                        <div className="flex items-center justify-between text-foreground">
                             <span>Satır sayısı</span>
                             <span className="font-medium">{formatNumber(excelPreview.totalRows)}</span>
                         </div>
-                        <div className="flex items-center justify-between text-gray-700">
+                        <div className="flex items-center justify-between text-foreground">
                             <span>Telefonu olan kayıt</span>
                             <span className="font-medium">{formatNumber(excelPreview.validPhoneCount)}</span>
                         </div>
@@ -517,7 +517,7 @@ const CampaignsPage: React.FC = () => {
                 }));
                 const excelData = excelPreview.rows.map((_row, i) => ({ _k: i, _row }));
                 return (
-                    <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700">
+                    <div className="overflow-hidden rounded-2xl border border-border">
                         <DataTable<{ _k: number; _row: (string | number | undefined)[] }>
                             data={excelData}
                             columns={excelCols}
@@ -540,7 +540,7 @@ const CampaignsPage: React.FC = () => {
                     </div>
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Kampanya Oluştur</h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <p className="text-sm text-muted-foreground">
                             Hedef kitleyi belirleyin, mesajı yazın ve kalan kredinize göre maliyeti görün.
                         </p>
                     </div>
@@ -550,7 +550,7 @@ const CampaignsPage: React.FC = () => {
                         <Wallet className="w-5 h-5" />
                     </div>
                     <div>
-                        <p className="text-xs uppercase text-gray-500 dark:text-gray-400">Kalan SMS Kredisi</p>
+                        <p className="text-xs uppercase text-muted-foreground">Kalan SMS Kredisi</p>
                         <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                             {creditLoading ? 'Yükleniyor...' : `${formatNumber(creditBalance)} kredi`}
                         </p>
@@ -563,7 +563,7 @@ const CampaignsPage: React.FC = () => {
                     <div className="flex flex-col gap-3">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">Hedef Kaynağı</p>
+                                <p className="text-sm text-muted-foreground">Hedef Kaynağı</p>
                                 <p className="text-xl font-semibold text-gray-900 dark:text-white">
                                     {mode === 'filters' ? 'Hasta Filtreleri' : 'Excel Listesi'}
                                 </p>
@@ -587,16 +587,16 @@ const CampaignsPage: React.FC = () => {
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Alıcı Sayısı</p>
+                                <p className="text-xs text-muted-foreground">Alıcı Sayısı</p>
                                 <p className="text-3xl font-semibold text-gray-900 dark:text-white">
                                     {recipients ? formatNumber(recipients) : '-'}
                                 </p>
-                                <p className="text-xs text-gray-400">
+                                <p className="text-xs text-muted-foreground">
                                     {mode === 'filters' ? 'Filtrelenen hastalar' : 'Telefonu bulunan satırlar'}
                                 </p>
                             </div>
                             <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Kaynak Detayı</p>
+                                <p className="text-xs text-muted-foreground">Kaynak Detayı</p>
                                 <p className="text-sm font-medium text-gray-900 dark:text-white">
                                     {mode === 'filters'
                                         ? `${Object.keys(normalizedParams).length === 0 ? 'Tüm hastalar' : 'Özel filtreler'}`
@@ -609,14 +609,14 @@ const CampaignsPage: React.FC = () => {
                     <div className="space-y-5">
                         {mode === 'filters' ? (
                             <>
-                                <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                                     <Users className="w-4 h-4 text-indigo-500" /> Hedef Kitleler
                                 </div>
                                 {renderFilters()}
                             </>
                         ) : (
                             <>
-                                <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                                     <FileSpreadsheet className="w-4 h-4 text-indigo-500" /> Excel Listesi
                                 </div>
                                 {renderExcelArea()}
@@ -628,19 +628,19 @@ const CampaignsPage: React.FC = () => {
                 <Card className="p-6 space-y-4 flex flex-col">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">SMS Mesajı</p>
+                            <p className="text-sm text-muted-foreground">SMS Mesajı</p>
                             <p className="text-lg font-semibold text-gray-900 dark:text-white">Metin ve Kredi</p>
                         </div>
                         {creditEnough ? (
                             <CheckCircle className="w-6 h-6 text-emerald-500" />
                         ) : (
-                            <AlertTriangle className="w-6 h-6 text-red-500" />
+                            <AlertTriangle className="w-6 h-6 text-destructive" />
                         )}
                     </div>
 
                     {/* Dynamic Fields */}
                     <div className="space-y-2">
-                        <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Dinamik Alanlar</p>
+                        <p className="text-xs font-medium text-muted-foreground">Dinamik Alanlar</p>
                         <div className="flex flex-wrap gap-2">
                             {DYNAMIC_FIELDS.map((field) => (
                                 <button
@@ -656,7 +656,7 @@ const CampaignsPage: React.FC = () => {
                                 </button>
                             ))}
                         </div>
-                        <p className="text-xs text-gray-400">Tıklayarak mesaja dinamik alan ekleyin</p>
+                        <p className="text-xs text-muted-foreground">Tıklayarak mesaja dinamik alan ekleyin</p>
                     </div>
 
                     {/* Message Textarea - Full Height */}
@@ -671,7 +671,7 @@ const CampaignsPage: React.FC = () => {
 Örnek: Sayın {{AD}} {{SOYAD}}, randevunuzu hatırlatmak isteriz."
                         />
                         <div className="flex items-center justify-between">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                            <p className="text-xs text-muted-foreground">
                                 {smsSegments || 0} SMS / kişi ({message.length} karakter)
                             </p>
                             <Button
@@ -688,7 +688,7 @@ const CampaignsPage: React.FC = () => {
                     </div>
 
                     {/* Credit Summary */}
-                    <div className="rounded-2xl border border-gray-200 dark:border-gray-700 p-4 space-y-2 bg-gray-50 dark:bg-gray-800">
+                    <div className="rounded-2xl border border-border p-4 space-y-2 bg-gray-50 dark:bg-gray-800">
                         <div className="flex justify-between text-sm">
                             <span>Toplam alıcı</span>
                             <span className="font-semibold">{recipients ? formatNumber(recipients) : '-'}</span>
@@ -701,7 +701,7 @@ const CampaignsPage: React.FC = () => {
                             <span>Toplam kredi</span>
                             <span>{creditsNeeded ? formatNumber(creditsNeeded) : '-'}</span>
                         </div>
-                        <p className={`text-xs ${creditEnough ? 'text-emerald-600' : 'text-red-600'}`}>
+                        <p className={`text-xs ${creditEnough ? 'text-emerald-600' : 'text-destructive'}`}>
                             {creditEnough
                                 ? 'Kredi yeterli'
                                 : `Eksik kredi: ${formatNumber(Math.abs(creditDelta))}`}
@@ -728,25 +728,25 @@ const CampaignsPage: React.FC = () => {
                             <button
                                 data-allow-raw="true"
                                 onClick={() => setShowPreview(false)}
-                                className="p-1 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                className="p-1 rounded-2xl hover:bg-muted dark:hover:bg-gray-700 transition-colors"
                             >
-                                <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                                <X className="w-5 h-5 text-muted-foreground" />
                             </button>
                         </div>
                         <div className="p-4 space-y-4">
-                            <div className="bg-gray-100 dark:bg-gray-700 rounded-2xl p-4">
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                            <div className="bg-muted rounded-2xl p-4">
+                                <p className="text-xs text-muted-foreground mb-2">
                                     {mode === 'filters' && firstParty
                                         ? `İlk hasta: ${firstParty.firstName} ${firstParty.lastName}`
                                         : mode === 'excel' && excelPreview
                                             ? 'Excel listesinden ilk kayıt'
                                             : 'Örnek verilerle'}
                                 </p>
-                                <div className="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-sm border border-gray-200 dark:border-gray-600">
-                                    <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{getPreviewMessage}</p>
+                                <div className="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-sm border border-border">
+                                    <p className="text-sm text-foreground whitespace-pre-wrap">{getPreviewMessage}</p>
                                 </div>
                             </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                            <div className="text-xs text-muted-foreground space-y-1">
                                 <p>Karakter sayısı: {getPreviewMessage.length}</p>
                                 <p>SMS sayısı: {Math.max(1, Math.ceil(getPreviewMessage.length / SMS_SEGMENT_LENGTH))}</p>
                             </div>

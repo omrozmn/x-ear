@@ -39,7 +39,6 @@ const hybridCamelize = (data: JsonValue | unknown): JsonValue | unknown => {
 // API Configuration
 // Ensure base URL doesn't end with /api/ to prevent double prefixing with Orval mutator
 const rawBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5003';
-// const rawBaseUrl = 'http://localhost:5003';
 const API_BASE_URL = rawBaseUrl.endsWith('/api') ? rawBaseUrl.slice(0, -4) : rawBaseUrl.endsWith('/api/') ? rawBaseUrl.slice(0, -5) : rawBaseUrl;
 
 export const apiClient = axios.create({
@@ -91,7 +90,6 @@ apiClient.interceptors.response.use(
     async (error) => {
         // Handle offline errors - queue for later processing
         if (isAxiosError(error) && !error.response && (error.code === 'ERR_NETWORK' || !navigator.onLine)) {
-            console.warn('[Admin API] Network error detected, queuing request for offline processing');
 
             // Dynamically import to avoid circular dependency
             const { offlineQueue } = await import('./offlineQueue');
@@ -129,15 +127,12 @@ apiClient.interceptors.response.use(
 
             // Only logout if it's a real auth error, not just missing permissions
             if (isAuthError) {
-                console.warn('Authentication error detected, logging out:', errorMessage);
                 localStorage.removeItem('admin_token');
                 localStorage.removeItem('admin_refresh_token');
+                localStorage.removeItem('admin-auth-storage');
                 if (window.location.pathname !== '/login') {
                     window.location.href = '/login';
                 }
-            } else {
-                // Just log the authorization error, don't logout
-                console.warn('Authorization error (not logging out):', errorMessage);
             }
         }
         return Promise.reject(error);

@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Input, Select, Textarea, Modal, DataTable } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
-import { 
-  Search, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  
-  CheckCircle, 
-  Loader2, 
-  Filter, 
+import { ConfirmDialog } from '../../ui/ConfirmDialog';
+import {
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+
+  CheckCircle,
+  Loader2,
+  Filter,
   RefreshCw,
   AlertCircle,
   Package
@@ -96,6 +97,7 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [confirmState, setConfirmState] = useState<{open: boolean, action?: () => void}>({open: false});
 
   const [formData, setFormData] = useState<InventoryFormData>({
     name: '',
@@ -144,7 +146,7 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
     try {
       // Simulate API call with mock data
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       const mockInventory: InventoryItem[] = [
         {
           id: '1',
@@ -191,7 +193,7 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
           updatedAt: '2024-01-18T16:45:00Z'
         }
       ];
-      
+
       setInventory(mockInventory);
       onInventoryUpdate?.(mockInventory);
     } catch (err) {
@@ -319,27 +321,30 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
     }
   };
 
-  const handleDeleteItem = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this item?')) return;
-    
-    setSaving(true);
-    setError(null);
-    
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const updatedInventory = inventory.filter(item => item.id !== id);
-      setInventory(updatedInventory);
-      onInventoryUpdate?.(updatedInventory);
-      
-      setSuccessMessage('Item deleted successfully!');
-    } catch (err) {
-      setError('Failed to delete item. Please try again.');
-      console.error('Error deleting item:', err);
-    } finally {
-      setSaving(false);
-    }
+  const handleDeleteItem = (id: string) => {
+    setConfirmState({
+      open: true,
+      action: async () => {
+        setSaving(true);
+        setError(null);
+
+        try {
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 1000));
+
+          const updatedInventory = inventory.filter(item => item.id !== id);
+          setInventory(updatedInventory);
+          onInventoryUpdate?.(updatedInventory);
+
+          setSuccessMessage('Item deleted successfully!');
+        } catch (err) {
+          setError('Failed to delete item. Please try again.');
+          console.error('Error deleting item:', err);
+        } finally {
+          setSaving(false);
+        }
+      }
+    });
   };
 
   const resetForm = () => {
@@ -425,12 +430,12 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
     const stockPercentage = (availableForSale / item.totalStock) * 100;
     
     if (item.onTrialStock > 0 && item.onTrialStock >= item.availableStock) {
-      return { color: 'text-blue-600', label: 'All on Trial' };
+      return { color: 'text-primary', label: 'All on Trial' };
     }
-    if (stockPercentage <= 10) return { color: 'text-red-600', label: 'Critical' };
+    if (stockPercentage <= 10) return { color: 'text-destructive', label: 'Critical' };
     if (stockPercentage <= 25) return { color: 'text-yellow-600', label: 'Low' };
-    if (item.onTrialStock > 0) return { color: 'text-blue-600', label: 'Some on Trial' };
-    return { color: 'text-green-600', label: 'Good' };
+    if (item.onTrialStock > 0) return { color: 'text-primary', label: 'Some on Trial' };
+    return { color: 'text-success', label: 'Good' };
   };
 
   const inventoryColumns: Column<InventoryItem>[] = [
@@ -439,9 +444,9 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
       title: 'Item Details',
       render: (_: unknown, item: InventoryItem) => (
         <div className="space-y-1">
-          <div className="font-medium text-gray-900">{item.name}</div>
-          <div className="text-sm text-gray-600">{item.brand} - {item.model}</div>
-          <div className="text-xs text-gray-500">
+          <div className="font-medium text-foreground">{item.name}</div>
+          <div className="text-sm text-muted-foreground">{item.brand} - {item.model}</div>
+          <div className="text-xs text-muted-foreground">
             {categoryOptions.find(c => c.value === item.category)?.label} &bull;
             {typeOptions.find(t => t.value === item.type)?.label}
           </div>
@@ -502,7 +507,7 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
             variant="outline"
             size="sm"
             disabled={saving}
-            className="text-red-600 hover:text-red-700 hover:border-red-300"
+            className="text-destructive hover:text-destructive hover:border-red-300"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
           </Button>
@@ -524,14 +529,14 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
       <div className="space-y-6">
         {/* Status Messages */}
         {error && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-2xl text-red-700">
+          <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-red-200 rounded-2xl text-destructive">
             <AlertCircle className="w-5 h-5 flex-shrink-0" />
             <span>{error}</span>
           </div>
         )}
         
         {successMessage && (
-          <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-2xl text-green-700">
+          <div className="flex items-center gap-2 p-3 bg-success/10 border border-green-200 rounded-2xl text-success">
             <CheckCircle className="w-5 h-5 flex-shrink-0" />
             <span>{successMessage}</span>
           </div>
@@ -540,9 +545,9 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
         {/* Header Actions */}
         <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
           <div className="flex items-center gap-2">
-            <Package className="w-6 h-6 text-blue-600" />
+            <Package className="w-6 h-6 text-primary" />
             <h2 className="text-xl font-semibold">Inventory Items</h2>
-            {loading && <Loader2 className="w-5 h-5 animate-spin text-blue-600" />}
+            {loading && <Loader2 className="w-5 h-5 animate-spin text-primary" />}
           </div>
           
           <div className="flex flex-wrap gap-2">
@@ -567,9 +572,9 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
         </div>
 
         {/* Search and Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-2xl">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-muted rounded-2xl">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
               placeholder="Search items..."
               value={searchTerm}
@@ -595,7 +600,7 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
             disabled={loading}
           />
           
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Filter className="w-4 h-4" />
             <span>{filteredInventory.length} of {inventory.length} items</span>
           </div>
@@ -605,8 +610,8 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
          {loading ? (
            <div className="flex items-center justify-center py-12">
              <div className="text-center">
-               <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-2" />
-               <p className="text-gray-600">Loading inventory...</p>
+               <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
+               <p className="text-muted-foreground">Loading inventory...</p>
              </div>
            </div>
          ) : (
@@ -637,7 +642,7 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
                   disabled={saving}
                   required
                 />
-                
+
                 <Input
                   label="Brand"
                   value={formData.brand}
@@ -646,7 +651,7 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
                   disabled={saving}
                   required
                 />
-                
+
                 <Input
                   label="Model"
                   value={formData.model}
@@ -655,7 +660,7 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
                   disabled={saving}
                   required
                 />
-                
+
                 <Select
                   label="Category"
                   options={categoryOptions.filter(opt => opt.value !== '')}
@@ -665,7 +670,7 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
                   disabled={saving}
                   required
                 />
-                
+
                 <Select
                   label="Type"
                   options={typeOptions.filter(opt => opt.value !== '')}
@@ -675,7 +680,7 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
                   disabled={saving}
                   required
                 />
-                
+
                 <Input
                   label="Total Stock"
                   type="number"
@@ -686,7 +691,7 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
                   min="0"
                   required
                 />
-                
+
                 <Input
                   label="Price (₺)"
                   type="number"
@@ -698,7 +703,7 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
                   step="0.01"
                   required
                 />
-                
+
                 <Input
                   label="List Price (₺)"
                   type="number"
@@ -710,7 +715,7 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
                   step="0.01"
                   required
                 />
-                
+
                 <Input
                   label="SGK Price (₺)"
                   type="number"
@@ -722,7 +727,7 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
                   step="0.01"
                   required
                 />
-                
+
                 <Input
                   label="Warranty Period (months)"
                   type="number"
@@ -735,7 +740,7 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
                   required
                 />
               </div>
-              
+
               <Textarea
                 label="Notes"
                 value={formData.notes}
@@ -743,7 +748,7 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
                 disabled={saving}
                 rows={3}
               />
-              
+
               <div className="flex justify-end gap-3 pt-4">
                 <Button
                   onClick={cancelEdit}
@@ -769,6 +774,18 @@ export const InventoryManagementModal: React.FC<InventoryManagementModalProps> =
             </div>
           </Modal>
         )}
+
+        {/* Confirm Dialog */}
+        <ConfirmDialog
+          isOpen={confirmState.open}
+          title="Silme Onayı"
+          description="Bu ürünü silmek istediğinizden emin misiniz?"
+          onClose={() => setConfirmState({open: false})}
+          onConfirm={() => { confirmState.action?.(); setConfirmState({open: false}); }}
+          confirmLabel="Sil"
+          cancelLabel="İptal"
+          variant="danger"
+        />
       </div>
     </Modal>
   );

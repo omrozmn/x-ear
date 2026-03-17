@@ -205,9 +205,9 @@ export function PurchasesPage() {
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
-      RECEIVED: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
-      PROCESSED: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-      PAID: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
+      RECEIVED: 'bg-primary/10 text-blue-800 dark:text-blue-400',
+      PROCESSED: 'bg-success/10 text-success',
+      PAID: 'bg-success/10 text-success',
       PARTIAL: 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400',
       APPROVED: 'bg-slate-100 text-slate-800 dark:bg-slate-900/20 dark:text-slate-300',
       MANUAL: 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400',
@@ -220,7 +220,7 @@ export function PurchasesPage() {
       APPROVED: 'Açık',
       MANUAL: 'Manuel',
     };
-    return <span className={`px-2 py-1 rounded-full text-xs font-medium ${styles[status] || 'bg-gray-100 text-gray-800'}`}>{labels[status] || status}</span>;
+    return <span className={`px-2 py-1 rounded-full text-xs font-medium ${styles[status] || 'bg-muted text-foreground'}`}>{labels[status] || status}</span>;
   };
 
   const toggleSelect = (id: string) => {
@@ -282,10 +282,10 @@ export function PurchasesPage() {
       {mobileVisibleInvoices.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="bg-white dark:bg-gray-800 p-4 rounded-full shadow-sm mb-4">
-            <ShoppingCart className="h-8 w-8 text-gray-300 dark:text-gray-500" />
+            <ShoppingCart className="h-8 w-8 text-gray-300" />
           </div>
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">Alış kaydı bulunamadı</h3>
-          <p className="text-gray-500 text-sm mt-1">Henüz gelen faturadan oluşturulmuş alış kaydı yok.</p>
+          <p className="text-muted-foreground text-sm mt-1">Henüz gelen faturadan oluşturulmuş alış kaydı yok.</p>
         </div>
       ) : mobileVisibleInvoices.map((invoice: PurchaseTableRow) => (
         <div
@@ -297,29 +297,29 @@ export function PurchasesPage() {
           }}
           className={cn(
             'bg-white dark:bg-gray-900 rounded-xl border shadow-sm overflow-visible relative transition-all',
-            selectedIds.has(invoice.id) ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 dark:border-blue-500' : 'border-gray-200 dark:border-gray-700'
+            selectedIds.has(invoice.id) ? 'border-blue-500 bg-primary/10/50 dark:border-blue-500' : 'border-border'
           )}
         >
           {isMobileSelectionMode && (
             <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
-              {selectedIds.has(invoice.id) ? <CheckSquare className="w-6 h-6 text-blue-600 dark:text-blue-400" /> : <Square className="w-6 h-6 text-gray-300 dark:text-gray-600" />}
+              {selectedIds.has(invoice.id) ? <CheckSquare className="w-6 h-6 text-primary" /> : <Square className="w-6 h-6 text-gray-300" />}
             </div>
           )}
-          <div className={cn('p-4 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800 transition-colors', isMobileSelectionMode && 'pr-12')}>
+          <div className={cn('p-4 cursor-pointer active:bg-muted dark:active:bg-gray-800 transition-colors', isMobileSelectionMode && 'pr-12')}>
             <div className="flex items-start justify-between mb-3 gap-3">
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{invoice.supplierName || '—'}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">{invoice.invoiceNumber || invoice.description || 'Kayıt Yok'}</p>
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">{invoice.invoiceNumber || invoice.description || 'Kayıt Yok'}</p>
               </div>
               <div className="shrink-0">{getStatusBadge(invoice.status)}</div>
             </div>
-            <div className="border-t border-gray-100 dark:border-gray-800 pt-3 flex items-end justify-between gap-3">
+            <div className="border-t border-border pt-3 flex items-end justify-between gap-3">
               <div>
-                <p className="text-xs text-gray-400">Tarih</p>
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{invoice.invoiceDate ? formatDate(invoice.invoiceDate) : '-'}</p>
+                <p className="text-xs text-muted-foreground">Tarih</p>
+                <p className="text-sm font-medium text-foreground">{invoice.invoiceDate ? formatDate(invoice.invoiceDate) : '-'}</p>
               </div>
               <div className="text-right">
-                <p className="text-xs text-gray-400">Tutar</p>
+                <p className="text-xs text-muted-foreground">Tutar</p>
                 <p className="text-lg font-bold text-gray-900 dark:text-white">{formatCurrency(Number(invoice.totalAmount || 0), invoice.currency || 'TRY')}</p>
               </div>
             </div>
@@ -333,7 +333,7 @@ export function PurchasesPage() {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-gray-600 dark:text-gray-400">Alış kayıtları yükleniyor...</span>
+        <span className="ml-3 text-muted-foreground">Alış kayıtları yükleniyor...</span>
       </div>
     );
   }
@@ -378,11 +378,11 @@ export function PurchasesPage() {
         <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Toplam Alış</p>
-              <p className="text-lg md:text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{formatCurrency(totalPurchases, 'TRY')}</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Toplam Alış</p>
+              <p className="text-lg md:text-2xl font-bold text-primary mt-1">{formatCurrency(totalPurchases, 'TRY')}</p>
             </div>
-            <div className="p-2 md:p-3 bg-blue-100 dark:bg-blue-900/20 rounded-2xl">
-              <ShoppingCart className="text-blue-600 dark:text-blue-400 w-4 h-4 md:w-6 md:h-6" />
+            <div className="p-2 md:p-3 bg-primary/10 rounded-2xl">
+              <ShoppingCart className="text-primary w-4 h-4 md:w-6 md:h-6" />
             </div>
           </div>
         </Card>
@@ -390,7 +390,7 @@ export function PurchasesPage() {
         <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Toplam Fatura</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Toplam Fatura</p>
               <p className="text-lg md:text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">{totalCount}</p>
             </div>
             <div className="p-2 md:p-3 bg-purple-100 dark:bg-purple-900/20 rounded-2xl">
@@ -402,23 +402,23 @@ export function PurchasesPage() {
         <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Tedarikçi</p>
-              <p className="text-lg md:text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{supplierCount}</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Tedarikçi</p>
+              <p className="text-lg md:text-2xl font-bold text-success mt-1">{supplierCount}</p>
             </div>
-            <div className="p-2 md:p-3 bg-green-100 dark:bg-green-900/20 rounded-2xl">
-              <CreditCard className="text-green-600 dark:text-green-400 w-4 h-4 md:w-6 md:h-6" />
+            <div className="p-2 md:p-3 bg-success/10 rounded-2xl">
+              <CreditCard className="text-success w-4 h-4 md:w-6 md:h-6" />
             </div>
           </div>
         </Card>
       </div>
 
       {showBanner && (
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 flex items-center gap-3">
-          <FileText className="text-blue-600 dark:text-blue-400 flex-shrink-0" size={20} />
+        <div className="bg-primary/10 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 flex items-center gap-3">
+          <FileText className="text-primary flex-shrink-0" size={20} />
           <p className="text-sm text-blue-800 dark:text-blue-300 flex-1">
             Bu sayfada sadece alış kayıtları listelenir. Kasa giderleri için Kasa sayfasını, fatura önizleme için Gelen Faturalar sayfasını kullanın.
           </p>
-          <Button variant="ghost" size="sm" onClick={() => { setShowBanner(false); localStorage.setItem(ONBOARDING_PURCHASES_DISMISSED, '1'); }} className="text-blue-400 hover:text-blue-600 dark:hover:text-blue-200 flex-shrink-0">
+          <Button variant="ghost" size="sm" onClick={() => { setShowBanner(false); localStorage.setItem(ONBOARDING_PURCHASES_DISMISSED, '1'); }} className="text-blue-400 hover:text-primary dark:hover:text-blue-200 flex-shrink-0">
             <X size={18} />
           </Button>
         </div>
@@ -428,7 +428,7 @@ export function PurchasesPage() {
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
               <Input
                 type="text"
                 placeholder="Tedarikçi ara..."
@@ -512,7 +512,7 @@ export function PurchasesPage() {
                   <div>
                     <div className="text-sm text-gray-900 dark:text-white">{inv.supplierName}</div>
                     {inv.supplierTaxNumber ? (
-                      <div className="text-xs text-gray-500 dark:text-gray-400">VKN: {inv.supplierTaxNumber}</div>
+                      <div className="text-xs text-muted-foreground">VKN: {inv.supplierTaxNumber}</div>
                     ) : null}
                   </div>
                 ),
@@ -566,8 +566,8 @@ export function PurchasesPage() {
       )}
 
       {selectedIds.size > 0 && (
-        <div className={`fixed ${isMobile ? 'bottom-24' : 'bottom-6'} left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl px-4 md:px-6 py-3 flex items-center gap-3 md:gap-4 w-[90%] md:w-auto overflow-x-auto whitespace-nowrap`}>
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{selectedIds.size} kayıt seçildi</span>
+        <div className={`fixed ${isMobile ? 'bottom-24' : 'bottom-6'} left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-border rounded-xl shadow-2xl px-4 md:px-6 py-3 flex items-center gap-3 md:gap-4 w-[90%] md:w-auto overflow-x-auto whitespace-nowrap`}>
+          <span className="text-sm font-medium text-foreground">{selectedIds.size} kayıt seçildi</span>
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
           <PermissionGate permission="invoices.documents.download.view">
             <ExportDropdown
@@ -577,8 +577,8 @@ export function PurchasesPage() {
               variant="ghost"
               label="Dışa Aktar"
               compact
-              iconClassName="text-blue-600"
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-colors h-auto"
+              iconClassName="text-primary"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/10 dark:hover:bg-blue-900/20 rounded-2xl transition-colors h-auto"
             />
           </PermissionGate>
           {selectedManualPurchaseIds.length > 0 ? (
@@ -593,47 +593,47 @@ export function PurchasesPage() {
             </>
           ) : null}
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
-          <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors h-auto"><X className="w-4 h-4" /> Seçimi Kaldır</Button>
+          <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted dark:hover:bg-gray-700 rounded-2xl transition-colors h-auto"><X className="w-4 h-4" /> Seçimi Kaldır</Button>
         </div>
       )}
 
       {selectedInvoice && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4" onClick={() => setSelectedInvoice(null)}>
           <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col" onClick={(event) => event.stopPropagation()}>
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between p-6 border-b border-border">
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Alış Detayı</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{selectedInvoice.invoiceNumber}</p>
+                <p className="text-sm text-muted-foreground mt-1">{selectedInvoice.invoiceNumber}</p>
               </div>
-              <Button variant="ghost" onClick={() => setSelectedInvoice(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><X size={24} /></Button>
+              <Button variant="ghost" onClick={() => setSelectedInvoice(null)} className="text-muted-foreground hover:text-muted-foreground dark:hover:text-gray-200"><X size={24} /></Button>
             </div>
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Tedarikçi</p>
+                  <p className="text-sm text-muted-foreground">Tedarikçi</p>
                   <p className="text-sm font-medium text-gray-900 dark:text-white">{selectedInvoice.supplierName}</p>
                 </div>
                 {selectedInvoice.supplierTaxNumber && (
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">VKN</p>
+                    <p className="text-sm text-muted-foreground">VKN</p>
                     <p className="text-sm font-medium text-gray-900 dark:text-white">{selectedInvoice.supplierTaxNumber}</p>
                   </div>
                 )}
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Tutar</p>
+                  <p className="text-sm text-muted-foreground">Tutar</p>
                   <p className="text-sm font-semibold text-gray-900 dark:text-white">{formatCurrency(Number(selectedInvoice.totalAmount), selectedInvoice.currency || 'TRY')}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Tarih</p>
+                  <p className="text-sm text-muted-foreground">Tarih</p>
                   <p className="text-sm font-medium text-gray-900 dark:text-white">{formatDate(selectedInvoice.invoiceDate)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Durum</p>
+                  <p className="text-sm text-muted-foreground">Durum</p>
                   <div className="mt-0.5">{getStatusBadge(selectedInvoice.status)}</div>
                 </div>
               </div>
             </div>
-            <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+            <div className="flex justify-end gap-3 p-6 border-t border-border bg-gray-50 dark:bg-gray-900">
               <Button variant="outline" onClick={() => setSelectedInvoice(null)}>Kapat</Button>
             </div>
           </div>
@@ -643,44 +643,44 @@ export function PurchasesPage() {
       {selectedManualPurchase && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4" onClick={() => setSelectedManualPurchase(null)}>
           <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col" onClick={(event) => event.stopPropagation()}>
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between p-6 border-b border-border">
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Manuel Alış Detayı</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{selectedManualPurchase.supplierName}</p>
+                <p className="text-sm text-muted-foreground mt-1">{selectedManualPurchase.supplierName}</p>
               </div>
-              <Button variant="ghost" onClick={() => setSelectedManualPurchase(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><X size={24} /></Button>
+              <Button variant="ghost" onClick={() => setSelectedManualPurchase(null)} className="text-muted-foreground hover:text-muted-foreground dark:hover:text-gray-200"><X size={24} /></Button>
             </div>
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Toplam</p>
+                  <p className="text-sm text-muted-foreground">Toplam</p>
                   <p className="text-sm font-semibold text-gray-900 dark:text-white">{formatCurrency(Number(selectedManualPurchase.totalAmount), selectedManualPurchase.currency || 'TRY')}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Ödenen</p>
+                  <p className="text-sm text-muted-foreground">Ödenen</p>
                   <p className="text-sm font-semibold text-gray-900 dark:text-white">{formatCurrency(Number(selectedManualPurchase.paidAmount), selectedManualPurchase.currency || 'TRY')}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Kalan</p>
+                  <p className="text-sm text-muted-foreground">Kalan</p>
                   <p className="text-sm font-semibold text-gray-900 dark:text-white">{formatCurrency(Number(selectedManualPurchase.remainingAmount), selectedManualPurchase.currency || 'TRY')}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Durum</p>
+                  <p className="text-sm text-muted-foreground">Durum</p>
                   <div className="mt-0.5">{getStatusBadge(selectedManualPurchase.status)}</div>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Tarih</p>
+                  <p className="text-sm text-muted-foreground">Tarih</p>
                   <p className="text-sm font-medium text-gray-900 dark:text-white">{selectedManualPurchase.purchaseDate ? formatDate(selectedManualPurchase.purchaseDate) : '-'}</p>
                 </div>
                 {selectedManualPurchase.notes ? (
                   <div className="col-span-2">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Not</p>
+                    <p className="text-sm text-muted-foreground">Not</p>
                     <p className="text-sm font-medium text-gray-900 dark:text-white">{selectedManualPurchase.notes}</p>
                   </div>
                 ) : null}
               </div>
             </div>
-            <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+            <div className="flex justify-end gap-3 p-6 border-t border-border bg-gray-50 dark:bg-gray-900">
               <Button variant="outline" onClick={() => setSelectedManualPurchase(null)}>Kapat</Button>
             </div>
           </div>
@@ -690,10 +690,10 @@ export function PurchasesPage() {
       {showBulkPaymentModal && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4" onClick={() => setShowBulkPaymentModal(false)}>
           <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full overflow-hidden" onClick={(event) => event.stopPropagation()}>
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between p-6 border-b border-border">
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Ödendi Olarak İşaretle</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{selectedManualPurchaseIds.length} manuel alış için kalan tutar kasaya gider olarak işlenecek.</p>
+                <p className="text-sm text-muted-foreground mt-1">{selectedManualPurchaseIds.length} manuel alış için kalan tutar kasaya gider olarak işlenecek.</p>
               </div>
               <Button variant="ghost" onClick={() => setShowBulkPaymentModal(false)}><X size={20} /></Button>
             </div>
@@ -710,7 +710,7 @@ export function PurchasesPage() {
                 ]}
               />
             </div>
-            <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+            <div className="flex justify-end gap-3 p-6 border-t border-border bg-gray-50 dark:bg-gray-900">
               <Button variant="outline" onClick={() => setShowBulkPaymentModal(false)}>İptal</Button>
               <Button onClick={handleBulkMarkPaid} disabled={recordManualPurchasePaymentMutation.isPending}>
                 {recordManualPurchasePaymentMutation.isPending ? 'İşleniyor...' : 'Kaydet'}

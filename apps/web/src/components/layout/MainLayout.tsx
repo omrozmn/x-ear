@@ -222,7 +222,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950 text-black dark:text-white">
+    <div className="flex min-h-screen bg-background text-foreground">
       {/* New Sidebar Component */}
       <Sidebar
         isOpen={sidebarOpen}
@@ -251,7 +251,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         {/* Header - Modern Floating Glassmorphism Pill */}
         {!hideGlobalHeader && (
         <header className={cn(
-          "mx-2 md:mx-6 mb-2 md:mb-4 px-3 sm:px-4 md:px-6 py-2 md:py-3 bg-white/70 dark:bg-gray-800/70 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50 shadow-sm rounded-xl md:rounded-2xl transition-all",
+          "mx-2 md:mx-6 mb-2 md:mb-4 px-3 sm:px-4 md:px-6 py-2 md:py-3 bg-white/70 dark:bg-gray-800/70 backdrop-blur-md border border-border/50/50 shadow-sm rounded-xl md:rounded-2xl transition-all",
           shouldUseStaticHeader ? "relative" : "sticky top-2 md:top-4 z-40",
         )}>
           <div className="flex justify-between items-center gap-2 md:gap-4">
@@ -259,14 +259,14 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             {isMobile && (
               <Button
                 onClick={toggleSidebar}
-                className="p-2 h-auto min-h-[44px] min-w-[44px] text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="p-2 h-auto min-h-[44px] min-w-[44px] text-foreground hover:bg-muted dark:hover:bg-gray-700"
                 variant='ghost'>
                 <Menu size={20} />
               </Button>
             )}
 
             {/* Page Title */}
-            <h1 className="m-0 text-base sm:text-lg md:text-2xl font-semibold text-gray-800 dark:text-white whitespace-nowrap truncate">
+            <h1 className="m-0 text-base sm:text-lg md:text-2xl font-semibold text-foreground whitespace-nowrap truncate">
               {getPageKeyFromPath(location.pathname)?.title || 'Dashboard'}
             </h1>
 
@@ -276,17 +276,17 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 onClick={toggleOpen}
                 className={cn(
                   "w-full flex items-center justify-between px-4 py-2 rounded-2xl cursor-pointer transition-colors border",
-                  "bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700",
-                  "hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500"
+                  "bg-gray-50 dark:bg-gray-900 border-border",
+                  "hover:bg-muted dark:hover:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500"
                 )}
               >
-                <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
+                <div className="flex items-center gap-3 text-muted-foreground">
                   <Search size={18} />
-                  <Bot size={18} className="text-blue-500" />
+                  <Bot size={18} className="text-primary" />
                   <span className="text-sm">{t('header.search_placeholder')}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border bg-white dark:bg-gray-800 px-1.5 font-mono text-[10px] font-medium text-gray-500 dark:text-gray-400 opacity-100">
+                  <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border bg-white dark:bg-gray-800 px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
                     <span className="text-xs">⌘</span>K
                   </kbd>
                 </div>
@@ -298,7 +298,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               {/* Dark Mode Toggle */}
               <Button
                 onClick={toggleDarkMode}
-                className="p-2 h-auto min-h-[44px] min-w-[44px] text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="p-2 h-auto min-h-[44px] min-w-[44px] text-foreground hover:bg-muted dark:hover:bg-gray-700"
                 title={isDark ? 'Açık Tema' : 'Koyu Tema'}
                 variant='ghost'>
                 {isDark ? <Sun size={18} className="sm:w-5 sm:h-5" /> : <Moon size={18} className="sm:w-5 sm:h-5" />}
@@ -308,7 +308,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               <div className="relative hidden sm:block">
                 <Button
                   onClick={() => setShowNotifications((current) => !current)}
-                  className="relative flex p-2 h-auto min-h-[44px] min-w-[44px] text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="relative flex p-2 h-auto min-h-[44px] min-w-[44px] text-foreground hover:bg-muted dark:hover:bg-gray-700"
                   title={t('header.notifications')}
                   variant='ghost'>
                   <Bell size={18} className="sm:w-5 sm:h-5" />
@@ -318,20 +318,20 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 </Button>
 
                 {showNotifications ? (
-                  <div className="absolute right-0 top-full mt-3 w-[360px] overflow-hidden rounded-[24px] border border-gray-200/80 bg-white/95 shadow-2xl backdrop-blur-xl dark:border-gray-700/80 dark:bg-gray-900/95 z-[1100]">
-                    <div className="border-b border-gray-200/80 px-4 py-3 dark:border-gray-700/80">
+                  <div className="absolute right-0 top-full mt-3 w-[360px] overflow-hidden rounded-[24px] border border-border/80 bg-white/95 shadow-2xl backdrop-blur-xl/80 dark:bg-gray-900/95 z-[1100]">
+                    <div className="border-b border-border/80 px-4 py-3/80">
                       <div className="text-sm font-semibold text-gray-900 dark:text-white">Bildirimler</div>
-                      <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      <div className="mt-1 text-xs text-muted-foreground">
                         Son sistem ve ekip bildirimleri burada listelenir
                       </div>
                     </div>
                     <div className="max-h-[420px] overflow-y-auto p-3">
                       {notificationsLoading ? (
-                        <div className="rounded-2xl border border-dashed border-gray-200 px-4 py-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                        <div className="rounded-2xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
                           Bildirimler yukleniyor
                         </div>
                       ) : notifications.length === 0 ? (
-                        <div className="rounded-2xl border border-dashed border-gray-200 px-4 py-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                        <div className="rounded-2xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
                           Henuz bildiriminiz yok
                         </div>
                       ) : (
@@ -343,7 +343,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                                 "rounded-[20px] border px-4 py-3 transition-colors",
                                 notification.isRead === false
                                   ? "border-sky-200 bg-sky-50/80 dark:border-sky-900/60 dark:bg-sky-950/30"
-                                  : "border-gray-200 bg-white/80 dark:border-gray-800 dark:bg-gray-950/40"
+                                  : "border-border bg-white/80 dark:bg-gray-950/40"
                               )}
                             >
                               <div className="flex items-start justify-between gap-3">
@@ -351,7 +351,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                                   <div className="text-sm font-medium text-gray-900 dark:text-white">
                                     {notification.title}
                                   </div>
-                                  <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                                  <div className="mt-1 text-sm text-muted-foreground">
                                     {notification.message}
                                   </div>
                                 </div>
@@ -380,8 +380,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
               {/* AI Status Indicator - Hidden on mobile */}
               <AIFeatureWrapper hideWhenUnavailable showLoading={false}>
-                <div className="hidden sm:flex items-center gap-2 px-2 py-1 rounded-xl bg-gray-100 dark:bg-gray-700/50" title="AI Durumu">
-                  <Bot size={16} className="text-gray-600 dark:text-gray-400" />
+                <div className="hidden sm:flex items-center gap-2 px-2 py-1 rounded-xl bg-muted/50" title="AI Durumu">
+                  <Bot size={16} className="text-muted-foreground" />
                   <AIStatusIndicator status={aiStatus} size="sm" showLabel />
                 </div>
               </AIFeatureWrapper>
@@ -397,7 +397,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 <Button
                   onClick={toggleUserDropdown}
                   data-testid="user-menu"
-                  className="flex items-center gap-2 p-2 h-auto min-h-[44px] rounded-xl bg-gray-100 dark:bg-gray-700/50 text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                  className="flex items-center gap-2 p-2 h-auto min-h-[44px] rounded-xl bg-muted/50 text-foreground hover:bg-accent dark:hover:bg-gray-700 transition-colors"
                   variant='ghost'>
                   <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm">
                     <User size={16} />
@@ -415,11 +415,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
                 {/* User Dropdown */}
                 {showUserDropdown && (
-                  <div className="absolute top-full right-0 mt-2 min-w-[200px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl z-[1000] py-2">
+                  <div className="absolute top-full right-0 mt-2 min-w-[200px] bg-white dark:bg-gray-800 border border-border rounded-2xl shadow-xl z-[1000] py-2">
                     <Link
                       to="/profile"
                       onClick={() => setShowUserDropdown(false)}
-                      className="flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left transition-colors border-b border-gray-100 dark:border-gray-700"
+                      className="flex items-center px-4 py-3 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 w-full text-left transition-colors border-b border-border"
                     >
                       <User size={16} className="mr-2" />
                       <span>{t('header.profile')}</span>
@@ -427,7 +427,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     <Link
                       to={"/settings" as unknown as "/"}
                       onClick={() => setShowUserDropdown(false)}
-                      className="flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left transition-colors border-b border-gray-100 dark:border-gray-700"
+                      className="flex items-center px-4 py-3 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 w-full text-left transition-colors border-b border-border"
                     >
                       <Settings size={16} className="mr-2" />
                       <span>{t('nav.settings.main')}</span>
@@ -451,7 +451,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                         navigate({ to: '/login' as unknown as '/' });
                       }}
                       data-testid="logout-button"
-                      className="flex items-center w-full px-4 py-3 text-sm text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-red-600 transition-colors h-auto"
+                      className="flex items-center w-full px-4 py-3 text-sm text-destructive hover:bg-muted dark:hover:bg-gray-700 hover:text-destructive transition-colors h-auto"
                       variant='ghost'>
                       <LogOut size={16} className="mr-2" />
                       <span>{t('header.logout')}</span>
@@ -466,12 +466,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
         {/* Content */}
         <main className={cn(
-          "flex-1 bg-gray-50 dark:bg-gray-950",
+          "flex-1 bg-background",
           location.pathname === '/settings'
             ? 'h-[calc(100vh-64px)] overflow-hidden'
             : location.pathname === '/reports'
               ? 'relative h-[calc(100vh-64px)]'
-              : 'p-3 sm:p-4 md:p-8 min-h-[calc(100vh-64px)]',
+              : 'min-h-[calc(100vh-64px)]',
           isMobile && "pb-24"
         )}>
           {(user?.isImpersonatingTenant || user?.isImpersonating) && (

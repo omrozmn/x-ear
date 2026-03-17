@@ -63,7 +63,7 @@ export function InvoiceScenarioSection({ scenarioData, onChange, disableSubScena
                         fullWidth
                         required
                     />
-                    <p className="mt-2 text-sm text-gray-500">
+                    <p className="mt-2 text-sm text-muted-foreground">
                         Fatura senaryosunu seçiniz. Bu alan zorunludur.
                     </p>
                 </div>
@@ -81,7 +81,7 @@ export function InvoiceScenarioSection({ scenarioData, onChange, disableSubScena
                             fullWidth
                             required
                         />
-                        <p className="mt-2 text-sm text-gray-500">
+                        <p className="mt-2 text-sm text-muted-foreground">
                             {disableSubScenario 
                                 ? 'Bu fatura tipi sadece Temel senaryo ile kullanılabilir.'
                                 : 'Temel veya Ticari fatura senaryosu seçiniz.'}

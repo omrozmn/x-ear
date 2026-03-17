@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@x-ear/ui-web';
 import { FileText, Eye, Truck, Edit, Download } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
+import toast from 'react-hot-toast';
 
 export interface SavedEReceiptMaterial {
   code: string;
@@ -89,7 +90,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
       if (onError) {
         onError('Doktor adı zorunludur');
       } else {
-        alert('Doktor adı zorunludur');
+        toast('Doktor adı zorunludur');
       }
       return;
     }
@@ -98,7 +99,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
       if (onError) {
         onError('Geçerlilik tarihi zorunludur');
       } else {
-        alert('Geçerlilik tarihi zorunludur');
+        toast('Geçerlilik tarihi zorunludur');
       }
       return;
     }
@@ -112,7 +113,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
       if (onError) {
         onError('Geçerli başvuru tarihleri giriniz');
       } else {
-        alert('Geçerli başvuru tarihleri giriniz');
+        toast('Geçerli başvuru tarihleri giriniz');
       }
       return;
     }
@@ -167,7 +168,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
 
   return (
     <>
-      <div className="bg-white rounded-2xl border p-6">
+      <div className="bg-card rounded-2xl border p-6">
         <h3 className="text-lg font-semibold mb-4">Kayıtlı E-Reçeteler</h3>
 
         {savedEReceiptsLoading ? (
@@ -183,9 +184,9 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
                   <div className="flex justify-between items-center mb-3">
                     <div>
                       <h5 className="font-medium">E-Reçete #{receipt.number}</h5>
-                      <p className="text-sm text-gray-600">Tarih: {new Date(receipt.date).toLocaleDateString('tr-TR')}</p>
-                      <p className="text-sm text-gray-600">Doktor: {receipt.doctorName}</p>
-                      <p className="text-sm text-gray-600">Geçerlilik: {new Date(receipt.validUntil).toLocaleDateString('tr-TR')}</p>
+                      <p className="text-sm text-muted-foreground">Tarih: {new Date(receipt.date).toLocaleDateString('tr-TR')}</p>
+                      <p className="text-sm text-muted-foreground">Doktor: {receipt.doctorName}</p>
+                      <p className="text-sm text-muted-foreground">Geçerlilik: {new Date(receipt.validUntil).toLocaleDateString('tr-TR')}</p>
                     </div>
                     <div className="flex items-center space-x-2">
                       <StatusBadge status={getStatusText(receipt.status)} />
@@ -227,17 +228,17 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
                   </div>
 
                   <div className="space-y-2">
-                    <h6 className="font-medium text-sm text-gray-700">Malzemeler:</h6>
+                    <h6 className="font-medium text-sm text-foreground">Malzemeler:</h6>
                     {receipt.materials.map((material, index) => (
-                      <div key={`${material.code}-${index}`} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                      <div key={`${material.code}-${index}`} className="flex justify-between items-center p-2 bg-muted rounded">
                         <div className="flex-1">
                           <p className="text-sm font-medium">{material.name}</p>
-                          <p className="text-xs text-gray-600">Kod: {material.code} • Başvuru: {new Date(material.applicationDate).toLocaleDateString('tr-TR')}</p>
+                          <p className="text-xs text-muted-foreground">Kod: {material.code} • Başvuru: {new Date(material.applicationDate).toLocaleDateString('tr-TR')}</p>
                         </div>
                         <div className="flex items-center space-x-2">
                           <span className={`text-xs px-2 py-1 rounded ${material.deliveryStatus === 'delivered'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-yellow-100 text-yellow-800'
+                              ? 'bg-success/10 text-success'
+                              : 'bg-warning/10 text-yellow-800'
                             }`}>
                             {getMaterialStatusText(material.deliveryStatus)}
                           </span>
@@ -260,7 +261,7 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
             })}
           </div>
         ) : (
-          <div className="text-center py-6 text-gray-500">
+          <div className="text-center py-6 text-muted-foreground">
             <FileText className="w-10 h-10 mx-auto mb-3 text-gray-300" />
             <p>Henüz e-reçete oluşturulmamış</p>
           </div>
@@ -270,13 +271,13 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
       {/* Preview Modal */}
       {previewEReceipt && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-card rounded-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">E-Reçete Detayları</h3>
                 <button data-allow-raw="true"
                   onClick={() => setPreviewEReceipt(null)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-muted-foreground hover:text-muted-foreground"
                 >
                   ✕
                 </button>
@@ -285,37 +286,37 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">E-Reçete No</label>
-                    <p className="text-sm text-gray-900">{previewEReceipt.number}</p>
+                    <label className="block text-sm font-medium text-foreground">E-Reçete No</label>
+                    <p className="text-sm text-foreground">{previewEReceipt.number}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Tarih</label>
-                    <p className="text-sm text-gray-900">{new Date(previewEReceipt.date).toLocaleDateString('tr-TR')}</p>
+                    <label className="block text-sm font-medium text-foreground">Tarih</label>
+                    <p className="text-sm text-foreground">{new Date(previewEReceipt.date).toLocaleDateString('tr-TR')}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Doktor</label>
-                    <p className="text-sm text-gray-900">{previewEReceipt.doctorName}</p>
+                    <label className="block text-sm font-medium text-foreground">Doktor</label>
+                    <p className="text-sm text-foreground">{previewEReceipt.doctorName}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Geçerlilik</label>
-                    <p className="text-sm text-gray-900">{new Date(previewEReceipt.validUntil).toLocaleDateString('tr-TR')}</p>
+                    <label className="block text-sm font-medium text-foreground">Geçerlilik</label>
+                    <p className="text-sm text-foreground">{new Date(previewEReceipt.validUntil).toLocaleDateString('tr-TR')}</p>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Malzemeler</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">Malzemeler</label>
                   <div className="space-y-2">
                     {previewEReceipt.materials.map((material, index) => (
                       <div key={`${material.code}-${index}`} className="border rounded p-3">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <p className="font-medium">{material.name}</p>
-                            <p className="text-sm text-gray-600">Kod: {material.code}</p>
-                            <p className="text-sm text-gray-600">Başvuru Tarihi: {new Date(material.applicationDate).toLocaleDateString('tr-TR')}</p>
+                            <p className="text-sm text-muted-foreground">Kod: {material.code}</p>
+                            <p className="text-sm text-muted-foreground">Başvuru Tarihi: {new Date(material.applicationDate).toLocaleDateString('tr-TR')}</p>
                           </div>
                           <span className={`text-xs px-2 py-1 rounded ${material.deliveryStatus === 'delivered'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-yellow-100 text-yellow-800'
+                              ? 'bg-success/10 text-success'
+                              : 'bg-warning/10 text-yellow-800'
                             }`}>
                             {getMaterialStatusText(material.deliveryStatus)}
                           </span>
@@ -339,13 +340,13 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
       {/* Edit Modal */}
       {editingEReceipt && editFormData && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-card rounded-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-semibold">E-Reçete Düzenle</h3>
                 <button data-allow-raw="true"
                   onClick={handleCancelEdit}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-muted-foreground hover:text-muted-foreground"
                 >
                   ✕
                 </button>
@@ -355,73 +356,73 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
                 {/* Basic Info */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       E-Reçete No
                     </label>
                     <input data-allow-raw="true"
                       type="text"
                       value={editFormData.number}
                       disabled
-                      className="w-full px-3 py-2 border border-gray-300 rounded-xl bg-gray-50 text-gray-500"
+                      className="w-full px-3 py-2 border border-border rounded-xl bg-muted text-muted-foreground"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       Doktor Adı *
                     </label>
                     <input data-allow-raw="true"
                       type="text"
                       value={editFormData.doctorName}
                       onChange={(e) => updateEditFormData('doctorName', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-border rounded-xl focus:ring-2 focus:ring-ring focus:border-blue-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       Geçerlilik Tarihi *
                     </label>
                     <input data-allow-raw="true"
                       type="date"
                       value={editFormData.validUntil}
                       onChange={(e) => updateEditFormData('validUntil', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-border rounded-xl focus:ring-2 focus:ring-ring focus:border-blue-500"
                     />
                   </div>
                 </div>
 
                 {/* Materials */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-4">
+                  <label className="block text-sm font-medium text-foreground mb-4">
                     Malzemeler
                   </label>
                   <div className="space-y-3">
                     {editFormData.materials.map((material: SavedEReceiptMaterial, index: number) => (
-                      <div key={`${material.code}-${index}`} className="border rounded-2xl p-4 bg-gray-50">
+                      <div key={`${material.code}-${index}`} className="border rounded-2xl p-4 bg-muted">
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-foreground mb-2">
                               Malzeme Kodu
                             </label>
                             <input data-allow-raw="true"
                               type="text"
                               value={material.code}
                               disabled
-                              className="w-full px-3 py-2 border border-gray-300 rounded-xl bg-gray-50 text-gray-500"
+                              className="w-full px-3 py-2 border border-border rounded-xl bg-muted text-muted-foreground"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-foreground mb-2">
                               Malzeme Adı
                             </label>
                             <input data-allow-raw="true"
                               type="text"
                               value={material.name}
                               disabled
-                              className="w-full px-3 py-2 border border-gray-300 rounded-xl bg-gray-50 text-gray-500"
+                              className="w-full px-3 py-2 border border-border rounded-xl bg-muted text-muted-foreground"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-foreground mb-2">
                               Başvuru Tarihi *
                             </label>
                             <input data-allow-raw="true"
@@ -429,17 +430,17 @@ export const SavedEReceiptsSection: React.FC<SavedEReceiptsSectionProps> = ({
                               value={material.applicationDate}
                               max={new Date().toISOString().split('T')[0]}
                               onChange={(e) => updateMaterialDate(index, e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              className="w-full px-3 py-2 border border-border rounded-xl focus:ring-2 focus:ring-ring focus:border-blue-500"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-foreground mb-2">
                               Teslim Durumu
                             </label>
                             <select data-allow-raw="true"
                               value={material.deliveryStatus}
                               onChange={(e) => updateMaterialStatus(index, e.target.value as 'saved' | 'delivered')}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              className="w-full px-3 py-2 border border-border rounded-xl focus:ring-2 focus:ring-ring focus:border-blue-500"
                             >
                               <option value="saved">Beklemede</option>
                               <option value="delivered">Teslim Edildi</option>

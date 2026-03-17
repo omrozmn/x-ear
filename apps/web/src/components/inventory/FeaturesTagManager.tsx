@@ -40,7 +40,7 @@ export const FeaturesTagManager: React.FC<FeaturesTagManagerProps> = ({
 
   return (
     <div className="space-y-3">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
+      <label className="block text-sm font-medium text-foreground flex items-center">
         <Tag className="w-4 h-4 mr-2" />
         Özellikler
       </label>
@@ -51,7 +51,7 @@ export const FeaturesTagManager: React.FC<FeaturesTagManagerProps> = ({
           {features.map((feature, index) => (
             <span
               key={index}
-              className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+              className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-blue-800 dark:text-blue-300"
             >
               {feature}
               {isEditMode && (

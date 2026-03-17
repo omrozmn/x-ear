@@ -89,7 +89,7 @@ export interface AIActionButtonProps {
  */
 const VARIANT_STYLES: Record<NonNullable<AIActionButtonProps['variant']>, string> = {
   primary: 'bg-blue-500 hover:bg-blue-600 text-white',
-  secondary: 'bg-gray-200 hover:bg-gray-300 text-gray-800',
+  secondary: 'bg-accent hover:bg-gray-300 text-foreground',
   danger: 'bg-red-500 hover:bg-red-600 text-white',
 };
 
@@ -106,15 +106,15 @@ const VARIANT_STYLES: Record<NonNullable<AIActionButtonProps['variant']>, string
  * @example
  * ```tsx
  * <AIActionButton
- *   actionType="create_party"
- *   label="Hasta Ekle (AI)"
- *   intent={{
- *     intentType: 'create_party',
- *     confidence: 0.95,
- *     entities: { name: 'John Doe' },
- *     clarificationNeeded: false,
- *   }}
- *   onSuccess={(planId) => console.log('Action created:', planId)}
+ * actionType="create_party"
+ * label="Hasta Ekle (AI)"
+ * intent={{
+ * intentType: 'create_party',
+ * confidence: 0.95,
+ * entities: { name: 'John Doe' },
+ * clarificationNeeded: false,
+ * }}
+ * onSuccess={(planId) => console.log('Action created:', planId)}
  * />
  * ```
  */
@@ -218,10 +218,10 @@ export function AIActionButton({
  * @example
  * ```tsx
  * <AIQuickAction
- *   actionType="update_party"
- *   icon={<EditIcon />}
- *   tooltip="AI ile Düzenle"
- *   intent={{...}}
+ * actionType="update_party"
+ * icon={<EditIcon />}
+ * tooltip="AI ile Düzenle"
+ * intent={{...}}
  * />
  * ```
  */
@@ -276,7 +276,7 @@ export function AIQuickAction({
           title={tooltip}
           className={`
             p-2 rounded-xl
-            text-gray-600 hover:text-blue-600 hover:bg-blue-50
+            text-muted-foreground hover:text-primary hover:bg-primary/10
             disabled:opacity-50 disabled:cursor-not-allowed
             transition-colors duration-200
             ${className}

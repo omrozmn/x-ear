@@ -59,7 +59,7 @@ export function SalesReportList({ items, isLoading, pagination }: SalesReportLis
       title: 'Ortalama Fiyat',
       sortable: true,
       render: (_, item) => (
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+        <span className="text-sm text-muted-foreground">
           {formatCurrency(Number(item.averagePrice || 0), 'TRY')}
         </span>
       )

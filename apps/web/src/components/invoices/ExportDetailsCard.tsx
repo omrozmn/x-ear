@@ -166,12 +166,12 @@ export default function ExportDetailsCard({ value, onChange }: ExportDetailsCard
         </div>
       </div>
 
-      <div className="bg-green-50 border border-green-200 rounded-2xl p-3">
+      <div className="bg-success/10 border border-green-200 rounded-2xl p-3">
         <div className="flex items-start">
           <Info className="text-green-400 mr-2 flex-shrink-0" size={18} />
           <div>
-            <h4 className="text-sm font-medium text-green-800 mb-1">İhracat Faturası Bilgilendirme</h4>
-            <p className="text-sm text-green-700">İhracat faturaları için gümrük beyannamesi ve GTİP kodu zorunludur. Taşıma şekli ve teslim şartları (INCOTERMS) mutlaka belirtilmelidir.</p>
+            <h4 className="text-sm font-medium text-success mb-1">İhracat Faturası Bilgilendirme</h4>
+            <p className="text-sm text-success">İhracat faturaları için gümrük beyannamesi ve GTİP kodu zorunludur. Taşıma şekli ve teslim şartları (INCOTERMS) mutlaka belirtilmelidir.</p>
           </div>
         </div>
       </div>

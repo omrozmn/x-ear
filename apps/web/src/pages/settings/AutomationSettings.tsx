@@ -146,7 +146,7 @@ export function AutomationSettings() {
         {toggles.map(({ key, icon: Icon, title, description, color }) => (
           <div
             key={key}
-            className="flex items-start gap-4 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
+            className="flex items-start gap-4 p-4 bg-white dark:bg-gray-800 rounded-xl border border-border hover:border-border dark:hover:border-gray-600 transition-colors"
           >
             <div className={`flex-shrink-0 w-10 h-10 rounded-lg bg-${color}-100 dark:bg-${color}-900/30 flex items-center justify-center`}>
               <Icon className={`w-5 h-5 text-${color}-600 dark:text-${color}-400`} />
@@ -162,17 +162,17 @@ export function AutomationSettings() {
                   disabled={saving}
                   onClick={() => updateSetting(key, !settings[key])}
                   className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 ${
-                    settings[key] ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-600'
+                    settings[key] ? 'bg-indigo-600' : 'bg-accent'
                   } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   <span
-                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-card shadow ring-0 transition duration-200 ease-in-out ${
                       settings[key] ? 'translate-x-5' : 'translate-x-0'
                     }`}
                   />
                 </button>
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{description}</p>
+              <p className="text-xs text-muted-foreground mt-1">{description}</p>
             </div>
           </div>
         ))}

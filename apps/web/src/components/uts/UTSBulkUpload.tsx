@@ -83,7 +83,7 @@ export const UTSBulkUpload: React.FC<{ onStarted?: (jobId: string) => void }> = 
         <div style={{ marginTop: 8 }}>
           <h4>Önizleme ({Array.isArray(preview.rows) ? preview.rows.length : preview.mapped?.length ?? 0})</h4>
           {preview.errors && preview.errors.length > 0 && (
-            <div style={{ color: 'red' }}>
+            <div className="text-destructive">
               Hatalar:
               <ul>
                 {preview.errors.map((err, idx) => (

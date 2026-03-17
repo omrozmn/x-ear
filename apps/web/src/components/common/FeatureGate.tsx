@@ -25,11 +25,11 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({ featureKey, children, 
 
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-        <ShieldOff className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" />
-        <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+        <ShieldOff className="w-16 h-16 text-gray-300 mb-4" />
+        <h2 className="text-xl font-semibold text-foreground mb-2">
           Bu özellik kullanılamıyor
         </h2>
-        <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md">
+        <p className="text-muted-foreground mb-6 max-w-md">
           Bu özellik mevcut abonelik planınızda aktif değil. Erişim için yöneticinizle iletişime geçin.
         </p>
         <Button

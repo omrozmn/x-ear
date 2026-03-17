@@ -28,7 +28,7 @@ import type {
 interface ApiInventoryItem extends Partial<InventoryItemRead> {
   // Add any fields that might be missing dynamically or purely local
   inventory?: number; // alias for availableInventory
-  stock?: number;     // alias for availableInventory
+  stock?: number; // alias for availableInventory
   vatRate?: number;
   kdv?: number;
 }
@@ -587,24 +587,23 @@ export function ProductLinesSection({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow p-4 sm:p-6 mb-6 overflow-visible">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-4 sm:p-6 mb-6 overflow-visible">
       <div className="flex flex-col gap-3 mb-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">Ürün/Hizmet</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Ürün/Hizmet</h3>
           <Button
             data-testid="invoice-add-line-button"
             type="button"
             onClick={addLine}
             variant="default"
-            style={{ backgroundColor: '#2563eb', color: 'white' }}
-            className="premium-gradient tactile-press text-white shadow-sm px-4 py-2 whitespace-nowrap"
+            className="premium-gradient tactile-press bg-primary text-primary-foreground shadow-sm px-4 py-2 whitespace-nowrap"
           >
             + Yeni Kalem
           </Button>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 px-3 py-3 bg-gray-100 rounded-2xl text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 px-3 py-3 bg-muted/50 rounded-2xl text-sm">
           <div className="flex items-center gap-2">
-            <label className="font-medium text-gray-700 whitespace-nowrap text-xs">Para Birimi:</label>
+            <label className="font-medium text-foreground whitespace-nowrap text-xs">Para Birimi:</label>
             <Select
               value={currency}
               onChange={(e) => onCurrencyChange?.(e.target.value)}
@@ -617,7 +616,7 @@ export function ProductLinesSection({
             />
           </div>
           <div className="flex items-center gap-2">
-            <label className="font-medium text-gray-700 whitespace-nowrap text-xs">Genel İskonto:</label>
+            <label className="font-medium text-foreground whitespace-nowrap text-xs">Genel İskonto:</label>
             <Input
               type="number"
               step="0.01"
@@ -665,10 +664,10 @@ export function ProductLinesSection({
       )}
 
       {isExportScenario && (
-        <div className="bg-green-50 border border-green-200 rounded-2xl p-3 mb-4">
+        <div className="bg-success/10 border border-green-200 rounded-2xl p-3 mb-4">
           <div className="flex items-start gap-2">
-            <Info className="text-green-600 flex-shrink-0" size={18} />
-            <p className="text-sm text-green-700">
+            <Info className="text-success flex-shrink-0" size={18} />
+            <p className="text-sm text-success">
               İhracat faturası: Her kalem için GTİP kodu zorunludur.
             </p>
           </div>
@@ -681,11 +680,11 @@ export function ProductLinesSection({
           <div
             key={line.id}
             data-testid={`invoice-line-${index}`}
-            className="border border-gray-200 rounded-2xl p-4 bg-gray-50 overflow-visible"
+            className="border border-border rounded-2xl p-4 bg-gray-50 dark:bg-gray-800/50 overflow-visible"
           >
             {/* Satır Başlığı */}
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-foreground">
                 Kalem {index + 1}
               </span>
               <div className="flex items-center space-x-2">
@@ -695,7 +694,7 @@ export function ProductLinesSection({
                     type="button"
                     onClick={() => clearLine(index)}
                     variant="default"
-                    className="text-xs px-2 py-1 bg-yellow-100 hover:bg-yellow-200 text-yellow-700"
+                    className="text-xs px-2 py-1 bg-warning/10 hover:bg-yellow-200 text-yellow-700"
                     title="Temizle"
                   >
                     <X size={18} />
@@ -705,7 +704,7 @@ export function ProductLinesSection({
                   type="button"
                   onClick={() => duplicateLine(index)}
                   variant="default"
-                  className="text-xs px-2 py-1 bg-gray-200 hover:bg-gray-300 text-gray-700"
+                  className="text-xs px-2 py-1 bg-accent hover:bg-gray-300 text-foreground"
                   title="Kopyala"
                 >
                   <Copy size={18} />
@@ -715,7 +714,7 @@ export function ProductLinesSection({
                     type="button"
                     onClick={() => removeLine(index)}
                     variant="default"
-                    className="text-xs px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700"
+                    className="text-xs px-2 py-1 bg-destructive/10 hover:bg-red-200 text-destructive"
                     title="Sil"
                   >
                     <Trash2 size={18} />
@@ -749,42 +748,42 @@ export function ProductLinesSection({
                   const shouldShow = focusedLineIndex === index && !exactMatch && (suggestions.length > 0 || query.length >= 2);
                   if (!shouldShow) return null;
                   return (
-                    <div className="mt-2 border border-gray-200 rounded-xl bg-white shadow-sm overflow-hidden">
+                    <div className="mt-2 border border-border rounded-xl bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
                       {suggestions.map(p => (
                         <Button
                           key={p.id}
                           type="button"
                           variant="ghost"
                           onClick={() => handleProductSelect(index, p.id)}
-                          className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm h-auto justify-start"
+                          className="w-full text-left px-3 py-2 hover:bg-muted dark:hover:bg-gray-700 text-sm h-auto justify-start"
                         >
                           <div className="flex items-start justify-between w-full">
                             <div className="flex-1">
-                              <div className="font-medium text-gray-900">
+                              <div className="font-medium text-gray-900 dark:text-white">
                                 {formatProductLabel(p)}
                               </div>
-                              <div className="mt-1 text-sm text-gray-500 flex gap-3 flex-wrap">
+                              <div className="mt-1 text-sm text-muted-foreground flex gap-3 flex-wrap">
                                 {typeof p.price === 'number' && (
-                                  <span className="text-green-600 font-medium">
+                                  <span className="text-success font-medium">
                                     {p.price.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}
                                   </span>
                                 )}
                                 {p.taxRate !== undefined && (
-                                  <span className="text-gray-600">KDV: %{p.taxRate}</span>
+                                  <span className="text-muted-foreground">KDV: %{p.taxRate}</span>
                                 )}
                                 {p.availableInventory !== undefined && (
-                                  <span className={`text-sm ${p.availableInventory > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                  <span className={`text-sm ${p.availableInventory > 0 ? 'text-success' : 'text-destructive'}`}>
                                     Stok: {p.availableInventory} {p.unit || 'Adet'}
                                   </span>
                                 )}
                               </div>
                             </div>
-                            <div className="text-blue-600 text-xl flex items-center ml-2">→</div>
+                            <div className="text-primary text-xl flex items-center ml-2">→</div>
                           </div>
                         </Button>
                       ))}
                       {suggestions.length === 0 && !exactMatch && (
-                        <div className="px-3 py-2 text-sm text-gray-600 flex items-center justify-between">
+                        <div className="px-3 py-2 text-sm text-muted-foreground flex items-center justify-between">
                           <span>Eşleşme bulunamadı.</span>
                           <Button
                             type="button"
@@ -799,7 +798,7 @@ export function ProductLinesSection({
                   );
                 })()}
                 {isLoadingProducts && (
-                  <p className="mt-1 text-xs text-blue-600">Ürünler yükleniyor...</p>
+                  <p className="mt-1 text-xs text-primary">Ürünler yükleniyor...</p>
                 )}
               </div>
 
@@ -830,7 +829,7 @@ export function ProductLinesSection({
 
                 {/* Birim Fiyat */}
                 <div className="min-w-0">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Birim Fiyat
                   </label>
                   <div className="relative">
@@ -845,7 +844,7 @@ export function ProductLinesSection({
                       fullWidth
                       className="pl-8"
                     />
-                    <span className="absolute left-3 top-2.5 text-gray-500 text-sm font-medium">
+                    <span className="absolute left-3 top-2.5 text-muted-foreground text-sm font-medium">
                       {getCurrencySymbol(currency)}
                     </span>
                   </div>
@@ -856,7 +855,7 @@ export function ProductLinesSection({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {/* İskonto */}
                 <div className="min-w-0">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     İskonto
                   </label>
                   <div className="flex gap-1">
@@ -899,10 +898,10 @@ export function ProductLinesSection({
 
                 {/* Toplam */}
                 <div className="min-w-0">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Toplam
                   </label>
-                  <div className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-xl text-right font-medium text-sm">
+                  <div className="px-3 py-2 bg-muted border border-border rounded-xl text-right font-medium text-sm">
                     {(safeForCompute(line.total)).toFixed(2)} {currency}
                   </div>
                 </div>
@@ -977,7 +976,7 @@ export function ProductLinesSection({
                     type="button"
                     onClick={() => openSpecialBaseModal(index)}
                     variant="default"
-                    className="text-sm px-3 py-1 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 border border-yellow-300 flex items-center gap-1"
+                    className="text-sm px-3 py-1 bg-warning/10 hover:bg-yellow-200 text-yellow-700 border border-yellow-300 flex items-center gap-1"
                   >
                     <DollarSign size={14} />
                     Özel Matrah
@@ -991,7 +990,7 @@ export function ProductLinesSection({
                     type="button"
                     onClick={() => openWithholdingModal(index)}
                     variant="default"
-                    className="text-sm px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 border border-red-300 flex items-center gap-1"
+                    className="text-sm px-3 py-1 bg-destructive/10 hover:bg-red-200 text-destructive border border-red-300 flex items-center gap-1"
                   >
                     <RefreshCw size={14} />
                     Tevkifat İade
@@ -1016,19 +1015,19 @@ export function ProductLinesSection({
 
               {/* Koşullu Alan Göstergeleri */}
               {line.withholdingData && (isWithholdingType || isReturnWithholdingType) && (
-                <div className="text-xs text-gray-600 bg-orange-50 border border-orange-200 rounded p-2">
+                <div className="text-xs text-muted-foreground bg-orange-50 border border-orange-200 rounded p-2">
                   Tevkifat bilgileri eklendi
                 </div>
               )}
 
               {line.specialBaseData && isSpecialBaseType && (
-                <div className="text-xs text-gray-600 bg-yellow-50 border border-yellow-200 rounded p-2">
+                <div className="text-xs text-muted-foreground bg-warning/10 border border-yellow-200 rounded p-2">
                   Özel Matrah: {line.specialBaseData.specialBaseAmount} TL × {line.specialBaseData.specialBaseRate}% = {line.specialBaseData.calculatedTax} TL
                 </div>
               )}
 
               {line.medicalDeviceData && isMedicalScenario && (
-                <div className="text-xs text-gray-600 bg-purple-50 border border-purple-200 rounded p-2">
+                <div className="text-xs text-muted-foreground bg-purple-50 border border-purple-200 rounded p-2">
                   Ruhsat No: {line.medicalDeviceData.licenseNumber}
                   {line.medicalDeviceData.serialNumber && ` | Seri: ${line.medicalDeviceData.serialNumber}`}
                   {line.medicalDeviceData.lotNumber && ` | Lot: ${line.medicalDeviceData.lotNumber}`}
@@ -1040,25 +1039,25 @@ export function ProductLinesSection({
       </div>
 
       {/* Toplam Hesaplamalar */}
-      <div className="mt-6 bg-gray-50 border border-gray-200 rounded-2xl p-4">
+      <div className="mt-6 bg-gray-50 dark:bg-gray-700/50 border border-border rounded-2xl p-4">
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Ara Toplam:</span>
+            <span className="text-muted-foreground">Ara Toplam:</span>
             <span className="font-medium">{(safeForCompute(totals.subtotal)).toFixed(2)} {currency}</span>
           </div>
           {totals.discount > 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">İskonto:</span>
-              <span className="font-medium text-red-600">-{(safeForCompute(totals.discount)).toFixed(2)} {currency}</span>
+              <span className="text-muted-foreground">İskonto:</span>
+              <span className="font-medium text-destructive">-{(safeForCompute(totals.discount)).toFixed(2)} {currency}</span>
             </div>
           )}
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">KDV:</span>
+            <span className="text-muted-foreground">KDV:</span>
             <span className="font-medium">{(safeForCompute(totals.tax)).toFixed(2)} {currency}</span>
           </div>
-          <div className="flex justify-between text-lg font-bold border-t border-gray-300 pt-2">
-            <span className="text-gray-900">Genel Toplam:</span>
-            <span className="text-blue-600">{(safeForCompute(totals.total)).toFixed(2)} {currency}</span>
+          <div className="flex justify-between text-lg font-bold border-t border-border pt-2">
+            <span className="text-gray-900 dark:text-white">Genel Toplam:</span>
+            <span className="text-primary">{(safeForCompute(totals.total)).toFixed(2)} {currency}</span>
           </div>
         </div>
       </div>

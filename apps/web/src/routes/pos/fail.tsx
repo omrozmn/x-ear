@@ -19,12 +19,12 @@ function PosFail() {
     }, [reason]);
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen bg-red-50 dark:bg-red-900/10">
+        <div className="flex flex-col items-center justify-center h-screen bg-destructive/10">
             <div className="text-center p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg">
-                <div className="text-red-500 text-5xl mb-4">✕</div>
-                <h1 className="text-2xl font-bold text-red-700 dark:text-red-400 mb-2">Ödeme Başarısız</h1>
-                <p className="text-gray-600 dark:text-gray-300">{reason}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">Lütfen tekrar deneyiniz.</p>
+                <div className="text-destructive text-5xl mb-4">✕</div>
+                <h1 className="text-2xl font-bold text-destructive mb-2">Ödeme Başarısız</h1>
+                <p className="text-muted-foreground">{reason}</p>
+                <p className="text-sm text-muted-foreground mt-4">Lütfen tekrar deneyiniz.</p>
             </div>
         </div>
     );

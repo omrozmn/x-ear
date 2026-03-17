@@ -86,7 +86,7 @@ const WebManagementOversightPage: React.FC = () => {
                         </p>
                     </div>
                     <a
-                        href="http://localhost:3005/web-management"
+                        href={`${import.meta.env.VITE_WEB_APP_URL || ''}/web-management`}
                         className="inline-flex items-center rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950"
                     >
                         Web app builder&apos;i ac

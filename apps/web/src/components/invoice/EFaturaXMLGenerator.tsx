@@ -142,7 +142,7 @@ export const EFaturaXMLGenerator: React.FC<EFaturaXMLGeneratorProps> = ({
     <div className={`efatura-xml-generator ${className}`}>
       <div className="generator-header">
         <h3>E-Fatura XML Oluşturucu</h3>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-muted-foreground">
           Fatura: {invoice.invoiceNumber} - {invoice.partyName}
         </p>
       </div>
@@ -263,9 +263,9 @@ export const EFaturaXMLGenerator: React.FC<EFaturaXMLGeneratorProps> = ({
       </div>
       {/* Error Display */}
       {state.error && (
-        <div className="error-message bg-red-50 border border-red-200 rounded p-3 mb-4">
+        <div className="error-message bg-destructive/10 border border-red-200 rounded p-3 mb-4">
           <h5 className="font-medium text-red-800 mb-1">Hata</h5>
-          <p className="text-red-700">{state.error}</p>
+          <p className="text-destructive">{state.error}</p>
         </div>
       )}
       {/* Generation Result */}
@@ -274,7 +274,7 @@ export const EFaturaXMLGenerator: React.FC<EFaturaXMLGeneratorProps> = ({
           <h4 className="font-medium mb-2">XML Oluşturma Sonucu</h4>
           
           {state.result.success ? (
-            <div className="success-result bg-green-50 border border-green-200 rounded p-3 mb-4">
+            <div className="success-result bg-success/10 border border-green-200 rounded p-3 mb-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <strong>Dosya Adı:</strong> {state.result.fileName}
@@ -287,7 +287,7 @@ export const EFaturaXMLGenerator: React.FC<EFaturaXMLGeneratorProps> = ({
               {state.result.validationResult && (
                 <div className="validation-result mt-3">
                   <h5 className="font-medium mb-1">Doğrulama Sonucu</h5>
-                  <p className={`text-sm ${state.result.validationResult.isValid ? 'text-green-700' : 'text-red-700'}`}>
+                  <p className={`text-sm ${state.result.validationResult.isValid ? 'text-success' : 'text-destructive'}`}>
                     {state.result.validationResult.isValid ? 'XML geçerli' : 'XML geçersiz'}
                   </p>
                   
@@ -305,10 +305,10 @@ export const EFaturaXMLGenerator: React.FC<EFaturaXMLGeneratorProps> = ({
               )}
             </div>
           ) : (
-            <div className="error-result bg-red-50 border border-red-200 rounded p-3 mb-4">
+            <div className="error-result bg-destructive/10 border border-red-200 rounded p-3 mb-4">
               <h5 className="font-medium text-red-800 mb-1">XML Oluşturma Başarısız</h5>
               {state.result.errors && (
-                <ul className="list-disc list-inside text-sm text-red-700">
+                <ul className="list-disc list-inside text-sm text-destructive">
                   {state.result.errors.map((error, index) => (
                     <li key={index}>{error}</li>
                   ))}
@@ -325,13 +325,13 @@ export const EFaturaXMLGenerator: React.FC<EFaturaXMLGeneratorProps> = ({
           
           <div className={`submission-status p-3 rounded mb-4 ${
             state.submissionResponse.success 
-              ? 'bg-green-50 border border-green-200' 
-              : 'bg-red-50 border border-red-200'
+              ? 'bg-success/10 border border-green-200' 
+              : 'bg-destructive/10 border border-red-200'
           }`}>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <strong>Durum:</strong> 
-                <span className={`ml-1 ${state.submissionResponse.success ? 'text-green-700' : 'text-red-700'}`}>
+                <span className={`ml-1 ${state.submissionResponse.success ? 'text-success' : 'text-destructive'}`}>
                   {getStatusText(state.submissionResponse.status)}
                 </span>
               </div>
@@ -349,7 +349,7 @@ export const EFaturaXMLGenerator: React.FC<EFaturaXMLGeneratorProps> = ({
             {state.submissionResponse.errors && state.submissionResponse.errors.length > 0 && (
               <div className="errors mt-2">
                 <h6 className="font-medium text-red-800">Hatalar:</h6>
-                <ul className="list-disc list-inside text-sm text-red-700">
+                <ul className="list-disc list-inside text-sm text-destructive">
                   {state.submissionResponse.errors.map((error, index) => (
                     <li key={index}>{error}</li>
                   ))}
@@ -363,7 +363,7 @@ export const EFaturaXMLGenerator: React.FC<EFaturaXMLGeneratorProps> = ({
       {state.result?.success && state.result.xmlContent && (
         <div className="xml-preview">
           <h4 className="font-medium mb-2">XML Önizleme</h4>
-          <div className="xml-content bg-gray-50 border rounded p-3 max-h-96 overflow-auto">
+          <div className="xml-content bg-muted border rounded p-3 max-h-96 overflow-auto">
             <pre className="text-xs whitespace-pre-wrap">
               {state.result.xmlContent.substring(0, 2000)}
               {state.result.xmlContent.length > 2000 && '...'}

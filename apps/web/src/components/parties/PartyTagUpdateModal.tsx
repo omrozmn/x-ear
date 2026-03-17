@@ -114,7 +114,7 @@ export function PartyTagUpdateModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="mb-4 flex items-center justify-between">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-muted-foreground">
             <strong>{party.firstName} {party.lastName}</strong> için etiketleri güncelleyin
           </p>
           <Button 
@@ -134,7 +134,7 @@ export function PartyTagUpdateModal({
         {/* Grid Layout - 2 columns */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label htmlFor="status" className="block text-sm font-medium text-foreground mb-1">
               Durum
             </label>
             <select data-allow-raw="true"
@@ -142,7 +142,7 @@ export function PartyTagUpdateModal({
               value={status || ''}
               onChange={(e) => setStatus(e.target.value as PartyStatus)}
               disabled={isLoading}
-              className="w-full block px-3 py-2 pr-10 border rounded-2xl text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-gray-300 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full block px-3 py-2 pr-10 border rounded-2xl text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-border focus:border-blue-500 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <option value="active" className="dark:bg-slate-800">Aktif</option>
               <option value="inactive" className="dark:bg-slate-800">Pasif</option>
@@ -150,7 +150,7 @@ export function PartyTagUpdateModal({
           </div>
 
           <div>
-            <label htmlFor="branchId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label htmlFor="branchId" className="block text-sm font-medium text-foreground mb-1">
               Şube
             </label>
             <select data-allow-raw="true"
@@ -158,7 +158,7 @@ export function PartyTagUpdateModal({
               value={branchId}
               onChange={(e) => setBranchId(e.target.value)}
               disabled={isLoading}
-              className="w-full block px-3 py-2 pr-10 border rounded-2xl text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-gray-300 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full block px-3 py-2 pr-10 border rounded-2xl text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-border focus:border-blue-500 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <option value="" className="dark:bg-slate-800">Seçiniz</option>
               {branches.map((branch) => (
@@ -170,7 +170,7 @@ export function PartyTagUpdateModal({
           </div>
 
           <div>
-            <label htmlFor="segment" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label htmlFor="segment" className="block text-sm font-medium text-foreground mb-1">
               Segment
             </label>
             <select data-allow-raw="true"
@@ -178,7 +178,7 @@ export function PartyTagUpdateModal({
               value={segment}
               onChange={(e) => setSegment(e.target.value as PartySegment)}
               disabled={isLoading}
-              className="w-full block px-3 py-2 pr-10 border rounded-2xl text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-gray-300 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full block px-3 py-2 pr-10 border rounded-2xl text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-border focus:border-blue-500 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {segmentOptions.map((option) => (
                 <option key={option.value} value={option.value} className="dark:bg-slate-800">
@@ -189,7 +189,7 @@ export function PartyTagUpdateModal({
           </div>
 
           <div>
-            <label htmlFor="acquisitionType" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label htmlFor="acquisitionType" className="block text-sm font-medium text-foreground mb-1">
               Kazanım Türü
             </label>
             <select data-allow-raw="true"
@@ -197,7 +197,7 @@ export function PartyTagUpdateModal({
               value={acquisitionType}
               onChange={(e) => setAcquisitionType(e.target.value)}
               disabled={isLoading}
-              className="w-full block px-3 py-2 pr-10 border rounded-2xl text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-gray-300 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full block px-3 py-2 pr-10 border rounded-2xl text-sm bg-white dark:bg-slate-800 dark:text-gray-100 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 border-border focus:border-blue-500 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <option value="" className="dark:bg-slate-800">Seçiniz</option>
               {acquisitionOptions.map((option) => (

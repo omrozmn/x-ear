@@ -101,9 +101,8 @@ const AdminApiKeysPage: React.FC = () => {
                 toast.success('API Anahtarı oluşturuldu');
                 refetch();
             }
-        } catch (error) {
+        } catch {
             toast.error('API Anahtarı oluşturulamadı');
-            console.error(error);
         }
     };
 

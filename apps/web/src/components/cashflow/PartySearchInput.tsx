@@ -60,19 +60,19 @@ export function PartySearchInput({ selectedParty, onSelectParty }: PartySearchIn
 
   if (selectedParty) {
     return (
-      <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-2xl">
+      <div className="flex items-center justify-between p-3 bg-primary/10 border border-blue-200 rounded-2xl">
         <div>
           <p className="font-medium text-blue-900">
             {selectedParty.firstName} {selectedParty.lastName}
           </p>
           {selectedParty.tcNumber && (
-            <p className="text-sm text-blue-700">TC: {selectedParty.tcNumber}</p>
+            <p className="text-sm text-primary">TC: {selectedParty.tcNumber}</p>
           )}
         </div>
         <button data-allow-raw="true"
           type="button"
           onClick={() => onSelectParty(null)}
-          className="text-blue-600 hover:text-blue-800"
+          className="text-primary hover:text-blue-800"
         >
           <X className="h-5 w-5" />
         </button>
@@ -82,7 +82,7 @@ export function PartySearchInput({ selectedParty, onSelectParty }: PartySearchIn
 
   return (
     <div ref={searchRef} className="relative">
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
       <Input
         placeholder="Hasta adı, TC veya telefon ile ara..."
         value={search}
@@ -94,7 +94,7 @@ export function PartySearchInput({ selectedParty, onSelectParty }: PartySearchIn
         className="pl-10"
       />
       {showResults && search.length >= 2 && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-2xl shadow-lg max-h-60 overflow-auto">
+        <div className="absolute z-50 w-full mt-1 bg-card border border-border rounded-2xl shadow-lg max-h-60 overflow-auto">
           {parties.length > 0 ? (
             parties.map((party) => (
               <div
@@ -104,12 +104,12 @@ export function PartySearchInput({ selectedParty, onSelectParty }: PartySearchIn
                   setSearch('');
                   setShowResults(false);
                 }}
-                className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                className="p-3 hover:bg-muted cursor-pointer border-b border-border last:border-b-0"
               >
-                <p className="font-medium text-gray-900">
+                <p className="font-medium text-foreground">
                   {party.firstName} {party.lastName}
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   {[
                     party.tcNumber && `TC: ${party.tcNumber}`,
                     party.phone && `Tel: ${party.phone}`,
@@ -120,7 +120,7 @@ export function PartySearchInput({ selectedParty, onSelectParty }: PartySearchIn
               </div>
             ))
           ) : (
-            <div className="p-3 text-sm text-gray-500">Hasta bulunamadı</div>
+            <div className="p-3 text-sm text-muted-foreground">Hasta bulunamadı</div>
           )}
         </div>
       )}

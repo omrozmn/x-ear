@@ -84,14 +84,14 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
+      <div className="bg-card rounded-2xl shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-foreground">
               Tahsilat İşlemleri
             </h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               {party.firstName} {party.lastName} - Satış #{sale.id || 'N/A'}
             </p>
           </div>
@@ -99,7 +99,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-muted-foreground hover:text-muted-foreground"
           >
             <X className="h-5 w-5" />
           </Button>
@@ -107,7 +107,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
 
         <div className="flex h-[calc(90vh-120px)]">
           {/* Left Panel - Summary */}
-          <div className="w-1/3 p-6 border-r bg-gray-50 overflow-y-auto">
+          <div className="w-1/3 p-6 border-r bg-muted overflow-y-auto">
             <CollectionSummary
               sale={sale}
               calculations={calculations}
@@ -201,7 +201,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end items-center gap-3 p-6 border-t bg-gray-50">
+        <div className="flex justify-end items-center gap-3 p-6 border-t bg-muted">
           <Button
             variant="outline"
             onClick={onClose}

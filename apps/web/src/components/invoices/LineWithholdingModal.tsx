@@ -125,19 +125,19 @@ export function LineWithholdingModal({
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         <div className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onClick={onClose}></div>
 
-        <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div className="inline-block align-bottom bg-card rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
           <form onSubmit={handleSubmit}>
-            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div className="bg-card px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
               <div className="sm:flex sm:items-start">
                 <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900 mb-2">
+                  <h3 className="text-lg leading-6 font-medium text-foreground mb-2">
                     Satır Bazında Tevkifat
                   </h3>
-                  <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 mb-4">
+                  <div className="bg-primary/10 border border-blue-200 rounded-2xl p-3 mb-4">
                     <p className="text-sm text-blue-900">
                       <span className="font-medium">Satır {itemIndex + 1}:</span> {itemName}
                     </p>
-                    <p className="text-sm text-blue-700 mt-1">
+                    <p className="text-sm text-primary mt-1">
                       Referans satır tutarı: {itemAmount.toFixed(2)} TL
                     </p>
                   </div>
@@ -145,7 +145,7 @@ export function LineWithholdingModal({
                   <div className="space-y-4">
                     {/* Tevkifat Kodu */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-foreground mb-1">
                         Tevkifat Kodu
                       </label>
                       <Select
@@ -165,7 +165,7 @@ export function LineWithholdingModal({
 
                     {/* Tevkifat Oranı */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-foreground mb-1">
                         Tevkifat Oranı (%)
                       </label>
                       <Input
@@ -184,7 +184,7 @@ export function LineWithholdingModal({
 
                     {/* Hesaplanan Tevkifat Tutarı */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-foreground mb-1">
                         Tevkifat Tutarı (TL)
                       </label>
                       <Input
@@ -192,19 +192,19 @@ export function LineWithholdingModal({
                         step="0.01"
                         value={formData.amount}
                         readOnly
-                        className="w-full bg-gray-50"
+                        className="w-full bg-muted"
                       />
-                      <p className="mt-1 text-xs text-gray-500">
+                      <p className="mt-1 text-xs text-muted-foreground">
                         Önizleme hesaplamasıdır. XML üretiminde provider kuralına göre tevkifat tutarı KDV/vergisel matrah üzerinden yeniden hesaplanır.
                       </p>
                     </div>
 
                     {/* Hesaplama Özeti */}
                     {Number(formData.rate) > 0 && (
-                      <div className="bg-green-50 border border-green-200 rounded-2xl p-4">
+                      <div className="bg-success/10 border border-green-200 rounded-2xl p-4">
                         <div className="flex items-start">
                           <CheckCircle className="text-green-400 mr-2 flex-shrink-0" size={18} />
-                          <div className="text-sm text-green-700">
+                          <div className="text-sm text-success">
                             <p className="font-medium mb-1">Tevkifat Hesaplaması:</p>
                             <p>Brüt Tutar: {itemAmount.toFixed(2)} TL</p>
                             <p>Tevkifat ({formData.rate}%): -{formData.amount.toFixed(2)} TL</p>
@@ -220,17 +220,17 @@ export function LineWithholdingModal({
               </div>
             </div>
 
-            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+            <div className="bg-muted px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
               <Button
                 type="submit"
-                className="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+                className="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring sm:ml-3 sm:w-auto sm:text-sm"
                 variant="default">
                 Kaydet
               </Button>
               <Button
                 type="button"
                 onClick={onClose}
-                className="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                className="mt-3 w-full inline-flex justify-center rounded-xl border border-border shadow-sm px-4 py-2 bg-card text-base font-medium text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                 variant="default">
                 İptal
               </Button>

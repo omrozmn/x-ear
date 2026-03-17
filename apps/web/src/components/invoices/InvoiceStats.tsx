@@ -11,10 +11,10 @@ export function InvoiceStats({ stats, loading = false }: InvoiceStatsProps) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-8">
         {[...Array(6)].map((_, i) => (
-          <div key={i} className="bg-white rounded-xl p-4 shadow animate-pulse">
-            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-            <div className="h-8 bg-gray-200 rounded w-1/2 mb-1"></div>
-            <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+          <div key={i} className="bg-card rounded-xl p-4 shadow animate-pulse">
+            <div className="h-4 bg-accent rounded w-3/4 mb-2"></div>
+            <div className="h-8 bg-accent rounded w-1/2 mb-1"></div>
+            <div className="h-3 bg-accent rounded w-2/3"></div>
           </div>
         ))}
       </div>
@@ -77,9 +77,9 @@ export function InvoiceStats({ stats, loading = false }: InvoiceStatsProps) {
 
   const getColorClasses = (color: string) => {
     const colors: Record<string, { bg: string; text: string; iconBg: string }> = {
-      blue: { bg: 'bg-blue-50', text: 'text-blue-600', iconBg: 'bg-blue-100' },
-      gray: { bg: 'bg-gray-50', text: 'text-gray-600', iconBg: 'bg-gray-100' },
-      green: { bg: 'bg-green-50', text: 'text-green-600', iconBg: 'bg-green-100' },
+      blue: { bg: 'bg-primary/10', text: 'text-primary', iconBg: 'bg-primary/10' },
+      gray: { bg: 'bg-muted', text: 'text-muted-foreground', iconBg: 'bg-muted' },
+      green: { bg: 'bg-success/10', text: 'text-success', iconBg: 'bg-success/10' },
       purple: { bg: 'bg-purple-50', text: 'text-purple-600', iconBg: 'bg-purple-100' },
       orange: { bg: 'bg-orange-50', text: 'text-orange-600', iconBg: 'bg-orange-100' }
     };
@@ -96,9 +96,9 @@ export function InvoiceStats({ stats, loading = false }: InvoiceStatsProps) {
             className={`${colors.bg} rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer`}>
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600 mb-1">{card.title}</p>
-                <p className="text-2xl font-semibold text-gray-900 mb-1">{card.value}</p>
-                <p className="text-xs text-gray-500">{card.subtitle}</p>
+                <p className="text-sm font-medium text-muted-foreground mb-1">{card.title}</p>
+                <p className="text-2xl font-semibold text-foreground mb-1">{card.value}</p>
+                <p className="text-xs text-muted-foreground">{card.subtitle}</p>
               </div>
               <div className={`p-3 ${colors.iconBg} rounded-full`}>
                 <card.Icon className={colors.text} size={24} />

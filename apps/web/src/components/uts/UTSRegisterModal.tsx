@@ -33,13 +33,13 @@ export const UTSRegisterModal: React.FC<{
   if (!open) return null;
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
-      <div style={{ background: 'white', padding: 16, width: '640px', borderRadius: 8 }}>
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[2000]">
+      <div className="bg-card p-4 w-[640px] rounded-lg">
         <h3>ÜTS Toplu Kayıt Başlat</h3>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div>
             <Textarea {...register('csv')} rows={8} className="w-full" />
-            {errors.csv && <div style={{ color: 'red' }}>{errors.csv.message}</div>}
+            {errors.csv && <div className="text-destructive">{errors.csv.message}</div>}
           </div>
           <div style={{ marginTop: 12, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
             <Button type="button" variant="ghost" onClick={onClose}>İptal</Button>

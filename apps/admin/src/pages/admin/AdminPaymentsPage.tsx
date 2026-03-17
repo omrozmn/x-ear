@@ -4,7 +4,7 @@ import { useListAdminPaymentPoTransactions } from '@/lib/api-client'
 import type { ListAdminPaymentPoTransactionsParams, PaymentRecordRead, ResponseEnvelopeListPaymentRecordRead } from '@/api/generated/schemas'
 import { useAdminResponsive } from '@/hooks'
 import { ResponsiveTable } from '@/components/responsive'
-import { isRecord as isPayloadRecord, unwrapData } from '@/lib/orval-response'
+import { isRecord as isPayloadRecord } from '@/lib/orval-response'
 
 interface PaymentTransaction extends PaymentRecordRead {
     payment_date?: string

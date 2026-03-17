@@ -19,6 +19,7 @@ type InventoryItemSchema = Record<string, unknown>;
 import { AlertTriangle, Edit, Trash2 } from 'lucide-react';
 import { InventoryItem as FrontendInventoryItem, InventoryFilters, InventoryStatus, InventoryCategory } from '../../types/inventory';
 import { AxiosError } from '@/api/orval-mutator';
+import toast from 'react-hot-toast';
 
 // Human-friendly category labels (keep in sync with ProductForm CATEGORIES)
 const CATEGORY_LABELS: Record<string, string> = {
@@ -256,7 +257,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
       await queryClient.invalidateQueries({ queryKey: getListInventoryQueryKey() });
     } catch (err) {
       console.error('Bulk delete failed:', err);
-      alert('Toplu silme başarısız oldu');
+      toast.error('Toplu silme başarısız oldu');
     }
   };
 
@@ -397,11 +398,11 @@ export const InventoryList: React.FC<InventoryListProps> = ({
           <Link
             to="/inventory/$id"
             params={{ id: record.id }}
-            className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-left transition-colors"
+            className="font-medium text-primary hover:text-blue-800 dark:hover:text-blue-300 text-left transition-colors"
           >
             {value}
           </Link>
-          <span className="text-sm text-gray-500 dark:text-gray-400">{record.brand} - {record.model}</span>
+          <span className="text-sm text-muted-foreground">{record.brand} - {record.model}</span>
         </div>
       )
     },
@@ -419,11 +420,11 @@ export const InventoryList: React.FC<InventoryListProps> = ({
       sortable: true,
       render: (value: number, record: FrontendInventoryItem) => (
         <div className="flex items-center space-x-2">
-          <span className={`font-medium ${value <= record.reorderLevel ? 'text-red-600' : 'text-gray-900 dark:text-white'}`}>
+          <span className={`font-medium ${value <= record.reorderLevel ? 'text-destructive' : 'text-gray-900 dark:text-white'}`}>
             {value}
           </span>
           {value <= record.reorderLevel && (
-            <AlertTriangle className="w-4 h-4 text-red-500" />
+            <AlertTriangle className="w-4 h-4 text-destructive" />
           )}
         </div>
       )
@@ -495,7 +496,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
               await queryClient.invalidateQueries({ queryKey: getListInventoryQueryKey() });
             } catch (e) {
               console.error("Delete failed", e);
-              alert("Silme başarısız");
+              toast.error("Silme başarısız");
             }
           }
         }
@@ -507,7 +508,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
     return (
       <div className={`flex items-center justify-center p-8 ${className}`}>
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2 text-gray-600 dark:text-gray-400">Envanter yükleniyor...</span>
+        <span className="ml-2 text-muted-foreground">Envanter yükleniyor...</span>
       </div>
     );
   }
@@ -515,7 +516,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
   if (fetchError) {
     const errorMsg = (fetchError as AxiosError)?.message || 'Bir hata oluştu';
     return (
-      <div className={`bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 ${className}`}>
+      <div className={`bg-destructive/10 border border-red-200 dark:border-red-800 rounded-xl p-4 ${className}`}>
         <div className="flex">
           <div className="flex-shrink-0">
             <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -524,7 +525,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
           </div>
           <div className="ml-3">
             <h3 className="text-sm font-medium text-red-800 dark:text-red-300">Envanter yüklenirken hata</h3>
-            <div className="mt-2 text-sm text-red-700 dark:text-red-400">{errorMsg}</div>
+            <div className="mt-2 text-sm text-destructive">{errorMsg}</div>
           </div>
         </div>
       </div>
@@ -534,11 +535,11 @@ export const InventoryList: React.FC<InventoryListProps> = ({
   if (items.length === 0) {
     return (
       <div className={`text-center py-12 ${className}`}>
-        <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="mx-auto h-12 w-12 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
         </svg>
         <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Envanter öğesi yok</h3>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">İlk envanter öğenizi ekleyerek başlayın.</p>
+        <p className="mt-1 text-sm text-muted-foreground">İlk envanter öğenizi ekleyerek başlayın.</p>
       </div>
     );
   }
@@ -547,7 +548,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
     <div className={className}>
       {selectedIds.length > 0 && (
         <div className="flex items-center justify-between mb-4">
-          <div className="text-sm text-gray-700">{selectedIds.length} seçili</div>
+          <div className="text-sm text-foreground">{selectedIds.length} seçili</div>
           <div className="flex items-center space-x-2">
             <Button variant="outline" onClick={() => setIsBulkModalOpen(true)}>Toplu İşlemler</Button>
             <Button variant="outline" onClick={exportSelected}>Dışa Aktar</Button>

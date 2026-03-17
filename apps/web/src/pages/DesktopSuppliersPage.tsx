@@ -213,7 +213,7 @@ export function DesktopSuppliersPage() {
   }, [sortedSuppliers]);
 
   return (
-    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900 p-6">
+    <div className="p-4 sm:p-6">
       <div className="max-w-full mx-auto space-y-6">
         {/* Header */}
         <DesktopPageHeader
@@ -237,47 +237,47 @@ export function DesktopSuppliersPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-all hover:shadow-md">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-border transition-all hover:shadow-md">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Toplam Tedarikçi</p>
+                <p className="text-sm font-medium text-muted-foreground mb-1">Toplam Tedarikçi</p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
               </div>
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-2xl">
-                <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              <div className="bg-primary/10 p-3 rounded-2xl">
+                <Users className="h-6 w-6 text-primary" />
               </div>
             </div>
           </div>
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-all hover:shadow-md">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-border transition-all hover:shadow-md">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Aktif Tedarikçiler</p>
-                <p className="text-3xl font-bold text-green-600 dark:text-green-400">{stats.active}</p>
+                <p className="text-sm font-medium text-muted-foreground mb-1">Aktif Tedarikçiler</p>
+                <p className="text-3xl font-bold text-success">{stats.active}</p>
               </div>
-              <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-2xl">
-                <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+              <div className="bg-success/10 p-3 rounded-2xl">
+                <CheckCircle className="h-6 w-6 text-success" />
               </div>
             </div>
           </div>
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-all hover:shadow-md">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-border transition-all hover:shadow-md">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Pasif Tedarikçiler</p>
-                <p className="text-3xl font-bold text-gray-600 dark:text-gray-400">{stats.inactive}</p>
+                <p className="text-sm font-medium text-muted-foreground mb-1">Pasif Tedarikçiler</p>
+                <p className="text-3xl font-bold text-muted-foreground">{stats.inactive}</p>
               </div>
               <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-2xl">
-                <Flame className="h-6 w-6 text-gray-600 dark:text-gray-400" />
+                <Flame className="h-6 w-6 text-muted-foreground" />
               </div>
             </div>
           </div>
         </div>
 
         {/* Search & Filters */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-border p-4">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Şirket adı, yetkili kişi, telefon veya email ile ara..."
                   value={searchValue}
@@ -298,7 +298,7 @@ export function DesktopSuppliersPage() {
 
           {
             showFilters && (
-              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 animate-in fade-in slide-in-from-top-2">
+              <div className="mt-4 pt-4 border-t border-border animate-in fade-in slide-in-from-top-2">
                 <SupplierFilters
                   filters={filters}
                   onFiltersChange={setFilters}
@@ -310,7 +310,7 @@ export function DesktopSuppliersPage() {
         </div>
 
         <Tabs defaultValue="all" className="space-y-6">
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-border">
             <TabsList>
               <TabsTrigger value="all">Tedarikçiler</TabsTrigger>
               <TabsTrigger value="suggested">
@@ -326,22 +326,22 @@ export function DesktopSuppliersPage() {
 
           <TabsContent value="all">
             {/* Supplier List */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-border overflow-hidden">
               {
                 isLoading ? (
                   <div className="flex items-center justify-center h-64">
                     <div className="text-center">
-                      <RefreshCw className="h-8 w-8 animate-spin text-blue-500 mx-auto mb-3" />
-                      <p className="text-sm text-gray-600 font-medium">Tedarikçiler yükleniyor...</p>
+                      <RefreshCw className="h-8 w-8 animate-spin text-primary mx-auto mb-3" />
+                      <p className="text-sm text-muted-foreground font-medium">Tedarikçiler yükleniyor...</p>
                     </div>
                   </div>
                 ) : error ? (
                   <div className="flex items-center justify-center h-64">
                     <div className="text-center">
-                      <div className="bg-red-50 p-3 rounded-full w-fit mx-auto mb-3">
-                        <Flame className="h-6 w-6 text-red-500" />
+                      <div className="bg-destructive/10 p-3 rounded-full w-fit mx-auto mb-3">
+                        <Flame className="h-6 w-6 text-destructive" />
                       </div>
-                      <p className="text-sm text-red-600 font-medium mb-2">Veriler yüklenirken bir hata oluştu</p>
+                      <p className="text-sm text-destructive font-medium mb-2">Veriler yüklenirken bir hata oluştu</p>
                       <Button variant="outline" size="sm" onClick={handleRefresh}>
                         Tekrar Dene
                       </Button>
@@ -351,10 +351,10 @@ export function DesktopSuppliersPage() {
                   <div className="flex items-center justify-center h-64">
                     <div className="text-center">
                       <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-full w-fit mx-auto mb-3">
-                        <Users className="h-8 w-8 text-gray-400 dark:text-gray-300" />
+                        <Users className="h-8 w-8 text-muted-foreground" />
                       </div>
                       <h3 className="text-lg font-medium text-gray-900 dark:text-white">Tedarikçi Bulunamadı</h3>
-                      <p className="text-sm text-gray-500 mt-1 mb-4">Arama kriterlerinize uygun kayıt bulunmuyor.</p>
+                      <p className="text-sm text-muted-foreground mt-1 mb-4">Arama kriterlerinize uygun kayıt bulunmuyor.</p>
                       <Button onClick={handleNewSupplier} className="premium-gradient tactile-press text-white">
                         <Plus className="h-4 w-4 mr-2" />
                         Yeni Tedarikçi Ekle
@@ -388,7 +388,7 @@ export function DesktopSuppliersPage() {
           </TabsContent>
 
           <TabsContent value="suggested">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-border overflow-hidden p-6">
               <SuggestedSuppliersList
                 suppliers={suggestedSuppliers}
                 isLoading={suggestedLoading}
@@ -420,22 +420,22 @@ export function DesktopSuppliersPage() {
           size="md"
         >
           <div className="space-y-4">
-            <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-2xl">
+            <div className="flex items-center gap-3 p-4 bg-destructive/10 border border-red-200 rounded-2xl">
               <div className="flex-shrink-0">
-                <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
-                  <Trash2 className="h-5 w-5 text-red-600" />
+                <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                  <Trash2 className="h-5 w-5 text-destructive" />
                 </div>
               </div>
               <div className="flex-1">
                 <h3 className="text-sm font-medium text-red-900">
                   Bu tedarikçiyi silmek istediğinizden emin misiniz?
                 </h3>
-                <p className="mt-1 text-sm text-red-700">
+                <p className="mt-1 text-sm text-destructive">
                   {supplierToDelete?.companyName}
                 </p>
               </div>
             </div>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               Bu işlem geri alınamaz. Tedarikçi kaydı ve tüm ilişkili veriler silinecektir.
             </p>
             <div className="flex justify-end gap-2 pt-2">

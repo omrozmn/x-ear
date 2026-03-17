@@ -209,10 +209,10 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
 
   const getPriorityColor = (priority?: string) => {
     switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'low': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'high': return 'bg-destructive/10 text-red-800';
+      case 'medium': return 'bg-warning/10 text-yellow-800';
+      case 'low': return 'bg-success/10 text-success';
+      default: return 'bg-muted text-foreground';
     }
   };
 
@@ -256,7 +256,7 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
         <CardContent className="pt-0">
           {/* Search */}
           <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Olaylarda ara..."
               value={searchTerm}
@@ -270,7 +270,7 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
             <div className="space-y-4">
               {/* Event type filter */}
               <div>
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                <label className="text-sm font-medium text-foreground mb-2 block">
                   Olay Türleri
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -297,7 +297,7 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
               {/* Date range filter */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                  <label className="text-sm font-medium text-foreground mb-1 block">
                     Başlangıç Tarihi
                   </label>
                   <Input
@@ -307,7 +307,7 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                  <label className="text-sm font-medium text-foreground mb-1 block">
                     Bitiş Tarihi
                   </label>
                   <Input
@@ -339,8 +339,8 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
       {loading ? (
         <Card className="dark:bg-gray-800 dark:border-gray-700">
           <CardContent className="text-center py-8">
-            <div className="text-gray-500 dark:text-gray-400">
-              <RefreshCw className="h-12 w-12 mx-auto mb-4 text-gray-300 dark:text-gray-600 animate-spin" />
+            <div className="text-muted-foreground">
+              <RefreshCw className="h-12 w-12 mx-auto mb-4 text-gray-300 animate-spin" />
               <p className="text-lg font-medium mb-2 text-gray-900 dark:text-gray-100">Yükleniyor...</p>
             </div>
           </CardContent>
@@ -348,7 +348,7 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
       ) : error ? (
         <Card className="dark:bg-gray-800 dark:border-gray-700">
           <CardContent className="text-center py-8">
-            <div className="text-red-500">
+            <div className="text-destructive">
               <p className="text-lg font-medium mb-2">Hata oluştu</p>
               <p className="text-sm">{error instanceof Error ? error.message : String(error)}</p>
             </div>
@@ -363,7 +363,7 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
                 <div className="flex-shrink-0 w-3 h-3 bg-blue-600 rounded-full"></div>
                 <div className="ml-4">
                   <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">{date}</h4>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{dayEvents.length} olay</p>
+                  <p className="text-xs text-muted-foreground">{dayEvents.length} olay</p>
                 </div>
               </div>
 
@@ -375,7 +375,7 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
                       <div className="flex items-start justify-between">
                         <div className="flex items-start space-x-3 flex-1">
                           <div className="flex-shrink-0">
-                            <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-600">
+                            <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center text-muted-foreground">
                               {getEventIcon(event.icon || event.type || 'activity')}
                             </div>
                           </div>
@@ -394,9 +394,9 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
                               )}
                             </div>
                             {event.description && (
-                              <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">{event.description}</p>
+                              <p className="text-sm text-muted-foreground mb-2">{event.description}</p>
                             )}
-                            <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
+                            <div className="flex items-center space-x-4 text-xs text-muted-foreground">
                               <span className="flex items-center">
                                 <Clock className="h-3 w-3 mr-1" />
                                 {formatTime(event.date)}
@@ -412,7 +412,7 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
                             {/* Expanded metadata */}
                             {expandedEvents.has(event.id) && event.metadata && (
                               <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
-                                <h6 className="text-xs font-medium text-gray-700 dark:text-gray-200 mb-2">{t('timeline.details.title')}</h6>
+                                <h6 className="text-xs font-medium text-foreground mb-2">{t('timeline.details.title')}</h6>
                                 <div className="space-y-1">
                                   {Object.entries(event.metadata)
                                     .filter(([key]) => {
@@ -452,8 +452,8 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
 
                                       return (
                                         <div key={key} className="flex justify-between text-xs">
-                                          <span className="text-gray-500 dark:text-gray-400">{label}:</span>
-                                          <span className="text-gray-700 dark:text-gray-300 text-right max-w-[60%] break-words">{displayValue}</span>
+                                          <span className="text-muted-foreground">{label}:</span>
+                                          <span className="text-foreground text-right max-w-[60%] break-words">{displayValue}</span>
                                         </div>
                                       );
                                     }).filter(Boolean)}
@@ -490,8 +490,8 @@ export const PartyTimelineTab: React.FC<PartyTimelineTabProps> = ({ party }) => 
       ) : (
         <Card className="dark:bg-gray-800 dark:border-gray-700">
           <CardContent className="text-center py-8">
-            <div className="text-gray-500 dark:text-gray-400">
-              <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+            <div className="text-muted-foreground">
+              <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
               <p className="text-lg font-medium mb-2 text-gray-900 dark:text-gray-100">Olay bulunamadı</p>
               <p className="text-sm">
                 {searchTerm || selectedEventTypes.length > 0 || dateRange

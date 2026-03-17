@@ -49,15 +49,15 @@ export const SGKWorkflow: React.FC<SGKWorkflowProps> = ({
 
   const getStatusColor = (status: SGKWorkflowStatus): string => {
     switch (status) {
-      case 'draft': return 'bg-gray-100 text-gray-800';
-      case 'submitted': return 'bg-blue-100 text-blue-800';
-      case 'under_review': return 'bg-yellow-100 text-yellow-800';
-      case 'approved': return 'bg-green-100 text-green-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
+      case 'draft': return 'bg-muted text-foreground';
+      case 'submitted': return 'bg-primary/10 text-blue-800';
+      case 'under_review': return 'bg-warning/10 text-yellow-800';
+      case 'approved': return 'bg-success/10 text-success';
+      case 'rejected': return 'bg-destructive/10 text-red-800';
       case 'paid': return 'bg-purple-100 text-purple-800';
       case 'completed': return 'bg-emerald-100 text-emerald-800';
-      case 'cancelled': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'cancelled': return 'bg-muted text-foreground';
+      default: return 'bg-muted text-foreground';
     }
   };
 
@@ -164,14 +164,14 @@ export const SGKWorkflow: React.FC<SGKWorkflowProps> = ({
     return (
       <div className="flex items-center justify-center p-4">
         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-        <span className="ml-2 text-gray-600">İş akışı yükleniyor...</span>
+        <span className="ml-2 text-muted-foreground">İş akışı yükleniyor...</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+      <div className="bg-destructive/10 border border-red-200 rounded-xl p-4">
         <div className="flex">
           <div className="flex-shrink-0">
             <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -180,10 +180,10 @@ export const SGKWorkflow: React.FC<SGKWorkflowProps> = ({
           </div>
           <div className="ml-3">
             <h3 className="text-sm font-medium text-red-800">Hata</h3>
-            <p className="mt-1 text-sm text-red-700">{error}</p>
+            <p className="mt-1 text-sm text-destructive">{error}</p>
             <Button
               onClick={() => setError(null)}
-              className="mt-2 text-sm text-red-600 hover:text-red-500"
+              className="mt-2 text-sm text-destructive hover:text-destructive"
               variant='default'>
               Tekrar dene
             </Button>
@@ -195,13 +195,13 @@ export const SGKWorkflow: React.FC<SGKWorkflowProps> = ({
 
   if (!workflow) {
     return (
-      <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+      <div className="bg-muted border border-border rounded-xl p-4">
         <div className="text-center">
-          <svg className="mx-auto h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="mx-auto h-8 w-8 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
           </svg>
-          <h3 className="mt-2 text-sm font-medium text-gray-900">İş akışı bulunamadı</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <h3 className="mt-2 text-sm font-medium text-foreground">İş akışı bulunamadı</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
             Bu belge için henüz bir iş akışı oluşturulmamış.
           </p>
           {!readOnly && (
@@ -215,7 +215,7 @@ export const SGKWorkflow: React.FC<SGKWorkflowProps> = ({
                   setError(err instanceof Error ? err.message : 'Failed to create workflow');
                 }
               }}
-              className="mt-3 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-xl text-white premium-gradient tactile-press focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="mt-3 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-xl text-white premium-gradient tactile-press focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring"
               variant='default'>
               İş Akışı Oluştur
             </Button>
@@ -228,18 +228,18 @@ export const SGKWorkflow: React.FC<SGKWorkflowProps> = ({
   return (
     <div className="space-y-4">
       {/* Current Status */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-4">
+      <div className="bg-card border border-border rounded-2xl p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(workflow.currentStatus)}`}>
               {getStatusLabel(workflow.currentStatus)}
             </span>
             {workflow.deadline && (
-              <div className="flex items-center text-sm text-gray-500">
+              <div className="flex items-center text-sm text-muted-foreground">
                 <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className={`${isOverdue(workflow.deadline) ? 'text-red-600 font-medium' : isDeadlineApproaching(workflow.deadline) ? 'text-yellow-600 font-medium' : ''}`}>
+                <span className={`${isOverdue(workflow.deadline) ? 'text-destructive font-medium' : isDeadlineApproaching(workflow.deadline) ? 'text-yellow-600 font-medium' : ''}`}>
                   {formatDate(workflow.deadline)}
                   {isOverdue(workflow.deadline) && ' (Gecikmiş)'}
                   {isDeadlineApproaching(workflow.deadline) && !isOverdue(workflow.deadline) && ' (Yaklaşıyor)'}
@@ -252,7 +252,7 @@ export const SGKWorkflow: React.FC<SGKWorkflowProps> = ({
             <Button
               onClick={() => setShowStatusModal(true)}
               disabled={loading}
-              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+              className="inline-flex items-center px-3 py-2 border border-border shadow-sm text-sm leading-4 font-medium rounded-xl text-foreground bg-card hover:bg-muted focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring disabled:opacity-50"
               variant='default'>
               Durumu Güncelle
             </Button>
@@ -264,19 +264,19 @@ export const SGKWorkflow: React.FC<SGKWorkflowProps> = ({
           <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             {workflow.submittedDate && (
               <div>
-                <span className="text-gray-500">Gönderim:</span>
+                <span className="text-muted-foreground">Gönderim:</span>
                 <div className="font-medium">{formatDate(workflow.submittedDate)}</div>
               </div>
             )}
             {workflow.approvalDate && (
               <div>
-                <span className="text-gray-500">Onay:</span>
+                <span className="text-muted-foreground">Onay:</span>
                 <div className="font-medium">{formatDate(workflow.approvalDate)}</div>
               </div>
             )}
             {workflow.paymentDate && (
               <div>
-                <span className="text-gray-500">Ödeme:</span>
+                <span className="text-muted-foreground">Ödeme:</span>
                 <div className="font-medium">{formatDate(workflow.paymentDate)}</div>
               </div>
             )}
@@ -285,15 +285,15 @@ export const SGKWorkflow: React.FC<SGKWorkflowProps> = ({
       </div>
       {/* Status History */}
       {!compact && (
-        <div className="bg-white border border-gray-200 rounded-2xl p-4">
-          <h4 className="text-sm font-medium text-gray-900 mb-3">Durum Geçmişi</h4>
+        <div className="bg-card border border-border rounded-2xl p-4">
+          <h4 className="text-sm font-medium text-foreground mb-3">Durum Geçmişi</h4>
           <div className="flow-root">
             <ul className="-mb-8">
               {workflow.statusHistory.map((entry, index) => (
                 <li key={index}>
                   <div className="relative pb-8">
                     {index !== workflow.statusHistory.length - 1 && (
-                      <span className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true" />
+                      <span className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-accent" aria-hidden="true" />
                     )}
                     <div className="relative flex space-x-3">
                       <div>
@@ -305,18 +305,18 @@ export const SGKWorkflow: React.FC<SGKWorkflowProps> = ({
                       </div>
                       <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                         <div>
-                          <p className="text-sm text-gray-900">
+                          <p className="text-sm text-foreground">
                             <span className="font-medium">{getStatusLabel(entry.status)}</span>
                             {entry.notes && (
-                              <span className="text-gray-500"> - {entry.notes}</span>
+                              <span className="text-muted-foreground"> - {entry.notes}</span>
                             )}
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-muted-foreground">
                             {entry.userName || 'Sistem'}
                             {entry.systemGenerated && ' (Otomatik)'}
                           </p>
                         </div>
-                        <div className="text-right text-xs text-gray-500 whitespace-nowrap">
+                        <div className="text-right text-xs text-muted-foreground whitespace-nowrap">
                           <time dateTime={entry.timestamp}>
                             {formatDate(entry.timestamp)}
                           </time>
@@ -336,14 +336,14 @@ export const SGKWorkflow: React.FC<SGKWorkflowProps> = ({
       {/* Status Update Modal */}
       {showStatusModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-xl bg-white">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-xl bg-card">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
+              <h3 className="text-lg font-medium text-foreground mb-4">
                 Durum Güncelle
               </h3>
               
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Yeni Durum
                 </label>
                 <Select
@@ -358,14 +358,14 @@ export const SGKWorkflow: React.FC<SGKWorkflowProps> = ({
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Notlar (İsteğe bağlı)
                 </label>
                 <Textarea
                   value={statusNotes}
                   onChange={(e) => setStatusNotes(e.target.value)}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
                   placeholder="Durum değişikliği ile ilgili notlar..."
                 />
               </div>
@@ -376,14 +376,14 @@ export const SGKWorkflow: React.FC<SGKWorkflowProps> = ({
                     setShowStatusModal(false);
                     setStatusNotes('');
                   }}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  className="px-4 py-2 text-sm font-medium text-foreground bg-muted hover:bg-accent rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500"
                   variant='default'>
                   İptal
                 </Button>
                 <Button
                   onClick={handleStatusUpdate}
                   disabled={loading}
-                  className="px-4 py-2 text-sm font-medium text-white premium-gradient tactile-press rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-medium text-white premium-gradient tactile-press rounded-xl focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
                   variant='default'>
                   {loading ? 'Güncelleniyor...' : 'Güncelle'}
                 </Button>

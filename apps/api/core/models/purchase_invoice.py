@@ -32,7 +32,8 @@ class PurchaseInvoice(BaseModel, TenantScopedMixin):
     sender_tax_office = Column(String(100))
     sender_address = Column(Text)
     sender_city = Column(String(100))
-    
+    sender_district = Column(String(100))
+
     # Supplier relationship (Nullable - may not exist initially)
     supplier_id = Column(Integer, ForeignKey('suppliers.id'), nullable=True, index=True)
     supplier = relationship('Supplier', backref='purchase_invoices')

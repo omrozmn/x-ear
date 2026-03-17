@@ -61,8 +61,8 @@ const Login: React.FC = () => {
         setRequiresMFA(true);
         toast.success('Please enter your MFA code');
       } else if (result.token) {
-        // Login successful, wait a bit for token to be saved to localStorage
-        // then redirect
+        // Login successful — full page reload to reinitialize auth state
+        // (useNavigate cannot be used here because auth context needs a fresh load)
         await new Promise(resolve => setTimeout(resolve, 100));
         window.location.href = '/';
       }

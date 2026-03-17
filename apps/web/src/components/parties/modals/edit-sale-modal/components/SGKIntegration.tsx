@@ -60,27 +60,27 @@ export const SGKIntegration: React.FC<SGKIntegrationProps> = ({
                 key={scheme.id}
                 className={`p-3 border rounded-2xl cursor-pointer transition-colors ${
                   selectedScheme?.id === scheme.id
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-blue-500 bg-primary/10'
+                    : 'border-border hover:border-border'
                 }`}
                 onClick={() => onSchemeSelect(scheme)}
               >
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium text-sm">{scheme.name}</div>
-                    <div className="text-xs text-gray-500">{scheme.code}</div>
+                    <div className="text-xs text-muted-foreground">{scheme.code}</div>
                   </div>
                   <div className="text-right">
                     <div className="text-sm font-medium">{scheme.coveragePercentage}%</div>
                     {scheme.maxAmount && (
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-muted-foreground">
                         Max: {formatCurrency(scheme.maxAmount)}
                       </div>
                     )}
                   </div>
                 </div>
                 {selectedScheme?.id === scheme.id && (
-                  <CheckCircle className="w-4 h-4 text-blue-500 mt-2" />
+                  <CheckCircle className="w-4 h-4 text-primary mt-2" />
                 )}
               </div>
             ))}
@@ -89,19 +89,19 @@ export const SGKIntegration: React.FC<SGKIntegrationProps> = ({
 
         {/* SGK Coverage Display */}
         {selectedScheme && (
-          <div className="p-4 bg-green-50 border border-green-200 rounded-2xl">
+          <div className="p-4 bg-success/10 border border-green-200 rounded-2xl">
             <div className="flex items-center gap-2 mb-2">
-              <CheckCircle className="w-5 h-5 text-green-600" />
-              <span className="font-medium text-green-800">SGK Karşılığı Hesaplandı</span>
+              <CheckCircle className="w-5 h-5 text-success" />
+              <span className="font-medium text-success">SGK Karşılığı Hesaplandı</span>
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-gray-600">Seçili Şema:</span>
+                <span className="text-muted-foreground">Seçili Şema:</span>
                 <div className="font-medium">{selectedScheme.name}</div>
               </div>
               <div>
-                <span className="text-gray-600">Karşılık Tutarı:</span>
-                <div className="font-medium text-green-600">{formatCurrency(sgkCoverage)}</div>
+                <span className="text-muted-foreground">Karşılık Tutarı:</span>
+                <div className="font-medium text-success">{formatCurrency(sgkCoverage)}</div>
               </div>
             </div>
           </div>
@@ -152,7 +152,7 @@ export const SGKIntegration: React.FC<SGKIntegrationProps> = ({
         </div>
 
         {/* SGK Information */}
-        <div className="text-xs text-gray-500 space-y-1">
+        <div className="text-xs text-muted-foreground space-y-1">
           <p>• SGK karşılığı otomatik olarak hesaplanır</p>
           <p>• Onay numarası ve tarihi zorunlu değildir</p>
           <p>• SGK sorgulama için hasta TC kimlik numarası gereklidir</p>

@@ -46,7 +46,7 @@ export function ActivityLogsList({ logs, isLoading, pagination, onSort }: Activi
       title: 'Tarih/Saat',
       sortable: true,
       render: (_, log) => (
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+        <span className="text-sm text-muted-foreground">
           {log.createdAt ? formatDate(log.createdAt) : '-'}
         </span>
       )
@@ -66,7 +66,7 @@ export function ActivityLogsList({ logs, isLoading, pagination, onSort }: Activi
       title: 'İşlem',
       sortable: true,
       render: (_, log) => (
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+        <span className="text-sm text-muted-foreground">
           {log.action || '-'}
         </span>
       )
@@ -76,7 +76,7 @@ export function ActivityLogsList({ logs, isLoading, pagination, onSort }: Activi
       title: 'Varlık Tipi',
       sortable: true,
       render: (_, log) => (
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+        <span className="text-sm text-muted-foreground">
           {log.entityType || '-'}
         </span>
       )
@@ -85,7 +85,7 @@ export function ActivityLogsList({ logs, isLoading, pagination, onSort }: Activi
       key: 'details',
       title: 'Detay',
       render: (_, log) => (
-        <span className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">
+        <span className="text-sm text-muted-foreground truncate max-w-xs">
           {formatDetails(log)}
         </span>
       )
@@ -94,7 +94,7 @@ export function ActivityLogsList({ logs, isLoading, pagination, onSort }: Activi
       key: 'message',
       title: 'Mesaj',
       render: (_, log) => (
-        <span className="text-sm text-gray-500 dark:text-gray-400 font-mono">
+        <span className="text-sm text-muted-foreground font-mono">
           {log.message || '-'}
         </span>
       )

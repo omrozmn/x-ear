@@ -60,7 +60,7 @@ export function OverviewTab({ filters }: OverviewTabProps) {
     if (isLoading) {
         return (
             <div className="flex justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
         );
     }
@@ -69,7 +69,7 @@ export function OverviewTab({ filters }: OverviewTabProps) {
         return (
             <div className="text-center py-12">
                 <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-4">Veriler yüklenirken hata oluştu</p>
+                <p className="text-muted-foreground mb-4">Veriler yüklenirken hata oluştu</p>
                 <Button onClick={() => refetch()} variant="outline" icon={<RefreshCw className="w-4 h-4" />}>
                     Tekrar Dene
                 </Button>
@@ -131,35 +131,35 @@ export function OverviewTab({ filters }: OverviewTabProps) {
 
             {/* Quick Stats */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-border p-6">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Hasta İstatistikleri</h3>
                     <div className="space-y-3">
                         <div className="flex justify-between items-center">
-                            <span className="text-gray-600 dark:text-gray-400">Toplam Hasta</span>
+                            <span className="text-muted-foreground">Toplam Hasta</span>
                             <span className="font-semibold text-gray-900 dark:text-white">{overview?.totalPatients || 0}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                            <span className="text-gray-600 dark:text-gray-400">Yeni Hastalar</span>
-                            <span className="font-semibold text-green-600 dark:text-green-400">{overview?.newPatients || 0}</span>
+                            <span className="text-muted-foreground">Yeni Hastalar</span>
+                            <span className="font-semibold text-success">{overview?.newPatients || 0}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                            <span className="text-gray-600 dark:text-gray-400">Toplam Randevu</span>
+                            <span className="text-muted-foreground">Toplam Randevu</span>
                             <span className="font-semibold text-gray-900 dark:text-white">{overview?.totalAppointments || 0}</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-border p-6">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Ödeme Yöntemleri</h3>
                     <div className="space-y-3">
                         {financial?.paymentMethods && Object.entries(financial.paymentMethods).map(([method, data]) => (
                             <div key={method} className="flex justify-between items-center">
-                                <span className="text-gray-600 dark:text-gray-400 capitalize">{method}</span>
+                                <span className="text-muted-foreground capitalize">{method}</span>
                                 <span className="font-semibold text-gray-900 dark:text-white">{formatProtectedCurrency(data.amount || 0)}</span>
                             </div>
                         ))}
                         {(!financial?.paymentMethods || Object.keys(financial.paymentMethods).length === 0) && (
-                            <p className="text-gray-400 text-sm">Veri bulunamadı</p>
+                            <p className="text-muted-foreground text-sm">Veri bulunamadı</p>
                         )}
                     </div>
                 </div>

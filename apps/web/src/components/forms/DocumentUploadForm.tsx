@@ -149,15 +149,15 @@ export const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Dosya Yükleme Alanı */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-foreground mb-2">
             Dosya Seçimi *
           </label>
           <div
             className={`relative border-2 border-dashed rounded-2xl p-6 text-center transition-colors ${dragActive
-              ? 'border-blue-400 bg-blue-50'
+              ? 'border-blue-400 bg-primary/10'
               : selectedFile
-                ? 'border-green-400 bg-green-50'
-                : 'border-gray-300 hover:border-gray-400'
+                ? 'border-green-400 bg-success/10'
+                : 'border-border hover:border-gray-400'
               }`}
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
@@ -174,11 +174,11 @@ export const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
 
             {selectedFile ? (
               <div className="flex flex-col items-center">
-                <CheckCircle className="w-12 h-12 text-green-500 mb-4" />
-                <p className="text-sm font-medium text-gray-900 mb-1">
+                <CheckCircle className="w-12 h-12 text-success mb-4" />
+                <p className="text-sm font-medium text-foreground mb-1">
                   {selectedFile.name}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   {formatFileSize(selectedFile.size)}
                 </p>
                 <Button
@@ -193,11 +193,11 @@ export const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
               </div>
             ) : (
               <div className="flex flex-col items-center">
-                <Upload className="w-12 h-12 text-gray-400 mb-4" />
-                <p className="text-sm font-medium text-gray-900 mb-1">
+                <Upload className="w-12 h-12 text-muted-foreground mb-4" />
+                <p className="text-sm font-medium text-foreground mb-1">
                   Dosyayı sürükleyin veya tıklayın
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   PDF, resim veya doküman dosyaları (max 10MB)
                 </p>
                 <Button
@@ -212,7 +212,7 @@ export const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
             )}
           </div>
           {errors.file && (
-            <p className="mt-2 text-sm text-red-600 flex items-center">
+            <p className="mt-2 text-sm text-destructive flex items-center">
               <AlertCircle className="w-4 h-4 mr-1" />
               {errors.file}
             </p>
@@ -221,7 +221,7 @@ export const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
 
         {/* Doküman Türü */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-foreground mb-2">
             Doküman Türü *
           </label>
           <Select
@@ -243,7 +243,7 @@ export const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
 
         {/* Açıklama */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Açıklama
           </label>
           <Textarea
@@ -251,13 +251,13 @@ export const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Doküman hakkında açıklama..."
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-blue-500"
           />
         </div>
 
         {/* Etiketler */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Etiketler
           </label>
           <Input
@@ -265,9 +265,9 @@ export const DocumentUploadForm: React.FC<DocumentUploadFormProps> = ({
             value={tags}
             onChange={(e) => setTags(e.target.value)}
             placeholder="Virgülle ayrılmış etiketler (örn: önemli, acil, kontrol)"
-            className="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-blue-500"
           />
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             Etiketler dokümanın aranmasını kolaylaştırır
           </p>
         </div>

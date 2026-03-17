@@ -64,6 +64,7 @@ class VerifyRegistrationOTPRequest(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     referral_code: Optional[str] = None
+    product_code: Optional[str] = None
 
 # --- Helper Functions ---
 
@@ -197,9 +198,37 @@ def verify_registration_otp(
                 if affiliate and affiliate.is_active:
                     affiliate_id = affiliate.id
 
-            new_tenant.slug = f"clinic-{_short_id(8)}"
+            # Sector-aware slug prefix
+            _product_code = request_data.product_code or "xear_hearing"
+            _slug_prefixes = {
+                "xear_hearing": "clinic",
+                "xear_pharmacy": "pharmacy",
+                "xear_optic": "optic",
+                "xear_medical": "medco",
+                "xear_hospital": "hospital",
+                "xear_hotel": "hotel",
+                "xear_beauty": "beauty",
+                "xear_general": "biz",
+            }
+            _slug_prefix = _slug_prefixes.get(_product_code, "biz")
+            new_tenant.slug = f"{_slug_prefix}-{_short_id(8)}"
             new_tenant.billing_email = f"{phone}@mobile-signup.x-ear.com"
             new_tenant.status = TenantStatus.TRIAL.value
+
+            # Set product_code and sector
+            new_tenant.product_code = _product_code
+            _sector_map = {
+                "xear_hearing": "hearing",
+                "xear_pharmacy": "pharmacy",
+                "xear_optic": "optic",
+                "xear_medical": "medical",
+                "xear_hospital": "hospital",
+                "xear_hotel": "hotel",
+                "xear_beauty": "beauty",
+                "xear_general": "general",
+            }
+            new_tenant.sector = _sector_map.get(_product_code, "general")
+
             if affiliate_id:
                 new_tenant.affiliate_id = affiliate_id
                 new_tenant.referral_code = request_data.referral_code

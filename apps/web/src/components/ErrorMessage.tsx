@@ -16,16 +16,16 @@ interface ErrorMessageProps {
 const typeConfig = {
   error: {
     icon: AlertCircle,
-    bgColor: 'bg-red-50',
+    bgColor: 'bg-destructive/10',
     borderColor: 'border-red-200',
-    iconColor: 'text-red-500',
+    iconColor: 'text-destructive',
     titleColor: 'text-red-800',
-    messageColor: 'text-red-700',
+    messageColor: 'text-destructive',
     buttonColor: 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
   },
   warning: {
     icon: AlertTriangle,
-    bgColor: 'bg-yellow-50',
+    bgColor: 'bg-warning/10',
     borderColor: 'border-yellow-200',
     iconColor: 'text-yellow-500',
     titleColor: 'text-yellow-800',
@@ -34,20 +34,20 @@ const typeConfig = {
   },
   info: {
     icon: Info,
-    bgColor: 'bg-blue-50',
+    bgColor: 'bg-primary/10',
     borderColor: 'border-blue-200',
-    iconColor: 'text-blue-500',
+    iconColor: 'text-primary',
     titleColor: 'text-blue-800',
-    messageColor: 'text-blue-700',
-    buttonColor: 'premium-gradient tactile-press focus:ring-blue-500'
+    messageColor: 'text-primary',
+    buttonColor: 'premium-gradient tactile-press focus:ring-ring'
   },
   success: {
     icon: CheckCircle,
-    bgColor: 'bg-green-50',
+    bgColor: 'bg-success/10',
     borderColor: 'border-green-200',
-    iconColor: 'text-green-500',
-    titleColor: 'text-green-800',
-    messageColor: 'text-green-700',
+    iconColor: 'text-success',
+    titleColor: 'text-success',
+    messageColor: 'text-success',
     buttonColor: 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
   }
 };

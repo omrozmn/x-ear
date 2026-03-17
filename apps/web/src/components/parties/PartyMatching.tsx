@@ -203,7 +203,7 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Hasta Eşleştirme</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Potansiyel duplikat hastaları tespit edin ve birleştirin
           </p>
         </div>
@@ -214,7 +214,7 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
               checked={autoMergeEnabled}
               onChange={(e) => setAutoMergeEnabled(e.target.checked)}
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">Otomatik birleştirme</span>
+            <span className="text-sm text-foreground">Otomatik birleştirme</span>
           </div>
 
           <Button
@@ -241,11 +241,11 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
         <Card className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Arama
               </label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   placeholder="Hasta ara..."
                   value={searchTerm}
@@ -258,7 +258,7 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
 
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Durum
               </label>
               <Select
@@ -275,7 +275,7 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Güven Seviyesi
               </label>
               <Select
@@ -291,7 +291,7 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Risk Seviyesi
               </label>
               <Select
@@ -317,11 +317,11 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card className="p-4 dark:bg-gray-800 dark:border-gray-700">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-2xl">
-                  <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <div className="p-2 bg-primary/10 rounded-2xl">
+                  <Users className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Toplam Eşleşme</p>
+                  <p className="text-sm text-muted-foreground">Toplam Eşleşme</p>
                   <p className="text-xl font-semibold dark:text-white">{matches.length}</p>
                 </div>
               </div>
@@ -329,11 +329,11 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
 
             <Card className="p-4 dark:bg-gray-800 dark:border-gray-700">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-2xl">
-                  <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                <div className="p-2 bg-destructive/10 rounded-2xl">
+                  <AlertTriangle className="w-5 h-5 text-destructive" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Yüksek Güven</p>
+                  <p className="text-sm text-muted-foreground">Yüksek Güven</p>
                   <p className="text-xl font-semibold dark:text-white">
                     {matches.filter(m => m.confidence === 'high').length}
                   </p>
@@ -343,11 +343,11 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
 
             <Card className="p-4 dark:bg-gray-800 dark:border-gray-700">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-2xl">
-                  <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                <div className="p-2 bg-success/10 rounded-2xl">
+                  <CheckCircle className="w-5 h-5 text-success" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Birleştirildi</p>
+                  <p className="text-sm text-muted-foreground">Birleştirildi</p>
                   <p className="text-xl font-semibold dark:text-white">
                     {matches.filter(m => m.status === 'merged').length}
                   </p>
@@ -357,11 +357,11 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
 
             <Card className="p-4 dark:bg-gray-800 dark:border-gray-700">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-2xl">
+                <div className="p-2 bg-warning/10 rounded-2xl">
                   <X className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Beklemede</p>
+                  <p className="text-sm text-muted-foreground">Beklemede</p>
                   <p className="text-xl font-semibold dark:text-white">{pendingMatches.length}</p>
                 </div>
               </div>
@@ -384,7 +384,7 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
                       <Badge className={getRiskColor(match.riskLevel)}>
                         {match.riskLevel} Risk
                       </Badge>
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                      <span className="text-sm text-muted-foreground">
                         %{Math.round(match.similarity * 100)} benzerlik
                       </span>
                     </div>
@@ -393,11 +393,11 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
                       {match.parties.map((party) => (
                         <div key={party.id} className="border dark:border-gray-700 rounded-2xl p-3 dark:bg-gray-700/30">
                           <div className="flex items-center space-x-2 mb-2">
-                            <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                            <User className="w-4 h-4 text-muted-foreground" />
                             <span className="font-medium dark:text-white">{party.firstName} {party.lastName}</span>
                           </div>
 
-                          <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                          <div className="space-y-1 text-sm text-muted-foreground">
                             {party.phone && (
                               <div className="flex items-center space-x-2">
                                 <Phone className="w-3 h-3" />
@@ -423,8 +423,8 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
                       ))}
                     </div>
 
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                      <strong className="text-gray-700 dark:text-gray-300">Eşleşme Nedenleri:</strong> {match.matchReasons.join(', ')}
+                    <div className="text-sm text-muted-foreground">
+                      <strong className="text-foreground">Eşleşme Nedenleri:</strong> {match.matchReasons.join(', ')}
                     </div>
                   </div>
 
@@ -461,21 +461,21 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
           </div>
         ) : matches.length > 0 ? (
           <Card className="p-8 text-center dark:bg-gray-800 dark:border-gray-700">
-            <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
+            <CheckCircle className="w-12 h-12 text-success mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               Filtre kriterlerine uygun eşleşme bulunamadı
             </h3>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-muted-foreground">
               Farklı filtre seçeneklerini deneyin veya filtreleri temizleyin.
             </p>
           </Card>
         ) : (
           <Card className="p-8 text-center dark:bg-gray-800 dark:border-gray-700">
-            <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               Henüz analiz yapılmadı
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
+            <p className="text-muted-foreground mb-4">
               Potansiyel duplikat hastaları bulmak için analiz başlatın.
             </p>
             <Button onClick={analyzeMatches} disabled={parties.length < 2}>
@@ -502,14 +502,14 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
               <Badge className={getRiskColor(selectedMatch.riskLevel)}>
                 {selectedMatch.riskLevel} Risk
               </Badge>
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-muted-foreground">
                 %{Math.round(selectedMatch.similarity * 100)} benzerlik
               </span>
             </div>
 
             <div>
               <h4 className="font-medium mb-2 dark:text-gray-200">Eşleşme Nedenleri:</h4>
-              <ul className="list-disc list-inside space-y-1 text-sm text-gray-600 dark:text-gray-400">
+              <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                 {selectedMatch.matchReasons.map((reason, index) => (
                   <li key={index}>{reason}</li>
                 ))}
@@ -522,7 +522,7 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
                 {selectedMatch.parties.map((party, index) => (
                   <div key={party.id} className="border dark:border-gray-700 rounded-2xl p-3 dark:bg-gray-800">
                     <h5 className="font-medium mb-2 dark:text-white">Hasta {index + 1}: {party.firstName} {party.lastName}</h5>
-                    <div className="grid grid-cols-2 gap-2 text-sm dark:text-gray-400">
+                    <div className="grid grid-cols-2 gap-2 text-sm">
                       <div><strong>Telefon:</strong> {party.phone || 'Yok'}</div>
                       <div><strong>E-posta:</strong> {party.email || 'Yok'}</div>
                       <div><strong>Doğum Tarihi:</strong> {party.birthDate || 'Yok'}</div>
@@ -555,7 +555,7 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
       >
         {mergePreview && (
           <div className="space-y-4">
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-2xl p-4">
+            <div className="bg-warning/10 border border-yellow-200 dark:border-yellow-800 rounded-2xl p-4">
               <div className="flex items-center space-x-2">
                 <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-500" />
                 <span className="font-medium text-yellow-800 dark:text-yellow-400">Dikkat</span>
@@ -567,9 +567,9 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
 
             <div>
               <h4 className="font-medium mb-2 dark:text-white">Ana Hasta (Korunacak):</h4>
-              <div className="border border-green-200 dark:border-green-800 rounded-2xl p-3 bg-green-50 dark:bg-green-900/20">
+              <div className="border border-green-200 dark:border-green-800 rounded-2xl p-3 bg-success/10">
                 <div className="font-medium dark:text-green-300">{`${mergePreview.primary.firstName || ''} ${mergePreview.primary.lastName || ''}`.trim() || 'Unknown'}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="text-sm text-muted-foreground">
                   {mergePreview.primary.phone} • {mergePreview.primary.email}
                 </div>
               </div>
@@ -579,9 +579,9 @@ export const PartyMatching: React.FC<PartyMatchingProps> = ({
               <h4 className="font-medium mb-2 dark:text-white">Silinecek Hastalar:</h4>
               <div className="space-y-2">
                 {mergePreview.duplicates.map(party => (
-                  <div key={party.id} className="border border-red-200 dark:border-red-800 rounded-2xl p-3 bg-red-50 dark:bg-red-900/20">
+                  <div key={party.id} className="border border-red-200 dark:border-red-800 rounded-2xl p-3 bg-destructive/10">
                     <div className="font-medium dark:text-red-300">{party.firstName} {party.lastName}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                    <div className="text-sm text-muted-foreground">
                       {party.phone} • {party.email}
                     </div>
                   </div>

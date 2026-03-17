@@ -27,7 +27,7 @@ export const StockInfoSection: React.FC<StockInfoSectionProps> = ({
         
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Mevcut Stok
             </label>
             {isEditMode ? (
@@ -46,7 +46,7 @@ export const StockInfoSection: React.FC<StockInfoSectionProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Min. Stok Seviyesi
             </label>
             {isEditMode ? (
@@ -64,7 +64,7 @@ export const StockInfoSection: React.FC<StockInfoSectionProps> = ({
             )}
           </div>
 
-          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="pt-4 border-t border-border">
             <Button
               variant="outline"
               onClick={onSerialModalOpen}

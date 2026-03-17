@@ -14,8 +14,8 @@ export function InvoiceDateTimeSection({
   onChange
 }: InvoiceDateTimeSectionProps) {
   return (
-    <div className="bg-white rounded-2xl shadow p-6 mb-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Fatura Tarihi</h3>
+    <div className="bg-card rounded-2xl shadow p-6 mb-6">
+      <h3 className="text-lg font-semibold text-foreground mb-4">Fatura Tarihi</h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Fatura Tarihi */}
@@ -33,14 +33,14 @@ export function InvoiceDateTimeSection({
             placeholder="Tarih seçin"
             fullWidth
           />
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             Faturanın düzenlenme tarihi
           </p>
         </div>
 
         {/* Fatura Saati */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Fatura Saati *
           </label>
           <Input
@@ -50,7 +50,7 @@ export function InvoiceDateTimeSection({
             className="w-full"
             required
           />
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             GİB için zorunlu alan (HH:mm)
           </p>
         </div>

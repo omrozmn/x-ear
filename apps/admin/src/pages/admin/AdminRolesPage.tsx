@@ -128,7 +128,7 @@ const AdminRolesPage: React.FC = () => {
     };
 
     const handleDelete = async (roleId: string) => {
-        if (!confirm('Bu rolü silmek istediğinize emin misiniz?')) return;
+        if (!window.confirm('Bu rolü silmek istediğinize emin misiniz?')) return;
 
         try {
             await deleteRoleMutation.mutateAsync({ roleId: roleId });
@@ -151,7 +151,7 @@ const AdminRolesPage: React.FC = () => {
             return;
         }
 
-        if (!confirm(`${deletableRoleIds.length} rol silinsin mi?`)) {
+        if (!window.confirm(`${deletableRoleIds.length} rol silinsin mi?`)) {
             return;
         }
 

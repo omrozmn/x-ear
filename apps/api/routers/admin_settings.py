@@ -62,26 +62,26 @@ def init_db(
         if not features_row:
             import json
             default_features = {
-                "patients": {"mode": "visible", "plans": []},
-                "appointments": {"mode": "visible", "plans": []},
-                "inventory": {"mode": "visible", "plans": []},
-                "suppliers": {"mode": "visible", "plans": []},
-                "sales": {"mode": "visible", "plans": []},
-                "purchases": {"mode": "visible", "plans": []},
-                "payments": {"mode": "visible", "plans": []},
-                "campaigns": {"mode": "visible", "plans": []},
-                "website_builder": {"mode": "visible", "plans": []},
-                "invoices": {"mode": "visible", "plans": []},
-                "sgk": {"mode": "visible", "plans": []},
-                "reports": {"mode": "visible", "plans": []},
-                "invoice_normalizer": {"mode": "visible", "plans": []},
-                "cashflow": {"mode": "visible", "plans": []},
-                "pos": {"mode": "visible", "plans": []},
-                "automation": {"mode": "visible", "plans": []},
-                "ai_chat": {"mode": "visible", "plans": []},
-                "integrations_ui": {"mode": "hidden", "plans": []},
-                "pricing_ui": {"mode": "hidden", "plans": []},
-                "security_ui": {"mode": "hidden", "plans": []},
+                "patients": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "appointments": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "inventory": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "suppliers": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "sales": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "purchases": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "payments": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "campaigns": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "website_builder": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "invoices": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "sgk": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "reports": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "invoice_normalizer": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "cashflow": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "pos": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "automation": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "ai_chat": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "integrations_ui": {"mode": "hidden", "plans": [], "countries": [], "sectors": []},
+                "pricing_ui": {"mode": "hidden", "plans": [], "countries": [], "sectors": []},
+                "security_ui": {"mode": "hidden", "plans": [], "countries": [], "sectors": []},
             }
             db.add(SystemSetting(
                 key='features',
@@ -115,26 +115,26 @@ def get_settings(
         has_features = any(s.key == 'features' for s in settings)
         if not has_features:
             default_features = {
-                "patients": {"mode": "visible", "plans": []},
-                "appointments": {"mode": "visible", "plans": []},
-                "inventory": {"mode": "visible", "plans": []},
-                "suppliers": {"mode": "visible", "plans": []},
-                "sales": {"mode": "visible", "plans": []},
-                "purchases": {"mode": "visible", "plans": []},
-                "payments": {"mode": "visible", "plans": []},
-                "campaigns": {"mode": "visible", "plans": []},
-                "website_builder": {"mode": "visible", "plans": []},
-                "invoices": {"mode": "visible", "plans": []},
-                "sgk": {"mode": "visible", "plans": []},
-                "reports": {"mode": "visible", "plans": []},
-                "invoice_normalizer": {"mode": "visible", "plans": []},
-                "cashflow": {"mode": "visible", "plans": []},
-                "pos": {"mode": "visible", "plans": []},
-                "automation": {"mode": "visible", "plans": []},
-                "ai_chat": {"mode": "visible", "plans": []},
-                "integrations_ui": {"mode": "hidden", "plans": []},
-                "pricing_ui": {"mode": "hidden", "plans": []},
-                "security_ui": {"mode": "hidden", "plans": []},
+                "patients": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "appointments": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "inventory": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "suppliers": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "sales": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "purchases": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "payments": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "campaigns": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "website_builder": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "invoices": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "sgk": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "reports": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "invoice_normalizer": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "cashflow": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "pos": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "automation": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "ai_chat": {"mode": "visible", "plans": [], "countries": [], "sectors": []},
+                "integrations_ui": {"mode": "hidden", "plans": [], "countries": [], "sectors": []},
+                "pricing_ui": {"mode": "hidden", "plans": [], "countries": [], "sectors": []},
+                "security_ui": {"mode": "hidden", "plans": [], "countries": [], "sectors": []},
             }
             features_row = SystemSetting(
                 key='features',
@@ -184,9 +184,26 @@ def update_settings(
                 db.add(setting)
         
         db.commit()
-        
+
+        # Audit log for feature flag changes
+        for item in request_data:
+            if item.key == 'features':
+                try:
+                    from models.user import ActivityLog
+                    log = ActivityLog(
+                        user_id=admin_user.id if hasattr(admin_user, 'id') else 'system',
+                        tenant_id=None,
+                        action='feature_flags_updated',
+                        details='Feature flags updated by admin'
+                    )
+                    db.add(log)
+                    db.commit()
+                except Exception:
+                    pass
+                break
+
         return ResponseEnvelope(message='Settings updated')
-        
+
     except HTTPException:
         raise
     except Exception as e:

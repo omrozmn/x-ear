@@ -145,7 +145,7 @@ export function CashflowModal({
               <h3 className="text-xl font-semibold text-slate-900 dark:text-white">{title}</h3>
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Hizli kayit akisi</p>
             </div>
-            <button data-allow-raw="true" onClick={handleClose} className="text-gray-400 hover:text-gray-600 dark:text-slate-400 dark:hover:text-white">
+            <button data-allow-raw="true" onClick={handleClose} className="text-muted-foreground hover:text-muted-foreground dark:text-slate-400 dark:hover:text-white">
               <X className="h-5 w-5" />
             </button>
           </div>
@@ -164,7 +164,7 @@ export function CashflowModal({
                       setRecordType('');
                     }}
                     className={`flex-1 py-3 px-4 border-2 rounded-2xl font-medium transition-all ${transactionType === 'income'
-                    ? 'border-green-500 bg-green-50 dark:border-green-700 dark:bg-green-950/65 text-green-700 dark:text-green-100'
+                    ? 'border-green-500 bg-success/10 dark:border-green-700 text-success'
                       : 'border-slate-300 bg-white/88 text-slate-800 hover:border-green-300 hover:bg-white dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-green-700 dark:hover:bg-slate-900'
                       }`}
                   >
@@ -178,7 +178,7 @@ export function CashflowModal({
                       setRecordType('');
                     }}
                     className={`flex-1 py-3 px-4 border-2 rounded-2xl font-medium transition-all ${transactionType === 'expense'
-                    ? 'border-red-500 bg-red-50 dark:border-red-700 dark:bg-red-950/65 text-red-700 dark:text-red-100'
+                    ? 'border-red-500 bg-destructive/10 dark:border-red-700 text-destructive'
                       : 'border-slate-300 bg-white/88 text-slate-800 hover:border-red-300 hover:bg-white dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-red-700 dark:hover:bg-slate-900'
                       }`}
                   >
@@ -187,7 +187,7 @@ export function CashflowModal({
                   </button>
                 </div>
                 {errors.transactionType && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.transactionType}</p>
+                  <p className="mt-1 text-sm text-destructive">{errors.transactionType}</p>
                 )}
               </div>
             ) : null}
@@ -199,7 +199,7 @@ export function CashflowModal({
               onSelectType={setRecordType}
             />
             {errors.recordType && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.recordType}</p>
+              <p className="mt-1 text-sm text-destructive">{errors.recordType}</p>
             )}
 
             {transactionType === 'income' ? (
@@ -258,10 +258,10 @@ export function CashflowModal({
                   const parts = value.split('.');
                   setAmount(parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : value);
                 }}
-                className="w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm shadow-slate-200/60 placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-50 dark:placeholder:text-slate-500"
+                className="w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm shadow-slate-200/60 placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-ring/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-50 dark:placeholder:text-slate-500"
               />
               {errors.amount && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.amount}</p>
+                <p className="mt-1 text-sm text-destructive">{errors.amount}</p>
               )}
             </div>
 
@@ -275,7 +275,7 @@ export function CashflowModal({
                 placeholder="İşlem açıklaması..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm shadow-slate-200/60 placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-50 dark:placeholder:text-slate-500"
+                className="w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm shadow-slate-200/60 placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-ring/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-50 dark:placeholder:text-slate-500"
               />
             </div>
 

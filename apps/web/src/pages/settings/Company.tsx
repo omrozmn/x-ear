@@ -151,14 +151,14 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
   };
 
   return (
-    <div className={`bg-white dark:bg-gray-800 ${compact ? 'rounded-2xl p-3 sm:p-4' : 'rounded-3xl p-5 sm:p-6'} shadow-sm border border-gray-200 dark:border-gray-700 premium-shadow transition-all hover:shadow-md`}>
+    <div className={`bg-white dark:bg-gray-800 ${compact ? 'rounded-2xl p-3 sm:p-4' : 'rounded-3xl p-5 sm:p-6'} shadow-sm border border-border premium-shadow transition-all hover:shadow-md`}>
       <div className={`flex items-center gap-3 ${compact ? 'mb-3' : 'mb-5'}`}>
         <div className={`${compact ? 'p-2 rounded-xl' : 'p-3 rounded-2xl'} bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400`}>
           {React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: compact ? 'w-5 h-5' : 'w-6 h-6' })}
         </div>
         <div>
           <h3 className={`${compact ? 'text-sm' : 'text-base sm:text-lg'} font-bold text-gray-900 dark:text-white`}>{label}</h3>
-          <p className={`${compact ? 'text-[11px]' : 'text-xs sm:text-sm'} text-gray-500 dark:text-gray-400`}>{description}</p>
+          <p className={`${compact ? 'text-[11px]' : 'text-xs sm:text-sm'} text-muted-foreground`}>{description}</p>
         </div>
       </div>
 
@@ -172,7 +172,7 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
       />
 
       {preview ? (
-        <div className="relative group overflow-hidden rounded-2xl border border-gray-100 dark:border-gray-700">
+        <div className="relative group overflow-hidden rounded-2xl border border-border">
           <img
             src={preview}
             alt={label}
@@ -183,7 +183,7 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
               <Button
                 onClick={handleClick}
                 variant="secondary"
-                className="p-3 rounded-xl !w-auto !h-auto bg-white/90 hover:bg-white shadow-xl"
+                className="p-3 rounded-xl !w-auto !h-auto bg-card/90 hover:bg-card shadow-xl"
                 disabled={isUploading}
               >
                 {isUploading ? (
@@ -214,7 +214,7 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
             ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}
             ${isDragging
               ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/30 ring-4 ring-indigo-500/10'
-              : 'border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600 hover:bg-gray-50/50 dark:hover:bg-gray-800/50'
+              : 'border-border hover:border-indigo-300 dark:hover:border-indigo-600 hover:bg-muted/50 dark:hover:bg-gray-800/50'
             }
             ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}
           `}
@@ -222,14 +222,14 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
           {isUploading ? (
             <Loader2 className={`${compact ? 'w-9 h-9' : 'w-12 h-12'} mx-auto text-indigo-500 animate-spin`} />
           ) : (
-            <div className={`bg-gray-100 dark:bg-gray-800/80 ${compact ? 'w-12 h-12 rounded-xl mb-3' : 'w-16 h-16 rounded-2xl mb-4'} flex items-center justify-center mx-auto group-hover:scale-110 transition-transform`}>
-              <Upload className={`${compact ? 'w-6 h-6' : 'w-8 h-8'} text-gray-400`} />
+            <div className={`bg-muted/80 ${compact ? 'w-12 h-12 rounded-xl mb-3' : 'w-16 h-16 rounded-2xl mb-4'} flex items-center justify-center mx-auto group-hover:scale-110 transition-transform`}>
+              <Upload className={`${compact ? 'w-6 h-6' : 'w-8 h-8'} text-muted-foreground`} />
             </div>
           )}
-          <p className={`${compact ? 'text-xs' : 'text-sm'} font-semibold text-gray-700 dark:text-gray-300`}>
+          <p className={`${compact ? 'text-xs' : 'text-sm'} font-semibold text-foreground`}>
             {isDragging ? 'Hemen Bırakın' : 'Görsel Seçin veya Sürükleyin'}
           </p>
-          <p className={`${compact ? 'text-[10px]' : 'text-xs'} text-gray-500 mt-2`}>Maximum 5MB • PNG, JPG, WEBP</p>
+          <p className={`${compact ? 'text-[10px]' : 'text-xs'} text-muted-foreground mt-2`}>Maximum 5MB • PNG, JPG, WEBP</p>
         </div>
       )}
     </div>
@@ -372,7 +372,7 @@ export default function CompanySettings() {
           <Loader2 className="w-12 h-12 animate-spin text-indigo-600" />
           <div className="absolute inset-0 w-12 h-12 rounded-full border-4 border-indigo-100 dark:border-indigo-900/30 -z-10" />
         </div>
-        <p className="text-gray-500 animate-pulse font-medium">Firma Bilgileri Yükleniyor...</p>
+        <p className="text-muted-foreground animate-pulse font-medium">Firma Bilgileri Yükleniyor...</p>
       </div>
     );
   }
@@ -390,7 +390,7 @@ export default function CompanySettings() {
               </div>
               <div>
                 <h4 className="font-bold text-gray-900 dark:text-white">Kaydedilmemiş Değişiklikler</h4>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Yaptığınız değişiklikler henüz kaydedilmedi.</p>
+                <p className="text-xs text-muted-foreground">Yaptığınız değişiklikler henüz kaydedilmedi.</p>
               </div>
             </div>
             <Button
@@ -410,7 +410,7 @@ export default function CompanySettings() {
               <div className="flex items-center justify-between gap-4">
                 <div className="flex-1">
                   <p className="text-white font-bold text-sm">Değişiklikleri Kaydet</p>
-                  <p className="text-gray-400 text-[10px]">Unutmadan firma bilgilerini güncelleyin.</p>
+                  <p className="text-muted-foreground text-[10px]">Unutmadan firma bilgilerini güncelleyin.</p>
                 </div>
                 <Button
                   onClick={handleSave}
@@ -492,15 +492,15 @@ export default function CompanySettings() {
       {/* Company Info Form - Professional Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Temel Bilgiler Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden premium-shadow flex flex-col">
-          <div className="p-8 bg-gray-50/50 dark:bg-gray-900/30 border-b border-gray-100 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-[2rem] shadow-sm border border-border overflow-hidden premium-shadow flex flex-col">
+          <div className="p-8 bg-gray-50/50 dark:bg-gray-900/30 border-b border-border">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/20">
                 <Building2 className="w-6 h-6" />
               </div>
               <div>
                 <h3 className="text-xl font-black text-indigo-900 dark:text-indigo-100 tracking-tight">Kurumsal Kimlik</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Unvan ve vergi mükellefiyeti</p>
+                <p className="text-sm text-muted-foreground font-medium">Unvan ve vergi mükellefiyeti</p>
               </div>
             </div>
           </div>
@@ -513,7 +513,7 @@ export default function CompanySettings() {
               disabled={!isTenantAdmin}
               placeholder="Tam ticari unvanınızı girin"
               fullWidth
-              className="rounded-2xl h-14 bg-gray-50/50 border-gray-200 dark:bg-gray-900/50 focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
+              className="rounded-2xl h-14 bg-gray-50/50 border-border dark:bg-gray-900/50 focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -525,7 +525,7 @@ export default function CompanySettings() {
                 disabled={!isTenantAdmin}
                 placeholder="10 Haneli VKN"
                 fullWidth
-                className="rounded-2xl h-14 bg-gray-50/50 border-gray-200 dark:bg-gray-900/50 transition-all font-medium"
+                className="rounded-2xl h-14 bg-gray-50/50 border-border dark:bg-gray-900/50 transition-all font-medium"
               />
               <Input
                 label="Vergi Dairesi"
@@ -535,22 +535,22 @@ export default function CompanySettings() {
                 disabled={!isTenantAdmin}
                 placeholder="Daire ismini yazın"
                 fullWidth
-                className="rounded-2xl h-14 bg-gray-50/50 border-gray-200 dark:bg-gray-900/50 transition-all font-medium"
+                className="rounded-2xl h-14 bg-gray-50/50 border-border dark:bg-gray-900/50 transition-all font-medium"
               />
             </div>
           </div>
         </div>
 
         {/* İletişim Bilgileri Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden premium-shadow flex flex-col">
-          <div className="p-8 bg-gray-50/50 dark:bg-gray-900/30 border-b border-gray-100 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-[2rem] shadow-sm border border-border overflow-hidden premium-shadow flex flex-col">
+          <div className="p-8 bg-gray-50/50 dark:bg-gray-900/30 border-b border-border">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-sky-600 flex items-center justify-center text-white shadow-lg shadow-sky-600/20">
                 <FileSignature className="w-6 h-6" />
               </div>
               <div>
                 <h3 className="text-xl font-black text-sky-900 dark:text-sky-100 tracking-tight">İletişim Kanalları</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Müşteri ve resmi kurum iletişim bilgileri</p>
+                <p className="text-sm text-muted-foreground font-medium">Müşteri ve resmi kurum iletişim bilgileri</p>
               </div>
             </div>
           </div>
@@ -564,7 +564,7 @@ export default function CompanySettings() {
                 disabled={!isTenantAdmin}
                 placeholder="+90 212 --- -- --"
                 fullWidth
-                className="rounded-2xl h-14 bg-gray-50/50 border-gray-200 dark:bg-gray-900/50 font-medium"
+                className="rounded-2xl h-14 bg-gray-50/50 border-border dark:bg-gray-900/50 font-medium"
               />
               <Input
                 label="Faks Numarası"
@@ -574,7 +574,7 @@ export default function CompanySettings() {
                 disabled={!isTenantAdmin}
                 placeholder="+90 212 --- -- --"
                 fullWidth
-                className="rounded-2xl h-14 bg-gray-50/50 border-gray-200 dark:bg-gray-900/50 font-medium"
+                className="rounded-2xl h-14 bg-gray-50/50 border-border dark:bg-gray-900/50 font-medium"
               />
             </div>
 
@@ -586,7 +586,7 @@ export default function CompanySettings() {
               disabled={!isTenantAdmin}
               placeholder="kurumsal@firma.com"
               fullWidth
-              className="rounded-2xl h-14 bg-gray-50/50 border-gray-200 dark:bg-gray-900/50 font-medium"
+              className="rounded-2xl h-14 bg-gray-50/50 border-border dark:bg-gray-900/50 font-medium"
             />
 
             <Input
@@ -597,14 +597,14 @@ export default function CompanySettings() {
               disabled={!isTenantAdmin}
               placeholder="https://www.firmaniz.com"
               fullWidth
-              className="rounded-2xl h-14 bg-gray-50/50 border-gray-200 dark:bg-gray-900/50 font-medium"
+              className="rounded-2xl h-14 bg-gray-50/50 border-border dark:bg-gray-900/50 font-medium"
             />
           </div>
         </div>
 
         {/* Adres Bilgileri Card - Full Width Span */}
-        <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden premium-shadow">
-          <div className="p-8 bg-gray-50/50 dark:bg-gray-900/30 border-b border-gray-100 dark:border-gray-700">
+        <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-[2rem] shadow-sm border border-border overflow-hidden premium-shadow">
+          <div className="p-8 bg-gray-50/50 dark:bg-gray-900/30 border-b border-border">
             <h3 className="text-xl font-black text-cyan-900 dark:text-cyan-100 tracking-tight">Merkez Adres</h3>
             <p className="text-sm text-cyan-700/70 dark:text-cyan-300/70 font-medium">Operasyon merkezi ve yasal adres detayları</p>
           </div>
@@ -617,7 +617,7 @@ export default function CompanySettings() {
               rows={3}
               placeholder="Mahalle, Sokak, No, Kat/Daire bilgilerini detaylıca girin..."
               fullWidth
-              className="rounded-2xl bg-gray-50/50 border-gray-200 dark:bg-gray-900/50 focus:ring-4 focus:ring-indigo-500/10 font-medium"
+              className="rounded-2xl bg-gray-50/50 border-border dark:bg-gray-900/50 focus:ring-4 focus:ring-indigo-500/10 font-medium"
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -652,7 +652,7 @@ export default function CompanySettings() {
                 disabled={!isTenantAdmin}
                 placeholder="34000"
                 fullWidth
-                className="rounded-2xl h-14 bg-gray-50/50 border-gray-200 dark:bg-gray-900/50 font-medium"
+                className="rounded-2xl h-14 bg-gray-50/50 border-border dark:bg-gray-900/50 font-medium"
               />
             </div>
           </div>
@@ -668,13 +668,13 @@ export default function CompanySettings() {
             </div>
             <div className="p-8 space-y-8">
               <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 ml-1">İşletme Tipi</label>
+                <label className="block text-sm font-bold text-foreground mb-2 ml-1">İşletme Tipi</label>
                 <select
                   data-allow-raw="true"
                   value={formData.companyType || ''}
                   onChange={(e) => handleInputChange('companyType', e.target.value)}
                   disabled={!isTenantAdmin}
-                  className="w-full h-14 px-5 border border-gray-200 dark:border-gray-700 rounded-2xl bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white font-bold focus:ring-4 focus:ring-indigo-500/10 transition-all appearance-none outline-none"
+                  className="w-full h-14 px-5 border border-border rounded-2xl bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white font-bold focus:ring-4 focus:ring-indigo-500/10 transition-all appearance-none outline-none"
                 >
                   <option value="">İşletme Tipini Belirleyin</option>
                   <option value="hearing_center">İşitme Merkezi</option>
@@ -695,7 +695,7 @@ export default function CompanySettings() {
                   disabled={!isTenantAdmin}
                   placeholder="Resmi SGK Kodunuz"
                   fullWidth
-                  className="rounded-2xl h-14 bg-gray-50/50 border-gray-200 dark:bg-gray-900/50 font-medium"
+                  className="rounded-2xl h-14 bg-gray-50/50 border-border dark:bg-gray-900/50 font-medium"
                 />
                 <Input
                   label="SGK Mükellef Adı (Kısa Unvan)"
@@ -705,7 +705,7 @@ export default function CompanySettings() {
                   disabled={!isTenantAdmin}
                   placeholder="Faturalarda görünecek isim"
                   fullWidth
-                  className="rounded-2xl h-14 bg-gray-50/50 border-gray-200 dark:bg-gray-900/50 font-medium"
+                  className="rounded-2xl h-14 bg-gray-50/50 border-border dark:bg-gray-900/50 font-medium"
                 />
               </div>
             </div>
@@ -726,7 +726,7 @@ export default function CompanySettings() {
                 disabled={!isTenantAdmin}
                 placeholder="Örn: Garanti BBVA, Ziraat Bankası"
                 fullWidth
-                className="rounded-2xl h-14 bg-gray-50/50 border-gray-200 dark:bg-gray-900/50 font-medium"
+                className="rounded-2xl h-14 bg-gray-50/50 border-border dark:bg-gray-900/50 font-medium"
               />
 
               <Input
@@ -737,7 +737,7 @@ export default function CompanySettings() {
                 disabled={!isTenantAdmin}
                 placeholder="TR 00 --- --- ---"
                 fullWidth
-                className="rounded-2xl h-14 bg-gray-50/50 border-gray-200 dark:bg-gray-900/50 font-bold font-mono tracking-wider"
+                className="rounded-2xl h-14 bg-gray-50/50 border-border dark:bg-gray-900/50 font-bold font-mono tracking-wider"
               />
 
               <div className="p-5 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl flex items-center gap-3">
@@ -772,9 +772,9 @@ export default function CompanySettings() {
       <footer className="mt-12 bg-gray-900 dark:bg-gray-950 rounded-[2.5rem] p-10 flex flex-col sm:flex-row items-center justify-between gap-8 text-white shadow-2xl">
         <div className="text-center sm:text-left">
           <h2 className="text-2xl font-black mb-2">Bölgesel Ayarlar</h2>
-          <p className="text-gray-400 font-medium font-medium">Uygulama dilini buradan güncelleyebilirsiniz.</p>
+          <p className="text-muted-foreground font-medium font-medium">Uygulama dilini buradan güncelleyebilirsiniz.</p>
         </div>
-        <div className="bg-white/10 backdrop-blur-md p-2 rounded-[2rem] w-full sm:w-auto">
+        <div className="bg-card/10 backdrop-blur-md p-2 rounded-[2rem] w-full sm:w-auto">
           <LanguageSwitcher className="!justify-center" />
         </div>
       </footer>

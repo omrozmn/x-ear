@@ -87,12 +87,12 @@ export const DeviceSearchForm: React.FC<DeviceSearchFormProps> = memo(({
     <div className="space-y-4">
       {/* Device Search */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-foreground mb-2">
           Cihaz Arama *
         </label>
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="w-4 h-4 text-gray-400" />
+            <Search className="w-4 h-4 text-muted-foreground" />
           </div>
           <Input
             id="device-search-input"
@@ -104,46 +104,46 @@ export const DeviceSearchForm: React.FC<DeviceSearchFormProps> = memo(({
           />
         </div>
         {errors.deviceId && (
-          <p className="mt-1 text-sm text-red-600">{errors.deviceId}</p>
+          <p className="mt-1 text-sm text-destructive">{errors.deviceId}</p>
         )}
       </div>
 
       {/* Device List */}
       {searchTerm && (
-        <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-2xl">
+        <div className="max-h-64 overflow-y-auto border border-border rounded-2xl">
           {filteredDevices.length > 0 ? (
             <div className="divide-y divide-gray-200">
               {filteredDevices.map((device) => (
                 <div
                   key={device.id}
                   onClick={() => onDeviceSelect(device)}
-                  className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${selectedDevice?.id === device.id ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
+                  className={`p-4 cursor-pointer hover:bg-muted transition-colors ${selectedDevice?.id === device.id ? 'bg-primary/10 border-l-4 border-l-blue-500' : ''
                     }`}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-1">
                         {getCategoryIcon(device.category)}
-                        <h4 className="text-sm font-medium text-gray-900">
+                        <h4 className="text-sm font-medium text-foreground">
                           {device.brand && device.model
                             ? `${device.brand} ${device.model}`
                             : device.name || `${device.brand} ${device.model}`}
                         </h4>
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-muted text-foreground">
                           {getCategoryLabel(device.category)}
                         </span>
                       </div>
-                      <div className="flex items-center space-x-4 text-xs text-gray-500">
+                      <div className="flex items-center space-x-4 text-xs text-muted-foreground">
                         <span>Kulak: {getEarLabel(device.ear)}</span>
                         <span>Stok: {device.availableInventory}</span>
                         {device.barcode && <span>Barkod: {device.barcode}</span>}
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-foreground">
                         {formatPrice(device.price)}
                       </div>
-                      <div className={`text-xs ${device.status === 'available' ? 'text-green-600' : 'text-red-600'
+                      <div className={`text-xs ${device.status === 'available' ? 'text-success' : 'text-destructive'
                         }`}>
                         {device.status === 'available' ? 'Mevcut' : 'Stokta Yok'}
                       </div>
@@ -153,8 +153,8 @@ export const DeviceSearchForm: React.FC<DeviceSearchFormProps> = memo(({
               ))}
             </div>
           ) : (
-            <div className="p-4 text-center text-gray-500">
-              <Package className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+            <div className="p-4 text-center text-muted-foreground">
+              <Package className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
               <p>Arama kriterlerinize uygun cihaz bulunamadı.</p>
             </div>
           )}
@@ -163,14 +163,14 @@ export const DeviceSearchForm: React.FC<DeviceSearchFormProps> = memo(({
 
       {/* Selected Device Summary */}
       {selectedDevice && (
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+        <div className="bg-primary/10 border border-blue-200 rounded-2xl p-4">
           <div className="flex items-start space-x-3">
             {getCategoryIcon(selectedDevice.category)}
             <div className="flex-1">
               <h4 className="text-sm font-medium text-blue-900 mb-1">
                 Seçilen Cihaz: {selectedDevice.brand} {selectedDevice.model}
               </h4>
-              <div className="grid grid-cols-2 gap-2 text-xs text-blue-700">
+              <div className="grid grid-cols-2 gap-2 text-xs text-primary">
                 <div>Kategori: {getCategoryLabel(selectedDevice.category)}</div>
                 <div>Kulak: {getEarLabel(selectedDevice.ear)}</div>
                 <div>Liste Fiyatı: {formatPrice(selectedDevice.price)}</div>

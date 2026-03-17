@@ -54,11 +54,11 @@ export const MobileAppointmentsPage: React.FC = () => {
 
     const getStatusColor = (status: string) => {
         switch (status?.toLowerCase()) {
-            case 'confirmed': return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800';
-            case 'pending': return 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800';
-            case 'cancelled': return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800';
-            case 'completed': return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800';
-            default: return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700';
+            case 'confirmed': return 'bg-success/10 text-success border-green-200 dark:border-green-800';
+            case 'pending': return 'bg-warning/10 text-yellow-700 border-yellow-200 dark:text-yellow-400 dark:border-yellow-800';
+            case 'cancelled': return 'bg-destructive/10 text-destructive border-red-200 dark:border-red-800';
+            case 'completed': return 'bg-primary/10 text-primary border-blue-200 dark:border-blue-800';
+            default: return 'bg-muted text-foreground border-border';
         }
     };
 
@@ -68,16 +68,16 @@ export const MobileAppointmentsPage: React.FC = () => {
                 title="Ajanda"
                 showBack={false}
                 actions={
-                    <button data-allow-raw="true" onClick={handleToday} className="text-primary-600 text-sm font-medium px-2">
+                    <button data-allow-raw="true" onClick={handleToday} className="text-primary-600 text-sm font-medium px-3 py-1.5 min-h-[44px] flex items-center">
                         Bugün
                     </button>
                 }
             />
 
             {/* Date Navigation */}
-            <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 p-4 sticky top-14 z-20 shadow-sm">
+            <div className="bg-white dark:bg-gray-900 border-b border-border p-4 sticky top-14 z-20 shadow-sm">
                 <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 rounded-xl p-1">
-                    <button data-allow-raw="true" onClick={handlePrevDay} className="p-2 rounded-2xl hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm transition-all text-gray-600 dark:text-gray-400">
+                    <button data-allow-raw="true" onClick={handlePrevDay} className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-2xl hover:bg-card dark:hover:bg-gray-700 hover:shadow-sm transition-all text-muted-foreground">
                         <ChevronLeft className="h-5 w-5" />
                     </button>
 
@@ -85,16 +85,35 @@ export const MobileAppointmentsPage: React.FC = () => {
                         <span className="text-base font-semibold text-gray-900 dark:text-white">
                             {format(selectedDate, 'd MMMM yyyy', { locale: tr })}
                         </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                        <span className="text-xs text-muted-foreground font-medium">
                             {format(selectedDate, 'EEEE', { locale: tr })}
                         </span>
                     </div>
 
-                    <button data-allow-raw="true" onClick={handleNextDay} className="p-2 rounded-2xl hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm transition-all text-gray-600 dark:text-gray-400">
+                    <button data-allow-raw="true" onClick={handleNextDay} className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-2xl hover:bg-card dark:hover:bg-gray-700 hover:shadow-sm transition-all text-muted-foreground">
                         <ChevronRight className="h-5 w-5" />
                     </button>
                 </div>
             </div>
+
+            {/* Stats Grid */}
+            {!loading && (
+                <div className="px-4 pt-4 bg-gray-50 dark:bg-gray-950">
+                    <div className="grid grid-cols-2 gap-2">
+                        {[
+                            { label: 'Toplam', value: (appointments as Appointment[] || []).filter(apt => apt.startTime && isSameDay(new Date(apt.startTime), selectedDate)).length, color: 'text-primary' },
+                            { label: 'Tamamlanan', value: (appointments as Appointment[] || []).filter(apt => apt.startTime && isSameDay(new Date(apt.startTime), selectedDate) && apt.status === 'completed').length, color: 'text-success' },
+                            { label: 'Bekleyen', value: (appointments as Appointment[] || []).filter(apt => apt.startTime && isSameDay(new Date(apt.startTime), selectedDate) && (apt.status as string) === 'pending').length, color: 'text-amber-600 dark:text-amber-400' },
+                            { label: 'İptal', value: (appointments as Appointment[] || []).filter(apt => apt.startTime && isSameDay(new Date(apt.startTime), selectedDate) && apt.status === 'cancelled').length, color: 'text-destructive' },
+                        ].map((stat, idx) => (
+                            <div key={idx} className="bg-white dark:bg-gray-900 rounded-xl p-3 border border-border">
+                                <p className="text-xs text-muted-foreground">{stat.label}</p>
+                                <p className={`text-xl font-bold ${stat.color}`}>{stat.value}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Timeline Content */}
             <div className="p-4 pb-24 min-h-[calc(100vh-180px)] bg-gray-50 dark:bg-gray-950">
@@ -115,10 +134,10 @@ export const MobileAppointmentsPage: React.FC = () => {
                                         <span className="text-sm font-bold text-gray-900 dark:text-white">
                                             {format(start, 'HH:mm')}
                                         </span>
-                                        <span className="text-xs text-gray-400">
+                                        <span className="text-xs text-muted-foreground">
                                             {format(end, 'HH:mm')}
                                         </span>
-                                        <div className="w-0.5 h-full bg-gray-200 dark:bg-gray-800 mt-2 rounded-full" />
+                                        <div className="w-0.5 h-full bg-accent mt-2 rounded-full" />
                                     </div>
 
                                     {/* Card */}
@@ -139,16 +158,16 @@ export const MobileAppointmentsPage: React.FC = () => {
                                         </div>
 
                                         <div className="space-y-1.5">
-                                            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                                 <User className="h-3.5 w-3.5" />
                                                 <span>{apt.partyName || 'Hasta seçilmedi'}</span>
                                             </div>
-                                            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                                 <Clock className="h-3.5 w-3.5" />
                                                 <span>{apt.duration || 30} dakika</span>
                                             </div>
                                             {apt.notes && (
-                                                <div className="flex items-start gap-2 text-xs text-gray-500 dark:text-gray-400 mt-2 bg-gray-50 dark:bg-gray-800 p-2 rounded-2xl">
+                                                <div className="flex items-start gap-2 text-xs text-muted-foreground mt-2 bg-gray-50 dark:bg-gray-800 p-2 rounded-2xl">
                                                     <span className="italic line-clamp-2">{apt.notes}</span>
                                                 </div>
                                             )}
@@ -161,10 +180,10 @@ export const MobileAppointmentsPage: React.FC = () => {
                 ) : (
                     <div className="flex flex-col items-center justify-center py-20 text-center">
                         <div className="bg-white dark:bg-gray-800 p-4 rounded-full shadow-sm mb-4">
-                            <CalendarIcon className="h-8 w-8 text-gray-300 dark:text-gray-500" />
+                            <CalendarIcon className="h-8 w-8 text-gray-300" />
                         </div>
                         <h3 className="text-lg font-medium text-gray-900 dark:text-white">Randevu Yok</h3>
-                        <p className="text-gray-500 text-sm mt-1 max-w-[200px]">
+                        <p className="text-muted-foreground text-sm mt-1 max-w-[200px]">
                             Bu tarih için planlanmış bir randevu bulunmuyor.
                         </p>
                         <button

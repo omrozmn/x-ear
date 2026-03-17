@@ -122,9 +122,8 @@ export default function SMSPackagesPage() {
             setEditingPkg(null);
             setFormData(toFormData());
             refetch();
-        } catch (error) {
+        } catch {
             toast.error('İşlem başarısız');
-            console.error(error);
         }
     };
 

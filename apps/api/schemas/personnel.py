@@ -114,6 +114,20 @@ class PersonnelSettingsUpdate(AppBaseModel):
     document_policy: Optional[PersonnelDocumentPolicy] = Field(None, alias="documentPolicy")
 
 
+class LeaveRequestCreate(AppBaseModel):
+    employee_id: str = Field(..., alias="employeeId")
+    leave_type: str = Field(..., alias="leaveType")
+    start_date: str = Field(..., alias="startDate")
+    end_date: str = Field(..., alias="endDate")
+    day_count: float = Field(..., alias="dayCount")
+    note: Optional[str] = None
+
+
+class LeaveRequestAction(AppBaseModel):
+    action: Literal["approve", "reject"]
+    reason: Optional[str] = None
+
+
 class AdminPersonnelTenantSummary(AppBaseModel):
     tenant_id: str = Field(..., alias="tenantId")
     tenant_name: str = Field(..., alias="tenantName")

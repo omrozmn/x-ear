@@ -20,7 +20,7 @@ export const CashRegisterCard: React.FC<CashRegisterCardProps> = ({
       onClick={onClick}
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.28),transparent_34%)] opacity-90" />
-      <div className="absolute top-0 right-0 h-32 w-32 -mr-10 -mt-10 rounded-full bg-white/10 blur-3xl group-hover:bg-white/20 transition-all duration-500" />
+      <div className="absolute top-0 right-0 h-32 w-32 -mr-10 -mt-10 rounded-full bg-card/10 blur-3xl group-hover:bg-card/20 transition-all duration-500" />
 
       <div className="flex items-center justify-between relative z-10">
         <div className="flex-1">
@@ -31,7 +31,7 @@ export const CashRegisterCard: React.FC<CashRegisterCardProps> = ({
             <div>
               <p className="text-2xl font-bold text-white tracking-tight">Kasa Kaydı</p>
               <div className="flex items-center space-x-2 mt-1">
-                <span className="text-sm font-medium text-emerald-50 bg-white/16 px-2 py-0.5 rounded-xl border border-white/20">Hızlı Giriş</span>
+                <span className="text-sm font-medium text-emerald-50 bg-card/16 px-2 py-0.5 rounded-xl border border-white/20">Hızlı Giriş</span>
               </div>
               <p className="text-sm text-emerald-50/80 mt-2 font-medium">
                 Gelir ve gider işlemlerinizi kolayca kaydedin
@@ -49,7 +49,7 @@ export const CashRegisterCard: React.FC<CashRegisterCardProps> = ({
               {lastTransaction?.date || '-'}
             </p>
           </div>
-          <div className="p-3 bg-white/20 rounded-full shadow-lg border border-white/20 group-hover:bg-white group-hover:text-emerald-600 text-white transition-colors duration-300">
+          <div className="p-3 bg-card/20 rounded-full shadow-lg border border-white/20 group-hover:bg-card group-hover:text-emerald-600 text-white transition-colors duration-300">
             <Plus className="w-6 h-6" />
           </div>
         </div>

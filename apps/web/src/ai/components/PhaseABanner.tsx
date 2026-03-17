@@ -133,7 +133,7 @@ export function PhaseABanner({
       className={`
         flex items-center justify-between gap-3 
         px-4 py-3 
-        bg-blue-50 border border-blue-200 
+        bg-primary/10 border border-blue-200 
         rounded-2xl
         ${className}
       `.trim()}
@@ -141,7 +141,7 @@ export function PhaseABanner({
       aria-live="polite"
     >
       {/* Icon and Message */}
-      <div className="flex items-center gap-3 text-blue-700">
+      <div className="flex items-center gap-3 text-primary">
         <InfoIcon />
         <p className="text-sm font-medium">
           {message}
@@ -156,11 +156,11 @@ export function PhaseABanner({
           className="
             flex-shrink-0 
             p-1 
-            text-blue-500 hover:text-blue-700 
-            hover:bg-blue-100 
+            text-primary hover:text-primary 
+            hover:bg-primary/10 
             rounded 
             transition-colors
-            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+            focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
           "
           aria-label="Bildirimi kapat"
         >

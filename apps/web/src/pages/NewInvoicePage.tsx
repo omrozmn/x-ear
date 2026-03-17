@@ -588,10 +588,10 @@ function InvoiceSidebar({
 
       {/* SGK Section */}
       {_showSGKSection && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/40">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border shadow-sm">
+          <div className="p-4 border-b border-border bg-primary/10">
             <h3 className="text-sm font-bold text-gray-900 dark:text-white">SGK Fatura Bilgileri</h3>
-            <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">SGK faturası için gerekli bilgileri girin</p>
+            <p className="text-xs text-muted-foreground mt-1">SGK faturası için gerekli bilgileri girin</p>
           </div>
           <div className="p-4">
             <SGKInvoiceSection
@@ -604,10 +604,10 @@ function InvoiceSidebar({
 
       {/* Government Section */}
       {_showGovernmentSection && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-purple-50 dark:bg-purple-900/40">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border shadow-sm">
+          <div className="p-4 border-b border-border bg-purple-50 dark:bg-purple-900/40">
             <h3 className="text-sm font-bold text-gray-900 dark:text-white">Kamu Fatura Bilgileri</h3>
-            <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">Kamu kurumu faturası bilgileri</p>
+            <p className="text-xs text-muted-foreground mt-1">Kamu kurumu faturası bilgileri</p>
           </div>
           <div className="p-4">
             <GovernmentSection
@@ -620,10 +620,10 @@ function InvoiceSidebar({
 
       {/* Istisna Sebebi card: show when invoiceType=13 selected outside export and government scenarios */}
       {showIstisnaReason && (
-        <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border p-4 shadow-sm">
           <div className="mb-3">
-            <h3 className="text-sm font-bold text-gray-900">İstisna Sebebi</h3>
-            <p className="text-xs text-gray-500">Seçilen istisna için neden kodunu belirtiniz</p>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white">İstisna Sebebi</h3>
+            <p className="text-xs text-muted-foreground">Seçilen istisna için neden kodunu belirtiniz</p>
           </div>
           <div>
             <Select
@@ -639,7 +639,7 @@ function InvoiceSidebar({
 
       {/* Export Section */}
       {_showExportSection && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border p-4 shadow-sm">
           <div className="mb-3">
             <h3 className="text-sm font-bold text-gray-900 dark:text-white">İhracat Bilgileri</h3>
           </div>
@@ -654,11 +654,11 @@ function InvoiceSidebar({
 
       {/* Özel Matrah (sidebar) */}
       {_showSpecialBaseSection && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border p-4 shadow-sm">
           <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3">Özel Matrah Bilgileri</h3>
           <div className="grid grid-cols-1 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Özel Matrah Tutarı</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Özel Matrah Tutarı</label>
               <Input
                 type="number"
                 step="0.01"
@@ -673,7 +673,7 @@ function InvoiceSidebar({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">KDV Oranı (%)</label>
+              <label className="block text-sm font-medium text-foreground mb-1">KDV Oranı (%)</label>
               <Input
                 type="number"
                 value={extendedData?.specialTaxBase?.taxRate || ''}
@@ -686,7 +686,7 @@ function InvoiceSidebar({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Açıklama</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Açıklama</label>
               <Input
                 type="text"
                 value={extendedData?.specialTaxBase?.description || ''}
@@ -703,13 +703,13 @@ function InvoiceSidebar({
       )}
       {/* İade Fatura Bilgileri (moved to sidebar) */}
       {_showReturnSection && (
-        <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border p-4 shadow-sm">
           <div className="mb-3">
-            <h3 className="text-sm font-bold text-gray-900">İade Fatura Bilgileri</h3>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white">İade Fatura Bilgileri</h3>
           </div>
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">İade Fatura No</label>
+              <label className="block text-sm font-medium text-foreground mb-1">İade Fatura No</label>
               <Input
                 data-testid="return-invoice-number"
                 type="text"
@@ -723,7 +723,7 @@ function InvoiceSidebar({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">İade Fatura Tarihi</label>
+              <label className="block text-sm font-medium text-foreground mb-1">İade Fatura Tarihi</label>
               <DatePicker
                 data-testid="return-invoice-date"
                 value={extendedData?.returnInvoiceDetails?.returnInvoiceDate ? new Date(extendedData.returnInvoiceDetails.returnInvoiceDate) : null}
@@ -735,7 +735,7 @@ function InvoiceSidebar({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">İade Nedeni</label>
+              <label className="block text-sm font-medium text-foreground mb-1">İade Nedeni</label>
               <Input
                 data-testid="return-invoice-reason"
                 type="text"
@@ -754,42 +754,42 @@ function InvoiceSidebar({
 
       {/* Medical Section */}
       {_showMedicalSection && (
-        <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border p-4 shadow-sm">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-bold text-gray-900">İlaç/Tıbbi Cihaz</h3>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white">İlaç/Tıbbi Cihaz</h3>
             <Button
               type="button"
               onClick={() => handlers?.setMedicalModalOpen?.(true)}
               variant="default"
               size="sm"
-              style={{ backgroundColor: '#9333ea', color: 'white' }}
-              className="text-xs px-3 py-1">
+              className="text-xs px-3 py-1 bg-primary text-primary-foreground"
+            >
               <Pill size={14} className="mr-1" />
               Detaylar
             </Button>
           </div>
           {extendedData?.medicalDeviceData ? (
-            <div className="bg-green-50 border border-green-200 rounded-2xl p-3">
+            <div className="bg-success/10 border border-green-200 rounded-2xl p-3">
               <div className="flex items-center gap-2">
-                <CheckCircle className="text-green-600" size={16} />
-                <p className="text-xs text-green-800">Tıbbi cihaz bilgileri kaydedildi</p>
+                <CheckCircle className="text-success" size={16} />
+                <p className="text-xs text-success">Tıbbi cihaz bilgileri kaydedildi</p>
               </div>
             </div>
           ) : (
-            <p className="text-xs text-gray-500">Tıbbi cihaz detaylarını eklemek için butona tıklayın</p>
+            <p className="text-xs text-muted-foreground">Tıbbi cihaz detaylarını eklemek için butona tıklayın</p>
           )}
         </div>
       )}
 
       {/* Özel İşlemler */}
       {handlers?.specialOperationsVisible && (
-        <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
-          <h3 className="text-sm font-bold text-gray-900 mb-3">Özel İşlemler</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border p-4 shadow-sm">
+          <h3 className="text-sm font-bold text-foreground mb-3">Özel İşlemler</h3>
           <div className="space-y-3">
             {/* Tevkifatlı Fatura Uyarısı */}
             {handlers?.isWithholdingType && (
               <div>
-                <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 mb-3">
+                <div className="bg-primary/10 border border-blue-200 rounded-2xl p-3 mb-3">
                   <p className="text-xs text-blue-800 leading-relaxed">
                     <span className="font-semibold">Tevkifatlı Fatura</span>
                     <br />
@@ -815,13 +815,13 @@ function InvoiceSidebar({
       )}
 
       {/* Açıklama / Notlar — Modern Card */}
-      <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+      <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl border border-border shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-border bg-gray-50/50 dark:bg-gray-800/50">
           <div className="flex items-center gap-2">
-            <svg className="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
             </svg>
-            <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">Fatura Açıklaması</span>
+            <span className="text-sm font-semibold text-foreground">Fatura Açıklaması</span>
           </div>
         </div>
         <div className="p-4">
@@ -838,10 +838,10 @@ function InvoiceSidebar({
 
       {/* Per-line editor in sidebar (opened from product lines) */}
       {activeLineEditor && (
-        <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-border p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-bold text-gray-900">{activeLineEditor?.type === 'withholding' ? 'Tevkifat (Kalem)' : activeLineEditor?.type === 'special' ? 'Özel Matrah (Kalem)' : 'Tıbbi Cihaz (Kalem)'} #{(activeLineEditor?.index ?? 0) + 1}</h3>
-            <button data-allow-raw="true" onClick={onCloseLineEditor} className="text-sm text-gray-500">Kapat</button>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white">{activeLineEditor?.type === 'withholding' ? 'Tevkifat (Kalem)' : activeLineEditor?.type === 'special' ? 'Özel Matrah (Kalem)' : 'Tıbbi Cihaz (Kalem)'} #{(activeLineEditor?.index ?? 0) + 1}</h3>
+            <button data-allow-raw="true" onClick={onCloseLineEditor} className="text-sm text-muted-foreground">Kapat</button>
           </div>
           <div>
             {activeLineEditor?.type === 'withholding' && activeLineEditor.index !== undefined && extendedData && (
@@ -855,10 +855,10 @@ function InvoiceSidebar({
               />
             )}
             {activeLineEditor?.type === 'special' && (
-              <div className="text-sm text-gray-600">Özel matrah düzenleyici burada gösterilecek.</div>
+              <div className="text-sm text-muted-foreground">Özel matrah düzenleyici burada gösterilecek.</div>
             )}
             {activeLineEditor?.type === 'medical' && (
-              <div className="text-sm text-gray-600">Tıbbi cihaz düzenleyici burada gösterilecek.</div>
+              <div className="text-sm text-muted-foreground">Tıbbi cihaz düzenleyici burada gösterilecek.</div>
             )}
           </div>
         </div>
@@ -949,28 +949,28 @@ function NewInvoicePageContent({
           )}
 
           {/* 1. Collapsible: Customer Selection */}
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-border overflow-hidden">
             <button
               data-allow-raw="true"
               type="button"
               onClick={() => setOpenCustomer(v => !v)}
-              className="w-full flex items-center justify-between p-4 text-left"
+              className="w-full flex items-center justify-between p-4 text-left min-h-[52px]"
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 {(formData.customerFirstName || formData.customerLastName || formData.customerTcNumber) ? (
-                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500" />
+                  <span className="inline-block w-3 h-3 rounded-full bg-green-500" />
                 ) : (
-                  <span className="inline-block w-2.5 h-2.5 rounded-full border-2 border-gray-300" />
+                  <span className="inline-block w-3 h-3 rounded-full border-2 border-border" />
                 )}
-                <h3 className="font-bold text-gray-900 dark:text-white">Fatura Alıcısı</h3>
+                <h3 className="font-bold text-base text-gray-900 dark:text-white">Fatura Alıcısı</h3>
               </div>
               <ChevronDown
                 size={20}
-                className={`text-gray-400 transition-transform duration-200${openCustomer ? ' rotate-180' : ''}`}
+                className={`text-muted-foreground transition-transform duration-200${openCustomer ? ' rotate-180' : ''}`}
               />
             </button>
             {openCustomer && (
-              <div className="border-t border-gray-100 dark:border-gray-700 p-1">
+              <div className="border-t border-border p-1">
                 <CustomerSectionCompact
                   isSGK={showSGKSection}
                   customerId={formData.customerId as string}
@@ -990,7 +990,7 @@ function NewInvoicePageContent({
           </div>
 
           {/* 2. Collapsible: Fatura Detayları */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-border overflow-hidden">
             <button
               data-allow-raw="true"
               type="button"
@@ -1001,17 +1001,17 @@ function NewInvoicePageContent({
                 {(formData.invoiceType || formData.scenario !== 'other') ? (
                   <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500" />
                 ) : (
-                  <span className="inline-block w-2.5 h-2.5 rounded-full border-2 border-gray-300" />
+                  <span className="inline-block w-2.5 h-2.5 rounded-full border-2 border-border" />
                 )}
                 <h3 className="font-bold text-gray-900 dark:text-white">Fatura Detayları</h3>
               </div>
               <ChevronDown
                 size={20}
-                className={`text-gray-400 transition-transform duration-200${openDetails ? ' rotate-180' : ''}`}
+                className={`text-muted-foreground transition-transform duration-200${openDetails ? ' rotate-180' : ''}`}
               />
             </button>
             {openDetails && (
-              <div className="border-t border-gray-100 dark:border-gray-700">
+              <div className="border-t border-border">
                 <InvoiceFormExtended
                   onSubmit={handleSubmit as never}
                   onCancel={handleCancel}
@@ -1034,7 +1034,7 @@ function NewInvoicePageContent({
                   data-allow-raw="true"
                   type="button"
                   onClick={() => setOpenSGK(v => !v)}
-                  className="w-full flex items-center justify-between p-4 text-left bg-blue-50 dark:bg-blue-900/20"
+                  className="w-full flex items-center justify-between p-4 text-left bg-primary/10"
                 >
                   <h3 className="text-sm font-bold text-blue-900 dark:text-blue-300 uppercase tracking-wider">SGK Bilgileri</h3>
                   <ChevronDown size={18} className={`text-blue-400 transition-transform duration-200${openSGK ? ' rotate-180' : ''}`} />
@@ -1051,7 +1051,7 @@ function NewInvoicePageContent({
             )}
 
             {showGovernmentSection && (
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-border overflow-hidden">
                 <button
                   data-allow-raw="true"
                   type="button"
@@ -1059,10 +1059,10 @@ function NewInvoicePageContent({
                   className="w-full flex items-center justify-between p-4 text-left"
                 >
                   <h3 className="font-bold text-gray-900 dark:text-white">Kamu Bilgileri</h3>
-                  <ChevronDown size={18} className={`text-gray-400 transition-transform duration-200${openGov ? ' rotate-180' : ''}`} />
+                  <ChevronDown size={18} className={`text-muted-foreground transition-transform duration-200${openGov ? ' rotate-180' : ''}`} />
                 </button>
                 {openGov && (
-                  <div className="p-4 border-t border-gray-100 dark:border-gray-800">
+                  <div className="p-4 border-t border-border">
                     <GovernmentSection
                       formData={formData as never}
                       onChange={onFormDataChange}
@@ -1073,7 +1073,7 @@ function NewInvoicePageContent({
             )}
 
             {showExportSection && (
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-4">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-border p-4">
                 <ExportDetailsCard
                   value={formData.exportDetails as never}
                   onChange={(data) => onFormDataChange('exportDetails', data)}
@@ -1083,7 +1083,7 @@ function NewInvoicePageContent({
           </div>
 
           {/* 4. Collapsible: Ürün ve Hizmetler */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-border overflow-hidden">
             <button
               data-allow-raw="true"
               type="button"
@@ -1094,22 +1094,22 @@ function NewInvoicePageContent({
                 {(formData.items as unknown[])?.length > 0 ? (
                   <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500" />
                 ) : (
-                  <span className="inline-block w-2.5 h-2.5 rounded-full border-2 border-gray-300" />
+                  <span className="inline-block w-2.5 h-2.5 rounded-full border-2 border-border" />
                 )}
                 <h3 className="font-bold text-gray-900 dark:text-white">Ürün ve Hizmetler</h3>
                 {(formData.items as unknown[])?.length > 0 && (
-                  <span className="text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full font-semibold">
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-semibold">
                     {(formData.items as unknown[]).length} kalem
                   </span>
                 )}
               </div>
               <ChevronDown
                 size={20}
-                className={`text-gray-400 transition-transform duration-200${openItems ? ' rotate-180' : ''}`}
+                className={`text-muted-foreground transition-transform duration-200${openItems ? ' rotate-180' : ''}`}
               />
             </button>
             {openItems && (
-              <div className="border-t border-gray-100 dark:border-gray-700">
+              <div className="border-t border-border">
                 <ProductLinesSection
                   lines={(formData.items as never[]) || []}
                   onChange={(lines) => onFormDataChange('items', lines)}
@@ -1126,12 +1126,12 @@ function NewInvoicePageContent({
         </div>
 
         {/* Bottom Bar for Action Buttons on Mobile */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 safe-area-inset-bottom z-[2100]">
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-t border-border safe-area-inset-bottom z-[2100]">
           <div className="flex gap-4">
             <Button
               onClick={handleSaveDraft}
               variant="outline"
-              className="flex-1 min-h-[48px] rounded-xl border-gray-300"
+              className="flex-1 min-h-[48px] rounded-xl border-border"
             >
               Taslak
             </Button>
@@ -1173,7 +1173,7 @@ function NewInvoicePageContent({
                   onClick={handleSaveDraft}
                   variant="outline"
                   disabled={isSaving}
-                  className="px-4 py-2 border-blue-300 text-blue-600 hover:bg-blue-50"
+                  className="px-4 py-2 border-blue-300 text-primary hover:bg-primary/10"
                 >
                   Taslak Kaydet
                 </Button>
@@ -1182,8 +1182,7 @@ function NewInvoicePageContent({
                   type="button"
                   onClick={() => handleSubmit(formData)}
                   disabled={isSaving}
-                  style={{ backgroundColor: '#2563eb', color: 'white' }}
-                  className="px-6 py-2 premium-gradient tactile-press text-white shadow-sm"
+                  className="px-6 py-2 premium-gradient tactile-press bg-primary text-primary-foreground shadow-sm"
                 >
                   {isSaving ? 'Kaydediliyor...' : 'Fatura Oluştur'}
                 </Button>
@@ -1198,7 +1197,7 @@ function NewInvoicePageContent({
         <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
           {/* Form - 2/3 width */}
           <div className="min-w-0">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-border">
                 <InvoiceFormExtended
                   onSubmit={handleSubmit as never}
                   onCancel={handleCancel}

@@ -115,20 +115,158 @@ def get_dashboard_metrics(
         except Exception as e:
             logger.warning(f"ActivityLog query failed: {e}")
         
-        # MRR
-        last_30_days = datetime.utcnow() - timedelta(days=30)
-        mrr = db_session.query(func.sum(Invoice.device_price)).filter(
-            Invoice.created_at >= last_30_days,
-            Invoice.status != 'cancelled'
-        ).scalar() or 0.0
-        
+        # MRR - subscription-based revenue
+        mrr = 0.0
+        try:
+            from core.models.subscription import Subscription
+            from models.plan import Plan as PlanModel
+            active_subs = db_session.query(Subscription).filter(
+                Subscription.status.in_(['active', 'trialing'])
+            ).all()
+            for sub in active_subs:
+                plan = db_session.get(PlanModel, sub.plan_id)
+                if plan and plan.price:
+                    mrr += float(plan.price)
+        except Exception:
+            # Fallback to invoice-based revenue if subscription model unavailable
+            last_30_days = datetime.utcnow() - timedelta(days=30)
+            mrr = float(db_session.query(func.sum(Invoice.device_price)).filter(
+                Invoice.created_at >= last_30_days,
+                Invoice.status != 'cancelled'
+            ).scalar() or 0.0)
+
+        # Alerts - real data
+        # Expiring soon: tenants with subscription ending within 30 days
+        expiring_soon = 0
+        try:
+            expiring_soon = db_session.query(Tenant).filter(
+                Tenant.deleted_at.is_(None),
+                Tenant.status == 'active',
+                Tenant.subscription_end_date.isnot(None),
+                Tenant.subscription_end_date <= datetime.utcnow() + timedelta(days=30),
+                Tenant.subscription_end_date > datetime.utcnow()
+            ).count()
+        except Exception:
+            pass
+
+        # Health metrics - real calculations
+        # Seat utilization: current_users / max_users across active tenants
+        avg_seat_utilization = 0.0
+        try:
+            active_tenants_with_limits = db_session.query(Tenant).filter(
+                Tenant.deleted_at.is_(None),
+                Tenant.status == 'active',
+                Tenant.max_users > 0
+            ).all()
+            if active_tenants_with_limits:
+                utilizations = [(t.current_users or 0) / t.max_users * 100 for t in active_tenants_with_limits]
+                avg_seat_utilization = sum(utilizations) / len(utilizations)
+        except Exception:
+            pass
+
+        # Churn rate: cancelled tenants in last 30 days / total active at start of period
+        churn_rate = 0.0
+        try:
+            thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+            cancelled_recently = db_session.query(Tenant).filter(
+                Tenant.status == 'cancelled',
+                Tenant.updated_at >= thirty_days_ago
+            ).count()
+            total_at_start = total_tenants + cancelled_recently
+            if total_at_start > 0:
+                churn_rate = round((cancelled_recently / total_at_start) * 100, 1)
+        except Exception:
+            pass
+
+        # Recent activity - real data
+        seven_days_ago = datetime.utcnow() - timedelta(days=7)
+        new_tenants_7d = db_session.query(Tenant).filter(
+            Tenant.deleted_at.is_(None),
+            Tenant.created_at >= seven_days_ago
+        ).count()
+
+        expiring_memberships_30d = expiring_soon  # Same query as alerts
+
+        # Active users - users who logged in within last 30 days
+        active_users = total_users
+        try:
+            thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+            active_users = db_session.query(User).filter(
+                User.is_active == True,
+                User.last_login_at >= thirty_days_ago
+            ).count()
+        except Exception:
+            # last_login_at may not exist, fallback to total
+            active_users = total_users
+
+        # Low utilization alert: tenants using less than 20% of seats
+        low_utilization = 0
+        try:
+            for t in active_tenants_with_limits:
+                if t.max_users > 0 and ((t.current_users or 0) / t.max_users) < 0.2:
+                    low_utilization += 1
+        except Exception:
+            pass
+
+        # Tenant growth trend - last 6 months
+        tenant_trend = []
+        try:
+            for i in range(5, -1, -1):
+                month_start = (datetime.utcnow().replace(day=1) - timedelta(days=i * 30)).replace(day=1)
+                if i > 0:
+                    month_end = (datetime.utcnow().replace(day=1) - timedelta(days=(i - 1) * 30)).replace(day=1)
+                else:
+                    month_end = datetime.utcnow()
+                count = db_session.query(Tenant).filter(
+                    Tenant.deleted_at.is_(None),
+                    Tenant.created_at < month_end
+                ).count()
+                tenant_trend.append({
+                    "month": month_start.strftime("%b %Y"),
+                    "count": count
+                })
+        except Exception:
+            pass
+
+        # Revenue trend - last 6 months
+        revenue_trend = []
+        try:
+            for i in range(5, -1, -1):
+                month_start = (datetime.utcnow().replace(day=1) - timedelta(days=i * 30)).replace(day=1)
+                if i > 0:
+                    month_end = (datetime.utcnow().replace(day=1) - timedelta(days=(i - 1) * 30)).replace(day=1)
+                else:
+                    month_end = datetime.utcnow()
+                month_revenue = db_session.query(func.sum(Invoice.device_price)).filter(
+                    Invoice.created_at >= month_start,
+                    Invoice.created_at < month_end,
+                    Invoice.status != 'cancelled'
+                ).scalar() or 0.0
+                revenue_trend.append({
+                    "month": month_start.strftime("%b %Y"),
+                    "revenue": float(month_revenue)
+                })
+        except Exception:
+            pass
+
+        # Tenants by status for pie chart
+        status_distribution = []
+        status_colors = {'active': '#22c55e', 'trial': '#3b82f6', 'suspended': '#f59e0b', 'cancelled': '#ef4444'}
+        status_labels = {'active': 'Aktif', 'trial': 'Deneme', 'suspended': 'Askıda', 'cancelled': 'İptal'}
+        for status, count in tenants_by_status:
+            status_distribution.append({
+                "name": status_labels.get(status, status),
+                "value": count,
+                "color": status_colors.get(status, '#94a3b8')
+            })
+
         return ResponseEnvelope(data=AdminDashboardMetrics(
             metrics={
                 "overview": {
                     "total_tenants": total_tenants,
                     "active_tenants": status_breakdown.get('active', 0),
                     "total_users": total_users,
-                    "active_users": total_users,
+                    "active_users": active_users,
                     "total_plans": total_plans
                 },
                 "daily_stats": {
@@ -140,16 +278,29 @@ def get_dashboard_metrics(
                 },
                 "recent_errors": recent_errors_data,
                 "revenue": {"monthly_recurring_revenue": float(mrr)},
-                "alerts": {"expiring_soon": 0, "high_churn": 0, "low_utilization": 0},
-                "health_metrics": {"churn_rate_percent": 0, "avg_seat_utilization_percent": 0},
-                "recent_activity": {"new_tenants_7d": 0, "expiring_memberships_30d": 0}
+                "alerts": {
+                    "expiring_soon": expiring_soon,
+                    "high_churn": 1 if churn_rate > 5.0 else 0,
+                    "low_utilization": low_utilization
+                },
+                "health_metrics": {
+                    "churn_rate_percent": churn_rate,
+                    "avg_seat_utilization_percent": round(avg_seat_utilization, 1)
+                },
+                "recent_activity": {
+                    "new_tenants_7d": new_tenants_7d,
+                    "expiring_memberships_30d": expiring_memberships_30d
+                },
+                "tenant_trend": tenant_trend,
+                "revenue_trend": revenue_trend,
+                "status_distribution": status_distribution
             },
             recent_tenants=[
                 RecentTenantItem(
-                    id=t.id, 
-                    name=t.name, 
-                    status=t.status, 
-                    current_plan=t.current_plan, 
+                    id=t.id,
+                    name=t.name,
+                    status=t.status,
+                    current_plan=t.current_plan,
                     created_at=t.created_at.isoformat()
                 ) for t in recent_tenants
             ]

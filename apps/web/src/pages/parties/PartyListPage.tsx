@@ -225,11 +225,11 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
     <div className="flex flex-col gap-4 mb-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-foreground">
             Hastalar ({parties.length})
           </h1>
           {!isOnline && (
-            <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">
+            <span className="px-2 py-1 text-xs bg-warning/10 text-yellow-800 rounded-full">
               Çevrimdışı
             </span>
           )}
@@ -263,21 +263,21 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
       </div>
 
       {hasSelectedParties && (
-        <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-2xl">
-          <span className="text-sm text-blue-700">
+        <div className="flex items-center gap-4 p-4 bg-primary/10 rounded-2xl">
+          <span className="text-sm text-primary">
             {selectedParties.size} hasta seçildi
           </span>
           <Button
             onClick={handleBulkDelete}
             variant="ghost"
-            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            className="text-destructive hover:text-destructive hover:bg-destructive/10"
           >
             Seçilenleri Sil
           </Button>
           <Button
             onClick={() => setSelectedParties(new Set())}
             variant="ghost"
-            className="text-gray-600 hover:text-gray-700 hover:bg-gray-100"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted"
           >
             Seçimi Temizle
           </Button>
@@ -308,14 +308,14 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
     if (parties.length === 0) {
       return (
         <div className="text-center py-12">
-          <div className="text-gray-400 text-6xl mb-4">👥</div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <div className="text-muted-foreground text-6xl mb-4">👥</div>
+          <h3 className="text-lg font-medium text-foreground mb-2">
             {searchTerm || Object.keys(filters).length > 0
               ? 'Arama kriterlerine uygun hasta bulunamadı'
               : 'Henüz hasta eklenmemiş'
             }
           </h3>
-          <p className="text-gray-500 mb-4">
+          <p className="text-muted-foreground mb-4">
             {searchTerm || Object.keys(filters).length > 0
               ? 'Farklı arama terimleri veya filtreler deneyin'
               : 'İlk hastanızı ekleyerek başlayın'
@@ -377,11 +377,11 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
     if (!currentError) return null;
 
     return (
-      <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl">
+      <div className="mb-6 p-4 bg-destructive/10 border border-red-200 rounded-2xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <span className="text-red-600 mr-2">⚠️</span>
-            <span className="text-sm text-red-700">{typeof currentError === 'string' ? currentError : (currentError as Error)?.message || String(currentError)}</span>
+            <span className="text-destructive mr-2">⚠️</span>
+            <span className="text-sm text-destructive">{typeof currentError === 'string' ? currentError : (currentError as Error)?.message || String(currentError)}</span>
           </div>
           <Button
             onClick={() => {
@@ -399,7 +399,7 @@ export function PartyListPage({ className = '' }: PartyListPageProps) {
   };
 
   return (
-    <div className={`min-h-screen bg-gray-50 p-6 ${className}`}>
+    <div className={`min-h-screen bg-muted p-6 ${className}`}>
       <div className="max-w-7xl mx-auto">
         {renderHeader()}
         {renderError()}

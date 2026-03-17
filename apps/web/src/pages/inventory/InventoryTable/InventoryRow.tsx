@@ -21,7 +21,7 @@ const InventoryRow: React.FC<Props> = ({
   showCheckbox = false
 }) => {
   return (
-    <tr className="border-b hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-gray-700">
+    <tr className="border-b hover:bg-muted dark:hover:bg-gray-700 dark:border-gray-700">
       {showCheckbox && (
         <td className="px-4 py-3">
           <Checkbox
@@ -31,13 +31,13 @@ const InventoryRow: React.FC<Props> = ({
         </td>
       )}
       <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">{item.name}</td>
-      <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{item.barcode ?? '-'}</td>
+      <td className="px-4 py-3 text-sm text-muted-foreground">{item.barcode ?? '-'}</td>
       <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{item.availableInventory}</td>
       <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{(item.price ?? 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TRY</td>
       <td className="px-4 py-3">
-        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${item.status === 'available' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-            item.status === 'low_stock' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
-              'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${item.status === 'available' ? 'bg-success/10 text-success' :
+            item.status === 'low_stock' ? 'bg-warning/10 text-yellow-800 dark:text-yellow-200' :
+              'bg-destructive/10 text-red-800 dark:text-red-200'
           }`}>
           {item.status === 'available' ? 'Mevcut' :
             item.status === 'low_stock' ? 'Düşük Stok' :

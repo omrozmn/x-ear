@@ -69,7 +69,7 @@ export function InvoicesList({ invoices, isLoading, pagination, onRowClick }: In
       title: 'Tarih',
       sortable: true,
       render: (_, invoice) => (
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+        <span className="text-sm text-muted-foreground">
           {invoice.date ? formatDate(invoice.date) : '-'}
         </span>
       )

@@ -54,6 +54,7 @@ export { Box } from './Box';
 export { Text } from './Text';
 export { FormControl } from './FormControl';
 export { FormLabel } from './FormLabel';
+export { FieldWrapper } from './FieldWrapper';
 export { HStack, VStack } from './Stack';
 export { SimpleGrid } from './Grid';
 export { AlertIcon } from './AlertIcon';

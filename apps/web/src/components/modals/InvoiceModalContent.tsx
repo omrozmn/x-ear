@@ -3,7 +3,7 @@ import { InvoiceFormExtended } from '../invoices/InvoiceFormExtended';
 import { InvoiceService } from '../../services/invoice.service';
 import { CreateInvoiceData, Invoice } from '../../types/invoice';
 import { InvoicePreviewModal } from './InvoicePreviewModal';
-import { Button } from '@x-ear/ui-web';
+import { Button, Input, DatePicker } from '@x-ear/ui-web';
 import { ChevronDown } from 'lucide-react';
 import { CustomerSectionCompact } from '../invoices/CustomerSectionCompact';
 import { ProductLinesSection } from '../invoices/ProductLinesSection';
@@ -61,6 +61,7 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
   const [openItems, setOpenItems] = useState(true);
   const [openSGK, setOpenSGK] = useState(true);
   const [openGov, setOpenGov] = useState(true);
+  const [openReturn, setOpenReturn] = useState(true);
 
   // Reset state when modal opens/closes
   useEffect(() => {
@@ -248,30 +249,31 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
   const showSGKSection = formData.invoiceType === '14';
   const showGovernmentSection = formData.scenario === 'government';
   const showExportSection = formData.scenario === 'export';
+  const showReturnSection = ['15', '49', '50'].includes(String(formData.invoiceType));
 
   const sectionDot = (done: boolean) => (
     done
       ? <span className="inline-block h-2.5 w-2.5 rounded-full bg-green-500" />
-      : <span className="inline-block h-2.5 w-2.5 rounded-full border-2 border-gray-300" />
+      : <span className="inline-block h-2.5 w-2.5 rounded-full border-2 border-border" />
   );
 
   return (
     <>
       <div
-        className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-[28px] bg-gray-50 shadow-xl"
+        className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-[28px] bg-muted shadow-xl"
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-5">
+        <div className="flex items-center justify-between border-b border-border bg-card px-6 py-5">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-foreground">
               {getModalTitle()}
             </h2>
-            <p className="mt-1 text-sm text-gray-500">Tüm alanlar kartlar halinde düzenlenmiştir.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Tüm alanlar kartlar halinde düzenlenmiştir.</p>
           </div>
           <Button
             type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-xl p-1"
+            className="text-muted-foreground hover:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring rounded-xl p-1"
             variant='default'>
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -286,7 +288,7 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
             <ErrorMessage type="error" title="Hata" message={submitError} />
           )}
 
-            <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+            <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
               <button
                 data-allow-raw="true"
                 type="button"
@@ -295,12 +297,12 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
               >
                 <div className="flex items-center gap-2">
                   {sectionDot(Boolean(formData.customerFirstName || formData.customerLastName || formData.customerName || formData.customerTcNumber))}
-                  <h3 className="font-bold text-gray-900">Fatura Alıcısı</h3>
+                  <h3 className="font-bold text-foreground">Fatura Alıcısı</h3>
                 </div>
-                <ChevronDown size={20} className={`text-gray-400 transition-transform duration-200${openCustomer ? ' rotate-180' : ''}`} />
+                <ChevronDown size={20} className={`text-muted-foreground transition-transform duration-200${openCustomer ? ' rotate-180' : ''}`} />
               </button>
               {openCustomer && (
-                <div className="border-t border-gray-100 p-1">
+                <div className="border-t border-border p-1">
                   <CustomerSectionCompact
                     isSGK={showSGKSection}
                     customerId={formData.customerId as string}
@@ -319,7 +321,7 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
               )}
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+            <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
               <button
                 data-allow-raw="true"
                 type="button"
@@ -328,12 +330,12 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
               >
                 <div className="flex items-center gap-2">
                   {sectionDot(Boolean(formData.invoiceType || formData.scenario !== 'other'))}
-                  <h3 className="font-bold text-gray-900">Fatura Detayları</h3>
+                  <h3 className="font-bold text-foreground">Fatura Detayları</h3>
                 </div>
-                <ChevronDown size={20} className={`text-gray-400 transition-transform duration-200${openDetails ? ' rotate-180' : ''}`} />
+                <ChevronDown size={20} className={`text-muted-foreground transition-transform duration-200${openDetails ? ' rotate-180' : ''}`} />
               </button>
               {openDetails && (
-                <div className="border-t border-gray-100">
+                <div className="border-t border-border">
                   <InvoiceFormExtended
                     invoice={initialData || undefined}
                     initialData={formData as unknown as Partial<Record<string, unknown>>}
@@ -348,12 +350,12 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
             </div>
 
             {showSGKSection && (
-              <div className="overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-sm">
+              <div className="overflow-hidden rounded-2xl border border-blue-100 bg-card shadow-sm">
                 <button
                   data-allow-raw="true"
                   type="button"
                   onClick={() => setOpenSGK((v) => !v)}
-                  className="flex w-full items-center justify-between bg-blue-50 p-4 text-left"
+                  className="flex w-full items-center justify-between bg-primary/10 p-4 text-left"
                 >
                   <h3 className="text-sm font-bold uppercase tracking-wider text-blue-900">SGK Bilgileri</h3>
                   <ChevronDown size={18} className={`text-blue-400 transition-transform duration-200${openSGK ? ' rotate-180' : ''}`} />
@@ -370,18 +372,18 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
             )}
 
             {showGovernmentSection && (
-              <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+              <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
                 <button
                   data-allow-raw="true"
                   type="button"
                   onClick={() => setOpenGov((v) => !v)}
                   className="flex w-full items-center justify-between p-4 text-left"
                 >
-                  <h3 className="font-bold text-gray-900">Kamu Bilgileri</h3>
-                  <ChevronDown size={18} className={`text-gray-400 transition-transform duration-200${openGov ? ' rotate-180' : ''}`} />
+                  <h3 className="font-bold text-foreground">Kamu Bilgileri</h3>
+                  <ChevronDown size={18} className={`text-muted-foreground transition-transform duration-200${openGov ? ' rotate-180' : ''}`} />
                 </button>
                 {openGov && (
-                  <div className="border-t border-gray-100 p-4">
+                  <div className="border-t border-border p-4">
                     <GovernmentSection formData={formData as never} onChange={handleFormDataChange} />
                   </div>
                 )}
@@ -389,7 +391,7 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
             )}
 
             {showExportSection && (
-              <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+              <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
                 <ExportDetailsCard
                   value={formData.exportDetails as never}
                   onChange={(data) => handleFormDataChange('exportDetails', data)}
@@ -397,7 +399,59 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
               </div>
             )}
 
-            <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+            {showReturnSection && (
+              <div className="overflow-hidden rounded-2xl border border-orange-100 bg-card shadow-sm">
+                <button
+                  data-allow-raw="true"
+                  type="button"
+                  onClick={() => setOpenReturn((v) => !v)}
+                  className="flex w-full items-center justify-between bg-orange-50 p-4 text-left"
+                >
+                  <h3 className="text-sm font-bold text-foreground">İade Fatura Bilgileri</h3>
+                  <ChevronDown size={18} className={`text-orange-400 transition-transform duration-200${openReturn ? ' rotate-180' : ''}`} />
+                </button>
+                {openReturn && (
+                  <div className="border-t border-orange-100 p-4 space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-1">İade Fatura No</label>
+                      <Input
+                        type="text"
+                        value={(formData.returnInvoiceDetails as { returnInvoiceNumber?: string })?.returnInvoiceNumber || ''}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFormDataChange('returnInvoiceDetails', {
+                          ...(formData.returnInvoiceDetails as Record<string, unknown> || {}),
+                          returnInvoiceNumber: e.target.value
+                        })}
+                        placeholder="İade edilen fatura numarası"
+                      />
+                    </div>
+                    <div>
+                      <DatePicker
+                        label="İade Fatura Tarihi"
+                        value={(formData.returnInvoiceDetails as { returnInvoiceDate?: string })?.returnInvoiceDate ? new Date((formData.returnInvoiceDetails as { returnInvoiceDate: string }).returnInvoiceDate) : null}
+                        onChange={(date: Date | null) => handleFormDataChange('returnInvoiceDetails', {
+                          ...(formData.returnInvoiceDetails as Record<string, unknown> || {}),
+                          returnInvoiceDate: date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : ''
+                        })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-1">İade Nedeni</label>
+                      <Input
+                        type="text"
+                        value={(formData.returnInvoiceDetails as { returnReason?: string })?.returnReason || ''}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFormDataChange('returnInvoiceDetails', {
+                          ...(formData.returnInvoiceDetails as Record<string, unknown> || {}),
+                          returnReason: e.target.value
+                        })}
+                        placeholder="İade nedeni"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
               <button
                 data-allow-raw="true"
                 type="button"
@@ -406,17 +460,17 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
               >
                 <div className="flex items-center gap-2">
                   {sectionDot(Array.isArray(formData.items) && formData.items.length > 0)}
-                  <h3 className="font-bold text-gray-900">Ürün ve Hizmetler</h3>
+                  <h3 className="font-bold text-foreground">Ürün ve Hizmetler</h3>
                   {Array.isArray(formData.items) && formData.items.length > 0 && (
-                    <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
                       {formData.items.length} kalem
                     </span>
                   )}
                 </div>
-                <ChevronDown size={20} className={`text-gray-400 transition-transform duration-200${openItems ? ' rotate-180' : ''}`} />
+                <ChevronDown size={20} className={`text-muted-foreground transition-transform duration-200${openItems ? ' rotate-180' : ''}`} />
               </button>
               {openItems && (
-                <div className="border-t border-gray-100">
+                <div className="border-t border-border">
                   <ProductLinesSection
                     lines={(formData.items as never[]) || []}
                     onChange={(lines) => handleFormDataChange('items', lines)}
@@ -433,7 +487,7 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
           </div>
         </div>
 
-        <div className="border-t border-gray-200 bg-white px-4 py-4 sm:px-6">
+        <div className="border-t border-border bg-card px-4 py-4 sm:px-6">
           {createdInvoice ? (
             <div className="flex flex-wrap items-center justify-end gap-3">
               <Button
@@ -453,15 +507,7 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
               </Button>
             </div>
           ) : (
-            <div className="flex gap-3">
-              <Button
-                type="button"
-                onClick={onClose}
-                variant="outline"
-                className="flex-1 rounded-xl"
-              >
-                İptal
-              </Button>
+            <div className="flex gap-3 justify-end">
               <Button
                 type="button"
                 onClick={() => handleSubmit(formData as unknown as CreateInvoiceData)}
@@ -470,6 +516,14 @@ export const InvoiceModalContent: React.FC<InvoiceModalContentProps> = ({
                 variant="primary"
               >
                 {isSubmitting ? 'Kaydediliyor...' : 'Faturayı Kes'}
+              </Button>
+              <Button
+                type="button"
+                onClick={onClose}
+                variant="outline"
+                className="rounded-xl"
+              >
+                İptal
               </Button>
             </div>
           )}

@@ -32,7 +32,7 @@ export function CustomerLabelSection({ customerLabel, onChange }: CustomerLabelS
 
   return (
     <div className="space-y-3">
-      <label className="block text-sm font-medium text-gray-700">
+      <label className="block text-sm font-medium text-foreground">
         Alıcı Etiketi
       </label>
       
@@ -50,7 +50,7 @@ export function CustomerLabelSection({ customerLabel, onChange }: CustomerLabelS
         <Button
           type="button"
           onClick={handleCustomLabel}
-          className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-xl hover:bg-gray-200"
+          className="px-3 py-2 bg-muted border border-border rounded-xl hover:bg-accent dark:hover:bg-gray-600"
           variant="default">
           + Özel
         </Button>
@@ -58,12 +58,12 @@ export function CustomerLabelSection({ customerLabel, onChange }: CustomerLabelS
 
       {/* Seçili Etiket Önizleme */}
       {customerLabel?.labelName && (
-        <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-xl">
+        <div className="flex items-center space-x-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-xl">
           <div
             className="w-4 h-4 rounded-full"
             style={{ backgroundColor: customerLabel.color }}
           />
-          <span className="text-sm font-medium text-gray-700">
+          <span className="text-sm font-medium text-foreground">
             {customerLabel.labelName}
           </span>
         </div>
@@ -71,11 +71,11 @@ export function CustomerLabelSection({ customerLabel, onChange }: CustomerLabelS
 
       {/* Özel Etiket Formu */}
       {showCustomLabel && (
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 space-y-3">
-          <h4 className="text-sm font-medium text-blue-900">Özel Etiket Oluştur</h4>
+        <div className="bg-primary/10 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 space-y-3">
+          <h4 className="text-sm font-medium text-blue-900 dark:text-blue-300">Özel Etiket Oluştur</h4>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-foreground mb-1">
                 Etiket Adı
               </label>
               <Input
@@ -90,7 +90,7 @@ export function CustomerLabelSection({ customerLabel, onChange }: CustomerLabelS
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-foreground mb-1">
                 Renk
               </label>
               <Input
@@ -107,7 +107,7 @@ export function CustomerLabelSection({ customerLabel, onChange }: CustomerLabelS
           <Button
             type="button"
             onClick={() => setShowCustomLabel(false)}
-            className="text-sm text-blue-600 hover:text-blue-800"
+            className="text-sm text-primary hover:text-blue-800"
             variant="default">
             Kapat
           </Button>

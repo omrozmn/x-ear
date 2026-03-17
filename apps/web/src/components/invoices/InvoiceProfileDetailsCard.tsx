@@ -24,8 +24,8 @@ export function InvoiceProfileDetailsCard({
 
   if (invoiceType === 'hks') {
     return (
-      <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
-        <h3 className="text-sm font-bold text-gray-900 mb-3">Konaklama Vergisi Bilgileri</h3>
+      <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
+        <h3 className="text-sm font-bold text-foreground mb-3">Konaklama Vergisi Bilgileri</h3>
         <div className="grid grid-cols-1 gap-3">
           <Input type="text" label="Tesis Kayıt No" value={data.hotelRegistrationNo || ''} onChange={(e) => patch({ hotelRegistrationNo: e.target.value })} />
           <DatePicker
@@ -46,8 +46,8 @@ export function InvoiceProfileDetailsCard({
 
   if (invoiceType === 'sarj' || invoiceType === 'sarjanlik') {
     return (
-      <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
-        <h3 className="text-sm font-bold text-gray-900 mb-3">Enerji Şarj Bilgileri</h3>
+      <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
+        <h3 className="text-sm font-bold text-foreground mb-3">Enerji Şarj Bilgileri</h3>
         <div className="grid grid-cols-1 gap-3">
           <Input type="text" label="İstasyon Kodu" value={data.stationCode || ''} onChange={(e) => patch({ stationCode: e.target.value })} />
           <Input type="text" label="Plaka" value={data.plateNumber || ''} onChange={(e) => patch({ plateNumber: e.target.value })} />
@@ -69,8 +69,8 @@ export function InvoiceProfileDetailsCard({
 
   if (invoiceType === 'yolcu') {
     return (
-      <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
-        <h3 className="text-sm font-bold text-gray-900 mb-3">Yolcu Beraberi Bilgileri</h3>
+      <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
+        <h3 className="text-sm font-bold text-foreground mb-3">Yolcu Beraberi Bilgileri</h3>
         <div className="grid grid-cols-1 gap-3">
           <Input type="text" label="Yolcu Adı" value={data.passengerName || ''} onChange={(e) => patch({ passengerName: e.target.value })} />
           <Input type="text" label="Pasaport No" value={data.passengerPassportNo || ''} onChange={(e) => patch({ passengerPassportNo: e.target.value })} />
@@ -86,8 +86,8 @@ export function InvoiceProfileDetailsCard({
 
   if (invoiceType === 'otv') {
     return (
-      <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
-        <h3 className="text-sm font-bold text-gray-900 mb-3">ÖTV Bilgileri</h3>
+      <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
+        <h3 className="text-sm font-bold text-foreground mb-3">ÖTV Bilgileri</h3>
         <div className="grid grid-cols-1 gap-3">
           <Input type="text" label="ÖTV Kodu" value={data.otvCode || ''} onChange={(e) => patch({ otvCode: e.target.value })} />
           <Input type="number" step="0.01" label="ÖTV Oranı (%)" value={data.otvRate || ''} onChange={(e) => patch({ otvRate: Number(e.target.value) || 0 })} />
@@ -99,8 +99,8 @@ export function InvoiceProfileDetailsCard({
 
   if (invoiceType === 'hastane') {
     return (
-      <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
-        <h3 className="text-sm font-bold text-gray-900 mb-3">Hasta Bilgileri</h3>
+      <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
+        <h3 className="text-sm font-bold text-foreground mb-3">Hasta Bilgileri</h3>
         <div className="grid grid-cols-1 gap-3">
           <Input type="text" label="Hasta Adı" value={data.patientName || ''} onChange={(e) => patch({ patientName: e.target.value })} />
           <Input type="text" label="Hasta TCKN/VKN" value={data.patientTaxId || ''} onChange={(e) => patch({ patientTaxId: e.target.value })} />

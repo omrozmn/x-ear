@@ -147,7 +147,7 @@ const AdminBlogPage: React.FC = () => {
                         <PencilSquareIcon className="w-5 h-5" />
                     </button>
                     <button
-                        onClick={() => window.open(`http://localhost:3000/blog/${post.slug}`, '_blank')}
+                        onClick={() => window.open(`${import.meta.env.VITE_WEB_APP_URL || ''}/blog/${post.slug}`, '_blank')}
                         title="Görüntüle"
                         className="p-1.5 rounded-2xl bg-gray-50 text-gray-500 hover:bg-blue-50 hover:text-blue-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-blue-900/20 dark:hover:text-blue-400 transition-all flex items-center justify-center"
                     >

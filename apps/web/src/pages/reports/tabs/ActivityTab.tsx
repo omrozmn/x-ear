@@ -66,7 +66,7 @@ export function ActivityTab({ filters }: ActivityTabProps) {
             render: (_: unknown, record: ActivityLogRead) =>
                 record.isCritical ? (
                     <span title="Kritik İşlem">
-                        <AlertTriangle className="w-4 h-4 text-red-500" />
+                        <AlertTriangle className="w-4 h-4 text-destructive" />
                     </span>
                 ) : null
         },
@@ -75,7 +75,7 @@ export function ActivityTab({ filters }: ActivityTabProps) {
             title: 'Tarih',
             sortable: true,
             render: (_: unknown, record: ActivityLogRead) => (
-                <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                <div className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
                     <Calendar className="w-3 h-3" />
                     {record.createdAt && new Date(record.createdAt).toLocaleString('tr-TR')}
                 </div>
@@ -89,7 +89,7 @@ export function ActivityTab({ filters }: ActivityTabProps) {
                     <p className="font-medium text-gray-900 dark:text-white truncate max-w-[150px]">
                         {record.userName || '-'}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
+                    <p className="text-xs text-muted-foreground truncate max-w-[150px]">
                         {canViewDetails ? (record.userEmail || '') : ''}
                     </p>
                 </>
@@ -99,7 +99,7 @@ export function ActivityTab({ filters }: ActivityTabProps) {
             key: 'action',
             title: 'Aksiyon',
             render: (_: unknown, record: ActivityLogRead) => (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-blue-800 dark:text-blue-300">
                     {translateActivityAction(record.action)}
                 </span>
             )
@@ -109,7 +109,7 @@ export function ActivityTab({ filters }: ActivityTabProps) {
             title: 'Mesaj',
             render: (_: unknown, record: ActivityLogRead) => (
                 <span
-                    className="text-gray-600 dark:text-gray-300 max-w-[250px] truncate block"
+                    className="text-muted-foreground max-w-[250px] truncate block"
                     title={translateActivityMessage(record)}
                 >
                     {translateActivityMessage(record)}
@@ -119,8 +119,8 @@ export function ActivityTab({ filters }: ActivityTabProps) {
         {
             key: 'branchName',
             title: 'Şube',
-            render: (_: unknown, record: ActivityLogRead & { branchName?: string; branchId?: string }) => (
-                <span className="text-sm text-gray-600 dark:text-gray-300">
+            render: (_: unknown, record: ActivityLogRead) => (
+                <span className="text-sm text-muted-foreground">
                     {record.branchName || record.branchId || '-'}
                 </span>
             )
@@ -134,10 +134,10 @@ export function ActivityTab({ filters }: ActivityTabProps) {
                 <Button
                     onClick={(e: React.MouseEvent) => { e.stopPropagation(); setSelectedLog(record); }}
                     variant="ghost"
-                    className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors !w-auto !h-auto"
+                    className="p-1.5 hover:bg-muted dark:hover:bg-gray-700 rounded-2xl transition-colors !w-auto !h-auto"
                     title={canViewDetails ? 'Detay' : 'Detaylar gizli'}
                 >
-                    <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                    <Eye className="w-4 h-4 text-muted-foreground" />
                 </Button>
             )
         }
@@ -149,10 +149,10 @@ export function ActivityTab({ filters }: ActivityTabProps) {
                 <TabExportButton filename="islem-dokumu" rows={logs as unknown as Array<Record<string, unknown>>} />
             </div>
             {/* Activity Filters */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-border p-4">
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                     <div>
-                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Şube</label>
+                        <label className="text-xs font-medium text-muted-foreground mb-1 block">Şube</label>
                         <Select
                             className="w-full text-sm"
                             value={activityFilters.branch_id}
@@ -164,7 +164,7 @@ export function ActivityTab({ filters }: ActivityTabProps) {
                         />
                     </div>
                     <div>
-                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Kullanıcı</label>
+                        <label className="text-xs font-medium text-muted-foreground mb-1 block">Kullanıcı</label>
                         <Select
                             className="w-full text-sm"
                             value={activityFilters.user_id}
@@ -176,7 +176,7 @@ export function ActivityTab({ filters }: ActivityTabProps) {
                         />
                     </div>
                     <div>
-                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Aksiyon</label>
+                        <label className="text-xs font-medium text-muted-foreground mb-1 block">Aksiyon</label>
                         <Select
                             className="w-full text-sm"
                             value={activityFilters.action}
@@ -188,7 +188,7 @@ export function ActivityTab({ filters }: ActivityTabProps) {
                         />
                     </div>
                     <div className="md:col-span-2">
-                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Arama</label>
+                        <label className="text-xs font-medium text-muted-foreground mb-1 block">Arama</label>
                         <Input
                             type="text"
                             className="w-full text-sm"
@@ -201,7 +201,7 @@ export function ActivityTab({ filters }: ActivityTabProps) {
             </div>
 
             {/* Activity Table */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-border overflow-hidden">
                 <DataTable<ActivityLogRead>
                     data={logs}
                     columns={columns}

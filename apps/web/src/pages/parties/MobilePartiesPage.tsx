@@ -81,8 +81,8 @@ export const MobilePartiesPage: React.FC = () => {
     };
 
     return (
-        <MobileLayout className="bg-gray-50">
-            <div className="sticky top-0 z-30 bg-white">
+        <MobileLayout className="bg-muted">
+            <div className="sticky top-0 z-30 bg-card">
                 <MobileHeader
                     title={isSelectionMode ? `${selectedIds.size} Seçilen` : "Hastalar"}
                     showBack={false}
@@ -91,19 +91,19 @@ export const MobilePartiesPage: React.FC = () => {
                         <div className="flex items-center gap-1">
                             {isSelectionMode ? (
                                 <>
-                                    <Button variant="ghost" size="sm" onClick={toggleSelectAll} className="px-2 py-1 h-auto text-sm text-blue-600 font-medium">
+                                    <Button variant="ghost" size="sm" onClick={toggleSelectAll} className="px-2 py-1 h-auto text-sm text-primary font-medium">
                                         {selectedIds.size === filteredParties.length && filteredParties.length > 0 ? 'Hiçbiri' : 'Tümünü Seç'}
                                     </Button>
-                                    <Button variant="ghost" size="sm" onClick={handleCancelSelection} className="p-2 text-gray-600">
+                                    <Button variant="ghost" size="sm" onClick={handleCancelSelection} className="p-2 text-muted-foreground">
                                         <X className="h-5 w-5" />
                                     </Button>
                                 </>
                             ) : (
                                 <>
-                                    <Button variant="ghost" size="sm" onClick={() => { setIsSelectionMode(true); triggerSelection(); }} className="px-2 py-1 h-auto text-sm text-blue-600 font-medium">
+                                    <Button variant="ghost" size="sm" onClick={() => { setIsSelectionMode(true); triggerSelection(); }} className="px-2 py-1 h-auto text-sm text-primary font-medium">
                                         Seç
                                     </Button>
-                                    <Button variant="ghost" size="sm" className="p-2 text-gray-600">
+                                    <Button variant="ghost" size="sm" className="p-2 text-muted-foreground">
                                         <Filter className="h-5 w-5" />
                                     </Button>
                                 </>
@@ -113,15 +113,15 @@ export const MobilePartiesPage: React.FC = () => {
                 />
 
                 {/* Search Bar */}
-                <div className="px-4 pb-4 bg-white border-b border-gray-100">
+                <div className="px-4 pb-4 bg-card border-b border-border">
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                             type="text"
                             placeholder="Hasta ara..."
                             value={searchValue}
                             onChange={(e) => setSearchValue(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 bg-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:bg-white transition-all"
+                            className="w-full pl-10 pr-4 py-2.5 bg-muted rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:bg-card transition-all"
                         />
                     </div>
                 </div>
@@ -155,7 +155,7 @@ export const MobilePartiesPage: React.FC = () => {
                             />
                         ))
                     ) : (
-                        <div className="text-center py-12 text-gray-500">
+                        <div className="text-center py-12 text-muted-foreground">
                             {searchValue ? 'Sonuç bulunamadı' : 'Hasta kaydı yok'}
                         </div>
                     )}

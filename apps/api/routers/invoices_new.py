@@ -719,15 +719,36 @@ def search_incoming_invoices_by_product(
             inv_date = None
             if inv.invoice_date:
                 inv_date = inv.invoice_date[:10] if isinstance(inv.invoice_date, str) else str(inv.invoice_date)[:10]
+
+            # Resolve address/city: prefer purchase_invoice fields, fallback to suppliers table
+            s_address = getattr(inv, 'sender_address', None) or ""
+            s_city = getattr(inv, 'sender_city', None) or ""
+            s_district = getattr(inv, 'sender_district', None) or ""
+            s_tax = getattr(inv, 'sender_tax_number', None) or ""
+            if (not s_address or not s_city or not s_district) and s_tax:
+                from core.models.suppliers import Supplier
+                supplier = db.query(Supplier).filter(
+                    Supplier.tenant_id == tenant_id,
+                    Supplier.tax_number == s_tax,
+                ).first()
+                if supplier:
+                    if not s_address and supplier.address:
+                        s_address = supplier.address
+                    if not s_city and supplier.city:
+                        s_city = supplier.city
+                    if not s_district and getattr(supplier, 'district', None):
+                        s_district = supplier.district
+
             results.append(
                 ProductSearchInvoiceResult(
                     invoice_id=inv.id,
                     invoice_number=inv.invoice_number or f"INV-{inv.id}",
                     invoice_date=inv_date,
                     sender_name=inv.sender_name or "",
-                    sender_tax_number=getattr(inv, 'sender_tax_number', None),
-                    sender_address=getattr(inv, 'sender_address', None),
-                    sender_city=getattr(inv, 'sender_city', None),
+                    sender_tax_number=s_tax or None,
+                    sender_address=s_address or None,
+                    sender_city=s_city or None,
+                    sender_district=s_district or None,
                     matched_items=matched,
                 )
             )

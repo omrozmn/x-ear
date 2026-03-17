@@ -50,7 +50,7 @@ const DocumentTypeSelector: React.FC<DocumentTypeSelectorProps> = ({
           />
         </div>
 
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-muted-foreground">
           <p>Otomatik olarak belirlenen tür: <strong>{currentType || 'Belirlenemedi'}</strong></p>
           <p className="mt-1">Gerekirse manuel olarak değiştirebilirsiniz.</p>
         </div>

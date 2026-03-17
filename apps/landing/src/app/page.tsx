@@ -65,9 +65,6 @@ function HomeContent() {
           </div>
         </section>
 
-        {/* Sector showcase */}
-        <SectorCards />
-
         <PainPoints />
 
         {/* Narrative DOM Layers - Sentient AI */}
@@ -78,6 +75,9 @@ function HomeContent() {
 
         {/* Narrative DOM Layers - Interactive ROI */}
         <InteractiveRoi />
+
+        {/* Sector showcase - bottom */}
+        <SectorCards />
 
       </main>
       <Footer />

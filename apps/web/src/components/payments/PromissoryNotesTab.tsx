@@ -779,11 +779,11 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
 
   const getStatusBadge = (status: string | undefined) => {
     const statusConfig = {
-      active: { color: 'bg-blue-100 text-blue-800', label: 'Aktif', icon: Clock },
-      paid: { color: 'bg-green-100 text-green-800', label: 'Ödendi', icon: CheckCircle },
-      partial: { color: 'bg-yellow-100 text-yellow-800', label: 'Kısmi', icon: Clock },
-      overdue: { color: 'bg-red-100 text-red-800', label: 'Gecikmiş', icon: Clock },
-      cancelled: { color: 'bg-gray-100 text-gray-800', label: 'İptal', icon: XCircle }
+      active: { color: 'bg-primary/10 text-blue-800', label: 'Aktif', icon: Clock },
+      paid: { color: 'bg-success/10 text-success', label: 'Ödendi', icon: CheckCircle },
+      partial: { color: 'bg-warning/10 text-yellow-800', label: 'Kısmi', icon: Clock },
+      overdue: { color: 'bg-destructive/10 text-red-800', label: 'Gecikmiş', icon: Clock },
+      cancelled: { color: 'bg-muted text-foreground', label: 'İptal', icon: XCircle }
     };
 
     const config = statusConfig[(status || 'active') as keyof typeof statusConfig] || statusConfig.active;
@@ -802,17 +802,17 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
       key: 'noteNumber',
       title: 'Senet No',
       render: (_: unknown, note: PromissoryNoteRead) => (
-        <span className="text-sm font-medium text-gray-900">{note.noteNumber}</span>
+        <span className="text-sm font-medium text-foreground">{note.noteNumber}</span>
       ),
     },
     {
       key: '_amount',
       title: 'Tutar',
       render: (_: unknown, note: PromissoryNoteRead) => (
-        <div className="text-sm font-semibold text-gray-900">
+        <div className="text-sm font-semibold text-foreground">
           {formatCurrency(note.amount)}
           {note.paidAmount && note.paidAmount > 0 && (
-            <div className="text-xs text-green-600">
+            <div className="text-xs text-success">
               Ödenen: {formatCurrency(note.paidAmount)}
             </div>
           )}
@@ -823,7 +823,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
       key: '_dueDate',
       title: 'Vade Tarihi',
       render: (_: unknown, note: PromissoryNoteRead) => (
-        <span className="text-sm text-gray-600">{formatDate(note.dueDate)}</span>
+        <span className="text-sm text-muted-foreground">{formatDate(note.dueDate)}</span>
       ),
     },
     {
@@ -835,7 +835,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
       key: '_paidDate',
       title: 'Ödeme Tarihi',
       render: (_: unknown, note: PromissoryNoteRead) => (
-        <span className="text-sm text-gray-600">{note.paidDate ? formatDate(note.paidDate) : '-'}</span>
+        <span className="text-sm text-muted-foreground">{note.paidDate ? formatDate(note.paidDate) : '-'}</span>
       ),
     },
     {
@@ -867,7 +867,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
                 handleCancelNote(note.id);
               }}
               title="İptal Et"
-              className="text-red-600 hover:text-red-700"
+              className="text-destructive hover:text-destructive"
             >
               <Trash2 className="w-4 h-4" />
             </Button>
@@ -882,7 +882,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
       {/* Yeni Senet Oluştur Formu - LEGACY STYLE - COLLAPSIBLE */}
       <Card>
         <CardHeader
-          className="cursor-pointer hover:bg-gray-50 transition-colors"
+          className="cursor-pointer hover:bg-muted transition-colors"
           onClick={() => setIsCreateFormOpen(!isCreateFormOpen)}
         >
           <CardTitle className="flex items-center justify-between">
@@ -891,15 +891,15 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
               Yeni Senet Oluştur
             </div>
             {isCreateFormOpen ? (
-              <ChevronUp className="w-5 h-5 text-gray-500" />
+              <ChevronUp className="w-5 h-5 text-muted-foreground" />
             ) : (
-              <ChevronDown className="w-5 h-5 text-gray-500" />
+              <ChevronDown className="w-5 h-5 text-muted-foreground" />
             )}
           </CardTitle>
         </CardHeader>
         {isCreateFormOpen && (
           <CardContent>
-            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
+            <div className="bg-primary/10 border border-blue-200 rounded-2xl p-4 mb-6">
               <p className="text-sm text-blue-800 flex items-center">
                 <FileText className="w-4 h-4 mr-2" />
                 Bu form ile resmi senet oluşturabilirsiniz. Bilgileri kontrol edip düzenleyebilirsiniz.
@@ -912,8 +912,8 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="w-full">
                   <Label className="flex items-center">
-                    <FileText className="w-4 h-4 mr-2 text-blue-600" />
-                    Senet Sayısı <span className="text-red-500 ml-1">*</span>
+                    <FileText className="w-4 h-4 mr-2 text-primary" />
+                    Senet Sayısı <span className="text-destructive ml-1">*</span>
                   </Label>
                   <Input
                     type="number"
@@ -924,13 +924,13 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
                     onFocus={(e) => e.target.select()}
                     placeholder="1-24 arası"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Maksimum 24 senet oluşturabilirsiniz</p>
+                  <p className="text-xs text-muted-foreground mt-1">Maksimum 24 senet oluşturabilirsiniz</p>
                 </div>
 
                 <div className="w-full">
                   <Label className="flex items-center">
-                    <Banknote className="w-4 h-4 mr-2 text-green-600" />
-                    Toplam Tutar (TL) <span className="text-red-500 ml-1">*</span>
+                    <Banknote className="w-4 h-4 mr-2 text-success" />
+                    Toplam Tutar (TL) <span className="text-destructive ml-1">*</span>
                   </Label>
                   <Input
                     type="number"
@@ -942,13 +942,13 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
                     }}
                     placeholder="0.00"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Kalan tutar: {formatCurrency(remainingAmount)}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Kalan tutar: {formatCurrency(remainingAmount)}</p>
                 </div>
 
                 <div className="w-full">
                   <Label className="flex items-center">
                     <Building className="w-4 h-4 mr-2 text-purple-600" />
-                    Yetkili Mahkeme <span className="text-red-500 ml-1">*</span>
+                    Yetkili Mahkeme <span className="text-destructive ml-1">*</span>
                   </Label>
                   <Input
                     value={authorizedCourt}
@@ -959,16 +959,16 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
               </div>
 
               {/* Tarihler */}
-              <div className="border-t border-gray-200 pt-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <Calendar className="w-5 h-5 mr-2 text-blue-600" />
+              <div className="border-t border-border pt-4">
+                <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center">
+                  <Calendar className="w-5 h-5 mr-2 text-primary" />
                   Tarihler
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="w-full">
                     <Label className="flex items-center">
-                      <Calendar className="w-4 h-4 mr-2 text-blue-600" />
-                      Düzenlenme Tarihi <span className="text-red-500 ml-1">*</span>
+                      <Calendar className="w-4 h-4 mr-2 text-primary" />
+                      Düzenlenme Tarihi <span className="text-destructive ml-1">*</span>
                     </Label>
                     <DatePicker
                       value={issueDate}
@@ -980,8 +980,8 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
 
                   <div className="w-full">
                     <Label className="flex items-center">
-                      <Calendar className="w-4 h-4 mr-2 text-green-600" />
-                      İlk Vade Tarihi <span className="text-red-500 ml-1">*</span>
+                      <Calendar className="w-4 h-4 mr-2 text-success" />
+                      İlk Vade Tarihi <span className="text-destructive ml-1">*</span>
                     </Label>
                     <DatePicker
                       value={firstDueDate}
@@ -989,16 +989,16 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
                       placeholder="İlk vade tarihi seçin"
                       fullWidth
                     />
-                    <p className="text-xs text-gray-500 mt-1">İlk vade tarihi, düzenlenme tarihinden en az 1 gün sonra olmalıdır.</p>
+                    <p className="text-xs text-muted-foreground mt-1">İlk vade tarihi, düzenlenme tarihinden en az 1 gün sonra olmalıdır.</p>
                   </div>
                 </div>
               </div>
 
               {/* Taksit Planı Önizleme */}
               {showInstallmentPreview && (
-                <div className="border-t border-gray-200 pt-4">
+                <div className="border-t border-border pt-4">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Taksit Planı</h3>
+                    <h3 className="text-lg font-semibold text-foreground">Taksit Planı</h3>
                     <Button
                       type="button"
                       variant="outline"
@@ -1011,8 +1011,8 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
                   </div>
                   <div className="space-y-2 max-h-64 overflow-y-auto">
                     {installments.map((inst, index) => (
-                      <div key={index} className="grid grid-cols-12 gap-3 bg-gray-50 p-3 rounded-2xl items-center">
-                        <span className="col-span-2 font-medium text-gray-700">Taksit {index + 1}:</span>
+                      <div key={index} className="grid grid-cols-12 gap-3 bg-muted p-3 rounded-2xl items-center">
+                        <span className="col-span-2 font-medium text-foreground">Taksit {index + 1}:</span>
                         <div className="col-span-5 flex items-center gap-2">
                           <Input
                             type="number"
@@ -1021,7 +1021,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
                             onChange={(e) => updateInstallmentAmount(index, parseFloat(e.target.value) || 0)}
                             className="flex-1"
                           />
-                          <span className="text-gray-500 text-sm">TL</span>
+                          <span className="text-muted-foreground text-sm">TL</span>
                         </div>
                         <div className="col-span-5">
                           <DatePicker
@@ -1034,18 +1034,18 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
                       </div>
                     ))}
                   </div>
-                  <div className="mt-4 pt-4 border-t border-gray-200">
+                  <div className="mt-4 pt-4 border-t border-border">
                     <div className="flex justify-between items-center">
-                      <span className="font-semibold text-gray-900">Taksitler Toplamı:</span>
+                      <span className="font-semibold text-foreground">Taksitler Toplamı:</span>
                       <span className={`font-bold text-lg ${installments.reduce((sum, inst) => sum + inst.amount, 0) > totalAmount
-                        ? 'text-red-600'
-                        : 'text-blue-600'
+                        ? 'text-destructive'
+                        : 'text-primary'
                         }`}>
                         {formatCurrency(installments.reduce((sum, inst) => sum + inst.amount, 0))}
                       </span>
                     </div>
                     {installments.reduce((sum, inst) => sum + inst.amount, 0) > totalAmount && (
-                      <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-2xl flex items-start gap-2">
+                      <div className="mt-2 p-3 bg-warning/10 border border-yellow-200 rounded-2xl flex items-start gap-2">
                         <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                         <div className="text-sm text-yellow-800">
                           <strong>Uyarı:</strong> Taksitlerin toplamı ({formatCurrency(installments.reduce((sum, inst) => sum + inst.amount, 0))})
@@ -1053,7 +1053,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
                         </div>
                       </div>
                     )}
-                    <div className="mt-2 flex justify-between items-center text-sm text-gray-600">
+                    <div className="mt-2 flex justify-between items-center text-sm text-muted-foreground">
                       <span>Belirlenen Toplam Tutar:</span>
                       <span className="font-semibold">{formatCurrency(totalAmount)}</span>
                     </div>
@@ -1062,14 +1062,14 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
               )}
 
               {/* Borçlu Bilgileri */}
-              <div className="border-t border-gray-200 pt-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <User className="w-5 h-5 mr-2 text-blue-600" />
+              <div className="border-t border-border pt-4">
+                <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center">
+                  <User className="w-5 h-5 mr-2 text-primary" />
                   Borçlu Bilgileri
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="w-full">
-                    <Label>Ad Soyad <span className="text-red-500">*</span></Label>
+                    <Label>Ad Soyad <span className="text-destructive">*</span></Label>
                     <Input
                       value={debtorName}
                       onChange={(e) => setDebtorName(e.target.value)}
@@ -1077,7 +1077,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
                     />
                   </div>
                   <div className="w-full">
-                    <Label>T.C. Kimlik No <span className="text-red-500">*</span></Label>
+                    <Label>T.C. Kimlik No <span className="text-destructive">*</span></Label>
                     <Input
                       value={debtorTc}
                       onChange={(e) => setDebtorTc(e.target.value)}
@@ -1087,8 +1087,8 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
                   </div>
                   <div className="col-span-1 md:col-span-2 w-full">
                     <Label className="flex items-center">
-                      <MapPin className="w-4 h-4 mr-2 text-red-600" />
-                      Adres <span className="text-red-500 ml-1">*</span>
+                      <MapPin className="w-4 h-4 mr-2 text-destructive" />
+                      Adres <span className="text-destructive ml-1">*</span>
                     </Label>
                     <Textarea
                       value={debtorAddress}
@@ -1101,7 +1101,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
                   <div className="w-full">
                     <Label className="flex items-center">
                       <Building className="w-4 h-4 mr-2 text-purple-600" />
-                      Vergi Dairesi <span className="text-red-500 ml-1">*</span>
+                      Vergi Dairesi <span className="text-destructive ml-1">*</span>
                     </Label>
                     <Input
                       value={debtorTaxOffice}
@@ -1111,8 +1111,8 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
                   </div>
                   <div className="w-full">
                     <Label className="flex items-center">
-                      <Phone className="w-4 h-4 mr-2 text-green-600" />
-                      Telefon <span className="text-red-500 ml-1">*</span>
+                      <Phone className="w-4 h-4 mr-2 text-success" />
+                      Telefon <span className="text-destructive ml-1">*</span>
                     </Label>
                     <Input
                       value={debtorPhone}
@@ -1124,7 +1124,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
               </div>
 
               {/* Kefil Bilgileri (Opsiyonel) */}
-              <div className="border-t border-gray-200 pt-4">
+              <div className="border-t border-border pt-4">
                 <div className="flex items-center mb-4">
                   <div className="flex items-center">
                     <Shield className="w-4 h-4 mr-2 text-orange-600" />
@@ -1158,7 +1158,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
                     </div>
                     <div className="col-span-1 md:col-span-2 w-full">
                       <Label className="flex items-center">
-                        <MapPin className="w-4 h-4 mr-2 text-red-600" />
+                        <MapPin className="w-4 h-4 mr-2 text-destructive" />
                         Kefil Adres
                       </Label>
                       <Textarea
@@ -1171,7 +1171,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
                     </div>
                     <div className="w-full">
                       <Label className="flex items-center">
-                        <Phone className="w-4 h-4 mr-2 text-green-600" />
+                        <Phone className="w-4 h-4 mr-2 text-success" />
                         Kefil Telefon
                       </Label>
                       <Input
@@ -1185,7 +1185,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
               </div>
 
               {/* Action Buttons */}
-              <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+              <div className="flex justify-end space-x-3 pt-4 border-t border-border">
                 <Button
                   type="button"
                   onClick={handleCreateNotes}
@@ -1205,15 +1205,15 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
       {/* Senet Listesi - COLLAPSIBLE */}
       <Card>
         <CardHeader
-          className="flex flex-row items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
+          className="flex flex-row items-center justify-between cursor-pointer hover:bg-muted transition-colors"
           onClick={() => setIsListOpen(!isListOpen)}
         >
           <CardTitle className="flex items-center gap-2">
             Senet Listesi
             {isListOpen ? (
-              <ChevronUp className="w-5 h-5 text-gray-500" />
+              <ChevronUp className="w-5 h-5 text-muted-foreground" />
             ) : (
-              <ChevronDown className="w-5 h-5 text-gray-500" />
+              <ChevronDown className="w-5 h-5 text-muted-foreground" />
             )}
           </CardTitle>
           {promissoryNotes.length > 0 && (
@@ -1250,22 +1250,22 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
       {/* Delete Confirmation Modal */}
       {deleteModal.isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+          <div className="bg-card rounded-2xl p-6 w-full max-w-md">
             <div className="flex items-center gap-3 mb-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-                <AlertTriangle className="w-6 h-6 text-red-600" />
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-destructive" />
               </div>
               <div>
-                <h3 className="text-lg font-medium text-gray-900">
+                <h3 className="text-lg font-medium text-foreground">
                   Senet İptal Et
                 </h3>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Senet #{deleteModal.noteNumber}
                 </p>
               </div>
             </div>
 
-            <p className="text-sm text-gray-600 mb-6">
+            <p className="text-sm text-muted-foreground mb-6">
               Bu senedi iptal etmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
             </p>
 
@@ -1293,13 +1293,13 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
       {/* Tahsilat Modal */}
       {collectModal.isOpen && collectModal.note && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
+          <div className="bg-card rounded-2xl p-6 w-full max-w-md">
+            <h3 className="text-lg font-medium text-foreground mb-4">
               Senet Tahsilatı - #{collectModal.note.noteNumber}
             </h3>
 
             <div className="space-y-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3">
+              <div className="bg-primary/10 border border-blue-200 rounded-2xl p-3">
                 <div className="text-sm text-blue-800">
                   <div>Senet Tutarı: {formatCurrency(collectModal.note.amount)}</div>
                   {collectModal.note.paidAmount && collectModal.note.paidAmount > 0 && (

@@ -38,7 +38,7 @@ import { unwrapArray } from '../../utils/response-unwrap';
 import { formatDateForInput } from '@/utils/date';
 
 // interface ExtendedSaleRead extends SaleRead {
-//   partyPayment?: number;
+// partyPayment?: number;
 // }
 
 interface PaymentRecord {
@@ -309,11 +309,11 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      paid: { color: 'bg-green-100 text-green-800', label: 'Ödendi' },
-      pending: { color: 'bg-yellow-100 text-yellow-800', label: 'Bekliyor' },
-      overdue: { color: 'bg-red-100 text-red-800', label: 'Gecikmiş' },
-      cancelled: { color: 'bg-gray-100 text-gray-800', label: 'İptal' },
-      active: { color: 'bg-blue-100 text-blue-800', label: 'Aktif' }
+      paid: { color: 'bg-success/10 text-success', label: 'Ödendi' },
+      pending: { color: 'bg-warning/10 text-yellow-800', label: 'Bekliyor' },
+      overdue: { color: 'bg-destructive/10 text-red-800', label: 'Gecikmiş' },
+      cancelled: { color: 'bg-muted text-foreground', label: 'İptal' },
+      active: { color: 'bg-primary/10 text-blue-800', label: 'Aktif' }
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
@@ -333,20 +333,20 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
       }}
     >
       <div
-        className={embedded ? '' : 'bg-white rounded-2xl p-6 w-full max-w-6xl max-h-[90vh] overflow-y-auto'}
+        className={embedded ? '' : 'bg-card rounded-2xl p-6 w-full max-w-6xl max-h-[90vh] overflow-y-auto'}
         onClick={embedded ? undefined : (e) => e.stopPropagation()}
       >
         {/* Header — hidden when embedded */}
         {!embedded && (
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-medium text-gray-900 flex items-center">
+          <h3 className="text-lg font-medium text-foreground flex items-center">
             <CreditCard className="w-5 h-5 mr-2" />
             Ödeme Takibi - Satış #{sale.id}
           </h3>
           <Button
             type="button"
             onClick={onClose}
-            className="p-1 text-gray-400 hover:text-gray-600 rounded-lg"
+            className="p-1 text-muted-foreground hover:text-muted-foreground rounded-lg"
           >
             <X className="w-5 h-5" />
           </Button>
@@ -359,8 +359,8 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
           <Card>
             <CardContent className="p-3 md:p-4">
-              <div className="text-xs md:text-sm text-gray-600">Toplam Tutar</div>
-              <div className="text-lg md:text-2xl font-bold text-gray-900">
+              <div className="text-xs md:text-sm text-muted-foreground">Toplam Tutar</div>
+              <div className="text-lg md:text-2xl font-bold text-foreground">
                 {formatCurrency(paymentSummary.totalAmount)}
               </div>
             </CardContent>
@@ -368,8 +368,8 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
 
           <Card>
             <CardContent className="p-3 md:p-4">
-              <div className="text-xs md:text-sm text-gray-600">Ödenen</div>
-              <div className="text-lg md:text-2xl font-bold text-green-600">
+              <div className="text-xs md:text-sm text-muted-foreground">Ödenen</div>
+              <div className="text-lg md:text-2xl font-bold text-success">
                 {formatCurrency(paymentSummary.totalPaid)}
               </div>
             </CardContent>
@@ -377,8 +377,8 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
 
           <Card>
             <CardContent className="p-3 md:p-4">
-              <div className="text-xs md:text-sm text-gray-600">Kalan</div>
-              <div className="text-lg md:text-2xl font-bold text-blue-600">
+              <div className="text-xs md:text-sm text-muted-foreground">Kalan</div>
+              <div className="text-lg md:text-2xl font-bold text-primary">
                 {formatCurrency(paymentSummary.remainingBalance)}
               </div>
             </CardContent>
@@ -386,8 +386,8 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
 
           <Card>
             <CardContent className="p-3 md:p-4">
-              <div className="text-xs md:text-sm text-gray-600">Gecikmiş</div>
-              <div className="text-lg md:text-2xl font-bold text-red-600">
+              <div className="text-xs md:text-sm text-muted-foreground">Gecikmiş</div>
+              <div className="text-lg md:text-2xl font-bold text-destructive">
                 {formatCurrency(paymentSummary.overdueAmount)}
               </div>
             </CardContent>
@@ -396,7 +396,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
 
         {/* Next Due Alert */}
         {paymentSummary.nextDueDate && (
-          <Alert className="mb-4 bg-yellow-50 border-yellow-200 text-yellow-800">
+          <Alert className="mb-4 bg-warning/10 border-yellow-200 text-yellow-800">
             <Clock className="w-4 h-4" />
             <span className="text-sm">
               Sonraki ödeme: {formatDate(paymentSummary.nextDueDate)} - {formatCurrency(paymentSummary.nextDueAmount || 0)}
@@ -458,7 +458,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
                       data-testid="payment-method-select"
                       value={newPayment.paymentMethod}
                       onChange={(e) => setNewPayment(prev => ({ ...prev, paymentMethod: e.target.value }))}
-                      className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                      className="w-full px-3 py-2 text-sm md:text-base border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring bg-card"
                     >
                       <option value="cash">Nakit</option>
                       <option value="card">Kredi Kartı</option>
@@ -498,31 +498,31 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
           {/* Payment Records - COLLAPSIBLE */}
           <Card>
             <CardHeader
-              className="cursor-pointer hover:bg-gray-50 transition-colors pb-3 md:pb-6"
+              className="cursor-pointer hover:bg-muted transition-colors pb-3 md:pb-6"
               onClick={() => setIsPaymentHistoryOpen(!isPaymentHistoryOpen)}
             >
               <CardTitle className="flex items-center justify-between text-base md:text-lg">
                 <span>Ödeme Geçmişi</span>
                 {isPaymentHistoryOpen ? (
-                  <ChevronUp className="w-5 h-5 text-gray-500" />
+                  <ChevronUp className="w-5 h-5 text-muted-foreground" />
                 ) : (
-                  <ChevronDown className="w-5 h-5 text-gray-500" />
+                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
                 )}
               </CardTitle>
             </CardHeader>
             {isPaymentHistoryOpen && (
               <CardContent className="pt-0 md:pt-4">
                 {paymentRecords.length === 0 ? (
-                  <div className="text-center py-6 md:py-8 text-gray-500 text-sm md:text-base">
+                  <div className="text-center py-6 md:py-8 text-muted-foreground text-sm md:text-base">
                     Henüz ödeme kaydı bulunmuyor
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {paymentRecords.map((payment) => (
-                      <div key={payment.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 md:p-4 border rounded-xl hover:bg-gray-50 gap-3">
+                      <div key={payment.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 md:p-4 border rounded-xl hover:bg-muted gap-3">
                         <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-6">
                           <div className="flex justify-between items-center sm:block">
-                            <div className="text-lg md:text-xl font-semibold text-gray-900">
+                            <div className="text-lg md:text-xl font-semibold text-foreground">
                               {formatCurrency(payment.amount)}
                             </div>
                             {/* Status badge on mobile right side */}
@@ -532,21 +532,21 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
                           </div>
 
                           <div className="flex flex-col">
-                            <div className="text-sm font-medium text-gray-700">
+                            <div className="text-sm font-medium text-foreground">
                               {formatDate(payment.paymentDate)}
                             </div>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-muted-foreground">
                               {getPaymentMethodLabel(payment.paymentMethod)}
                             </div>
                             {payment.referenceNumber && (
-                              <div className="text-[10px] text-gray-400 font-mono mt-0.5">
+                              <div className="text-[10px] text-muted-foreground font-mono mt-0.5">
                                 Ref: {payment.referenceNumber}
                               </div>
                             )}
                           </div>
 
                           {payment.notes && (
-                            <div className="text-sm text-gray-600 italic bg-gray-50 p-2 rounded-md sm:bg-transparent sm:p-0">
+                            <div className="text-sm text-muted-foreground italic bg-muted p-2 rounded-md sm:bg-transparent sm:p-0">
                               "{payment.notes}"
                             </div>
                           )}

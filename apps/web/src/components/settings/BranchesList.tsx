@@ -43,7 +43,7 @@ export function BranchesList({ branches, isLoading, pagination, onEdit, onDelete
       title: 'Kod',
       sortable: true,
       render: (_, branch) => (
-        <span className="text-sm font-mono text-gray-600 dark:text-gray-400">
+        <span className="text-sm font-mono text-muted-foreground">
           {branch.code || '-'}
         </span>
       )
@@ -53,7 +53,7 @@ export function BranchesList({ branches, isLoading, pagination, onEdit, onDelete
       title: 'Şehir',
       sortable: true,
       render: (_, branch) => (
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+        <span className="text-sm text-muted-foreground">
           {branch.city || '-'}
         </span>
       )
@@ -62,7 +62,7 @@ export function BranchesList({ branches, isLoading, pagination, onEdit, onDelete
       key: 'phone',
       title: 'Telefon',
       render: (_, branch) => (
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+        <span className="text-sm text-muted-foreground">
           {branch.phone || '-'}
         </span>
       )
@@ -71,7 +71,7 @@ export function BranchesList({ branches, isLoading, pagination, onEdit, onDelete
       key: 'address',
       title: 'Adres',
       render: (_, branch) => (
-        <span className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">
+        <span className="text-sm text-muted-foreground truncate max-w-xs">
           {branch.address || '-'}
         </span>
       )

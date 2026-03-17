@@ -4,7 +4,7 @@ import { Plus, Search, CheckCircle, Trash2, AlertTriangle, X } from 'lucide-reac
 import toast from 'react-hot-toast';
 import Pagination from '@/components/ui/Pagination';
 import { TenantEditModal, TenantCreateModal } from './tenants';
-import { PRODUCT_REGISTRY, getProductConfig } from '@/config/productRegistry';
+import { PRODUCT_REGISTRY, getProductConfig, getSectorForProduct } from '@/config/productRegistry';
 import { getCountryConfig } from '@/config/countryRegistry';
 import {
     useListAdminTenants,
@@ -15,6 +15,7 @@ import {
     type TenantStatus,
     type UpdateStatusRequest,
 } from '@/lib/api-client';
+import { apiClient } from '@/lib/api';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useAdminResponsive } from '@/hooks';
 import { ResponsiveTable } from '@/components/responsive';
@@ -145,6 +146,8 @@ export default function TenantsPage() {
     const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [statusModalOpen, setStatusModalOpen] = useState(false);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [deletingTenantId, setDeletingTenantId] = useState<string | null>(null);
     const [selectedTenantForStatus, setSelectedTenantForStatus] = useState<{ id: string, status: TenantFilterStatus } | null>(null);
     const queryClient = useQueryClient();
     const productCodeFilter = productFilter !== 'all' && isProductCode(productFilter) ? productFilter : undefined;
@@ -193,11 +196,29 @@ export default function TenantsPage() {
         setSelectedTenantForStatus(null);
     };
 
-    const handleDelete = async (tenantId: string, e: React.MouseEvent) => {
+    const handleDelete = (tenantId: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (window.confirm('Bu aboneyi silmek istediğinize emin misiniz? Bu işlem geri alınamaz!')) {
-            toast.error('Silme işlemi henüz aktif değil');
-        }
+        setDeletingTenantId(tenantId);
+        setDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!deletingTenantId) return;
+
+        await toast.promise(
+            (async () => {
+                await apiClient.delete(`/api/admin/tenants/${deletingTenantId}`);
+                await queryClient.invalidateQueries({ queryKey: ['/admin/tenants'] });
+                await queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
+            })(),
+            {
+                loading: 'Abone siliniyor...',
+                success: 'Abone başarıyla silindi',
+                error: 'Abone silinemedi'
+            }
+        );
+        setDeleteModalOpen(false);
+        setDeletingTenantId(null);
     };
 
     const columns = [
@@ -249,9 +270,48 @@ export default function TenantsPage() {
                         productConfig.badge === 'green' ? 'bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-400' :
                         productConfig.badge === 'red' ? 'bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-900/30 dark:text-red-400' :
                         productConfig.badge === 'orange' ? 'bg-orange-50 text-orange-700 ring-orange-600/20 dark:bg-orange-900/30 dark:text-orange-400' :
+                        productConfig.badge === 'teal' ? 'bg-teal-50 text-teal-700 ring-teal-600/20 dark:bg-teal-900/30 dark:text-teal-400' :
+                        productConfig.badge === 'violet' ? 'bg-violet-50 text-violet-700 ring-violet-600/20 dark:bg-violet-900/30 dark:text-violet-400' :
+                        productConfig.badge === 'pink' ? 'bg-pink-50 text-pink-700 ring-pink-600/20 dark:bg-pink-900/30 dark:text-pink-400' :
+                        productConfig.badge === 'gray' ? 'bg-gray-50 text-gray-700 ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400' :
                         'bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
                     }`}>
                         {productConfig.name}
+                    </span>
+                );
+            }
+        },
+        {
+            key: 'sector',
+            header: 'Sektör',
+            sortable: true,
+            sortKey: 'sector',
+            render: (tenant: TenantRow) => {
+                const productCode = tenant.productCode || tenant.product_code || '';
+                const sectorName = getSectorForProduct(productCode);
+                const sectorLabels: Record<string, string> = {
+                    hearing: 'İşitme',
+                    pharmacy: 'Eczane',
+                    medical: 'Medikal',
+                    optic: 'Optik',
+                    beauty: 'Güzellik',
+                    hospital: 'Hastane',
+                    hotel: 'Otel',
+                    general: 'Genel',
+                };
+                const sectorColors: Record<string, string> = {
+                    hearing: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                    pharmacy: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+                    medical: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
+                    optic: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400',
+                    beauty: 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400',
+                    hospital: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                    hotel: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+                    general: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+                };
+                return (
+                    <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${sectorColors[sectorName] || sectorColors.general}`}>
+                        {sectorLabels[sectorName] || sectorName}
                     </span>
                 );
             }
@@ -454,6 +514,46 @@ export default function TenantsPage() {
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
             />
+
+            <Dialog.Root open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+                <Dialog.Portal>
+                    <Dialog.Overlay className="fixed inset-0 bg-black/50 z-40" />
+                    <Dialog.Content className="fixed left-[50%] top-[50%] max-h-[85vh] w-[90vw] max-w-[400px] translate-x-[-50%] translate-y-[-50%] rounded-[6px] bg-white p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none z-50">
+                        <div className="flex items-center mb-4 text-red-500">
+                            <AlertTriangle className="h-6 w-6 mr-2" />
+                            <Dialog.Title className="text-xl font-medium text-gray-900">
+                                Abone Silme Onayı
+                            </Dialog.Title>
+                        </div>
+                        <div className="mb-6 text-sm text-gray-500">
+                            Bu aboneyi silmek istediğinize emin misiniz? <strong>Bu işlem geri alınamaz!</strong>
+                        </div>
+                        <div className="flex justify-end space-x-3">
+                            <Dialog.Close asChild>
+                                <button
+                                    className="inline-flex justify-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                >
+                                    İptal
+                                </button>
+                            </Dialog.Close>
+                            <button
+                                onClick={confirmDelete}
+                                className="inline-flex justify-center rounded-xl border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                            >
+                                Sil
+                            </button>
+                        </div>
+                        <Dialog.Close asChild>
+                            <button
+                                className="absolute top-[10px] right-[10px] inline-flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-full focus:shadow-[0_0_0_2px] focus:outline-none"
+                                aria-label="Close"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </Dialog.Close>
+                    </Dialog.Content>
+                </Dialog.Portal>
+            </Dialog.Root>
 
             <Dialog.Root open={statusModalOpen} onOpenChange={setStatusModalOpen}>
                 <Dialog.Portal>

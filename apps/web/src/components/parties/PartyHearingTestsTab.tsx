@@ -107,23 +107,23 @@ function AudiometryCard({ test, isExpanded, onToggle, onFetchRecommendations, on
         <button
           data-allow-raw="true"
           onClick={onToggle}
-          className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors text-left"
+          className="w-full flex items-center justify-between p-4 hover:bg-muted transition-colors text-left"
         >
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
-            <Activity className="w-5 h-5 text-blue-600" />
+          <div className="w-9 h-9 bg-primary/10 rounded-lg flex items-center justify-center">
+            <Activity className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h4 className="font-medium text-gray-900 text-sm">Odyometri</h4>
-            <p className="text-xs text-gray-500">{formatDate(test.testDate)}</p>
+            <h4 className="font-medium text-foreground text-sm">Odyometri</h4>
+            <p className="text-xs text-muted-foreground">{formatDate(test.testDate)}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           {test.conductedBy && (
-            <span className="text-xs text-gray-500">{test.conductedBy}</span>
+            <span className="text-xs text-muted-foreground">{test.conductedBy}</span>
           )}
           <Badge variant="default">Tamamlandı</Badge>
-          {isExpanded ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+          {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
         </div>
       </button>
 
@@ -137,7 +137,7 @@ function AudiometryCard({ test, isExpanded, onToggle, onFetchRecommendations, on
               leftBone={leftBone}
             />
           ) : (
-            <p className="text-sm text-gray-500 text-center py-4">Odyogram verisi bulunamadi.</p>
+            <p className="text-sm text-muted-foreground text-center py-4">Odyogram verisi bulunamadi.</p>
           )}
 
           {/* Action buttons */}
@@ -147,7 +147,7 @@ function AudiometryCard({ test, isExpanded, onToggle, onFetchRecommendations, on
                 data-allow-raw="true"
                 onClick={handleLoadRecs}
                 disabled={loadingRecs}
-                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs border rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs border rounded-xl hover:bg-muted transition-colors disabled:opacity-50"
               >
                 <Zap className="w-3.5 h-3.5" />
                 {loadingRecs ? 'Yukleniyor...' : recs ? 'Onerileri Gizle' : 'Uyumlu Cihaz Oner'}
@@ -156,13 +156,13 @@ function AudiometryCard({ test, isExpanded, onToggle, onFetchRecommendations, on
                 data-allow-raw="true"
                 onClick={handleToggleRem}
                 disabled={loadingRem}
-                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs border rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs border rounded-xl hover:bg-muted transition-colors disabled:opacity-50"
               >
                 <BarChart3 className="w-3.5 h-3.5" />
                 {loadingRem ? 'Yukleniyor...' : remOpen ? 'REM Kapat' : 'REM Dogrulama'}
               </button>
               {remError && (
-                <span className="text-xs text-red-500 flex items-center gap-1">
+                <span className="text-xs text-destructive flex items-center gap-1">
                   <AlertCircle className="w-3 h-3" />
                   {remError}
                 </span>
@@ -172,9 +172,9 @@ function AudiometryCard({ test, isExpanded, onToggle, onFetchRecommendations, on
 
           {/* Recommendation results */}
           {recs && (
-            <div className="border rounded-xl p-3 bg-gray-50 space-y-3">
+            <div className="border rounded-xl p-3 bg-muted space-y-3">
               <div className="flex items-center justify-between">
-                <h5 className="text-xs font-medium text-gray-700">Cihaz Onerileri</h5>
+                <h5 className="text-xs font-medium text-foreground">Cihaz Onerileri</h5>
                 <div className="flex items-center gap-2">
                   {recs.audiogramConfig && recs.audiogramConfig.config !== 'unknown' && (
                     <Badge variant="secondary">
@@ -190,7 +190,7 @@ function AudiometryCard({ test, isExpanded, onToggle, onFetchRecommendations, on
               </div>
 
               {recs.guidelines && (
-                <p className="text-[11px] text-gray-500">{recs.guidelines}</p>
+                <p className="text-[11px] text-muted-foreground">{recs.guidelines}</p>
               )}
 
               {/* Device type suitability with recommended/suitable labels */}
@@ -201,8 +201,8 @@ function AudiometryCard({ test, isExpanded, onToggle, onFetchRecommendations, on
                       key={s.type}
                       className={`text-[10px] px-2 py-0.5 rounded-full ${
                         s.suitability === 'recommended'
-                          ? 'bg-green-50 text-green-700 border border-green-200'
-                          : 'bg-blue-50 text-blue-700'
+                          ? 'bg-success/10 text-success border border-green-200'
+                          : 'bg-primary/10 text-primary'
                       }`}
                     >
                       {s.label} ({s.suitabilityTr})
@@ -213,47 +213,47 @@ function AudiometryCard({ test, isExpanded, onToggle, onFetchRecommendations, on
 
               {/* Coupling (dome/earmold/vent) recommendations */}
               {recs.coupling && (
-                <div className="border rounded-lg bg-white p-3 space-y-2">
-                  <h6 className="text-[11px] font-medium text-gray-700">Kalip ve Vent Onerisi</h6>
+                <div className="border rounded-lg bg-card p-3 space-y-2">
+                  <h6 className="text-[11px] font-medium text-foreground">Kalip ve Vent Onerisi</h6>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     {/* Dome/earmold */}
-                    <div className="p-2 bg-gray-50 rounded-lg">
-                      <p className="text-[10px] text-gray-500 mb-0.5">Kubbe / Kalip Tipi</p>
+                    <div className="p-2 bg-muted rounded-lg">
+                      <p className="text-[10px] text-muted-foreground mb-0.5">Kubbe / Kalip Tipi</p>
                       {recs.coupling.domes.length > 0 ? (
                         <div className="space-y-0.5">
                           {recs.coupling.domes.map((d, i) => (
-                            <p key={d.type} className={`text-[11px] ${i === 0 ? 'font-medium text-gray-900' : 'text-gray-600'}`}>
+                            <p key={d.type} className={`text-[11px] ${i === 0 ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
                               {i === 0 ? '' : 'veya '}{d.labelTr}
                             </p>
                           ))}
                         </div>
                       ) : recs.coupling.earmold ? (
-                        <p className="text-[11px] font-medium text-gray-900">{recs.coupling.earmold.labelTr}</p>
+                        <p className="text-[11px] font-medium text-foreground">{recs.coupling.earmold.labelTr}</p>
                       ) : (
-                        <p className="text-[11px] text-gray-400">-</p>
+                        <p className="text-[11px] text-muted-foreground">-</p>
                       )}
                       {recs.coupling.domes.length > 0 && recs.coupling.earmold && (
-                        <p className="text-[10px] text-gray-500 mt-0.5">Alternatif: {recs.coupling.earmold.labelTr}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">Alternatif: {recs.coupling.earmold.labelTr}</p>
                       )}
                     </div>
 
                     {/* Vent */}
-                    <div className="p-2 bg-gray-50 rounded-lg">
-                      <p className="text-[10px] text-gray-500 mb-0.5">Vent Boyutu</p>
-                      <p className="text-[11px] font-medium text-gray-900">{recs.coupling.vent.labelTr}</p>
-                      <p className="text-[10px] text-gray-500">{recs.coupling.vent.description}</p>
+                    <div className="p-2 bg-muted rounded-lg">
+                      <p className="text-[10px] text-muted-foreground mb-0.5">Vent Boyutu</p>
+                      <p className="text-[11px] font-medium text-foreground">{recs.coupling.vent.labelTr}</p>
+                      <p className="text-[10px] text-muted-foreground">{recs.coupling.vent.description}</p>
                     </div>
 
                     {/* Vent size indicator */}
-                    <div className="p-2 bg-gray-50 rounded-lg">
-                      <p className="text-[10px] text-gray-500 mb-0.5">Vent Cap (mm)</p>
-                      <p className="text-[11px] font-medium text-gray-900">{recs.coupling.vent.sizeMm} mm</p>
+                    <div className="p-2 bg-muted rounded-lg">
+                      <p className="text-[10px] text-muted-foreground mb-0.5">Vent Cap (mm)</p>
+                      <p className="text-[11px] font-medium text-foreground">{recs.coupling.vent.sizeMm} mm</p>
                     </div>
                   </div>
 
                   {/* Clinical notes */}
-                  <p className="text-[10px] text-gray-500">{recs.coupling.notes}</p>
+                  <p className="text-[10px] text-muted-foreground">{recs.coupling.notes}</p>
                   {recs.coupling.configNote && (
                     <p className="text-[10px] text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
                       {recs.coupling.configNote}
@@ -265,14 +265,14 @@ function AudiometryCard({ test, isExpanded, onToggle, onFetchRecommendations, on
               {recs.recommendations.length > 0 ? (
                 <div className="space-y-2">
                   {recs.recommendations.slice(0, 6).map(rec => (
-                    <div key={rec.inventoryId} className="flex items-center justify-between p-2.5 bg-white rounded-lg border">
+                    <div key={rec.inventoryId} className="flex items-center justify-between p-2.5 bg-card rounded-lg border">
                       <div className="flex items-center gap-2.5">
                         <div className="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center">
                           <Headphones className="w-4 h-4 text-purple-600" />
                         </div>
                         <div>
-                          <p className="text-xs font-medium text-gray-900">{rec.brand} {rec.model || rec.name}</p>
-                          <p className="text-[10px] text-gray-500">
+                          <p className="text-xs font-medium text-foreground">{rec.brand} {rec.model || rec.name}</p>
+                          <p className="text-[10px] text-muted-foreground">
                             {rec.deviceTypeLabel}
                             {rec.fittingRangeMin != null && rec.fittingRangeMax != null
                               ? ` / ${rec.fittingRangeMin}-${rec.fittingRangeMax} dB HL`
@@ -290,20 +290,20 @@ function AudiometryCard({ test, isExpanded, onToggle, onFetchRecommendations, on
                           {rec.matchQuality === 'style' && rec.suitabilityTr && (
                             <Badge variant="secondary">{rec.suitabilityTr}</Badge>
                           )}
-                          <span className="flex items-center gap-0.5 text-[10px] text-gray-500">
+                          <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
                             <Package className="w-3 h-3" />
                             {rec.availableStock}
                           </span>
                         </div>
                         {rec.price != null && (
-                          <p className="text-[10px] text-gray-400 mt-0.5">{rec.price.toLocaleString('tr-TR')} TL</p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">{rec.price.toLocaleString('tr-TR')} TL</p>
                         )}
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-gray-500 text-center py-2">Envanterde uyumlu cihaz bulunamadi.</p>
+                <p className="text-xs text-muted-foreground text-center py-2">Envanterde uyumlu cihaz bulunamadi.</p>
               )}
             </div>
           )}
@@ -320,9 +320,9 @@ function AudiometryCard({ test, isExpanded, onToggle, onFetchRecommendations, on
           )}
 
           {test.notes && (
-            <div className="p-3 bg-gray-50 rounded-xl">
-              <p className="text-xs text-gray-500 font-medium mb-1">Notlar</p>
-              <p className="text-sm text-gray-700">{test.notes}</p>
+            <div className="p-3 bg-muted rounded-xl">
+              <p className="text-xs text-muted-foreground font-medium mb-1">Notlar</p>
+              <p className="text-sm text-foreground">{test.notes}</p>
             </div>
           )}
         </div>
@@ -356,41 +356,41 @@ function FittingCard({ test }: { test: PartyHearingTest }) {
           <Headphones className="w-5 h-5 text-purple-600" />
         </div>
         <div className="flex-1">
-          <h4 className="font-medium text-gray-900 text-sm">Cihaz Uyumu</h4>
-          <p className="text-xs text-gray-500">{formatDate(test.testDate)}</p>
+          <h4 className="font-medium text-foreground text-sm">Cihaz Uyumu</h4>
+          <p className="text-xs text-muted-foreground">{formatDate(test.testDate)}</p>
         </div>
         <Badge variant="secondary">{earLabel}</Badge>
       </div>
       <div className="grid grid-cols-2 gap-3 text-sm">
         {deviceBrand && (
           <div>
-            <p className="text-xs text-gray-500">Marka</p>
-            <p className="font-medium text-gray-900">{deviceBrand}</p>
+            <p className="text-xs text-muted-foreground">Marka</p>
+            <p className="font-medium text-foreground">{deviceBrand}</p>
           </div>
         )}
         {deviceModel && (
           <div>
-            <p className="text-xs text-gray-500">Model</p>
-            <p className="font-medium text-gray-900">{deviceModel}</p>
+            <p className="text-xs text-muted-foreground">Model</p>
+            <p className="font-medium text-foreground">{deviceModel}</p>
           </div>
         )}
         {deviceSerial && (
           <div>
-            <p className="text-xs text-gray-500">Seri No</p>
-            <p className="font-medium text-gray-900">{deviceSerial}</p>
+            <p className="text-xs text-muted-foreground">Seri No</p>
+            <p className="font-medium text-foreground">{deviceSerial}</p>
           </div>
         )}
         {deviceCategory && (
           <div>
-            <p className="text-xs text-gray-500">Kategori</p>
-            <p className="font-medium text-gray-900">{deviceCategory}</p>
+            <p className="text-xs text-muted-foreground">Kategori</p>
+            <p className="font-medium text-foreground">{deviceCategory}</p>
           </div>
         )}
       </div>
       {test.notes && (
-        <div className="mt-3 p-3 bg-gray-50 rounded-xl">
-          <p className="text-xs text-gray-500 font-medium mb-1">Notlar</p>
-          <p className="text-sm text-gray-700">{test.notes}</p>
+        <div className="mt-3 p-3 bg-muted rounded-xl">
+          <p className="text-xs text-muted-foreground font-medium mb-1">Notlar</p>
+          <p className="text-sm text-foreground">{test.notes}</p>
         </div>
       )}
     </div>
@@ -490,16 +490,16 @@ function RemPanel({ testId, targets, onSaveRem, onFetchRem, onClose }: RemPanelP
   const hasAnyInput = Object.values(rightRear).some(v => v !== '') || Object.values(leftRear).some(v => v !== '');
 
   return (
-    <div className="border rounded-xl p-4 bg-gray-50 space-y-4">
+    <div className="border rounded-xl p-4 bg-muted space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <BarChart3 className="w-4 h-4 text-indigo-600" />
-          <h5 className="text-xs font-medium text-gray-700">REM Dogrulama (NAL-NL2)</h5>
+          <h5 className="text-xs font-medium text-foreground">REM Dogrulama (NAL-NL2)</h5>
         </div>
         <button
           data-allow-raw="true"
           onClick={onClose}
-          className="text-[10px] text-gray-400 hover:text-gray-600"
+          className="text-[10px] text-muted-foreground hover:text-muted-foreground"
         >
           Kapat
         </button>
@@ -513,22 +513,22 @@ function RemPanel({ testId, targets, onSaveRem, onFetchRem, onClose }: RemPanelP
             type="checkbox"
             checked={experienced}
             onChange={e => setExperienced(e.target.checked)}
-            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            className="rounded border-border text-indigo-600 focus:ring-indigo-500"
           />
-          <span className="text-gray-600">Deneyimli kullanici</span>
+          <span className="text-muted-foreground">Deneyimli kullanici</span>
         </label>
         <div className="flex items-center gap-1.5">
-          <span className="text-gray-500">Ekipman:</span>
+          <span className="text-muted-foreground">Ekipman:</span>
           <input
             data-allow-raw="true"
             type="text"
             value={equipment}
             onChange={e => setEquipment(e.target.value)}
             placeholder="Ornek: Verifit2"
-            className="w-32 px-2 py-1 text-xs border rounded-lg bg-white"
+            className="w-32 px-2 py-1 text-xs border rounded-lg bg-card"
           />
         </div>
-        <span className="text-gray-400">Giris: 65 dB SPL</span>
+        <span className="text-muted-foreground">Giris: 65 dB SPL</span>
       </div>
 
       {/* REM data entry table */}
@@ -537,9 +537,9 @@ function RemPanel({ testId, targets, onSaveRem, onFetchRem, onClose }: RemPanelP
           <table className="w-full text-[11px]">
             <thead>
               <tr className="border-b">
-                <th className="text-left py-1.5 px-1 text-gray-500 font-medium w-16">Kulak</th>
+                <th className="text-left py-1.5 px-1 text-muted-foreground font-medium w-16">Kulak</th>
                 {REM_FREQUENCIES.map(f => (
-                  <th key={f} className="text-center py-1.5 px-0.5 text-gray-500 font-medium">
+                  <th key={f} className="text-center py-1.5 px-0.5 text-muted-foreground font-medium">
                     {FREQ_LABELS[f]}
                   </th>
                 ))}
@@ -550,18 +550,18 @@ function RemPanel({ testId, targets, onSaveRem, onFetchRem, onClose }: RemPanelP
               {hasRight && (
                 <>
                   <tr className="border-b border-dashed">
-                    <td className="py-1.5 px-1 text-red-600 font-medium">Sag Hedef</td>
+                    <td className="py-1.5 px-1 text-destructive font-medium">Sag Hedef</td>
                     {REM_FREQUENCIES.map(f => {
                       const t = rightTargets[f] as RemFrequencyTarget | undefined;
                       return (
-                        <td key={f} className="text-center py-1.5 px-0.5 text-gray-400">
+                        <td key={f} className="text-center py-1.5 px-0.5 text-muted-foreground">
                           {t ? t.targetRear.toFixed(0) : '-'}
                         </td>
                       );
                     })}
                   </tr>
                   <tr className="border-b">
-                    <td className="py-1.5 px-1 text-red-600 font-medium">Sag REAR</td>
+                    <td className="py-1.5 px-1 text-destructive font-medium">Sag REAR</td>
                     {REM_FREQUENCIES.map(f => {
                       const t = rightTargets[f] as RemFrequencyTarget | undefined;
                       if (!t) return <td key={f} className="text-center py-1.5 px-0.5 text-gray-300">-</td>;
@@ -572,7 +572,7 @@ function RemPanel({ testId, targets, onSaveRem, onFetchRem, onClose }: RemPanelP
                             type="number"
                             value={rightRear[f] ?? ''}
                             onChange={e => setRightRear(prev => ({ ...prev, [f]: e.target.value }))}
-                            className="w-10 px-1 py-0.5 text-center text-[11px] border rounded bg-white"
+                            className="w-10 px-1 py-0.5 text-center text-[11px] border rounded bg-card"
                             placeholder={t.targetRear.toFixed(0)}
                           />
                         </td>
@@ -585,18 +585,18 @@ function RemPanel({ testId, targets, onSaveRem, onFetchRem, onClose }: RemPanelP
               {hasLeft && (
                 <>
                   <tr className="border-b border-dashed">
-                    <td className="py-1.5 px-1 text-blue-600 font-medium">Sol Hedef</td>
+                    <td className="py-1.5 px-1 text-primary font-medium">Sol Hedef</td>
                     {REM_FREQUENCIES.map(f => {
                       const t = leftTargets[f] as RemFrequencyTarget | undefined;
                       return (
-                        <td key={f} className="text-center py-1.5 px-0.5 text-gray-400">
+                        <td key={f} className="text-center py-1.5 px-0.5 text-muted-foreground">
                           {t ? t.targetRear.toFixed(0) : '-'}
                         </td>
                       );
                     })}
                   </tr>
                   <tr className="border-b">
-                    <td className="py-1.5 px-1 text-blue-600 font-medium">Sol REAR</td>
+                    <td className="py-1.5 px-1 text-primary font-medium">Sol REAR</td>
                     {REM_FREQUENCIES.map(f => {
                       const t = leftTargets[f] as RemFrequencyTarget | undefined;
                       if (!t) return <td key={f} className="text-center py-1.5 px-0.5 text-gray-300">-</td>;
@@ -607,7 +607,7 @@ function RemPanel({ testId, targets, onSaveRem, onFetchRem, onClose }: RemPanelP
                             type="number"
                             value={leftRear[f] ?? ''}
                             onChange={e => setLeftRear(prev => ({ ...prev, [f]: e.target.value }))}
-                            className="w-10 px-1 py-0.5 text-center text-[11px] border rounded bg-white"
+                            className="w-10 px-1 py-0.5 text-center text-[11px] border rounded bg-card"
                             placeholder={t.targetRear.toFixed(0)}
                           />
                         </td>
@@ -640,11 +640,11 @@ function RemPanel({ testId, targets, onSaveRem, onFetchRem, onClose }: RemPanelP
             const earLabel = ear === 'right' ? 'Sag Kulak' : 'Sol Kulak';
             const earColor = ear === 'right' ? 'red' : 'blue';
             return (
-              <div key={ear} className="border rounded-lg bg-white p-3 space-y-2">
+              <div key={ear} className="border rounded-lg bg-card p-3 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className={`text-xs font-medium text-${earColor}-600`}>{earLabel}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-gray-500">
+                    <span className="text-[10px] text-muted-foreground">
                       {v.passCount}/{v.totalCount} frekans
                     </span>
                     {v.overallPass ? (
@@ -659,7 +659,7 @@ function RemPanel({ testId, targets, onSaveRem, onFetchRem, onClose }: RemPanelP
                     <div
                       key={freq}
                       className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] ${
-                        fv.pass ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                        fv.pass ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'
                       }`}
                     >
                       {fv.pass ? (
@@ -680,7 +680,7 @@ function RemPanel({ testId, targets, onSaveRem, onFetchRem, onClose }: RemPanelP
         </div>
       )}
 
-      <p className="text-[10px] text-gray-400">
+      <p className="text-[10px] text-muted-foreground">
         NAL-NL2 formulune gore hedef kazanc hesaplandi. Tolerans: +/-5 dB.
       </p>
     </div>
@@ -713,7 +713,7 @@ export const PartyHearingTestsTab: React.FC<PartyHearingTestsTabProps> = ({ part
       <div className="flex items-center justify-center py-8">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600 text-sm">İşitme testleri yükleniyor...</p>
+          <p className="text-muted-foreground text-sm">İşitme testleri yükleniyor...</p>
         </div>
       </div>
     );
@@ -723,8 +723,8 @@ export const PartyHearingTestsTab: React.FC<PartyHearingTestsTabProps> = ({ part
     return (
       <div className="p-6 text-center">
         <AlertCircle className="w-10 h-10 text-red-400 mx-auto mb-3" />
-        <h3 className="text-sm font-medium text-gray-900 mb-1">Hata Oluştu</h3>
-        <p className="text-xs text-gray-500">İşitme testleri yüklenirken bir hata oluştu.</p>
+        <h3 className="text-sm font-medium text-foreground mb-1">Hata Oluştu</h3>
+        <p className="text-xs text-muted-foreground">İşitme testleri yüklenirken bir hata oluştu.</p>
       </div>
     );
   }
@@ -736,8 +736,8 @@ export const PartyHearingTestsTab: React.FC<PartyHearingTestsTabProps> = ({ part
     return (
       <div className="text-center py-12">
         <Activity className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-        <h3 className="text-sm font-medium text-gray-900 mb-1">İşitme Testi Bulunamadı</h3>
-        <p className="text-xs text-gray-500 mb-4">
+        <h3 className="text-sm font-medium text-foreground mb-1">İşitme Testi Bulunamadı</h3>
+        <p className="text-xs text-muted-foreground mb-4">
           Manuel olarak test ekleyebilir veya Noah&apos;tan aktarım yapabilirsiniz.
         </p>
         <button
@@ -762,22 +762,22 @@ export const PartyHearingTestsTab: React.FC<PartyHearingTestsTabProps> = ({ part
       {/* Summary bar */}
       <div className="flex items-center gap-4 text-sm">
         <div className="flex items-center gap-1.5">
-          <Activity className="w-4 h-4 text-blue-600" />
-          <span className="font-medium text-gray-900">{audiometryTests.length}</span>
-          <span className="text-gray-500">Odyometri</span>
+          <Activity className="w-4 h-4 text-primary" />
+          <span className="font-medium text-foreground">{audiometryTests.length}</span>
+          <span className="text-muted-foreground">Odyometri</span>
         </div>
         {fittingTests.length > 0 && (
           <div className="flex items-center gap-1.5">
             <Headphones className="w-4 h-4 text-purple-600" />
-            <span className="font-medium text-gray-900">{fittingTests.length}</span>
-            <span className="text-gray-500">Cihaz Uyumu</span>
+            <span className="font-medium text-foreground">{fittingTests.length}</span>
+            <span className="text-muted-foreground">Cihaz Uyumu</span>
           </div>
         )}
         {hearingTests.length > 0 && (
           <div className="flex items-center gap-3 ml-auto">
             <div className="flex items-center gap-1.5">
-              <Calendar className="w-4 h-4 text-gray-400" />
-              <span className="text-gray-500">Son: {formatDate(hearingTests[0]?.testDate)}</span>
+              <Calendar className="w-4 h-4 text-muted-foreground" />
+              <span className="text-muted-foreground">Son: {formatDate(hearingTests[0]?.testDate)}</span>
             </div>
             <button
               data-allow-raw="true"
@@ -795,7 +795,7 @@ export const PartyHearingTestsTab: React.FC<PartyHearingTestsTabProps> = ({ part
       {/* Audiometry section */}
       {audiometryTests.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-medium text-gray-700">Odyometri Testleri</h3>
+          <h3 className="text-sm font-medium text-foreground">Odyometri Testleri</h3>
           {audiometryTests.map(test => (
             <AudiometryCard
               key={test.id}
@@ -814,7 +814,7 @@ export const PartyHearingTestsTab: React.FC<PartyHearingTestsTabProps> = ({ part
       {/* Fitting section */}
       {fittingTests.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-medium text-gray-700">Cihaz Uyum Kayıtları</h3>
+          <h3 className="text-sm font-medium text-foreground">Cihaz Uyum Kayıtları</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {fittingTests.map(test => (
               <FittingCard key={test.id} test={test} />

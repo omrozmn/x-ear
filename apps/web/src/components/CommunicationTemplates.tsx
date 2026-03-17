@@ -9,6 +9,7 @@ import {
 } from '@/api/client/communications.client';
 // CommunicationTemplate type defined locally since schema may not export it
 import { Button, Input, Select, Textarea, Checkbox } from '@x-ear/ui-web';
+import { ConfirmDialog } from './ui/ConfirmDialog';
 
 interface ResponseEnvelope<T> {
   success: boolean;
@@ -88,6 +89,7 @@ const CommunicationTemplates: React.FC = () => {
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [confirmDeleteState, setConfirmDeleteState] = useState<{open: boolean, template?: CommunicationTemplate}>({open: false});
 
   // Categories
   const categories = [
@@ -252,8 +254,14 @@ const CommunicationTemplates: React.FC = () => {
     }
   };
 
-  const handleDeleteTemplate = async (template: CommunicationTemplate) => {
-    if (!confirm(`Are you sure you want to delete "${template.name}"?`)) return;
+  const handleDeleteTemplate = (template: CommunicationTemplate) => {
+    setConfirmDeleteState({open: true, template});
+  };
+
+  const executeDeleteTemplate = async () => {
+    const template = confirmDeleteState.template;
+    if (!template) return;
+    setConfirmDeleteState({open: false});
 
     try {
       const response = await deleteCommunicationTemplate(template.id!) as unknown as ResponseEnvelope<CommunicationTemplate>;
@@ -298,7 +306,7 @@ const CommunicationTemplates: React.FC = () => {
   };
 
   const getTypeColor = (type: string) => {
-    return type === 'email' ? 'text-blue-600' : 'text-green-600';
+    return type === 'email' ? 'text-primary' : 'text-success';
   };
 
   if (loading) {
@@ -314,8 +322,8 @@ const CommunicationTemplates: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">İletişim Şablonları</h2>
-          <p className="text-gray-600">SMS ve e-posta şablonlarını yönetin</p>
+          <h2 className="text-2xl font-bold text-foreground">İletişim Şablonları</h2>
+          <p className="text-muted-foreground">SMS ve e-posta şablonlarını yönetin</p>
         </div>
         <Button
           onClick={handleCreateTemplate}
@@ -326,11 +334,11 @@ const CommunicationTemplates: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-2xl shadow-sm border">
+      <div className="bg-card p-4 rounded-2xl shadow-sm border">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
               type="text"
               placeholder="Şablon ara..."
@@ -380,7 +388,7 @@ const CommunicationTemplates: React.FC = () => {
       {/* Templates Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredTemplates.map((template) => (
-          <div key={template.id} className="bg-white rounded-2xl shadow-sm border hover:shadow-md transition-shadow">
+          <div key={template.id} className="bg-card rounded-2xl shadow-sm border hover:shadow-md transition-shadow">
             <div className="p-4">
               {/* Header */}
               <div className="flex items-start justify-between mb-3">
@@ -388,17 +396,17 @@ const CommunicationTemplates: React.FC = () => {
                   <span className={getTypeColor(template.templateType || 'sms')}>
                     {getTypeIcon(template.templateType || 'sms')}
                   </span>
-                  <h3 className="font-semibold text-gray-900 truncate">{template.name || ''}</h3>
+                  <h3 className="font-semibold text-foreground truncate">{template.name || ''}</h3>
                 </div>
                 <div className="flex items-center gap-1">
                   {template.isSystem && (
-                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
+                    <span className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded">
                       Sistem
                     </span>
                   )}
                   <span className={`px-2 py-1 text-xs rounded ${template.isActive
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-red-100 text-red-800'
+                    ? 'bg-success/10 text-success'
+                    : 'bg-destructive/10 text-red-800'
                     }`}>
                     {template.isActive ? 'Aktif' : 'Pasif'}
                   </span>
@@ -407,7 +415,7 @@ const CommunicationTemplates: React.FC = () => {
 
               {/* Description */}
               {template.description && (
-                <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                   {template.description}
                 </p>
               )}
@@ -415,16 +423,16 @@ const CommunicationTemplates: React.FC = () => {
               {/* Category */}
               {template.category && (
                 <div className="flex items-center gap-1 mb-3">
-                  <Tag className="w-3 h-3 text-gray-400" />
-                  <span className="text-xs text-gray-500">
+                  <Tag className="w-3 h-3 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">
                     {getCategoryLabel(template.category)}
                   </span>
                 </div>
               )}
 
               {/* Content Preview */}
-              <div className="bg-gray-50 p-3 rounded mb-3">
-                <p className="text-sm text-gray-700 line-clamp-3">
+              <div className="bg-muted p-3 rounded mb-3">
+                <p className="text-sm text-foreground line-clamp-3">
                   {template.bodyText}
                 </p>
               </div>
@@ -432,15 +440,15 @@ const CommunicationTemplates: React.FC = () => {
               {/* Variables */}
               {template.variables && template.variables.length > 0 && (
                 <div className="mb-3">
-                  <p className="text-xs text-gray-500 mb-1">Değişkenler:</p>
+                  <p className="text-xs text-muted-foreground mb-1">Değişkenler:</p>
                   <div className="flex flex-wrap gap-1">
                     {template.variables?.slice(0, 3).map((variable, index) => (
-                      <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+                      <span key={index} className="px-2 py-1 bg-primary/10 text-blue-800 text-xs rounded">
                         {variable}
                       </span>
                     ))}
                     {template.variables && template.variables.length > 3 && (
-                      <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
+                      <span className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded">
                         +{template.variables.length - 3}
                       </span>
                     )}
@@ -449,7 +457,7 @@ const CommunicationTemplates: React.FC = () => {
               )}
 
               {/* Stats */}
-              <div className="text-xs text-gray-500 mb-4">
+              <div className="text-xs text-muted-foreground mb-4">
                 Kullanım: {template.usageCount || 0} kez
               </div>
 
@@ -502,9 +510,9 @@ const CommunicationTemplates: React.FC = () => {
       {/* Empty State */}
       {filteredTemplates.length === 0 && (
         <div className="text-center py-12">
-          <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Şablon bulunamadı</h3>
-          <p className="text-gray-600 mb-4">
+          <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-foreground mb-2">Şablon bulunamadı</h3>
+          <p className="text-muted-foreground mb-4">
             {searchTerm || filterType !== 'all' || filterCategory !== 'all' || filterStatus !== 'all'
               ? 'Arama kriterlerinize uygun şablon bulunamadı.'
               : 'Henüz hiç şablon oluşturulmamış.'}
@@ -520,7 +528,7 @@ const CommunicationTemplates: React.FC = () => {
       {/* Create/Edit Modal */}
       {(showCreateModal || showEditModal) && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-card rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold">
@@ -540,16 +548,16 @@ const CommunicationTemplates: React.FC = () => {
               </div>
 
               {formErrors.general && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-red-600" />
-                  <span className="text-red-700 text-sm">{formErrors.general}</span>
+                <div className="mb-4 p-3 bg-destructive/10 border border-red-200 rounded-2xl flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-destructive" />
+                  <span className="text-destructive text-sm">{formErrors.general}</span>
                 </div>
               )}
 
               <div className="space-y-4">
                 {/* Template Name */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Şablon Adı *
                   </label>
                   <Input
@@ -560,13 +568,13 @@ const CommunicationTemplates: React.FC = () => {
                     placeholder="Şablon adını girin"
                   />
                   {formErrors.name && (
-                    <p className="text-red-600 text-sm mt-1">{formErrors.name}</p>
+                    <p className="text-destructive text-sm mt-1">{formErrors.name}</p>
                   )}
                 </div>
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Açıklama
                   </label>
                   <Input
@@ -580,7 +588,7 @@ const CommunicationTemplates: React.FC = () => {
                 {/* Type and Category */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Tip *
                     </label>
                     <Select
@@ -594,7 +602,7 @@ const CommunicationTemplates: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Kategori
                     </label>
                     <Select
@@ -614,7 +622,7 @@ const CommunicationTemplates: React.FC = () => {
                 {/* Email Subject */}
                 {formData.templateType === 'email' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       E-posta Konusu *
                     </label>
                     <Input
@@ -625,14 +633,14 @@ const CommunicationTemplates: React.FC = () => {
                       placeholder="E-posta konusu"
                     />
                     {formErrors.subject && (
-                      <p className="text-red-600 text-sm mt-1">{formErrors.subject}</p>
+                      <p className="text-destructive text-sm mt-1">{formErrors.subject}</p>
                     )}
                   </div>
                 )}
 
                 {/* Body Text */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     İçerik *
                   </label>
                   <Textarea
@@ -643,9 +651,9 @@ const CommunicationTemplates: React.FC = () => {
                     placeholder="Şablon içeriği... Değişkenler için {{değişken_adı}} formatını kullanın"
                   />
                   {formErrors.bodyText && (
-                    <p className="text-red-600 text-sm mt-1">{formErrors.bodyText}</p>
+                    <p className="text-destructive text-sm mt-1">{formErrors.bodyText}</p>
                   )}
-                  <p className="text-gray-500 text-sm mt-1">
+                  <p className="text-muted-foreground text-sm mt-1">
                     Değişkenler için {`{{değişken_adı}}`} formatını kullanın
                   </p>
                 </div>
@@ -653,12 +661,12 @@ const CommunicationTemplates: React.FC = () => {
                 {/* Variables Preview */}
                 {formData.variables.length > 0 && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       Tespit Edilen Değişkenler
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {formData.variables.map((variable, index) => (
-                        <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded">
+                        <span key={index} className="px-2 py-1 bg-primary/10 text-blue-800 text-sm rounded">
                           {variable}
                         </span>
                       ))}
@@ -673,7 +681,7 @@ const CommunicationTemplates: React.FC = () => {
                     checked={formData.isActive}
                     onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
                   />
-                  <label htmlFor="isActive" className="text-sm text-gray-700">
+                  <label htmlFor="isActive" className="text-sm text-foreground">
                     Şablon aktif
                   </label>
                 </div>
@@ -717,7 +725,7 @@ const CommunicationTemplates: React.FC = () => {
       {/* Preview Modal */}
       {showPreviewModal && selectedTemplate && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-card rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold">Şablon Önizleme</h3>
@@ -735,7 +743,7 @@ const CommunicationTemplates: React.FC = () => {
 
               <div className="space-y-4">
                 {/* Template Info */}
-                <div className="bg-gray-50 p-4 rounded-2xl">
+                <div className="bg-muted p-4 rounded-2xl">
                   <div className="flex items-center gap-2 mb-2">
                     <span className={getTypeColor(selectedTemplate.templateType || 'sms')}>
                       {getTypeIcon(selectedTemplate.templateType || 'sms')}
@@ -743,9 +751,9 @@ const CommunicationTemplates: React.FC = () => {
                     <h4 className="font-semibold">{selectedTemplate.name || ''}</h4>
                   </div>
                   {selectedTemplate.description && (
-                    <p className="text-gray-600 text-sm mb-2">{selectedTemplate.description}</p>
+                    <p className="text-muted-foreground text-sm mb-2">{selectedTemplate.description}</p>
                   )}
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <span>Tip: {(selectedTemplate.templateType || 'sms').toUpperCase()}</span>
                     {selectedTemplate.category && (
                       <span>Kategori: {getCategoryLabel(selectedTemplate.category)}</span>
@@ -757,10 +765,10 @@ const CommunicationTemplates: React.FC = () => {
                 {/* Subject (for email) */}
                 {selectedTemplate.templateType === 'email' && selectedTemplate.subject && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Konu
                     </label>
-                    <div className="p-3 bg-gray-50 rounded border">
+                    <div className="p-3 bg-muted rounded border">
                       {selectedTemplate.subject}
                     </div>
                   </div>
@@ -768,10 +776,10 @@ const CommunicationTemplates: React.FC = () => {
 
                 {/* Content */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     İçerik
                   </label>
-                  <div className="p-4 bg-gray-50 rounded border whitespace-pre-wrap">
+                  <div className="p-4 bg-muted rounded border whitespace-pre-wrap">
                     {selectedTemplate.bodyText}
                   </div>
                 </div>
@@ -779,12 +787,12 @@ const CommunicationTemplates: React.FC = () => {
                 {/* Variables */}
                 {selectedTemplate.variables && selectedTemplate.variables.length > 0 && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       Değişkenler
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {selectedTemplate.variables?.map((variable, index) => (
-                        <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded">
+                        <span key={index} className="px-3 py-1 bg-primary/10 text-blue-800 text-sm rounded">
                           {variable}
                         </span>
                       ))}
@@ -810,6 +818,17 @@ const CommunicationTemplates: React.FC = () => {
           </div>
         </div>
       )}
+      {/* Delete Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDeleteState.open}
+        title="Silme Onayı"
+        description={confirmDeleteState.template ? `"${confirmDeleteState.template.name}" şablonunu silmek istediğinizden emin misiniz?` : 'Bu şablonu silmek istediğinizden emin misiniz?'}
+        onClose={() => setConfirmDeleteState({open: false})}
+        onConfirm={executeDeleteTemplate}
+        confirmLabel="Sil"
+        cancelLabel="İptal"
+        variant="danger"
+      />
     </div>
   );
 };

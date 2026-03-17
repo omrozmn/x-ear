@@ -178,8 +178,8 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
           className={`
             border-2 border-dashed rounded-2xl p-8 text-center transition-colors
             ${isDragOver
-              ? 'border-blue-400 bg-blue-50'
-              : 'border-gray-300 hover:border-gray-400'
+              ? 'border-blue-400 bg-primary/10'
+              : 'border-border hover:border-gray-400'
             }
             ${isUploading ? 'opacity-50 pointer-events-none' : 'cursor-pointer'}
           `}
@@ -202,9 +202,9 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
         {errors.length > 0 && (
           <div className="space-y-1">
             {errors.map((error, i) => (
-              <div key={i} className="flex items-center gap-2 p-2 bg-red-50 border border-red-200 rounded-xl text-sm">
-                <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
-                <p className="text-red-700">{error}</p>
+              <div key={i} className="flex items-center gap-2 p-2 bg-destructive/10 border border-red-200 rounded-xl text-sm">
+                <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0" />
+                <p className="text-destructive">{error}</p>
               </div>
             ))}
           </div>
@@ -216,11 +216,11 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-sm font-medium">
                 Dosyalar ({fileItems.length})
-                {successCount > 0 && <span className="text-green-600 ml-2">✓ {successCount}</span>}
-                {errorCount > 0 && <span className="text-red-600 ml-2">✗ {errorCount}</span>}
+                {successCount > 0 && <span className="text-success ml-2">✓ {successCount}</span>}
+                {errorCount > 0 && <span className="text-destructive ml-2">✗ {errorCount}</span>}
               </h4>
               {errorCount > 0 && !isUploading && (
-                <button data-allow-raw="true" onClick={retryFailed} className="text-xs text-blue-600 hover:underline">
+                <button data-allow-raw="true" onClick={retryFailed} className="text-xs text-primary hover:underline">
                   Başarısızları tekrar dene
                 </button>
               )}
@@ -230,35 +230,35 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                 <div
                   key={item.id}
                   className={`flex items-center justify-between p-3 rounded-xl transition-colors ${
-                    item.status === 'success' ? 'bg-green-50' :
-                    item.status === 'error' ? 'bg-red-50' :
-                    item.status === 'uploading' ? 'bg-blue-50' :
-                    'bg-gray-50'
+                    item.status === 'success' ? 'bg-success/10' :
+                    item.status === 'error' ? 'bg-destructive/10' :
+                    item.status === 'uploading' ? 'bg-primary/10' :
+                    'bg-muted'
                   }`}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     {item.status === 'success' ? (
-                      <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                      <CheckCircle className="h-5 w-5 text-success flex-shrink-0" />
                     ) : item.status === 'error' ? (
-                      <XCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
+                      <XCircle className="h-5 w-5 text-destructive flex-shrink-0" />
                     ) : (
-                      <FileImage className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                      <FileImage className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className="text-sm font-medium text-foreground truncate">
                         {item.file.name}
                       </p>
                       <div className="flex items-center gap-2">
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted-foreground">
                           {(item.file.size / 1024 / 1024).toFixed(2)} MB
                         </p>
                         {item.error && (
-                          <p className="text-xs text-red-500 truncate">{item.error}</p>
+                          <p className="text-xs text-destructive truncate">{item.error}</p>
                         )}
                       </div>
                       {/* Progress bar */}
                       {item.status === 'uploading' && (
-                        <div className="mt-1 w-full bg-gray-200 rounded-full h-1.5">
+                        <div className="mt-1 w-full bg-accent rounded-full h-1.5">
                           <div
                             className="bg-blue-500 h-1.5 rounded-full transition-all duration-300 animate-pulse"
                             style={{ width: `${item.progress}%` }}
@@ -273,7 +273,7 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                       variant="ghost"
                       size="sm"
                       onClick={() => removeFile(item.id)}
-                      className="text-gray-400 hover:text-red-500 p-1"
+                      className="text-muted-foreground hover:text-destructive p-1"
                     >
                       <X className="h-4 w-4" />
                     </Button>

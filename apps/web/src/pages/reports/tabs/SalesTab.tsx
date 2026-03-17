@@ -68,7 +68,7 @@ export function SalesTab({ filters }: SalesTabProps) {
             sortable: true,
             align: 'right',
             render: (value: number) => (
-                <span className="font-medium text-green-600">{formatProtectedCurrency(value)}</span>
+                <span className="font-medium text-success">{formatProtectedCurrency(value)}</span>
             )
         },
     ];
@@ -76,7 +76,7 @@ export function SalesTab({ filters }: SalesTabProps) {
     if (isLoading) {
         return (
             <div className="flex justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
         );
     }
@@ -85,7 +85,7 @@ export function SalesTab({ filters }: SalesTabProps) {
         return (
             <div className="text-center py-12">
                 <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-4">Veriler yüklenirken hata oluştu</p>
+                <p className="text-muted-foreground mb-4">Veriler yüklenirken hata oluştu</p>
                 <Button onClick={() => refetch()} variant="outline" icon={<RefreshCw className="w-4 h-4" />}>
                     Tekrar Dene
                 </Button>
@@ -101,30 +101,30 @@ export function SalesTab({ filters }: SalesTabProps) {
             </div>
 
             {/* Revenue Trend */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-border p-6">
                 <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Aylık Gelir Trendi</h4>
                 {Object.keys(revenueTrend).length > 0 ? (
                     <div className="grid grid-cols-6 gap-4">
                         {Object.entries(revenueTrend).map(([month, amount]) => (
                             <div key={month} className="text-center">
-                                <div className="h-24 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-end justify-center mb-2">
+                                <div className="h-24 bg-primary/10 rounded-2xl flex items-end justify-center mb-2">
                                     <div
                                         className="bg-blue-500 rounded w-full"
                                         style={{ height: `${Math.min(100, (amount / Math.max(...Object.values(revenueTrend).map(Number)) * 100))}%` }}
                                     />
                                 </div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">{month}. Ay</p>
+                                <p className="text-xs text-muted-foreground">{month}. Ay</p>
                                 <p className="text-sm font-medium text-gray-900 dark:text-white">{formatProtectedCurrency(amount)}</p>
                             </div>
                         ))}
                     </div>
                 ) : (
-                    <p className="text-gray-400 text-center py-8">Veri bulunamadı</p>
+                    <p className="text-muted-foreground text-center py-8">Veri bulunamadı</p>
                 )}
             </div>
 
             {/* Product Sales */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-border p-6">
                 <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Marka Bazlı Satışlar</h4>
                 <DataTable<SaleRow>
                     data={salesRows}

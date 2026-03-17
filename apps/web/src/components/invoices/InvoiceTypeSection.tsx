@@ -115,8 +115,8 @@ export function InvoiceTypeSection({
     <div className="space-y-4">
       {/* Fatura Tipi */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          {documentKind === 'despatch' ? 'Belge Tipi' : 'Fatura Tipi'} <span className="text-red-500">*</span>
+        <label className="block text-sm font-medium text-foreground mb-2">
+          {documentKind === 'despatch' ? 'Belge Tipi' : 'Fatura Tipi'} <span className="text-destructive">*</span>
         </label>
         <Select
           data-testid="invoice-type-select"
@@ -135,14 +135,14 @@ export function InvoiceTypeSection({
 
       {/* SGK Bilgilendirme */}
       {showSGKInfo && (
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+        <div className="bg-primary/10 border border-blue-200 rounded-2xl p-4">
           <div className="flex items-start">
             <Info className="text-blue-400 mr-2 flex-shrink-0" size={18} />
             <div>
               <h4 className="text-sm font-medium text-blue-800 mb-1">
                 SGK Faturası
               </h4>
-              <p className="text-sm text-blue-700">
+              <p className="text-sm text-primary">
                 SGK faturası için müşteri bilgileri otomatik olarak ayarlanacaktır. Para birimi TRY olmalıdır.
               </p>
             </div>

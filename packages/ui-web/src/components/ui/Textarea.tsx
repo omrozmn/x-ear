@@ -13,7 +13,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
   label,
   error,
   helperText,
-  fullWidth = false,
+  fullWidth = true,
   resize = 'vertical',
   className = '',
   id,
@@ -21,11 +21,11 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
 }, ref) => {
   const textareaId = id || `textarea-${Math.random().toString(36).substr(2, 9)}`;
 
-  const baseClasses = 'block px-3 py-2 border rounded-xl text-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseClasses = 'block px-3 py-2 border rounded-xl text-sm bg-card text-foreground transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed';
 
   const stateClasses = error
-    ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500';
+    ? 'border-destructive focus:border-destructive focus:ring-destructive'
+    : 'border-border focus:border-primary';
 
   const widthClasses = fullWidth ? 'w-full' : '';
 
@@ -47,10 +47,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
   return (
     <div className={fullWidth ? 'w-full' : ''}>
       {label && (
-        <label
-          htmlFor={textareaId}
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
+        <label htmlFor={textareaId} className="block text-sm font-medium text-foreground mb-1">
           {label}
         </label>
       )}
@@ -65,21 +62,17 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
 
         {error && (
           <div className="absolute top-2 right-2 pointer-events-none">
-            <AlertCircle className="w-5 h-5 text-red-500" />
+            <AlertCircle className="w-5 h-5 text-destructive" />
           </div>
         )}
       </div>
 
       {error && (
-        <p className="mt-1 text-sm text-red-600">
-          {error}
-        </p>
+        <p className="mt-1 text-sm text-destructive">{error}</p>
       )}
 
       {helperText && !error && (
-        <p className="mt-1 text-sm text-gray-500">
-          {helperText}
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">{helperText}</p>
       )}
     </div>
   );

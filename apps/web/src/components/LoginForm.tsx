@@ -130,13 +130,13 @@ export function LoginForm() {
         <Button
           variant="outline"
           size="sm"
-          className="rounded-full w-10 h-10 p-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-gray-200 dark:border-gray-700"
+          className="rounded-full w-10 h-10 p-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-border"
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         >
           {theme === 'dark' ? (
             <Sun className="h-5 w-5 text-yellow-500" />
           ) : (
-            <Moon className="h-5 w-5 text-gray-700" />
+            <Moon className="h-5 w-5 text-foreground" />
           )}
         </Button>
       </div>
@@ -169,7 +169,7 @@ export function LoginForm() {
             <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent mb-2">
               X-EAR CRM
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 text-sm">
+            <p className="text-muted-foreground text-sm">
               {t('subtitle')}
             </p>
           </div>
@@ -177,7 +177,7 @@ export function LoginForm() {
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-4">
               <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="username" className="block text-sm font-medium text-foreground mb-2">
                   {t('username_label')}
                 </label>
                 <Input
@@ -187,7 +187,7 @@ export function LoginForm() {
                   autoComplete="username"
                   required
                   data-testid="login-identifier-input"
-                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 dark:bg-gray-800/50 dark:text-white backdrop-blur-sm login-form-transition focus-ring-enhanced placeholder-gray-500 dark:placeholder-gray-400"
+                  className="w-full px-4 py-3 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-white/50 dark:bg-gray-800/50 dark:text-white backdrop-blur-sm login-form-transition focus-ring-enhanced placeholder-gray-500 dark:placeholder-gray-400"
                   placeholder={t('username_placeholder')}
                   value={username}
                   onChange={(e) => {
@@ -199,7 +199,7 @@ export function LoginForm() {
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
                   {t('password_label')}
                 </label>
                 <div className="relative">
@@ -210,7 +210,7 @@ export function LoginForm() {
                     autoComplete="current-password"
                     required
                     data-testid="login-password-input"
-                    className="w-full px-4 py-3 pr-12 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 dark:bg-gray-800/50 dark:text-white backdrop-blur-sm login-form-transition focus-ring-enhanced placeholder-gray-500 dark:placeholder-gray-400"
+                    className="w-full px-4 py-3 pr-12 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-white/50 dark:bg-gray-800/50 dark:text-white backdrop-blur-sm login-form-transition focus-ring-enhanced placeholder-gray-500 dark:placeholder-gray-400"
                     placeholder={t('password_placeholder')}
                     value={password}
                     onChange={(e) => {
@@ -221,7 +221,7 @@ export function LoginForm() {
                   />
                   <button data-allow-raw="true"
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-muted-foreground hover:text-muted-foreground dark:hover:text-gray-300 transition-colors"
                     onClick={() => setShowPassword(!showPassword)}
                     disabled={isLoading}
                     aria-label={showPassword ? t('hide_password') : t('show_password')}
@@ -244,18 +244,18 @@ export function LoginForm() {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer flex-shrink-0"
+                  className="w-5 h-5 text-primary bg-muted border-border rounded-lg focus:ring-ring dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 cursor-pointer flex-shrink-0"
                   disabled={isLoading}
                 />
-                <span className="text-sm text-gray-700 dark:text-gray-300 select-none">
+                <span className="text-sm text-foreground select-none">
                   Beni Hatırla
                 </span>
               </label>
             </div>
 
             {error && (
-              <div className="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 animate-shake" data-testid="login-error-message">
-                <p className="text-sm text-red-700 dark:text-red-300 text-center font-medium">{error}</p>
+              <div className="rounded-xl bg-destructive/10 border border-red-200 dark:border-red-800 p-4 animate-shake" data-testid="login-error-message">
+                <p className="text-sm text-destructive text-center font-medium">{error}</p>
               </div>
             )}
 
@@ -263,7 +263,7 @@ export function LoginForm() {
               type="submit"
               disabled={isLoading || !username.trim() || !password.trim()}
               data-testid="login-submit-button"
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg login-button-hover focus-ring-enhanced"
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg login-button-hover focus-ring-enhanced"
             >
               {isLoading ? (
                 <div className="flex items-center justify-center" data-testid="login-loading-spinner">
@@ -294,7 +294,7 @@ export function LoginForm() {
                   // Navigate to forgot-password
                   window.location.href = '/forgot-password';
                 }}
-                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors font-medium"
+                className="text-sm text-primary hover:text-blue-800 dark:hover:text-blue-300 transition-colors font-medium"
               >
                 {t('forgot_password')}
               </button>

@@ -159,6 +159,30 @@ def create_tenant(
             country_code=country_code,
         )
         db_session.add(tenant)
+        db_session.flush()
+
+        # Auto-create tenant admin user from owner_email
+        owner_email = request_data.owner_email or request_data.email
+        if owner_email:
+            existing_user = db_session.query(User).filter_by(email=owner_email).first()
+            if not existing_user:
+                import secrets
+                tenant_admin = User(
+                    email=owner_email,
+                    username=owner_email.split('@')[0],
+                    first_name=request_data.name,
+                    last_name="Admin",
+                    role="tenant_admin",
+                    tenant_id=tenant.id,
+                    is_active=True,
+                )
+                # Generate a random initial password - tenant admin should reset via email
+                tenant_admin.set_password(secrets.token_urlsafe(16))
+                db_session.add(tenant_admin)
+                tenant.current_users = 1
+            else:
+                logger.info(f"User with email {owner_email} already exists, skipping auto-creation")
+
         db_session.commit()
         db_session.refresh(tenant)
 

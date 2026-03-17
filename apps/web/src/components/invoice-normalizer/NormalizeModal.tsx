@@ -78,29 +78,29 @@ export function NormalizeModal({ templateId, onClose }: Props) {
             flex flex-col items-center gap-2 p-8 rounded-xl border-2 border-dashed
             cursor-pointer transition-all duration-200
             ${dragActive
-              ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20'
+              ? 'border-blue-400 bg-primary/10'
               : file
-                ? 'border-green-300 bg-green-50/50 dark:bg-green-900/10'
-                : 'border-gray-300 dark:border-gray-600 hover:border-blue-400'}
+                ? 'border-green-300 bg-success/10/50'
+                : 'border-border hover:border-blue-400'}
           `}
         >
           {file ? (
             <>
-              <FileSpreadsheet className="w-10 h-10 text-green-500" />
-              <span className="text-sm font-medium text-green-700 dark:text-green-400">
+              <FileSpreadsheet className="w-10 h-10 text-success" />
+              <span className="text-sm font-medium text-success">
                 {file.name}
               </span>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-muted-foreground">
                 {(file.size / 1024).toFixed(1)} KB
               </span>
             </>
           ) : (
             <>
-              <Upload className="w-10 h-10 text-gray-400" />
-              <span className="text-sm text-gray-500 dark:text-gray-400">
+              <Upload className="w-10 h-10 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">
                 Normalize edilecek fatura dosyasını sürükleyin
               </span>
-              <span className="text-xs text-gray-400">CSV veya Excel</span>
+              <span className="text-xs text-muted-foreground">CSV veya Excel</span>
             </>
           )}
           <input
@@ -127,7 +127,7 @@ export function NormalizeModal({ templateId, onClose }: Props) {
         {/* History */}
         {history.length > 0 && (
           <div>
-            <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">
+            <h4 className="text-xs font-medium text-muted-foreground uppercase mb-2">
               Son Normalizasyonlar
             </h4>
             <div className="space-y-1.5 max-h-40 overflow-y-auto">
@@ -138,14 +138,14 @@ export function NormalizeModal({ templateId, onClose }: Props) {
                     bg-gray-50 dark:bg-gray-700/50 text-xs"
                 >
                   {h.status === 'success' ? (
-                    <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
                   ) : (
-                    <AlertCircle className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                    <AlertCircle className="w-3.5 h-3.5 text-destructive shrink-0" />
                   )}
-                  <span className="text-gray-700 dark:text-gray-300 truncate flex-1">
+                  <span className="text-foreground truncate flex-1">
                     {h.inputFilename}
                   </span>
-                  <span className="text-gray-400 shrink-0">{h.rowCount} satır</span>
+                  <span className="text-muted-foreground shrink-0">{h.rowCount} satır</span>
                 </div>
               ))}
             </div>

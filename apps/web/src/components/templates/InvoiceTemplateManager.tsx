@@ -288,7 +288,7 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
       <div className={`template-manager-loading ${className}`}>
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <span className="ml-3 text-gray-600 dark:text-gray-400">Şablonlar yükleniyor...</span>
+          <span className="ml-3 text-muted-foreground">Şablonlar yükleniyor...</span>
         </div>
       </div>
     );
@@ -313,7 +313,7 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Arama
               </label>
               <Input
@@ -321,19 +321,19 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
                 value={state.searchQuery}
                 onChange={(e) => setState(prev => ({ ...prev, searchQuery: e.target.value }))}
                 placeholder="Şablon adı, açıklama..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
 
             {/* Category Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Kategori
               </label>
               <Select
                 value={state.selectedCategory}
                 onChange={(e) => setState(prev => ({ ...prev, selectedCategory: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
                 options={[
                   { value: "all", label: "Tüm Kategoriler" },
                   ...categories.map(category => ({
@@ -346,13 +346,13 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
 
             {/* Sort By */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Sıralama
               </label>
               <Select
                 value={state.sortBy}
                 onChange={(e) => setState(prev => ({ ...prev, sortBy: e.target.value as "name" | "createdAt" | "usageCount" }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
                 options={[
                   { value: "name", label: "İsim" },
                   { value: "createdAt", label: "Oluşturma Tarihi" },
@@ -363,13 +363,13 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
 
             {/* Sort Order */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Sıra
               </label>
               <Select
                 value={state.sortOrder}
                 onChange={(e) => setState(prev => ({ ...prev, sortOrder: e.target.value as "asc" | "desc" }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
                 options={[
                   { value: "asc", label: "Artan" },
                   { value: "desc", label: "Azalan" }
@@ -381,19 +381,19 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
       </div>
       {/* Error Display */}
       {state.error && (
-        <div className="error-message bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-4 mb-6">
+        <div className="error-message bg-destructive/10 border border-red-200 dark:border-red-800 rounded-2xl p-4 mb-6">
           <div className="flex">
             <div className="flex-shrink-0">
               <span className="text-red-400">⚠️</span>
             </div>
             <div className="ml-3">
               <h3 className="text-sm font-medium text-red-800 dark:text-red-400">Hata</h3>
-              <p className="mt-1 text-sm text-red-700 dark:text-red-300">{state.error}</p>
+              <p className="mt-1 text-sm text-destructive">{state.error}</p>
             </div>
             <div className="ml-auto pl-3">
               <Button
                 onClick={() => setState(prev => ({ ...prev, error: null }))}
-                className="text-red-400 hover:text-red-600"
+                className="text-red-400 hover:text-destructive"
                 variant='default'>
                 ✕
               </Button>
@@ -405,14 +405,14 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
       <div className="templates-grid">
         {filteredAndSortedTemplates.length === 0 ? (
           <div className="empty-state text-center py-12">
-            <div className="text-gray-400 text-6xl mb-4">📄</div>
+            <div className="text-muted-foreground text-6xl mb-4">📄</div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               {state.searchQuery || state.selectedCategory !== 'all'
                 ? 'Arama kriterlerine uygun şablon bulunamadı'
                 : 'Henüz şablon oluşturulmamış'
               }
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
+            <p className="text-muted-foreground mb-4">
               {state.searchQuery || state.selectedCategory !== 'all'
                 ? 'Farklı arama kriterleri deneyin'
                 : 'İlk şablonunuzu oluşturmak için "Yeni Şablon" butonuna tıklayın'
@@ -458,14 +458,14 @@ export const InvoiceTemplateManager: React.FC<InvoiceTemplateManagerProps> = ({
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full mx-4">
             <h3 className="font-medium text-lg mb-4 dark:text-white">Şablonu Sil</h3>
-            <p className="text-gray-700 dark:text-gray-300 mb-6">
+            <p className="text-foreground mb-6">
               "<strong>{confirmDialog.templateName}</strong>" şablonunu silmek istediğinizden emin misiniz?
               Bu işlem geri alınamaz.
             </p>
             <div className="flex justify-end gap-3">
               <Button
                 onClick={cancelDelete}
-                className="px-4 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="px-4 py-2 text-muted-foreground border border-border rounded hover:bg-muted dark:hover:bg-gray-700"
                 variant='default'>
                 İptal
               </Button>
@@ -502,12 +502,12 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
   onDuplicate
 }) => {
   return (
-    <div className="template-card bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 hover:shadow-md transition-shadow">
+    <div className="template-card bg-white dark:bg-gray-800 border border-border rounded-2xl p-6 hover:shadow-md transition-shadow">
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1">
           <h3 className="font-medium text-lg text-gray-900 dark:text-white mb-1">{template.name}</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{template.description}</p>
-          <span className="inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 text-xs rounded">
+          <p className="text-sm text-muted-foreground mb-2">{template.description}</p>
+          <span className="inline-block px-2 py-1 bg-primary/10 text-blue-800 dark:text-blue-300 text-xs rounded">
             {getCategoryLabel(template.category)}
           </span>
         </div>
@@ -515,35 +515,35 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
         <div className="flex items-center space-x-1">
           <Button
             onClick={onView}
-            className="p-1 text-gray-400 hover:text-gray-600"
+            className="p-1 text-muted-foreground hover:text-muted-foreground"
             title="Görüntüle"
             variant='default'>
             👁️
           </Button>
           <Button
             onClick={onEdit}
-            className="p-1 text-gray-400 hover:text-blue-600"
+            className="p-1 text-muted-foreground hover:text-primary"
             title="Düzenle"
             variant='default'>
             ✏️
           </Button>
           <Button
             onClick={onDuplicate}
-            className="p-1 text-gray-400 hover:text-green-600"
+            className="p-1 text-muted-foreground hover:text-success"
             title="Kopyala"
             variant='default'>
             📋
           </Button>
           <Button
             onClick={onDelete}
-            className="p-1 text-gray-400 hover:text-red-600"
+            className="p-1 text-muted-foreground hover:text-destructive"
             title="Sil"
             variant='default'>
             🗑️
           </Button>
         </div>
       </div>
-      <div className="template-stats text-sm text-gray-500 dark:text-gray-400 mb-4">
+      <div className="template-stats text-sm text-muted-foreground mb-4">
         <div className="flex justify-between">
           <span>Kullanım: {template.usageCount || 0}</span>
           <span>{new Date(template.createdAt).toLocaleDateString('tr-TR')}</span>
@@ -603,7 +603,7 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
             </h2>
             <Button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-muted-foreground hover:text-muted-foreground"
               variant='default'>
               ✕
             </Button>
@@ -615,7 +615,7 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
           <div className="template-metadata mb-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Şablon Adı *
                 </label>
                 <Input
@@ -624,19 +624,19 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                   disabled={isReadOnly}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                  className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Kategori
                 </label>
                 <Select
                   value={formData.category}
                   onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
                   disabled={isReadOnly}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                  className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted"
                   options={[
                     { value: "general", label: "Genel" },
                     { value: "medical", label: "Tıbbi" },
@@ -650,7 +650,7 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Açıklama
               </label>
               <Textarea
@@ -658,7 +658,7 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 disabled={isReadOnly}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring disabled:bg-muted"
                 placeholder="Şablon açıklaması..."
               />
             </div>
@@ -682,7 +682,7 @@ const TemplateFormModal: React.FC<TemplateFormModalProps> = ({
                   type="button"
                   onClick={onClose}
                   disabled={isSubmitting}
-                  className="px-6 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
+                  className="px-6 py-2 text-muted-foreground border border-border rounded hover:bg-muted disabled:opacity-50"
                   variant='default'>
                   İptal
                 </Button>

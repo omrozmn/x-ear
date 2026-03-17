@@ -89,7 +89,7 @@ export default function SgkCredentialsSettings() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-red-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-destructive" />
       </div>
     );
   }
@@ -102,10 +102,10 @@ export default function SgkCredentialsSettings() {
         icon={<Shield className="w-6 h-6" />}
       />
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-5">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-border p-6 space-y-5">
         {/* Tesis Kodu */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Tesis Kodu
           </label>
           <Input
@@ -117,10 +117,10 @@ export default function SgkCredentialsSettings() {
 
         {/* Tesis Şifresi */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Tesis Şifresi
             {stored?.hasTesisSifresi && (
-              <span className="ml-2 inline-flex items-center gap-1 text-xs text-green-600">
+              <span className="ml-2 inline-flex items-center gap-1 text-xs text-success">
                 <CheckCircle className="w-3 h-3" /> Kayıtlı
               </span>
             )}
@@ -130,13 +130,13 @@ export default function SgkCredentialsSettings() {
               type={showPasswords.tesisSifresi ? 'text' : 'password'}
               value={form.tesisSifresi}
               onChange={(e) => setForm(prev => ({ ...prev, tesisSifresi: e.target.value }))}
-              placeholder={stored?.hasTesisSifresi ? '••••••••  (değiştirmek için yeni şifre girin)' : 'Tesis şifresini girin'}
+              placeholder={stored?.hasTesisSifresi ? '•••••••• (değiştirmek için yeni şifre girin)' : 'Tesis şifresini girin'}
             />
             <button
               data-allow-raw="true"
               type="button"
               onClick={() => setShowPasswords(p => ({ ...p, tesisSifresi: !p.tesisSifresi }))}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
             >
               {showPasswords.tesisSifresi ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
@@ -145,10 +145,10 @@ export default function SgkCredentialsSettings() {
 
         {/* Mesul Müdür TC */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Mesul Müdür TC Kimlik No
             {stored?.mesulMudurTc && (
-              <span className="ml-2 inline-flex items-center gap-1 text-xs text-green-600">
+              <span className="ml-2 inline-flex items-center gap-1 text-xs text-success">
                 <CheckCircle className="w-3 h-3" /> Kayıtlı
               </span>
             )}
@@ -160,17 +160,17 @@ export default function SgkCredentialsSettings() {
             placeholder={stored?.mesulMudurTc ? '••••••••••• (şifreli saklanıyor)' : 'TC kimlik numarası'}
             maxLength={11}
           />
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             🔒 TC kimlik numarası AES-256-GCM ile şifrelenerek saklanır
           </p>
         </div>
 
         {/* Mesul Müdür Şifresi */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Mesul Müdür Şifresi
             {stored?.hasMesulMudurSifresi && (
-              <span className="ml-2 inline-flex items-center gap-1 text-xs text-green-600">
+              <span className="ml-2 inline-flex items-center gap-1 text-xs text-success">
                 <CheckCircle className="w-3 h-3" /> Kayıtlı
               </span>
             )}
@@ -180,13 +180,13 @@ export default function SgkCredentialsSettings() {
               type={showPasswords.mesulMudurSifresi ? 'text' : 'password'}
               value={form.mesulMudurSifresi}
               onChange={(e) => setForm(prev => ({ ...prev, mesulMudurSifresi: e.target.value }))}
-              placeholder={stored?.hasMesulMudurSifresi ? '••••••••  (değiştirmek için yeni şifre girin)' : 'Mesul müdür şifresini girin'}
+              placeholder={stored?.hasMesulMudurSifresi ? '•••••••• (değiştirmek için yeni şifre girin)' : 'Mesul müdür şifresini girin'}
             />
             <button
               data-allow-raw="true"
               type="button"
               onClick={() => setShowPasswords(p => ({ ...p, mesulMudurSifresi: !p.mesulMudurSifresi }))}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
             >
               {showPasswords.mesulMudurSifresi ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
@@ -194,7 +194,7 @@ export default function SgkCredentialsSettings() {
         </div>
 
         {/* Security Note */}
-        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+        <div className="p-4 bg-primary/10 rounded-xl border border-blue-200 dark:border-blue-800">
           <p className="text-sm text-blue-800 dark:text-blue-200">
             🛡️ <strong>Güvenlik:</strong> Tüm şifreler ve TC kimlik numaraları
             AES-256-GCM algoritması ile şifrelenir. Bu algoritma yalnızca kuantum

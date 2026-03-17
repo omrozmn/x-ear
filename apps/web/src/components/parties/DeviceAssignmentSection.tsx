@@ -22,7 +22,7 @@ export const DeviceAssignmentSection: React.FC<DeviceAssignmentSectionProps> = (
   deviceAssignmentsLoading
 }) => {
   return (
-    <div className="bg-white rounded-2xl border p-6">
+    <div className="bg-card rounded-2xl border p-6">
       <h3 className="text-lg font-semibold mb-4">Cihaz Atama</h3>
 
       {deviceAssignmentsLoading ? (
@@ -36,9 +36,9 @@ export const DeviceAssignmentSection: React.FC<DeviceAssignmentSectionProps> = (
               <div className="flex justify-between items-center">
                 <div>
                   <h5 className="font-medium">{assignment.deviceName}</h5>
-                  <p className="text-sm text-gray-600">Kulak: {assignment.earSide === 'LEFT' ? 'Sol' : 'Sağ'}</p>
-                  <p className="text-sm text-gray-600">Seri No: {assignment.serialNumber}</p>
-                  <p className="text-sm text-gray-600">Atama Tarihi: {new Date(assignment.assignedDate).toLocaleDateString('tr-TR')}</p>
+                  <p className="text-sm text-muted-foreground">Kulak: {assignment.earSide === 'LEFT' ? 'Sol' : 'Sağ'}</p>
+                  <p className="text-sm text-muted-foreground">Seri No: {assignment.serialNumber}</p>
+                  <p className="text-sm text-muted-foreground">Atama Tarihi: {new Date(assignment.assignedDate).toLocaleDateString('tr-TR')}</p>
                 </div>
                 <StatusBadge status={assignment.status} />
               </div>
@@ -46,7 +46,7 @@ export const DeviceAssignmentSection: React.FC<DeviceAssignmentSectionProps> = (
           ))}
         </div>
       ) : (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-muted-foreground">
           <Shield className="w-12 h-12 mx-auto mb-4 text-gray-300" />
           <p>Henüz cihaz ataması yapılmamış.</p>
         </div>

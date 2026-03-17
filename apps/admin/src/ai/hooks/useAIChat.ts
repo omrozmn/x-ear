@@ -344,7 +344,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
 
           // Notify about retry
           onRetry?.(attempt + 1, delay);
-          console.log(`[useAIChat] Retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
+          if (import.meta.env.DEV) console.log(`[useAIChat] Retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
 
           // Wait before retrying
           await sleep(delay);
@@ -407,7 +407,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
       setIsTyping(false);
 
       // Log error for debugging
-      console.error('[useAIChat] Error:', error);
+      if (import.meta.env.DEV) console.error('[useAIChat] Error:', error);
 
       // Call error callback
       onError?.(error);

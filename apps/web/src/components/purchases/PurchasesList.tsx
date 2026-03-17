@@ -53,7 +53,7 @@ export function PurchasesList({ purchases, isLoading, pagination, onSort, onRowC
       title: 'Fatura No',
       sortable: true,
       render: (_, purchase) => (
-        <span className="text-sm text-gray-600 dark:text-gray-400 font-mono">
+        <span className="text-sm text-muted-foreground font-mono">
           {purchase.invoiceNumber || '-'}
         </span>
       )
@@ -63,7 +63,7 @@ export function PurchasesList({ purchases, isLoading, pagination, onSort, onRowC
       title: 'Tarih',
       sortable: true,
       render: (_, purchase) => (
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+        <span className="text-sm text-muted-foreground">
           {purchase.invoiceDate ? formatDate(purchase.invoiceDate) : '-'}
         </span>
       )

@@ -265,8 +265,8 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
   return (
     <div className={`relative ${className}`}>
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          {label} {required && <span className="text-red-500">*</span>}
+        <label className="block text-sm font-medium text-foreground mb-2">
+          {label} {required && <span className="text-destructive">*</span>}
         </label>
       )}
 
@@ -279,7 +279,7 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
           onFocus={handleInputFocus}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${error ? 'border-red-300' : 'border-gray-300 dark:border-gray-600'
+          className={`w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring dark:bg-gray-700 dark:text-white ${error ? 'border-red-300' : 'border-border'
             }`}
           aria-autocomplete="list"
           aria-expanded={isOpen}
@@ -291,17 +291,17 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
             ref={dropdownRef}
             id="brand-autocomplete-list"
             style={dropdownStyle}
-            className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-lg max-h-60 overflow-auto"
+            className="bg-white dark:bg-gray-800 border border-border rounded-xl shadow-lg max-h-60 overflow-auto"
             role="listbox"
           >
             {isLoading && (
-              <div className="px-4 py-2 text-sm text-gray-500 italic">
+              <div className="px-4 py-2 text-sm text-muted-foreground italic">
                 Yükleniyor...
               </div>
             )}
 
             {isError && (
-              <div className="px-4 py-2 text-sm text-red-500">
+              <div className="px-4 py-2 text-sm text-destructive">
                 Markalar yüklenirken hata oluştu.
               </div>
             )}
@@ -318,7 +318,7 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
                     handleSelect(brand);
                   }
                 }}
-                className="px-4 py-2 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/30 focus:bg-blue-50 dark:focus:bg-blue-900/30 focus:outline-none transition-colors"
+                className="px-4 py-2 cursor-pointer hover:bg-primary/10 dark:hover:bg-blue-900/30 focus:bg-primary/10 dark:focus:bg-blue-900/30 focus:outline-none transition-colors"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-900 dark:text-gray-100">{brand}</span>
@@ -337,11 +337,11 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
                     handleCreateNew();
                   }
                 }}
-                className="px-4 py-2 cursor-pointer bg-green-50 hover:bg-green-100 focus:bg-green-100 focus:outline-none transition-colors border-t border-gray-200 dark:bg-green-900/20 dark:hover:bg-green-900/40 dark:focus:bg-green-900/40 dark:border-gray-700"
+                className="px-4 py-2 cursor-pointer bg-success/10 hover:bg-success/10 focus:bg-success/10 focus:outline-none transition-colors border-t border-border dark:hover:bg-green-900/40 dark:focus:bg-green-900/40"
               >
                 <div className="flex items-center gap-2">
-                  <Plus className="w-4 h-4 text-green-600 dark:text-green-400" />
-                  <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                  <Plus className="w-4 h-4 text-success" />
+                  <span className="text-sm font-medium text-success">
                     "{value}" markasını ekle
                   </span>
                 </div>
@@ -351,7 +351,7 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
           , portalRef.current)}
       </div>
 
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-sm text-destructive">{error}</p>}
     </div>
   );
 };

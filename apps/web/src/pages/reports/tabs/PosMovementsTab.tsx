@@ -52,7 +52,7 @@ export function PosMovementsTab({ filters }: PosMovementsTabProps) {
     if (isLoading) {
         return (
             <div className="flex justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
         );
     }
@@ -61,7 +61,7 @@ export function PosMovementsTab({ filters }: PosMovementsTabProps) {
         return (
             <div className="text-center py-12">
                 <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-4">Veriler yüklenirken hata oluştu</p>
+                <p className="text-muted-foreground mb-4">Veriler yüklenirken hata oluştu</p>
                 <Button onClick={() => refetch()} variant="outline" icon={<RefreshCw className="w-4 h-4" />}>
                     Tekrar Dene
                 </Button>
@@ -76,7 +76,7 @@ export function PosMovementsTab({ filters }: PosMovementsTabProps) {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">POS Hareketleri</h3>
+                <h3 className="text-lg font-semibold text-foreground">POS Hareketleri</h3>
                 <TabExportButton filename="pos-hareketleri" rows={data as unknown as Array<Record<string, unknown>>} />
             </div>
 
@@ -88,11 +88,11 @@ export function PosMovementsTab({ filters }: PosMovementsTabProps) {
                             <CreditCard className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <p className="text-sm text-green-600 dark:text-green-400">Toplam Başarılı İşlem</p>
+                            <p className="text-sm text-success">Toplam Başarılı İşlem</p>
                             <p className="text-2xl font-bold text-green-900 dark:text-green-100">
                                 {formatProtectedCurrency(summary?.totalVolume || 0)}
                             </p>
-                            <p className="text-xs text-green-600 dark:text-green-400">{summary?.successCount || 0} işlem</p>
+                            <p className="text-xs text-success">{summary?.successCount || 0} işlem</p>
                         </div>
                     </div>
                 </div>
@@ -103,7 +103,7 @@ export function PosMovementsTab({ filters }: PosMovementsTabProps) {
                             <AlertTriangle className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <p className="text-sm text-red-600 dark:text-red-400">Başarısız İşlemler</p>
+                            <p className="text-sm text-destructive">Başarısız İşlemler</p>
                             <p className="text-2xl font-bold text-red-900 dark:text-red-100">
                                 {summary?.failCount || 0}
                             </p>

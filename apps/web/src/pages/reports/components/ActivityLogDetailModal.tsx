@@ -27,12 +27,12 @@ export function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalP
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 rounded-xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col">
-                <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between p-4 border-b border-border">
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white">İşlem Kaydı Detayı</h2>
                     <Button
                         onClick={onClose}
                         variant="ghost"
-                        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-500 dark:text-gray-400 !w-auto !h-auto"
+                        className="p-1 hover:bg-muted dark:hover:bg-gray-700 rounded text-muted-foreground !w-auto !h-auto"
                     >
                         <X className="w-5 h-5" />
                     </Button>
@@ -41,47 +41,47 @@ export function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalP
                     <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="text-xs text-gray-500 dark:text-gray-400">Tarih</label>
+                                <label className="text-xs text-muted-foreground">Tarih</label>
                                 <p className="font-medium text-gray-900 dark:text-white">
                                     {log.createdAt ? new Date(log.createdAt).toLocaleString('tr-TR') : '-'}
                                 </p>
                             </div>
                             <div>
-                                <label className="text-xs text-gray-500 dark:text-gray-400">Aksiyon</label>
+                                <label className="text-xs text-muted-foreground">Aksiyon</label>
                                 <p className="font-medium text-gray-900 dark:text-white">{actionLabel}</p>
                             </div>
                             <div>
-                                <label className="text-xs text-gray-500 dark:text-gray-400">Kullanıcı</label>
+                                <label className="text-xs text-muted-foreground">Kullanıcı</label>
                                 <p className="font-medium text-gray-900 dark:text-white">{log.userName || log.userId || '-'}</p>
-                                {canViewDetails && log.userEmail && <p className="text-xs text-gray-500 dark:text-gray-400">{log.userEmail}</p>}
+                                {canViewDetails && log.userEmail && <p className="text-xs text-muted-foreground">{log.userEmail}</p>}
                             </div>
                             <div>
-                                <label className="text-xs text-gray-500 dark:text-gray-400">Varlık</label>
+                                <label className="text-xs text-muted-foreground">Varlık</label>
                                 <p className="font-medium text-gray-900 dark:text-white">
                                     {entityLabel} {log.entityId ? `- ${log.entityId}` : ''}
                                 </p>
                             </div>
                             <div>
-                                <label className="text-xs text-gray-500 dark:text-gray-400">Kritik</label>
+                                <label className="text-xs text-muted-foreground">Kritik</label>
                                 <p className="font-medium text-gray-900 dark:text-white">{log.isCritical ? 'Evet' : 'Hayır'}</p>
                             </div>
                         </div>
 
                         {messageLabel && messageLabel !== '-' && (
                             <div>
-                                <label className="text-xs text-gray-500 dark:text-gray-400">Mesaj</label>
+                                <label className="text-xs text-muted-foreground">Mesaj</label>
                                 <p className="font-medium text-gray-900 dark:text-white">{messageLabel}</p>
                             </div>
                         )}
 
                         {canViewDetails && log.details && (
                             <div>
-                                <label className="text-xs text-gray-500 dark:text-gray-400">İşlem Detayları</label>
+                                <label className="text-xs text-muted-foreground">İşlem Detayları</label>
                                 {detailEntries.length > 0 ? (
-                                    <div className="rounded-2xl bg-gray-100 dark:bg-gray-900/50 p-3 space-y-2">
+                                    <div className="rounded-2xl bg-muted/50 p-3 space-y-2">
                                         {detailEntries.map((entry) => (
                                             <div key={entry.label} className="flex items-start justify-between gap-4 text-sm">
-                                                <span className="text-gray-500 dark:text-gray-400">{entry.label}</span>
+                                                <span className="text-muted-foreground">{entry.label}</span>
                                                 <span className="font-medium text-right text-gray-900 dark:text-gray-200 whitespace-pre-wrap break-words">
                                                     {entry.value}
                                                 </span>
@@ -89,7 +89,7 @@ export function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalP
                                         ))}
                                     </div>
                                 ) : (
-                                    <pre className="bg-gray-100 dark:bg-gray-900/50 p-3 rounded-2xl text-xs overflow-x-auto text-gray-900 dark:text-gray-300">
+                                    <pre className="bg-muted/50 p-3 rounded-2xl text-xs overflow-x-auto text-gray-900 dark:text-gray-300">
                                         {readableDetails}
                                     </pre>
                                 )}
@@ -103,7 +103,7 @@ export function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalP
                         )}
                     </div>
                 </div>
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="p-4 border-t border-border">
                     <Button onClick={onClose} variant="outline" className="w-full">
                         Kapat
                     </Button>

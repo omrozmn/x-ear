@@ -16,7 +16,7 @@ export const WarrantyInfoSection: React.FC<WarrantyInfoSectionProps> = ({ item }
         </h2>
         
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+          <label className="block text-sm font-medium text-foreground mb-2 flex items-center">
             <Shield className="w-4 h-4 mr-2" />
             Garanti Süresi
           </label>

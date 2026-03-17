@@ -115,7 +115,7 @@ export const SingleSmsTab: React.FC<SingleSmsTabProps> = ({ creditBalance }) => 
             setRecipientName('');
             setMessage('');
         } catch (error) {
-            console.error('SMS sending failed:', error);
+            if (import.meta.env.DEV) console.error('SMS sending failed:', error);
             toast.error('SMS gönderilemedi. Lütfen tekrar deneyin.');
         } finally {
             setIsSending(false);

@@ -53,7 +53,7 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
       <div className="flex flex-wrap gap-4 items-center justify-between">
         <div className="flex flex-wrap gap-4 items-center flex-1">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
               placeholder="Satış ara..."
               value={searchTerm}
@@ -65,7 +65,7 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
           <select data-allow-raw="true"
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 h-10 dark:bg-slate-800 dark:text-white"
+            className="px-3 py-2 border border-border dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-ring h-10 dark:bg-slate-800 dark:text-white"
           >
             <option value="all">Tüm Tarihler</option>
             <option value="today">Bugün</option>
@@ -77,7 +77,7 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
           <select data-allow-raw="true"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 h-10 dark:bg-slate-800 dark:text-white"
+            className="px-3 py-2 border border-border dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-ring h-10 dark:bg-slate-800 dark:text-white"
           >
             <option value="all">Tüm Durumlar</option>
             <option value="completed">Tamamlandı</option>
@@ -88,7 +88,7 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
           <select data-allow-raw="true"
             value={paymentMethodFilter}
             onChange={(e) => setPaymentMethodFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 h-10 dark:bg-slate-800 dark:text-white"
+            className="px-3 py-2 border border-border dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-ring h-10 dark:bg-slate-800 dark:text-white"
           >
             <option value="all">Tüm Ödemeler</option>
             <option value="cash">Nakit</option>
@@ -123,7 +123,7 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
         <div className="p-4 bg-gray-50 dark:bg-slate-900 rounded-2xl space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Minimum Tutar
               </label>
               <Input
@@ -134,7 +134,7 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Maksimum Tutar
               </label>
               <Input
@@ -145,14 +145,14 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Sıralama
               </label>
               <div className="flex gap-2">
                 <select data-allow-raw="true"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as 'date' | 'amount' | 'status')}
-                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white"
+                  className="flex-1 px-3 py-2 border border-border dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-ring dark:bg-slate-800 dark:text-white"
                 >
                   <option value="date">Tarih</option>
                   <option value="amount">Tutar</option>
@@ -161,7 +161,7 @@ export const SalesFilters: React.FC<SalesFiltersProps> = ({
                 <select data-allow-raw="true"
                   value={sortOrder}
                   onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
-                  className="px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-white"
+                  className="px-3 py-2 border border-border dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-ring dark:bg-slate-800 dark:text-white"
                 >
                   <option value="desc">Azalan</option>
                   <option value="asc">Artan</option>

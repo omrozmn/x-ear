@@ -20,8 +20,18 @@ import { CashRecordDetailModal } from '../components/cashflow/CashRecordDetailMo
 import type { CashflowFilters as CashflowFiltersType, CashRecord, CashRecordFormData } from '../types/cashflow';
 import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 import { PermissionGate } from '@/components/PermissionGate';
+import { useIsMobile } from '@/hooks/useBreakpoint';
+import { MobileCashflowPage } from './cashflow/MobileCashflowPage';
 
 export function CashflowPage() {
+  const isMobile = useIsMobile();
+
+  if (isMobile) return <MobileCashflowPage />;
+
+  return <DesktopCashflowPage />;
+}
+
+function DesktopCashflowPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [filters, setFilters] = useState<CashflowFiltersType>({});
@@ -199,7 +209,7 @@ export function CashflowPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div className="p-4 sm:p-6">
       {/* Header */}
       <div className="mb-6">
         <DesktopPageHeader
@@ -234,7 +244,7 @@ export function CashflowPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-border p-4 mb-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Filtreler</h3>
           <Button
@@ -257,16 +267,16 @@ export function CashflowPage() {
       </div>
 
       {/* Records Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-border">
+        <div className="px-6 py-4 border-b border-border">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Kasa Kayıtları</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{records.length} kayıt</p>
+          <p className="text-sm text-muted-foreground mt-1">{records.length} kayıt</p>
         </div>
 
         {error ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <p className="text-sm text-red-600">Bir hata oluştu</p>
+              <p className="text-sm text-destructive">Bir hata oluştu</p>
               <Button variant="outline" size="sm" onClick={handleRefresh} className="mt-2">
                 Tekrar Dene
               </Button>
@@ -282,7 +292,7 @@ export function CashflowPage() {
             />
 
             {totalPages > 1 && (
-              <div className="border-t border-gray-200 dark:border-gray-700 p-4">
+              <div className="border-t border-border p-4">
                 <Pagination
                   currentPage={currentPage}
                   totalPages={totalPages}
@@ -320,22 +330,22 @@ export function CashflowPage() {
         size="md"
       >
         <div className="space-y-4 dark:text-gray-200">
-          <div className="flex items-center gap-3 p-4 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-2xl">
+          <div className="flex items-center gap-3 p-4 bg-destructive/10 border border-red-200 dark:border-red-800 rounded-2xl">
             <div className="flex-shrink-0">
-              <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
-                <Trash2 className="h-5 w-5 text-red-600" />
+              <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                <Trash2 className="h-5 w-5 text-destructive" />
               </div>
             </div>
             <div className="flex-1">
               <h3 className="text-sm font-medium text-red-900 dark:text-red-400">
                 Bu kaydı silmek istediğinizden emin misiniz?
               </h3>
-              <p className="mt-1 text-sm text-red-700 dark:text-red-300">
+              <p className="mt-1 text-sm text-destructive">
                 {recordToDelete?.partyName || 'Kayıt'} - {recordToDelete?.amount} ₺
               </p>
             </div>
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-muted-foreground">
             Bu işlem geri alınamaz. Kayıt kalıcı olarak silinecektir.
           </p>
           <div className="flex justify-end gap-2 pt-2">

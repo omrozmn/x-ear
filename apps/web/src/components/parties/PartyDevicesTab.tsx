@@ -88,9 +88,9 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
   const loadInventoryItems = useCallback(async () => {
     try {
       // const params: ListInventoryParams = {
-      //   page: 1,
-      //   per_page: 20,
-      //   // status: 'IN_STOCK' // Removed, not in new API params. Default shows available inventory.
+      // page: 1,
+      // per_page: 20,
+      // // status: 'IN_STOCK' // Removed, not in new API params. Default shows available inventory.
       // };
 
       // const response = await listInventory(params);
@@ -426,7 +426,7 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
       <div className="flex items-center justify-center py-8">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Cihazlar yükleniyor...</p>
+          <p className="text-muted-foreground">Cihazlar yükleniyor...</p>
         </div>
       </div>
     );
@@ -437,34 +437,34 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
       {/* Quick Stats - Hiddden per user request */}
       {/* 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-        <div className="bg-white p-3 md:p-4 rounded-xl md:rounded-2xl shadow-sm border">
+        <div className="bg-card p-3 md:p-4 rounded-xl md:rounded-2xl shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm font-medium text-gray-600">Aktif Cihaz</p>
-              <p className="text-xl md:text-2xl font-bold text-green-600">{quickStats.activeDevices}</p>
+              <p className="text-xs md:text-sm font-medium text-muted-foreground">Aktif Cihaz</p>
+              <p className="text-xl md:text-2xl font-bold text-success">{quickStats.activeDevices}</p>
             </div>
-            <div className="p-1.5 md:p-2 bg-green-100 rounded-full">
-              <Settings className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
+            <div className="p-1.5 md:p-2 bg-success/10 rounded-full">
+              <Settings className="w-5 h-5 md:w-6 md:h-6 text-success" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-3 md:p-4 rounded-xl md:rounded-2xl shadow-sm border">
+        <div className="bg-card p-3 md:p-4 rounded-xl md:rounded-2xl shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm font-medium text-gray-600">Deneme</p>
-              <p className="text-xl md:text-2xl font-bold text-blue-600">{quickStats.trials}</p>
+              <p className="text-xs md:text-sm font-medium text-muted-foreground">Deneme</p>
+              <p className="text-xl md:text-2xl font-bold text-primary">{quickStats.trials}</p>
             </div>
-            <div className="p-1.5 md:p-2 bg-blue-100 rounded-full">
-              <Calendar className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
+            <div className="p-1.5 md:p-2 bg-primary/10 rounded-full">
+              <Calendar className="w-5 h-5 md:w-6 md:h-6 text-primary" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-3 md:p-4 rounded-xl md:rounded-2xl shadow-sm border">
+        <div className="bg-card p-3 md:p-4 rounded-xl md:rounded-2xl shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm font-medium text-gray-600">Toplam Değer</p>
+              <p className="text-xs md:text-sm font-medium text-muted-foreground">Toplam Değer</p>
               <p className="text-lg md:text-2xl font-bold text-purple-600">₺{quickStats.totalValue.toLocaleString()}</p>
             </div>
             <div className="p-1.5 md:p-2 bg-purple-100 rounded-full hidden sm:block">
@@ -473,10 +473,10 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
           </div>
         </div>
 
-        <div className="bg-white p-3 md:p-4 rounded-xl md:rounded-2xl shadow-sm border">
+        <div className="bg-card p-3 md:p-4 rounded-xl md:rounded-2xl shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm font-medium text-gray-600">E-Reçete</p>
+              <p className="text-xs md:text-sm font-medium text-muted-foreground">E-Reçete</p>
               <p className="text-xl md:text-2xl font-bold text-orange-600">{quickStats.ereceiptsCount}</p>
             </div>
             <div className="p-1.5 md:p-2 bg-orange-100 rounded-full hidden sm:block">
@@ -489,10 +489,10 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
 
       {/* Header with Add Device Button */}
       <div className="flex justify-between items-center sm:mt-6">
-        <h3 className="text-base md:text-lg font-medium text-gray-900">Atanmış Cihazlar</h3>
+        <h3 className="text-base md:text-lg font-medium text-foreground">Atanmış Cihazlar</h3>
         <Button
           onClick={() => setShowDeviceForm(true)}
-          className="inline-flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 text-sm md:text-base premium-gradient tactile-press text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors rounded-xl"
+          className="inline-flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 text-sm md:text-base premium-gradient tactile-press text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring transition-colors rounded-xl"
           aria-label="Yeni Cihaz Ata"
         >
           <Plus className="w-4 h-4 md:w-5 md:h-5" />
@@ -502,14 +502,14 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
 
       {/* Error Message */}
       {(error || devicesError) && (
-        <div className="rounded-xl bg-red-50 p-3 md:p-4 border border-red-200">
+        <div className="rounded-xl bg-destructive/10 p-3 md:p-4 border border-red-200">
           <div className="flex">
             <div className="flex-shrink-0">
               <XCircle className="h-4 w-4 md:h-5 md:w-5 text-red-400" aria-hidden="true" />
             </div>
             <div className="ml-3">
               <h3 className="text-xs md:text-sm font-medium text-red-800">Hata</h3>
-              <div className="mt-1 md:mt-2 text-xs md:text-sm text-red-700">
+              <div className="mt-1 md:mt-2 text-xs md:text-sm text-destructive">
                 <p>{error || (devicesError instanceof Error ? devicesError.message : 'Cihazlar yüklenirken bir hata oluştu.')}</p>
               </div>
             </div>
@@ -521,11 +521,11 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
       <div className="space-y-4">
         {/* Only show these headers on desktop, on mobile they take unnecessary space since cards have indicator labels */}
         <div className="hidden md:grid grid-cols-2 gap-4">
-          <h4 className="text-sm font-medium text-red-600 dark:text-red-400 flex items-center gap-2">
+          <h4 className="text-sm font-medium text-destructive flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-red-500"></span>
             Sağ Kulak
           </h4>
-          <h4 className="text-sm font-medium text-blue-600 dark:text-blue-400 flex items-center gap-2">
+          <h4 className="text-sm font-medium text-primary flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-blue-500"></span>
             Sol Kulak
           </h4>
@@ -628,10 +628,10 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
           if (rows.length === 0) {
             return (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="text-center py-6 md:py-8 text-gray-400 border-2 border-dashed border-red-200 dark:border-red-800 rounded-2xl bg-red-50/50 dark:bg-red-900/10">
+                <div className="text-center py-6 md:py-8 text-muted-foreground border-2 border-dashed border-red-200 dark:border-red-800 rounded-2xl bg-destructive/10/50">
                   <p className="text-xs md:text-sm">Sağ kulak için cihaz atanmamış</p>
                 </div>
-                <div className="text-center py-6 md:py-8 text-gray-400 border-2 border-dashed border-blue-200 dark:border-blue-800 rounded-2xl bg-blue-50/50 dark:bg-blue-900/10">
+                <div className="text-center py-6 md:py-8 text-muted-foreground border-2 border-dashed border-blue-200 dark:border-blue-800 rounded-2xl bg-primary/10/50">
                   <p className="text-xs md:text-sm">Sol kulak için cihaz atanmamış</p>
                 </div>
               </div>
@@ -698,7 +698,7 @@ export const PartyDevicesTab: React.FC<PartyDevicesTabProps> = ({ party }: Party
 
       {/* Empty State */}
       {devices.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-muted-foreground">
           <Settings className="w-12 h-12 mx-auto mb-4 text-gray-300" />
           <p>Henüz atanmış cihaz bulunmamaktadır.</p>
         </div>

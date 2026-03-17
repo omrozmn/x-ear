@@ -97,13 +97,13 @@ export const SGKQueryForm: React.FC<SGKQueryFormProps> = ({
   ];
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-2xl shadow-lg">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">SGK Sorgulama</h2>
+    <div className="max-w-2xl mx-auto p-6 bg-card rounded-2xl shadow-lg">
+      <h2 className="text-2xl font-bold text-foreground mb-6">SGK Sorgulama</h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Hasta Bilgileri */}
-        <div className="bg-gray-50 p-4 rounded-2xl">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Hasta Bilgileri</h3>
+        <div className="bg-muted p-4 rounded-2xl">
+          <h3 className="text-lg font-semibold text-foreground mb-4">Hasta Bilgileri</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label="Hasta Adı"
@@ -125,8 +125,8 @@ export const SGKQueryForm: React.FC<SGKQueryFormProps> = ({
         </div>
 
         {/* Sorgulama Bilgileri */}
-        <div className="bg-gray-50 p-4 rounded-2xl">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Sorgulama Detayları</h3>
+        <div className="bg-muted p-4 rounded-2xl">
+          <h3 className="text-lg font-semibold text-foreground mb-4">Sorgulama Detayları</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Select
               label="Sorgulama Türü"
@@ -139,7 +139,7 @@ export const SGKQueryForm: React.FC<SGKQueryFormProps> = ({
               error={errors.queryType}
             />
             <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">Sorgulama Tarihi</label>
+              <label className="text-sm font-medium text-foreground ml-1">Sorgulama Tarihi</label>
               <DatePicker
                 value={formData.queryDate}
                 onChange={handleDateChange}

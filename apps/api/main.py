@@ -402,8 +402,7 @@ from routers import (
     admin_marketplaces, admin_notifications, admin_parties, admin_payments, admin_production,
     admin_scan_queue, admin_suppliers
 )
-# Pending Future Implementation:
-# from routers import admin_campaigns, orders
+from routers import admin_campaigns
 from routers import admin_tickets
 
 app.include_router(admin_api_keys.router)
@@ -420,7 +419,7 @@ app.include_router(admin_production.router)
 app.include_router(admin_scan_queue.router)
 app.include_router(admin_suppliers.router)
 app.include_router(admin_tickets.router)  # ✅ NOW ACTIVE
-# app.include_router(admin_campaigns.router) # Pending - Redundant with campaigns.py?
+app.include_router(admin_campaigns.router)
 
 # Phase 6 migrated routers - Other modules
 from routers import audit, automation, affiliates, checkout, replacements, birfatura

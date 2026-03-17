@@ -110,10 +110,34 @@ class SGKRejectionRiskAnalyzer(BaseAnalyzer):
     schedule = "weekly"
 
     async def analyze(self, tenant_id: str, locale: str = "tr") -> List[Dict[str, Any]]:
-        # 1. New sales with SGK but missing required fields
+        """Identify SGK sales missing required fields that could cause claim rejection."""
         raw_insights = []
-        # Implementation...
-        return []
+        # Sales with SGK coverage but missing TC number or hearing profile
+        sgk_sales = self.db.query(Sale).join(Party, Sale.party_id == Party.id).filter(
+            Sale.tenant_id == tenant_id,
+            Sale.sgk_coverage_amount > 0,
+            or_(Party.tc_number.is_(None), Party.tc_number == ""),
+        ).all()
+
+        for sale in sgk_sales:
+            party = self.db.query(Party).filter(Party.id == sale.party_id).first()
+            name = f"{party.first_name} {party.last_name}" if party else "Bilinmeyen"
+            titles = {"tr": f"SGK Ret Riski: {name}", "en": f"SGK Rejection Risk: {name}"}
+            summaries = {
+                "tr": f"{name} için SGK'lı satış var ancak TC kimlik numarası eksik. Ret riski yüksek.",
+                "en": f"SGK sale for {name} is missing TC number. High rejection risk."
+            }
+            raw_insights.append({
+                "tenant_id": tenant_id, "type": self.insight_id, "category": "financial",
+                "entity_type": "sale", "entity_id": sale.id,
+                "priority": OpportunityPriority.HIGH,
+                "confidence_score": 0.90, "impact_score": 0.80,
+                "title": self._get_localized_text(titles, locale),
+                "summary": self._get_localized_text(summaries, locale),
+                "recommended_capability": "updateParty",
+                "recommended_action_label": self._get_localized_text({"tr": "TC Ekle", "en": "Add TC"}, locale)
+            })
+        return raw_insights
 
 class RefundPatternAnalyzer(BaseAnalyzer):
     """FN-008: Refund Request Analysis."""
@@ -121,9 +145,39 @@ class RefundPatternAnalyzer(BaseAnalyzer):
     schedule = "monthly"
 
     async def analyze(self, tenant_id: str, locale: str = "tr") -> List[Dict[str, Any]]:
-        # 1. Detect branches with > 15% refund rate
+        """Detect branches with refund rate exceeding 15%."""
         raw_insights = []
-        return []
+        now = datetime.now(timezone.utc)
+        month_ago = now - timedelta(days=30)
+
+        branch_stats = self.db.query(
+            Sale.branch_id,
+            func.count(Sale.id).label('total'),
+            func.sum(func.cast(Sale.status == 'refunded', Integer)).label('refunds')
+        ).filter(
+            Sale.tenant_id == tenant_id,
+            Sale.created_at >= month_ago,
+        ).group_by(Sale.branch_id).all()
+
+        for branch_id, total, refunds in branch_stats:
+            if total > 5 and refunds and (refunds / total) > 0.15:
+                rate = (refunds / total) * 100
+                titles = {"tr": f"Yüksek İade Oranı", "en": f"High Refund Rate"}
+                summaries = {
+                    "tr": f"Son 30 günde %{rate:.0f} iade oranı ({refunds}/{total}). Nedenleri araştırılmalı.",
+                    "en": f"Refund rate {rate:.0f}% ({refunds}/{total}) in last 30 days. Investigation needed."
+                }
+                raw_insights.append({
+                    "tenant_id": tenant_id, "type": self.insight_id, "category": "financial",
+                    "entity_type": "branch", "entity_id": branch_id or "default",
+                    "priority": OpportunityPriority.HIGH,
+                    "confidence_score": 0.95, "impact_score": 0.75,
+                    "title": self._get_localized_text(titles, locale),
+                    "summary": self._get_localized_text(summaries, locale),
+                    "recommended_capability": "generateReport",
+                    "recommended_action_label": self._get_localized_text({"tr": "Rapor İncele", "en": "Review Report"}, locale)
+                })
+        return raw_insights
 
 class DiscountThresholdAnalyzer(BaseAnalyzer):
     """FN-012: Manual Discount Threshold Overreached."""
@@ -170,9 +224,40 @@ class InstallmentSkipAnalyzer(BaseAnalyzer):
     schedule = "weekly"
 
     async def analyze(self, tenant_id: str, locale: str = "tr") -> List[Dict[str, Any]]:
-        # 1. Patients who skipped > 2 consecutive installments
+        """Identify patients who skipped 2+ consecutive installment payments."""
+        from models.payment import PaymentInstallment
         raw_insights = []
-        return []
+        now = datetime.now(timezone.utc)
+
+        # Find pending installments past due date, grouped by party
+        overdue = self.db.query(
+            Sale.party_id,
+            func.count(PaymentInstallment.id).label('skipped')
+        ).join(Sale, PaymentInstallment.sale_id == Sale.id).filter(
+            Sale.tenant_id == tenant_id,
+            PaymentInstallment.status == 'pending',
+            PaymentInstallment.due_date < now,
+        ).group_by(Sale.party_id).having(func.count(PaymentInstallment.id) >= 2).all()
+
+        for party_id, skipped in overdue:
+            party = self.db.query(Party).filter(Party.id == party_id).first()
+            name = f"{party.first_name} {party.last_name}" if party else party_id
+            titles = {"tr": f"Taksit Atlama: {name}", "en": f"Installment Skip: {name}"}
+            summaries = {
+                "tr": f"{name} son {skipped} taksitini atladı. Ödeme planı gözden geçirilmeli.",
+                "en": f"{name} skipped {skipped} installments. Payment plan review needed."
+            }
+            raw_insights.append({
+                "tenant_id": tenant_id, "type": self.insight_id, "category": "financial",
+                "entity_type": "party", "entity_id": party_id,
+                "priority": OpportunityPriority.HIGH,
+                "confidence_score": 0.95, "impact_score": 0.80,
+                "title": self._get_localized_text(titles, locale),
+                "summary": self._get_localized_text(summaries, locale),
+                "recommended_capability": "notification_send",
+                "recommended_action_label": self._get_localized_text({"tr": "Hatırlatma Gönder", "en": "Send Reminder"}, locale)
+            })
+        return raw_insights
 
 class HighDebtAnalyzer(BaseAnalyzer):
     """FN-003: High Unpaid Balance Alert."""

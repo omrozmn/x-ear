@@ -242,9 +242,9 @@ export function PartySearch({
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           {isSearching ? (
-            <Loading className="h-5 w-5 text-gray-400" />
+            <Loading className="h-5 w-5 text-muted-foreground" />
           ) : (
-            <Search className="h-5 w-5 text-gray-400" />
+            <Search className="h-5 w-5 text-muted-foreground" />
           )}
         </div>
         
@@ -269,7 +269,7 @@ export function PartySearch({
             className="absolute inset-y-0 right-0 pr-3 flex items-center"
             disabled={disabled}
           >
-            <X className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+            <X className="h-5 w-5 text-muted-foreground hover:text-muted-foreground" />
           </button>
         )}
 
@@ -282,7 +282,7 @@ export function PartySearch({
             disabled={disabled}
           >
             <div className="relative">
-              <Filter className={`h-5 w-5 ${showAdvancedFilters ? 'text-blue-600' : 'text-gray-400'} hover:text-gray-600`} />
+              <Filter className={`h-5 w-5 ${showAdvancedFilters ? 'text-primary' : 'text-muted-foreground'} hover:text-muted-foreground`} />
               {activeFiltersCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
                   {activeFiltersCount}
@@ -295,9 +295,9 @@ export function PartySearch({
 
       {/* Advanced Filters Panel */}
       {showFilters && showAdvancedFilters && (
-        <div className="absolute z-40 w-full mt-1 bg-white border border-gray-200 rounded-2xl shadow-lg p-4">
+        <div className="absolute z-40 w-full mt-1 bg-card border border-border rounded-2xl shadow-lg p-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-gray-900">Gelişmiş Filtreler</h3>
+            <h3 className="text-sm font-medium text-foreground">Gelişmiş Filtreler</h3>
             <Button
               variant="ghost"
               size="sm"
@@ -311,13 +311,13 @@ export function PartySearch({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Status Filter */}
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-foreground mb-1">
                 Durum
               </label>
               <select data-allow-raw="true"
                 value={filters.status || ''}
                 onChange={(e) => handleFilterChange('status', e.target.value || undefined)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="">Tümü</option>
                 <option value="active">Aktif</option>
@@ -328,13 +328,13 @@ export function PartySearch({
 
             {/* Segment Filter */}
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-foreground mb-1">
                 Segment
               </label>
               <select data-allow-raw="true"
                 value={filters.segment || ''}
                 onChange={(e) => handleFilterChange('segment', e.target.value || undefined)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="">Tümü</option>
                 <option value="trial">Deneme</option>
@@ -346,13 +346,13 @@ export function PartySearch({
 
             {/* Acquisition Type Filter */}
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-foreground mb-1">
                 Kazanım Türü
               </label>
               <select data-allow-raw="true"
                 value={filters.acquisitionType || ''}
                 onChange={(e) => handleFilterChange('acquisitionType', e.target.value || undefined)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="">Tümü</option>
                 <option value="referral">Referans</option>
@@ -365,39 +365,39 @@ export function PartySearch({
 
             {/* Date From */}
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-foreground mb-1">
                 Başlangıç Tarihi
               </label>
               <input data-allow-raw="true"
                 type="date"
                 value={filters.dateFrom || ''}
                 onChange={(e) => handleFilterChange('dateFrom', e.target.value || undefined)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
 
             {/* Date To */}
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-foreground mb-1">
                 Bitiş Tarihi
               </label>
               <input data-allow-raw="true"
                 type="date"
                 value={filters.dateTo || ''}
                 onChange={(e) => handleFilterChange('dateTo', e.target.value || undefined)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
 
             {/* Branch Filter */}
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-foreground mb-1">
                 Şube
               </label>
               <select data-allow-raw="true"
                 value={filters.branchId || ''}
                 onChange={(e) => handleFilterChange('branchId', e.target.value || undefined)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="">Tüm Şubeler</option>
                 <option value="branch-1">Merkez Şube</option>
@@ -413,7 +413,7 @@ export function PartySearch({
       {showDropdown && !showAdvancedFilters && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-2xl shadow-lg max-h-96 overflow-y-auto"
+          className="absolute z-50 w-full mt-1 bg-card border border-border rounded-2xl shadow-lg max-h-96 overflow-y-auto"
         >
           {/* Search Results */}
           {localValue.length > 0 && (
@@ -421,39 +421,39 @@ export function PartySearch({
               {isSearching ? (
                 <div className="p-4 text-center">
                   <Loading className="h-6 w-6 mx-auto mb-2" />
-                  <p className="text-sm text-gray-500">Aranıyor...</p>
+                  <p className="text-sm text-muted-foreground">Aranıyor...</p>
                 </div>
               ) : results.length > 0 ? (
                 <div>
-                  <div className="px-3 py-2 text-xs font-medium text-gray-500 bg-gray-50 border-b">
+                  <div className="px-3 py-2 text-xs font-medium text-muted-foreground bg-muted border-b">
                     Arama Sonuçları ({results.length})
                   </div>
                   {results.slice(0, 8).map((party) => (
                     <div
                       key={party.id}
-                      className="px-3 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                      className="px-3 py-3 hover:bg-muted cursor-pointer border-b border-border last:border-b-0"
                       onClick={() => console.log('Select party:', party.id)}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
                           <div className="flex items-center space-x-2">
-                            <User className="h-4 w-4 text-gray-400" />
-                            <span className="font-medium text-gray-900">
+                            <User className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-medium text-foreground">
                               {party.firstName} {party.lastName}
                             </span>
                             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                               party.status === 'ACTIVE' 
-                                ? 'bg-green-100 text-green-800'
+                                ? 'bg-success/10 text-success'
                                 : party.status === 'INACTIVE'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-gray-100 text-gray-800'
+                                ? 'bg-warning/10 text-yellow-800'
+                                : 'bg-muted text-foreground'
                             }`}>
                               {party.status === 'ACTIVE' ? 'Aktif' : 
                                party.status === 'INACTIVE' ? 'Pasif' : 'Arşiv'}
                             </span>
                           </div>
                           
-                          <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500">
+                          <div className="mt-1 flex items-center space-x-4 text-sm text-muted-foreground">
                             {party.phone && (
                               <div className="flex items-center space-x-1">
                                 <Phone className="h-3 w-3" />
@@ -466,7 +466,7 @@ export function PartySearch({
                             </span>
                             
                             {party.deviceCount > 0 && (
-                              <span className="text-blue-600">
+                              <span className="text-primary">
                                 {party.deviceCount} cihaz
                               </span>
                             )}
@@ -481,7 +481,7 @@ export function PartySearch({
                           )}
                           
                           {party.outstandingBalance > 0 && (
-                            <div className="text-xs text-red-600">
+                            <div className="text-xs text-destructive">
                               Borç: ₺{party.outstandingBalance.toLocaleString('tr-TR')}
                             </div>
                           )}
@@ -491,13 +491,13 @@ export function PartySearch({
                   ))}
                   
                   {results.length > 8 && (
-                    <div className="px-3 py-2 text-center text-sm text-gray-500 bg-gray-50">
+                    <div className="px-3 py-2 text-center text-sm text-muted-foreground bg-muted">
                       +{results.length - 8} hasta daha
                     </div>
                   )}
                 </div>
               ) : localValue.length >= 2 ? (
-                <div className="p-4 text-center text-gray-500">
+                <div className="p-4 text-center text-muted-foreground">
                   <User className="h-8 w-8 mx-auto mb-2 text-gray-300" />
                   <p className="text-sm">Hasta bulunamadı</p>
                   <p className="text-xs mt-1">Farklı arama terimleri deneyin</p>
@@ -509,7 +509,7 @@ export function PartySearch({
           {/* Recent Searches */}
           {showRecentSearches && localValue.length === 0 && recentSearches.length > 0 && (
             <div>
-              <div className="flex items-center justify-between px-3 py-2 text-xs font-medium text-gray-500 bg-gray-50 border-b">
+              <div className="flex items-center justify-between px-3 py-2 text-xs font-medium text-muted-foreground bg-muted border-b">
                 <span>Son Aramalar</span>
                 <Button
                   variant="ghost"
@@ -524,16 +524,16 @@ export function PartySearch({
               {recentSearches.slice(0, 5).map((search) => (
                 <div
                   key={search.id}
-                  className="px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                  className="px-3 py-2 hover:bg-muted cursor-pointer border-b border-border last:border-b-0"
                   onClick={() => handleRecentSearchClick(search.query)}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <Clock className="h-4 w-4 text-gray-400" />
-                      <span className="text-sm text-gray-900">{search.query}</span>
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm text-foreground">{search.query}</span>
                     </div>
                     
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-muted-foreground">
                       {search.resultCount} sonuç
                     </div>
                   </div>
@@ -544,7 +544,7 @@ export function PartySearch({
 
           {/* Empty State */}
           {localValue.length === 0 && recentSearches.length === 0 && (
-            <div className="p-4 text-center text-gray-500">
+            <div className="p-4 text-center text-muted-foreground">
               <Search className="h-8 w-8 mx-auto mb-2 text-gray-300" />
               <p className="text-sm">Hasta aramaya başlayın</p>
               <p className="text-xs mt-1">Ad, soyad, telefon veya TC ile arayabilirsiniz</p>

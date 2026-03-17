@@ -35,25 +35,25 @@ const STATUS_CONFIG: Record<ImportSessionStatus, {
     icon: <Clock className="w-6 h-6" />,
     label: 'Bekliyor',
     color: 'text-yellow-600',
-    bgColor: 'bg-yellow-50 dark:bg-yellow-900/20',
+    bgColor: 'bg-warning/10',
   },
   uploading: {
     icon: <Loader2 className="w-6 h-6 animate-spin" />,
     label: 'Yükleniyor',
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+    color: 'text-primary',
+    bgColor: 'bg-primary/10',
   },
   processing: {
     icon: <Loader2 className="w-6 h-6 animate-spin" />,
     label: 'İşleniyor',
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+    color: 'text-primary',
+    bgColor: 'bg-primary/10',
   },
   completed: {
     icon: <CheckCircle className="w-6 h-6" />,
     label: 'Tamamlandı',
-    color: 'text-green-600',
-    bgColor: 'bg-green-50 dark:bg-green-900/20',
+    color: 'text-success',
+    bgColor: 'bg-success/10',
   },
   completed_with_warnings: {
     icon: <AlertTriangle className="w-6 h-6" />,
@@ -64,13 +64,13 @@ const STATUS_CONFIG: Record<ImportSessionStatus, {
   failed: {
     icon: <XCircle className="w-6 h-6" />,
     label: 'Başarısız',
-    color: 'text-red-600',
-    bgColor: 'bg-red-50 dark:bg-red-900/20',
+    color: 'text-destructive',
+    bgColor: 'bg-destructive/10',
   },
   expired: {
     icon: <Clock className="w-6 h-6" />,
     label: 'Süresi Doldu',
-    color: 'text-gray-600',
+    color: 'text-muted-foreground',
     bgColor: 'bg-gray-50 dark:bg-gray-800',
   },
 };
@@ -78,11 +78,11 @@ const STATUS_CONFIG: Record<ImportSessionStatus, {
 function ProgressBar({ percent, stage }: { percent: number; stage?: string }) {
   return (
     <div className="space-y-1">
-      <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+      <div className="flex justify-between text-xs text-muted-foreground">
         <span>{stage || 'İşleniyor...'}</span>
         <span>{Math.round(percent)}%</span>
       </div>
-      <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+      <div className="h-2 bg-accent rounded-full overflow-hidden">
         <div
           className="h-full bg-blue-500 rounded-full transition-all duration-500 ease-out"
           style={{ width: `${Math.min(100, percent)}%` }}
@@ -96,9 +96,9 @@ function ImportSummary({ summary }: { summary: ImportSession['summary'] }) {
   if (!summary) return null;
 
   const stats = [
-    { label: 'Oluşturulan', value: summary.created || 0, icon: <Users className="w-4 h-4" />, color: 'text-green-600' },
-    { label: 'Güncellenen', value: summary.updated || 0, icon: <RefreshCw className="w-4 h-4" />, color: 'text-blue-600' },
-    { label: 'Atlanan', value: summary.skipped || 0, icon: <ArrowRight className="w-4 h-4" />, color: 'text-gray-500' },
+    { label: 'Oluşturulan', value: summary.created || 0, icon: <Users className="w-4 h-4" />, color: 'text-success' },
+    { label: 'Güncellenen', value: summary.updated || 0, icon: <RefreshCw className="w-4 h-4" />, color: 'text-primary' },
+    { label: 'Atlanan', value: summary.skipped || 0, icon: <ArrowRight className="w-4 h-4" />, color: 'text-muted-foreground' },
     { label: 'Mükerrer', value: summary.duplicates || 0, icon: <AlertTriangle className="w-4 h-4" />, color: 'text-amber-600' },
   ];
 
@@ -107,11 +107,11 @@ function ImportSummary({ summary }: { summary: ImportSession['summary'] }) {
       {stats.map(({ label, value, icon, color }) => (
         <div
           key={label}
-          className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700"
+          className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-xl border border-border"
         >
           <div className={`flex justify-center mb-1 ${color}`}>{icon}</div>
           <div className="text-xl font-bold text-gray-900 dark:text-white">{value}</div>
-          <div className="text-xs text-gray-500 dark:text-gray-400">{label}</div>
+          <div className="text-xs text-muted-foreground">{label}</div>
         </div>
       ))}
     </div>
@@ -121,12 +121,12 @@ function ImportSummary({ summary }: { summary: ImportSession['summary'] }) {
 function ErrorList({ errors }: { errors: Array<{ code: string; message: string }> }) {
   if (!errors?.length) return null;
   return (
-    <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">
+    <div className="mt-4 p-3 bg-destructive/10 rounded-xl border border-red-200 dark:border-red-800">
       <h4 className="text-sm font-medium text-red-800 dark:text-red-300 mb-2 flex items-center gap-1">
         <AlertCircle className="w-4 h-4" />
         Hatalar ({errors.length})
       </h4>
-      <ul className="space-y-1 text-xs text-red-700 dark:text-red-400">
+      <ul className="space-y-1 text-xs text-destructive">
         {errors.slice(0, 10).map((err, i) => (
           <li key={i} className="flex items-start gap-1">
             <span className="mt-0.5">•</span>
@@ -134,7 +134,7 @@ function ErrorList({ errors }: { errors: Array<{ code: string; message: string }
           </li>
         ))}
         {errors.length > 10 && (
-          <li className="text-red-600 font-medium">... ve {errors.length - 10} hata daha</li>
+          <li className="text-destructive font-medium">... ve {errors.length - 10} hata daha</li>
         )}
       </ul>
     </div>
@@ -209,13 +209,13 @@ export default function NoahImportModal({ open, onClose, onImportComplete }: Noa
             )}
 
             <div className="text-center py-4">
-              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Download className="w-8 h-8 text-blue-600" />
+              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Download className="w-8 h-8 text-primary" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                 Noah Verilerini İçe Aktar
               </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+              <p className="text-sm text-muted-foreground max-w-md mx-auto">
                 Hasta, odyogram ve cihaz verilerini Noah'tan CRM'e aktarın.
               </p>
             </div>
@@ -223,19 +223,19 @@ export default function NoahImportModal({ open, onClose, onImportComplete }: Noa
             <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 space-y-3">
               <div className="flex items-center gap-3 text-sm">
                 <span className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
-                <span className="text-gray-700 dark:text-gray-300">
+                <span className="text-foreground">
                   Noah'ta <strong>Dosya → Export</strong> ile hasta verilerini export alın
                 </span>
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <span className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
-                <span className="text-gray-700 dark:text-gray-300">
-                  Dosyayı <code className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs">C:\XEAR\noah_exports\</code> klasörüne kaydedin
+                <span className="text-foreground">
+                  Dosyayı <code className="px-1 py-0.5 bg-accent rounded text-xs">C:\XEAR\noah_exports\</code> klasörüne kaydedin
                 </span>
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <span className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">3</span>
-                <span className="text-gray-700 dark:text-gray-300">
+                <span className="text-foreground">
                   <strong>İçe Aktarımı Başlat</strong> butonuna basın
                 </span>
               </div>
@@ -266,7 +266,7 @@ export default function NoahImportModal({ open, onClose, onImportComplete }: Noa
                 {statusConfig.label}
               </h3>
               {session.progress?.stage && (
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   {session.progress.stage}
                 </p>
               )}
@@ -280,7 +280,7 @@ export default function NoahImportModal({ open, onClose, onImportComplete }: Noa
             )}
 
             {session.fileMeta && (
-              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 px-3 py-2 rounded-lg">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground bg-gray-50 dark:bg-gray-800 px-3 py-2 rounded-lg">
                 <FileText className="w-4 h-4" />
                 <span>{session.fileMeta.name}</span>
                 {session.fileMeta.size && (

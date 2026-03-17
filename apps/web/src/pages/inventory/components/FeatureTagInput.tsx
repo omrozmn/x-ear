@@ -83,7 +83,7 @@ export const FeatureTagInput: React.FC<FeatureTagInputProps> = ({
   return (
     <div className={`space-y-2 ${className}`}>
       {label && (
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label className="block text-sm font-medium text-foreground">
           {label}
         </label>
       )}
@@ -92,7 +92,7 @@ export const FeatureTagInput: React.FC<FeatureTagInputProps> = ({
         className={`min-h-[42px] p-2 border rounded-2xl bg-white dark:bg-gray-800 cursor-text transition-colors ${
           isInputFocused 
             ? 'border-blue-500 ring-1 ring-blue-500' 
-            : 'border-gray-300 dark:border-gray-600 hover:border-gray-400'
+            : 'border-border hover:border-gray-400'
         }`}
         onClick={() => inputRef.current?.focus()}
       >
@@ -102,7 +102,7 @@ export const FeatureTagInput: React.FC<FeatureTagInputProps> = ({
             <Badge
               key={index}
               variant="secondary"
-              className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+              className="flex items-center gap-1 px-2 py-1 text-xs bg-primary/10 text-blue-800 dark:text-blue-200"
             >
               {feature}
               <Button
@@ -113,7 +113,7 @@ export const FeatureTagInput: React.FC<FeatureTagInputProps> = ({
                   e.stopPropagation();
                   removeFeature(index);
                 }}
-                className="ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-100"
+                className="ml-1 text-primary hover:text-blue-800 dark:hover:text-blue-100"
               >
                 <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/>
@@ -139,7 +139,7 @@ export const FeatureTagInput: React.FC<FeatureTagInputProps> = ({
 
       {/* Suggestions */}
       {isInputFocused && inputValue && filteredSuggestions.length > 0 && (
-        <div className="absolute z-10 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-2xl shadow-lg max-h-40 overflow-y-auto">
+        <div className="absolute z-10 w-full bg-white dark:bg-gray-800 border border-border rounded-2xl shadow-lg max-h-40 overflow-y-auto">
           {filteredSuggestions.slice(0, 5).map((feature, index) => (
             <Button
               key={index}
@@ -147,7 +147,7 @@ export const FeatureTagInput: React.FC<FeatureTagInputProps> = ({
               variant="ghost"
               size="sm"
               onClick={() => addSuggestedFeature(feature)}
-              className="w-full px-3 py-2 text-left text-sm text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg"
+              className="w-full px-3 py-2 text-left text-sm text-gray-900 dark:text-gray-100 hover:bg-muted dark:hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg"
             >
               {feature}
             </Button>
@@ -158,7 +158,7 @@ export const FeatureTagInput: React.FC<FeatureTagInputProps> = ({
       {/* Common features as quick add buttons */}
       {value.length === 0 && !isInputFocused && (
         <div className="flex flex-wrap gap-1 mt-2">
-          <span className="text-xs text-gray-500 dark:text-gray-400 mr-2">Hızlı ekle:</span>
+          <span className="text-xs text-muted-foreground mr-2">Hızlı ekle:</span>
           {commonFeatures.slice(0, 6).map((feature, index) => (
             <Button
               key={index}
@@ -166,7 +166,7 @@ export const FeatureTagInput: React.FC<FeatureTagInputProps> = ({
               variant="ghost"
               size="sm"
               onClick={() => addSuggestedFeature(feature)}
-              className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="px-2 py-1 text-xs bg-muted text-foreground rounded hover:bg-accent dark:hover:bg-gray-600 transition-colors"
             >
               + {feature}
             </Button>
@@ -176,7 +176,7 @@ export const FeatureTagInput: React.FC<FeatureTagInputProps> = ({
       
       {/* Error message */}
       {error && (
-        <div className="mt-1 text-sm text-red-600 dark:text-red-400">
+        <div className="mt-1 text-sm text-destructive">
           {error}
         </div>
       )}

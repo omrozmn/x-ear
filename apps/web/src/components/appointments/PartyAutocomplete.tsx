@@ -135,33 +135,33 @@ export function PartyAutocomplete({
         />
         <div className="absolute inset-y-0 right-2 flex items-center pointer-events-none">
           {isLoading ? (
-            <div className="animate-spin h-5 w-5 border-2 border-gray-300 border-t-blue-600 rounded-full" />
+            <div className="animate-spin h-5 w-5 border-2 border-border border-t-blue-600 rounded-full" />
           ) : (
-            <Search className="h-5 w-5 text-gray-400" />
+            <Search className="h-5 w-5 text-muted-foreground" />
           )}
         </div>
       </div>
 
       {/* Error message */}
       {error && (
-        <p className="mt-1 text-sm text-red-600">{error}</p>
+        <p className="mt-1 text-sm text-destructive">{error}</p>
       )}
 
       {/* Search results dropdown */}
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
+        <div className="absolute z-50 w-full mt-1 bg-card border border-border rounded-2xl shadow-lg max-h-60 overflow-y-auto">
           {isLoading ? (
-            <div className="p-3 text-sm text-gray-500">Hasta verisi yükleniyor...</div>
+            <div className="p-3 text-sm text-muted-foreground">Hasta verisi yükleniyor...</div>
           ) : filteredParties.length === 0 ? (
             <div className="p-2">
-              <div className="p-2 text-sm text-gray-500 text-center mb-2">
+              <div className="p-2 text-sm text-muted-foreground text-center mb-2">
                 "{searchQuery}" için sonuç bulunamadı
               </div>
               {onAddNew && searchQuery.length > 2 && (
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full flex items-center justify-center text-blue-600 border-blue-200 hover:bg-blue-50"
+                  className="w-full flex items-center justify-center text-primary border-blue-200 hover:bg-primary/10"
                   onClick={() => {
                     onAddNew(searchQuery);
                     setIsOpen(false);
@@ -177,19 +177,19 @@ export function PartyAutocomplete({
               {filteredParties.map((party) => (
                 <div
                   key={party.id}
-                  className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 flex items-center space-x-3"
+                  className="p-3 hover:bg-muted cursor-pointer border-b border-border last:border-b-0 flex items-center space-x-3"
                   onClick={() => handlePartySelect(party)}
                 >
                   <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                      <User className="h-4 w-4 text-blue-600" />
+                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                      <User className="h-4 w-4 text-primary" />
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-gray-900 truncate">
+                    <div className="font-medium text-foreground truncate">
                       {party.firstName} {party.lastName}
                     </div>
-                    <div className="text-sm text-gray-500 truncate">
+                    <div className="text-sm text-muted-foreground truncate">
                       {party.tcNumber && `TC: ${party.tcNumber}`}
                       {party.tcNumber && party.phone && ' • '}
                       {party.phone && `Tel: ${party.phone}`}
@@ -198,11 +198,11 @@ export function PartyAutocomplete({
                 </div>
               ))}
               {onAddNew && (
-                <div className="p-2 border-t border-gray-100 sticky bottom-0 bg-white">
+                <div className="p-2 border-t border-border sticky bottom-0 bg-card">
                   <Button
                     type="button"
                     variant="ghost"
-                    className="w-full flex items-center justify-center text-sm text-blue-600 hover:bg-blue-50"
+                    className="w-full flex items-center justify-center text-sm text-primary hover:bg-primary/10"
                     onClick={() => {
                       onAddNew(searchQuery);
                       setIsOpen(false);

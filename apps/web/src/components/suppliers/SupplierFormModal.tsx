@@ -212,13 +212,13 @@ export function SupplierFormModal({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Company Information */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
             <Building2 className="h-4 w-4" />
             Şirket Bilgileri
           </h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Şirket Adı *
               </label>
               <Input
@@ -231,7 +231,7 @@ export function SupplierFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Website
               </label>
               <Input
@@ -243,7 +243,7 @@ export function SupplierFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Vergi Numarası
               </label>
               <div className="flex gap-2">
@@ -260,7 +260,7 @@ export function SupplierFormModal({
                     variant="outline"
                     size="sm"
                     onClick={handleAutoFill}
-                    className="flex items-center gap-1 text-blue-600 border-blue-300 hover:bg-blue-50 whitespace-nowrap mt-0 self-end"
+                    className="flex items-center gap-1 text-primary border-blue-300 hover:bg-primary/10 whitespace-nowrap mt-0 self-end"
                     title="Fatura bilgilerinden otomatik doldur"
                   >
                     <Zap className="h-3.5 w-3.5" />
@@ -271,7 +271,7 @@ export function SupplierFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 UTS Kurum No
               </label>
               <Input
@@ -283,7 +283,7 @@ export function SupplierFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Şirket Kodu
               </label>
               <Input
@@ -295,7 +295,7 @@ export function SupplierFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Vergi Dairesi
               </label>
               <Input
@@ -307,14 +307,14 @@ export function SupplierFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Durum
               </label>
               <select
                 data-allow-raw="true"
                 value={formData.isActive ? 'active' : 'inactive'}
                 onChange={(e) => handleChange('isActive', e.target.value === 'active')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="active">Aktif</option>
                 <option value="inactive">Pasif</option>
@@ -325,13 +325,13 @@ export function SupplierFormModal({
 
         {/* Contact Information */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
             <User className="h-4 w-4" />
             İletişim Bilgileri
           </h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Yetkili Kişi
               </label>
               <Input
@@ -343,7 +343,7 @@ export function SupplierFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 E-posta
               </label>
               <Input
@@ -357,7 +357,7 @@ export function SupplierFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Telefon
               </label>
               <Input
@@ -369,7 +369,7 @@ export function SupplierFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Mobil
               </label>
               <Input
@@ -384,7 +384,7 @@ export function SupplierFormModal({
 
         {/* Address Information */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
             <MapPin className="h-4 w-4" />
             Adres Bilgileri
           </h3>
@@ -412,7 +412,7 @@ export function SupplierFormModal({
                 />
               ) : (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Şehir
                   </label>
                   <Input
@@ -438,7 +438,7 @@ export function SupplierFormModal({
                 />
               ) : (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Bölge
                   </label>
                   <Input
@@ -452,7 +452,7 @@ export function SupplierFormModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Posta Kodu
               </label>
               <Input
@@ -464,7 +464,7 @@ export function SupplierFormModal({
             </div>
 
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Adres
               </label>
               <textarea
@@ -473,7 +473,7 @@ export function SupplierFormModal({
                 onChange={(e) => handleChange('address', e.target.value)}
                 placeholder="Tam adres giriniz"
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
           </div>
@@ -481,7 +481,7 @@ export function SupplierFormModal({
 
         {/* Notes */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Notlar
           </label>
           <textarea
@@ -490,7 +490,7 @@ export function SupplierFormModal({
             onChange={(e) => handleChange('notes', e.target.value)}
             placeholder="İlave notlar..."
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
 

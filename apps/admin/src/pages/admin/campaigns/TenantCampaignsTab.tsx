@@ -67,7 +67,7 @@ export default function TenantCampaignsTab() {
             setTotal(isCampaignListResponse(campaignsPayload) && typeof campaignsPayload.meta?.total === 'number' ? campaignsPayload.meta.total : 0);
             setTotalPages(isCampaignListResponse(campaignsPayload) && typeof campaignsPayload.meta?.totalPages === 'number' ? campaignsPayload.meta.totalPages : 1);
         } catch (error) {
-            console.error('Failed to fetch campaigns:', error);
+            if (import.meta.env.DEV) console.error('Failed to fetch campaigns:', error);
             toast.error('Kampanyalar yüklenirken hata oluştu');
         } finally {
             setIsLoading(false);

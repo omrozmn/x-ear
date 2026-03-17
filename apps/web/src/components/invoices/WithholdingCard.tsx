@@ -76,7 +76,7 @@ export default function WithholdingCard({ value, onChange }: WithholdingCardProp
     <div>
       <div className="space-y-3">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Tevkifat Kodu</label>
+          <label className="block text-sm font-medium text-foreground mb-1">Tevkifat Kodu</label>
           <Select
             value={formData.withholdingCode || ''}
             onChange={(e) => handleCodeChange(e.target.value)}
@@ -89,7 +89,7 @@ export default function WithholdingCard({ value, onChange }: WithholdingCardProp
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Tevkifat İade Edilen Mal Oranı (%)</label>
+          <label className="block text-sm font-medium text-foreground mb-1">Tevkifat İade Edilen Mal Oranı (%)</label>
           <Input
             type="number"
             step="0.01"
@@ -101,7 +101,7 @@ export default function WithholdingCard({ value, onChange }: WithholdingCardProp
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Tevkifatsız İade KDV Tutarı (TL)</label>
+          <label className="block text-sm font-medium text-foreground mb-1">Tevkifatsız İade KDV Tutarı (TL)</label>
           <Input
             type="number"
             step="0.01"
@@ -113,15 +113,15 @@ export default function WithholdingCard({ value, onChange }: WithholdingCardProp
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Tevkifat İade KDV Tutarı (TL)</label>
-          <Input type="number" step="0.01" value={formData.withholdingAmount} readOnly className="bg-gray-50" fullWidth />
+          <label className="block text-sm font-medium text-foreground mb-1">Tevkifat İade KDV Tutarı (TL)</label>
+          <Input type="number" step="0.01" value={formData.withholdingAmount} readOnly className="bg-muted" fullWidth />
         </div>
 
         {Number(formData.withholdingRate) > 0 && Number(formData.taxFreeAmount) > 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3">
+          <div className="bg-primary/10 border border-blue-200 rounded-2xl p-3">
             <div className="flex items-start">
               <Info className="text-blue-400 mr-2 flex-shrink-0" size={18} />
-              <div className="text-sm text-blue-700">
+              <div className="text-sm text-primary">
                 <p className="font-medium mb-1">Hesaplama:</p>
                 <p>{formData.withholdingRate}% × {Number(formData.taxFreeAmount).toFixed(2)} TL = <span className="font-semibold">{formData.withholdingAmount.toFixed(2)} TL</span></p>
               </div>
@@ -129,7 +129,7 @@ export default function WithholdingCard({ value, onChange }: WithholdingCardProp
           </div>
         )}
 
-        <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-3">
+        <div className="bg-warning/10 border border-yellow-200 rounded-2xl p-3">
           <div className="flex">
             <AlertTriangle className="text-yellow-400 mr-2 flex-shrink-0" size={18} />
             <div className="text-sm text-yellow-700">

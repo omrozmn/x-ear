@@ -189,7 +189,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
       navigate({ to: '/inventory' });
     } catch (err) {
       console.error('Delete failed:', err);
-      alert('Silme işlemi başarısız oldu');
+      toast.error('Silme işlemi başarısız oldu');
     }
   };
 
@@ -261,7 +261,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
       }
     } catch (err) {
       console.error('Save failed:', err);
-      alert('Kaydetme işlemi başarısız oldu');
+      toast.error('Kaydetme işlemi başarısız oldu');
     }
   };
 
@@ -296,7 +296,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
       }
     } catch (err) {
       console.error('Save features failed:', err);
-      alert('Özellikler kaydetme işlemi başarısız oldu');
+      toast.error('Özellikler kaydetme işlemi başarısız oldu');
     }
   };
 
@@ -315,7 +315,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
   if (error || !item) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
+        <div className="bg-destructive/10 border border-red-200 dark:border-red-800 rounded-xl p-4">
           <h3 className="text-sm font-medium text-red-800 dark:text-red-300">
             {error || 'Ürün bulunamadı'}
           </h3>
@@ -479,8 +479,8 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
       </div>
 
       {/* Inventory Movements Table */}
-      <div className="bg-white rounded-2xl shadow p-6">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Ürün Hareketleri</h2>
+      <div className="bg-card rounded-2xl shadow p-6">
+        <h2 className="text-lg font-medium text-foreground mb-4">Ürün Hareketleri</h2>
         <InventoryMovementsTable inventoryId={id} />
       </div>
 
@@ -517,17 +517,17 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
       >
         <div className="space-y-4">
           <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
-              <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
+              <AlertTriangle className="w-6 h-6 text-destructive" />
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                 Ürünü silmek istediğinizden emin misiniz?
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+              <p className="text-sm text-muted-foreground mb-2">
                 <span className="font-semibold">{item.name}</span> ürününü silmek üzeresiniz.
               </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 Bu işlem geri alınamaz. Ürünle ilgili tüm veriler kalıcı olarak silinecektir.
               </p>
             </div>

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { Button, Loading, Badge, Checkbox, Modal, DataTable } from '@x-ear/ui-web';
+import { Button, Loading, Badge, Checkbox, Modal, DataTable } from '@x-ear/ui-web'; // Checkbox still used in grid view
 import type { Column } from '@x-ear/ui-web';
 import {
   User,
@@ -97,7 +97,7 @@ export function PartyList({
     return (
       <div className="flex items-center justify-center py-12">
         <Loading size="lg" />
-        <span className="ml-2 text-gray-600">{t('list.loading')}</span>
+        <span className="ml-2 text-muted-foreground">{t('list.loading')}</span>
       </div>
     );
   }
@@ -105,9 +105,9 @@ export function PartyList({
   if (parties.length === 0) {
     return (
       <div className="text-center py-12">
-        <User className="mx-auto h-12 w-12 text-gray-400" />
-        <h3 className="mt-2 text-sm font-medium text-gray-900">{t('list.empty_title')}</h3>
-        <p className="mt-1 text-sm text-gray-500">
+        <User className="mx-auto h-12 w-12 text-muted-foreground" />
+        <h3 className="mt-2 text-sm font-medium text-foreground">{t('list.empty_title')}</h3>
+        <p className="mt-1 text-sm text-muted-foreground">
           {t('list.empty_desc')}
         </p>
       </div>
@@ -120,7 +120,7 @@ export function PartyList({
         {parties.map((party) => (
           <div
             key={party.id}
-            className="bg-white rounded-2xl border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
+            className="bg-card rounded-2xl border border-border p-4 hover:shadow-md transition-shadow cursor-pointer"
             onClick={() => {
               console.log('=== PARTY CARD CLICK ===', party);
               (onView || onPartyClick)?.(party);
@@ -138,26 +138,26 @@ export function PartyList({
                       onClick={(e) => e.stopPropagation()}
                     />
                   )}
-                  <h3 className="text-sm font-medium text-gray-900">
+                  <h3 className="text-sm font-medium text-foreground">
                     {party.firstName} {party.lastName}
                   </h3>
                 </div>
 
                 <div className="mt-2 space-y-1">
                   {party.tcNumber && (
-                    <div className="flex items-center text-xs text-gray-500">
+                    <div className="flex items-center text-xs text-muted-foreground">
                       <CreditCard className="h-3 w-3 mr-1" />
                       {party.tcNumber}
                     </div>
                   )}
                   {party.phone && (
-                    <div className="flex items-center text-xs text-gray-500">
+                    <div className="flex items-center text-xs text-muted-foreground">
                       <Phone className="h-3 w-3 mr-1" />
                       {formatPhone(party.phone)}
                     </div>
                   )}
                   {party.email && (
-                    <div className="flex items-center text-xs text-gray-500">
+                    <div className="flex items-center text-xs text-muted-foreground">
                       <Mail className="h-3 w-3 mr-1" />
                       {party.email}
                     </div>
@@ -167,7 +167,7 @@ export function PartyList({
                 <div className="mt-3 flex items-center justify-between">
                   <StatusBadge status={party.status || undefined} />
                   {party.createdAt && (
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-muted-foreground">
                       <span className="mx-2 text-gray-300">|</span>
                       {formatDate(party.createdAt || undefined)}
                     </span>
@@ -197,18 +197,9 @@ export function PartyList({
   }
 
   // List view (default)
+  // Note: DataTable handles selection checkbox via rowSelection prop
+  // Do NOT add a manual _selection column - it causes duplicate checkboxes
   const partyColumns: Column<Party>[] = [
-    ...(showSelection ? [{
-      key: '_selection',
-      title: '',
-      render: (_: unknown, party: Party) => (
-        <Checkbox
-          checked={party.id ? selectedParties.includes(party.id) : false}
-          onChange={() => party.id && onPartySelect?.(party.id)}
-          onClick={(e: React.MouseEvent) => e.stopPropagation()}
-        />
-      ),
-    }] : []),
     {
       key: 'name',
       title: t('list.columns.name'),
@@ -221,7 +212,7 @@ export function PartyList({
               const isFemale = ['f', 'female', 'kadın', 'k', 'woman', 'w'].includes(g) || g.includes('kad');
               return (
                 <div className={`h-10 w-10 rounded-full flex items-center justify-center ${isFemale ? 'bg-pink-100 dark:bg-pink-900/30' : 'bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30'}`}>
-                  <User className={`h-5 w-5 ${isFemale ? 'text-pink-600 dark:text-pink-400' : 'text-blue-600 dark:text-blue-400'}`} />
+                  <User className={`h-5 w-5 ${isFemale ? 'text-pink-600 dark:text-pink-400' : 'text-primary'}`} />
                 </div>
               );
             })()}
@@ -231,7 +222,7 @@ export function PartyList({
               {party.firstName} {party.lastName}
             </div>
             {party.email && (
-              <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[180px]">{party.email}</div>
+              <div className="text-sm text-muted-foreground truncate max-w-[180px]">{party.email}</div>
             )}
           </div>
         </div>
@@ -312,7 +303,7 @@ export function PartyList({
       title: t('list.columns.created_at'),
       sortable: true,
       render: (_, party) => (
-        <span className="text-sm text-gray-500 dark:text-gray-400">{formatDate(party.createdAt || undefined)}</span>
+        <span className="text-sm text-muted-foreground">{formatDate(party.createdAt || undefined)}</span>
       ),
     },
     ...(showActions ? [{
@@ -324,7 +315,7 @@ export function PartyList({
           <Button
             variant="ghost"
             onClick={(e: React.MouseEvent) => { e.stopPropagation(); setCommunicationParty(party); }}
-            className="h-11 w-11 !p-0 inline-flex items-center justify-center rounded-xl hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 text-gray-400 dark:text-gray-500 transition-colors"
+            className="h-11 w-11 !p-0 inline-flex items-center justify-center rounded-xl hover:bg-success/10 dark:hover:bg-green-900/20 hover:text-success dark:hover:text-green-400 text-muted-foreground transition-colors"
             title={t('nav.communication', { ns: 'layout' })}
           >
             <MessageSquare className="h-6 w-6" />
@@ -332,7 +323,7 @@ export function PartyList({
           <Button
             variant="ghost"
             onClick={(e: React.MouseEvent) => { e.stopPropagation(); onDelete?.(party); }}
-            className="h-11 w-11 !p-0 inline-flex items-center justify-center rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 text-gray-400 dark:text-gray-500 transition-colors"
+            className="h-11 w-11 !p-0 inline-flex items-center justify-center rounded-xl hover:bg-destructive/10 dark:hover:bg-red-900/20 hover:text-destructive dark:hover:text-red-400 text-muted-foreground transition-colors"
             title={t('delete', { ns: 'common' })}
           >
             <Trash2 className="h-6 w-6" />

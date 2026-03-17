@@ -92,10 +92,10 @@ export const PromissoryNotesModal: React.FC<PromissoryNotesModalProps> = ({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'paid': return 'bg-green-100 text-green-800';
-      case 'partial': return 'bg-yellow-100 text-yellow-800';
-      case 'overdue': return 'bg-red-100 text-red-800';
-      default: return 'bg-blue-100 text-blue-800';
+      case 'paid': return 'bg-success/10 text-success';
+      case 'partial': return 'bg-warning/10 text-yellow-800';
+      case 'overdue': return 'bg-destructive/10 text-red-800';
+      default: return 'bg-primary/10 text-blue-800';
     }
   };
 
@@ -154,13 +154,13 @@ export const PromissoryNotesModal: React.FC<PromissoryNotesModalProps> = ({
     >
       <div className="space-y-6">
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
+          <div className="bg-destructive/10 border border-red-200 rounded-2xl p-4">
             <p className="text-red-800">{error}</p>
           </div>
         )}
 
         {/* Sale Summary */}
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+        <div className="bg-primary/10 border border-blue-200 rounded-2xl p-4">
           <h3 className="font-medium text-blue-900 mb-2">Satış Bilgileri</h3>
           <div className="space-y-1 text-sm text-blue-800">
             <p><strong>Satış ID:</strong> {sale?.id}</p>
@@ -172,7 +172,7 @@ export const PromissoryNotesModal: React.FC<PromissoryNotesModalProps> = ({
         {/* Notes List */}
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <h3 className="font-medium text-gray-900">Senetler</h3>
+            <h3 className="font-medium text-foreground">Senetler</h3>
             <Button
               variant="secondary"
               onClick={() => setShowCreateForm(true)}
@@ -187,13 +187,13 @@ export const PromissoryNotesModal: React.FC<PromissoryNotesModalProps> = ({
             <LoadingSkeleton lines={3} />
           ) : (!notes || !Array.isArray(notes) || notes.length === 0) ? (
             <div className="text-center py-8">
-              <Banknote className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Henüz senet bulunmuyor</p>
+              <Banknote className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">Henüz senet bulunmuyor</p>
             </div>
           ) : (
             <div className="space-y-3">
               {notes.map((note) => (
-                <div key={note.id} className="border border-gray-200 rounded-2xl p-4">
+                <div key={note.id} className="border border-border rounded-2xl p-4">
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center">
                       {getStatusIcon(note.status)}
@@ -208,20 +208,20 @@ export const PromissoryNotesModal: React.FC<PromissoryNotesModalProps> = ({
 
                   <div className="grid grid-cols-2 gap-4 text-sm mb-3">
                     <div>
-                      <span className="text-gray-600">Tutar:</span>
+                      <span className="text-muted-foreground">Tutar:</span>
                       <span className="ml-2 font-medium">{formatCurrency(note.amount)}</span>
                     </div>
                     <div>
-                      <span className="text-gray-600">Vade:</span>
+                      <span className="text-muted-foreground">Vade:</span>
                       <span className="ml-2">{formatDate(note.dueDate)}</span>
                     </div>
                     <div>
-                      <span className="text-gray-600">Ödenen:</span>
-                      <span className="ml-2 text-green-600">{formatCurrency(note.paidAmount)}</span>
+                      <span className="text-muted-foreground">Ödenen:</span>
+                      <span className="ml-2 text-success">{formatCurrency(note.paidAmount)}</span>
                     </div>
                     <div>
-                      <span className="text-gray-600">Kalan:</span>
-                      <span className="ml-2 text-red-600">{formatCurrency(note.amount - note.paidAmount)}</span>
+                      <span className="text-muted-foreground">Kalan:</span>
+                      <span className="ml-2 text-destructive">{formatCurrency(note.amount - note.paidAmount)}</span>
                     </div>
                   </div>
 
@@ -231,7 +231,7 @@ export const PromissoryNotesModal: React.FC<PromissoryNotesModalProps> = ({
                         <div className="space-y-3">
                           <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <label className="block text-xs font-medium text-gray-700 mb-1">
+                              <label className="block text-xs font-medium text-foreground mb-1">
                                 Tahsilat Tutarı
                               </label>
                               <input
@@ -242,18 +242,18 @@ export const PromissoryNotesModal: React.FC<PromissoryNotesModalProps> = ({
                                 max={note.amount - note.paidAmount}
                                 value={collectionData.amount}
                                 onChange={(e) => setCollectionData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
-                                className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                className="w-full px-2 py-1 text-sm border border-border rounded focus:outline-none focus:ring-1 focus:ring-ring"
                               />
                             </div>
                             <div>
-                              <label className="block text-xs font-medium text-gray-700 mb-1">
+                              <label className="block text-xs font-medium text-foreground mb-1">
                                 Ödeme Yöntemi
                               </label>
                               <select
                                 data-allow-raw="true"
                                 value={collectionData.paymentMethod}
                                 onChange={(e) => setCollectionData(prev => ({ ...prev, paymentMethod: e.target.value }))}
-                                className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                className="w-full px-2 py-1 text-sm border border-border rounded focus:outline-none focus:ring-1 focus:ring-ring"
                               >
                                 <option value="cash">Nakit</option>
                                 <option value="card">Kart</option>

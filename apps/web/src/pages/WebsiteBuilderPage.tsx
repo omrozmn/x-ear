@@ -1,6 +1,7 @@
 /* eslint-disable no-restricted-syntax */
 import React, { useEffect, useMemo, useState } from 'react';
 import { Bot, Paintbrush2, Globe2, LayoutTemplate, MessageCircle, Package, Plus, Settings, Sparkles, Store, Trash2 } from 'lucide-react';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useBreakpoints } from '@/hooks/useMediaQuery';
 import {
     addSitePageSection,
@@ -196,7 +197,13 @@ const WebsiteBuilderPage: React.FC = () => {
     const addBusy = (key: string) => setBusyKeys((prev) => new Set(prev).add(key));
     const removeBusy = (key: string) => setBusyKeys((prev) => { const next = new Set(prev); next.delete(key); return next; });
     const isBusy = (key: string) => busyKeys.has(key);
-    const isAnyBusy = busyKeys.size > 0;
+    // busyKeys.size > 0 can be used for global busy indicator if needed
+
+    const [pendingDelete, setPendingDelete] = useState<{ action: () => Promise<void>; title: string; description: string } | null>(null);
+
+    const requestDelete = (title: string, description: string, action: () => Promise<void>) => {
+        setPendingDelete({ action, title, description });
+    };
     const [error, setError] = useState<string | null>(null);
     const [domainProviders, setDomainProviders] = useState<DomainProviderCatalogResponse | null>(null);
     const [domainSearch, setDomainSearch] = useState<DomainAvailabilityResponse | null>(null);
@@ -228,6 +235,7 @@ const WebsiteBuilderPage: React.FC = () => {
     const [newMarketplaceProvider, setNewMarketplaceProvider] = useState('trendyol');
     const [newMarketplaceLabel, setNewMarketplaceLabel] = useState('');
     const [newMarketplaceUrl, setNewMarketplaceUrl] = useState('');
+    const [marketplaceUrlError, setMarketplaceUrlError] = useState<string | null>(null);
 
     const loadWorkspace = async (siteId: string) => {
         addBusy('load-workspace');
@@ -257,13 +265,13 @@ const WebsiteBuilderPage: React.FC = () => {
             if (!cancelled) {
                 setSnapshot(data);
             }
-        });
+        }).catch(() => {});
 
         listDomainProviders().then((data) => {
             if (!cancelled) {
                 setDomainProviders(data);
             }
-        });
+        }).catch(() => {});
 
         listWizardTemplates().then((data) => {
             if (!cancelled) {
@@ -360,8 +368,8 @@ const WebsiteBuilderPage: React.FC = () => {
     const sectionRegistry = snapshot?.sectionRegistry as BuilderSectionRegistryResponse | undefined;
     const selectedPage = pages.find((page) => page.slug === selectedPageSlug) ?? pages[0] ?? null;
     const previewTargets = pages.flatMap((page) =>
-        page.sections.map((section) => ({
-            key: `${page.slug}::${section.type}`,
+        page.sections.map((section, sIdx) => ({
+            key: `${page.slug}::${section.type}::${sIdx}`,
             label: `${page.title} / ${section.type}`,
         })),
     );
@@ -683,17 +691,18 @@ const WebsiteBuilderPage: React.FC = () => {
         if (!workspace || !selectedPage) {
             return;
         }
-        if (!window.confirm('Bu ogesi silmek istediginize emin misiniz?')) return;
-        addBusy('delete-section');
-        setError(null);
-        try {
-            await deleteSitePageSection(workspace.site.id, selectedPage.slug, sectionIndex);
-            await loadWorkspace(workspace.site.id);
-        } catch (nextError) {
-            setError(nextError instanceof Error ? nextError.message : 'Section silinemedi.');
-        } finally {
-            removeBusy('delete-section');
-        }
+        requestDelete('Section Silme', 'Bu section\'i silmek istediginize emin misiniz?', async () => {
+            addBusy('delete-section');
+            setError(null);
+            try {
+                await deleteSitePageSection(workspace.site.id, selectedPage.slug, sectionIndex);
+                await loadWorkspace(workspace.site.id);
+            } catch (nextError) {
+                setError(nextError instanceof Error ? nextError.message : 'Section silinemedi.');
+            } finally {
+                removeBusy('delete-section');
+            }
+        });
     };
 
     const handleMoveSection = async (sectionIndex: number, direction: 'up' | 'down') => {
@@ -768,26 +777,27 @@ const WebsiteBuilderPage: React.FC = () => {
 
     const handleDeleteBlogPost = async (postSlug: string) => {
         if (!workspace) return;
-        if (!window.confirm('Bu ogesi silmek istediginize emin misiniz?')) return;
-        addBusy('delete-blog');
-        setError(null);
-        try {
-            await deleteBlogPost(workspace.site.id, postSlug);
-            await loadWorkspace(workspace.site.id);
-        } catch (nextError) {
-            setError(nextError instanceof Error ? nextError.message : 'Blog yazisi silinemedi.');
-        } finally {
-            removeBusy('delete-blog');
-        }
+        requestDelete('Blog Yazisi Silme', 'Bu blog yazisini silmek istediginize emin misiniz?', async () => {
+            addBusy('delete-blog');
+            setError(null);
+            try {
+                await deleteBlogPost(workspace.site.id, postSlug);
+                await loadWorkspace(workspace.site.id);
+            } catch (nextError) {
+                setError(nextError instanceof Error ? nextError.message : 'Blog yazisi silinemedi.');
+            } finally {
+                removeBusy('delete-blog');
+            }
+        });
     };
 
     const handleAddProduct = async () => {
         if (!workspace || !newProductName.trim()) return;
-        setBusyKey('add-product');
+        addBusy('add-product');
         setError(null);
         try {
             const sku = newProductSku || `SKU-${Date.now()}`;
-            const slug = newProductName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            const slug = newProductName.toLowerCase().replace(/ı/g,'i').replace(/ö/g,'o').replace(/ü/g,'u').replace(/ç/g,'c').replace(/ş/g,'s').replace(/ğ/g,'g').replace(/İ/g,'i').replace(/Ö/g,'o').replace(/Ü/g,'u').replace(/Ç/g,'c').replace(/Ş/g,'s').replace(/Ğ/g,'g').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
             await createProduct(workspace.site.id, {
                 sku,
                 slug,
@@ -805,27 +815,32 @@ const WebsiteBuilderPage: React.FC = () => {
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'Urun eklenemedi.');
         } finally {
-            setBusyKey(null);
+            removeBusy('add-product');
         }
     };
 
     const handleDeleteProduct = async (productSku: string) => {
         if (!workspace) return;
-        setBusyKey('delete-product');
-        setError(null);
-        try {
-            await deleteProduct(workspace.site.id, productSku);
-            await loadWorkspace(workspace.site.id);
-        } catch (nextError) {
-            setError(nextError instanceof Error ? nextError.message : 'Urun silinemedi.');
-        } finally {
-            setBusyKey(null);
-        }
+        requestDelete('Urun Silme', 'Bu urunu silmek istediginize emin misiniz?', async () => {
+            addBusy('delete-product');
+            setError(null);
+            try {
+                await deleteProduct(workspace.site.id, productSku);
+                await loadWorkspace(workspace.site.id);
+            } catch (nextError) {
+                setError(nextError instanceof Error ? nextError.message : 'Urun silinemedi.');
+            } finally {
+                removeBusy('delete-product');
+            }
+        });
     };
 
     const handleAddMarketplaceLink = async () => {
         if (!workspace || !newMarketplaceLabel.trim() || !newMarketplaceUrl.trim()) return;
-        setBusyKey('add-marketplace');
+        setMarketplaceUrlError(null);
+        try { const u = new URL(newMarketplaceUrl); if (!['http:', 'https:'].includes(u.protocol)) throw new Error(); }
+        catch { setMarketplaceUrlError('Gecerli bir URL girin (https://...)'); return; }
+        addBusy('add-marketplace');
         setError(null);
         try {
             await createMarketplaceLink(workspace.site.id, {
@@ -840,40 +855,44 @@ const WebsiteBuilderPage: React.FC = () => {
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'Pazaryeri linki eklenemedi.');
         } finally {
-            setBusyKey(null);
+            removeBusy('add-marketplace');
         }
     };
 
     const handleDeleteMarketplaceLink = async (linkId: string) => {
         if (!workspace) return;
-        setBusyKey('delete-marketplace');
-        setError(null);
-        try {
-            await deleteMarketplaceLink(workspace.site.id, linkId);
-            await loadWorkspace(workspace.site.id);
-        } catch (nextError) {
-            setError(nextError instanceof Error ? nextError.message : 'Pazaryeri linki silinemedi.');
-        } finally {
-            setBusyKey(null);
-        }
+        requestDelete('Pazaryeri Linki Silme', 'Bu pazaryeri linkini silmek istediginize emin misiniz?', async () => {
+            addBusy('delete-marketplace');
+            setError(null);
+            try {
+                await deleteMarketplaceLink(workspace.site.id, linkId);
+                await loadWorkspace(workspace.site.id);
+            } catch (nextError) {
+                setError(nextError instanceof Error ? nextError.message : 'Pazaryeri linki silinemedi.');
+            } finally {
+                removeBusy('delete-marketplace');
+            }
+        });
     };
 
     const handleDeletePage = async (pageSlug: string) => {
         if (!workspace) return;
-        setBusyKey('delete-page');
-        setError(null);
-        try {
-            await deleteSitePage(workspace.site.id, pageSlug);
-            await loadWorkspace(workspace.site.id);
-        } catch (nextError) {
-            setError(nextError instanceof Error ? nextError.message : 'Sayfa silinemedi.');
-        } finally {
-            setBusyKey(null);
-        }
+        requestDelete('Sayfa Silme', 'Bu sayfayi silmek istediginize emin misiniz?', async () => {
+            addBusy('delete-page');
+            setError(null);
+            try {
+                await deleteSitePage(workspace.site.id, pageSlug);
+                await loadWorkspace(workspace.site.id);
+            } catch (nextError) {
+                setError(nextError instanceof Error ? nextError.message : 'Sayfa silinemedi.');
+            } finally {
+                removeBusy('delete-page');
+            }
+        });
     };
 
     const handleSavePlatformSettings = async () => {
-        setBusyKey('save-settings');
+        addBusy('save-settings');
         setError(null);
         try {
             const cleanPayload: Record<string, string> = {};
@@ -888,26 +907,28 @@ const WebsiteBuilderPage: React.FC = () => {
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'Platform ayarlari guncellenemedi.');
         } finally {
-            setBusyKey(null);
+            removeBusy('save-settings');
         }
     };
 
     const handleDeletePlatformSetting = async (key: string) => {
-        setBusyKey('delete-setting');
-        setError(null);
-        try {
-            const updated = await deletePlatformSetting(key);
-            setPlatformSettings(updated);
-        } catch (nextError) {
-            setError(nextError instanceof Error ? nextError.message : 'Ayar silinemedi.');
-        } finally {
-            setBusyKey(null);
-        }
+        requestDelete('Ayar Silme', 'Bu platform ayarini silmek istediginize emin misiniz?', async () => {
+            addBusy('delete-setting');
+            setError(null);
+            try {
+                const updated = await deletePlatformSetting(key);
+                setPlatformSettings(updated);
+            } catch (nextError) {
+                setError(nextError instanceof Error ? nextError.message : 'Ayar silinemedi.');
+            } finally {
+                removeBusy('delete-setting');
+            }
+        });
     };
 
     const handleToggleFeature = async (featureKey: string, enabled: boolean) => {
         if (!workspace) return;
-        setBusyKey('toggle-feature');
+        addBusy('toggle-feature');
         setError(null);
         try {
             await updateSiteFeatureFlags(workspace.site.id, { [featureKey]: enabled });
@@ -915,7 +936,7 @@ const WebsiteBuilderPage: React.FC = () => {
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : 'Ozellik guncellenemedi.');
         } finally {
-            setBusyKey(null);
+            removeBusy('toggle-feature');
         }
     };
 
@@ -1126,8 +1147,8 @@ const WebsiteBuilderPage: React.FC = () => {
                                 </option>
                             ))}
                         </select>
-                        <button onClick={handleAddSection} disabled={!selectedPage || busyKey === 'add-section'} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
-                            {busyKey === 'add-section' ? 'Ekleniyor...' : 'Section Ekle'}
+                        <button onClick={handleAddSection} disabled={!selectedPage || isBusy('add-section')} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+                            {isBusy('add-section') ? 'Ekleniyor...' : 'Section Ekle'}
                         </button>
                     </div>
                     <div className="mt-4 space-y-3">
@@ -1211,10 +1232,10 @@ const WebsiteBuilderPage: React.FC = () => {
                             </div>
                             <button
                                 onClick={handleApplyTheme}
-                                disabled={!workspace || busyKey === 'apply-theme'}
+                                disabled={!workspace || isBusy('apply-theme')}
                                 className="mt-4 rounded-2xl bg-gray-900 px-4 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
                             >
-                                {busyKey === 'apply-theme' ? 'Tema uygulanıyor...' : 'Secili temayi uygula'}
+                                {isBusy('apply-theme') ? 'Tema uygulanıyor...' : 'Secili temayi uygula'}
                             </button>
                         </div>
                     </div>
@@ -1291,8 +1312,8 @@ const WebsiteBuilderPage: React.FC = () => {
                         <div className="mt-3 grid gap-3">
                             <input value={newPageTitle} onChange={(event) => setNewPageTitle(event.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="Sayfa basligi" />
                             <input value={newPageSlug} onChange={(event) => setNewPageSlug(event.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="/ornek-sayfa" />
-                            <button onClick={handleCreatePage} disabled={!workspace || busyKey === 'create-page'} className="rounded-2xl bg-gray-900 px-4 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
-                                {busyKey === 'create-page' ? 'Sayfa ekleniyor...' : 'Yeni sayfayi olustur'}
+                            <button onClick={handleCreatePage} disabled={!workspace || isBusy('create-page')} className="rounded-2xl bg-gray-900 px-4 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+                                {isBusy('create-page') ? 'Sayfa ekleniyor...' : 'Yeni sayfayi olustur'}
                             </button>
                         </div>
                     </div>
@@ -1304,11 +1325,11 @@ const WebsiteBuilderPage: React.FC = () => {
                             <input value={pageTitleDraft} onChange={(event) => setPageTitleDraft(event.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" />
                             <input value={pageSlugDraft} onChange={(event) => setPageSlugDraft(event.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" />
                             <div className="flex gap-2">
-                                <button onClick={handleSavePageMeta} disabled={!selectedPage || busyKey === 'save-page'} className="flex-1 rounded-2xl bg-gray-900 px-4 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
-                                    {busyKey === 'save-page' ? 'Kaydediliyor...' : 'Sayfa bilgilerini kaydet'}
+                                <button onClick={handleSavePageMeta} disabled={!selectedPage || isBusy('save-page')} className="flex-1 rounded-2xl bg-gray-900 px-4 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+                                    {isBusy('save-page') ? 'Kaydediliyor...' : 'Sayfa bilgilerini kaydet'}
                                 </button>
                                 {selectedPage && selectedPage.slug !== '/' && (
-                                    <button onClick={() => handleDeletePage(selectedPage.slug)} disabled={busyKey === 'delete-page'} className="rounded-2xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 ring-1 ring-rose-200 disabled:cursor-not-allowed disabled:opacity-60">
+                                    <button onClick={() => handleDeletePage(selectedPage.slug)} disabled={isBusy('delete-page')} className="rounded-2xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 ring-1 ring-rose-200 disabled:cursor-not-allowed disabled:opacity-60">
                                         <Trash2 className="inline h-4 w-4" />
                                     </button>
                                 )}
@@ -1350,14 +1371,14 @@ const WebsiteBuilderPage: React.FC = () => {
                         <h3 className="text-lg font-semibold">Canliya alma merkezi</h3>
                         <p className="mt-2 text-sm text-gray-300">Preview, domain baglama ve publish akisini tek karar panelinden yonet.</p>
                         <div className="mt-5 flex flex-wrap gap-3">
-                            <button onClick={handlePreview} disabled={!workspace || busyKey === 'preview'} className="rounded-2xl bg-white px-4 py-3 text-sm font-medium text-gray-950 disabled:cursor-not-allowed disabled:opacity-60">
-                                {busyKey === 'preview' ? 'Preview hazirlaniyor...' : 'Preview olustur'}
+                            <button onClick={handlePreview} disabled={!workspace || isBusy('preview') || isBusy('publish') || isBusy('rollback')} className="rounded-2xl bg-white px-4 py-3 text-sm font-medium text-gray-950 disabled:cursor-not-allowed disabled:opacity-60">
+                                {isBusy('preview') ? 'Preview hazirlaniyor...' : 'Preview olustur'}
                             </button>
-                            <button onClick={handlePublish} disabled={!workspace || busyKey === 'publish'} className="rounded-2xl bg-emerald-300 px-4 py-3 text-sm font-medium text-gray-950 disabled:cursor-not-allowed disabled:opacity-60">
-                                {busyKey === 'publish' ? 'Canliya aliniyor...' : 'Canliya al'}
+                            <button onClick={handlePublish} disabled={!workspace || isBusy('publish') || isBusy('preview') || isBusy('rollback')} className="rounded-2xl bg-emerald-300 px-4 py-3 text-sm font-medium text-gray-950 disabled:cursor-not-allowed disabled:opacity-60">
+                                {isBusy('publish') ? 'Canliya aliniyor...' : 'Canliya al'}
                             </button>
-                            <button onClick={handleRollback} disabled={!workspace || busyKey === 'rollback'} className="rounded-2xl bg-white/10 px-4 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
-                                {busyKey === 'rollback' ? 'Geri aliniyor...' : 'Rollback'}
+                            <button onClick={handleRollback} disabled={!workspace || isBusy('rollback') || isBusy('preview') || isBusy('publish')} className="rounded-2xl bg-white/10 px-4 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+                                {isBusy('rollback') ? 'Geri aliniyor...' : 'Rollback'}
                             </button>
                         </div>
                         <div className="mt-5 grid gap-3 md:grid-cols-2">
@@ -1452,8 +1473,8 @@ const WebsiteBuilderPage: React.FC = () => {
                                     </option>
                                 ))}
                             </select>
-                            <button onClick={handleDomainSearch} disabled={!workspace || busyKey === 'domain-search'} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
-                                {busyKey === 'domain-search' ? 'Araniyor...' : 'Domain ara'}
+                            <button onClick={handleDomainSearch} disabled={!workspace || isBusy('domain-search')} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+                                {isBusy('domain-search') ? 'Araniyor...' : 'Domain ara'}
                             </button>
                         </div>
                         <div className="mt-4 space-y-3">
@@ -1466,7 +1487,7 @@ const WebsiteBuilderPage: React.FC = () => {
                                         </div>
                                         <button
                                             onClick={() => handleConnectDomain(result.domain)}
-                                            disabled={!result.available || busyKey === 'connect-domain'}
+                                            disabled={!result.available || isBusy('connect-domain')}
                                             className="rounded-2xl bg-emerald-500 px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
                                         >
                                             {result.available ? 'Bagla' : 'Dolu'}
@@ -1516,8 +1537,8 @@ const WebsiteBuilderPage: React.FC = () => {
                             <input value={newBlogTitle} onChange={(e) => setNewBlogTitle(e.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="Yazi basligi" />
                             <input value={newBlogSlug} onChange={(e) => setNewBlogSlug(e.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="Slug (bos birakilirsa otomatik)" />
                             <input value={newBlogExcerpt} onChange={(e) => setNewBlogExcerpt(e.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="Kisa aciklama" />
-                            <button onClick={handleAddBlogPost} disabled={!newBlogTitle.trim() || busyKey === 'add-blog'} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
-                                <Plus className="mr-1 inline h-4 w-4" />{busyKey === 'add-blog' ? 'Ekleniyor...' : 'Yazi Ekle'}
+                            <button onClick={handleAddBlogPost} disabled={!newBlogTitle.trim() || isBusy('add-blog')} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+                                <Plus className="mr-1 inline h-4 w-4" />{isBusy('add-blog') ? 'Ekleniyor...' : 'Yazi Ekle'}
                             </button>
                         </div>
                     </div>
@@ -1560,8 +1581,8 @@ const WebsiteBuilderPage: React.FC = () => {
                             <input value={newProductName} onChange={(e) => setNewProductName(e.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="Urun adi" />
                             <input value={newProductSku} onChange={(e) => setNewProductSku(e.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="SKU (bos birakilirsa otomatik)" />
                             <input type="number" value={newProductPrice} onChange={(e) => setNewProductPrice(e.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="Fiyat (TRY)" />
-                            <button onClick={handleAddProduct} disabled={!newProductName.trim() || busyKey === 'add-product'} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
-                                <Plus className="mr-1 inline h-4 w-4" />{busyKey === 'add-product' ? 'Ekleniyor...' : 'Urun Ekle'}
+                            <button onClick={handleAddProduct} disabled={!newProductName.trim() || isBusy('add-product')} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+                                <Plus className="mr-1 inline h-4 w-4" />{isBusy('add-product') ? 'Ekleniyor...' : 'Urun Ekle'}
                             </button>
                         </div>
                     </div>
@@ -1697,9 +1718,12 @@ const WebsiteBuilderPage: React.FC = () => {
                                 <option value="ciceksepeti">Ciceksepeti</option>
                             </select>
                             <input value={newMarketplaceLabel} onChange={(e) => setNewMarketplaceLabel(e.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="Etiket (orn: Trendyol Magaza)" />
-                            <input value={newMarketplaceUrl} onChange={(e) => setNewMarketplaceUrl(e.target.value)} className="rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="URL" />
-                            <button onClick={handleAddMarketplaceLink} disabled={!newMarketplaceLabel.trim() || !newMarketplaceUrl.trim() || busyKey === 'add-marketplace'} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
-                                <Plus className="mr-1 inline h-4 w-4" />{busyKey === 'add-marketplace' ? 'Ekleniyor...' : 'Kanal Ekle'}
+                            <div>
+                                <input value={newMarketplaceUrl} onChange={(e) => { setNewMarketplaceUrl(e.target.value); setMarketplaceUrlError(null); }} className={`w-full rounded-2xl border bg-white px-3 py-2 text-sm outline-none ${marketplaceUrlError ? 'border-rose-400' : 'border-gray-200'}`} placeholder="URL (https://...)" />
+                                {marketplaceUrlError && <p className="mt-1 text-xs text-rose-600">{marketplaceUrlError}</p>}
+                            </div>
+                            <button onClick={handleAddMarketplaceLink} disabled={!newMarketplaceLabel.trim() || !newMarketplaceUrl.trim() || isBusy('add-marketplace')} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+                                <Plus className="mr-1 inline h-4 w-4" />{isBusy('add-marketplace') ? 'Ekleniyor...' : 'Kanal Ekle'}
                             </button>
                         </div>
                     </div>
@@ -1725,7 +1749,7 @@ const WebsiteBuilderPage: React.FC = () => {
                                 <div className="text-xs font-medium text-gray-500">{item.label}</div>
                                 <div className="mt-2 flex gap-2">
                                     <input
-                                        type="text"
+                                        type={item.key.includes('secret') || item.key.includes('api_key') || item.key.includes('access_key') ? 'password' : 'text'}
                                         value={platformSettingsDraft[item.key] ?? (platformSettings?.[item.key] as string) ?? ''}
                                         onChange={(e) => setPlatformSettingsDraft((prev) => ({ ...prev, [item.key]: e.target.value }))}
                                         className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none"
@@ -1758,7 +1782,7 @@ const WebsiteBuilderPage: React.FC = () => {
                                 <div className="text-xs font-medium text-gray-500">{item.label}</div>
                                 <div className="mt-2 flex gap-2">
                                     <input
-                                        type="text"
+                                        type={item.key.includes('secret') || item.key.includes('token') ? 'password' : 'text'}
                                         value={platformSettingsDraft[item.key] ?? (platformSettings?.[item.key] as string) ?? ''}
                                         onChange={(e) => setPlatformSettingsDraft((prev) => ({ ...prev, [item.key]: e.target.value }))}
                                         className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none"
@@ -1775,10 +1799,10 @@ const WebsiteBuilderPage: React.FC = () => {
                     </div>
                     <button
                         onClick={handleSavePlatformSettings}
-                        disabled={Object.keys(platformSettingsDraft).length === 0 || busyKey === 'save-settings'}
+                        disabled={Object.keys(platformSettingsDraft).length === 0 || isBusy('save-settings')}
                         className="mt-4 w-full rounded-2xl bg-gray-900 px-4 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                        {busyKey === 'save-settings' ? 'Kaydediliyor...' : 'Ayarlari Kaydet'}
+                        {isBusy('save-settings') ? 'Kaydediliyor...' : 'Ayarlari Kaydet'}
                     </button>
                 </div>
             </div>
@@ -1797,9 +1821,9 @@ const WebsiteBuilderPage: React.FC = () => {
         {
             title: 'AI ile basla',
             detail: '1-3 kritik soruyla ilk taslagi uret, bos ekranla baslama.',
-            cta: busyKey === 'create-draft' ? 'Taslak olusturuluyor...' : 'AI taslak olustur',
+            cta: isBusy('create-draft') ? 'Taslak olusturuluyor...' : 'AI taslak olustur',
             onClick: handleCreateDraft,
-            disabled: busyKey === 'create-draft',
+            disabled: isBusy('create-draft'),
             tone: 'primary',
         },
         {
@@ -2014,10 +2038,10 @@ const WebsiteBuilderPage: React.FC = () => {
                             </div>
                             <button
                                 onClick={handleCreateDraft}
-                                disabled={busyKey === 'create-draft'}
+                                disabled={isBusy('create-draft')}
                                 className="rounded-2xl bg-gray-900 px-4 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
                             >
-                                {busyKey === 'create-draft' ? 'Draft olusturuluyor...' : 'AI ile Taslak Olustur'}
+                                {isBusy('create-draft') ? 'Draft olusturuluyor...' : 'AI ile Taslak Olustur'}
                             </button>
                         </div>
                     ) : (
@@ -2058,10 +2082,10 @@ const WebsiteBuilderPage: React.FC = () => {
                             </div>
                             <button
                                 onClick={handleCreateFromWizard}
-                                disabled={!selectedTemplateKey || !wizardSiteName.trim() || busyKey === 'create-wizard'}
+                                disabled={!selectedTemplateKey || !wizardSiteName.trim() || isBusy('create-wizard')}
                                 className="rounded-2xl bg-gray-900 px-4 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
                             >
-                                {busyKey === 'create-wizard' ? 'Olusturuluyor...' : 'Sablondan Site Olustur'}
+                                {isBusy('create-wizard') ? 'Olusturuluyor...' : 'Sablondan Site Olustur'}
                             </button>
                         </div>
                     )}
@@ -2087,7 +2111,7 @@ const WebsiteBuilderPage: React.FC = () => {
                                             setAnswers((current) => ({ ...current, [item.key]: !current[item.key] }));
                                         }
                                     }}
-                                    disabled={busyKey === 'toggle-feature'}
+                                    disabled={isBusy('toggle-feature')}
                                     className={`flex w-full items-start justify-between rounded-3xl px-4 py-4 text-left ring-1 transition-colors disabled:opacity-60 ${
                                         isActive ? 'bg-emerald-50 ring-emerald-200' : 'bg-gray-50 ring-gray-200'
                                     }`}
@@ -2175,8 +2199,8 @@ const WebsiteBuilderPage: React.FC = () => {
                     <div className="mt-4 rounded-3xl bg-gray-50 p-4">
                         <div className="flex flex-col gap-3">
                             <input value={chatCommand} onChange={(event) => setChatCommand(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none" placeholder="Ornek: Blog ekle" />
-                            <button onClick={() => handleProposeEdit(chatCommand)} disabled={!chatCommand || busyKey === 'propose-edit'} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
-                                {busyKey === 'propose-edit' ? 'Oneri hazirlaniyor...' : 'AI Onerisi Uret'}
+                            <button onClick={() => handleProposeEdit(chatCommand)} disabled={!chatCommand || isBusy('propose-edit')} className="rounded-2xl bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60">
+                                {isBusy('propose-edit') ? 'Oneri hazirlaniyor...' : 'AI Onerisi Uret'}
                             </button>
                         </div>
                     </div>
@@ -2197,10 +2221,10 @@ const WebsiteBuilderPage: React.FC = () => {
                             <div className="mt-2 text-sm text-gray-600">{proposal.summary}</div>
                             <div className="mt-2 text-xs text-gray-500">Durum: {proposal.status}</div>
                             <div className="mt-3 flex gap-2">
-                                <button onClick={handleApplyProposal} disabled={proposal.status !== 'proposed' || busyKey === 'apply-proposal'} className="rounded-2xl bg-emerald-500 px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60">
+                                <button onClick={handleApplyProposal} disabled={proposal.status !== 'proposed' || isBusy('apply-proposal')} className="rounded-2xl bg-emerald-500 px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60">
                                     Uygula
                                 </button>
-                                <button onClick={handleRevertProposal} disabled={proposal.status !== 'applied' || busyKey === 'revert-proposal'} className="rounded-2xl bg-gray-900 px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60">
+                                <button onClick={handleRevertProposal} disabled={proposal.status !== 'applied' || isBusy('revert-proposal')} className="rounded-2xl bg-gray-900 px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60">
                                     Geri Al
                                 </button>
                             </div>
@@ -2273,6 +2297,21 @@ const WebsiteBuilderPage: React.FC = () => {
                     </div>
                 ))}
             </div>
+            <ConfirmDialog
+                isOpen={pendingDelete !== null}
+                title={pendingDelete?.title}
+                description={pendingDelete?.description}
+                onClose={() => setPendingDelete(null)}
+                onConfirm={async () => {
+                    if (pendingDelete) {
+                        await pendingDelete.action();
+                        setPendingDelete(null);
+                    }
+                }}
+                confirmLabel="Sil"
+                cancelLabel="Vazgec"
+                variant="danger"
+            />
         </div>
     );
 };

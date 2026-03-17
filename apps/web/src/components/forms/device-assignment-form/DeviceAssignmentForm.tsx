@@ -7,6 +7,7 @@ import { PricingForm } from './components/PricingForm';
 import { SerialNumberForm } from './components/SerialNumberForm';
 import { useDeviceAssignment } from './hooks/useDeviceAssignment';
 import { DeviceAssignment } from './components/AssignmentDetailsForm';
+import toast from 'react-hot-toast';
 
 export interface DeviceAssignmentFormProps {
   partyId: string;
@@ -65,7 +66,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
     if (isManualMode) {
       if (!manualDevice.brand || !manualDevice.model) {
         // Simple validation for manual mode
-        alert('Marka ve Model zorunludur.');
+        toast('Marka ve Model zorunludur.');
         return;
       }
     }
@@ -98,7 +99,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
         // Ensure pricing fields are present for manual mode (they might be 0/custom)
         // Since we don't have a base price from inventory, we rely on user input listPrice
         if (!assignmentData.listPrice) {
-          alert('Lütfen liste fiyatı giriniz.');
+          toast('Lütfen liste fiyatı giriniz.');
           return;
         }
       } else if (selectedDevice) {
@@ -179,7 +180,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
                   setSelectedDevice(null);
                   setSearchTerm('');
                 }}
-                className="text-blue-600 hover:text-blue-700"
+                className="text-primary hover:text-primary"
               >
                 {isManualMode ? 'Stoktan Seç' : 'Manuel Ekle'}
               </Button>
@@ -189,7 +190,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Marka</label>
+                    <label className="block text-sm font-medium text-foreground mb-1">Marka</label>
                     <Input
                       type="text"
                       value={manualDevice.brand}
@@ -199,7 +200,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Model</label>
+                    <label className="block text-sm font-medium text-foreground mb-1">Model</label>
                     <Input
                       type="text"
                       value={manualDevice.model}
@@ -228,14 +229,14 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
             For now, manual mode is primarily for NEW assignments where stock is missing. 
         */}
         {assignment && selectedDevice && (
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-4 border border-blue-200 dark:border-blue-800">
+          <div className="bg-primary/10 rounded-2xl p-4 border border-blue-200 dark:border-blue-800">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">Seçili Cihaz</p>
+                <p className="text-sm text-primary font-medium">Seçili Cihaz</p>
                 <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                   {selectedDevice.brand} {selectedDevice.model}
                 </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Barkod: {selectedDevice.barcode || '-'}</p>
+                <p className="text-sm text-muted-foreground">Barkod: {selectedDevice.barcode || '-'}</p>
               </div>
               <Button
                 type="button"
@@ -247,7 +248,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
                   }
                 }}
                 variant="ghost"
-                className="px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-100 rounded-2xl transition-colors"
+                className="px-4 py-2 text-sm font-medium text-primary hover:bg-primary/10 rounded-2xl transition-colors"
               >
                 Farklı Cihaz Seç
               </Button>
@@ -324,7 +325,7 @@ export const DeviceAssignmentForm: React.FC<DeviceAssignmentFormProps> = ({
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-200 dark:border-slate-800">
+        <div className="flex items-center justify-end gap-3 pt-6 border-t border-border dark:border-slate-800">
           <Button
             type="button"
             variant="outline"

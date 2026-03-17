@@ -44,7 +44,7 @@ export const SGKInfoCard: React.FC<SGKInfoCardProps> = ({
   if (!sgkPartyInfo) return null;
 
   return (
-    <Card className="border-blue-200 bg-blue-50">
+    <Card className="border-blue-200 bg-primary/10">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center text-blue-800">
@@ -56,7 +56,7 @@ export const SGKInfoCard: React.FC<SGKInfoCardProps> = ({
             disabled={sgkLoading}
             size="sm"
             variant="outline"
-            className="border-blue-300 text-blue-700 hover:bg-blue-100"
+            className="border-blue-300 text-primary hover:bg-primary/10"
           >
             {sgkLoading ? <Clock className="w-4 h-4 mr-2 animate-spin" /> : <Search className="w-4 h-4 mr-2" />}
             Hakları Sorgula
@@ -66,17 +66,17 @@ export const SGKInfoCard: React.FC<SGKInfoCardProps> = ({
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <p className="text-sm font-medium text-blue-700">Sigorta Durumu</p>
+            <p className="text-sm font-medium text-primary">Sigorta Durumu</p>
             <div className="flex items-center mt-1">
               {sgkPartyInfo.hasInsurance ? (
                 <>
-                  <CheckCircle className="w-4 h-4 text-green-600 mr-1" />
-                  <span className="text-green-700 font-medium">Aktif</span>
+                  <CheckCircle className="w-4 h-4 text-success mr-1" />
+                  <span className="text-success font-medium">Aktif</span>
                 </>
               ) : (
                 <>
-                  <AlertCircle className="w-4 h-4 text-red-600 mr-1" />
-                  <span className="text-red-700 font-medium">Pasif</span>
+                  <AlertCircle className="w-4 h-4 text-destructive mr-1" />
+                  <span className="text-destructive font-medium">Pasif</span>
                 </>
               )}
             </div>
@@ -84,11 +84,11 @@ export const SGKInfoCard: React.FC<SGKInfoCardProps> = ({
           
           {sgkPartyInfo.deviceEntitlement && (
             <div>
-              <p className="text-sm font-medium text-blue-700">Cihaz Hakkı</p>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm font-medium text-primary">Cihaz Hakkı</p>
+              <p className="text-sm text-muted-foreground">
                 Kalan: {sgkPartyInfo.deviceEntitlement.remainingQuantity} / {sgkPartyInfo.deviceEntitlement.maxQuantity}
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Geçerlilik: {new Date(sgkPartyInfo.deviceEntitlement.validUntil).toLocaleDateString('tr-TR')}
               </p>
             </div>
@@ -96,11 +96,11 @@ export const SGKInfoCard: React.FC<SGKInfoCardProps> = ({
           
           {sgkPartyInfo.batteryEntitlement && (
             <div>
-              <p className="text-sm font-medium text-blue-700">Pil Hakkı</p>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm font-medium text-primary">Pil Hakkı</p>
+              <p className="text-sm text-muted-foreground">
                 Kalan: {sgkPartyInfo.batteryEntitlement.remainingQuantity} / {sgkPartyInfo.batteryEntitlement.maxQuantity}
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Geçerlilik: {new Date(sgkPartyInfo.batteryEntitlement.validUntil).toLocaleDateString('tr-TR')}
               </p>
             </div>
@@ -108,27 +108,27 @@ export const SGKInfoCard: React.FC<SGKInfoCardProps> = ({
         </div>
         
         {sgkCoverageCalculation && (
-          <div className="mt-4 p-3 bg-white rounded-2xl border border-blue-200">
+          <div className="mt-4 p-3 bg-card rounded-2xl border border-blue-200">
             <h4 className="text-sm font-medium text-blue-800 mb-2">SGK Kapsam Hesaplaması</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               {sgkCoverageCalculation.deviceCoverage && (
                 <div>
-                  <p className="font-medium text-gray-700">Cihaz Kapsamı</p>
-                  <p className="text-gray-600">
+                  <p className="font-medium text-foreground">Cihaz Kapsamı</p>
+                  <p className="text-muted-foreground">
                     Maksimum: ₺{sgkCoverageCalculation.deviceCoverage.maxCoverage.toLocaleString()}
                   </p>
-                  <p className="text-gray-600">
+                  <p className="text-muted-foreground">
                     Kapsam Oranı: %{sgkCoverageCalculation.deviceCoverage.coveragePercentage}
                   </p>
                 </div>
               )}
               {sgkCoverageCalculation.batteryCoverage && (
                 <div>
-                  <p className="font-medium text-gray-700">Pil Kapsamı</p>
-                  <p className="text-gray-600">
+                  <p className="font-medium text-foreground">Pil Kapsamı</p>
+                  <p className="text-muted-foreground">
                     Maksimum: ₺{sgkCoverageCalculation.batteryCoverage.maxCoverage.toLocaleString()}
                   </p>
-                  <p className="text-gray-600">
+                  <p className="text-muted-foreground">
                     Kapsam Oranı: %{sgkCoverageCalculation.batteryCoverage.coveragePercentage}
                   </p>
                 </div>

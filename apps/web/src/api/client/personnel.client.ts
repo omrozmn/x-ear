@@ -43,6 +43,24 @@ export interface PersonnelLeaveRecord {
   dayCount: number;
   status: string;
   approver?: string | null;
+  note?: string | null;
+  createdAt?: string | null;
+  actionReason?: string | null;
+  actionAt?: string | null;
+}
+
+export interface LeaveRequestCreatePayload {
+  employeeId: string;
+  leaveType: string;
+  startDate: string;
+  endDate: string;
+  dayCount: number;
+  note?: string;
+}
+
+export interface LeaveRequestActionPayload {
+  action: 'approve' | 'reject';
+  reason?: string;
 }
 
 export interface PersonnelDocumentRecord {
@@ -216,6 +234,44 @@ export function useUpdatePersonnelSettings() {
       queryClient.invalidateQueries({ queryKey: PERSONNEL_COMPENSATION_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: PERSONNEL_OVERVIEW_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: PERSONNEL_EMPLOYEES_QUERY_KEY });
+    },
+  });
+}
+
+export function useCreateLeaveRequest() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: LeaveRequestCreatePayload) => {
+      const response = await customInstance<Envelope<PersonnelLeaveRecord>>({
+        url: '/api/personnel/leave',
+        method: 'POST',
+        data,
+      });
+      return response.data ?? null;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PERSONNEL_LEAVE_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: PERSONNEL_OVERVIEW_QUERY_KEY });
+    },
+  });
+}
+
+export function useLeaveRequestAction() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ leaveId, ...data }: LeaveRequestActionPayload & { leaveId: string }) => {
+      const response = await customInstance<Envelope<PersonnelLeaveRecord>>({
+        url: `/api/personnel/leave/${leaveId}`,
+        method: 'PUT',
+        data,
+      });
+      return response.data ?? null;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PERSONNEL_LEAVE_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: PERSONNEL_OVERVIEW_QUERY_KEY });
     },
   });
 }

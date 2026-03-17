@@ -206,7 +206,7 @@ export function KillSwitchRecommendation({
       const acknowledgePromises = criticalAlerts.map((alert) =>
         acknowledge(alert.alert_id, 'Auto-acknowledged on kill switch activation')
           .catch((err) => {
-            console.error(`Failed to acknowledge alert ${alert.alert_id}:`, err);
+            if (import.meta.env.DEV) console.error(`Failed to acknowledge alert ${alert.alert_id}:`, err);
           })
       );
 
@@ -216,7 +216,7 @@ export function KillSwitchRecommendation({
       onActivate?.();
       setIsDismissed(true);
     } catch (error) {
-      console.error('Failed to activate kill switch:', error);
+      if (import.meta.env.DEV) console.error('Failed to activate kill switch:', error);
       toast.error('Kill switch aktivasyonu başarısız oldu');
     } finally {
       setIsActivating(false);

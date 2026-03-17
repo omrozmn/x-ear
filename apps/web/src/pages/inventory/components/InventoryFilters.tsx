@@ -63,10 +63,10 @@ const InventoryFilters: React.FC<InventoryFiltersProps> = ({
               placeholder="Ürün ara..."
               value={filters.search || ''}
               onChange={(e) => handleFilterChange('search', e.target.value || undefined)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+              className="w-full pl-10 pr-4 py-2 border border-border rounded-2xl focus:ring-2 focus:ring-ring focus:border-transparent dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
             />
             <svg
-              className="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500"
+              className="absolute left-3 top-2.5 w-5 h-5 text-muted-foreground"
               fill="currentColor"
               viewBox="0 0 20 20"
             >
@@ -81,34 +81,34 @@ const InventoryFilters: React.FC<InventoryFiltersProps> = ({
 
         {/* Category Filter */}
         <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Kategori:</label>
+          <label className="text-sm font-medium text-foreground">Kategori:</label>
           <Select
             value={filters.category || ''}
             onChange={(e) => handleFilterChange('category', e.target.value || undefined)}
             options={categoryOptions}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            className="px-3 py-2 border border-border rounded-2xl focus:ring-2 focus:ring-ring focus:border-transparent dark:bg-gray-700 dark:text-white"
           />
         </div>
 
         {/* Brand Filter */}
         <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Marka:</label>
+          <label className="text-sm font-medium text-foreground">Marka:</label>
           <Select
             value={filters.brand || ''}
             onChange={(e) => handleFilterChange('brand', e.target.value || undefined)}
             options={brandOptions}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            className="px-3 py-2 border border-border rounded-2xl focus:ring-2 focus:ring-ring focus:border-transparent dark:bg-gray-700 dark:text-white"
           />
         </div>
 
         {/* Status Filter */}
         <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Durum:</label>
+          <label className="text-sm font-medium text-foreground">Durum:</label>
           <Select
             value={filters.status || ''}
             onChange={(e) => handleFilterChange('status', e.target.value || undefined)}
             options={statusOptions}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            className="px-3 py-2 border border-border rounded-2xl focus:ring-2 focus:ring-ring focus:border-transparent dark:bg-gray-700 dark:text-white"
           />
         </div>
 
@@ -117,7 +117,7 @@ const InventoryFilters: React.FC<InventoryFiltersProps> = ({
           variant="ghost"
           size="sm"
           onClick={onClearFilters}
-          className="px-4 py-2 text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-2xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          className="px-4 py-2 text-muted-foreground bg-muted rounded-2xl hover:bg-accent dark:hover:bg-gray-600 transition-colors"
         >
           Filtreleri Temizle
         </Button>

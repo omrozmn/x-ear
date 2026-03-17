@@ -39,7 +39,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
             className={cn(
                 "z-40 pt-safe transition-all",
                 sticky && "sticky top-2",
-                "mx-2 mb-2 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/50 shadow-sm rounded-xl",
+                "mx-2 mb-2 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border border-border/50/50 shadow-sm rounded-xl",
                 className
             )}
         >
@@ -49,7 +49,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
                         <Button
                             onClick={toggleSidebar}
                             variant="ghost"
-                            className="flex items-center justify-center rounded-full p-1.5 -ml-1 text-gray-700 transition-colors active:scale-95 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                            className="flex items-center justify-center rounded-full p-1.5 -ml-1 text-foreground transition-colors active:scale-95 hover:bg-muted dark:hover:bg-gray-800"
                         >
                             <Menu className="h-6 w-6" />
                         </Button>
@@ -58,7 +58,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
                         <Button
                             onClick={handleBack}
                             variant="ghost"
-                            className="flex items-center justify-center rounded-full p-1.5 -ml-1 text-gray-700 transition-colors active:scale-95 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                            className="flex items-center justify-center rounded-full p-1.5 -ml-1 text-foreground transition-colors active:scale-95 hover:bg-muted dark:hover:bg-gray-800"
                         >
                             <ArrowLeft className="h-6 w-6" />
                         </Button>

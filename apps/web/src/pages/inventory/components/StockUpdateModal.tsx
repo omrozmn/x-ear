@@ -93,10 +93,10 @@ export const StockUpdateModal: React.FC<StockUpdateModalProps> = ({
         {product && (
           <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
             <h3 className="font-medium text-gray-900 dark:text-white">{product.name}</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-muted-foreground">
               Mevcut Stok: <span className="font-medium">{product.availableInventory}</span>
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-muted-foreground">
               Model: {product.model} | Marka: {product.brand}
             </p>
           </div>
@@ -114,7 +114,7 @@ export const StockUpdateModal: React.FC<StockUpdateModalProps> = ({
             required
           />
           {selectedType && (
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{selectedType.description}</p>
+            <p className="text-xs text-muted-foreground mt-1">{selectedType.description}</p>
           )}
         </div>
 

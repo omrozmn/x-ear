@@ -10,6 +10,10 @@ import { useAdminResponsive } from '@/hooks';
 import { DataTable } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
 import {
+    AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
+    XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+} from 'recharts';
+import {
     Users,
     CreditCard,
     TrendingUp,
@@ -57,6 +61,9 @@ export default function AdminDashboardPage() {
     const activity = metrics?.recent_activity;
     const dailyStats = metrics?.daily_stats;
     const recentErrors = metrics?.recent_errors;
+    const tenantTrend = metrics?.tenant_trend;
+    const revenueTrend = metrics?.revenue_trend;
+    const statusDistribution = metrics?.status_distribution;
 
     const loadDashboardData = () => {
         refetch();
@@ -252,6 +259,7 @@ export default function AdminDashboardPage() {
                                     </div>
                                 </div>
 
+                                {(dailyStats.fitted_patients || 0) > 0 && (
                                 <div className={`bg-white dark:bg-gray-800 ${isMobile ? 'p-2.5' : 'p-3'} rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between hover:border-teal-100 dark:hover:border-teal-800 transition-colors`}>
                                     <div className="flex items-center gap-2 min-w-0">
                                         <div className={`${isMobile ? 'p-1.5' : 'p-2'} bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 rounded-2xl flex-shrink-0`}>
@@ -263,6 +271,7 @@ export default function AdminDashboardPage() {
                                         </div>
                                     </div>
                                 </div>
+                                )}
 
                                 <div className={`bg-white dark:bg-gray-800 ${isMobile ? 'p-2.5' : 'p-3'} rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between hover:border-orange-100 dark:hover:border-orange-800 transition-colors`}>
                                     <div className="flex items-center gap-2 min-w-0">
@@ -276,6 +285,7 @@ export default function AdminDashboardPage() {
                                     </div>
                                 </div>
 
+                                {(dailyStats.sgk_processed || 0) > 0 && (
                                 <div className={`bg-white dark:bg-gray-800 ${isMobile ? 'p-2.5' : 'p-3'} rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between hover:border-cyan-100 dark:hover:border-cyan-800 transition-colors`}>
                                     <div className="flex items-center gap-2 min-w-0">
                                         <div className={`${isMobile ? 'p-1.5' : 'p-2'} bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 rounded-2xl flex-shrink-0`}>
@@ -287,6 +297,7 @@ export default function AdminDashboardPage() {
                                         </div>
                                     </div>
                                 </div>
+                                )}
                             </div>
                         </div>
                     )}

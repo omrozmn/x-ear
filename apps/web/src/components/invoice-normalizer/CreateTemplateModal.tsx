@@ -67,10 +67,10 @@ export function CreateTemplateModal({ onClose, onCreated }: Props) {
 
         {/* File upload — drag-drop zone requires custom markup */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Örnek Çıktı Dosyası *
           </label>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+          <p className="text-xs text-muted-foreground mb-2">
             Hedef formatınıza uygun bir örnek CSV veya Excel dosyası yükleyin.
             Sistem kolon yapısını otomatik algılayacak.
           </p>
@@ -86,26 +86,26 @@ export function CreateTemplateModal({ onClose, onCreated }: Props) {
               flex flex-col items-center gap-2 p-6 rounded-xl border-2 border-dashed
               cursor-pointer transition-all duration-200
               ${dragActive
-                ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20'
+                ? 'border-blue-400 bg-primary/10'
                 : file
-                  ? 'border-green-300 bg-green-50/50 dark:bg-green-900/10'
-                  : 'border-gray-300 dark:border-gray-600 hover:border-blue-400'}
+                  ? 'border-green-300 bg-success/10/50'
+                  : 'border-border hover:border-blue-400'}
             `}
           >
             {file ? (
               <>
-                <FileSpreadsheet className="w-8 h-8 text-green-500" />
-                <span className="text-sm font-medium text-green-700 dark:text-green-400">
+                <FileSpreadsheet className="w-8 h-8 text-success" />
+                <span className="text-sm font-medium text-success">
                   {file.name}
                 </span>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-muted-foreground">
                   {(file.size / 1024).toFixed(1)} KB — Değiştirmek için tıklayın
                 </span>
               </>
             ) : (
               <>
-                <Upload className="w-8 h-8 text-gray-400" />
-                <span className="text-sm text-gray-500 dark:text-gray-400">
+                <Upload className="w-8 h-8 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
                   CSV veya Excel dosyası sürükleyin veya tıklayın
                 </span>
               </>
@@ -123,7 +123,7 @@ export function CreateTemplateModal({ onClose, onCreated }: Props) {
         </div>
 
         {error && (
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          <p className="text-sm text-destructive">{error}</p>
         )}
 
         <div className="flex justify-end gap-3 pt-2">

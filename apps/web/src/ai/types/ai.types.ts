@@ -181,6 +181,7 @@ export interface ActionPlan {
 
 export type ActionPlanStatus =
   | 'pending'
+  | 'ready'
   | 'approved'
   | 'rejected'
   | 'executing'

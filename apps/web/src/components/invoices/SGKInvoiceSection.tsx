@@ -70,11 +70,11 @@ export function SGKInvoiceSection({
                 
                 // Firma tipi mapping
                 const typeMapping: Record<string, 'E' | 'H' | 'O' | 'M' | 'A' | 'MH' | 'D'> = {
-                    'pharmacy': 'E',        // Eczane
-                    'hospital': 'H',        // Hastane
-                    'optical': 'O',         // Optik
-                    'hearing_center': 'M',  // İşitme Merkezi -> Medikal
-                    'medical': 'M',         // Medikal
+                    'pharmacy': 'E', // Eczane
+                    'hospital': 'H', // Hastane
+                    'optical': 'O', // Optik
+                    'hearing_center': 'M', // İşitme Merkezi -> Medikal
+                    'medical': 'M', // Medikal
                 };
                 
                 if (companyType && typeMapping[companyType]) {
@@ -142,11 +142,11 @@ export function SGKInvoiceSection({
     const showDosyaNo = ['E', 'H', 'O', 'M', 'A', 'MH'].includes(additionalInfo);
 
     return (
-        <div className="bg-white rounded-2xl shadow p-6 mb-6">
+        <div className="bg-card rounded-2xl shadow p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">SGK Faturası Özel Bilgileri</h3>
+                <h3 className="text-lg font-semibold text-foreground">SGK Faturası Özel Bilgileri</h3>
                 <div className="flex items-center space-x-2">
-                    <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                    <span className="px-3 py-1 bg-primary/10 text-blue-800 text-sm font-medium rounded-full">
                         SGK Faturası
                     </span>
                 </div>
@@ -154,8 +154,8 @@ export function SGKInvoiceSection({
 
             <div className="space-y-6">
                 {/* İlave Fatura Bilgileri - KRİTİK YENİ BÖLÜM */}
-                <div className="border border-blue-200 rounded-2xl p-4 bg-blue-50">
-                    <h4 className="text-md font-medium text-gray-900 mb-4">İlave Fatura Bilgileri *</h4>
+                <div className="border border-blue-200 rounded-2xl p-4 bg-primary/10">
+                    <h4 className="text-md font-medium text-foreground mb-4">İlave Fatura Bilgileri *</h4>
 
                     <div className="space-y-4">
                         <div>
@@ -168,14 +168,14 @@ export function SGKInvoiceSection({
                                 fullWidth
                                 required
                             />
-                            <p className="mt-1 text-sm text-gray-600">
+                            <p className="mt-1 text-sm text-muted-foreground">
                                 Fatura türüne göre gerekli bilgileri seçiniz
                             </p>
                         </div>
 
                         {/* Mükellef Kodu ve Adı - E, H, O, M için */}
                         {showMukellefFields && (
-                            <div className="grid grid-cols-2 gap-4 bg-white p-4 rounded border border-blue-200">
+                            <div className="grid grid-cols-2 gap-4 bg-card p-4 rounded border border-blue-200">
                                 <div>
                                     <Input
                                         type="text"
@@ -206,7 +206,7 @@ export function SGKInvoiceSection({
 
                         {/* Dosya No - E, H, O, M, A, MH için */}
                         {showDosyaNo && (
-                            <div className="bg-white p-4 rounded border border-blue-200">
+                            <div className="bg-card p-4 rounded border border-blue-200">
                                 <Input
                                     type="text"
                                     label="Dosya No"
@@ -222,7 +222,7 @@ export function SGKInvoiceSection({
 
                         {/* Abone No - Sadece A için */}
                         {showAboneNo && (
-                            <div className="bg-white p-4 rounded border border-blue-200">
+                            <div className="bg-card p-4 rounded border border-blue-200">
                                 <Input
                                     type="text"
                                     label="Abone No"
@@ -239,9 +239,9 @@ export function SGKInvoiceSection({
                 </div>
 
                 {/* Dönem Bilgileri */}
-                <div className="border border-gray-200 rounded-2xl p-4">
+                <div className="border border-border rounded-2xl p-4">
                     <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-md font-medium text-gray-900">Dönem Bilgileri *</h4>
+                        <h4 className="text-md font-medium text-foreground">Dönem Bilgileri *</h4>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -328,8 +328,8 @@ export function SGKInvoiceSection({
                 </div>
 
                 {/* Tesis Bilgileri - GİZLENDİ */}
-                <div className="hidden border border-gray-200 rounded-2xl p-4">
-                    <h4 className="text-md font-medium text-gray-900 mb-4">Tesis Bilgileri</h4>
+                <div className="hidden border border-border rounded-2xl p-4">
+                    <h4 className="text-md font-medium text-foreground mb-4">Tesis Bilgileri</h4>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -343,7 +343,7 @@ export function SGKInvoiceSection({
                                 maxLength={8}
                                 fullWidth
                             />
-                            <p className="mt-1 text-sm text-gray-500">
+                            <p className="mt-1 text-sm text-muted-foreground">
                                 SGK tesis kodu (8 haneli, opsiyonel)
                             </p>
                         </div>
@@ -387,8 +387,8 @@ export function SGKInvoiceSection({
                 </div>
 
                 {/* Referans Bilgileri - GİZLENDİ */}
-                <div className="hidden border border-gray-200 rounded-2xl p-4">
-                    <h4 className="text-md font-medium text-gray-900 mb-4">Referans Bilgileri</h4>
+                <div className="hidden border border-border rounded-2xl p-4">
+                    <h4 className="text-md font-medium text-foreground mb-4">Referans Bilgileri</h4>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -401,7 +401,7 @@ export function SGKInvoiceSection({
                                 error={errors.referenceNumber}
                                 fullWidth
                             />
-                            <p className="mt-1 text-sm text-gray-500">
+                            <p className="mt-1 text-sm text-muted-foreground">
                                 SGK referans numarası
                             </p>
                         </div>

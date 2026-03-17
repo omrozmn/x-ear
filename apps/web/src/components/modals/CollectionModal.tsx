@@ -126,13 +126,13 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
+          <div className="bg-destructive/10 border border-red-200 rounded-2xl p-4">
             <p className="text-red-800">{error}</p>
           </div>
         )}
 
         {/* Sale Summary */}
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+        <div className="bg-primary/10 border border-blue-200 rounded-2xl p-4">
           <h3 className="font-medium text-blue-900 mb-3 flex items-center">
             <Receipt className="w-4 h-4 mr-2" />
             Satış Bilgileri
@@ -148,7 +148,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
             </div>
             <div className="flex justify-between border-t pt-2">
               <span className="font-medium">Kalan Tutar:</span>
-              <span className="font-bold text-red-600">{formatCurrency(remainingAmount)}</span>
+              <span className="font-bold text-destructive">{formatCurrency(remainingAmount)}</span>
             </div>
           </div>
         </div>
@@ -156,12 +156,12 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
         {/* Payment Form */}
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Tahsilat Tutarı
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <DollarSign className="w-4 h-4 text-gray-400" />
+                <DollarSign className="w-4 h-4 text-muted-foreground" />
               </div>
               <Input
                 type="number"
@@ -178,7 +178,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Ödeme Yöntemi
             </label>
             <Select
@@ -196,12 +196,12 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Ödeme Tarihi
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Calendar className="w-4 h-4 text-gray-400" />
+                <Calendar className="w-4 h-4 text-muted-foreground" />
               </div>
               <Input
                 type="date"
@@ -215,7 +215,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
 
           {(paymentData.paymentMethod === 'card' || paymentData.paymentMethod === 'transfer' || paymentData.paymentMethod === 'check') && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Referans Numarası
               </label>
               <Input
@@ -233,7 +233,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Notlar
             </label>
             <Textarea

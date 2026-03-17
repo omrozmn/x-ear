@@ -398,7 +398,7 @@ export function UtsSerialStatusModal({
               {!isBulk ? <UtsSerialStatusBadge status={primaryItem.status} /> : null}
             </div>
             {primaryItem.lastMessage ? (
-              <div className="mt-3 flex items-start gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600">
+              <div className="mt-3 flex items-start gap-2 rounded-2xl border border-slate-200 bg-card px-3 py-2 text-sm text-slate-600">
                 <AlertCircle className="mt-0.5 h-4 w-4 text-slate-400" />
                 <span>{primaryItem.lastMessage}</span>
               </div>
@@ -420,7 +420,7 @@ export function UtsSerialStatusModal({
                     className={`rounded-full border px-3 py-1.5 text-sm font-medium transition ${
                       statusOverride === item.status
                         ? 'border-sky-500 bg-sky-50 text-sky-700'
-                        : 'border-slate-200 bg-white text-slate-600'
+                        : 'border-slate-200 bg-card text-slate-600'
                     }`}
                   >
                     {item.label}
@@ -449,7 +449,7 @@ export function UtsSerialStatusModal({
                   <Input value={supplierSearch} onChange={(event) => setSupplierSearch(event.target.value)} placeholder="Tedarikci adi veya kurum no" className="pl-10" />
                 </div>
                 {supplierSearch.trim() ? (
-                  <div className="max-h-40 overflow-y-auto rounded-2xl border border-slate-200 bg-white">
+                  <div className="max-h-40 overflow-y-auto rounded-2xl border border-slate-200 bg-card">
                     {filteredSuppliers.length ? filteredSuppliers.map((supplier) => (
                       <Button
                         key={String(supplier.id)}
@@ -542,7 +542,7 @@ export function UtsSerialStatusModal({
                   className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium ${
                     selectedChannels.includes(channel)
                       ? 'border-sky-500 bg-sky-50 text-sky-700'
-                      : 'border-slate-200 bg-white text-slate-600'
+                      : 'border-slate-200 bg-card text-slate-600'
                   }`}
                 >
                   {channel === 'sms' ? <Smartphone className="h-4 w-4" /> : channel === 'whatsapp' ? <MessageCircle className="h-4 w-4" /> : <Mail className="h-4 w-4" />}

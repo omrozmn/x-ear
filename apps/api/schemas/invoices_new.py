@@ -272,6 +272,7 @@ class ProductSearchInvoiceResult(AppBaseModel):
     sender_tax_number: Optional[str] = Field(None, alias="senderTaxNumber", description="Supplier tax number")
     sender_address: Optional[str] = Field(None, alias="senderAddress", description="Supplier address")
     sender_city: Optional[str] = Field(None, alias="senderCity", description="Supplier city")
+    sender_district: Optional[str] = Field(None, alias="senderDistrict", description="Supplier district")
     matched_items: List[ProductSearchMatchedItem] = Field(
         default_factory=list, alias="matchedItems", description="Matching line items"
     )

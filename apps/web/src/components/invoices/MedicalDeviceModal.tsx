@@ -132,7 +132,7 @@ export function MedicalDeviceModal({
           onClick={handleCancel}
         ></div>
 
-        <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+        <div className="inline-block align-bottom bg-card rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
           <div className="bg-purple-600 px-6 py-4">
             <h3 className="text-lg font-medium text-white">
               İlaç ve Tıbbi Cihaz Bilgileri
@@ -143,7 +143,7 @@ export function MedicalDeviceModal({
             )}
           </div>
 
-          <div className="bg-white px-6 py-4">
+          <div className="bg-card px-6 py-4">
             <div className="space-y-4">
               <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4">
                 <RadioGroup
@@ -171,7 +171,7 @@ export function MedicalDeviceModal({
                   fullWidth
                   required
                 />
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {formData.productType === 'ilac'
                     ? 'İlaç GTIN numarasını giriniz'
                     : 'Tıbbi cihaz ürün numarasını giriniz'}
@@ -189,7 +189,7 @@ export function MedicalDeviceModal({
                   fullWidth
                   required
                 />
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {formData.productType === 'ilac'
                     ? 'İlaç parti numarasını giriniz'
                     : 'Tıbbi cihaz lot numarasını giriniz'}
@@ -207,7 +207,7 @@ export function MedicalDeviceModal({
                   disabled={seriNoDisabled ? true : false}
                   fullWidth
                 />
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {formData.productType === 'ilac'
                     ? 'İlaç sıra numarası (zorunlu)'
                     : seriNoDisabled
@@ -225,7 +225,7 @@ export function MedicalDeviceModal({
                   fullWidth
                   required
                 />
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {formData.productType === 'ilac'
                     ? 'İlaç son kullanma tarihi'
                     : 'Tıbbi cihaz üretim tarihi'}
@@ -259,14 +259,14 @@ export function MedicalDeviceModal({
               </div>
 
               {Object.keys(errors).length > 0 && (
-                <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
+                <div className="bg-destructive/10 border border-red-200 rounded-2xl p-4">
                   <div className="flex items-start">
                     <AlertTriangle className="text-red-400 mr-2 flex-shrink-0" size={18} />
                     <div>
                       <h4 className="text-sm font-medium text-red-800 mb-1">
                         Lütfen zorunlu alanları doldurun
                       </h4>
-                      <ul className="text-sm text-red-700 list-disc list-inside">
+                      <ul className="text-sm text-destructive list-disc list-inside">
                         {Object.values(errors).map((error, index) => (
                           <li key={index}>{error}</li>
                         ))}
@@ -278,12 +278,12 @@ export function MedicalDeviceModal({
             </div>
           </div>
 
-          <div className="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
+          <div className="bg-muted px-6 py-4 flex justify-end space-x-3">
             <Button
               type="button"
               onClick={handleCancel}
               variant="default"
-              className="bg-gray-200 hover:bg-gray-300 text-gray-800"
+              className="bg-accent hover:bg-gray-300 text-foreground"
             >
               İptal
             </Button>

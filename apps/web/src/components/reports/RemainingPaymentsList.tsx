@@ -43,7 +43,7 @@ export function RemainingPaymentsList({ payments, isLoading, pagination }: Remai
       title: 'Fatura No',
       sortable: true,
       render: (_, payment) => (
-        <span className="text-sm font-mono text-gray-600 dark:text-gray-400">
+        <span className="text-sm font-mono text-muted-foreground">
           {payment.invoiceNumber || '-'}
         </span>
       )
@@ -63,7 +63,7 @@ export function RemainingPaymentsList({ payments, isLoading, pagination }: Remai
       title: 'Ödenen',
       sortable: true,
       render: (_, payment) => (
-        <span className="text-sm text-green-600 dark:text-green-400">
+        <span className="text-sm text-success">
           {formatCurrency(Number(payment.paidAmount || 0), 'TRY')}
         </span>
       )
@@ -73,7 +73,7 @@ export function RemainingPaymentsList({ payments, isLoading, pagination }: Remai
       title: 'Kalan',
       sortable: true,
       render: (_, payment) => (
-        <span className="text-sm font-semibold text-red-600 dark:text-red-400">
+        <span className="text-sm font-semibold text-destructive">
           {formatCurrency(Number(payment.remainingAmount || 0), 'TRY')}
         </span>
       )
@@ -83,7 +83,7 @@ export function RemainingPaymentsList({ payments, isLoading, pagination }: Remai
       title: 'Vade Tarihi',
       sortable: true,
       render: (_, payment) => (
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+        <span className="text-sm text-muted-foreground">
           {payment.dueDate ? formatDate(payment.dueDate) : '-'}
         </span>
       )

@@ -14,6 +14,7 @@ import { listInventory, deleteInventory } from '@/api/client/inventory.client';
 import { unwrapArray } from '../utils/response-unwrap';
 import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 import { PermissionGate } from '@/components/PermissionGate';
+import toast from 'react-hot-toast';
 
 
 
@@ -135,7 +136,7 @@ export const DesktopInventoryPage: React.FC = () => {
       // Reload will happen via subscription
     } catch (error) {
       console.error('Delete failed:', error);
-      alert('Silme işlemi başarısız oldu');
+      toast.error('Silme işlemi başarısız oldu');
     }
   };
 
@@ -179,7 +180,7 @@ export const DesktopInventoryPage: React.FC = () => {
       document.body.removeChild(link);
     } catch (error) {
       console.error('Export failed:', error);
-      alert('Dışa aktarma başarısız oldu');
+      toast.error('Dışa aktarma başarısız oldu');
     }
   };
 
@@ -272,15 +273,25 @@ export const DesktopInventoryPage: React.FC = () => {
         isOpen={isImporterOpen}
         onClose={() => setIsImporterOpen(false)}
         entityFields={[
-          { key: 'id', label: 'ID' },
           { key: 'name', label: 'Ürün Adı' },
           { key: 'brand', label: 'Marka' },
           { key: 'model', label: 'Model' },
           { key: 'category', label: 'Kategori' },
-          { key: 'availableInventory', label: 'Stok' },
-          { key: 'price', label: 'Fiyat' },
           { key: 'barcode', label: 'Barkod' },
-          { key: 'supplier', label: 'Tedarikçi' }
+          { key: 'stockCode', label: 'Stok Kodu' },
+          { key: 'supplier', label: 'Tedarikçi' },
+          { key: 'availableInventory', label: 'Stok Miktarı' },
+          { key: 'price', label: 'Satış Fiyatı' },
+          { key: 'cost', label: 'Alış Fiyatı' },
+          { key: 'kdvRate', label: 'KDV Oranı' },
+          { key: 'unit', label: 'Birim' },
+          { key: 'reorderLevel', label: 'Minimum Stok' },
+          { key: 'warranty', label: 'Garanti (Ay)' },
+          { key: 'description', label: 'Açıklama' },
+          { key: 'direction', label: 'Yön (Sol/Sağ)' },
+          { key: 'maxGain', label: 'Max Kazanç (dB)' },
+          { key: 'fittingRangeMin', label: 'Fitting Min (dB)' },
+          { key: 'fittingRangeMax', label: 'Fitting Max (dB)' },
         ] as FieldDef[]}
         zodSchema={inventorySchema}
         uploadEndpoint={'/api/inventory/bulk-upload'}
@@ -367,14 +378,14 @@ export const DesktopInventoryPage: React.FC = () => {
                 placeholder="🔍 Barkod, seri no, marka, model veya isim ile ara..."
                 value={modalSearch}
                 onChange={(e) => setModalSearch(e.target.value)}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-border rounded-xl px-4 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-ring"
               />
             </div>
             <div className="w-56">
               <select data-allow-raw="true"
                 value={modalCategoryFilter}
                 onChange={(e) => setModalCategoryFilter(e.target.value)}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                className="w-full border border-border rounded-xl px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               >
                 <option value="">Tüm Kategoriler</option>
                 {categories.map((c) => (
@@ -420,28 +431,28 @@ export const DesktopInventoryPage: React.FC = () => {
                 const serials = item.availableSerials || [];
                 const isSelected = modalSelectedItemId === item.id;
                 return (
-                  <div key={item.id} className={`border rounded-2xl p-4 ${isSelected ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'}`}>
+                  <div key={item.id} className={`border rounded-2xl p-4 ${isSelected ? 'border-blue-500 bg-primary/10 shadow' : 'bg-white dark:bg-gray-800 border-border'}`}>
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <h4 className="font-semibold text-gray-900 dark:text-gray-100">{item.brand} {item.model}</h4>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{item.name || ''}</p>
+                        <p className="text-xs text-muted-foreground">{item.name || ''}</p>
                       </div>
                       <div className="text-right text-sm">
                         <div className="font-medium text-gray-900 dark:text-gray-100">₺{Number(price).toLocaleString()}</div>
-                        <div className="text-gray-500 dark:text-gray-400">Stok: {available}</div>
+                        <div className="text-muted-foreground">Stok: {available}</div>
                       </div>
                     </div>
 
                     {serials && serials.length > 0 ? (
                       <div className="mb-2">
-                        <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Seri No</label>
+                        <label className="block text-xs text-muted-foreground mb-1">Seri No</label>
                         <select data-allow-raw="true"
                           value={modalSelectedItemId === item.id ? (modalSelectedSerial || '') : ''}
                           onChange={(e) => {
                             setModalSelectedItemId(item.id);
                             setModalSelectedSerial(e.target.value || null);
                           }}
-                          className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                          className="w-full border border-border rounded-xl px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                         >
                           <option value="">Seri seçin (opsiyonel)</option>
                           {serials.map((s: string) => (
@@ -450,7 +461,7 @@ export const DesktopInventoryPage: React.FC = () => {
                         </select>
                       </div>
                     ) : (
-                      <p className="text-xs text-gray-500 mb-2">Seri: <span className="text-red-500">Yok</span></p>
+                      <p className="text-xs text-muted-foreground mb-2">Seri: <span className="text-destructive">Yok</span></p>
                     )}
 
                     <div className="flex justify-between items-center mt-3">
@@ -471,7 +482,7 @@ export const DesktopInventoryPage: React.FC = () => {
                             setSelectedItem(mapped as InventoryItem);
                             setIsEditModalOpen(true);
                           }}
-                          className="text-blue-600 hover:text-blue-800 text-sm"
+                          className="text-primary hover:text-blue-800 text-sm"
                         >
                           Düzenle
                         </button>
@@ -485,10 +496,10 @@ export const DesktopInventoryPage: React.FC = () => {
                               triggerInventoryRefresh();
                             } catch (e) {
                               console.error('Delete failed', e);
-                              alert('Silme işlemi başarısız oldu');
+                              toast.error('Silme işlemi başarısız oldu');
                             }
                           }}
-                          className="text-red-600 hover:text-red-800 text-sm"
+                          className="text-destructive hover:text-red-800 text-sm"
                         >
                           Sil
                         </button>
@@ -510,7 +521,7 @@ export const DesktopInventoryPage: React.FC = () => {
               })}
           </div>
 
-          <div className="flex justify-end pt-4 border-t border-gray-200">
+          <div className="flex justify-end pt-4 border-t border-border">
             <button data-allow-raw="true"
               className="btn btn-secondary mr-3"
               onClick={() => setIsBulkUploadModalOpen(false)}
@@ -534,7 +545,7 @@ export const DesktopInventoryPage: React.FC = () => {
                     link.remove();
                   }
                 } else {
-                  alert('Lütfen bir öğe seçin');
+                  toast('Lütfen bir öğe seçin');
                 }
               }}
             >
@@ -555,8 +566,8 @@ export const DesktopInventoryPage: React.FC = () => {
       >
         <div className="space-y-4">
           <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
-              <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
+              <AlertTriangle className="w-6 h-6 text-destructive" />
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
@@ -564,10 +575,10 @@ export const DesktopInventoryPage: React.FC = () => {
               </h3>
               {itemToDelete && (
                 <>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  <p className="text-sm text-muted-foreground mb-2">
                     <span className="font-semibold">{itemToDelete.name}</span> ürününü silmek üzeresiniz.
                   </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-muted-foreground">
                     Bu işlem geri alınamaz. Ürünle ilgili tüm veriler kalıcı olarak silinecektir.
                   </p>
                 </>

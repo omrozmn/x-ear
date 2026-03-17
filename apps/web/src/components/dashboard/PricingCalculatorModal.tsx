@@ -128,12 +128,12 @@ function InventoryAutocomplete({
                   onSelect(null);
                   setIsOpen(false);
                 }}
-                className="h-auto p-1 text-gray-400 hover:text-gray-600"
+                className="h-auto p-1 text-muted-foreground hover:text-muted-foreground"
               >
                 <X className="h-4 w-4" />
               </Button>
             ) : null}
-            <Search className="h-4 w-4 text-gray-400" />
+            <Search className="h-4 w-4 text-muted-foreground" />
           </div>
         }
       />
@@ -141,9 +141,9 @@ function InventoryAutocomplete({
       {isOpen ? (
         <div className="absolute z-50 mt-2 max-h-72 w-full overflow-y-auto rounded-3xl border border-slate-200/90 bg-white/98 shadow-[0_20px_60px_-24px_rgba(15,23,42,0.2)] backdrop-blur-xl dark:border-slate-700 dark:bg-slate-950/96">
           {loading ? (
-            <div className="px-4 py-3 text-sm text-gray-500">Envanter yukleniyor...</div>
+            <div className="px-4 py-3 text-sm text-muted-foreground">Envanter yukleniyor...</div>
           ) : error ? (
-            <div className="px-4 py-3 text-sm text-red-600">Envanter alinamadi</div>
+            <div className="px-4 py-3 text-sm text-destructive">Envanter alinamadi</div>
           ) : filteredProducts.length > 0 ? (
             filteredProducts.map((product) => {
               const stock = product.availableInventory ?? 0;
@@ -163,7 +163,7 @@ function InventoryAutocomplete({
                 >
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-medium text-gray-900 dark:text-white">{product.name}</div>
-                    <div className="truncate text-xs text-gray-500 dark:text-slate-400">
+                    <div className="truncate text-xs text-muted-foreground dark:text-slate-400">
                       {[product.brand, product.model, product.category].filter(Boolean).join(' • ')}
                     </div>
                   </div>
@@ -171,13 +171,13 @@ function InventoryAutocomplete({
                     <div className="text-sm font-semibold text-gray-900 dark:text-white">
                       {Number(product.price || 0).toLocaleString('tr-TR')} TL
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-slate-400">Stok: {stock}</div>
+                    <div className="text-xs text-muted-foreground dark:text-slate-400">Stok: {stock}</div>
                   </div>
                 </button>
               );
             })
           ) : (
-            <div className="px-4 py-3 text-sm text-gray-500 dark:text-slate-400">Sonuc bulunamadi</div>
+            <div className="px-4 py-3 text-sm text-muted-foreground dark:text-slate-400">Sonuc bulunamadi</div>
           )}
         </div>
       ) : null}
@@ -478,18 +478,18 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
             </h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-slate-400">Ara Toplam</span>
+                <span className="text-muted-foreground dark:text-slate-400">Ara Toplam</span>
                 <span className="font-medium text-slate-900 dark:text-white">{(devicePrice * quantity).toLocaleString('tr-TR')} TL</span>
               </div>
               {isHearingAid && calculation.sgkAmount > 0 ? (
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-slate-400">SGK Dusumu</span>
+                  <span className="text-muted-foreground dark:text-slate-400">SGK Dusumu</span>
                   <span className="font-medium text-emerald-600">-{calculation.sgkAmount.toLocaleString('tr-TR')} TL</span>
                 </div>
               ) : null}
               {calculation.discountAmount > 0 ? (
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-slate-400">
+                  <span className="text-muted-foreground dark:text-slate-400">
                     Indirim
                     {discountType === 'percentage' ? ` (%${calculation.discountPercent.toFixed(1)})` : ''}
                   </span>
@@ -502,7 +502,7 @@ export const PricingCalculatorModal: React.FC<PricingCalculatorModalProps> = ({
                   <span className="text-sky-700 dark:text-sky-300">{calculation.finalPrice.toLocaleString('tr-TR')} TL</span>
                 </div>
                 {calculation.installmentAmount ? (
-                  <div className="mt-1 flex justify-between text-sm text-gray-600 dark:text-slate-400">
+                  <div className="mt-1 flex justify-between text-sm text-muted-foreground dark:text-slate-400">
                     <span>Taksit Tutari</span>
                     <span>
                       {calculation.installmentAmount.toLocaleString('tr-TR')} TL x {installments}

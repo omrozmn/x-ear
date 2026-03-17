@@ -392,7 +392,7 @@ export type SiteDomainSetupResponse = {
     notes: string[];
 };
 
-const DEFAULT_BASE_URL = (import.meta.env.VITE_WEBSITE_GENERATOR_API_URL as string | undefined) ?? 'http://127.0.0.1:8000';
+const DEFAULT_BASE_URL = (import.meta.env.VITE_WEBSITE_GENERATOR_API_URL as string | undefined) ?? (import.meta.env.VITE_API_URL || '/api');
 
 type RequestOptions = {
     method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';

@@ -45,16 +45,16 @@ export const AIInbox: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col h-full bg-gray-50/30">
+        <div className="flex flex-col h-full bg-muted/30">
             {/* Search/Header */}
-            <div className="p-4 bg-white border-b border-gray-100 flex items-center justify-between sticky top-0 z-10 shadow-sm">
+            <div className="p-4 bg-card border-b border-border flex items-center justify-between sticky top-0 z-10 shadow-sm">
                 <div className="flex items-center gap-2.5">
                     <div className="bg-indigo-600 p-1.5 rounded-2xl text-white shadow-indigo-100 shadow-lg">
                         <Sparkles size={18} />
                     </div>
                     <div>
-                        <h2 className="text-sm font-bold text-gray-900 leading-none">AI Inbox</h2>
-                        <p className="text-[10px] text-gray-500 font-medium uppercase mt-1 tracking-tight">Proactive Insights</p>
+                        <h2 className="text-sm font-bold text-foreground leading-none">AI Inbox</h2>
+                        <p className="text-[10px] text-muted-foreground font-medium uppercase mt-1 tracking-tight">Proactive Insights</p>
                     </div>
                 </div>
 
@@ -62,7 +62,7 @@ export const AIInbox: React.FC = () => {
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="p-2 h-8 w-8 rounded-full hover:bg-gray-100 text-gray-400"
+                        className="p-2 h-8 w-8 rounded-full hover:bg-muted text-muted-foreground"
                         onClick={fetchOpportunities}
                     >
                         <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
@@ -71,14 +71,14 @@ export const AIInbox: React.FC = () => {
             </div>
 
             {/* Filters */}
-            <div className="p-3 bg-white/50 border-b border-gray-100 flex gap-2 overflow-x-auto no-scrollbar">
+            <div className="p-3 bg-card/50 border-b border-border flex gap-2 overflow-x-auto no-scrollbar">
                 <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setFilter('NEW')}
                     className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all h-auto ${filter === 'NEW'
                         ? 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200'
-                        : 'text-gray-500 hover:text-gray-700'
+                        : 'text-muted-foreground hover:text-foreground'
                         }`}
                 >
                     New ({filter === 'NEW' ? opportunities.length : '..'})
@@ -88,8 +88,8 @@ export const AIInbox: React.FC = () => {
                     size="sm"
                     onClick={() => setFilter('ACKNOWLEDGED')}
                     className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all h-auto ${filter === 'ACKNOWLEDGED'
-                        ? 'bg-blue-50 text-blue-700 ring-1 ring-blue-200'
-                        : 'text-gray-500 hover:text-gray-700'
+                        ? 'bg-primary/10 text-primary ring-1 ring-blue-200'
+                        : 'text-muted-foreground hover:text-foreground'
                         }`}
                 >
                     Active
@@ -99,8 +99,8 @@ export const AIInbox: React.FC = () => {
                     size="sm"
                     onClick={() => setFilter('ALL')}
                     className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all h-auto ${filter === 'ALL'
-                        ? 'bg-gray-100 text-gray-700'
-                        : 'text-gray-500 hover:text-gray-700'
+                        ? 'bg-muted text-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
                         }`}
                 >
                     History
@@ -110,17 +110,17 @@ export const AIInbox: React.FC = () => {
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
                 {loading && opportunities.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-64 text-gray-400 animate-pulse">
+                    <div className="flex flex-col items-center justify-center h-64 text-muted-foreground animate-pulse">
                         <RefreshCw size={32} className="mb-4 animate-spin-slow opacity-20" />
                         <p className="text-xs font-medium uppercase tracking-widest">Scanning Data...</p>
                     </div>
                 ) : opportunities.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-64 text-center">
-                        <div className="bg-gray-100 p-4 rounded-full mb-4">
+                        <div className="bg-muted p-4 rounded-full mb-4">
                             <Inbox size={32} className="text-gray-300" />
                         </div>
-                        <p className="text-sm font-bold text-gray-900">All caught up!</p>
-                        <p className="text-xs text-gray-500 mt-1 px-8">
+                        <p className="text-sm font-bold text-foreground">All caught up!</p>
+                        <p className="text-xs text-muted-foreground mt-1 px-8">
                             AI hasn't found any new opportunities or risks at the moment.
                         </p>
                     </div>
@@ -139,7 +139,7 @@ export const AIInbox: React.FC = () => {
             </div>
 
             {/* Footer / Tip */}
-            <div className="p-3 bg-white border-t border-gray-100">
+            <div className="p-3 bg-card border-t border-border">
                 <div className="bg-indigo-50/50 rounded-2xl p-3 flex items-start gap-2.5 border border-indigo-100/50">
                     <Bell size={14} className="text-indigo-600 mt-0.5" />
                     <p className="text-[11px] text-indigo-900 leading-relaxed">

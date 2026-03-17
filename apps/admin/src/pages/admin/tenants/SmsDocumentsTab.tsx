@@ -153,8 +153,7 @@ export const SmsDocumentsTab = ({ tenantId, onUpdate }: SmsDocumentsTabProps) =>
                     toast.error('Önizleme URL\'i alınamadı');
                 }
             })
-            .catch((err) => {
-                console.error('Preview error:', err);
+            .catch(() => {
                 toast.error('Önizleme açılamadı');
             });
     };

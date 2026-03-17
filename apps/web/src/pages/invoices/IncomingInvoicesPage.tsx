@@ -123,7 +123,7 @@ export function IncomingInvoicesPage() {
           {inv.documentKindLabel || (inv.documentKind === 'despatch' ? 'E-İrsaliye' : 'E-Fatura')}
         </span>
         {inv.profileId && (
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-muted text-foreground">
             {inv.profileId}
           </span>
         )}
@@ -139,8 +139,8 @@ export function IncomingInvoicesPage() {
   const getStatusBadge = (status: string) => {
     const isProcessed = status === 'RECEIVED' || status === 'PROCESSED' || status === 'PAID';
     const style = isProcessed
-      ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-      : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
+      ? 'bg-success/10 text-success'
+      : 'bg-destructive/10 text-red-800 dark:text-red-400';
     const label = isProcessed ? 'İşlendi' : 'Reddedildi';
     const icon = isProcessed
       ? <CheckCircle className="w-3 h-3 mr-1" />
@@ -311,7 +311,7 @@ export function IncomingInvoicesPage() {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-gray-600 dark:text-gray-400">Gelen faturalar yükleniyor...</span>
+        <span className="ml-3 text-muted-foreground">Gelen faturalar yükleniyor...</span>
       </div>
     );
   }
@@ -334,7 +334,7 @@ export function IncomingInvoicesPage() {
           <div className="text-sm text-gray-900 dark:text-white">{invoice.supplierName}</div>
           {renderDocumentBadges(invoice)}
           {invoice.supplierTaxNumber && (
-            <div className="text-xs text-gray-500 dark:text-gray-400">VKN: {invoice.supplierTaxNumber}</div>
+            <div className="text-xs text-muted-foreground">VKN: {invoice.supplierTaxNumber}</div>
           )}
         </div>
       ),
@@ -354,7 +354,7 @@ export function IncomingInvoicesPage() {
       title: 'Tarih',
       sortable: true,
       render: (_, invoice) => (
-        <span className="text-sm text-gray-600 dark:text-gray-400">{formatDate(invoice.invoiceDate)}</span>
+        <span className="text-sm text-muted-foreground">{formatDate(invoice.invoiceDate)}</span>
       ),
     },
     {
@@ -365,7 +365,7 @@ export function IncomingInvoicesPage() {
         <div>
           {getStatusBadge(invoice.status)}
           {invoice.isConvertedToPurchase && (
-            <div className="text-xs text-green-600 dark:text-green-400 mt-1 flex items-center gap-1">
+            <div className="text-xs text-success mt-1 flex items-center gap-1">
               <ShoppingCart className="w-3 h-3" />
               Alışa dönüştürüldü
             </div>
@@ -387,26 +387,26 @@ export function IncomingInvoicesPage() {
             <MoreVertical className="w-4 h-4" />
           </Button>
           {activeMenu === String(invoice.invoiceId) && (
-            <div className="absolute right-0 z-50 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg">
-              <Button variant="ghost" fullWidth onClick={() => handleViewPdf(invoice)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 justify-start h-auto">
+            <div className="absolute right-0 z-50 mt-1 w-48 bg-white dark:bg-gray-800 border border-border rounded-2xl shadow-lg">
+              <Button variant="ghost" fullWidth onClick={() => handleViewPdf(invoice)} className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 justify-start h-auto">
                 <Eye className="w-4 h-4" /> Fatura Görüntüle
               </Button>
-              <Button variant="ghost" fullWidth onClick={() => handleDownloadPdf(invoice)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 justify-start h-auto">
+              <Button variant="ghost" fullWidth onClick={() => handleDownloadPdf(invoice)} className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 justify-start h-auto">
                 <Download className="w-4 h-4" /> PDF İndir
               </Button>
-              <Button variant="ghost" fullWidth onClick={() => handleOpenRemoteHtml(invoice)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 justify-start h-auto">
+              <Button variant="ghost" fullWidth onClick={() => handleOpenRemoteHtml(invoice)} className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 justify-start h-auto">
                 <FileText className="w-4 h-4" /> HTML Aç
               </Button>
-              <Button variant="ghost" fullWidth onClick={() => handleCopy(invoice)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 justify-start h-auto">
+              <Button variant="ghost" fullWidth onClick={() => handleCopy(invoice)} className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 justify-start h-auto">
                 <Copy className="w-4 h-4" /> Kopyala
               </Button>
-              <div className="border-t border-gray-100 dark:border-gray-700" />
+              <div className="border-t border-border" />
               <Button
                 variant="ghost"
                 fullWidth
                 onClick={() => handleAccept(invoice)}
                 disabled={actionLoading === `accept-${invoice.invoiceId}`}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 disabled:opacity-50 justify-start h-auto"
+                className="flex items-center gap-2 px-4 py-2 text-sm text-success hover:bg-success/10 dark:hover:bg-green-900/20 disabled:opacity-50 justify-start h-auto"
               >
                 <CheckCircle className="w-4 h-4" />
                 {actionLoading === `accept-${invoice.invoiceId}` ? 'İşleniyor...' : 'Kabul Et'}
@@ -416,7 +416,7 @@ export function IncomingInvoicesPage() {
                 fullWidth
                 onClick={() => handleReject(invoice)}
                 disabled={actionLoading === `reject-${invoice.invoiceId}`}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 justify-start h-auto"
+                className="flex items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 dark:hover:bg-red-900/20 disabled:opacity-50 justify-start h-auto"
               >
                 <XCircle className="w-4 h-4" />
                 {actionLoading === `reject-${invoice.invoiceId}` ? 'İşleniyor...' : 'Reddet'}
@@ -460,23 +460,11 @@ export function IncomingInvoicesPage() {
         <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Toplam Fatura</p>
-              <p className="text-lg md:text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{totalCount}</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Toplam Fatura</p>
+              <p className="text-lg md:text-2xl font-bold text-primary mt-1">{totalCount}</p>
             </div>
-            <div className="p-2 md:p-3 bg-blue-100 dark:bg-blue-900/20 rounded-2xl">
-              <FileText className="text-blue-600 dark:text-blue-400 w-4 h-4 md:w-6 md:h-6" />
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-3 md:p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Bekleyen</p>
-              <p className="text-lg md:text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{pendingCount}</p>
-            </div>
-            <div className="p-2 md:p-3 bg-green-100 dark:bg-green-900/20 rounded-2xl">
-              <CheckCircle className="text-green-600 dark:text-green-400 w-4 h-4 md:w-6 md:h-6" />
+            <div className="p-2 md:p-3 bg-primary/10 rounded-2xl">
+              <FileText className="text-primary w-4 h-4 md:w-6 md:h-6" />
             </div>
           </div>
         </Card>
@@ -484,7 +472,19 @@ export function IncomingInvoicesPage() {
         <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Alışa Dönüştürülen</p>
+              <p className="text-xs md:text-sm text-muted-foreground">Bekleyen</p>
+              <p className="text-lg md:text-2xl font-bold text-success mt-1">{pendingCount}</p>
+            </div>
+            <div className="p-2 md:p-3 bg-success/10 rounded-2xl">
+              <CheckCircle className="text-success w-4 h-4 md:w-6 md:h-6" />
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-3 md:p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs md:text-sm text-muted-foreground">Alışa Dönüştürülen</p>
               <p className="text-lg md:text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">{processedCount}</p>
             </div>
             <div className="p-2 md:p-3 bg-purple-100 dark:bg-purple-900/20 rounded-2xl">
@@ -496,9 +496,9 @@ export function IncomingInvoicesPage() {
 
       {/* Auto-conversion info banner */}
       {showBanner && (
-        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-4 flex items-center gap-3">
-          <ShoppingCart className="text-green-600 dark:text-green-400 flex-shrink-0" size={20} />
-          <p className="text-sm text-green-800 dark:text-green-300 flex-1">
+        <div className="bg-success/10 border border-green-200 dark:border-green-800 rounded-2xl p-4 flex items-center gap-3">
+          <ShoppingCart className="text-success flex-shrink-0" size={20} />
+          <p className="text-sm text-success flex-1">
             Gelen faturalar otomatik olarak alış kaydına dönüştürülmektedir. Manuel işlem gerekmez.
           </p>
           <Button
@@ -508,7 +508,7 @@ export function IncomingInvoicesPage() {
               setShowBanner(false);
               localStorage.setItem(ONBOARDING_INCOMING_INVOICES_DISMISSED, '1');
             }}
-            className="text-green-400 hover:text-green-600 dark:hover:text-green-200 flex-shrink-0"
+            className="text-green-400 hover:text-success dark:hover:text-green-200 flex-shrink-0"
           >
             <X size={18} />
           </Button>
@@ -519,7 +519,7 @@ export function IncomingInvoicesPage() {
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
               <Input
                 type="text"
                 placeholder="Tedarikçi adı veya fatura no ara..."
@@ -576,7 +576,7 @@ export function IncomingInvoicesPage() {
       <Card className="hidden md:block p-4">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
             <Input
               type="text"
               placeholder="Tedarikçi adı veya fatura no ara..."
@@ -620,10 +620,10 @@ export function IncomingInvoicesPage() {
       {/* Mobile Selection Action Bar (< md) */}
       {isMobileSelectionMode && (
         <div className="md:hidden flex items-center justify-between mt-4">
-          <Button variant="ghost" size="sm" onClick={() => setIsMobileSelectionMode(false)} className="text-gray-600">
+          <Button variant="ghost" size="sm" onClick={() => setIsMobileSelectionMode(false)} className="text-muted-foreground">
             <X className="w-4 h-4 mr-1" /> Kapat
           </Button>
-          <Button variant="ghost" size="sm" onClick={toggleSelectAll} className="text-blue-600 font-medium">
+          <Button variant="ghost" size="sm" onClick={toggleSelectAll} className="text-primary font-medium">
             {selectedIds.size === filteredInvoices.length && filteredInvoices.length > 0 ? 'Hiçbiri' : 'Tümünü Seç'}
           </Button>
         </div>
@@ -633,7 +633,7 @@ export function IncomingInvoicesPage() {
       <div className="block md:hidden space-y-3 mt-3">
         {filteredInvoices.length === 0 ? (
           <div className="text-center py-12">
-            <FileText className="mx-auto h-12 w-12 text-gray-400" />
+            <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
             <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Gelen fatura bulunamadı</h3>
           </div>
         ) : filteredInvoices.map((invoice: IncomingInvoiceResponse) => (
@@ -681,22 +681,22 @@ export function IncomingInvoicesPage() {
       {/* Bulk Action Bar */}
       {selectedIds.size > 0 && (
         <div className="fixed bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-24px)] max-w-3xl md:w-auto">
-          <div className="rounded-2xl border border-gray-200 bg-white/95 shadow-2xl backdrop-blur dark:border-gray-700 dark:bg-gray-800/95">
-            <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-100 dark:border-gray-700 md:hidden">
+          <div className="rounded-2xl border border-border bg-white/95 shadow-2xl backdrop-blur dark:bg-gray-800/95">
+            <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border md:hidden">
               <div>
                 <p className="text-sm font-semibold text-gray-900 dark:text-white">{selectedIds.size} fatura seçildi</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Toplu işlem seçerek devam edebilirsin</p>
+                <p className="text-xs text-muted-foreground">Toplu işlem seçerek devam edebilirsin</p>
               </div>
-              <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="h-9 rounded-xl px-3 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700">
+              <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="h-9 rounded-xl px-3 text-muted-foreground hover:bg-muted dark:hover:bg-gray-700">
                 <X className="w-4 h-4" />
               </Button>
             </div>
 
             <div className="grid grid-cols-2 gap-2 p-3 md:hidden">
-              <Button variant="ghost" onClick={handleBulkAccept} className="flex items-center justify-center gap-2 rounded-xl bg-green-50 px-3 py-3 text-sm font-semibold text-green-700 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-300 dark:hover:bg-green-900/30 h-auto">
+              <Button variant="ghost" onClick={handleBulkAccept} className="flex items-center justify-center gap-2 rounded-xl bg-success/10 px-3 py-3 text-sm font-semibold text-success hover:bg-success/10 dark:hover:bg-green-900/30 h-auto">
                 <CheckCircle className="w-4 h-4" /> Kabul Et
               </Button>
-              <Button variant="ghost" onClick={handleBulkReject} className="flex items-center justify-center gap-2 rounded-xl bg-red-50 px-3 py-3 text-sm font-semibold text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/30 h-auto">
+              <Button variant="ghost" onClick={handleBulkReject} className="flex items-center justify-center gap-2 rounded-xl bg-destructive/10 px-3 py-3 text-sm font-semibold text-destructive hover:bg-destructive/10 dark:hover:bg-red-900/30 h-auto">
                 <XCircle className="w-4 h-4" /> Reddet
               </Button>
               <PermissionGate permission="invoices.documents.download.view">
@@ -707,21 +707,21 @@ export function IncomingInvoicesPage() {
                   variant="ghost"
                   label="Dışa Aktar"
                   compact
-                  className="flex items-center justify-center gap-2 rounded-xl bg-blue-50 px-3 py-3 text-sm font-semibold text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/30 h-auto"
+                  className="flex items-center justify-center gap-2 rounded-xl bg-primary/10 px-3 py-3 text-sm font-semibold text-primary hover:bg-primary/10 dark:hover:bg-blue-900/30 h-auto"
                 />
               </PermissionGate>
-              <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center justify-center gap-2 rounded-xl bg-gray-100 px-3 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 h-auto">
+              <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center justify-center gap-2 rounded-xl bg-muted px-3 py-3 text-sm font-semibold text-foreground hover:bg-accent dark:hover:bg-gray-600 h-auto">
                 <X className="w-4 h-4" /> Temizle
               </Button>
             </div>
 
             <div className="hidden md:flex items-center gap-4 px-6 py-3 whitespace-nowrap">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{selectedIds.size} fatura seçildi</span>
+              <span className="text-sm font-medium text-foreground">{selectedIds.size} fatura seçildi</span>
               <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
-              <Button variant="ghost" onClick={handleBulkAccept} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-2xl transition-colors h-auto">
+              <Button variant="ghost" onClick={handleBulkAccept} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/10 dark:hover:bg-green-900/20 rounded-2xl transition-colors h-auto">
                 <CheckCircle className="w-4 h-4" /> Toplu Kabul
               </Button>
-              <Button variant="ghost" onClick={handleBulkReject} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl transition-colors h-auto">
+              <Button variant="ghost" onClick={handleBulkReject} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/10 dark:hover:bg-red-900/20 rounded-2xl transition-colors h-auto">
                 <XCircle className="w-4 h-4" /> Toplu Reddet
               </Button>
               <PermissionGate permission="invoices.documents.download.view">
@@ -732,12 +732,12 @@ export function IncomingInvoicesPage() {
                   variant="ghost"
                   label="Dışa Aktar"
                   compact
-                  iconClassName="text-blue-600"
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-colors h-auto"
+                  iconClassName="text-primary"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/10 dark:hover:bg-blue-900/20 rounded-2xl transition-colors h-auto"
                 />
               </PermissionGate>
               <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
-              <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-2xl transition-colors h-auto">
+              <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted dark:hover:bg-gray-700 rounded-2xl transition-colors h-auto">
                 <X className="w-4 h-4" /> Seçimi Kaldır
               </Button>
             </div>
@@ -766,7 +766,7 @@ export function IncomingInvoicesPage() {
             style={{ height: '90vh' }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+            <div className="flex items-center justify-between p-4 border-b border-border flex-shrink-0">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white truncate pr-4">{pdfModal.title}</h2>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <a
@@ -780,7 +780,7 @@ export function IncomingInvoicesPage() {
                 <Button
                   variant="ghost"
                   onClick={() => { URL.revokeObjectURL(pdfModal.blobUrl.split('#')[0]); setPdfModal(null); }}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                  className="text-muted-foreground hover:text-muted-foreground dark:hover:text-gray-200"
                 >
                   <X size={24} />
                 </Button>
@@ -828,19 +828,19 @@ function IncomingInvoiceMobileCard({ invoice, onView, onAccept, onReject, onDown
   }, [menuOpen]);
 
   return (
-    <div className={cn("bg-white dark:bg-gray-900 rounded-xl border shadow-sm overflow-visible relative transition-all", isSelected ? "border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 dark:border-blue-500" : "border-gray-200 dark:border-gray-700")}>
+    <div className={cn("bg-white dark:bg-gray-900 rounded-xl border shadow-sm overflow-visible relative transition-all", isSelected ? "border-blue-500 bg-primary/10/50 dark:border-blue-500" : "border-border")}>
       {isSelectionMode && (
         <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
           {isSelected ? (
-            <CheckSquare className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <CheckSquare className="w-6 h-6 text-primary" />
           ) : (
-            <Square className="w-6 h-6 text-gray-300 dark:text-gray-600" />
+            <Square className="w-6 h-6 text-gray-300" />
           )}
         </div>
       )}
       {/* Tappable card body */}
       <div
-        className={cn("p-4 cursor-pointer active:bg-gray-50 dark:active:bg-gray-800 transition-colors", isSelectionMode && "pr-12")}
+        className={cn("p-4 cursor-pointer active:bg-muted dark:active:bg-gray-800 transition-colors", isSelectionMode && "pr-12")}
         onClick={() => {
           if (isSelectionMode && onToggleSelect) onToggleSelect();
           else onView();
@@ -849,9 +849,9 @@ function IncomingInvoiceMobileCard({ invoice, onView, onAccept, onReject, onDown
         <div className="flex items-start justify-between mb-2">
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{invoice.invoiceNumber}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">{invoice.supplierName}</p>
+            <p className="text-xs text-muted-foreground mt-0.5 truncate">{invoice.supplierName}</p>
             {invoice.supplierTaxNumber && (
-              <p className="text-xs text-gray-400 dark:text-gray-500">VKN: {invoice.supplierTaxNumber}</p>
+              <p className="text-xs text-muted-foreground">VKN: {invoice.supplierTaxNumber}</p>
             )}
           </div>
           <div className="flex items-center gap-2 ml-2 flex-shrink-0">
@@ -866,20 +866,20 @@ function IncomingInvoiceMobileCard({ invoice, onView, onAccept, onReject, onDown
                 <MoreVertical className="w-4 h-4" />
               </Button>
               {menuOpen && (
-                <div className="absolute right-0 top-8 z-50 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl">
-                  <Button variant="ghost" fullWidth onClick={() => { setMenuOpen(false); onView(); }} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 justify-start h-auto">
+                <div className="absolute right-0 top-8 z-50 w-48 bg-white dark:bg-gray-800 border border-border rounded-2xl shadow-xl">
+                  <Button variant="ghost" fullWidth onClick={() => { setMenuOpen(false); onView(); }} className="flex items-center gap-2 px-4 py-3 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 justify-start h-auto">
                     <Eye className="w-4 h-4" /> Görüntüle
                   </Button>
-                  <Button variant="ghost" fullWidth onClick={() => { setMenuOpen(false); onDownload(); }} className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 justify-start h-auto">
+                  <Button variant="ghost" fullWidth onClick={() => { setMenuOpen(false); onDownload(); }} className="flex items-center gap-2 px-4 py-3 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 justify-start h-auto">
                     <Download className="w-4 h-4" /> PDF İndir
                   </Button>
-                  <div className="border-t border-gray-100 dark:border-gray-700" />
+                  <div className="border-t border-border" />
                   <Button
                     variant="ghost"
                     fullWidth
                     onClick={() => { setMenuOpen(false); onAccept(); }}
                     disabled={actionLoading === `accept-${invoice.invoiceId}`}
-                    className="flex items-center gap-2 px-4 py-3 text-sm text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 disabled:opacity-50 justify-start h-auto"
+                    className="flex items-center gap-2 px-4 py-3 text-sm text-success hover:bg-success/10 dark:hover:bg-green-900/20 disabled:opacity-50 justify-start h-auto"
                   >
                     <CheckCircle className="w-4 h-4" /> Kabul Et
                   </Button>
@@ -888,7 +888,7 @@ function IncomingInvoiceMobileCard({ invoice, onView, onAccept, onReject, onDown
                     fullWidth
                     onClick={() => { setMenuOpen(false); onReject(); }}
                     disabled={actionLoading === `reject-${invoice.invoiceId}`}
-                    className="flex items-center gap-2 px-4 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 justify-start h-auto"
+                    className="flex items-center gap-2 px-4 py-3 text-sm text-destructive hover:bg-destructive/10 dark:hover:bg-red-900/20 disabled:opacity-50 justify-start h-auto"
                   >
                     <XCircle className="w-4 h-4" /> Reddet
                   </Button>
@@ -901,12 +901,12 @@ function IncomingInvoiceMobileCard({ invoice, onView, onAccept, onReject, onDown
           <span className="text-sm font-semibold text-gray-900 dark:text-white">
             {formatCurrency(Number(invoice.totalAmount), invoice.currency || 'TRY')}
           </span>
-          <span className="text-xs text-gray-500 dark:text-gray-400">
+          <span className="text-xs text-muted-foreground">
             {formatDate(invoice.invoiceDate)}
           </span>
         </div>
         {invoice.isConvertedToPurchase && (
-          <div className="mt-2 text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+          <div className="mt-2 text-xs text-success flex items-center gap-1">
             <ShoppingCart className="w-3 h-3" /> Alışa dönüştürüldü
           </div>
         )}

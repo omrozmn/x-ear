@@ -108,7 +108,7 @@ export function AppointmentCard({
               <Text className="text-sm font-medium truncate">
                 {appointment.partyName || 'Hasta bilgisi yok'}
               </Text>
-              <Text className="text-xs text-gray-500">
+              <Text className="text-xs text-muted-foreground">
                 {appointment.time}
               </Text>
             </div>
@@ -130,13 +130,13 @@ export function AppointmentCard({
           <HStack spacing="sm" className="items-start justify-between">
             <div className="flex-1 min-w-0">
               <HStack spacing="xs" className="items-center mb-1">
-                <User className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                <User className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 <Text className="font-medium truncate">
                   {appointment.partyName}
                 </Text>
               </HStack>
 
-              <HStack spacing="xs" className="items-center text-sm text-gray-600">
+              <HStack spacing="xs" className="items-center text-sm text-muted-foreground">
                 <Clock className="w-3 h-3 flex-shrink-0" />
                 <Text>
                   {showDate && format(new Date(appointment.date), 'dd MMM', { locale: tr })} {appointment.time}
@@ -167,7 +167,7 @@ export function AppointmentCard({
 
           {/* Notes */}
           {appointment.notes && (
-            <Text className="text-sm text-gray-600 line-clamp-2">
+            <Text className="text-sm text-muted-foreground line-clamp-2">
               {appointment.notes}
             </Text>
           )}
@@ -213,7 +213,7 @@ export function AppointmentCard({
                     e.stopPropagation();
                     onDelete();
                   }}
-                  className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                  className="flex-1 text-destructive hover:text-destructive hover:bg-destructive/10"
                 >
                   <Trash2 className="w-3 h-3 mr-1" />
                   Sil

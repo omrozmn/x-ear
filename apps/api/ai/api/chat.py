@@ -315,8 +315,16 @@ async def chat(
         awaiting_slot_fill = False
         slot_name = None
         
-        # Build context with conversation history and pending plan
+        # Inject tenant + sector + country context
+        from ai.services.tenant_context import get_tenant_context
+        from ai.services.sector_context import get_sector_context
+        tenant_ctx = get_tenant_context(db, tenant_id)
+        sector_ctx = get_sector_context(db, tenant_id)
+
+        # Build context with tenant info, sector awareness, and conversation history
         full_context = request.context or {}
+        full_context["tenant_context"] = tenant_ctx
+        full_context["sector"] = sector_ctx
         full_context["conversation_history"] = [turn.to_dict() for turn in conversation_history]
         
         # Get all entities mentioned so far (Requirement 4.4)
@@ -368,6 +376,23 @@ async def chat(
                     else:
                         result.intent.intent_type = IntentType.ACTION
                     logger.info(f"SLOT_FILL upgraded to {result.intent.intent_type} for {prev_action_type} with merged entities")
+
+            # Entity Resolution: resolve party_name → party_id using FTS + fuzzy search
+            entities = result.intent.entities
+            if entities.get("party_name") and not entities.get("party_id"):
+                try:
+                    from ai.services.entity_resolver import get_entity_resolver
+                    resolver = get_entity_resolver(db)
+                    resolution = resolver.resolve_party(entities["party_name"], tenant_id)
+                    if resolution.resolved and resolution.entity:
+                        entities["party_id"] = resolution.entity.entity_id
+                        entities["_resolved_party"] = resolution.entity.display_name
+                        logger.info(f"Resolved party '{entities['party_name']}' → {resolution.entity.entity_id}")
+                    elif resolution.needs_clarification:
+                        result.intent.clarification_needed = True
+                        result.intent.clarification_question = resolution.clarification_message
+                except Exception as e:
+                    logger.warning(f"Entity resolution failed: {e}")
 
     except Exception as e:
         logger.error(f"Intent refiner error: {e}")
@@ -729,7 +754,10 @@ async def chat(
         # so the frontend goes straight to confirmation/execution instead of slot-filling.
         matched_capability_response = None
 
-    # Generate response message
+    # Generate response message with natural language formatting
+    from ai.services.response_formatter import get_response_formatter
+    formatter = get_response_formatter(locale=lang)
+
     response_message = None
     if result.intent:
         response_message = result.intent.conversational_response or result.intent.reasoning

@@ -38,7 +38,7 @@ export const PromissoryNoteForm: React.FC<PromissoryNoteFormProps> = ({
       {/* Existing Promissory Notes */}
       {promissoryNotes.length > 0 && (
         <div>
-          <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+          <h4 className="font-medium text-foreground mb-3 flex items-center gap-2">
             <FileText className="h-4 w-4" />
             Mevcut Senetler
           </h4>
@@ -48,7 +48,7 @@ export const PromissoryNoteForm: React.FC<PromissoryNoteFormProps> = ({
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <div className="font-medium">Senet #{note.noteNumber}</div>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-muted-foreground">
                       Vade: {new Date(note.dueDate).toLocaleDateString('tr-TR')}
                     </div>
                   </div>
@@ -67,16 +67,16 @@ export const PromissoryNoteForm: React.FC<PromissoryNoteFormProps> = ({
 
                 <div className="grid grid-cols-3 gap-4 text-sm mb-3">
                   <div>
-                    <span className="text-gray-600">Toplam:</span>
+                    <span className="text-muted-foreground">Toplam:</span>
                     <div className="font-medium">{formatCurrency(note.amount)}</div>
                   </div>
                   <div>
-                    <span className="text-gray-600">Ödenen:</span>
-                    <div className="font-medium text-green-600">{formatCurrency(note.paidAmount)}</div>
+                    <span className="text-muted-foreground">Ödenen:</span>
+                    <div className="font-medium text-success">{formatCurrency(note.paidAmount)}</div>
                   </div>
                   <div>
-                    <span className="text-gray-600">Kalan:</span>
-                    <div className="font-medium text-red-600">{formatCurrency(note.remainingAmount)}</div>
+                    <span className="text-muted-foreground">Kalan:</span>
+                    <div className="font-medium text-destructive">{formatCurrency(note.remainingAmount)}</div>
                   </div>
                 </div>
 
@@ -110,7 +110,7 @@ export const PromissoryNoteForm: React.FC<PromissoryNoteFormProps> = ({
                 )}
 
                 {note.notes && (
-                  <div className="mt-3 text-sm text-gray-600">
+                  <div className="mt-3 text-sm text-muted-foreground">
                     <strong>Not:</strong> {note.notes}
                   </div>
                 )}
@@ -122,7 +122,7 @@ export const PromissoryNoteForm: React.FC<PromissoryNoteFormProps> = ({
 
       {/* Create New Promissory Note */}
       <div>
-        <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+        <h4 className="font-medium text-foreground mb-3 flex items-center gap-2">
           <FileText className="h-4 w-4" />
           Yeni Senet Oluştur
         </h4>
@@ -130,7 +130,7 @@ export const PromissoryNoteForm: React.FC<PromissoryNoteFormProps> = ({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Senet Numarası
               </label>
               <Input
@@ -140,11 +140,11 @@ export const PromissoryNoteForm: React.FC<PromissoryNoteFormProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Tutar
               </label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   name="amount"
                   type="number"
@@ -159,11 +159,11 @@ export const PromissoryNoteForm: React.FC<PromissoryNoteFormProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Vade Tarihi
             </label>
             <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 name="dueDate"
                 type="date"
@@ -174,7 +174,7 @@ export const PromissoryNoteForm: React.FC<PromissoryNoteFormProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Notlar (İsteğe Bağlı)
             </label>
             <Textarea

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Input, Button } from '@x-ear/ui-web';
-import { Search } from 'lucide-react';
+import { Search, ScanLine } from 'lucide-react';
+import { BarcodeScannerModal } from '../../../barcode';
 
 interface DeviceInventoryItem {
   id: string;
@@ -38,45 +39,58 @@ export const DeviceInventorySearch: React.FC<DeviceInventorySearchProps> = ({
   filteredDevices,
   onDeviceSelect
 }) => {
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
+      <label className="block text-sm font-medium text-foreground mb-2">
         Envanter Arama
       </label>
-      <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <Search className="w-4 h-4 text-gray-400" />
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="w-4 h-4 text-muted-foreground" />
+          </div>
+          <Input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="Marka, model veya barkod ile ara..."
+            className="pl-10"
+          />
         </div>
-        <Input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Marka, model veya barkod ile ara..."
-          className="pl-10"
-        />
+        <button
+          data-allow-raw="true"
+          type="button"
+          onClick={() => setIsScannerOpen(true)}
+          className="p-2.5 border border-border rounded-xl hover:bg-muted transition-colors"
+          title="Barkod tara"
+        >
+          <ScanLine className="h-5 w-5 text-muted-foreground" />
+        </button>
       </div>
       
       {searchTerm && filteredDevices.length > 0 && (
-        <div className="mt-2 border border-gray-200 rounded-2xl max-h-60 overflow-y-auto">
+        <div className="mt-2 border border-border rounded-2xl max-h-60 overflow-y-auto">
           {filteredDevices.map((device) => (
-            <div key={device.id} className="p-3 border-b border-gray-100 last:border-b-0">
+            <div key={device.id} className="p-3 border-b border-border last:border-b-0">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">{device.brand} {device.model}</p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     {formatCurrency(device.price)} • Stok: {device.availableInventory}
                   </p>
                   {device.categoryDisplayName && (
-                    <p className="text-xs text-gray-400">Kategori: {device.categoryDisplayName}</p>
+                    <p className="text-xs text-muted-foreground">Kategori: {device.categoryDisplayName}</p>
                   )}
                   {device.barcode && (
-                    <p className="text-xs text-gray-400">Barkod: {device.barcode}</p>
+                    <p className="text-xs text-muted-foreground">Barkod: {device.barcode}</p>
                   )}
                   {device.serialNumber && (
-                    <p className="text-xs text-gray-400">Seri No: {device.serialNumber}</p>
+                    <p className="text-xs text-muted-foreground">Seri No: {device.serialNumber}</p>
                   )}
                   {device.vatRate && (
-                    <p className="text-xs text-gray-400">KDV: %{device.vatRate}</p>
+                    <p className="text-xs text-muted-foreground">KDV: %{device.vatRate}</p>
                   )}
                 </div>
                 <Button
@@ -92,6 +106,17 @@ export const DeviceInventorySearch: React.FC<DeviceInventorySearchProps> = ({
           ))}
         </div>
       )}
+
+      <BarcodeScannerModal
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onScan={(barcode) => {
+          onSearchChange(barcode);
+          setIsScannerOpen(false);
+        }}
+        mode="input"
+        title="Cihaz Barkodu Tara"
+      />
     </div>
   );
 };

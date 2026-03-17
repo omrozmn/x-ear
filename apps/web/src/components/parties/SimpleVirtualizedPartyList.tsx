@@ -192,7 +192,7 @@ export const SimpleVirtualizedPartyList: React.FC<VirtualizedPartyListProps> = (
           right: 0,
           height: `${ITEM_HEIGHT}px`
         }}
-        className={`flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${isSelected ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : ''
+        className={`flex items-center px-4 py-3 border-b border-border hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${isSelected ? 'bg-primary/10 border-blue-200 dark:border-blue-800' : ''
           }`}
       >
         {/* Selection Checkbox */}
@@ -205,8 +205,8 @@ export const SimpleVirtualizedPartyList: React.FC<VirtualizedPartyListProps> = (
 
         {/* Party Avatar */}
         <div className="flex-shrink-0 mr-4">
-          <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-            <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+            <User className="w-5 h-5 text-primary" />
           </div>
         </div>
 
@@ -214,7 +214,7 @@ export const SimpleVirtualizedPartyList: React.FC<VirtualizedPartyListProps> = (
         <div className="flex-1 min-w-0">
           <div className="flex items-center space-x-3 mb-1">
             <h3
-              className="text-sm font-medium text-gray-900 dark:text-white truncate cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
+              className="text-sm font-medium text-gray-900 dark:text-white truncate cursor-pointer hover:text-primary dark:hover:text-blue-400"
               onClick={() => onPartyClick?.(party)}
             >
               {`${party.firstName || ''} ${party.lastName || ''}`.trim() || 'İsimsiz Hasta'}
@@ -223,7 +223,7 @@ export const SimpleVirtualizedPartyList: React.FC<VirtualizedPartyListProps> = (
             {getLabelBadge(party.label)}
           </div>
 
-          <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
+          <div className="flex items-center space-x-4 text-xs text-muted-foreground">
             {party.tcNumber && (
               <span>TC: {party.tcNumber}</span>
             )}
@@ -240,7 +240,7 @@ export const SimpleVirtualizedPartyList: React.FC<VirtualizedPartyListProps> = (
               </div>
             )}
             {party.devices && party.devices.length > 0 && (
-              <span className="text-green-600">
+              <span className="text-success">
                 {party.devices.length} cihaz
               </span>
             )}
@@ -305,7 +305,7 @@ export const SimpleVirtualizedPartyList: React.FC<VirtualizedPartyListProps> = (
     return (
       <div className="flex items-center justify-center py-12">
         <Loading size="lg" />
-        <span className="ml-2 text-gray-600 dark:text-gray-400">Hastalar yükleniyor...</span>
+        <span className="ml-2 text-muted-foreground">Hastalar yükleniyor...</span>
       </div>
     );
   }
@@ -316,7 +316,7 @@ export const SimpleVirtualizedPartyList: React.FC<VirtualizedPartyListProps> = (
   return (
     <div className={`bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-xl ${className}`} ref={containerRef}>
       {/* Header with Search and Filters */}
-      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+      <div className="px-4 py-3 border-b border-border">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-3">
             <Checkbox
@@ -324,7 +324,7 @@ export const SimpleVirtualizedPartyList: React.FC<VirtualizedPartyListProps> = (
               indeterminate={isPartiallySelected}
               onChange={handleSelectAll}
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">
+            <span className="text-sm text-foreground">
               {selectedParties.length > 0
                 ? `${selectedParties.length} hasta seçildi`
                 : `${parties.length} hasta`
@@ -345,7 +345,7 @@ export const SimpleVirtualizedPartyList: React.FC<VirtualizedPartyListProps> = (
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Hasta ara (isim, TC, telefon)..."
             value={searchTerm}
@@ -366,7 +366,7 @@ export const SimpleVirtualizedPartyList: React.FC<VirtualizedPartyListProps> = (
                 { value: 'inactive', label: 'Pasif' },
                 { value: 'archived', label: 'Arşivlenmiş' }
               ]}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="px-3 py-2 border border-border rounded-xl text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
 
             <Select
@@ -380,7 +380,7 @@ export const SimpleVirtualizedPartyList: React.FC<VirtualizedPartyListProps> = (
                 { value: 'control', label: 'Kontrol' },
                 { value: 'renewal', label: 'Yenileme' }
               ]}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="px-3 py-2 border border-border rounded-xl text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
 
             <Select
@@ -395,7 +395,7 @@ export const SimpleVirtualizedPartyList: React.FC<VirtualizedPartyListProps> = (
                 { value: 'kontrol-hastasi', label: 'Kontrol Hastası' },
                 { value: 'satis-tamamlandi', label: 'Satış Tamamlandı' }
               ]}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="px-3 py-2 border border-border rounded-xl text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
 
             <Select
@@ -406,7 +406,7 @@ export const SimpleVirtualizedPartyList: React.FC<VirtualizedPartyListProps> = (
                 { value: 'true', label: 'Cihazı Var' },
                 { value: 'false', label: 'Cihazı Yok' }
               ]}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="px-3 py-2 border border-border rounded-xl text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
 
             <Select
@@ -419,7 +419,7 @@ export const SimpleVirtualizedPartyList: React.FC<VirtualizedPartyListProps> = (
                 { value: 'rejected', label: 'Reddedildi' },
                 { value: 'paid', label: 'Ödendi' }
               ]}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="px-3 py-2 border border-border rounded-xl text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
         )}
@@ -440,9 +440,9 @@ export const SimpleVirtualizedPartyList: React.FC<VirtualizedPartyListProps> = (
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-12">
-          <User className="w-12 h-12 text-gray-400 mb-4" />
+          <User className="w-12 h-12 text-muted-foreground mb-4" />
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Hasta bulunamadı</h3>
-          <p className="text-gray-600 dark:text-gray-400 text-center">
+          <p className="text-muted-foreground text-center">
             {searchTerm || Object.values(filters || {}).some(v => v)
               ? 'Arama kriterlerinize uygun hasta bulunamadı.'
               : 'Henüz hasta kaydı bulunmuyor.'
@@ -453,9 +453,9 @@ export const SimpleVirtualizedPartyList: React.FC<VirtualizedPartyListProps> = (
 
       {/* Loading indicator at bottom */}
       {loading && parties.length > 0 && (
-        <div className="flex items-center justify-center py-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-center py-4 border-t border-border">
           <Loading size="sm" />
-          <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Daha fazla hasta yükleniyor...</span>
+          <span className="ml-2 text-sm text-muted-foreground">Daha fazla hasta yükleniyor...</span>
         </div>
       )}
 

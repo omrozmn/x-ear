@@ -16,6 +16,7 @@ import type { ActivityLogRead, ExecuteResponse, ListActivityLogsParams } from '@
 import { Button, Input, Select, DataTable } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
 import { DesktopPageHeader } from '../../components/layout/DesktopPageHeader';
+import toast from 'react-hot-toast';
 
 // Extended interface to cover properties present in API response but missing from current schema
 interface ExtendedActivityLogRead extends ActivityLogRead {
@@ -52,53 +53,53 @@ function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalProps) {
                     <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="text-xs text-gray-500 dark:text-gray-400">Tarih</label>
+                                <label className="text-xs text-muted-foreground">Tarih</label>
                                 <p className="font-medium dark:text-gray-200">{log.createdAt ? new Date(String(log.createdAt)).toLocaleString('tr-TR') : '-'}</p>
                             </div>
                             <div>
-                                <label className="text-xs text-gray-500 dark:text-gray-400">Aksiyon</label>
+                                <label className="text-xs text-muted-foreground">Aksiyon</label>
                                 <p className="font-medium dark:text-gray-200">{log.action}</p>
                             </div>
                             <div>
-                                <label className="text-xs text-gray-500 dark:text-gray-400">Kullanıcı</label>
+                                <label className="text-xs text-muted-foreground">Kullanıcı</label>
                                 <p className="font-medium dark:text-gray-200">{log.userName || log.userId}</p>
-                                {log.userEmail && <p className="text-xs text-gray-500 dark:text-gray-400">{log.userEmail}</p>}
+                                {log.userEmail && <p className="text-xs text-muted-foreground">{log.userEmail}</p>}
                             </div>
                             <div>
-                                <label className="text-xs text-gray-500 dark:text-gray-400">Şube</label>
+                                <label className="text-xs text-muted-foreground">Şube</label>
                                 <p className="font-medium dark:text-gray-200">{log.branchName || log.branchId || '-'}</p>
                             </div>
                             <div>
-                                <label className="text-xs text-gray-500 dark:text-gray-400">Rol</label>
+                                <label className="text-xs text-muted-foreground">Rol</label>
                                 <p className="font-medium dark:text-gray-200">{log.role || '-'}</p>
                             </div>
                             <div>
-                                <label className="text-xs text-gray-500 dark:text-gray-400">Varlık</label>
+                                <label className="text-xs text-muted-foreground">Varlık</label>
                                 <p className="font-medium dark:text-gray-200">
                                     {log.entityType} - {log.partyName ? `${log.partyName} (${log.entityId})` : log.entityId}
                                 </p>
                             </div>
                             <div>
-                                <label className="text-xs text-gray-500 dark:text-gray-400">IP Adresi</label>
+                                <label className="text-xs text-muted-foreground">IP Adresi</label>
                                 <p className="font-mono text-sm dark:text-gray-300">{log.ipAddress}</p>
                             </div>
                             <div>
-                                <label className="text-xs text-gray-500 dark:text-gray-400">Kritik</label>
+                                <label className="text-xs text-muted-foreground">Kritik</label>
                                 <p className="font-medium dark:text-gray-200">{log.isCritical ? 'Evet' : 'Hayır'}</p>
                             </div>
                         </div>
 
                         {log.message && (
                             <div>
-                                <label className="text-xs text-gray-500 dark:text-gray-400">Mesaj</label>
+                                <label className="text-xs text-muted-foreground">Mesaj</label>
                                 <p className="font-medium dark:text-gray-200">{log.message}</p>
                             </div>
                         )}
 
                         {log.data && Object.keys(log.data).length > 0 && (
                             <div>
-                                <label className="text-xs text-gray-500 dark:text-gray-400">Veri</label>
-                                <pre className="bg-gray-100 dark:bg-gray-900 p-3 rounded-2xl text-xs overflow-x-auto dark:text-gray-300">
+                                <label className="text-xs text-muted-foreground">Veri</label>
+                                <pre className="bg-muted p-3 rounded-2xl text-xs overflow-x-auto dark:text-gray-300">
                                     {JSON.stringify(log.data, null, 2)}
                                 </pre>
                             </div>
@@ -106,8 +107,8 @@ function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalProps) {
 
                         {log.details && Object.keys(log.details).length > 0 && (
                             <div>
-                                <label className="text-xs text-gray-500 dark:text-gray-400">Detaylar</label>
-                                <pre className="bg-gray-100 dark:bg-gray-900 p-3 rounded-2xl text-xs overflow-x-auto dark:text-gray-300">
+                                <label className="text-xs text-muted-foreground">Detaylar</label>
+                                <pre className="bg-muted p-3 rounded-2xl text-xs overflow-x-auto dark:text-gray-300">
                                     {JSON.stringify(log.details, null, 2)}
                                 </pre>
                             </div>
@@ -115,8 +116,8 @@ function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalProps) {
 
                         {log.userAgent && (
                             <div>
-                                <label className="text-xs text-gray-500 dark:text-gray-400">User Agent</label>
-                                <p className="text-xs text-gray-600 dark:text-gray-400 break-all">{log.userAgent}</p>
+                                <label className="text-xs text-muted-foreground">User Agent</label>
+                                <p className="text-xs text-muted-foreground break-all">{log.userAgent}</p>
                             </div>
                         )}
                     </div>
@@ -152,16 +153,16 @@ export default function ActivityLogsPage() {
         mutation: {
             onSuccess: (data: ExecuteResponse) => {
                 if (data.status === 'error') {
-                    alert('Geri alma işleminde hata: ' + data.error);
+                    toast.error('Geri alma işleminde hata: ' + data.error);
                 } else {
-                    alert('Geri alma işlemi başarıyla tamamlandı.');
+                    toast.success('Geri alma işlemi başarıyla tamamlandı.');
                     // Refresh logs (tanstack query invalidation is better, but simple refresh works)
                     window.location.reload();
                 }
             },
             onError: (error: unknown) => {
                 const msg = error instanceof Error ? error.message : JSON.stringify(error);
-                alert('Geri alma işleminde teknik bir hata oluştu: ' + msg);
+                toast.error('Geri alma işleminde teknik bir hata oluştu: ' + msg);
             }
         }
     });
@@ -209,14 +210,14 @@ export default function ActivityLogsPage() {
             key: '_critical',
             title: '',
             render: (_, log) => log.isCritical ? (
-                <span title="Kritik İşlem"><AlertTriangle className="w-4 h-4 text-red-500" /></span>
+                <span title="Kritik İşlem"><AlertTriangle className="w-4 h-4 text-destructive" /></span>
             ) : null,
         },
         {
             key: 'createdAt',
             title: 'Tarih',
             render: (_, log) => (
-                <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400 whitespace-nowrap text-xs">
+                <div className="flex items-center gap-1 text-muted-foreground whitespace-nowrap text-xs">
                     <Calendar className="w-3 h-3" />
                     {log.createdAt ? new Date(String(log.createdAt)).toLocaleString('tr-TR') : '-'}
                 </div>
@@ -228,7 +229,7 @@ export default function ActivityLogsPage() {
             render: (_, log) => (
                 <div>
                     <p className="font-medium text-gray-900 dark:text-white truncate max-w-[150px]">{log.userName || '-'}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">{log.userEmail}</p>
+                    <p className="text-xs text-muted-foreground truncate max-w-[150px]">{log.userEmail}</p>
                 </div>
             ),
         },
@@ -236,21 +237,21 @@ export default function ActivityLogsPage() {
             key: 'action',
             title: 'Aksiyon',
             render: (_, log) => (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200">{log.action}</span>
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-blue-800 dark:text-blue-200">{log.action}</span>
             ),
         },
         {
             key: 'message',
             title: 'Mesaj',
             render: (_, log) => (
-                <span className="text-gray-600 dark:text-gray-400 max-w-[250px] truncate block" title={log.message ?? undefined}>{log.message || '-'}</span>
+                <span className="text-muted-foreground max-w-[250px] truncate block" title={log.message ?? undefined}>{log.message || '-'}</span>
             ),
         },
         {
             key: 'ipAddress',
             title: 'IP',
             render: (_, log) => (
-                <span className="text-xs text-gray-400 dark:text-gray-500 font-mono">{log.ipAddress}</span>
+                <span className="text-xs text-muted-foreground font-mono">{log.ipAddress}</span>
             ),
         },
         {
@@ -263,7 +264,7 @@ export default function ActivityLogsPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleRollback(String(log.data!.batch_id))}
-                            className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                            className="p-1.5 text-destructive hover:text-destructive hover:bg-destructive/10 dark:hover:bg-red-900/20"
                             title="Bu Toplu Yüklemeyi Geri Al"
                             disabled={isRollingBack}
                         >
@@ -277,7 +278,7 @@ export default function ActivityLogsPage() {
                         className="p-1.5"
                         title="Detay"
                     >
-                        <Eye className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                        <Eye className="w-4 h-4 text-muted-foreground" />
                     </Button>
                 </div>
             ),
@@ -295,7 +296,7 @@ export default function ActivityLogsPage() {
             />
 
             {/* Filters */}
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-border mb-6">
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4 items-end">
                     <Select
                         label="Şube"
@@ -347,14 +348,14 @@ export default function ActivityLogsPage() {
                         placeholder="Mesaj veya aksiyon ara..."
                         value={filters.search}
                         onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                        leftIcon={<Search className="w-4 h-4 text-gray-400" />}
+                        leftIcon={<Search className="w-4 h-4 text-muted-foreground" />}
                         fullWidth
                     />
                 </div>
             </div>
 
             {/* Table */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-border overflow-hidden">
                 <DataTable<ExtendedActivityLogRead>
                     data={logs}
                     columns={activityColumns}

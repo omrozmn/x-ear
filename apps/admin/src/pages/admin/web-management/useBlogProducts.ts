@@ -21,6 +21,7 @@ export function useBlogProducts(core: CoreState) {
     const [newMarketplaceProvider, setNewMarketplaceProvider] = useState('trendyol');
     const [newMarketplaceLabel, setNewMarketplaceLabel] = useState('');
     const [newMarketplaceUrl, setNewMarketplaceUrl] = useState('');
+    const [marketplaceUrlError, setMarketplaceUrlError] = useState<string | null>(null);
 
     const handleAddBlogPost = async () => {
         if (!workspace || !newBlogTitle.trim()) return;
@@ -69,8 +70,9 @@ export function useBlogProducts(core: CoreState) {
 
     const handleAddMarketplaceLink = async () => {
         if (!workspace || !newMarketplaceLabel.trim() || !newMarketplaceUrl.trim()) return;
+        setMarketplaceUrlError(null);
         try { const u = new URL(newMarketplaceUrl); if (!['http:', 'https:'].includes(u.protocol)) throw new Error(); }
-        catch { setError('Gecerli bir URL girin (https://...)'); return; }
+        catch { setMarketplaceUrlError('Gecerli bir URL girin (https://...)'); return; }
         addBusy('add-marketplace'); setError(null);
         try {
             await createMarketplaceLink(workspace.site.id, {
@@ -94,7 +96,7 @@ export function useBlogProducts(core: CoreState) {
         newBlogTitle, setNewBlogTitle, newBlogSlug, setNewBlogSlug, newBlogExcerpt, setNewBlogExcerpt,
         newProductName, setNewProductName, newProductSku, setNewProductSku, newProductPrice, setNewProductPrice,
         newMarketplaceProvider, setNewMarketplaceProvider, newMarketplaceLabel, setNewMarketplaceLabel,
-        newMarketplaceUrl, setNewMarketplaceUrl,
+        newMarketplaceUrl, setNewMarketplaceUrl, marketplaceUrlError, setMarketplaceUrlError,
         handleAddBlogPost, handleDeleteBlogPost, handleAddProduct, handleDeleteProduct,
         handleAddMarketplaceLink, handleDeleteMarketplaceLink,
     };

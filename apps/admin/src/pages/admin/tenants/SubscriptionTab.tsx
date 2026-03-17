@@ -227,7 +227,6 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
             await queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
             onUpdate();
         } catch (error: unknown) {
-            console.error('Add addon error:', error);
             toast.error(getApiErrorMessage(error, 'Ek özellik eklenemedi'));
         } finally {
             setLoadingAddon(false);
@@ -246,7 +245,6 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
             await queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
             onUpdate();
         } catch (error: unknown) {
-            console.error('Remove addon error:', error);
             toast.error(getApiErrorMessage(error, 'Ek özellik kaldırılamadı'));
         } finally {
             setLoadingRemoveAddon(false);
@@ -295,7 +293,6 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
             await queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
             onUpdate();
         } catch (error: unknown) {
-            console.error('Update SMS limit error:', error);
             toast.error(getApiErrorMessage(error, 'SMS limiti güncellenemedi'));
         } finally {
             setLoadingSmsUpdate(false);
@@ -336,7 +333,6 @@ export const SubscriptionTab = ({ tenant, onUpdate }: SubscriptionTabProps) => {
             await queryClient.invalidateQueries({ queryKey: ['/api/admin/tenants'] });
             onUpdate();
         } catch (error: unknown) {
-            console.error('Add SMS package error:', error);
             toast.error(getApiErrorMessage(error, 'SMS paketi eklenemedi'));
         } finally {
             setLoadingSmsUpdate(false);

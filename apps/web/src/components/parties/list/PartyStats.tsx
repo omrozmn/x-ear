@@ -22,8 +22,8 @@ export const PartyStats: React.FC<PartyStatsProps> = ({
       value: stats.total,
       icon: Users,
       color: 'blue',
-      bgColor: 'bg-blue-50',
-      iconColor: 'text-blue-600',
+      bgColor: 'bg-primary/10',
+      iconColor: 'text-primary',
       textColor: 'text-blue-900'
     },
     {
@@ -32,8 +32,8 @@ export const PartyStats: React.FC<PartyStatsProps> = ({
       value: stats.active,
       icon: UserCheck,
       color: 'green',
-      bgColor: 'bg-green-50',
-      iconColor: 'text-green-600',
+      bgColor: 'bg-success/10',
+      iconColor: 'text-success',
       textColor: 'text-green-900'
     },
     {
@@ -42,8 +42,8 @@ export const PartyStats: React.FC<PartyStatsProps> = ({
       value: stats.inactive,
       icon: UserX,
       color: 'red',
-      bgColor: 'bg-red-50',
-      iconColor: 'text-red-600',
+      bgColor: 'bg-destructive/10',
+      iconColor: 'text-destructive',
       textColor: 'text-red-900'
     },
     {
@@ -65,11 +65,11 @@ export const PartyStats: React.FC<PartyStatsProps> = ({
         return (
           <div
             key={item.id}
-            className={`${item.bgColor} rounded-2xl p-6 border border-gray-200`}
+            className={`${item.bgColor} rounded-2xl p-6 border border-border`}
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
+                <p className="text-sm font-medium text-muted-foreground mb-1">
                   {item.label}
                 </p>
                 <p className={`text-2xl font-bold ${item.textColor}`}>

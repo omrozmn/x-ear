@@ -249,11 +249,11 @@ export function TeamMembersTab() {
         const styles: Record<string, string> = {
             'admin': 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
             'tenant_admin': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
-            'doctor': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+            'doctor': 'bg-primary/10 text-blue-800 dark:text-blue-300',
             'secretary': 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
-            'user': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+            'user': 'bg-success/10 text-success'
         };
-        return styles[role] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
+        return styles[role] || 'bg-muted text-foreground/30';
     };
 
     const teamMemberColumns: Column<UserRead>[] = [
@@ -267,7 +267,7 @@ export function TeamMembersTab() {
                     </div>
                     <div>
                         <div className="font-medium text-gray-900 dark:text-white">{user.firstName} {user.lastName}</div>
-                        <div className="text-sm text-gray-500">{user.email}</div>
+                        <div className="text-sm text-muted-foreground">{user.email}</div>
                     </div>
                 </div>
             ),
@@ -285,7 +285,7 @@ export function TeamMembersTab() {
             key: 'isActive',
             title: 'Durum',
             render: (_, user) => (
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'}`}>
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isActive ? 'bg-success/10 text-success' : 'bg-destructive/10 text-red-800 dark:text-red-300'}`}>
                     {user.isActive ? 'Aktif' : 'Pasif'}
                 </span>
             ),
@@ -294,7 +294,7 @@ export function TeamMembersTab() {
             key: 'createdAt',
             title: 'Katılma Tarihi',
             render: (_, user) => (
-                <span className="text-sm text-gray-500">{user.createdAt ? new Date(user.createdAt).toLocaleDateString('tr-TR') : '-'}</span>
+                <span className="text-sm text-muted-foreground">{user.createdAt ? new Date(user.createdAt).toLocaleDateString('tr-TR') : '-'}</span>
             ),
         },
         {
@@ -304,18 +304,18 @@ export function TeamMembersTab() {
             render: (_, user) => (
                 <div className="flex justify-end items-center space-x-2">
                     {user.isActive ? (
-                        <Button onClick={() => handleToggleStatus(user)} size="sm" variant="outline" className="border-transparent text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:ring-yellow-500">
+                        <Button onClick={() => handleToggleStatus(user)} size="sm" variant="outline" className="border-transparent text-yellow-700 bg-warning/10 hover:bg-yellow-200 focus:ring-yellow-500">
                             Pasife Al
                         </Button>
                     ) : (
-                        <Button onClick={() => handleToggleStatus(user)} size="sm" variant="outline" className="border-transparent text-green-700 bg-green-100 hover:bg-green-200 focus:ring-green-500">
+                        <Button onClick={() => handleToggleStatus(user)} size="sm" variant="outline" className="border-transparent text-success bg-success/10 hover:bg-green-200 focus:ring-green-500">
                             Aktifleştir
                         </Button>
                     )}
-                    <Button onClick={() => handleEditClick(user)} variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800 p-1" title="Düzenle">
+                    <Button onClick={() => handleEditClick(user)} variant="ghost" size="sm" className="text-primary hover:text-blue-800 p-1" title="Düzenle">
                         <Pencil className="w-5 h-5" />
                     </Button>
-                    <Button onClick={() => handleDelete(user.id)} variant="ghost" size="sm" className="text-gray-400 hover:text-red-600 p-1" title="Kullanıcıyı Sil">
+                    <Button onClick={() => handleDelete(user.id)} variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive p-1" title="Kullanıcıyı Sil">
                         <Trash2 className="w-5 h-5" />
                     </Button>
                 </div>
@@ -343,7 +343,7 @@ export function TeamMembersTab() {
             />
 
             {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl flex items-center">
+                <div className="mb-6 p-4 bg-destructive/10 border border-red-200 text-destructive rounded-2xl flex items-center">
                     <AlertCircle className="w-5 h-5 mr-2" />
                     <div>
                         <div className="font-medium">Kullanicilar yuklenirken bir hata olustu.</div>
@@ -369,12 +369,12 @@ export function TeamMembersTab() {
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Yeni Kullanici Olustur</h2>
 
                         {inviteSuccess ? (
-                            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-2xl">
-                                <div className="flex items-center text-green-700 mb-2">
+                            <div className="mb-6 p-4 bg-success/10 border border-green-200 rounded-2xl">
+                                <div className="flex items-center text-success mb-2">
                                     <CheckCircle2 className="w-5 h-5 mr-2" />
                                     Davet Basarili!
                                 </div>
-                                <p className="text-sm text-green-600 break-all">{inviteSuccess}</p>
+                                <p className="text-sm text-success break-all">{inviteSuccess}</p>
                                 <Button
                                     onClick={() => { setIsModalOpen(false); setInviteSuccess(''); }}
                                     fullWidth
@@ -388,7 +388,7 @@ export function TeamMembersTab() {
                             <form onSubmit={handleInvite} className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ad</label>
+                                        <label className="block text-sm font-medium text-foreground mb-1">Ad</label>
                                         <Input
                                             type="text"
                                             required
@@ -405,7 +405,7 @@ export function TeamMembersTab() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Soyad</label>
+                                        <label className="block text-sm font-medium text-foreground mb-1">Soyad</label>
                                         <Input
                                             type="text"
                                             required
@@ -424,7 +424,7 @@ export function TeamMembersTab() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kullanici Adi *</label>
+                                    <label className="block text-sm font-medium text-foreground mb-1">Kullanici Adi *</label>
                                     <div className="relative">
 
                                         <Input
@@ -439,7 +439,7 @@ export function TeamMembersTab() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sifre *</label>
+                                    <label className="block text-sm font-medium text-foreground mb-1">Sifre *</label>
                                     <div className="relative">
 
                                         <Input
@@ -462,11 +462,11 @@ export function TeamMembersTab() {
                                             minLength={6}
                                         />
                                     </div>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Minimum 6 karakter</p>
+                                    <p className="text-xs text-muted-foreground mt-1">Minimum 6 karakter</p>
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">E-posta Adresi (Opsiyonel)</label>
+                                    <label className="block text-sm font-medium text-foreground mb-1">E-posta Adresi (Opsiyonel)</label>
                                     <div className="relative">
                                         <Input
                                             type="email"
@@ -478,7 +478,7 @@ export function TeamMembersTab() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rol</label>
+                                        <label className="block text-sm font-medium text-foreground mb-1">Rol</label>
                                         <div className="relative">
                                             <Select
                                                 value={inviteData.role}
@@ -493,13 +493,13 @@ export function TeamMembersTab() {
                                                 ]}
                                             />
                                             <div className="absolute left-3 top-2.5 pointer-events-none">
-                                                <Shield className="w-5 h-5 text-gray-400" />
+                                                <Shield className="w-5 h-5 text-muted-foreground" />
                                             </div>
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sube</label>
+                                        <label className="block text-sm font-medium text-foreground mb-1">Sube</label>
                                         <div className="relative">
                                             <Select
                                                 value={inviteData.branchId}
@@ -512,14 +512,14 @@ export function TeamMembersTab() {
                                                 }))}
                                             />
                                             <div className="absolute left-3 top-2.5 pointer-events-none">
-                                                <Building2 className="w-5 h-5 text-gray-400" />
+                                                <Building2 className="w-5 h-5 text-muted-foreground" />
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
                                 {inviteError && (
-                                    <div className="text-sm text-red-600 flex items-center">
+                                    <div className="text-sm text-destructive flex items-center">
                                         <AlertCircle className="w-4 h-4 mr-1" />
                                         {inviteError}
                                     </div>
@@ -558,7 +558,7 @@ export function TeamMembersTab() {
                         <form onSubmit={handleUpdateUser} className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ad</label>
+                                    <label className="block text-sm font-medium text-foreground mb-1">Ad</label>
                                     <Input
                                         type="text"
                                         value={editData.firstName}
@@ -566,7 +566,7 @@ export function TeamMembersTab() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Soyad</label>
+                                    <label className="block text-sm font-medium text-foreground mb-1">Soyad</label>
                                     <Input
                                         type="text"
                                         value={editData.lastName}
@@ -576,7 +576,7 @@ export function TeamMembersTab() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kullanici Adi</label>
+                                <label className="block text-sm font-medium text-foreground mb-1">Kullanici Adi</label>
                                 <div className="relative">
 
                                     <Input
@@ -590,7 +590,7 @@ export function TeamMembersTab() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Yeni Sifre (Opsiyonel)</label>
+                                <label className="block text-sm font-medium text-foreground mb-1">Yeni Sifre (Opsiyonel)</label>
                                 <div className="relative">
 
                                     <Input
@@ -615,7 +615,7 @@ export function TeamMembersTab() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">E-posta Adresi</label>
+                                <label className="block text-sm font-medium text-foreground mb-1">E-posta Adresi</label>
                                 <div className="relative">
 
                                     <Input
@@ -628,7 +628,7 @@ export function TeamMembersTab() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rol</label>
+                                <label className="block text-sm font-medium text-foreground mb-1">Rol</label>
                                 <div className="relative">
                                     <Select
                                         value={editData.role}
@@ -647,7 +647,7 @@ export function TeamMembersTab() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sube</label>
+                                <label className="block text-sm font-medium text-foreground mb-1">Sube</label>
                                 <div className="relative">
                                     <Select
                                         value={editData.branchId}
@@ -664,7 +664,7 @@ export function TeamMembersTab() {
                             </div>
 
                             {updateError && (
-                                <div className="text-sm text-red-600 flex items-center">
+                                <div className="text-sm text-destructive flex items-center">
                                     <AlertCircle className="w-4 h-4 mr-1" />
                                     {updateError}
                                 </div>
@@ -698,8 +698,8 @@ export function TeamMembersTab() {
             {confirmationModal.isOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-sm w-full p-6 transform transition-all">
-                        <div className={`flex items - center mb - 4 ${confirmationModal.type === 'danger' ? 'text-red-600' :
-                            confirmationModal.type === 'warning' ? 'text-amber-500' : 'text-blue-600'
+                        <div className={`flex items - center mb - 4 ${confirmationModal.type === 'danger' ? 'text-destructive' :
+                            confirmationModal.type === 'warning' ? 'text-amber-500' : 'text-primary'
                             } `}>
                             <AlertTriangle className="w-6 h-6 mr-2" />
                             <h3 className="text-lg font-bold text-gray-900 dark:text-white">
@@ -707,7 +707,7 @@ export function TeamMembersTab() {
                             </h3>
                         </div>
 
-                        <p className="text-gray-600 dark:text-gray-300 mb-6">
+                        <p className="text-muted-foreground mb-6">
                             {confirmationModal.message}
                         </p>
 

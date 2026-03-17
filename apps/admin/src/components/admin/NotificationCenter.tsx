@@ -58,8 +58,8 @@ export function NotificationCenter() {
         try {
             await markReadMutation.mutateAsync({ notificationId: id });
             refetch();
-        } catch (error) {
-            console.error('[NotificationCenter] Mark read failed:', error);
+        } catch {
+            // Silently fail - notification read status is non-critical
         }
     };
 

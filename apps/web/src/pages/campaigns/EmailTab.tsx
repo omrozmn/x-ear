@@ -85,7 +85,7 @@ export default function EmailTab() {
               className={`flex-1 rounded-2xl px-4 py-3 text-sm font-medium transition-all ${
                 activeTab === tab.id
                   ? 'bg-sky-600 text-white dark:bg-sky-500'
-                  : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
+                  : 'text-muted-foreground hover:bg-muted dark:hover:bg-gray-700'
               }`}
             >
               <span className="inline-flex items-center gap-2">

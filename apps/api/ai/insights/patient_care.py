@@ -560,3 +560,121 @@ class BilateralUpgradeAnalyzer(BaseAnalyzer):
                     "recommended_action_label": self._get_localized_text({"tr": "Bilateral Teklif Ver", "en": "Offer Bilateral"}, locale)
                 })
         return raw_insights
+
+
+class AccessoryCrossSellAnalyzer(BaseAnalyzer):
+    """PC-011: Accessory Cross-Sell Opportunity."""
+    insight_id = "PC-011"
+    schedule = "weekly"
+
+    async def analyze(self, tenant_id: str, locale: str = "tr") -> List[Dict[str, Any]]:
+        """Find patients with devices but no accessory purchases in 6 months."""
+        six_months = datetime.now(timezone.utc) - timedelta(days=180)
+        # Patients with device assignments but no recent accessory sales
+        patients_with_devices = self.db.query(DeviceAssignment.party_id).filter(DeviceAssignment.tenant_id == tenant_id, DeviceAssignment.status == "ASSIGNED").distinct().all()
+        party_ids = [p[0] for p in patients_with_devices]
+        if not party_ids:
+            return []
+        # Find those without recent accessory-category sales
+        recent_buyers = self.db.query(Sale.party_id).filter(Sale.tenant_id == tenant_id, Sale.party_id.in_(party_ids), Sale.created_at >= six_months).distinct().all()
+        recent_ids = {r[0] for r in recent_buyers}
+        candidates = [pid for pid in party_ids if pid not in recent_ids]
+
+        raw_insights = []
+        for pid in candidates[:15]:
+            party = self.db.query(Party).filter(Party.id == pid).first()
+            if not party: continue
+            name = f"{party.first_name} {party.last_name}"
+            titles = {"tr": f"Aksesuar Satış Fırsatı: {name}", "en": f"Accessory Cross-Sell: {name}"}
+            summaries = {"tr": f"{name} 6+ aydır aksesuar satın almadı. Pil, temizlik kiti vb. önerilebilir.", "en": f"{name} hasn't purchased accessories in 6+ months."}
+            raw_insights.append({"tenant_id": tenant_id, "type": self.insight_id, "category": "patient_care", "entity_type": "party", "entity_id": pid, "priority": OpportunityPriority.LOW, "confidence_score": 0.75, "impact_score": 0.40, "title": self._get_localized_text(titles, locale), "summary": self._get_localized_text(summaries, locale), "recommended_capability": "notification_send", "recommended_action_label": self._get_localized_text({"tr": "Teklif Gönder", "en": "Send Offer"}, locale)})
+        return raw_insights
+
+
+class DeviceUpgradeAnalyzer(BaseAnalyzer):
+    """PC-012: Device Upgrade Opportunity."""
+    insight_id = "PC-012"
+    schedule = "monthly"
+
+    async def analyze(self, tenant_id: str, locale: str = "tr") -> List[Dict[str, Any]]:
+        """Find patients with devices older than 4 years — upgrade candidates."""
+        four_years = datetime.now(timezone.utc) - timedelta(days=4*365)
+        old_assignments = self.db.query(DeviceAssignment).filter(DeviceAssignment.tenant_id == tenant_id, DeviceAssignment.status == "ASSIGNED", DeviceAssignment.created_at < four_years).limit(20).all()
+        raw_insights = []
+        for da in old_assignments:
+            party = self.db.query(Party).filter(Party.id == da.party_id).first()
+            if not party: continue
+            name = f"{party.first_name} {party.last_name}"
+            titles = {"tr": f"Cihaz Yükseltme: {name}", "en": f"Device Upgrade: {name}"}
+            summaries = {"tr": f"{name}'ın cihazı 4+ yıllık. Yeni teknoloji ile yükseltme önerilebilir.", "en": f"{name}'s device is 4+ years old. Upgrade recommended."}
+            raw_insights.append({"tenant_id": tenant_id, "type": self.insight_id, "category": "patient_care", "entity_type": "party", "entity_id": da.party_id, "priority": OpportunityPriority.MEDIUM, "confidence_score": 0.85, "impact_score": 0.55, "title": self._get_localized_text(titles, locale), "summary": self._get_localized_text(summaries, locale), "recommended_capability": "getDeviceRecommendations", "recommended_action_label": self._get_localized_text({"tr": "Cihaz Öner", "en": "Recommend Device"}, locale)})
+        return raw_insights
+
+
+class ReferralOpportunityAnalyzer(BaseAnalyzer):
+    """PC-013: Referral Opportunity Detection."""
+    insight_id = "PC-013"
+    schedule = "weekly"
+
+    async def analyze(self, tenant_id: str, locale: str = "tr") -> List[Dict[str, Any]]:
+        """Find satisfied long-term patients who could refer others."""
+        one_year = datetime.now(timezone.utc) - timedelta(days=365)
+        loyal = self.db.query(Sale.party_id, func.count(Sale.id).label('cnt')).filter(Sale.tenant_id == tenant_id, Sale.status == 'completed').group_by(Sale.party_id).having(func.count(Sale.id) >= 3).all()
+        raw_insights = []
+        for pid, cnt in loyal[:10]:
+            party = self.db.query(Party).filter(Party.id == pid).first()
+            if not party: continue
+            name = f"{party.first_name} {party.last_name}"
+            titles = {"tr": f"Referans Fırsatı: {name}", "en": f"Referral Opportunity: {name}"}
+            summaries = {"tr": f"{name} sadık müşteri ({cnt} satış). Referans programına davet edilebilir.", "en": f"{name} is a loyal customer ({cnt} sales). Referral invite recommended."}
+            raw_insights.append({"tenant_id": tenant_id, "type": self.insight_id, "category": "patient_care", "entity_type": "party", "entity_id": pid, "priority": OpportunityPriority.LOW, "confidence_score": 0.80, "impact_score": 0.35, "title": self._get_localized_text(titles, locale), "summary": self._get_localized_text(summaries, locale), "recommended_capability": "notification_send", "recommended_action_label": self._get_localized_text({"tr": "Davet Gönder", "en": "Send Invite"}, locale)})
+        return raw_insights
+
+
+class PostFittingFollowUpAnalyzer(BaseAnalyzer):
+    """PC-014: Post-Fitting Follow-Up."""
+    insight_id = "PC-014"
+    schedule = "weekly"
+
+    async def analyze(self, tenant_id: str, locale: str = "tr") -> List[Dict[str, Any]]:
+        """Find patients who had a device fitting 2-4 weeks ago with no follow-up."""
+        two_weeks = datetime.now(timezone.utc) - timedelta(days=14)
+        four_weeks = datetime.now(timezone.utc) - timedelta(days=28)
+        # Fittings 2-4 weeks ago
+        fittings = self.db.query(Appointment).filter(Appointment.tenant_id == tenant_id, Appointment.appointment_type == 'device_fitting', Appointment.status == 'COMPLETED', Appointment.date >= four_weeks, Appointment.date <= two_weeks).all()
+        raw_insights = []
+        for apt in fittings:
+            # Check no follow-up scheduled
+            followup = self.db.query(Appointment).filter(Appointment.tenant_id == tenant_id, Appointment.party_id == apt.party_id, Appointment.date > apt.date, Appointment.status != 'cancelled').first()
+            if followup: continue
+            party = self.db.query(Party).filter(Party.id == apt.party_id).first()
+            if not party: continue
+            name = f"{party.first_name} {party.last_name}"
+            titles = {"tr": f"Fitting Sonrası Kontrol: {name}", "en": f"Post-Fitting Follow-Up: {name}"}
+            summaries = {"tr": f"{name} 2-4 hafta önce cihaz fitting yaptı ama kontrol randevusu yok.", "en": f"{name} had fitting 2-4 weeks ago but no follow-up scheduled."}
+            raw_insights.append({"tenant_id": tenant_id, "type": self.insight_id, "category": "patient_care", "entity_type": "party", "entity_id": apt.party_id, "priority": OpportunityPriority.HIGH, "confidence_score": 0.90, "impact_score": 0.65, "title": self._get_localized_text(titles, locale), "summary": self._get_localized_text(summaries, locale), "recommended_capability": "createAppointment", "recommended_action_label": self._get_localized_text({"tr": "Kontrol Randevusu Oluştur", "en": "Schedule Follow-Up"}, locale)})
+        return raw_insights
+
+
+class SeasonalCampaignAnalyzer(BaseAnalyzer):
+    """PC-015: Seasonal Campaign Trigger."""
+    insight_id = "PC-015"
+    schedule = "monthly"
+
+    async def analyze(self, tenant_id: str, locale: str = "tr") -> List[Dict[str, Any]]:
+        """Suggest seasonal campaigns based on time of year."""
+        month = datetime.now().month
+        raw_insights = []
+        campaigns = {
+            1: ("Yeni Yıl Kampanyası", "New Year Campaign", "Yeni yıl indirimi ile hasta çekimi artırılabilir."),
+            3: ("Dünya İşitme Günü", "World Hearing Day", "3 Mart Dünya İşitme Günü için farkındalık kampanyası."),
+            5: ("Anneler Günü", "Mother's Day", "Anneler gününe özel işitme cihazı kampanyası."),
+            9: ("Okul Dönemi", "Back to School", "Çocuk hastaları için okul dönemi işitme kontrolü hatırlatması."),
+            11: ("Kış Bakım", "Winter Care", "Kış aylarında cihaz bakım kampanyası."),
+        }
+        if month in campaigns:
+            tr_name, en_name, desc = campaigns[month]
+            titles = {"tr": f"Sezonsal Kampanya: {tr_name}", "en": f"Seasonal Campaign: {en_name}"}
+            summaries = {"tr": desc, "en": f"Consider running a {en_name} promotion this month."}
+            raw_insights.append({"tenant_id": tenant_id, "type": self.insight_id, "category": "patient_care", "entity_type": "campaign", "entity_id": f"seasonal_{month}", "priority": OpportunityPriority.LOW, "confidence_score": 0.70, "impact_score": 0.35, "title": self._get_localized_text(titles, locale), "summary": self._get_localized_text(summaries, locale), "recommended_capability": "createCampaign", "recommended_action_label": self._get_localized_text({"tr": "Kampanya Oluştur", "en": "Create Campaign"}, locale)})
+        return raw_insights

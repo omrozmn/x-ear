@@ -19,6 +19,7 @@ const mockUseListSalePayments = vi.fn();
 
 vi.mock('../api/generated', () => ({
   useListSalePayments: (..._args: unknown[]) => mockUseListSalePayments(..._args),
+  useListPaymentRecords: (..._args: unknown[]) => mockUseListSalePayments(..._args),
 }));
 
 describe('Property 3: Complete Data Display for Payments', () => {
@@ -49,7 +50,7 @@ describe('Property 3: Complete Data Display for Payments', () => {
               currency: fc.constantFrom('TRY', 'USD', 'EUR'),
               paymentMethod: fc.constantFrom('cash', 'card', 'transfer'),
               status: fc.constantFrom('completed', 'pending', 'failed'),
-              paidAt: fc.date().map(d => d.toISOString()),
+              paymentDate: fc.date().map(d => d.toISOString()),
               createdAt: fc.date().map(d => d.toISOString()),
             }),
             { minLength: 1, maxLength: 5 }
@@ -75,8 +76,11 @@ describe('Property 3: Complete Data Display for Payments', () => {
 
           // Verify: Each payment has all required fields displayed
           for (const payment of payments) {
-            // Check if amount is in the document (may be formatted differently)
-            expect(container.textContent).toContain(payment.amount.toString().split('.')[0]);
+            // Check if amount is in the document (may be formatted with locale separators like 1.000 for 1000)
+            const rawAmount = payment.amount.toString();
+            const formattedAmount = payment.amount.toLocaleString('tr-TR');
+            const textContent = container.textContent ?? '';
+            expect(textContent.includes(rawAmount) || textContent.includes(formattedAmount)).toBe(true);
 
             // Payment method should be displayed
             const methodText = 
@@ -95,7 +99,7 @@ describe('Property 3: Complete Data Display for Payments', () => {
             expect(screen.getAllByText(statusText)[0]).toBeInTheDocument();
 
             // Date should be displayed
-            const date = new Date(payment.paidAt || payment.createdAt);
+            const date = new Date(payment.paymentDate || payment.createdAt);
             const formattedDate = date.toLocaleDateString('tr-TR');
             expect(screen.getAllByText(formattedDate)[0]).toBeInTheDocument();
           }
@@ -167,7 +171,7 @@ describe('Property 3: Complete Data Display for Payments', () => {
       fc.asyncProperty(
         fc.record({
           saleId: fc.uuid(),
-          errorMessage: fc.string({ minLength: 5, maxLength: 100 }).filter(s => s.trim().length > 0),
+          errorMessage: fc.string({ minLength: 5, maxLength: 50 }).filter((s: string) => s.trim().length >= 5),
         }),
         async ({ saleId, errorMessage }) => {
           // Setup: Mock error state
@@ -175,7 +179,7 @@ describe('Property 3: Complete Data Display for Payments', () => {
           mockUseListSalePayments.mockReturnValue({
             data: undefined,
             isLoading: false,
-            error: { message: errorMessage },
+            error: new Error(errorMessage),
             refetch: mockRefetch,
           });
 

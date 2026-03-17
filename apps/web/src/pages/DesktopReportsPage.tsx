@@ -147,8 +147,8 @@ export function DesktopReportsPage() {
 
   if (permissionsLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      <div className="flex items-center justify-center py-32">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -156,16 +156,14 @@ export function DesktopReportsPage() {
   // No permission at all
   if (!canViewReports && !canViewActivityLogs) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <NoPermission />
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <NoPermission />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <DesktopPageHeader
           title="Raporlar ve Analizler"
@@ -179,11 +177,11 @@ export function DesktopReportsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Filters - Only show for report tabs, not activity */}
         {activeTab !== 'activity' && allowedTabs.some((tab) => tab.id === activeTab) && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-border p-4 mb-6">
             <div className="flex items-center gap-4 flex-wrap">
               <div className="flex items-center gap-2">
-                <Filter className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Filtreler:</span>
+                <Filter className="w-5 h-5 text-muted-foreground" />
+                <span className="text-sm font-medium text-foreground">Filtreler:</span>
               </div>
               <div>
                 <Select
@@ -222,9 +220,9 @@ export function DesktopReportsPage() {
                       days: getDayCount(start, prev.dateRange.end)
                     }));
                   }}
-                  className="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                  className="px-3 py-2 text-sm rounded-lg border border-border bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                 />
-                <span className="text-sm text-gray-400">-</span>
+                <span className="text-sm text-muted-foreground">-</span>
                 <input
                   data-allow-raw="true"
                   type="date"
@@ -238,7 +236,7 @@ export function DesktopReportsPage() {
                       days: getDayCount(prev.dateRange.start, end)
                     }));
                   }}
-                  className="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                  className="px-3 py-2 text-sm rounded-lg border border-border bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                 />
               </div>
               <div>
@@ -269,8 +267,8 @@ export function DesktopReportsPage() {
         )}
 
         {/* Tabs */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div className="border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-border overflow-hidden">
+          <div className="border-b border-border overflow-x-auto">
             <nav className="-mb-px flex min-w-max gap-2 px-3 sm:gap-4 sm:px-6">
               {allowedTabs.map(tab => {
                 const Icon = tab.icon;
@@ -281,8 +279,8 @@ export function DesktopReportsPage() {
                     onClick={() => handleTabChange(tab.id)}
                     variant="ghost"
                     className={`${isActive
-                      ? 'border-blue-500 text-blue-600 dark:text-blue-400 dark:border-blue-400 rounded-none'
-                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                      ? 'border-blue-500 text-primary dark:border-blue-400 rounded-none'
+                      : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-gray-300 hover:border-border dark:hover:border-gray-600'
                       } shrink-0 whitespace-nowrap py-3 px-2 sm:py-4 sm:px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center transition-colors !w-auto !h-auto rounded-none`}
                   >
                     <Icon className="w-4 h-4 mr-1.5 sm:mr-2" />

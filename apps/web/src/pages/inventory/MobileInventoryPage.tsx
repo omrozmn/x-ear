@@ -12,6 +12,8 @@ import { toast } from 'react-hot-toast';
 import { Modal, Button } from '@x-ear/ui-web';
 import { InventoryForm } from '@/components/inventory/InventoryForm';
 import { useNewActionStore } from '@/stores/newActionStore';
+import { BarcodeScannerModal } from '@/components/barcode';
+import { useBarcodeKeyboardInput } from '@/hooks/useBarcodeKeyboardInput';
 import type { InventoryItem as InventoryFormItem } from '@/types/inventory';
 
 interface InventoryItem {
@@ -58,6 +60,20 @@ export const MobileInventoryPage: React.FC = () => {
     };
     const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isScannerOpen, setIsScannerOpen] = useState(false);
+
+    const handleBarcodeScan = useCallback((barcode: string) => {
+        setIsScannerOpen(false);
+        // Search for the scanned barcode
+        setSearchValue(barcode);
+        toast.success(`Barkod okundu: ${barcode}`);
+    }, []);
+
+    // USB barcode scanner support on page level
+    useBarcodeKeyboardInput({
+        onScan: handleBarcodeScan,
+        enabled: true,
+    });
 
     const { triggered, resetNewAction } = useNewActionStore();
 
@@ -112,7 +128,7 @@ export const MobileInventoryPage: React.FC = () => {
 
     const handleScan = () => {
         triggerSelection();
-        toast.success('Kamera ile tarama özelliği hazırlanıyor');
+        setIsScannerOpen(true);
     };
 
     return (
@@ -124,19 +140,19 @@ export const MobileInventoryPage: React.FC = () => {
                     <div className="flex items-center gap-1">
                         {isSelectionMode ? (
                             <>
-                                <Button variant="ghost" size="sm" onClick={toggleSelectAll} className="px-2 py-1 h-auto text-sm text-blue-600 font-medium">
+                                <Button variant="ghost" size="sm" onClick={toggleSelectAll} className="px-2 py-1 h-auto text-sm text-primary font-medium">
                                     {selectedIds.size === items.length && items.length > 0 ? 'Hiçbiri' : 'Tümünü Seç'}
                                 </Button>
-                                <Button variant="ghost" size="sm" onClick={handleCancelSelection} className="p-2 text-gray-600">
+                                <Button variant="ghost" size="sm" onClick={handleCancelSelection} className="p-2 text-muted-foreground">
                                     <X className="h-5 w-5" />
                                 </Button>
                             </>
                         ) : (
                             <>
-                                <Button variant="ghost" size="sm" onClick={() => { setIsSelectionMode(true); triggerSelection(); }} className="px-2 py-1 h-auto text-sm text-blue-600 font-medium">
+                                <Button variant="ghost" size="sm" onClick={() => { setIsSelectionMode(true); triggerSelection(); }} className="px-2 py-1 h-auto text-sm text-primary font-medium">
                                     Seç
                                 </Button>
-                                <Button variant="ghost" size="sm" className="p-2 text-gray-600">
+                                <Button variant="ghost" size="sm" className="p-2 text-muted-foreground">
                                     <Filter className="h-5 w-5" />
                                 </Button>
                             </>
@@ -146,10 +162,10 @@ export const MobileInventoryPage: React.FC = () => {
             />
 
             {/* Search & Scan Bar */}
-            <div className="px-4 pb-4 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-14 z-20">
+            <div className="px-4 pb-4 bg-white dark:bg-gray-900 border-b border-border sticky top-14 z-20">
                 <div className="flex gap-2">
                     <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <input
                             data-allow-raw="true"
                             type="text"
@@ -162,7 +178,7 @@ export const MobileInventoryPage: React.FC = () => {
                     <button
                         data-allow-raw="true"
                         onClick={handleScan}
-                        className="p-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl text-gray-600 dark:text-gray-300 active:bg-gray-100 dark:active:bg-gray-700 transition-colors border border-transparent"
+                        className="p-2.5 bg-gray-50 rounded-xl text-muted-foreground active:bg-muted dark:active:bg-gray-700 transition-colors border border-transparent"
                     >
                         <ScanLine className="h-5 w-5" />
                     </button>
@@ -190,16 +206,16 @@ export const MobileInventoryPage: React.FC = () => {
                                 className={cn(
                                     "p-4 rounded-xl border shadow-sm active:scale-[0.99] transition-all relative overflow-hidden",
                                     selectedIds.has(item.id)
-                                        ? "border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 dark:border-blue-500"
-                                        : "bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700"
+                                        ? "border-blue-500 bg-primary/10/50 dark:border-blue-500"
+                                        : "bg-white dark:bg-gray-800 border-border"
                                 )}
                             >
                                 {isSelectionMode && (
                                     <div className="absolute right-4 top-1/2 -translate-y-1/2">
                                         {selectedIds.has(item.id) ? (
-                                            <CheckSquare className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                                            <CheckSquare className="w-7 h-7 text-primary" />
                                         ) : (
-                                            <Square className="w-6 h-6 text-gray-300 dark:text-gray-600" />
+                                            <Square className="w-7 h-7 text-gray-300" />
                                         )}
                                     </div>
                                 )}
@@ -208,7 +224,7 @@ export const MobileInventoryPage: React.FC = () => {
                                         {item.imageUrl ? (
                                             <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover rounded-2xl" />
                                         ) : (
-                                            <Package className="h-8 w-8 text-gray-300 dark:text-gray-500" />
+                                            <Package className="h-8 w-8 text-gray-300" />
                                         )}
                                     </div>
 
@@ -222,21 +238,21 @@ export const MobileInventoryPage: React.FC = () => {
                                             </p>
                                         </div>
 
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                                        <p className="text-xs text-muted-foreground font-medium mb-2">
                                             {item.brand} {item.model}
                                         </p>
 
                                         <div className="flex items-center gap-3">
                                             <div className={cn(
                                                 "text-xs px-2 py-0.5 rounded-xl font-medium flex items-center gap-1",
-                                                (item.availableInventory || item.available_inventory || 0) > 0 ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300" : "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                                                (item.availableInventory || item.available_inventory || 0) > 0 ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
                                             )}>
                                                 <Tag className="h-3 w-3" />
                                                 Stok: {item.availableInventory || item.available_inventory || 0}
                                             </div>
 
                                             {item.category && (
-                                                <span className="text-xs text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-xl">
+                                                <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-xl">
                                                     {typeof item.category === 'string' ? item.category : item.category.name}
                                                 </span>
                                             )}
@@ -248,10 +264,10 @@ export const MobileInventoryPage: React.FC = () => {
                     ) : (
                         <div className="flex flex-col items-center justify-center py-20 text-center">
                             <div className="bg-white dark:bg-gray-800 p-4 rounded-full shadow-sm mb-4">
-                                <Package className="h-8 w-8 text-gray-300 dark:text-gray-600" />
+                                <Package className="h-8 w-8 text-gray-300" />
                             </div>
                             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Ürün Bulunamadı</h3>
-                            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
+                            <p className="text-muted-foreground text-sm mt-1">
                                 Arama kriterlerinize uygun ürün yok.
                             </p>
                         </div>
@@ -312,6 +328,14 @@ export const MobileInventoryPage: React.FC = () => {
                     />
                 )}
             </Modal>
+
+            <BarcodeScannerModal
+                isOpen={isScannerOpen}
+                onClose={() => setIsScannerOpen(false)}
+                onScan={handleBarcodeScan}
+                mode="lookup"
+                title="Ürün Barkodu Tara"
+            />
         </MobileLayout>
     );
 };

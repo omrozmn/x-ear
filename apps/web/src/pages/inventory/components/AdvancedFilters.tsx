@@ -53,7 +53,7 @@ const CategoryAutocomplete: React.FC<CategoryAutocompleteProps> = ({ categories,
           {suggestions.map(s => (
             <div
               key={s.key}
-              className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer dark:text-gray-200"
+              className="px-3 py-2 hover:bg-muted dark:hover:bg-gray-700 cursor-pointer dark:text-gray-200"
               onMouseDown={(e) => { e.preventDefault(); onChange(s.key); setIsOpen(false); }}
             >
               {s.label}
@@ -131,18 +131,18 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
 
   // Handler for warranty period change via select - available but using inline change
   // const handleWarrantyPeriodChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-  //   const value = event.target.value;
-  //   onFiltersChange({ ...filters, warrantyPeriod: value });
+  // const value = event.target.value;
+  // onFiltersChange({ ...filters, warrantyPeriod: value });
   // };
 
   // Handler for feature change via select - available but using handleFeatureToggle
   // const handleFeatureChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-  //   const value = event.target.value;
-  //   const currentFeatures = filters.features || [];
-  //   const updatedFeatures = currentFeatures.includes(value)
-  //     ? currentFeatures.filter(f => f !== value)
-  //     : [...currentFeatures, value];
-  //   onFiltersChange({ ...filters, features: updatedFeatures });
+  // const value = event.target.value;
+  // const currentFeatures = filters.features || [];
+  // const updatedFeatures = currentFeatures.includes(value)
+  // ? currentFeatures.filter(f => f !== value)
+  // : [...currentFeatures, value];
+  // onFiltersChange({ ...filters, features: updatedFeatures });
   // };
 
   const applyDatePreset = (preset: string) => {
@@ -397,7 +397,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-700 mt-6">
+          <div className="flex justify-between items-center pt-6 border-t border-border mt-6">
             <Button
               variant="outline"
               onClick={clearFilters}

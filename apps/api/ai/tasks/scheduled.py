@@ -78,6 +78,16 @@ def run_proactive_insights():
         logger.error(f"Proactive AI analysis failed: {e}", exc_info=True)
 
 
+def _run_billing_cycle():
+    """Scheduled task to run recurring billing."""
+    logger.info("Starting scheduled billing cycle")
+    try:
+        from services.billing_scheduler import run_billing_cycle
+        run_billing_cycle()
+    except Exception as e:
+        logger.error(f"Billing cycle failed: {e}", exc_info=True)
+
+
 def start_scheduler():
     """
     Start the APScheduler for AI Layer scheduled tasks.
@@ -109,6 +119,15 @@ def start_scheduler():
         trigger=IntervalTrigger(minutes=60),
         id='run_proactive_insights',
         name='Proactive AI Insight Analysis',
+        replace_existing=True,
+    )
+
+    # Schedule recurring billing cycle daily at 6 AM UTC
+    scheduler.add_job(
+        _run_billing_cycle,
+        trigger=CronTrigger(hour=6, minute=0, timezone='UTC'),
+        id='run_billing_cycle',
+        name='Recurring Billing & Dunning',
         replace_existing=True,
     )
 

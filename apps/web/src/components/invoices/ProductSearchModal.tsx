@@ -1,7 +1,10 @@
 import { Input, Button } from '@x-ear/ui-web';
 import { useState, useEffect } from 'react';
+import { ScanLine } from 'lucide-react';
 import { listInventory } from '@/api/client/inventory.client';
 import { AUTH_TOKEN } from '@/constants/storage-keys';
+import { BarcodeScannerModal } from '@/components/barcode';
+import { useBarcodeKeyboardInput } from '@/hooks/useBarcodeKeyboardInput';
 
 // Local InventoryItem type for API responses
 interface InventoryItem {
@@ -42,6 +45,17 @@ export function ProductSearchModal({ isOpen, onClose, onSelect }: ProductSearchM
   const [searchQuery, setSearchQuery] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+
+  const handleBarcodeScan = (barcode: string) => {
+    setSearchQuery(barcode);
+    setIsScannerOpen(false);
+  };
+
+  useBarcodeKeyboardInput({
+    onScan: handleBarcodeScan,
+    enabled: isOpen,
+  });
 
   useEffect(() => {
     if (!isOpen) {
@@ -129,11 +143,11 @@ export function ProductSearchModal({ isOpen, onClose, onSelect }: ProductSearchM
         />
 
         {/* Modal */}
-        <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+        <div className="inline-block align-bottom bg-card rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
           {/* Header */}
-          <div className="bg-white px-6 py-4 border-b border-gray-200">
+          <div className="bg-card px-6 py-4 border-b border-border">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-foreground">
                 Ürün Ara
               </h3>
               <Button
@@ -147,32 +161,43 @@ export function ProductSearchModal({ isOpen, onClose, onSelect }: ProductSearchM
           </div>
 
           {/* Content */}
-          <div className="bg-white px-6 py-4">
+          <div className="bg-card px-6 py-4">
             {/* Search Input */}
             <div className="mb-4">
-              <div className="relative">
-                <Input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    console.debug('[ProductSearchModal] Input onChange', { value: val });
-                    setSearchQuery(val);
-                  }}
-                  placeholder="Ürün adı, kodu veya markası ile arayın..."
-                  className="w-full pl-10"
-                  autoFocus
-                />
-                <span className="absolute left-3 top-3 text-gray-400">
-                  🔍
-                </span>
-                {isLoading && (
-                  <span className="absolute right-3 top-3 text-gray-400">
-                    <i className="fa fa-spinner fa-spin"></i>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      console.debug('[ProductSearchModal] Input onChange', { value: val });
+                      setSearchQuery(val);
+                    }}
+                    placeholder="Ürün adı, kodu veya markası ile arayın..."
+                    className="w-full pl-10"
+                    autoFocus
+                  />
+                  <span className="absolute left-3 top-3 text-muted-foreground">
+                    🔍
                   </span>
-                )}
+                  {isLoading && (
+                    <span className="absolute right-3 top-3 text-muted-foreground">
+                      <i className="fa fa-spinner fa-spin"></i>
+                    </span>
+                  )}
+                </div>
+                <button
+                  data-allow-raw="true"
+                  type="button"
+                  onClick={() => setIsScannerOpen(true)}
+                  className="p-2.5 border border-border rounded-xl hover:bg-muted transition-colors"
+                  title="Barkod tara"
+                >
+                  <ScanLine className="h-5 w-5 text-muted-foreground" />
+                </button>
               </div>
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-muted-foreground">
                 En az 2 karakter girerek ürün arayabilirsiniz
               </p>
             </div>
@@ -186,13 +211,13 @@ export function ProductSearchModal({ isOpen, onClose, onSelect }: ProductSearchM
                       key={product.id}
                       variant="ghost"
                       onClick={() => handleSelect(product)}
-                      className="w-full p-4 text-left border border-gray-200 rounded-2xl hover:bg-blue-50 hover:border-blue-300 transition-colors">
+                      className="w-full p-4 text-left border border-border rounded-2xl hover:bg-primary/10 hover:border-blue-300 transition-colors">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <div className="font-medium text-gray-900">
+                          <div className="font-medium text-foreground">
                             {product.name}
                           </div>
-                          <div className="mt-1 text-sm text-gray-500 space-x-3">
+                          <div className="mt-1 text-sm text-muted-foreground space-x-3">
                             {product.code && (
                               <span>Kod: {product.code}</span>
                             )}
@@ -202,7 +227,7 @@ export function ProductSearchModal({ isOpen, onClose, onSelect }: ProductSearchM
                           </div>
                           <div className="mt-2 flex items-center space-x-4 text-sm">
                             {product.price && (
-                              <span className="text-green-600 font-medium">
+                              <span className="text-success font-medium">
                                 {product.price.toLocaleString('tr-TR', {
                                   style: 'currency',
                                   currency: 'TRY'
@@ -210,32 +235,32 @@ export function ProductSearchModal({ isOpen, onClose, onSelect }: ProductSearchM
                               </span>
                             )}
                             {product.taxRate !== undefined && (
-                              <span className="text-gray-600">KDV: %{product.taxRate}</span>
+                              <span className="text-muted-foreground">KDV: %{product.taxRate}</span>
                             )}
                             {product.stockQuantity !== undefined && (
                               <span className={`${product.stockQuantity > 0
-                                ? 'text-green-600'
-                                : 'text-red-600'
+                                ? 'text-success'
+                                : 'text-destructive'
                                 }`}>
                                 Stok: {product.stockQuantity} {product.unit || 'Adet'}
                               </span>
                             )}
                           </div>
                         </div>
-                        <span className="text-blue-600 text-xl">→</span>
+                        <span className="text-primary text-xl">→</span>
                       </div>
                     </Button>
                   ))}
                 </div>
               ) : searchQuery.length >= 2 && !isLoading ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-500">
+                  <p className="text-muted-foreground">
                     Ürün bulunamadı. Manuel olarak girebilirsiniz.
                   </p>
                 </div>
               ) : searchQuery.length < 2 ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-400">
+                  <p className="text-muted-foreground">
                     Ürün aramak için en az 2 karakter girin
                   </p>
                 </div>
@@ -244,19 +269,27 @@ export function ProductSearchModal({ isOpen, onClose, onSelect }: ProductSearchM
           </div>
 
           {/* Footer */}
-          <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
+          <div className="bg-muted px-6 py-4 border-t border-border">
             <div className="flex justify-end">
               <Button
                 type="button"
                 onClick={onClose}
                 variant="default"
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300">
+                className="px-4 py-2 bg-accent text-foreground rounded-xl hover:bg-gray-300">
                 İptal
               </Button>
             </div>
           </div>
         </div>
       </div>
+
+      <BarcodeScannerModal
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onScan={handleBarcodeScan}
+        mode="input"
+        title="Ürün Barkodu Tara"
+      />
     </div>
   );
 }

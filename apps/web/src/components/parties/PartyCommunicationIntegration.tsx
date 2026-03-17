@@ -237,11 +237,11 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'sent': return <Send className="w-4 h-4 text-blue-500" />;
-      case 'delivered': return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'failed': return <AlertCircle className="w-4 h-4 text-red-500" />;
+      case 'sent': return <Send className="w-4 h-4 text-primary" />;
+      case 'delivered': return <CheckCircle className="w-4 h-4 text-success" />;
+      case 'failed': return <AlertCircle className="w-4 h-4 text-destructive" />;
       case 'scheduled': return <Clock className="w-4 h-4 text-yellow-500" />;
-      default: return <Clock className="w-4 h-4 text-gray-500" />;
+      default: return <Clock className="w-4 h-4 text-muted-foreground" />;
     }
   };
 
@@ -258,12 +258,12 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'sent': return 'bg-blue-100 text-blue-800';
-      case 'delivered': return 'bg-green-100 text-green-800';
-      case 'failed': return 'bg-red-100 text-red-800';
-      case 'scheduled': return 'bg-yellow-100 text-yellow-800';
-      case 'draft': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'sent': return 'bg-primary/10 text-blue-800';
+      case 'delivered': return 'bg-success/10 text-success';
+      case 'failed': return 'bg-destructive/10 text-red-800';
+      case 'scheduled': return 'bg-warning/10 text-yellow-800';
+      case 'draft': return 'bg-muted text-foreground';
+      default: return 'bg-muted text-foreground';
     }
   };
 
@@ -272,7 +272,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">İletişim sistemi yükleniyor...</p>
+          <p className="text-muted-foreground">İletişim sistemi yükleniyor...</p>
         </div>
       </div>
     );
@@ -283,12 +283,12 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
       {/* Hasta Bilgileri */}
       <Card className="p-4">
         <div className="flex items-center space-x-4">
-          <div className="p-3 bg-blue-100 rounded-full">
-            <User className="w-6 h-6 text-blue-600" />
+          <div className="p-3 bg-primary/10 rounded-full">
+            <User className="w-6 h-6 text-primary" />
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900">{`${party.firstName || ''} ${party.lastName || ''}`.trim() || 'İsimsiz Hasta'}</h3>
-            <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
+            <h3 className="text-lg font-semibold text-foreground">{`${party.firstName || ''} ${party.lastName || ''}`.trim() || 'İsimsiz Hasta'}</h3>
+            <div className="flex items-center space-x-4 text-sm text-muted-foreground mt-1">
               {party.phone && (
                 <div className="flex items-center space-x-1">
                   <Phone className="w-4 h-4" />
@@ -312,14 +312,14 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
       </Card>
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-border">
         <nav className="-mb-px flex space-x-8">
           <button
             data-allow-raw="true"
             onClick={() => setActiveTab('send')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'send'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-blue-500 text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
               }`}
           >
             <div className="flex items-center space-x-2">
@@ -331,8 +331,8 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
             data-allow-raw="true"
             onClick={() => setActiveTab('history')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'history'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-blue-500 text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
               }`}
           >
             <div className="flex items-center space-x-2">
@@ -348,7 +348,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
         <div className="space-y-6">
           {/* Message Type Selection */}
           <Card className="p-4">
-            <h4 className="text-sm font-medium text-gray-900 mb-3">Mesaj Türü</h4>
+            <h4 className="text-sm font-medium text-foreground mb-3">Mesaj Türü</h4>
             <div className="flex space-x-4">
               <label className="flex items-center">
                 <input
@@ -394,7 +394,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
 
           {/* Quick Templates */}
           <Card className="p-4">
-            <h4 className="text-sm font-medium text-gray-900 mb-3">Hızlı Şablonlar</h4>
+            <h4 className="text-sm font-medium text-foreground mb-3">Hızlı Şablonlar</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {QUICK_TEMPLATES
                 .filter(template => template.type === messageType)
@@ -403,11 +403,11 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
                     data-allow-raw="true"
                     key={template.id}
                     onClick={() => handleTemplateSelect(template.id)}
-                    className={`p-3 text-left border rounded-2xl hover:bg-gray-50 transition-colors ${selectedTemplate === template.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                    className={`p-3 text-left border rounded-2xl hover:bg-muted transition-colors ${selectedTemplate === template.id ? 'border-blue-500 bg-primary/10' : 'border-border'
                       }`}
                   >
-                    <div className="font-medium text-sm text-gray-900">{template.name}</div>
-                    <div className="text-xs text-gray-600 mt-1 line-clamp-2">{template.content}</div>
+                    <div className="font-medium text-sm text-foreground">{template.name}</div>
+                    <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{template.content}</div>
                   </button>
                 ))}
             </div>
@@ -418,7 +418,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
             <div className="space-y-4">
               {messageType === 'email' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Konu
                   </label>
                   <Input
@@ -430,7 +430,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Mesaj İçeriği
                 </label>
                 <Textarea
@@ -441,7 +441,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
                   className="resize-none"
                 />
                 {messageType !== 'email' && (
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className="text-xs text-muted-foreground mt-1">
                     {messageContent.length}/160 karakter
                   </div>
                 )}
@@ -454,13 +454,13 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
                     checked={isScheduled}
                     onChange={(e) => setIsScheduled(e.target.checked)}
                   />
-                  <span className="ml-2 text-sm text-gray-700">Mesajı zamanla</span>
+                  <span className="ml-2 text-sm text-foreground">Mesajı zamanla</span>
                 </label>
 
                 {isScheduled && (
                   <div className="mt-3 grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-foreground mb-1">
                         Tarih
                       </label>
                       <Input
@@ -471,7 +471,7 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-foreground mb-1">
                         Saat
                       </label>
                       <Input
@@ -542,11 +542,11 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
                       <div className="flex items-center space-x-3 mb-2">
                         <div className="flex items-center space-x-2">
                           {message.type === 'sms' ? (
-                            <MessageSquare className="w-4 h-4 text-blue-500" />
+                            <MessageSquare className="w-4 h-4 text-primary" />
                           ) : message.type === 'whatsapp' ? (
                             <MessageCircle className="w-4 h-4 text-emerald-500" />
                           ) : (
-                            <Mail className="w-4 h-4 text-green-500" />
+                            <Mail className="w-4 h-4 text-success" />
                           )}
                           <span className="font-medium text-sm">{message.type.toUpperCase()}</span>
                         </div>
@@ -560,14 +560,14 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
                       </div>
 
                       {message.subject && (
-                        <div className="font-medium text-gray-900 mb-1">{message.subject}</div>
+                        <div className="font-medium text-foreground mb-1">{message.subject}</div>
                       )}
 
-                      <div className="text-sm text-gray-700 mb-2 line-clamp-3">
+                      <div className="text-sm text-foreground mb-2 line-clamp-3">
                         {message.content}
                       </div>
 
-                      <div className="flex items-center space-x-4 text-xs text-gray-500">
+                      <div className="flex items-center space-x-4 text-xs text-muted-foreground">
                         <span>Oluşturulma: {new Date(message.createdAt).toLocaleString('tr-TR')}</span>
                         {message.sentAt && (
                           <span>Gönderilme: {new Date(message.sentAt).toLocaleString('tr-TR')}</span>
@@ -583,9 +583,9 @@ export const PartyCommunicationIntegration: React.FC<PartyCommunicationIntegrati
             </div>
           ) : (
             <Card className="p-8 text-center">
-              <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Mesaj bulunamadı</h3>
-              <p className="text-gray-600">
+              <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-foreground mb-2">Mesaj bulunamadı</h3>
+              <p className="text-muted-foreground">
                 {searchTerm || statusFilter !== 'all'
                   ? 'Arama kriterlerinize uygun mesaj bulunamadı.'
                   : 'Bu hasta ile henüz mesaj alışverişi yapılmamış.'

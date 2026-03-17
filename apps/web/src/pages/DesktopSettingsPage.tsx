@@ -60,7 +60,7 @@ export function DesktopSettingsPage() {
   };
 
   return (
-    <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
+    <div className="h-full flex flex-col">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <DesktopPageHeader
           title={getPageTitle()}

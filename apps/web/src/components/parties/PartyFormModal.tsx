@@ -409,7 +409,7 @@ export function PartyFormModal({
                 className="h-10 w-full"
               />
               {errors.tcNumber && (
-                <p className="mt-1 text-sm text-red-600">{errors.tcNumber}</p>
+                <p className="mt-1 text-sm text-destructive">{errors.tcNumber}</p>
               )}
             </div>
 
@@ -440,7 +440,7 @@ export function PartyFormModal({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div>
               <Label className="mb-1">
-                Ad <span className="text-red-500">*</span>
+                Ad <span className="text-destructive">*</span>
               </Label>
               <Input
                 type="text"
@@ -451,13 +451,13 @@ export function PartyFormModal({
                 data-testid="party-first-name-input"
               />
               {errors.firstName && (
-                <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
+                <p className="mt-1 text-sm text-destructive">{errors.firstName}</p>
               )}
             </div>
 
             <div>
               <Label className="mb-1">
-                Soyad <span className="text-red-500">*</span>
+                Soyad <span className="text-destructive">*</span>
               </Label>
               <Input
                 type="text"
@@ -468,7 +468,7 @@ export function PartyFormModal({
                 data-testid="party-last-name-input"
               />
               {errors.lastName && (
-                <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
+                <p className="mt-1 text-sm text-destructive">{errors.lastName}</p>
               )}
             </div>
           </div>
@@ -477,7 +477,7 @@ export function PartyFormModal({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div>
               <Label className="mb-1">
-                Telefon <span className="text-red-500">*</span>
+                Telefon <span className="text-destructive">*</span>
               </Label>
               <Input
                 type="text"
@@ -488,7 +488,7 @@ export function PartyFormModal({
                 data-testid="party-phone-input"
               />
               {errors.phone && (
-                <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+                <p className="mt-1 text-sm text-destructive">{errors.phone}</p>
               )}
             </div>
 
@@ -554,7 +554,7 @@ export function PartyFormModal({
                 data-testid="party-address-input"
               />
               {errors.address && (
-                <p className="mt-1 text-sm text-red-600">{errors.address}</p>
+                <p className="mt-1 text-sm text-destructive">{errors.address}</p>
               )}
             </div>
 
@@ -571,7 +571,7 @@ export function PartyFormModal({
                 data-testid="party-email-input"
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                <p className="mt-1 text-sm text-destructive">{errors.email}</p>
               )}
             </div>
           </div>
@@ -625,13 +625,13 @@ export function PartyFormModal({
 
         {/* Submit Error */}
         {errors.submit && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-2xl">
-            <p className="text-sm text-red-600">{errors.submit}</p>
+          <div className="p-3 bg-destructive/10 border border-red-200 rounded-2xl">
+            <p className="text-sm text-destructive">{errors.submit}</p>
           </div>
         )}
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
+        <div className="flex items-center justify-end gap-3 pt-6 border-t border-border">
           <Button
             type="button"
             onClick={handleClose}

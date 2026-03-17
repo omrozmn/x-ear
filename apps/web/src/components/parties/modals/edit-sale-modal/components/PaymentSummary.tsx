@@ -62,15 +62,15 @@ export const PaymentSummary: React.FC<PaymentSummaryProps> = ({
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Price Summary */}
-        <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-2xl">
+        <div className="grid grid-cols-2 gap-4 p-4 bg-muted rounded-2xl">
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm text-gray-600">Liste Fiyatı:</span>
+              <span className="text-sm text-muted-foreground">Liste Fiyatı:</span>
               <span className="font-medium">{formatCurrency(listPrice)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-gray-600">İndirim:</span>
-              <span className="font-medium text-red-600">
+              <span className="text-sm text-muted-foreground">İndirim:</span>
+              <span className="font-medium text-destructive">
                 -{formatCurrency(discountAmount)} ({discountPercentage.toFixed(1)}%)
               </span>
             </div>
@@ -82,12 +82,12 @@ export const PaymentSummary: React.FC<PaymentSummaryProps> = ({
 
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm text-gray-600">Ödenen:</span>
-              <span className="font-medium text-green-600">{formatCurrency(totalPaid)}</span>
+              <span className="text-sm text-muted-foreground">Ödenen:</span>
+              <span className="font-medium text-success">{formatCurrency(totalPaid)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-gray-600">Kalan:</span>
-              <span className={`font-medium ${remainingBalance > 0 ? 'text-red-600' : 'text-green-600'}`}>
+              <span className="text-sm text-muted-foreground">Kalan:</span>
+              <span className={`font-medium ${remainingBalance > 0 ? 'text-destructive' : 'text-success'}`}>
                 {formatCurrency(remainingBalance)}
               </span>
             </div>
@@ -112,11 +112,11 @@ export const PaymentSummary: React.FC<PaymentSummaryProps> = ({
                       <span className="font-medium">{formatCurrency(payment.amount)}</span>
                       {getPaymentStatusBadge(payment.status)}
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-muted-foreground">
                       {payment.paymentMethod} • {new Date(payment.paymentDate).toLocaleDateString('tr-TR')}
                     </div>
                     {payment.notes && (
-                      <div className="text-xs text-gray-400 mt-1">{payment.notes}</div>
+                      <div className="text-xs text-muted-foreground mt-1">{payment.notes}</div>
                     )}
                   </div>
                 </div>

@@ -192,7 +192,7 @@ export function UtsSettingsPanel() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[240px] items-center justify-center rounded-3xl border border-slate-200 bg-white">
+      <div className="flex min-h-[240px] items-center justify-center rounded-3xl border border-slate-200 bg-card">
         <Loader2 className="h-6 w-6 animate-spin text-slate-500" />
       </div>
     );
@@ -200,7 +200,7 @@ export function UtsSettingsPanel() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-3xl border border-slate-200 bg-card p-6 shadow-sm">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
             <div className="flex items-center gap-2 text-slate-900">
@@ -233,7 +233,7 @@ export function UtsSettingsPanel() {
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
         <div className="space-y-6">
-          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <section className="rounded-3xl border border-slate-200 bg-card p-6 shadow-sm">
             <div className="grid gap-5 md:grid-cols-2">
               <label className="space-y-2">
                 <span className="text-sm font-medium text-slate-700">Ortam</span>
@@ -241,7 +241,7 @@ export function UtsSettingsPanel() {
                   data-allow-raw="true"
                   value={environment}
                   onChange={(event) => setEnvironment(event.target.value as UtsEnvironment)}
-                  className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
+                  className="w-full rounded-2xl border border-slate-300 bg-card px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
                 >
                   <option value="test">Test</option>
                   <option value="prod">Canli</option>
@@ -254,7 +254,7 @@ export function UtsSettingsPanel() {
                   data-allow-raw="true"
                   value={authScheme}
                   onChange={(event) => setAuthScheme(event.target.value as UtsAuthScheme)}
-                  className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
+                  className="w-full rounded-2xl border border-slate-300 bg-card px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
                 >
                   {authSchemeOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -272,7 +272,7 @@ export function UtsSettingsPanel() {
                   value={token}
                   onChange={(event) => setToken(event.target.value)}
                   placeholder="UTS tarafindan uretilen token"
-                  className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
+                  className="w-full rounded-2xl border border-slate-300 bg-card px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
                 />
                 <p className="text-xs text-slate-500">
                   Kayitli token maskeli gelir. Degistirmeyeceksen oldugu gibi birakabilirsin.
@@ -291,7 +291,7 @@ export function UtsSettingsPanel() {
                     value={companyCode}
                     onChange={(event) => setCompanyCode(event.target.value)}
                     placeholder="Opsiyonel"
-                    className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
+                    className="w-full rounded-2xl border border-slate-300 bg-card px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
                   />
                 )}
                 {config?.companyCodeSource === 'tenant_company_info' ? (
@@ -311,7 +311,7 @@ export function UtsSettingsPanel() {
                     value={memberNumber}
                     onChange={(event) => setMemberNumber(event.target.value)}
                     placeholder="Opsiyonel"
-                    className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
+                    className="w-full rounded-2xl border border-slate-300 bg-card px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
                   />
                 )}
                 {config?.memberNumberSource === 'tenant_company_info' ? (
@@ -342,7 +342,7 @@ export function UtsSettingsPanel() {
                   value={baseUrlOverride}
                   onChange={(event) => setBaseUrlOverride(event.target.value)}
                   placeholder="Bos birakirsan resmi test/canli URL kullanilir"
-                  className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
+                  className="w-full rounded-2xl border border-slate-300 bg-card px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
                 />
               </label>
             </div>
@@ -412,7 +412,7 @@ export function UtsSettingsPanel() {
                   data-allow-raw="true"
                   value={notificationMode}
                   onChange={(event) => setNotificationMode(event.target.value as 'manual' | 'outbox')}
-                  className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
+                  className="w-full rounded-2xl border border-slate-300 bg-card px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
                 >
                   <option value="outbox">Outbox / queue</option>
                   <option value="manual">Manuel tetikle</option>
@@ -454,7 +454,7 @@ export function UtsSettingsPanel() {
             </div>
           </section>
 
-          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <section className="rounded-3xl border border-slate-200 bg-card p-6 shadow-sm">
             <div className="flex items-center gap-2 text-slate-900">
               <MessageSquareText className="h-5 w-5 text-sky-600" />
               <h3 className="text-base font-semibold">Alma / Verme Mesaj Sabitleri</h3>
@@ -566,7 +566,7 @@ export function UtsSettingsPanel() {
         </div>
 
         <div className="space-y-6">
-          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <section className="rounded-3xl border border-slate-200 bg-card p-6 shadow-sm">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h3 className="text-base font-semibold text-slate-900">Token ve IP Kurulumu</h3>
@@ -596,7 +596,7 @@ export function UtsSettingsPanel() {
             </ol>
           </section>
 
-          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <section className="rounded-3xl border border-slate-200 bg-card p-6 shadow-sm">
             <div className="flex items-center gap-2 text-slate-900">
               {config?.lastTest?.ok ? (
                 <CheckCircle2 className="h-5 w-5 text-emerald-600" />
@@ -624,7 +624,7 @@ export function UtsSettingsPanel() {
             )}
           </section>
 
-          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <section className="rounded-3xl border border-slate-200 bg-card p-6 shadow-sm">
             <h3 className="text-base font-semibold text-slate-900">Hazir kalan altyapi</h3>
             <ul className="mt-4 space-y-3 text-sm text-slate-700">
               <li>Tenant bazli test/canli ortam secimi</li>
@@ -635,7 +635,7 @@ export function UtsSettingsPanel() {
             </ul>
           </section>
 
-          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <section className="rounded-3xl border border-slate-200 bg-card p-6 shadow-sm">
             <h3 className="text-base font-semibold text-slate-900">Referans</h3>
             <div className="mt-4 space-y-3 text-sm text-slate-700">
               <a

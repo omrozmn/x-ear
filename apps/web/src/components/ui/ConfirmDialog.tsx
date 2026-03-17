@@ -29,7 +29,7 @@ export function ConfirmDialog({
   return (
     <Modal isOpen={isOpen} onClose={isLoading ? () => { } : onClose} title={title || 'Onay'} size="sm">
       <div>
-        {description && <p className="text-sm text-gray-700">{description}</p>}
+        {description && <p className="text-sm text-foreground">{description}</p>}
         <div className="mt-4 flex justify-end space-x-2">
           <Button variant="outline" onClick={onClose} disabled={isLoading}>{cancelLabel}</Button>
           <Button

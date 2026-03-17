@@ -631,7 +631,7 @@ export function ApprovalQueue({ tenantId: initialTenantId, className = '' }: App
       setSelectedItem(null);
     } catch (error) {
       toast.error('Onaylama işlemi başarısız');
-      console.error('Approve error:', error);
+      if (import.meta.env.DEV) console.error('Approve error:', error);
     }
   };
 
@@ -648,7 +648,7 @@ export function ApprovalQueue({ tenantId: initialTenantId, className = '' }: App
       setSelectedItem(null);
     } catch (error) {
       toast.error('Reddetme işlemi başarısız');
-      console.error('Reject error:', error);
+      if (import.meta.env.DEV) console.error('Reject error:', error);
     }
   };
 

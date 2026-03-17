@@ -623,13 +623,13 @@ export function RolePermissionsTab() {
           <div
             key={perm.id}
             onClick={() => handlePermissionToggle(perm.name)}
-            className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/30"
+            className="flex items-center justify-between p-3 cursor-pointer hover:bg-muted dark:hover:bg-gray-700/30"
           >
             <div className="flex-1 min-w-0 pr-3">
-              <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <div className="text-sm font-medium text-foreground">
                 {perm.description || perm.name}
               </div>
-              <div className="text-xs text-gray-400 dark:text-gray-500 break-all mt-1">
+              <div className="text-xs text-muted-foreground break-all mt-1">
                 {perm.name}
               </div>
             </div>
@@ -672,9 +672,9 @@ export function RolePermissionsTab() {
       />
 
       {/* Role Selector */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-border p-4 mb-6">
         <div className="flex justify-between items-center mb-3">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Rol Seçin</label>
+          <label className="block text-sm font-medium text-foreground">Rol Seçin</label>
           <Button
             onClick={() => {
               setNewRoleName('');
@@ -717,7 +717,7 @@ export function RolePermissionsTab() {
                 }}
                 className={`px-4 py-2.5 rounded-r-none font-medium transition-colors ${selectedRole === role.name
                   ? 'premium-gradient tactile-press text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  : 'bg-muted text-foreground hover:bg-accent dark:hover:bg-gray-600'
                   }`}
               >
                 {ROLE_LABELS[role.name] || role.name}
@@ -727,7 +727,7 @@ export function RolePermissionsTab() {
                 onClick={(e) => handleEditRole(role, e)}
                 className={`px-2 py-2.5 rounded-l-none border-l ${selectedRole === role.name
                   ? 'bg-indigo-700 text-white border-indigo-500 hover:bg-indigo-800'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-300'
+                  : 'bg-muted text-muted-foreground border-border hover:bg-accent dark:hover:bg-gray-600 hover:text-foreground dark:hover:text-gray-300'
                   }`}
                 title="Rol adını düzenle"
               >
@@ -751,7 +751,7 @@ export function RolePermissionsTab() {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Rol Adı</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Rol Adı</label>
             <Input
               type="text"
               value={editRoleName}
@@ -793,7 +793,7 @@ export function RolePermissionsTab() {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Rol Adı</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Rol Adı</label>
             <Input
               type="text"
               value={newRoleName}
@@ -847,13 +847,13 @@ export function RolePermissionsTab() {
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
-          <span className="ml-3 text-gray-500">Izinler yukleniyor...</span>
+          <span className="ml-3 text-muted-foreground">Izinler yukleniyor...</span>
         </div>
       ) : permissionCards.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 text-center">
-          <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500 dark:text-gray-400">Izinler yuklenemedi veya henuz tanimlanmamis.</p>
-          <p className="text-sm text-gray-400 mt-2">Lutfen sayfayi yenileyin veya sistem yoneticinize basvurun.</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-border p-8 text-center">
+          <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-muted-foreground">Izinler yuklenemedi veya henuz tanimlanmamis.</p>
+          <p className="text-sm text-muted-foreground mt-2">Lutfen sayfayi yenileyin veya sistem yoneticinize basvurun.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -864,7 +864,7 @@ export function RolePermissionsTab() {
             return (
               <div
                 key={group.key}
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-border overflow-hidden"
               >
                 {/* Category Header */}
                 <div className="flex items-start justify-between gap-3 p-4 bg-gray-50 dark:bg-gray-700/50">
@@ -878,7 +878,7 @@ export function RolePermissionsTab() {
                     >
                       <span className="font-medium text-gray-900 dark:text-white">{group.label}</span>
                       {group.description && (
-                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{group.description}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">{group.description}</p>
                       )}
                     </button>
                   </div>
@@ -897,7 +897,7 @@ export function RolePermissionsTab() {
                       return (
                         <div
                           key={tab.key}
-                          className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 dark:border-gray-700 px-3 py-2"
+                          className="flex items-center justify-between gap-3 rounded-xl border border-border px-3 py-2"
                         >
                           <button
                             data-allow-raw="true"
@@ -907,7 +907,7 @@ export function RolePermissionsTab() {
                           >
                             <p className="text-sm font-medium text-gray-900 dark:text-white">{tab.label}</p>
                             {tab.description && (
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{tab.description}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">{tab.description}</p>
                             )}
                           </button>
                           <Checkbox
@@ -937,10 +937,10 @@ export function RolePermissionsTab() {
         {selectedPage && (
           <div className="space-y-5">
             {selectedPage.description && (
-              <p className="text-sm text-gray-500 dark:text-gray-400">{selectedPage.description}</p>
+              <p className="text-sm text-muted-foreground">{selectedPage.description}</p>
             )}
 
-            <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="rounded-xl border border-border overflow-hidden">
               <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-700/40">
                 <h4 className="font-medium text-gray-900 dark:text-white">Sayfa Yetkileri</h4>
                 <Checkbox
@@ -953,7 +953,7 @@ export function RolePermissionsTab() {
             </div>
 
             {selectedPage.tabs && selectedPage.tabs.length > 0 && (
-              <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="rounded-xl border border-border overflow-hidden">
                 <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700/40">
                   <h4 className="font-medium text-gray-900 dark:text-white">Sekmeler</h4>
                 </div>
@@ -964,7 +964,7 @@ export function RolePermissionsTab() {
                     return (
                       <div
                         key={tab.key}
-                        className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 dark:border-gray-700 px-3 py-3"
+                        className="flex items-center justify-between gap-3 rounded-xl border border-border px-3 py-3"
                       >
                         <button
                           data-allow-raw="true"
@@ -974,7 +974,7 @@ export function RolePermissionsTab() {
                         >
                           <p className="text-sm font-medium text-gray-900 dark:text-white">{tab.label}</p>
                           {tab.description && (
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{tab.description}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{tab.description}</p>
                           )}
                         </button>
                         <Checkbox
@@ -1001,10 +1001,10 @@ export function RolePermissionsTab() {
         {selectedTab && (
           <div className="space-y-5">
             {selectedTab.tab.description && (
-              <p className="text-sm text-gray-500 dark:text-gray-400">{selectedTab.tab.description}</p>
+              <p className="text-sm text-muted-foreground">{selectedTab.tab.description}</p>
             )}
 
-            <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="rounded-xl border border-border overflow-hidden">
               <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-700/40">
                 <h4 className="font-medium text-gray-900 dark:text-white">Sekme Yetkileri</h4>
                 <Checkbox
@@ -1016,7 +1016,7 @@ export function RolePermissionsTab() {
               {getPermissionsByName(selectedTab.tab.permissions).length > 0 ? (
                 renderPermissionRows(getPermissionsByName(selectedTab.tab.permissions))
               ) : (
-                <div className="px-4 py-6 text-sm text-gray-500 dark:text-gray-400">
+                <div className="px-4 py-6 text-sm text-muted-foreground">
                   Bu sekme için henüz ayrı bir izin satırı bulunmuyor.
                 </div>
               )}
@@ -1028,12 +1028,12 @@ export function RolePermissionsTab() {
                   const blockPermissions = getPermissionsByName(block.permissions);
                   const blockState = getSelectionState(block.permissions);
                   return (
-                    <div key={block.key} className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div key={block.key} className="rounded-xl border border-border overflow-hidden">
                       <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-700/40">
                         <div>
                           <h5 className="font-medium text-gray-900 dark:text-white">{block.label}</h5>
                           {block.description && (
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{block.description}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{block.description}</p>
                           )}
                         </div>
                         <Checkbox
@@ -1045,7 +1045,7 @@ export function RolePermissionsTab() {
                       {blockPermissions.length > 0 ? (
                         renderPermissionRows(blockPermissions)
                       ) : (
-                        <div className="px-4 py-6 text-sm text-gray-500 dark:text-gray-400">
+                        <div className="px-4 py-6 text-sm text-muted-foreground">
                           Bu blok için henüz ayrı bir izin satırı bulunmuyor.
                         </div>
                       )}
@@ -1059,12 +1059,12 @@ export function RolePermissionsTab() {
       </Modal>
 
       {/* Info Box */}
-      <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl">
+      <div className="mt-6 p-4 bg-primary/10 border border-blue-200 dark:border-blue-800 rounded-2xl">
         <div className="flex items-start">
-          <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
+          <AlertCircle className="w-5 h-5 text-primary mt-0.5 mr-3 flex-shrink-0" />
           <div>
             <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300">İzin Sistemi Hakkında</h4>
-            <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">
+            <p className="text-sm text-primary mt-1">
               Tenant Admin rolü tüm izinlere otomatik olarak sahiptir ve düzenlenemez.
               Bu sayfada Yönetici, Odyolog, Odyometrist, Sekreter ve Kullanıcı rollerinin izinlerini yapılandırabilirsiniz.
             </p>

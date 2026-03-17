@@ -563,10 +563,10 @@ async def bulk_upload_parties(
                     errors.append({'row': row_num, 'error': 'Missing required identifying fields'})
                     continue
 
-                # Prepare Payload
+                # Prepare Payload — all Party model fields
                 payload = {
                     'tc_number': tc_number,
-                    'identity_number': get_val(['identityNumber', 'identity_number']),
+                    'identity_number': get_val(['identityNumber', 'identity_number', 'kimlik_no', 'Kimlik No']),
                     'first_name': first_name,
                     'last_name': last_name,
                     'phone': phone,
@@ -575,6 +575,8 @@ async def bulk_upload_parties(
                     'gender': get_val(['gender', 'cinsiyet', 'Cinsiyet', 'Gender']),
                     'status': get_val(['status', 'durum', 'Durum', 'Status']),
                     'segment': get_val(['segment', 'Segment']),
+                    'acquisition_type': get_val(['acquisitionType', 'acquisition_type', 'kazanim_tipi', 'Kazanım Tipi']),
+                    'referred_by': get_val(['referredBy', 'referred_by', 'referans', 'Referans']),
                 }
                 
                 # Normalize gender values (Turkish → English)
@@ -619,34 +621,63 @@ async def bulk_upload_parties(
                     else:
                         payload['tags_json'] = tags_val
 
-                # Check Existing
+                # Check Existing — cascading match (tc > phone > name)
                 existing = None
+
+                # Priority 1: TC number (strongest identifier)
                 if tc_number:
-                    existing = db.query(Party).filter(Party.tc_number == tc_number, Party.tenant_id == effective_tenant).first()
-                
+                    existing = db.query(Party).filter(
+                        Party.tc_number == tc_number,
+                        Party.tenant_id == effective_tenant
+                    ).first()
+
+                # Priority 2: Phone (exact match, tenant-scoped)
+                if not existing and phone:
+                    existing = db.query(Party).filter(
+                        Party.phone == phone,
+                        Party.tenant_id == effective_tenant
+                    ).first()
+
+                # Priority 3: first_name + last_name (tenant-scoped)
+                if not existing and first_name and last_name:
+                    existing = db.query(Party).filter(
+                        Party.first_name == first_name,
+                        Party.last_name == last_name,
+                        Party.tenant_id == effective_tenant
+                    ).first()
+
                 if existing:
-                    # Update Logic
+                    # Update Logic — additive: only fill empty fields, don't overwrite
                     for k, v in payload.items():
+                        if k == 'tags_json':
+                            continue  # handled separately below
                         if hasattr(existing, k) and v is not None:
-                            # Handle Date parsing for birth_date if strictly string
-                            if k == 'birth_date' and isinstance(v, str):
-                                try:
-                                    dt = None
-                                    for fmt in ('%Y-%m-%d', '%d.%m.%Y', '%d/%m/%Y', '%Y/%m/%d'):
-                                        try:
-                                            dt = datetime.strptime(v, fmt)
-                                            break
-                                        except ValueError:
-                                            pass
-                                    if dt:
-                                         setattr(existing, k, dt)
-                                    else:
-                                         # Try isoformat
-                                         setattr(existing, k, datetime.fromisoformat(v))
-                                except:
-                                    pass 
-                            else:
-                                setattr(existing, k, v)
+                            current_val = getattr(existing, k, None)
+                            # Only fill if current value is empty/null
+                            if current_val is None or current_val == '':
+                                # Handle Date parsing for birth_date if strictly string
+                                if k == 'birth_date' and isinstance(v, str):
+                                    try:
+                                        dt = None
+                                        for fmt in ('%Y-%m-%d', '%d.%m.%Y', '%d/%m/%Y', '%Y/%m/%d'):
+                                            try:
+                                                dt = datetime.strptime(v, fmt)
+                                                break
+                                            except ValueError:
+                                                pass
+                                        if dt:
+                                             setattr(existing, k, dt)
+                                        else:
+                                             setattr(existing, k, datetime.fromisoformat(v))
+                                    except:
+                                        pass
+                                else:
+                                    setattr(existing, k, v)
+                    # Merge tags (union, not replace)
+                    if 'tags_json' in payload and payload['tags_json']:
+                        existing_tags = existing.tags_json or []
+                        merged = list(set(existing_tags + payload['tags_json']))
+                        existing.tags_json = merged
                     updated += 1
                     db.add(existing)
                 else:

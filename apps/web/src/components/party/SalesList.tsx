@@ -49,8 +49,8 @@ export const SalesList: React.FC<SalesListProps> = ({
   if (filteredSales.length === 0) {
     return (
       <div className="text-center py-12" role="status" data-testid="sales-empty-state">
-        <DollarSign className="w-12 h-12 text-gray-400 mx-auto mb-4" aria-hidden="true" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2" data-testid="sales-empty-title">
+        <DollarSign className="w-12 h-12 text-muted-foreground mx-auto mb-4" aria-hidden="true" />
+        <h3 className="text-lg font-medium text-foreground mb-2" data-testid="sales-empty-title">
           {sales.length === 0
             ? 'Henüz satış yapılmamış'
             : hasActiveFilters
@@ -58,7 +58,7 @@ export const SalesList: React.FC<SalesListProps> = ({
               : 'Henüz satış kaydı bulunmuyor'
           }
         </h3>
-        <p className="text-gray-500" data-testid="sales-empty-description">
+        <p className="text-muted-foreground" data-testid="sales-empty-description">
           {sales.length === 0
             ? 'Bu hastaya henüz satış işlemi gerçekleştirilmemiş.'
             : hasActiveFilters
@@ -82,8 +82,8 @@ export const SalesList: React.FC<SalesListProps> = ({
     if (devices && devices.length > 0) {
       return devices.map((d, index: number) => (
         <div key={index} className="mb-1">
-          <div className="font-medium text-gray-900">{(d.name || d.model || 'Cihaz') as string}</div>
-          <div className="text-xs text-gray-600">Marka: {(d.brand || '-') as string} | Model: {(d.model || '-') as string}</div>
+          <div className="font-medium text-foreground">{(d.name || d.model || 'Cihaz') as string}</div>
+          <div className="text-xs text-muted-foreground">Marka: {(d.brand || '-') as string} | Model: {(d.model || '-') as string}</div>
         </div>
       ));
     }
@@ -92,13 +92,13 @@ export const SalesList: React.FC<SalesListProps> = ({
     if (sale.productId) {
       return (
         <div className="mb-1">
-          <div className="font-medium text-gray-900">Ürün ID: {sale.productId}</div>
-          <div className="text-xs text-gray-600">Envanter ürünü</div>
+          <div className="font-medium text-foreground">Ürün ID: {sale.productId}</div>
+          <div className="text-xs text-muted-foreground">Envanter ürünü</div>
         </div>
       );
     }
 
-    return <div className="text-gray-500 text-sm">Ürün bilgisi yok</div>;
+    return <div className="text-muted-foreground text-sm">Ürün bilgisi yok</div>;
   };
 
   const renderBarcodeSerialInfo = (sale: SaleRead) => {
@@ -117,21 +117,21 @@ export const SalesList: React.FC<SalesListProps> = ({
             return (
               <div key={index} className="text-sm">
                 {barcode && (
-                  <div className="font-mono text-xs bg-gray-100 px-1 rounded inline-block mb-1">
+                  <div className="font-mono text-xs bg-muted px-1 rounded inline-block mb-1">
                     {String(barcode)}
                   </div>
                 )}
                 {serialNumber && (
-                  <div className="font-mono text-gray-900">{String(serialNumber)}</div>
+                  <div className="font-mono text-foreground">{String(serialNumber)}</div>
                 )}
                 {serialNumberLeft && (
-                  <div className="font-mono text-xs text-red-600">S: {String(serialNumberLeft)}</div>
+                  <div className="font-mono text-xs text-destructive">S: {String(serialNumberLeft)}</div>
                 )}
                 {serialNumberRight && (
-                  <div className="font-mono text-xs text-blue-600">L: {String(serialNumberRight)}</div>
+                  <div className="font-mono text-xs text-primary">L: {String(serialNumberRight)}</div>
                 )}
                 {!barcode && !serialNumber && !serialNumberLeft && !serialNumberRight && (
-                  <div className="text-xs text-gray-400">Seri yok</div>
+                  <div className="text-xs text-muted-foreground">Seri yok</div>
                 )}
               </div>
             );
@@ -145,7 +145,7 @@ export const SalesList: React.FC<SalesListProps> = ({
       return (
         <div>
           <div className="font-medium">{sale.productId}</div>
-          <div className="text-xs text-gray-600">Ürün Kodu</div>
+          <div className="text-xs text-muted-foreground">Ürün Kodu</div>
         </div>
       );
     }
@@ -193,15 +193,15 @@ export const SalesList: React.FC<SalesListProps> = ({
     if (paidAmount > 0 && remainingAmount > 0) {
       return <span className="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full">Kısmi Ödendi</span>;
     } else if (paidAmount > 0 && remainingAmount === 0) {
-      return <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Ödendi</span>;
+      return <span className="px-2 py-1 text-xs font-medium bg-success/10 text-success rounded-full">Ödendi</span>;
     }
 
     const badges: Record<string, React.ReactElement> = {
-      'paid': <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Ödendi</span>,
-      'pending': <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Beklemede</span>,
+      'paid': <span className="px-2 py-1 text-xs font-medium bg-success/10 text-success rounded-full">Ödendi</span>,
+      'pending': <span className="px-2 py-1 text-xs font-medium bg-warning/10 text-yellow-800 rounded-full">Beklemede</span>,
       'partial': <span className="px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 rounded-full">Kısmi Ödendi</span>,
-      'cancelled': <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">İptal edildi</span>,
-      'completed': <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">Tamamlandı</span>
+      'cancelled': <span className="px-2 py-1 text-xs font-medium bg-destructive/10 text-red-800 rounded-full">İptal edildi</span>,
+      'completed': <span className="px-2 py-1 text-xs font-medium bg-primary/10 text-blue-800 rounded-full">Tamamlandı</span>
     };
     return (status ? badges[status] : undefined) || badges['pending'];
   };
@@ -251,8 +251,8 @@ export const SalesList: React.FC<SalesListProps> = ({
       title: 'Satış ID/Tarih',
       render: (_: unknown, sale: SaleRead) => (
         <div className="flex flex-col">
-          <span className="font-medium text-gray-900 text-xs">#{sale.id}</span>
-          <span className="text-xs text-gray-500">
+          <span className="font-medium text-foreground text-xs">#{sale.id}</span>
+          <span className="text-xs text-muted-foreground">
             {sale.saleDate ? new Date(sale.saleDate).toLocaleDateString('tr-TR') : '-'}
           </span>
         </div>
@@ -285,9 +285,9 @@ export const SalesList: React.FC<SalesListProps> = ({
         const ext = sale as unknown as ExtendedSaleRead;
         const discount = ext.discountAmount || (ext.discount_amount as number) || 0;
         return discount > 0 ? (
-          <span className="text-red-600 font-medium">-{formatCurrency(discount)}</span>
+          <span className="text-destructive font-medium">-{formatCurrency(discount)}</span>
         ) : (
-          <span className="text-gray-400">-</span>
+          <span className="text-muted-foreground">-</span>
         );
       },
     },
@@ -299,9 +299,9 @@ export const SalesList: React.FC<SalesListProps> = ({
         const ext = sale as unknown as ExtendedSaleRead;
         const sgk = ext.sgkCoverage || 0;
         return sgk > 0 ? (
-          <span className="text-blue-600 font-medium">{formatCurrency(sgk)}</span>
+          <span className="text-primary font-medium">{formatCurrency(sgk)}</span>
         ) : (
-          <span className="text-gray-400">-</span>
+          <span className="text-muted-foreground">-</span>
         );
       },
     },
@@ -319,7 +319,7 @@ export const SalesList: React.FC<SalesListProps> = ({
       align: 'right',
       render: (_: unknown, sale: SaleRead) => (
         <div className="flex flex-col items-end gap-0.5">
-          <span className="font-medium text-green-700">{formatCurrency(calculatePaidAmount(sale))}</span>
+          <span className="font-medium text-success">{formatCurrency(calculatePaidAmount(sale))}</span>
           {renderPaymentMethods(sale)}
         </div>
       ),
@@ -333,7 +333,7 @@ export const SalesList: React.FC<SalesListProps> = ({
         return remaining > 0 ? (
           <span className="font-semibold text-orange-600">{formatCurrency(remaining)}</span>
         ) : (
-          <span className="text-green-600 font-medium">Ödendi</span>
+          <span className="text-success font-medium">Ödendi</span>
         );
       },
     },
@@ -353,17 +353,17 @@ export const SalesList: React.FC<SalesListProps> = ({
             type="button"
             variant="ghost"
             onClick={() => setOpenMenuSaleId(prev => prev === String(sale.id) ? null : String(sale.id))}
-            className="rounded p-1 hover:bg-gray-100"
+            className="rounded p-1 hover:bg-muted"
           >
-            <MoreVertical className="w-4 h-4 text-gray-600" />
+            <MoreVertical className="w-4 h-4 text-muted-foreground" />
           </Button>
           {openMenuSaleId === String(sale.id) && (
-            <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+            <div className="absolute right-0 top-full mt-1 w-48 bg-card border border-border rounded-lg shadow-lg z-50">
               <ul className="py-1">
                 <li>
                   <Button type="button" variant="ghost"
                     onClick={() => { onViewInvoice(sale); setOpenMenuSaleId(null); }}
-                    className="flex w-full items-center justify-start gap-2 rounded-none px-4 py-2 text-sm hover:bg-gray-50"
+                    className="flex w-full items-center justify-start gap-2 rounded-none px-4 py-2 text-sm hover:bg-muted"
                   >
                     <Eye className="w-4 h-4" /> Fatura Görüntüle
                   </Button>
@@ -371,7 +371,7 @@ export const SalesList: React.FC<SalesListProps> = ({
                 <li>
                   <Button type="button" variant="ghost"
                     onClick={() => { onCreateInvoice(sale); setOpenMenuSaleId(null); }}
-                    className="flex w-full items-center justify-start gap-2 rounded-none px-4 py-2 text-sm hover:bg-gray-50"
+                    className="flex w-full items-center justify-start gap-2 rounded-none px-4 py-2 text-sm hover:bg-muted"
                   >
                     <FileText className="w-4 h-4" /> Fatura Oluştur
                   </Button>
@@ -379,7 +379,7 @@ export const SalesList: React.FC<SalesListProps> = ({
                 <li>
                   <Button type="button" variant="ghost"
                     onClick={() => { onCollectPayment(sale); setOpenMenuSaleId(null); }}
-                    className="flex w-full items-center justify-start gap-2 rounded-none px-4 py-2 text-sm hover:bg-gray-50"
+                    className="flex w-full items-center justify-start gap-2 rounded-none px-4 py-2 text-sm hover:bg-muted"
                   >
                     <DollarSign className="w-4 h-4" /> Ödeme Al
                   </Button>
@@ -387,7 +387,7 @@ export const SalesList: React.FC<SalesListProps> = ({
                 <li>
                   <Button type="button" variant="ghost"
                     onClick={() => { onManagePromissoryNotes(sale); setOpenMenuSaleId(null); }}
-                    className="flex w-full items-center justify-start gap-2 rounded-none px-4 py-2 text-sm hover:bg-gray-50"
+                    className="flex w-full items-center justify-start gap-2 rounded-none px-4 py-2 text-sm hover:bg-muted"
                   >
                     <File className="w-4 h-4" /> Senetleri Yönet
                   </Button>
@@ -395,7 +395,7 @@ export const SalesList: React.FC<SalesListProps> = ({
                 <li>
                   <Button type="button" variant="ghost"
                     onClick={() => { onManageInstallments(sale); setOpenMenuSaleId(null); }}
-                    className="flex w-full items-center justify-start gap-2 rounded-none px-4 py-2 text-sm hover:bg-gray-50"
+                    className="flex w-full items-center justify-start gap-2 rounded-none px-4 py-2 text-sm hover:bg-muted"
                   >
                     <Edit className="w-4 h-4" /> Taksitleri Yönet
                   </Button>

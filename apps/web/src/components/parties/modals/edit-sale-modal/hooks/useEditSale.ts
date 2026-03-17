@@ -14,6 +14,13 @@ import type {
 import type { InventoryItem } from '../components/SaleFormFields';
 import { ExtendedSaleRead } from '@/types/extended-sales';
 
+export interface BatterySgkScheme {
+  label: string;
+  quantity_per_ear: number;
+  coverage_amount: number;
+  kdv_rate: number;
+}
+
 export const useEditSale = (sale: Sale, isOpen: boolean) => {
   // Form data state
   const [formData, setFormData] = useState<SaleFormData>({
@@ -95,12 +102,6 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
   const storedSgkPerEar = useRef<number>(0);
 
   // Battery SGK settings
-  interface BatterySgkScheme {
-    label: string;
-    quantity_per_ear: number;
-    coverage_amount: number;
-    kdv_rate: number;
-  }
   const [batterySgkSettings, setBatterySgkSettings] = useState<Record<string, BatterySgkScheme>>({});
   const [batteryReportQuantity, setBatteryReportQuantity] = useState<'per_ear' | 'bilateral'>('per_ear');
 

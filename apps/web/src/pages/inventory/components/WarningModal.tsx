@@ -36,14 +36,14 @@ const WarningModal: React.FC<WarningModalProps> = ({ isOpen, onClose, title = 'U
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="font-medium dark:text-gray-100">ID: {f.id}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">{f.message}</div>
+                    <div className="text-sm text-muted-foreground">{f.message}</div>
                   </div>
-                  <div className="text-right text-xs text-gray-500 dark:text-gray-500">
+                  <div className="text-right text-xs text-muted-foreground">
                     {f.status && <div>Status: {f.status}</div>}
                   </div>
                 </div>
                 {f.data ? (
-                  <pre className="text-xs text-gray-700 dark:text-gray-300 mt-1 bg-white dark:bg-gray-700 p-2 rounded overflow-x-auto">
+                  <pre className="text-xs text-foreground mt-1 bg-white dark:bg-gray-700 p-2 rounded overflow-x-auto">
                     {String(JSON.stringify(f.data as Record<string, unknown>, null, 2))}
                   </pre>
                 ) : null}

@@ -154,7 +154,7 @@ export const PartySelectionModal: React.FC<PartySelectionModalProps> = ({
 
         {/* Seçili Hasta Bilgisi */}
         {selectedParty && (
-          <div className="bg-blue-50 p-4 rounded-2xl">
+          <div className="bg-primary/10 p-4 rounded-2xl">
             <h4 className="font-medium text-blue-900 mb-2">Seçili Hasta:</h4>
             <p className="text-blue-800">
               {selectedParty.firstName || ''} {selectedParty.lastName || ''} - {selectedParty.tcNumber || ''}
