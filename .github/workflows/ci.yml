@@ -7,7 +7,7 @@ on:
     branches: [main, dev, develop]
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: '20'
   PYTHON_VERSION: '3.11'
   PNPM_VERSION: '9'
   STORE_PATH: ''

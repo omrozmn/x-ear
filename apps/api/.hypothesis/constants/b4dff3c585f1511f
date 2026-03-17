@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/product_media.py
+# hypothesis_version: 6.151.6
+
+[100, 255, 500, 'CASCADE', 'InventoryItem', 'altText', 'fileSize', 'filename', 'height', 'id', 'image', 'inventory.id', 'inventoryId', 'isPrimary', 'media', 'mediaType', 'mimeType', 'pm', 'product_media', 's3Key', 'select', 'sortOrder', 'source', 'sourceId', 'upload', 'url', 'width']

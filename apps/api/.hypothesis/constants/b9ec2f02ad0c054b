@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/services/s3_service.py
+# hypothesis_version: 6.151.6
+
+[1024, 2048, 3600, 10485760, '%Y/%m/%d', '.', '0', '1', 'AES256', 'AWSAccessKeyId', 'AWS_ACCESS_KEY_ID', 'AWS_REGION', 'AWS_S3_BUCKET', 'Bucket', 'Content-Type', 'ContentType', 'Contents', 'Key', 'LastModified', 'Metadata', 'Objects', 'S3_MOCK', 'ServerSideEncryption', 'Size', '_', 'application/msword', 'application/pdf', 'content-length-range', 'doc', 'docx', 'eu-central-1', 'fields', 'filename', 'get_object', 'image.png', 'image/jpeg', 'image/png', 'jpeg', 'jpg', 'key', 'last_modified', 'mock-key', 'mock-policy', 'mock-signature', 'original_filename', 'pdf', 'png', 'policy', 's3', 'signature', 'size', 'tenant_id', 'test1.pdf', 'upload_date', 'url', 'x-amz-meta-tenant-id', 'xls', 'xlsx']

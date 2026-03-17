@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/ai/tools/analytics_tool.py
+# hypothesis_version: 6.151.6
+
+['%Y-%m-%d', '+00:00', '1.0.0', 'Dönemsel gelir özeti', 'End date (ISO)', 'Randevu durum özeti', 'Start date (ISO)', 'Tenant ID', 'Z', '__float__', 'amount', 'appointment_count', 'appointment_status', 'borç', 'brand', 'ciro', 'city', 'clinician', 'columns', 'completed', 'count', 'data', 'date_from', 'date_to', 'description', 'due_date', 'dynamic_query', 'en_çok_satılan', 'gelir', 'integer', 'klinisyen', 'limit', 'marka', 'model', 'month', 'monthly_new_patients', 'new_patients', 'no_shows', 'overdue', 'overdue_payments', 'patient_name', 'patients_by_city', 'performans', 'period', 'query_type', 'randevu_durum', 'reports.view', 'revenue', 'revenue_by_period', 'sale_count', 'sql', 'status', 'string', 'tenant_id', 'today', 'top_selling', 'top_selling_devices', 'total', 'total_revenue', 'total_stock', 'vadesi_geçmiş', 'yeni_hasta', 'şehir']

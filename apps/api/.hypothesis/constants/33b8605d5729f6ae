@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/personnel.py
+# hypothesis_version: 6.151.6
+
+['accruedPremium', 'active', 'activeRules', 'approve', 'baseRate', 'branchCount', 'branchName', 'branchNames', 'calculationDate', 'carryOverEnabled', 'collectionRule', 'compensationModel', 'dayCount', 'documentPolicy', 'documentType', 'employeeId', 'employeeName', 'endDate', 'fullName', 'hiredAt', 'lastLogin', 'leavePolicy', 'leaveType', 'leaveTypes', 'linkedUser', 'linkedUserId', 'linkedUserRequired', 'modelType', 'passive', 'payrollStatus', 'periodLabel', 'periodMode', 'personnelEnabled', 'premiumProfile', 'rateSummary', 'reject', 'salesTotal', 'startDate', 'targetAmount', 'targetEnabled', 'tenantId', 'tenantName', 'totalTenants', 'userCount', 'validUntil']

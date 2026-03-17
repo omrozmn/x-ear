@@ -1,51 +1,453 @@
-{"timestamp": "2026-03-16T02:13:24.856559+00:00", "level": "INFO", "logger": "middleware.permission_middleware", "message": "DEBUG [MIDDLEWARE]: Admin/TenantAdmin bypass for path=/api/inventory role=ADMIN"}
-{"timestamp": "2026-03-16T02:13:24.857014+00:00", "level": "INFO", "logger": "core.database", "message": "\ud83d\udd11 [GET_DB] Using tenant_id from thread-local: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:13:24.857051+00:00", "level": "INFO", "logger": "core.database", "message": "\ud83d\udd11 [GET_DB] Set session.info['tenant_id']: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:13:24.857313+00:00", "level": "INFO", "logger": "middleware.unified_access", "message": "\ud83d\udd0d [TOKEN DEBUG] user_id=usr_fafdcfc55d1d, is_impersonating=False, is_impersonating_tenant=False, tenant_id_in_payload=61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:13:24.857351+00:00", "level": "INFO", "logger": "core.database", "message": "\ud83d\udd13 Entering unbound session: auth-user-lookup"}
-{"timestamp": "2026-03-16T02:13:24.858563+00:00", "level": "INFO", "logger": "core.database", "message": "\ud83d\udd12 Exiting unbound session: auth-user-lookup"}
-{"timestamp": "2026-03-16T02:13:24.858604+00:00", "level": "INFO", "logger": "middleware.unified_access", "message": "\ud83d\udd11 [ACCESS DEPENDENCY] Storing tenant_id in request.state: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:13:24.858629+00:00", "level": "INFO", "logger": "middleware.unified_access", "message": "\ud83d\udd11 [ACCESS DEPENDENCY] Setting tenant context: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:13:24.858653+00:00", "level": "INFO", "logger": "middleware.unified_access", "message": "\ud83d\udd11 [ACCESS DEPENDENCY] Set thread-local tenant_id: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:13:27.933912+00:00", "level": "INFO", "logger": "middleware.permission_middleware", "message": "Token parsed: role=ADMIN, perms_count=1"}
-{"timestamp": "2026-03-16T02:13:27.934464+00:00", "level": "INFO", "logger": "core.database", "message": "\ud83d\udd11 [GET_DB] Using tenant_id from thread-local: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:13:27.934496+00:00", "level": "INFO", "logger": "core.database", "message": "\ud83d\udd11 [GET_DB] Set session.info['tenant_id']: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:13:27.934776+00:00", "level": "INFO", "logger": "middleware.unified_access", "message": "\ud83d\udd0d [TOKEN DEBUG] user_id=usr_fafdcfc55d1d, is_impersonating=False, is_impersonating_tenant=False, tenant_id_in_payload=61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:13:27.934818+00:00", "level": "INFO", "logger": "core.database", "message": "\ud83d\udd13 Entering unbound session: auth-user-lookup"}
-{"timestamp": "2026-03-16T02:13:27.935901+00:00", "level": "INFO", "logger": "core.database", "message": "\ud83d\udd12 Exiting unbound session: auth-user-lookup"}
-{"timestamp": "2026-03-16T02:13:27.935946+00:00", "level": "INFO", "logger": "middleware.unified_access", "message": "\ud83d\udd11 [ACCESS DEPENDENCY] Storing tenant_id in request.state: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:13:27.935972+00:00", "level": "INFO", "logger": "middleware.unified_access", "message": "\ud83d\udd11 [ACCESS DEPENDENCY] Setting tenant context: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:13:27.935997+00:00", "level": "INFO", "logger": "middleware.unified_access", "message": "\ud83d\udd11 [ACCESS DEPENDENCY] Set thread-local tenant_id: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:13:29.667113+00:00", "level": "INFO", "logger": "middleware.permission_middleware", "message": "Token parsed: role=ADMIN, perms_count=1"}
-{"timestamp": "2026-03-16T02:13:29.667651+00:00", "level": "INFO", "logger": "core.database", "message": "\ud83d\udd11 [GET_DB] Using tenant_id from thread-local: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:13:29.667687+00:00", "level": "INFO", "logger": "core.database", "message": "\ud83d\udd11 [GET_DB] Set session.info['tenant_id']: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:13:29.668014+00:00", "level": "INFO", "logger": "middleware.unified_access", "message": "\ud83d\udd0d [TOKEN DEBUG] user_id=usr_fafdcfc55d1d, is_impersonating=False, is_impersonating_tenant=False, tenant_id_in_payload=61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:13:29.668057+00:00", "level": "INFO", "logger": "core.database", "message": "\ud83d\udd13 Entering unbound session: auth-user-lookup"}
-{"timestamp": "2026-03-16T02:13:29.669281+00:00", "level": "INFO", "logger": "core.database", "message": "\ud83d\udd12 Exiting unbound session: auth-user-lookup"}
-{"timestamp": "2026-03-16T02:13:29.669325+00:00", "level": "INFO", "logger": "middleware.unified_access", "message": "\ud83d\udd11 [ACCESS DEPENDENCY] Storing tenant_id in request.state: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:13:29.669347+00:00", "level": "INFO", "logger": "middleware.unified_access", "message": "\ud83d\udd11 [ACCESS DEPENDENCY] Setting tenant context: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:13:29.669368+00:00", "level": "INFO", "logger": "middleware.unified_access", "message": "\ud83d\udd11 [ACCESS DEPENDENCY] Set thread-local tenant_id: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:13:30.817106+00:00", "level": "INFO", "logger": "middleware.permission_middleware", "message": "Token parsed: role=ADMIN, perms_count=1"}
-{"timestamp": "2026-03-16T02:13:30.818868+00:00", "level": "INFO", "logger": "core.database", "message": "\ud83d\udd11 [GET_DB] Using tenant_id from thread-local: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:13:30.818953+00:00", "level": "INFO", "logger": "core.database", "message": "\ud83d\udd11 [GET_DB] Set session.info['tenant_id']: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:13:30.819557+00:00", "level": "INFO", "logger": "middleware.unified_access", "message": "\ud83d\udd0d [TOKEN DEBUG] user_id=usr_fafdcfc55d1d, is_impersonating=False, is_impersonating_tenant=False, tenant_id_in_payload=61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:13:30.819630+00:00", "level": "INFO", "logger": "core.database", "message": "\ud83d\udd13 Entering unbound session: auth-user-lookup"}
-{"timestamp": "2026-03-16T02:13:30.822381+00:00", "level": "INFO", "logger": "core.database", "message": "\ud83d\udd12 Exiting unbound session: auth-user-lookup"}
-{"timestamp": "2026-03-16T02:13:30.822543+00:00", "level": "INFO", "logger": "middleware.unified_access", "message": "\ud83d\udd11 [ACCESS DEPENDENCY] Storing tenant_id in request.state: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:13:30.822634+00:00", "level": "INFO", "logger": "middleware.unified_access", "message": "\ud83d\udd11 [ACCESS DEPENDENCY] Setting tenant context: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:13:30.822725+00:00", "level": "INFO", "logger": "middleware.unified_access", "message": "\ud83d\udd11 [ACCESS DEPENDENCY] Set thread-local tenant_id: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:13:57.435196+00:00", "level": "WARNING", "logger": "middleware.permission_middleware", "message": "JWT decode failed: Not enough segments"}
-{"timestamp": "2026-03-16T02:13:57.435525+00:00", "level": "INFO", "logger": "core.database", "message": "\ud83d\udd11 [GET_DB] Using tenant_id from thread-local: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:13:57.435563+00:00", "level": "INFO", "logger": "core.database", "message": "\ud83d\udd11 [GET_DB] Set session.info['tenant_id']: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:14:03.880054+00:00", "level": "INFO", "logger": "middleware.permission_middleware", "message": "Token parsed: role=ADMIN, perms_count=1"}
-{"timestamp": "2026-03-16T02:14:03.880237+00:00", "level": "INFO", "logger": "middleware.permission_middleware", "message": "DEBUG [MIDDLEWARE]: Admin/TenantAdmin bypass for path=/api/inventory role=ADMIN"}
-{"timestamp": "2026-03-16T02:14:03.881426+00:00", "level": "INFO", "logger": "core.database", "message": "\ud83d\udd11 [GET_DB] Using tenant_id from thread-local: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:14:03.881582+00:00", "level": "INFO", "logger": "core.database", "message": "\ud83d\udd11 [GET_DB] Set session.info['tenant_id']: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:14:03.882695+00:00", "level": "INFO", "logger": "middleware.unified_access", "message": "\ud83d\udd0d [TOKEN DEBUG] user_id=usr_fafdcfc55d1d, is_impersonating=False, is_impersonating_tenant=False, tenant_id_in_payload=61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:14:03.883055+00:00", "level": "INFO", "logger": "core.database", "message": "\ud83d\udd13 Entering unbound session: auth-user-lookup"}
-{"timestamp": "2026-03-16T02:14:03.887096+00:00", "level": "INFO", "logger": "core.database", "message": "\ud83d\udd12 Exiting unbound session: auth-user-lookup"}
-{"timestamp": "2026-03-16T02:14:03.887266+00:00", "level": "INFO", "logger": "middleware.unified_access", "message": "\ud83d\udd11 [ACCESS DEPENDENCY] Storing tenant_id in request.state: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:14:03.887382+00:00", "level": "INFO", "logger": "middleware.unified_access", "message": "\ud83d\udd11 [ACCESS DEPENDENCY] Setting tenant context: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:14:03.887497+00:00", "level": "INFO", "logger": "middleware.unified_access", "message": "\ud83d\udd11 [ACCESS DEPENDENCY] Set thread-local tenant_id: 61ec4a29-b6e9-4914-8f26-546808efb07f"}
-{"timestamp": "2026-03-16T02:14:24.539916+00:00", "level": "INFO", "logger": "apscheduler.scheduler", "message": "Scheduler has been shut down"}
-{"timestamp": "2026-03-16T02:14:24.540066+00:00", "level": "INFO", "logger": "services.birfatura.auto_sync_scheduler", "message": "[auto-sync] Scheduler stopped"}
+{"timestamp": "2026-03-17T16:58:48.938708+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:48.939268+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:49.674108+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:49.676916+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:50.288410+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:50.289312+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:50.902076+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.003354+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.003767+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.003947+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.004093+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.004231+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.004365+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.004498+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.004628+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.004756+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.004882+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.005006+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.005130+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.005258+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.005383+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.005505+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.005626+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.005777+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.005908+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.006038+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.006192+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.006316+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.006439+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.006578+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.006727+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.006856+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.006980+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.007101+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.007223+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.007347+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.007468+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.007615+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.007754+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.007875+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.007997+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.008118+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.008241+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.008363+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.008486+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.008606+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.008731+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.008852+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.008974+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.009099+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.009223+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.009342+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.009462+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.009579+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.009698+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.009816+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:53.009939+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.120088+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.120504+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.120673+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.120811+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.120945+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.121075+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.121208+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.121334+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.121462+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.121586+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.121710+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.121849+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.121974+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.122099+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.122221+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.122342+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.122468+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.122591+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.122715+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.122838+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.122966+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.123093+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.123217+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.123338+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.123461+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.123582+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.123709+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.123834+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.123957+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.124079+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.124200+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.124326+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.124591+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.124802+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.124976+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.125121+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.125255+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.125385+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.125513+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.125642+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.125773+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.125901+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.126025+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.126149+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.126278+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.126404+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.126547+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.126683+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.126815+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:55.126942+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.163444+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.163798+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.164094+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.164299+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.164458+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.164614+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.164766+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.164905+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.165038+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.165169+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.165298+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.165424+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.165553+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.165677+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.165798+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.165919+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.166046+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.166171+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.166293+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.166416+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.166538+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.166661+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.166790+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.166914+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.167037+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.167158+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.167280+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.167402+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.167523+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.167654+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.167777+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.167898+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.168019+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.168139+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.168262+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.168386+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.168508+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.168628+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.168749+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.168869+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.168990+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.169109+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.169231+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.169356+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.169479+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.169598+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.169718+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.169839+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.169965+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:57.170093+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.299655+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.300072+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.300274+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.300435+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.300581+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.300723+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.300868+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.301025+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.301165+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.301297+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.301427+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.301555+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.301678+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.301800+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.301923+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.302046+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.302168+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.302296+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.302432+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.302563+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.302686+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.302807+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.302928+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.303049+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.303181+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.303307+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.303430+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.303552+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.303673+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.303795+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.303919+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.304045+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.304168+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.304292+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.304560+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.304764+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.304926+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.305067+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.305199+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.305326+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.305460+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.305587+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.305712+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.305836+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.305959+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.306081+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.306209+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.306339+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.306473+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:58:59.306599+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:59:01.363336+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:59:01.363660+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:59:01.363829+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:59:01.363972+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:59:01.364114+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:59:01.364245+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:59:01.364371+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:59:01.364495+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:59:01.364617+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:59:01.364739+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:59:01.364864+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:59:01.364994+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:59:01.365119+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:59:01.365242+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:59:01.365364+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:59:02.473869+00:00", "level": "INFO", "logger": "services.birfatura.invoice_sync", "message": "Pre-cached PDF links for 265 incoming invoices (tenant 61ec4a29-b6e9-4914-8f26-546808efb07f)"}
+{"timestamp": "2026-03-17T16:59:02.474171+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T16:59:02.985196+00:00", "level": "INFO", "logger": "services.birfatura.auto_sync_scheduler", "message": "[auto-sync] Completed for 2 tenants"}
+{"timestamp": "2026-03-17T16:59:02.985710+00:00", "level": "INFO", "logger": "apscheduler.executors.default", "message": "Job \"BirFatura Invoice Auto-Sync (trigger: interval[0:15:00], next run at: 2026-03-17 20:13:48 +03)\" executed successfully"}
+{"timestamp": "2026-03-17T17:13:48.939285+00:00", "level": "INFO", "logger": "apscheduler.executors.default", "message": "Running job \"BirFatura Invoice Auto-Sync (trigger: interval[0:15:00], next run at: 2026-03-17 20:28:48 +03)\" (scheduled at 2026-03-17 20:13:48.924139+03:00)"}
+{"timestamp": "2026-03-17T17:13:48.939428+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:48.939950+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:49.780838+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:49.781188+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:50.234551+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:50.235442+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:50.885943+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.086243+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.086580+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.086738+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.086875+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.087000+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.087123+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.087242+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.087358+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.087481+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.087595+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.087713+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.087830+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.087943+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.088065+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.088176+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.088287+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.088397+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.088510+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.088627+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.088739+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.088850+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.088962+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.089076+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.089212+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.089348+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.089486+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.089609+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.089730+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.089852+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.089981+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.090105+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.090226+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.090352+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.090467+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.090579+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.090694+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.090817+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.090931+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.091041+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.091156+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.091287+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.091415+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.091526+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.091636+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.091746+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.091857+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.091970+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.092082+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.092193+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:53.092302+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.102344+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.102681+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.102836+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.102967+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.103095+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.103219+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.103340+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.103455+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.103580+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.103694+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.103811+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.103931+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.104062+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.104195+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.104319+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.104442+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.104570+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.104694+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.104824+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.104942+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.105058+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.105171+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.105283+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.105394+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.105504+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.105614+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.105728+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.105841+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.105951+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.106062+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.106174+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.106290+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.106407+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.106526+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.106636+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.106746+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.106861+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.106981+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.107092+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.107206+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.107316+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.107426+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.107540+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.107651+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.107759+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.107868+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.107979+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.108088+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.108201+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:55.108312+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.275051+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.275453+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.275636+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.275808+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.275955+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.276090+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.276221+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.276351+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.276480+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.276610+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.276738+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.276864+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.276988+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.277113+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.277237+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.277362+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.277486+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.277608+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.277730+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.277851+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.277976+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.278102+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.278227+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.278350+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.278474+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.278603+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.278737+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.278860+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.278983+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.279106+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.279229+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.279356+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.279480+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.279601+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.279724+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.279845+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.279971+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.280095+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.280217+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.280348+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.280487+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.280625+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.280779+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.280919+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.281053+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.281188+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.281324+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.281458+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.281602+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:57.281745+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.704526+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.704910+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.705088+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.705231+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.705365+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.705489+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.705612+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.705740+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.705860+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.705975+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.706090+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.706207+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.706322+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.706435+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.706547+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.706660+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.706772+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.706888+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.707003+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.707117+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.707230+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.707348+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.707475+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.707598+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.707738+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.707866+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.707981+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.708107+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.708225+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.708337+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.708447+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.708559+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.708684+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.708796+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.708908+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.709043+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.709160+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.709273+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.709388+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.709507+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.709618+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.709736+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.709846+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.709956+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.710069+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.710181+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.710290+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.710401+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.710511+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:13:59.710621+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:14:02.007620+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:14:02.008008+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:14:02.008194+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:14:02.008325+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:14:02.008447+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:14:02.008563+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:14:02.008682+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:14:02.008799+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:14:02.008913+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:14:02.009028+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:14:02.009141+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:14:02.009253+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:14:02.009369+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:14:02.009483+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:14:02.009596+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:14:03.093795+00:00", "level": "INFO", "logger": "services.birfatura.invoice_sync", "message": "Pre-cached PDF links for 265 incoming invoices (tenant 61ec4a29-b6e9-4914-8f26-546808efb07f)"}
+{"timestamp": "2026-03-17T17:14:03.094268+00:00", "level": "WARNING", "logger": "core.database", "message": "\u26a0\ufe0f [TENANT FILTER] No tenant_id in context for SELECT query!"}
+{"timestamp": "2026-03-17T17:14:03.679164+00:00", "level": "INFO", "logger": "services.birfatura.auto_sync_scheduler", "message": "[auto-sync] Completed for 2 tenants"}
+{"timestamp": "2026-03-17T17:14:03.679661+00:00", "level": "INFO", "logger": "apscheduler.executors.default", "message": "Job \"BirFatura Invoice Auto-Sync (trigger: interval[0:15:00], next run at: 2026-03-17 20:28:48 +03)\" executed successfully"}

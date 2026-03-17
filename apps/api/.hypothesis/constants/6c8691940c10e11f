@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/ai/tools/ocr_tools.py
+# hypothesis_version: 6.151.6
+
+[0.0, 0.5, 2000, '.png', '1.0.0', 'Type of document', 'action', 'confidence', 'document_type', 'documents.view', 'extractTextFromImage', 'extracted_text', 'general', 'image_base64', 'invoice', 'ocr', 'prescription', 'receipt', 'string', 'structured_data', 'text']

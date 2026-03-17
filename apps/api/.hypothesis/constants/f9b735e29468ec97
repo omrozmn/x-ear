@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/ai/tools/hearing_tools.py
+# hypothesis_version: 6.151.6
+
+[0.1, 0.3, 0.5, 500, 1000, 2000, 4000, '1.0.0', 'BTE', 'COCHLEAR', 'Get Hearing Profile', 'Get Hearing Tests', 'ITE', 'Patient ID', 'RIC', 'SUPER_POWER', 'Tenant ID', 'bilateral', 'brand', 'device_type', 'devices.view', 'eligible', 'getHearingProfile', 'getHearingTests', 'hearing_aid', 'inventoryId', 'is_eligible', 'leftEar', 'leftPTA', 'message', 'mild', 'model', 'moderate', 'moderately_severe', 'name', 'normal', 'parties.view', 'party_id', 'price', 'profile', 'profound', 'recommendations', 'rightEar', 'rightPTA', 'sale_price', 'score', 'severe', 'severity', 'sgkCoverage', 'sgkEligible', 'sgk_eligible', 'stock', 'string', 'tenant_id', 'tests', 'total', 'total_matching', 'type']

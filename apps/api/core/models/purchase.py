@@ -2,7 +2,7 @@
 Purchase Model
 Represents approved purchase records created from invoices or manually.
 """
-from sqlalchemy import Column, String, DateTime, Numeric, ForeignKey, Text, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, Numeric, ForeignKey, Text, Boolean
 from sqlalchemy.orm import relationship
 from .base import BaseModel
 from .mixins import TenantScopedMixin
@@ -21,7 +21,7 @@ class Purchase(BaseModel, TenantScopedMixin):
     id = Column(String(50), primary_key=True, default=lambda: gen_id("purch"))
     
     # Basic purchase information
-    supplier_id = Column(String(50), ForeignKey('suppliers.id'), nullable=False, index=True)
+    supplier_id = Column(Integer, ForeignKey('suppliers.id'), nullable=False, index=True)
     purchase_date = Column(DateTime, nullable=False, index=True)
     
     # Financial information

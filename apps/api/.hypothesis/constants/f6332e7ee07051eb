@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/cargo_integrations.py
+# hypothesis_version: 6.151.6
+
+[404, '/cargo-integrations', '/{integration_id}', 'Cargo Integrations', 'connected', 'inventory.manage', 'inventory.view', 'message', 'status', 'success', 'testCargoIntegration']

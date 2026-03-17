@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/image_processing.py
+# hypothesis_version: 6.151.6
+
+[1024, 'fileSize', 'imageId', 'imageUrl', 'inventoryId', 'maintainAspect', 'perPage', 'pexels', 's3Key', 'thumbnailUrl']

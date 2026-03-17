@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/product_media.py
+# hypothesis_version: 6.151.6
+
+[404, 'Media deleted', 'Media not found', 'Media reordered', 'Product Media', 'createProductMedia', 'deleteProductMedia', 'fields', 'getMediaPresignedUrl', 'inventory.manage', 'inventory.view', 'is_primary', 'key', 'listProductMedia', 'message', 'product_media', 'reorderProductMedia', 'sort_order', 'success', 'updateProductMedia', 'url']

@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/schemas/cargo_integrations.py
+# hypothesis_version: 6.151.6
+
+['apiKey', 'apiSecret', 'customerId', 'disconnected', 'isActive', 'otherParams']

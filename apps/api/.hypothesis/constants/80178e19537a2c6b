@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/cargo_integration.py
+# hypothesis_version: 6.151.6
+
+[100, 255, 'cargo_integrations', 'crg', 'customerId', 'disconnected', 'id', 'isActive', 'name', 'platform', 'status']

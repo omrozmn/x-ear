@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/dashboard.py
+# hypothesis_version: 6.151.6
+
+[0.0, 500, '%Y-%m', ',', '/dashboard', '/dashboard/kpis', 'Bilinmiyor', 'Dashboard', 'IN_STOCK', 'SCHEDULED', 'Secili Kapsam', 'Sube', 'TRIAL', 'acquisitionType', 'activePatients', 'activeTrials', 'activity', 'admin', 'availableDevices', 'branch', 'branchId', 'branchName', 'branch_id', 'branches', 'breakdown', 'completed', 'dailyRevenue', 'dashboard:read', 'devices', 'enabledModules', 'endingTrials', 'estimatedRevenue', 'hearing', 'kpis', 'labels', 'listDashboard', 'listDashboardKpis', 'manager', 'monthly', 'monthlyRevenue', 'owner', 'patient', 'patientName', 'pendingAppointments', 'platform_admin', 'product_code', 'recentActivity', 'scope', 'sector', 'segment', 'status', 'tenantName', 'todayAppointments', 'todaysAppointments', 'totalDevices', 'totalPatients', 'userEmail', 'userName', 'value']

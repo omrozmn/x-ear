@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/config/module_registry.py
+# hypothesis_version: 6.151.9
+
+['Cihazlar', 'Envanter', 'Faturalar', 'Kampanyalar', 'NOAH Import', 'Personel', 'Randevular', 'Raporlar', 'SGK', 'Satışlar', 'UTS', '__ALL__', 'appointments', 'campaigns', 'devices', 'hearing', 'hearing_tests', 'inventory', 'invoices', 'medical', 'noah', 'optic', 'personnel', 'reports', 'sales', 'sgk', 'team', 'uts', 'İşitme Testleri']

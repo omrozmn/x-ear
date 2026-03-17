@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/stock_images.py
+# hypothesis_version: 6.151.6
+
+[200, 400, 404, 502, 503, '/', '/download', '/search', '/stock-images', ';', 'Authorization', 'PEXELS_API_KEY', 'Pexels API error', 'Search query', 'Stock Images', 'UNSPLASH_ACCESS_KEY', 'Unsplash API error', 'alt', 'alt_description', 'content-type', 'downloadStockImage', 'filename', 'full', 'height', 'id', 'image', 'image/jpeg', 'inventory.manage', 'inventory.view', 'key', 'medium', 'name', 'original', 'page', 'per_page', 'pexels', 'pexels or unsplash', 'photographer', 'photos', 'product_media', 'query', 'results', 'searchStockImages', 'size', 'small', 'src', 'total', 'total_results', 'unsplash', 'url', 'urls', 'user', 'width']

@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/ai/api/opportunities.py
+# hypothesis_version: 6.151.6
+
+[400, 404, '/', '/ai/opportunities', '/{opportunity_id}', 'ACKNOWLEDGED', 'AI Opportunities', 'Invalid status', 'PC-001', 'PC-004', 'PC-005', 'PC-008', 'PC-010', 'READY_FOR_APPROVAL', 'SIMULATE', 'admin', 'approval_required', 'clinician', 'count', 'doctor', 'entity_ids', 'finance', 'financial', 'get_ai_opportunity', 'grouped_count', 'mode', 'operations', 'patient_care', 'plan_id', 'receptionist', 'representative', 'status', 'tenant_id', 'title', 'type', 'user_id']

@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/marketplace_listing.py
+# hypothesis_version: 6.151.6
+
+[100, 200, 500, 'CASCADE', 'InventoryItem', 'draft', 'errorMessage', 'id', 'integrationId', 'inventory.id', 'inventoryId', 'lastSyncedAt', 'listingData', 'listings', 'marketplaceBarcode', 'marketplaceBrand', 'marketplacePrice', 'marketplaceStock', 'marketplaceTitle', 'marketplace_listings', 'mpl', 'remoteProductId', 'select', 'status']

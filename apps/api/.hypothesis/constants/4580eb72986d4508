@@ -1,0 +1,4 @@
+# file: /Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/core/models/sms_package.py
+# hypothesis_version: 6.151.6
+
+[100, 500, 'TRY', 'countries.code', 'country_code', 'created_at', 'currency', 'description', 'extend_existing', 'id', 'is_active', 'name', 'price', 'sms_count', 'sms_packages']
