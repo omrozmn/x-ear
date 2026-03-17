@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 import logging
 
 from sqlalchemy.orm import Session
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, extract, cast, String
 
 from schemas.base import ResponseEnvelope
 
@@ -359,21 +359,24 @@ def patient_trends(
     try:
         now = datetime.utcnow()
         labels = []
-        data = []
-        
-        base_query = tenant_scoped_query(access, Party, db_session)
-        
         for i in range(5, -1, -1):
             month_dt = (now.replace(day=1) - timedelta(days=30*i))
-            label = month_dt.strftime('%Y-%m')
-            labels.append(label)
-            try:
-                count = base_query.filter(
-                    func.strftime('%Y-%m', Party.created_at) == label
-                ).count()
-                data.append(int(count or 0))
-            except Exception:
-                data.append(0)
+            labels.append(month_dt.strftime('%Y-%m'))
+
+        six_months_ago = (now.replace(day=1) - timedelta(days=30*5)).replace(day=1)
+
+        yr = extract('year', Party.created_at)
+        mo = extract('month', Party.created_at)
+        rows = tenant_scoped_query(access, Party, db_session).filter(
+            Party.created_at >= six_months_ago,
+        ).with_entities(
+            yr.label('yr'),
+            mo.label('mo'),
+            func.count(Party.id).label('cnt')
+        ).group_by(yr, mo).all()
+
+        count_map = {f"{int(r.yr)}-{int(r.mo):02d}": int(r.cnt) for r in rows}
+        data = [count_map.get(label, 0) for label in labels]
 
         return ResponseEnvelope(
             data={"labels": labels, "monthly": data}
@@ -390,24 +393,29 @@ def revenue_trends(
     """Revenue trends chart data"""
     try:
         now = datetime.utcnow()
+        # Build labels for last 6 months
         labels = []
-        data = []
-        
-        base_query = tenant_scoped_query(access, Sale, db_session)
-        
         for i in range(5, -1, -1):
             month_dt = (now.replace(day=1) - timedelta(days=30*i))
-            label = month_dt.strftime('%Y-%m')
-            labels.append(label)
-            try:
-                sales = base_query.filter(
-                    func.strftime('%Y-%m', Sale.created_at) == label,
-                    Sale.status == 'completed'
-                ).all()
-                total = sum(float(s.final_amount or s.total_amount or 0) for s in sales)
-                data.append(total)
-            except Exception:
-                data.append(0.0)
+            labels.append(month_dt.strftime('%Y-%m'))
+
+        # Calculate date range for the query (6 months ago to now)
+        six_months_ago = (now.replace(day=1) - timedelta(days=30*5)).replace(day=1)
+
+        # Single GROUP BY query instead of 6 separate .all() calls
+        yr = extract('year', Sale.created_at)
+        mo = extract('month', Sale.created_at)
+        rows = tenant_scoped_query(access, Sale, db_session).filter(
+            Sale.status == 'completed',
+            Sale.created_at >= six_months_ago,
+        ).with_entities(
+            yr.label('yr'),
+            mo.label('mo'),
+            func.coalesce(func.sum(func.coalesce(Sale.final_amount, Sale.total_amount, 0)), 0).label('total')
+        ).group_by(yr, mo).all()
+
+        revenue_map = {f"{int(r.yr)}-{int(r.mo):02d}": float(r.total) for r in rows}
+        data = [revenue_map.get(label, 0.0) for label in labels]
 
         return ResponseEnvelope(
             data={"labels": labels, "monthly": data}

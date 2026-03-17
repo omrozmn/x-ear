@@ -20,7 +20,7 @@ import logging
 import os
 from typing import Any, Dict, Optional
 
-import requests
+import httpx
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ class TapService:
 
     def _post(self, path: str, data: dict) -> dict:
         try:
-            resp = requests.post(f"{self.base_url}{path}", json=data, headers=self._headers(), timeout=30)
+            resp = httpx.post(f"{self.base_url}{path}", json=data, headers=self._headers(), timeout=30)
             return resp.json()
         except Exception as e:
             logger.error(f"Tap API error: {e}")
@@ -48,7 +48,7 @@ class TapService:
 
     def _get(self, path: str) -> dict:
         try:
-            resp = requests.get(f"{self.base_url}{path}", headers=self._headers(), timeout=15)
+            resp = httpx.get(f"{self.base_url}{path}", headers=self._headers(), timeout=15)
             return resp.json()
         except Exception as e:
             return {"status": "error", "message": str(e)}

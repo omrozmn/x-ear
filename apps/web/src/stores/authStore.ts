@@ -505,7 +505,8 @@ export const useAuthStore = create<AuthStore>()(
 
           const responseEnvelope = await forgotPasswordApi({
             identifier: phone,
-          });
+            captchaToken: '',
+          } as any);
 
           if (import.meta.env.DEV) {
             console.log('Response received:', responseEnvelope);

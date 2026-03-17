@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from dataclasses import dataclass
 
-import requests
+import httpx
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +81,7 @@ class IyzicoService:
         body = json.dumps(data)
         headers = self._generate_auth_header(path, body)
         try:
-            resp = requests.post(url, data=body, headers=headers, timeout=30)
+            resp = httpx.post(url, content=body, headers=headers, timeout=30)
             return resp.json()
         except Exception as e:
             logger.error(f"iyzico API error: {e}")

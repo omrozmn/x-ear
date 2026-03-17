@@ -1,6 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
-import AffiliatesPage from '../pages/admin/AffiliatesPage'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/affiliates')({
-    component: AffiliatesPage,
+    beforeLoad: () => {
+        throw redirect({ to: '/tenants' })
+    },
 })

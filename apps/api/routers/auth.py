@@ -144,6 +144,7 @@ def get_otp_store():
 # --- Routes ---
 
 @router.post("/auth/lookup-phone", operation_id="createAuthLookupPhone", response_model=ResponseEnvelope[LookupPhoneResponse])
+@rate_limit(window_seconds=900, max_calls=10, key_prefix="lookup_phone")
 def lookup_phone(
     request_data: LookupPhoneRequest,
     db_session: Session = Depends(get_db)
@@ -161,13 +162,12 @@ def lookup_phone(
                 user = db_session.query(User).filter_by(phone=identifier).first()
         
         if not user or not user.phone:
-            raise HTTPException(
-                status_code=404,
-                detail=ApiError(
-                    message="User not found or no phone registered",
-                    code="USER_NOT_FOUND"
-                ).model_dump(mode="json")
-            )
+            # Always return success to prevent user enumeration
+            return ResponseEnvelope(data=LookupPhoneResponse(
+                masked_phone="*******####",
+                is_phone_input=False,
+                user_exists=True  # Always true to prevent enumeration
+            ))
         
         phone = user.phone
         masked = '*' * (len(phone) - 4) + phone[-4:] if len(phone) > 4 else phone
@@ -187,6 +187,7 @@ def lookup_phone(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/auth/forgot-password", operation_id="createAuthForgotPassword", response_model=ResponseEnvelope[MessageResponse])
+@rate_limit(window_seconds=900, max_calls=5, key_prefix="forgot_password")
 def forgot_password(
     request_data: ForgotPasswordRequest,
     db_session: Session = Depends(get_db)
@@ -238,6 +239,7 @@ def forgot_password(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/auth/verify-otp", operation_id="createAuthVerifyOtp", response_model=ResponseEnvelope[VerifyOtpResponse])
+@rate_limit(window_seconds=900, max_calls=5, key_prefix="verify_otp")
 def verify_otp(
     request_data: VerifyOtpRequest,
     authorization: Optional[str] = Header(None),

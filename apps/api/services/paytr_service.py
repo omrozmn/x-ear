@@ -3,7 +3,7 @@ import base64
 import hmac
 import hashlib
 import json
-import requests
+import httpx
 import logging
 
 logger = logging.getLogger(__name__)
@@ -110,7 +110,7 @@ class PayTRService:
         Sends the request to PayTR to get the token (iframe URL token)
         """
         try:
-            response = requests.post(f"{self.base_url}/odeme/api/get-token", data=payload)
+            response = httpx.post(f"{self.base_url}/odeme/api/get-token", data=payload)
             result = response.json()
             
             if result['status'] == 'success':

@@ -1,6 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
-import AdminApiKeysPage from '../pages/admin/AdminApiKeysPage'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/api-keys')({
-    component: AdminApiKeysPage,
+    beforeLoad: () => {
+        throw redirect({ to: '/integrations' })
+    },
 })

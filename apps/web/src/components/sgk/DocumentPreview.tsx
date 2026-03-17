@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import DOMPurify from 'dompurify';
 import { Modal, Button, Input } from '@x-ear/ui-web';
 import { 
   FileText, 
@@ -322,10 +323,10 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({
                     showFullOCR ? 'max-h-64 overflow-y-auto' : 'max-h-32 overflow-hidden'
                   }`}
                   dangerouslySetInnerHTML={{
-                    __html: highlightOCRText(
+                    __html: DOMPurify.sanitize(highlightOCRText(
                       showFullOCR ? fullOCRText : fullOCRText.substring(0, 500) + (fullOCRText.length > 500 ? '...' : ''),
                       searchTerm
-                    )
+                    ))
                   }}
                 />
               </div>

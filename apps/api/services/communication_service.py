@@ -4,7 +4,7 @@ Handles SMS and Email sending with proper error handling and provider abstractio
 """
 import os
 import logging
-import requests
+import httpx
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -149,9 +149,9 @@ class VatanSMSProvider(SMSProvider):
                 "phones": [clean_phone]
             }
             
-            response = requests.post(
+            response = httpx.post(
                 self.otp_url,
-                json=payload, # Use json parameter for automatic Content-Type header
+                json=payload,
                 timeout=30
             )
             
@@ -179,7 +179,7 @@ class VatanSMSProvider(SMSProvider):
                     'provider': 'vatansms'
                 }
                 
-        except requests.RequestException as e:
+        except httpx.HTTPError as e:
             logger.error(f"VatanSMS request error: {e}")
             return {
                 'success': False,

@@ -1,4 +1,4 @@
-import requests
+import httpx
 import logging
 
 logger = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ class VatanSMSService:
         message: string
         """
         url = f"{self.BASE_URL}/1toN"
-        
+
         payload = {
             "api_id": self.api_id,
             "api_key": self.api_key,
@@ -27,15 +27,13 @@ class VatanSMSService:
             "message": message,
             "phones": phones
         }
-        
+
         try:
-            response = requests.post(url, json=payload, timeout=10)
+            response = httpx.post(url, json=payload, timeout=10)
             response.raise_for_status()
             return response.json()
         except Exception as e:
             logger.error(f"VatanSMS send error: {e}")
-            if hasattr(e, 'response') and e.response:
-                logger.error(f"Response: {e.response.text}")
             raise e
 
     def get_sender_names(self):
@@ -45,7 +43,7 @@ class VatanSMSService:
             "api_key": self.api_key
         }
         try:
-            response = requests.post(url, json=payload, timeout=10)
+            response = httpx.post(url, json=payload, timeout=10)
             response.raise_for_status()
             return response.json()
         except Exception as e:

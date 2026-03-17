@@ -17,6 +17,7 @@ from schemas.tenants import TurnstileConfigResponse, RegistrationVerifyResponse
 from routers.auth import create_access_token
 from services.otp_store import get_store
 from services.sms_service import VatanSMSService
+from utils.rate_limit import rate_limit
 
 logger = logging.getLogger(__name__)
 
@@ -91,6 +92,7 @@ def get_turnstile_config():
     return ResponseEnvelope(data=TurnstileConfigResponse(site_key=site_key or ''))
 
 @router.post("/register-phone", operation_id="createRegisterPhone")
+@rate_limit(window_seconds=900, max_calls=5, key_prefix="register_phone")
 def register_phone(
     request_data: RegisterPhoneRequest,
     db: Session = Depends(get_db)
@@ -150,6 +152,7 @@ def register_phone(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/verify-registration-otp", operation_id="createVerifyRegistrationOtp", status_code=201, response_model=ResponseEnvelope[RegistrationVerifyResponse])
+@rate_limit(window_seconds=900, max_calls=5, key_prefix="verify_reg_otp")
 def verify_registration_otp(
     request_data: VerifyRegistrationOTPRequest,
     db: Session = Depends(get_db)

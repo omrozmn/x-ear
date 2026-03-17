@@ -255,6 +255,28 @@ app.add_middleware(
     expose_headers=["X-Request-Id", "X-Response-Time", "X-Idempotency-Replayed"],
 )
 
+# Request timeout middleware - prevents workers from being held indefinitely
+import asyncio as _asyncio
+
+@app.middleware("http")
+async def request_timeout_middleware(request: Request, call_next):
+    # Longer timeout for AI, export, and OCR endpoints
+    path = request.url.path
+    if any(p in path for p in ("/ai/", "/export", "/ocr/", "/bulk")):
+        timeout = 180  # 3 min for heavy operations
+    else:
+        timeout = 30  # 30s default
+
+    try:
+        response = await _asyncio.wait_for(call_next(request), timeout=timeout)
+        return response
+    except _asyncio.TimeoutError:
+        logger.warning(f"Request timeout ({timeout}s): {request.method} {path}")
+        return DefaultJSONResponse(
+            status_code=504,
+            content={"success": False, "error": {"code": "TIMEOUT", "message": f"Request timed out after {timeout}s"}}
+        )
+
 # Security headers middleware
 @app.middleware("http")
 async def security_headers_middleware(request: Request, call_next):
