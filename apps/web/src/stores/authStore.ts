@@ -364,7 +364,7 @@ export const useAuthStore = create<AuthStore>()(
             errorMessage = 'Sunucu hatası. Lütfen daha sonra tekrar deneyin.';
           } else if (error.response?.data?.error) {
             const errData = error.response.data.error;
-            errorMessage = typeof errData === 'string' ? errData : (errData?.message || JSON.stringify(errData));
+            errorMessage = typeof errData === 'string' ? errData : ((errData as any)?.message || JSON.stringify(errData));
           } else if (error.response?.data?.message) {
             const msgData = error.response.data.message;
             errorMessage = typeof msgData === 'string' ? msgData : JSON.stringify(msgData);

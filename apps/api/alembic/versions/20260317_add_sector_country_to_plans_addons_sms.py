@@ -12,7 +12,7 @@ from sqlalchemy import inspect
 revision = "20260317_010000"
 down_revision = "20260312_180500"
 branch_labels = None
-depends_on = "a1b2c3d4e5f6"  # requires countries table from 20260316_add_countries
+depends_on = None
 
 
 def upgrade():

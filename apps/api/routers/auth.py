@@ -493,22 +493,28 @@ async def reset_password(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/auth/login", operation_id="createAuthLogin", response_model=ResponseEnvelope[LoginResponse])
-@rate_limit(window_seconds=900, max_calls=10, key_prefix="login")
 def login(
     request_data: LoginRequest,
+    request: Request = None,
     response: Response = None,
     db_session: Session = Depends(get_db)
 ):
     """Login with username/email/phone and password"""
     try:
+        # Inline rate limiting (decorator breaks FastAPI DI)
+        from utils.rate_limit import _check_rate_redis
+        client_ip = request.client.host if request and request.client else "unknown"
+        if not _check_rate_redis(f"login:{client_ip}", 900, 10):
+            raise HTTPException(status_code=429, detail="Too many login attempts. Try again later.")
+
         identifier = (
-            request_data.identifier or 
-            request_data.username or 
-            request_data.email or 
+            request_data.identifier or
+            request_data.username or
+            request_data.email or
             request_data.phone
         )
         password = request_data.password
-        
+
         masked = f"{identifier[:3]}***" if identifier and len(identifier) > 3 else "***"
         logger.info(f"Login attempt - identifier: {masked}")
         

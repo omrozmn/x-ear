@@ -5,6 +5,7 @@ import re
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from ai.agents.intent_refiner import get_intent_refiner
@@ -626,9 +627,24 @@ async def list_inbox(
 # Incoming Webhook — Real-time WhatsApp → AI
 # =============================================================================
 
+class WhatsAppWebhookPayload(BaseModel):
+    """Incoming WhatsApp webhook payload."""
+    tenant_id: str
+    phone: Optional[str] = None
+    message: Optional[str] = None
+    text: Optional[str] = None
+    body: Optional[str] = None
+    chat_id: Optional[str] = None
+    message_id: Optional[str] = None
+    id: Optional[str] = None
+
+    # Allow extra fields from providers
+    model_config = {"extra": "allow"}
+
+
 @router.post("/webhook", operation_id="whatsappWebhookReceive")
 async def webhook_receive(
-    request: Request,
+    payload: WhatsAppWebhookPayload,
     db: Session = Depends(get_db),
 ):
     """
@@ -636,26 +652,12 @@ async def webhook_receive(
 
     Third-party WhatsApp providers (WAHA, Baileys, etc.) can POST
     incoming messages here for real-time AI processing.
-
-    Expected payload:
-    {
-        "tenant_id": "...",
-        "phone": "905321234567",
-        "message": "Yarın randevum var mı?",
-        "chat_id": "...",
-        "message_id": "..."
-    }
     """
-    try:
-        body = await request.json()
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid JSON payload")
-
-    tenant_id = body.get("tenant_id")
-    phone = body.get("phone") or body.get("from")
-    message_text = body.get("message") or body.get("text") or body.get("body", "")
-    chat_id = body.get("chat_id") or phone
-    message_id = body.get("message_id") or body.get("id")
+    tenant_id = payload.tenant_id
+    phone = payload.phone or getattr(payload, 'from', None)
+    message_text = payload.message or payload.text or payload.body or ""
+    chat_id = payload.chat_id or phone
+    message_id = payload.message_id or payload.id
 
     if not tenant_id or not phone or not message_text:
         raise HTTPException(status_code=400, detail="Missing required fields: tenant_id, phone, message")
