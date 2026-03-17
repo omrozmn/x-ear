@@ -7,7 +7,7 @@
 
 import { useListSalePayments } from '@/api/generated';
 
-export const usePayments = (saleId: string) => {
+export const usePayments = (saleId: string): ReturnType<typeof useListSalePayments> => {
   return useListSalePayments(
     saleId,
     {
