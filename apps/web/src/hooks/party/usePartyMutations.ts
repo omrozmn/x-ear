@@ -28,9 +28,7 @@ interface PartyCreateRequest {
   customData?: Record<string, unknown>;
 }
 
-interface PartyUpdateRequest extends Partial<PartyCreateRequest> {
-  // Additional update-specific fields can be added here
-}
+type PartyUpdateRequest = Partial<PartyCreateRequest>;
 
 /**
  * usePartyMutations Hook

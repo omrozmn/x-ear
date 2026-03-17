@@ -114,7 +114,7 @@ export const DesktopInventoryPage: React.FC = () => {
     setSelectedItem(null);
     // Ensure lists reload from API
     triggerInventoryRefresh();
-    showSuccess && showSuccess(t('messages.product_updated'));
+    if (showSuccess) showSuccess(t('messages.product_updated'));
   };
 
   const handleItemEdit = (item: InventoryItem) => {

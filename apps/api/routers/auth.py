@@ -173,7 +173,6 @@ def get_otp_store():
 # --- Routes ---
 
 @router.post("/auth/lookup-phone", operation_id="createAuthLookupPhone", response_model=ResponseEnvelope[LookupPhoneResponse])
-@rate_limit(window_seconds=900, max_calls=10, key_prefix="lookup_phone")
 def lookup_phone(
     request_data: LookupPhoneRequest,
     db_session: Session = Depends(get_db)
@@ -216,7 +215,6 @@ def lookup_phone(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/auth/forgot-password", operation_id="createAuthForgotPassword", response_model=ResponseEnvelope[MessageResponse])
-@rate_limit(window_seconds=900, max_calls=5, key_prefix="forgot_password")
 def forgot_password(
     request_data: ForgotPasswordRequest,
     db_session: Session = Depends(get_db)
@@ -268,7 +266,6 @@ def forgot_password(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/auth/verify-otp", operation_id="createAuthVerifyOtp", response_model=ResponseEnvelope[VerifyOtpResponse])
-@rate_limit(window_seconds=900, max_calls=5, key_prefix="verify_otp")
 def verify_otp(
     request_data: VerifyOtpRequest,
     authorization: Optional[str] = Header(None),

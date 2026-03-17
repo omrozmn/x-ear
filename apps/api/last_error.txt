@@ -1,0 +1,104 @@
+Error: A string literal cannot contain NUL (0x00) characters.
+Traceback (most recent call last):
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/routers/parties.py", line 107, in list_parties
+    items, total, next_cursor = service.list_parties(
+                                ~~~~~~~~~~~~~~~~~~~~^
+        tenant_id=access.tenant_id,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+        branch_ids=branch_ids
+        ^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/services/party_service.py", line 109, in list_parties
+    total = query.count() if not cursor else 0
+            ~~~~~~~~~~~^^
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/venv_new/lib/python3.14/site-packages/sqlalchemy/orm/query.py", line 3146, in count
+    self._legacy_from_self(col).enable_eagerloads(False).scalar()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/venv_new/lib/python3.14/site-packages/sqlalchemy/orm/query.py", line 2835, in scalar
+    ret = self.one()
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/venv_new/lib/python3.14/site-packages/sqlalchemy/orm/query.py", line 2808, in one
+    return self._iter().one()  # type: ignore
+           ~~~~~~~~~~^^
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/venv_new/lib/python3.14/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/venv_new/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/venv_new/lib/python3.14/site-packages/sqlalchemy/orm/session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/venv_new/lib/python3.14/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/venv_new/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/venv_new/lib/python3.14/site-packages/sqlalchemy/sql/elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/venv_new/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/venv_new/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/venv_new/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/venv_new/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 2366, in _handle_dbapi_exception
+    raise exc_info[1].with_traceback(exc_info[2])
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/venv_new/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ozmen/Desktop/x-ear web app/x-ear/apps/api/venv_new/lib/python3.14/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: A string literal cannot contain NUL (0x00) characters.
