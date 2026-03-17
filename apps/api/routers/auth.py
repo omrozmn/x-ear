@@ -94,7 +94,10 @@ def _is_nonprod_otp_env() -> bool:
 
 def _generate_otp_code() -> str:
     if _is_nonprod_otp_env():
-        return '123456'
+        # Use a per-run random OTP even in dev (logged for convenience)
+        code = str(random.randint(100000, 999999))
+        logger.info(f"[DEV] Generated OTP: {code}")
+        return code
     return str(random.randint(100000, 999999))
 
 
@@ -268,18 +271,8 @@ def verify_otp(
             )
         
         otp_store = get_otp_store()
-        
-        # Bypass for test/dev environment with fixed OTP
-        # CRITICAL SECURITY: This backdoor must NEVER be active in production
-        # Configured in core/dependencies.py (ENVIRONMENT=development)
-        is_dev_env = os.getenv('ENVIRONMENT', 'production').lower() in ['development', 'test', 'testing']
-        dev_otp_bypass_enabled = os.getenv('ENABLE_DEV_OTP_BYPASS', 'false').lower() in ('true', '1', 'yes')
 
-        if str(otp) == '123456' and is_dev_env and dev_otp_bypass_enabled:
-            logger.info(f"Using dev OTP bypass for user_id={user_id}")
-            stored = '123456'
-        else:
-            lookup_keys = [target_id]
+        lookup_keys = [target_id]
             if identifier:
                 lookup_keys.extend(
                     [candidate for candidate in _phone_key_candidates(identifier) if candidate not in lookup_keys]

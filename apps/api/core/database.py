@@ -320,13 +320,15 @@ def gen_sale_id(db_session=None) -> str:
     if db_session is not None:
         try:
             from models.sales import Sale
-            max_id = (
-                db_session.query(func.max(Sale.id))
+            last_sale = (
+                db_session.query(Sale.id)
                 .filter(Sale.id.like(f"{today_prefix}%"))
-                .scalar()
+                .order_by(Sale.id.desc())
+                .with_for_update()
+                .first()
             )
-            if max_id:
-                last_seq = int(str(max_id)[-2:])
+            if last_sale:
+                last_seq = int(str(last_sale[0])[-2:])
                 nn = f"{last_seq + 1:02d}"
         except Exception:
             nn = "01"

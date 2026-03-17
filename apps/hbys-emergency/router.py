@@ -28,6 +28,9 @@ from schemas import (
     TransferRequest,
     ForensicReportRequest,
     DashboardStats,
+    SepsisRiskRequest,
+    QSofaRequest,
+    NEWS2Request,
 )
 from service import EmergencyService
 from ai_service import predict_sepsis_risk, calculate_qsofa, calculate_news2
@@ -383,13 +386,16 @@ def get_dashboard(
     summary="Predict sepsis risk from vital signs using AI",
     tags=["HBYS - Emergency AI"],
 )
-def ai_sepsis_risk(body: dict):
+def ai_sepsis_risk(
+    body: SepsisRiskRequest,
+    user: CurrentUser = Depends(get_current_user),
+):
     """
     Accepts a JSON body with vital sign keys (heart_rate, systolic_bp, etc.)
     and returns an AI-powered sepsis risk prediction.
     """
     try:
-        result = predict_sepsis_risk(body)
+        result = predict_sepsis_risk(body.model_dump(exclude_none=True))
         return ResponseEnvelope.ok(data=result)
     except Exception as e:
         logger.exception("AI sepsis risk prediction failed")
@@ -401,12 +407,15 @@ def ai_sepsis_risk(body: dict):
     summary="Calculate qSOFA score",
     tags=["HBYS - Emergency AI"],
 )
-def ai_qsofa(body: dict):
+def ai_qsofa(
+    body: QSofaRequest,
+    user: CurrentUser = Depends(get_current_user),
+):
     """
     Calculate quick SOFA score from respiratory_rate, systolic_bp, gcs_score.
     """
     try:
-        result = calculate_qsofa(body)
+        result = calculate_qsofa(body.model_dump(exclude_none=True))
         return ResponseEnvelope.ok(data=result)
     except Exception as e:
         logger.exception("qSOFA calculation failed")
@@ -418,12 +427,15 @@ def ai_qsofa(body: dict):
     summary="Calculate NEWS2 score",
     tags=["HBYS - Emergency AI"],
 )
-def ai_news2(body: dict):
+def ai_news2(
+    body: NEWS2Request,
+    user: CurrentUser = Depends(get_current_user),
+):
     """
     Calculate National Early Warning Score 2 from vital signs.
     """
     try:
-        result = calculate_news2(body)
+        result = calculate_news2(body.model_dump(exclude_none=True))
         return ResponseEnvelope.ok(data=result)
     except Exception as e:
         logger.exception("NEWS2 calculation failed")

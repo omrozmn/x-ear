@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Plus, Search, CheckCircle, Trash2, AlertTriangle, X } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -139,9 +139,21 @@ function getPagination(data: unknown): TenantListPagination {
 export default function TenantsPage() {
     const { isMobile } = useAdminResponsive();
     const [searchTerm, setSearchTerm] = useState('');
+    const [searchInput, setSearchInput] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [productFilter, setProductFilter] = useState<string>('all');
     const [page, setPage] = useState(1);
+
+    // Debounced search handler
+    const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+    const handleSearchChange = useCallback((value: string) => {
+        setSearchInput(value);
+        if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+        searchTimeoutRef.current = setTimeout(() => {
+            setSearchTerm(value);
+            setPage(1);
+        }, 300);
+    }, []);
     const [limit, setLimit] = useState(10);
     const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -443,14 +455,14 @@ export default function TenantsPage() {
                         type="text"
                         className="block w-full rounded-xl border-gray-300 pl-10 focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                         placeholder="Abone ara..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        value={searchInput}
+                        onChange={(e) => handleSearchChange(e.target.value)}
                     />
                 </div>
                 <div className="w-full sm:w-48">
                     <select
                         value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
+                        onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
                         className="block w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                     >
                         <option value="all">Tüm Durumlar</option>
@@ -463,7 +475,7 @@ export default function TenantsPage() {
                 <div className="w-full sm:w-48">
                     <select
                         value={productFilter}
-                        onChange={(e) => setProductFilter(e.target.value)}
+                        onChange={(e) => { setProductFilter(e.target.value); setPage(1); }}
                         className="block w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
                     >
                         <option value="all">Tüm Ürünler</option>

@@ -157,8 +157,16 @@ class FastAPIPermissionMiddleware:
         ctx = parse_token_from_request(scope)
         
         if ctx is None:
-            # No valid token - let the endpoint handle auth (401)
-            await self.app(scope, receive, send)
+            # No valid token on a non-public endpoint - reject with 401
+            from starlette.responses import JSONResponse as StarletteJSONResponse
+            response = StarletteJSONResponse(
+                status_code=401,
+                content={
+                    "success": False,
+                    "error": {"code": "AUTH_REQUIRED", "message": "Missing or invalid authorization token"},
+                }
+            )
+            await response(scope, receive, send)
             return
 
         # Store context in scope state for potential use by endpoints

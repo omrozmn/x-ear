@@ -1,11 +1,23 @@
+import React, { Suspense } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import WebsiteBuilderPreviewPage from '../pages/WebsiteBuilderPreviewPage';
 import { FeatureGate } from '../components/common/FeatureGate';
+
+const WebsiteBuilderPreviewPage = React.lazy(() => import('../pages/WebsiteBuilderPreviewPage'));
+
+function LoadingSpinner() {
+  return (
+    <div className="flex min-h-64 items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600" />
+    </div>
+  );
+}
 
 function GatedPreviewPage() {
   return (
     <FeatureGate featureKey="website_builder">
-      <WebsiteBuilderPreviewPage />
+      <Suspense fallback={<LoadingSpinner />}>
+        <WebsiteBuilderPreviewPage />
+      </Suspense>
     </FeatureGate>
   );
 }

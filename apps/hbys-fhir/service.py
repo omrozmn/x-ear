@@ -28,8 +28,9 @@ from mappers import (
 class FHIRService:
     """Orchestrates FHIR resource retrieval and mapping."""
 
-    def __init__(self, db: AsyncSession | None = None):
+    def __init__(self, db: AsyncSession | None = None, tenant_id: str | None = None):
         self.db = db
+        self.tenant_id = tenant_id
 
     # ================================================================== #
     # Bundle helper
@@ -180,6 +181,8 @@ class FHIRService:
         query = select(Party)
         filters = []
 
+        if self.tenant_id:
+            filters.append(Party.tenant_id == self.tenant_id)
         if params.get("_id"):
             filters.append(Party.id == params["_id"])
         if params.get("identifier"):
@@ -207,7 +210,10 @@ class FHIRService:
         """Read a single Patient by ID."""
         from core.models.party import Party
 
-        result = await self.db.execute(select(Party).where(Party.id == patient_id))
+        stmt = select(Party).where(Party.id == patient_id)
+        if self.tenant_id:
+            stmt = stmt.where(Party.tenant_id == self.tenant_id)
+        result = await self.db.execute(stmt)
         party = result.scalar_one_or_none()
         if not party:
             return None
@@ -223,6 +229,8 @@ class FHIRService:
         query = select(Encounter)
         filters = []
 
+        if self.tenant_id:
+            filters.append(Encounter.tenant_id == self.tenant_id)
         if params.get("_id"):
             filters.append(Encounter.id == params["_id"])
         if params.get("patient"):
@@ -253,9 +261,10 @@ class FHIRService:
         """Read a single Encounter by ID."""
         from services.hbys.clinical.models.encounter import Encounter
 
-        result = await self.db.execute(
-            select(Encounter).where(Encounter.id == encounter_id)
-        )
+        stmt = select(Encounter).where(Encounter.id == encounter_id)
+        if self.tenant_id:
+            stmt = stmt.where(Encounter.tenant_id == self.tenant_id)
+        result = await self.db.execute(stmt)
         enc = result.scalar_one_or_none()
         if not enc:
             return None
@@ -275,6 +284,8 @@ class FHIRService:
 
             query = select(VitalSigns)
             filters = []
+            if self.tenant_id:
+                filters.append(VitalSigns.tenant_id == self.tenant_id)
             if params.get("_id"):
                 filters.append(VitalSigns.id == params["_id"])
             if params.get("patient"):
@@ -300,6 +311,8 @@ class FHIRService:
 
             query = select(LabTest)
             filters = []
+            if self.tenant_id:
+                filters.append(LabTest.tenant_id == self.tenant_id)
             if params.get("_id"):
                 filters.append(LabTest.id == params["_id"])
             if params.get("code"):
@@ -331,17 +344,19 @@ class FHIRService:
         from services.hbys.laboratory.models.lab_test import LabTest
 
         # Try vital signs
-        result = await self.db.execute(
-            select(VitalSigns).where(VitalSigns.id == observation_id)
-        )
+        stmt_vs = select(VitalSigns).where(VitalSigns.id == observation_id)
+        if self.tenant_id:
+            stmt_vs = stmt_vs.where(VitalSigns.tenant_id == self.tenant_id)
+        result = await self.db.execute(stmt_vs)
         vs = result.scalar_one_or_none()
         if vs:
             return ObservationMapper.to_fhir(vs.to_dict(), category="vital-signs")
 
         # Try lab test
-        result = await self.db.execute(
-            select(LabTest).where(LabTest.id == observation_id)
-        )
+        stmt_lt = select(LabTest).where(LabTest.id == observation_id)
+        if self.tenant_id:
+            stmt_lt = stmt_lt.where(LabTest.tenant_id == self.tenant_id)
+        result = await self.db.execute(stmt_lt)
         lt = result.scalar_one_or_none()
         if lt:
             return ObservationMapper.to_fhir(lt.to_dict(), category="laboratory")
@@ -358,6 +373,8 @@ class FHIRService:
         query = select(Diagnosis)
         filters = []
 
+        if self.tenant_id:
+            filters.append(Diagnosis.tenant_id == self.tenant_id)
         if params.get("_id"):
             filters.append(Diagnosis.id == params["_id"])
         if params.get("patient"):
@@ -387,9 +404,10 @@ class FHIRService:
         """Read a single Condition by ID."""
         from services.hbys.diagnosis.models.diagnosis import Diagnosis
 
-        result = await self.db.execute(
-            select(Diagnosis).where(Diagnosis.id == condition_id)
-        )
+        stmt = select(Diagnosis).where(Diagnosis.id == condition_id)
+        if self.tenant_id:
+            stmt = stmt.where(Diagnosis.tenant_id == self.tenant_id)
+        result = await self.db.execute(stmt)
         diag = result.scalar_one_or_none()
         if not diag:
             return None
@@ -405,6 +423,8 @@ class FHIRService:
         query = select(Prescription)
         filters = []
 
+        if self.tenant_id:
+            filters.append(Prescription.tenant_id == self.tenant_id)
         if params.get("_id"):
             filters.append(Prescription.id == params["_id"])
         if params.get("patient"):
@@ -434,9 +454,10 @@ class FHIRService:
         """Read a single MedicationRequest by ID."""
         from services.hbys.prescription.models.prescription import Prescription
 
-        result = await self.db.execute(
-            select(Prescription).where(Prescription.id == request_id)
-        )
+        stmt = select(Prescription).where(Prescription.id == request_id)
+        if self.tenant_id:
+            stmt = stmt.where(Prescription.tenant_id == self.tenant_id)
+        result = await self.db.execute(stmt)
         prx = result.scalar_one_or_none()
         if not prx:
             return None
@@ -456,6 +477,8 @@ class FHIRService:
 
             query = select(LabOrder)
             filters = []
+            if self.tenant_id:
+                filters.append(LabOrder.tenant_id == self.tenant_id)
             if params.get("_id"):
                 filters.append(LabOrder.id == params["_id"])
             if params.get("patient"):
@@ -485,6 +508,8 @@ class FHIRService:
 
             query = select(ImagingOrder)
             filters = []
+            if self.tenant_id:
+                filters.append(ImagingOrder.tenant_id == self.tenant_id)
             if params.get("_id"):
                 filters.append(ImagingOrder.id == params["_id"])
             if params.get("patient"):
@@ -516,17 +541,19 @@ class FHIRService:
         from services.hbys.imaging.models.imaging_order import ImagingOrder
 
         # Try lab order first
-        result = await self.db.execute(
-            select(LabOrder).where(LabOrder.id == report_id)
-        )
+        stmt_lab = select(LabOrder).where(LabOrder.id == report_id)
+        if self.tenant_id:
+            stmt_lab = stmt_lab.where(LabOrder.tenant_id == self.tenant_id)
+        result = await self.db.execute(stmt_lab)
         order = result.scalar_one_or_none()
         if order:
             return DiagnosticReportMapper.to_fhir(order.to_dict(), category="LAB")
 
         # Try imaging order
-        result = await self.db.execute(
-            select(ImagingOrder).where(ImagingOrder.id == report_id)
-        )
+        stmt_img = select(ImagingOrder).where(ImagingOrder.id == report_id)
+        if self.tenant_id:
+            stmt_img = stmt_img.where(ImagingOrder.tenant_id == self.tenant_id)
+        result = await self.db.execute(stmt_img)
         img = result.scalar_one_or_none()
         if img:
             return DiagnosticReportMapper.to_fhir(img.to_dict(), category="RAD")

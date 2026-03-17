@@ -4,7 +4,7 @@ Provides cross-tenant admin operations
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional, Dict, Any
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 import logging
@@ -196,19 +196,19 @@ def list_admin_users(
     """List all users (admin operation)"""
     try:
         query = db_session.query(User)
-        
+
         if tenant_id:
             query = query.filter_by(tenant_id=tenant_id)
-        
+
         if search:
             query = query.filter(
                 (User.email.ilike(f'%{search}%')) |
                 (User.first_name.ilike(f'%{search}%')) |
                 (User.last_name.ilike(f'%{search}%'))
             )
-        
+
         total = query.count()
-        users = query.offset((page - 1) * per_page).limit(per_page).all()
+        users = query.options(joinedload(User.tenant)).offset((page - 1) * per_page).limit(per_page).all()
         
         users_data = [UserRead.model_validate(u).model_dump(by_alias=True) for u in users]
         
@@ -239,36 +239,34 @@ def list_all_tenant_users(
     try:
         # Query users with tenant_id (exclude admin users)
         query = db_session.query(User).filter(User.tenant_id.isnot(None))
-        
+
         if search:
             query = query.filter(
                 (User.email.ilike(f'%{search}%')) |
                 (User.first_name.ilike(f'%{search}%')) |
                 (User.last_name.ilike(f'%{search}%'))
             )
-        
+
         if role:
             query = query.filter_by(role=role)
-        
+
         if status:
             if status == 'active':
                 query = query.filter_by(is_active=True)
             elif status == 'inactive':
                 query = query.filter_by(is_active=False)
-        
+
         total = query.count()
-        users = query.order_by(User.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
-        
-        # Add tenant name to each user
+        users = query.options(joinedload(User.tenant)).order_by(User.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
+
+        # Add tenant name to each user (eager-loaded via joinedload)
         users_data = []
         for u in users:
             user_dict = UserRead.model_validate(u).model_dump(by_alias=True)
-            if u.tenant_id:
-                tenant = db_session.get(Tenant, u.tenant_id)
-                if tenant:
-                    user_dict['tenantName'] = tenant.name
+            if u.tenant_id and u.tenant:
+                user_dict['tenantName'] = u.tenant.name
             users_data.append(user_dict)
-        
+
         return ResponseEnvelope(data={
             "users": users_data,
             "pagination": {
@@ -294,52 +292,6 @@ def get_admin_user(
         raise HTTPException(status_code=404, detail={"message": "User not found", "code": "NOT_FOUND"})
     
     return ResponseEnvelope(data=UserRead.model_validate(user).model_dump(by_alias=True))
-    """List ALL tenant users from ALL tenants (admin operation)"""
-    try:
-        # Query users with tenant_id (exclude admin users)
-        query = db_session.query(User).filter(User.tenant_id.isnot(None))
-        
-        if search:
-            query = query.filter(
-                (User.email.ilike(f'%{search}%')) |
-                (User.first_name.ilike(f'%{search}%')) |
-                (User.last_name.ilike(f'%{search}%'))
-            )
-        
-        if role:
-            query = query.filter_by(role=role)
-        
-        if status:
-            if status == 'active':
-                query = query.filter_by(is_active=True)
-            elif status == 'inactive':
-                query = query.filter_by(is_active=False)
-        
-        total = query.count()
-        users = query.order_by(User.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
-        
-        # Add tenant name to each user
-        users_data = []
-        for u in users:
-            user_dict = UserRead.model_validate(u).model_dump(by_alias=True)
-            if u.tenant_id:
-                tenant = db_session.get(Tenant, u.tenant_id)
-                if tenant:
-                    user_dict['tenantName'] = tenant.name
-            users_data.append(user_dict)
-        
-        return ResponseEnvelope(data={
-            "users": users_data,
-            "pagination": {
-                "page": page,
-                "perPage": per_page,
-                "total": total,
-                "totalPages": (total + per_page - 1) // per_page
-            }
-        })
-    except Exception as e:
-        logger.error(f"List all tenant users error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
 
 @router.put("/users/all/{user_id}", operation_id="updateAdminUserAll")
 def update_any_tenant_user(

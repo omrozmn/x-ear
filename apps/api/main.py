@@ -255,6 +255,18 @@ app.add_middleware(
     expose_headers=["X-Request-Id", "X-Response-Time", "X-Idempotency-Replayed"],
 )
 
+# Security headers middleware
+@app.middleware("http")
+async def security_headers_middleware(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    if os.getenv("ENVIRONMENT", "development").lower() in ("production", "prod", "staging"):
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
+
 # CRITICAL: Tenant context cleanup middleware (G-02 security fix)
 # Must be registered after CORS to ensure it wraps all request processing
 # Ensures ContextVar is cleared after each request to prevent cross-tenant leaks

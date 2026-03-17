@@ -277,9 +277,11 @@ def _create_subscription(db: Session, order_data: dict, provision_result: dict):
     user = None
 
     if auth_token:
-        from routers.auth import decode_access_token
+        import jwt
+        from core.security import get_jwt_secret, JWT_ALGORITHM
         try:
-            user_id = decode_access_token(auth_token)
+            payload = jwt.decode(auth_token, get_jwt_secret(), algorithms=[JWT_ALGORITHM])
+            user_id = payload.get("sub")
             if user_id:
                 user = db.get(User, user_id)
         except Exception as e:

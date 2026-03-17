@@ -14,7 +14,7 @@ export {
   createCommunicationMessageSendSms,
   createCommunicationMessageSendEmail,
   updateCommunicationTemplate,
-  createCommunicationTemplates,
+  createCommunicationTemplate,
   deleteCommunicationTemplate,
   useListCommunicationStats,
   useListCommunicationMessages,
@@ -24,4 +24,4 @@ export {
   getListCommunicationTemplatesQueryKey,
 } from '@/api/generated/index';
 
-export type { RoutersCommunicationsTemplateCreate } from '@/api/generated/schemas';
+export type { SchemasCommunicationsTemplateCreate } from '@/api/generated/schemas';

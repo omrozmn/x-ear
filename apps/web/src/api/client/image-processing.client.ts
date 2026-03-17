@@ -1,7 +1,11 @@
-// TODO: Backend endpoints not yet in OpenAPI spec
-// Stubbed to prevent build errors
+// TODO: Backend endpoints not yet registered as OpenAPI tags
+// Types are available from schemas, hooks are stubbed
+export * from '@/api/generated/schemas';
 
-export const useRemoveBackground = (...args: any[]) => ({ data: undefined, isLoading: false, mutate: () => {}, mutateAsync: async () => ({}) } as any);
-export const useResizeImage = (...args: any[]) => ({ data: undefined, isLoading: false, mutate: () => {}, mutateAsync: async () => ({}) } as any);
-export const useAiGenerateImage = (...args: any[]) => ({ data: undefined, isLoading: false, mutate: () => {}, mutateAsync: async () => ({}) } as any);
-export const useAiEditImage = (...args: any[]) => ({ data: undefined, isLoading: false, mutate: () => {}, mutateAsync: async () => ({}) } as any);
+// Stub hooks until backend registers these endpoints
+const stubHook = (..._args: any[]) => ({ data: undefined, isLoading: false, mutate: () => {}, mutateAsync: async () => ({}) } as any);
+const stubFn = async (..._args: any[]) => ({} as any);
+export const useRemoveBackground = stubHook;
+export const useResizeImage = stubHook;
+export const useAiGenerateImage = stubHook;
+export const useAiEditImage = stubHook;

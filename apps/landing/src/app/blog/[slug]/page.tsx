@@ -4,14 +4,14 @@ export async function generateStaticParams() {
     try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5003";
         const res = await fetch(`${apiUrl}/api/blog/`);
-        if (!res.ok) return [];
+        if (!res.ok) return [{ slug: "_" }];
         const data = await res.json();
-        return Array.isArray(data) ? data.map((post: any) => ({
+        const slugs = Array.isArray(data) ? data.map((post: any) => ({
             slug: post.slug,
         })) : [];
+        return slugs.length > 0 ? slugs : [{ slug: "_" }];
     } catch (e) {
-        console.error("Failed to generate static params for blog:", e);
-        return [];
+        return [{ slug: "_" }];
     }
 }
 

@@ -437,6 +437,7 @@ def verify_test_result(
 def get_patient_lab_history(
     db: Session,
     patient_id: str,
+    tenant_id: Optional[str] = None,
     test_definition_id: Optional[str] = None,
     skip: int = 0,
     limit: int = 50,
@@ -452,6 +453,8 @@ def get_patient_lab_history(
         .filter(LabOrder.patient_id == patient_id)
         .filter(LabTest.status.in_(["completed", "verified"]))
     )
+    if tenant_id:
+        query = query.filter(LabOrder.tenant_id == tenant_id)
 
     if test_definition_id:
         query = query.filter(LabTest.test_definition_id == test_definition_id)
@@ -482,9 +485,13 @@ def update_test_definition(
     db: Session,
     definition_id: str,
     data: TestDefinitionUpdate,
+    tenant_id: Optional[str] = None,
 ) -> Optional[TestDefinition]:
     """Update an existing test definition."""
-    definition = db.query(TestDefinition).filter(TestDefinition.id == definition_id).first()
+    query = db.query(TestDefinition).filter(TestDefinition.id == definition_id)
+    if tenant_id:
+        query = query.filter(TestDefinition.tenant_id == tenant_id)
+    definition = query.first()
     if not definition:
         return None
 
@@ -499,6 +506,7 @@ def update_test_definition(
 
 def search_test_definitions(
     db: Session,
+    tenant_id: Optional[str] = None,
     query_str: Optional[str] = None,
     category: Optional[str] = None,
     specimen_type: Optional[str] = None,
@@ -509,6 +517,8 @@ def search_test_definitions(
     """Search test definitions by name, category, or specimen type."""
     q = db.query(TestDefinition)
 
+    if tenant_id:
+        q = q.filter(TestDefinition.tenant_id == tenant_id)
     if is_active is not None:
         q = q.filter(TestDefinition.is_active == is_active)
     if category:
@@ -528,6 +538,9 @@ def search_test_definitions(
     return definitions, total
 
 
-def get_test_definition(db: Session, definition_id: str) -> Optional[TestDefinition]:
+def get_test_definition(db: Session, definition_id: str, tenant_id: Optional[str] = None) -> Optional[TestDefinition]:
     """Get a single test definition by ID."""
-    return db.query(TestDefinition).filter(TestDefinition.id == definition_id).first()
+    query = db.query(TestDefinition).filter(TestDefinition.id == definition_id)
+    if tenant_id:
+        query = query.filter(TestDefinition.tenant_id == tenant_id)
+    return query.first()

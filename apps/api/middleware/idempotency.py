@@ -39,6 +39,8 @@ SKIP_PATHS = [
     "/docs",
     "/openapi.json",
     "/redoc",
+    "/api/payments/kuveytturk/callback/ok",
+    "/api/payments/kuveytturk/callback/fail",
 ]
 
 

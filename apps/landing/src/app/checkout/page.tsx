@@ -167,6 +167,11 @@ function CheckoutContent() {
             return;
         }
 
+        if (!planId) {
+            setError("Lütfen bir plan seçin.");
+            return;
+        }
+
         const rawCardNumber = cardData.number.replace(/\s/g, '');
         if (!rawCardNumber || rawCardNumber.length < 13) {
             setError("Lütfen geçerli bir kart numarası girin.");
@@ -189,31 +194,78 @@ function CheckoutContent() {
         setError("");
 
         try {
-            const res = await apiClient.post('/api/subscriptions/subscribe', {
+            // Parse expiry MM/YY
+            const [expMonth, expYear] = cardData.expiry.split('/');
+
+            const res = await apiClient.post('/api/payments/kuveytturk/initiate', {
+                card_number: rawCardNumber,
+                card_expire_month: expMonth,
+                card_expire_year: expYear,
+                card_cvv: cardData.cvc,
+                card_holder_name: cardData.name,
                 plan_id: planId,
                 billing_interval: billingCycle.toUpperCase(),
-                addon_ids: selectedAddons,
-                sms_package_id: selectedSmsPackageId,
-                card_number: cardData.number
+                addon_ids: selectedAddons.length > 0 ? selectedAddons : undefined,
+                sms_package_id: selectedSmsPackageId || undefined,
+                sector: sector,
             });
 
             const data = res.data;
 
-            if (data.success || data.data) {
-                const webUrl = process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:8080';
-                window.location.href = `${webUrl}/login?subscribed=true`;
+            if (data.success && data.data?.html) {
+                // 3D Secure redirect: render the bank's HTML response
+                setRedirecting(true);
+
+                // Write the HTML to a new document (full page redirect to bank 3D page)
+                const bankHtml = data.data.html;
+
+                // Create a hidden container and inject bank HTML
+                if (threeDFormRef.current) {
+                    threeDFormRef.current.innerHTML = bankHtml;
+
+                    // Auto-submit any forms in the bank HTML
+                    const forms = threeDFormRef.current.querySelectorAll('form');
+                    if (forms.length > 0) {
+                        forms[0].submit();
+                    } else {
+                        // If no form, write directly to document (bank returns full HTML page)
+                        document.open();
+                        document.write(bankHtml);
+                        document.close();
+                    }
+                } else {
+                    // Fallback: write to document
+                    document.open();
+                    document.write(bankHtml);
+                    document.close();
+                }
             } else {
-                setError(data.error?.message || data.message || "Bir hata oluştu.");
+                setError(data.error?.message || data.message || "Banka baglantisi kurulamadi.");
             }
         } catch (err: any) {
-            const errMsg = err.response?.data?.error?.message || err.response?.data?.message || err.response?.data?.detail || err.message || "Bağlantı hatası.";
+            const errMsg = err.response?.data?.error?.message || err.response?.data?.message || err.response?.data?.detail || err.message || "Baglanti hatasi.";
             setError(typeof errMsg === 'string' ? errMsg : JSON.stringify(errMsg));
+            setRedirecting(false);
         } finally {
-            setLoading(false);
+            if (!redirecting) {
+                setLoading(false);
+            }
         }
     };
 
-    if (fetchingPlans) return <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center text-white">Yükleniyor...</div>;
+    if (fetchingPlans) return <div className="min-h-screen bg-background flex items-center justify-center text-foreground">Yükleniyor...</div>;
+
+    // Show redirecting overlay while going to bank 3D Secure page
+    if (redirecting) {
+        return (
+            <div className="min-h-screen bg-background flex flex-col items-center justify-center text-foreground">
+                <Loader2 className="w-12 h-12 animate-spin text-accent-blue mb-6" />
+                <h2 className="text-2xl font-display font-medium mb-2">3D Secure Dogrulama</h2>
+                <p className="text-foreground/60">Banka sayfasina yonlendiriliyorsunuz...</p>
+                <div ref={threeDFormRef} className="hidden" />
+            </div>
+        );
+    }
 
     const planPrice = plan ? plan.price : 0;
     const addonsPrice = selectedAddons.reduce((total, addonId) => {
@@ -443,20 +495,20 @@ function CheckoutContent() {
                                         <span className="text-3xl text-accent-blue font-display font-bold decoration-accent-blue/30 underline-offset-8 underline">{fmt(totalPrice)}</span>
                                     </div>
 
-                                    <button type="submit" disabled={loading || !isLoggedIn} className="w-full group relative flex items-center justify-center px-8 py-4 bg-foreground text-background rounded-2xl font-bold text-lg overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:scale-100">
+                                    <button type="submit" disabled={loading || !isLoggedIn || !planId} className="w-full group relative flex items-center justify-center px-8 py-4 bg-foreground text-background rounded-2xl font-bold text-lg overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:scale-100">
                                         <div className="absolute inset-0 bg-gradient-to-r from-accent-blue to-accent-purple opacity-0 group-hover:opacity-10 transition-opacity" />
-                                        {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <><CheckCircle2 className="w-5 h-5 mr-3 transition-transform group-hover:rotate-12" />{fmt(totalPrice)} Öde</>}
+                                        {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <><Lock className="w-5 h-5 mr-3 transition-transform group-hover:rotate-12" /> 3D Secure ile {fmt(totalPrice)} Ode</>}
                                     </button>
 
-                                    {/* SSL BADGES */}
+                                    {/* Security BADGES */}
                                     <div className="grid grid-cols-1 gap-3 pt-6">
                                         <div className="flex items-center text-xs text-foreground/40 font-medium">
-                                            <CheckCircle2 className="w-4 h-4 text-emerald-400/60 mr-2 flex-shrink-0" />
-                                            <span>7 gün ücretsiz deneme</span>
+                                            <Lock className="w-4 h-4 text-emerald-400/60 mr-2 flex-shrink-0" />
+                                            <span>3D Secure ile guvenli odeme (Kuveyt Turk)</span>
                                         </div>
                                         <div className="flex items-center text-xs text-foreground/40 font-medium">
-                                            <Lock className="w-4 h-4 text-emerald-400/60 mr-2 flex-shrink-0" />
-                                            <span>256-bit SSL güvenli ödeme</span>
+                                            <CheckCircle2 className="w-4 h-4 text-emerald-400/60 mr-2 flex-shrink-0" />
+                                            <span>256-bit SSL sifreleme</span>
                                         </div>
                                     </div>
 

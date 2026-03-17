@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import random
 import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -183,36 +184,56 @@ class LocalModelClient(ModelClient):
             payload["prompt"] = prompt
             payload["stream"] = False
 
-        try:
-            async with httpx.AsyncClient(timeout=self.config.timeout_seconds) as client:
-                response = await client.post(endpoint, json=payload, headers=headers)
-                response.raise_for_status()
-                data = response.json()
-                
-                content = ""
-                if is_gemini:
-                    content = data["candidates"][0]["content"]["parts"][0]["text"]
-                elif is_anthropic:
-                    # Anthropic format: data["content"] is a list
-                    content_parts = data.get("content", [])
-                    content = "".join([part.get("text", "") for part in content_parts if part.get("type") == "text"])
-                elif is_openai:
-                    content = data["choices"][0]["message"]["content"]
-                else:
-                    content = data.get("response", "")
+        max_retries = 3
+        last_error = None
+        for attempt in range(max_retries):
+            try:
+                async with httpx.AsyncClient(timeout=self.config.timeout_seconds) as client:
+                    response = await client.post(endpoint, json=payload, headers=headers)
+                    # Retry on 429 (rate limit) and 529 (overloaded)
+                    if response.status_code in (429, 529):
+                        retry_after = int(response.headers.get("retry-after", 2 * (attempt + 1)))
+                        wait = min(retry_after, 10) + random.uniform(0, 1)
+                        logger.warning(f"API returned {response.status_code}, retrying in {wait:.1f}s (attempt {attempt + 1}/{max_retries})")
+                        await asyncio.sleep(wait)
+                        continue
+                    response.raise_for_status()
+                    data = response.json()
 
-                return ModelResponse(
-                    content=content,
-                    model=self.config.model_name,
-                    created_at=datetime.now(timezone.utc),
-                    total_duration_ms=(time.time() - start_time) * 1000
-                )
-        except Exception as e:
-            logger.error(f"Generate failed: {e}")
-            raise ModelConnectionError(str(e))
-        
-        # This part should be unreachable if logic is correct, but satisfies linting
-        raise ModelConnectionError("Generate failed: unknown error")
+                    content = ""
+                    if is_gemini:
+                        content = data["candidates"][0]["content"]["parts"][0]["text"]
+                    elif is_anthropic:
+                        content_parts = data.get("content", [])
+                        content = "".join([part.get("text", "") for part in content_parts if part.get("type") == "text"])
+                    elif is_openai:
+                        content = data["choices"][0]["message"]["content"]
+                    else:
+                        content = data.get("response", "")
+
+                    self._consecutive_failures = 0
+                    return ModelResponse(
+                        content=content,
+                        model=self.config.model_name,
+                        created_at=datetime.now(timezone.utc),
+                        total_duration_ms=(time.time() - start_time) * 1000
+                    )
+            except httpx.HTTPStatusError as e:
+                last_error = e
+                if e.response.status_code >= 500:
+                    wait = (2 ** attempt) + random.uniform(0, 1)
+                    logger.warning(f"Server error {e.response.status_code}, retrying in {wait:.1f}s (attempt {attempt + 1}/{max_retries})")
+                    await asyncio.sleep(wait)
+                    continue
+                logger.error(f"Generate failed: {e}")
+                raise ModelConnectionError(str(e))
+            except Exception as e:
+                last_error = e
+                logger.error(f"Generate failed: {e}")
+                raise ModelConnectionError(str(e))
+
+        self._consecutive_failures += 1
+        raise ModelConnectionError(f"Generate failed after {max_retries} retries: {last_error}")
 
     async def generate_chat(self, messages: List[Dict[str, str]], **kwargs) -> ModelResponse:
         # For simplicity and to match the prompt/chat pattern, we can route generate_chat to similar logic
@@ -257,37 +278,57 @@ class LocalModelClient(ModelClient):
                 "temperature": kwargs.get("temperature", self.config.temperature),
             }
 
-        try:
-            async with httpx.AsyncClient(timeout=self.config.timeout_seconds) as client:
-                response = await client.post(endpoint, json=payload, headers=headers)
-                response.raise_for_status()
-                data = response.json()
-                
-                content = ""
-                if is_gemini:
-                    content = data["candidates"][0]["content"]["parts"][0]["text"]
-                elif is_anthropic:
-                    content_parts = data.get("content", [])
-                    content = "".join([part.get("text", "") for part in content_parts if part.get("type") == "text"])
-                elif is_openai:
-                    content = data["choices"][0]["message"]["content"]
-                elif "message" in data:
-                    content = data["message"].get("content", "")
-                else:
-                    content = data.get("response", "")
+        max_retries = 3
+        last_error = None
+        for attempt in range(max_retries):
+            try:
+                async with httpx.AsyncClient(timeout=self.config.timeout_seconds) as client:
+                    response = await client.post(endpoint, json=payload, headers=headers)
+                    if response.status_code in (429, 529):
+                        retry_after = int(response.headers.get("retry-after", 2 * (attempt + 1)))
+                        wait = min(retry_after, 10) + random.uniform(0, 1)
+                        logger.warning(f"API returned {response.status_code}, retrying in {wait:.1f}s (attempt {attempt + 1}/{max_retries})")
+                        await asyncio.sleep(wait)
+                        continue
+                    response.raise_for_status()
+                    data = response.json()
 
-                return ModelResponse(
-                    content=content,
-                    model=self.config.model_name,
-                    created_at=datetime.now(timezone.utc),
-                    total_duration_ms=(time.time() - start_time) * 1000
-                )
-        except Exception as e:
-            logger.error(f"Chat failed: {e}")
-            raise ModelConnectionError(str(e))
+                    content = ""
+                    if is_gemini:
+                        content = data["candidates"][0]["content"]["parts"][0]["text"]
+                    elif is_anthropic:
+                        content_parts = data.get("content", [])
+                        content = "".join([part.get("text", "") for part in content_parts if part.get("type") == "text"])
+                    elif is_openai:
+                        content = data["choices"][0]["message"]["content"]
+                    elif "message" in data:
+                        content = data["message"].get("content", "")
+                    else:
+                        content = data.get("response", "")
 
-        # This part should be unreachable if logic is correct, but satisfies linting
-        raise ModelConnectionError("Chat failed: unknown error")
+                    self._consecutive_failures = 0
+                    return ModelResponse(
+                        content=content,
+                        model=self.config.model_name,
+                        created_at=datetime.now(timezone.utc),
+                        total_duration_ms=(time.time() - start_time) * 1000
+                    )
+            except httpx.HTTPStatusError as e:
+                last_error = e
+                if e.response.status_code >= 500:
+                    wait = (2 ** attempt) + random.uniform(0, 1)
+                    logger.warning(f"Server error {e.response.status_code}, retrying in {wait:.1f}s (attempt {attempt + 1}/{max_retries})")
+                    await asyncio.sleep(wait)
+                    continue
+                logger.error(f"Chat failed: {e}")
+                raise ModelConnectionError(str(e))
+            except Exception as e:
+                last_error = e
+                logger.error(f"Chat failed: {e}")
+                raise ModelConnectionError(str(e))
+
+        self._consecutive_failures += 1
+        raise ModelConnectionError(f"Chat failed after {max_retries} retries: {last_error}")
 
     def reset_failures(self) -> None:
         self._consecutive_failures = 0

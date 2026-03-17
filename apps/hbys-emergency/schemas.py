@@ -197,3 +197,37 @@ class DashboardStats(AppBaseModel):
 class EmergencyVisitListResponse(AppBaseModel):
     items: List[EmergencyVisitRead]
     total: int
+
+
+# --- AI Scoring Schemas -------------------------------------------------------
+
+
+class SepsisRiskRequest(AppBaseModel):
+    """Vital signs input for AI sepsis risk prediction."""
+    heart_rate: Optional[float] = Field(None, ge=0, le=400)
+    systolic_bp: Optional[float] = Field(None, ge=0, le=400)
+    diastolic_bp: Optional[float] = Field(None, ge=0, le=300)
+    respiratory_rate: Optional[float] = Field(None, ge=0, le=100)
+    temperature: Optional[float] = Field(None, ge=20.0, le=50.0)
+    oxygen_saturation: Optional[float] = Field(None, ge=0.0, le=100.0)
+    wbc_count: Optional[float] = Field(None, ge=0)
+    lactate: Optional[float] = Field(None, ge=0)
+    gcs_score: Optional[int] = Field(None, ge=3, le=15)
+
+
+class QSofaRequest(AppBaseModel):
+    """Input for qSOFA score calculation."""
+    respiratory_rate: Optional[float] = Field(None, ge=0, le=100)
+    systolic_bp: Optional[float] = Field(None, ge=0, le=400)
+    gcs_score: Optional[int] = Field(None, ge=3, le=15)
+
+
+class NEWS2Request(AppBaseModel):
+    """Input for NEWS2 score calculation."""
+    respiratory_rate: Optional[float] = Field(None, ge=0, le=100)
+    oxygen_saturation: Optional[float] = Field(None, ge=0.0, le=100.0)
+    systolic_bp: Optional[float] = Field(None, ge=0, le=400)
+    heart_rate: Optional[float] = Field(None, ge=0, le=400)
+    temperature: Optional[float] = Field(None, ge=20.0, le=50.0)
+    consciousness: Optional[str] = Field(None, description="alert, verbal, pain, unresponsive")
+    on_supplemental_oxygen: Optional[bool] = Field(False)

@@ -11,9 +11,10 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from hbys_common.auth import get_current_user, CurrentUser
+from main import get_db
 from service import FHIRService
 
 router = APIRouter(prefix="/api/fhir", tags=["FHIR R4"])
@@ -31,8 +32,11 @@ def _fhir_response(data: dict, status_code: int = 200) -> JSONResponse:
     )
 
 
-def _get_service() -> FHIRService:
-    return FHIRService()
+def _get_service(
+    db: AsyncSession = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+) -> FHIRService:
+    return FHIRService(db=db, tenant_id=current_user.tenant_id)
 
 
 # ====================================================================== #

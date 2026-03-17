@@ -28,9 +28,11 @@ def _is_nonprod_otp_env() -> bool:
 
 
 def _generate_registration_otp() -> str:
-    if _is_nonprod_otp_env():
-        return '123456'
     import random
+    if _is_nonprod_otp_env():
+        code = str(random.randint(100000, 999999))
+        logger.info(f"[DEV] Generated registration OTP: {code}")
+        return code
     return str(random.randint(100000, 999999))
 
 
