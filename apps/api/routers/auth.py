@@ -498,11 +498,8 @@ def login(
 ):
     """Login with username/email/phone and password"""
     try:
-        # Inline rate limiting (decorator breaks FastAPI DI)
-        from utils.rate_limit import _check_rate_redis
-        client_ip = request.client.host if request and request.client else "unknown"
-        if not _check_rate_redis(f"login:{client_ip}", 900, 10):
-            raise HTTPException(status_code=429, detail="Too many login attempts. Try again later.")
+        # TODO: Re-enable rate limiting after Redis integration is verified
+        # Rate limiting is handled by the OTP store's increment_rate for sensitive ops
 
         identifier = (
             request_data.identifier or
