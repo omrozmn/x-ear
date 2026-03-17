@@ -82,13 +82,13 @@ export function SalesPage() {
         source: 'sale',
         partyId: sale.partyId || undefined,
         patientName: (patient?.firstName || patient?.lastName) ? `${patient?.firstName || ''} ${patient?.lastName || ''}`.trim() : null, // legacy
-        productName: sale.productName || sale.brand || '-',
+        productName: (sale as any).productName || (sale as any).brand || '-',
         amount: Number(sale.finalAmount || sale.totalAmount || 0),
         saleDate: sale.saleDate ? String(sale.saleDate) : undefined,
         status: String(sale.status || 'draft'),
-        serialNumber: sale.serialNumber || undefined,
-        brand: sale.brand || undefined,
-        model: sale.model || undefined,
+        serialNumber: (sale as any).serialNumber || undefined,
+        brand: (sale as any).brand || undefined,
+        model: (sale as any).model || undefined,
         rawSale: sale,
       };
     });

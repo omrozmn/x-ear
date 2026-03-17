@@ -8,6 +8,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from main import get_db
 from hbys_common.auth import get_current_user, CurrentUser
 from hbys_common.schemas import ResponseEnvelope, ResponseMeta
 
@@ -50,7 +51,7 @@ def get_or_schedule(
     date_to: Optional[datetime] = Query(None),
     status: Optional[SurgeryStatusEnum] = Query(None),
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: None),  # replaced at startup
+    db: Session = Depends(get_db),  # replaced at startup
 ):
     """Get operating room schedule with optional filters."""
     from models.surgery_team import SurgeryTeam, TeamRole
@@ -105,7 +106,7 @@ def get_or_schedule(
 def create_surgery(
     data: SurgeryCreate,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: None),
+    db: Session = Depends(get_db),
 ):
     """Create a new surgical procedure record."""
     surgery = SurgeryService.create_surgery(db, data, user.tenant_id)
@@ -122,7 +123,7 @@ def list_surgeries(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: None),
+    db: Session = Depends(get_db),
 ):
     """List surgeries with optional filters."""
     items, total = SurgeryService.list_surgeries(
@@ -141,7 +142,7 @@ def list_surgeries(
 def get_surgery(
     surgery_id: str,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: None),
+    db: Session = Depends(get_db),
 ):
     """Get a surgery by ID."""
     surgery = SurgeryService.get_surgery(db, surgery_id, user.tenant_id)
@@ -157,7 +158,7 @@ def update_surgery(
     surgery_id: str,
     data: SurgeryUpdate,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: None),
+    db: Session = Depends(get_db),
 ):
     """Update a surgery record."""
     surgery = SurgeryService.update_surgery(db, surgery_id, data, user.tenant_id)
@@ -172,7 +173,7 @@ def update_surgery(
 def delete_surgery(
     surgery_id: str,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: None),
+    db: Session = Depends(get_db),
 ):
     """Delete a surgery record."""
     deleted = SurgeryService.delete_surgery(db, surgery_id, user.tenant_id)
@@ -188,7 +189,7 @@ def delete_surgery(
 def start_surgery(
     surgery_id: str,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: None),
+    db: Session = Depends(get_db),
 ):
     """Start a surgery (transition to in_progress, sets actual_start)."""
     try:
@@ -212,7 +213,7 @@ def complete_surgery(
     surgery_id: str,
     data: Optional[CompleteSurgeryPayload] = None,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: None),
+    db: Session = Depends(get_db),
 ):
     """Complete a surgery (transition to completed, sets actual_end)."""
     try:
@@ -245,7 +246,7 @@ def add_team_member(
     surgery_id: str,
     data: SurgeryTeamCreate,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: None),
+    db: Session = Depends(get_db),
 ):
     """Add a team member to a surgery."""
     member = SurgeryService.add_team_member(db, surgery_id, data, user.tenant_id)
@@ -263,7 +264,7 @@ def add_team_member(
 def list_team_members(
     surgery_id: str,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: None),
+    db: Session = Depends(get_db),
 ):
     """List all team members for a surgery."""
     members = SurgeryService.list_team_members(db, surgery_id, user.tenant_id)
@@ -281,7 +282,7 @@ def update_team_member(
     member_id: str,
     data: SurgeryTeamUpdate,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: None),
+    db: Session = Depends(get_db),
 ):
     """Update a team member's role or notes."""
     member = SurgeryService.update_team_member(db, member_id, data, user.tenant_id)
@@ -299,7 +300,7 @@ def remove_team_member(
     surgery_id: str,
     member_id: str,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: None),
+    db: Session = Depends(get_db),
 ):
     """Remove a team member from a surgery."""
     removed = SurgeryService.remove_team_member(db, member_id, user.tenant_id)
@@ -318,7 +319,7 @@ def remove_team_member(
 def get_checklist(
     surgery_id: str,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: None),
+    db: Session = Depends(get_db),
 ):
     """Get the WHO surgical safety checklist for a surgery (auto-creates if missing)."""
     checklist = SurgeryService.get_or_create_checklist(db, surgery_id, user.tenant_id)
@@ -337,7 +338,7 @@ def complete_sign_in(
     surgery_id: str,
     data: ChecklistSignInUpdate,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: None),
+    db: Session = Depends(get_db),
 ):
     """Complete the Sign In phase of the WHO checklist (before anesthesia induction)."""
     checklist = SurgeryService.complete_sign_in(
@@ -358,7 +359,7 @@ def complete_time_out(
     surgery_id: str,
     data: ChecklistTimeOutUpdate,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: None),
+    db: Session = Depends(get_db),
 ):
     """Complete the Time Out phase of the WHO checklist (before skin incision)."""
     checklist = SurgeryService.complete_time_out(
@@ -379,7 +380,7 @@ def complete_sign_out(
     surgery_id: str,
     data: ChecklistSignOutUpdate,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: None),
+    db: Session = Depends(get_db),
 ):
     """Complete the Sign Out phase of the WHO checklist (before patient leaves OR)."""
     checklist = SurgeryService.complete_sign_out(
@@ -403,7 +404,7 @@ def create_anesthesia_record(
     surgery_id: str,
     data: AnesthesiaRecordCreate,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: None),
+    db: Session = Depends(get_db),
 ):
     """Create an anesthesia record for a surgery."""
     record = SurgeryService.create_anesthesia_record(
@@ -423,7 +424,7 @@ def create_anesthesia_record(
 def get_anesthesia_record(
     surgery_id: str,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: None),
+    db: Session = Depends(get_db),
 ):
     """Get the anesthesia record for a surgery."""
     record = SurgeryService.get_anesthesia_record(db, surgery_id, user.tenant_id)
@@ -443,7 +444,7 @@ def update_anesthesia_record(
     record_id: str,
     data: AnesthesiaRecordUpdate,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: None),
+    db: Session = Depends(get_db),
 ):
     """Update an anesthesia record."""
     record = SurgeryService.update_anesthesia_record(

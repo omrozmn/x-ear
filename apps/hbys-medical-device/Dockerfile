@@ -10,6 +10,6 @@ RUN pip install -e /app/hbys-common
 
 COPY . .
 
-EXPOSE 8105
+EXPOSE 8114
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8105"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8114"]

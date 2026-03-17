@@ -7,35 +7,40 @@ import { TextReveal } from "./TextReveal";
 import { useLocale } from "@/lib/i18n";
 import { useSectorStore, SectorId } from "@/lib/sector-store";
 import { cn } from "@/lib/utils";
+import {
+  Hospital, Ear, Package, Receipt, MessageCircle,
+  Smartphone, ShoppingCart, ScanBarcode, ScanEye, CreditCard,
+} from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /*  Integration Data                                                   */
 /* ------------------------------------------------------------------ */
 
-const ALL_SECTORS: SectorId[] = ["hearing", "pharmacy", "hospital", "hotel", "medical", "optic", "general"];
+const ALL_SECTORS: SectorId[] = ["hearing", "pharmacy", "hospital", "hotel", "medical", "optic", "beauty", "general"];
 
 interface Integration {
   id: string;
   name: string;
-  icon: string;
+  icon: React.ReactNode;
   ring: "inner" | "outer";
   sectors: SectorId[];
   desc: { tr: string; en: string };
 }
 
+const IC = "w-5 h-5";
 const integrations: Integration[] = [
   // Core (inner ring)
-  { id: "sgk", name: "SGK Medula", icon: "\u{1F3E5}", ring: "inner", sectors: ["hearing", "pharmacy", "hospital", "medical"], desc: { tr: "E-re\u00e7ete, provizyon ve fatura entegrasyonu", en: "E-prescription, provision and invoice integration" } },
-  { id: "noah", name: "NOAH", icon: "\u{1F442}", ring: "inner", sectors: ["hearing"], desc: { tr: "Odyoloji yaz\u0131l\u0131m\u0131 entegrasyonu", en: "Audiology software integration" } },
-  { id: "uts", name: "\u00dcTS", icon: "\u{1F4E6}", ring: "inner", sectors: ["hearing", "medical"], desc: { tr: "\u00dcr\u00fcn Takip Sistemi entegrasyonu", en: "Product Tracking System integration" } },
-  { id: "efatura", name: "E-Fatura", icon: "\u{1F9FE}", ring: "inner", sectors: ALL_SECTORS, desc: { tr: "E-fatura g\u00f6nderimi ve al\u0131m\u0131", en: "E-invoice sending and receiving" } },
+  { id: "sgk", name: "SGK Medula", icon: <Hospital className={IC} />, ring: "inner", sectors: ["hearing", "pharmacy", "hospital", "medical"], desc: { tr: "E-reçete, provizyon ve fatura entegrasyonu", en: "E-prescription, provision and invoice integration" } },
+  { id: "noah", name: "NOAH", icon: <Ear className={IC} />, ring: "inner", sectors: ["hearing"], desc: { tr: "Odyoloji yazılımı entegrasyonu", en: "Audiology software integration" } },
+  { id: "uts", name: "ÜTS", icon: <Package className={IC} />, ring: "inner", sectors: ["hearing", "medical"], desc: { tr: "Ürün Takip Sistemi entegrasyonu", en: "Product Tracking System integration" } },
+  { id: "efatura", name: "E-Fatura", icon: <Receipt className={IC} />, ring: "inner", sectors: ALL_SECTORS, desc: { tr: "E-fatura gönderimi ve alımı", en: "E-invoice sending and receiving" } },
   // Secondary (outer ring)
-  { id: "whatsapp", name: "WhatsApp", icon: "\u{1F4AC}", ring: "outer", sectors: ALL_SECTORS, desc: { tr: "Mesaj g\u00f6nderim ve takip", en: "Message sending and tracking" } },
-  { id: "sms", name: "SMS", icon: "\u{1F4F1}", ring: "outer", sectors: ALL_SECTORS, desc: { tr: "Toplu ve otomatik SMS g\u00f6nderimi", en: "Bulk and automated SMS" } },
-  { id: "ecommerce", name: "E-Ticaret", icon: "\u{1F6D2}", ring: "outer", sectors: ALL_SECTORS, desc: { tr: "Online sat\u0131\u015f ve \u00fcr\u00fcn senkronizasyonu", en: "Online sales and product sync" } },
-  { id: "barcode", name: "Barkod", icon: "\u{1F4CA}", ring: "outer", sectors: ALL_SECTORS, desc: { tr: "Barkod okuma ve stok y\u00f6netimi", en: "Barcode scanning and stock management" } },
-  { id: "ocr", name: "OCR", icon: "\u{1F50D}", ring: "outer", sectors: ALL_SECTORS, desc: { tr: "Fatura, re\u00e7ete ve kimlik tarama", en: "Invoice, prescription and ID scanning" } },
-  { id: "pos", name: "POS", icon: "\u{1F4B3}", ring: "outer", sectors: ALL_SECTORS, desc: { tr: "Yazarkasa ve \u00f6deme terminali", en: "POS terminal integration" } },
+  { id: "whatsapp", name: "WhatsApp", icon: <MessageCircle className={IC} />, ring: "outer", sectors: ALL_SECTORS, desc: { tr: "Mesaj gönderim ve takip", en: "Message sending and tracking" } },
+  { id: "sms", name: "SMS", icon: <Smartphone className={IC} />, ring: "outer", sectors: ALL_SECTORS, desc: { tr: "Toplu ve otomatik SMS gönderimi", en: "Bulk and automated SMS" } },
+  { id: "ecommerce", name: "E-Ticaret", icon: <ShoppingCart className={IC} />, ring: "outer", sectors: ALL_SECTORS, desc: { tr: "Online satış ve ürün senkronizasyonu", en: "Online sales and product sync" } },
+  { id: "barcode", name: "Barkod", icon: <ScanBarcode className={IC} />, ring: "outer", sectors: ALL_SECTORS, desc: { tr: "Barkod okuma ve stok yönetimi", en: "Barcode scanning and stock management" } },
+  { id: "ocr", name: "OCR", icon: <ScanEye className={IC} />, ring: "outer", sectors: ALL_SECTORS, desc: { tr: "Fatura, reçete ve kimlik tarama", en: "Invoice, prescription and ID scanning" } },
+  { id: "pos", name: "POS", icon: <CreditCard className={IC} />, ring: "outer", sectors: ALL_SECTORS, desc: { tr: "Yazarkasa ve ödeme terminali", en: "POS terminal integration" } },
 ];
 
 const innerItems = integrations.filter((i) => i.ring === "inner");
@@ -132,7 +137,7 @@ function MobileGrid({ activeId, sector, locale, onSelect }: {
               active && "ring-2 ring-cyan-400 border-cyan-400/50 shadow-[0_0_20px_rgba(34,211,238,0.2)]"
             )}
           >
-            <span className="text-2xl">{item.icon}</span>
+            <span className="shrink-0 text-cyan-400">{item.icon}</span>
             <div className="min-w-0">
               <p className="text-sm font-semibold text-foreground truncate">{item.name}</p>
               <p className="text-[11px] text-foreground/50 truncate">{item.desc[locale]}</p>

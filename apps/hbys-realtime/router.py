@@ -8,10 +8,10 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect, status
 from sqlalchemy.orm import Session
 
-from hbys_common.database import gen_id
 from hbys_common.auth import get_current_user, CurrentUser
 from hbys_common.schemas import ResponseEnvelope
 
+from database import get_db
 import service
 from handlers.code_blue_handler import handle_code_blue
 from ws.connection_manager import manager, ConnectionInfo
@@ -33,12 +33,6 @@ from schemas import (
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["HBYS - Notifications & Realtime"])
-
-
-def _get_db():
-    """Lazy import to avoid circular dependency with main.py."""
-    from main import get_db
-    return get_db
 
 
 # ─── WebSocket Endpoint ──────────────────────────────────────────────────────
@@ -134,7 +128,7 @@ async def websocket_clinical_notifications(websocket: WebSocket):
             elif msg_type == "mark_read":
                 notif_id = msg.get("notificationId") or msg.get("notification_id")
                 if notif_id:
-                    db_gen = _get_db()()
+                    db_gen = get_db()
                     db = next(db_gen)
                     try:
                         service.mark_notification_read(db, notif_id, tenant_id, user_id)
@@ -177,7 +171,7 @@ def list_notifications(
     priority: Optional[str] = Query(None, description="Filter by priority"),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
-    db: Session = Depends(_get_db()),
+    db: Session = Depends(get_db),
     user: CurrentUser = Depends(get_current_user),
 ):
     result = service.list_notifications(
@@ -203,7 +197,7 @@ def list_notifications(
 )
 def get_notification(
     notification_id: str,
-    db: Session = Depends(_get_db()),
+    db: Session = Depends(get_db),
     user: CurrentUser = Depends(get_current_user),
 ):
     notif = service.get_notification(db, notification_id=notification_id, tenant_id=user.tenant_id)
@@ -225,7 +219,7 @@ def get_notification(
 )
 def mark_read(
     notification_id: str,
-    db: Session = Depends(_get_db()),
+    db: Session = Depends(get_db),
     user: CurrentUser = Depends(get_current_user),
 ):
     notif = service.mark_notification_read(
@@ -245,7 +239,7 @@ def mark_read(
     summary="Mark all notifications as read",
 )
 def mark_all_read(
-    db: Session = Depends(_get_db()),
+    db: Session = Depends(get_db),
     user: CurrentUser = Depends(get_current_user),
 ):
     count = service.mark_all_read(db, tenant_id=user.tenant_id, user_id=user.user_id)
@@ -264,7 +258,7 @@ def mark_all_read(
 )
 async def send_notification(
     data: SendNotificationRequest,
-    db: Session = Depends(_get_db()),
+    db: Session = Depends(get_db),
     user: CurrentUser = Depends(get_current_user),
 ):
     create_data = NotificationCreate(
@@ -301,7 +295,7 @@ async def send_notification(
 )
 async def trigger_code_blue(
     data: CodeBlueRequest,
-    db: Session = Depends(_get_db()),
+    db: Session = Depends(get_db),
     user: CurrentUser = Depends(get_current_user),
 ):
     notif = await handle_code_blue(
@@ -337,7 +331,7 @@ async def trigger_code_blue(
     description="List all notification preferences for the current user.",
 )
 def list_preferences(
-    db: Session = Depends(_get_db()),
+    db: Session = Depends(get_db),
     user: CurrentUser = Depends(get_current_user),
 ):
     result = service.list_preferences(db, user_id=user.user_id, tenant_id=user.tenant_id)
@@ -353,7 +347,7 @@ def list_preferences(
 )
 def create_preference(
     data: PreferenceCreate,
-    db: Session = Depends(_get_db()),
+    db: Session = Depends(get_db),
     user: CurrentUser = Depends(get_current_user),
 ):
     pref = service.upsert_preference(
@@ -370,7 +364,7 @@ def create_preference(
 def update_preference(
     preference_id: str,
     data: PreferenceUpdate,
-    db: Session = Depends(_get_db()),
+    db: Session = Depends(get_db),
     user: CurrentUser = Depends(get_current_user),
 ):
     pref = service.update_preference(
@@ -391,7 +385,7 @@ def update_preference(
 )
 def delete_preference(
     preference_id: str,
-    db: Session = Depends(_get_db()),
+    db: Session = Depends(get_db),
     user: CurrentUser = Depends(get_current_user),
 ):
     deleted = service.delete_preference(db, preference_id=preference_id, tenant_id=user.tenant_id)

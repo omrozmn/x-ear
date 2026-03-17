@@ -7,7 +7,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCreateBirfaturaSyncInvoices } from '@/api/client/bir-fatura.client';
 import { getListSuppliersQueryKey, useListSuppliers, useCreateSupplier } from '@/api/client/suppliers.client';
 import { useListInvoices, getListInvoicesQueryKey, useListIncomingInvoices } from '@/api/client/invoices.client';
-import type { HTTPValidationError, InvoiceRead, SupplierRead, IncomingInvoiceResponse } from '@/api/generated/schemas';
+import type { HTTPValidationError, InvoiceRead, SupplierRead } from '@/api/generated/schemas';
+import type { IncomingInvoiceResponse } from '@/api/client/invoices.client';
 
 // ========== TYPES ==========
 

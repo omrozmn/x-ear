@@ -8,6 +8,7 @@ from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from main import get_db
 from hbys_common.auth import get_current_user, CurrentUser
 from hbys_common.schemas import ResponseEnvelope, ResponseMeta
 
@@ -35,18 +36,6 @@ from schemas import (
 router = APIRouter(prefix="/api/hbys/pharmacy", tags=["Pharmacy"])
 
 
-# ---------------------------------------------------------------------------
-# DB dependency – will be replaced at import time by main.py
-# ---------------------------------------------------------------------------
-get_db = None  # Injected by main.py
-
-
-def _inject_get_db(db_dep):
-    """Called by main.py to inject the get_db dependency."""
-    global get_db
-    get_db = db_dep
-
-
 # ===========================================================================
 # STOCK ENDPOINTS
 # ===========================================================================
@@ -55,7 +44,7 @@ def _inject_get_db(db_dep):
 def create_stock(
     payload: PharmacyStockCreate,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: get_db()),
+    db: Session = Depends(get_db),
 ):
     """Create a new pharmacy stock record."""
     stock = service.create_stock(db, payload, user.tenant_id)
@@ -70,7 +59,7 @@ def list_stocks(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: get_db()),
+    db: Session = Depends(get_db),
 ):
     """List pharmacy stock items with optional filters."""
     items, total = service.list_stocks(db, medication_id, is_narcotic, storage_conditions, skip, limit)
@@ -84,7 +73,7 @@ def list_stocks(
 def get_stock(
     stock_id: str,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: get_db()),
+    db: Session = Depends(get_db),
 ):
     """Get a single stock item by ID."""
     stock = service.get_stock(db, stock_id)
@@ -98,7 +87,7 @@ def update_stock(
     stock_id: str,
     payload: PharmacyStockUpdate,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: get_db()),
+    db: Session = Depends(get_db),
 ):
     """Update an existing stock record."""
     stock = service.update_stock(db, stock_id, payload)
@@ -111,7 +100,7 @@ def update_stock(
 def delete_stock(
     stock_id: str,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: get_db()),
+    db: Session = Depends(get_db),
 ):
     """Delete a stock record."""
     deleted = service.delete_stock(db, stock_id)
@@ -128,7 +117,7 @@ def delete_stock(
 def create_dispensing(
     payload: PharmacyDispensingCreate,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: get_db()),
+    db: Session = Depends(get_db),
 ):
     """Dispense medication to a patient."""
     dispensing = service.create_dispensing(db, payload, user.tenant_id)
@@ -143,7 +132,7 @@ def list_dispensings(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: get_db()),
+    db: Session = Depends(get_db),
 ):
     """List dispensing records with optional filters."""
     items, total = service.list_dispensings(db, patient_id, prescription_id, status, skip, limit)
@@ -157,7 +146,7 @@ def list_dispensings(
 def get_dispensing(
     dispensing_id: str,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: get_db()),
+    db: Session = Depends(get_db),
 ):
     """Get a single dispensing record."""
     dispensing = service.get_dispensing(db, dispensing_id)
@@ -170,7 +159,7 @@ def get_dispensing(
 def process_return(
     payload: ReturnRequest,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: get_db()),
+    db: Session = Depends(get_db),
 ):
     """Process a medication return. Returns stock to inventory."""
     dispensing = service.process_return(
@@ -192,7 +181,7 @@ def process_return(
 def check_interactions(
     payload: InteractionCheckRequest,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: get_db()),
+    db: Session = Depends(get_db),
 ):
     """Check drug-drug interactions for a list of drug codes."""
     result = service.check_interactions(db, payload.drug_codes)
@@ -203,7 +192,7 @@ def check_interactions(
 def create_interaction(
     payload: DrugInteractionCreate,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: get_db()),
+    db: Session = Depends(get_db),
 ):
     """Create a new drug interaction record."""
     interaction = service.create_interaction(db, payload)
@@ -217,7 +206,7 @@ def list_interactions(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: get_db()),
+    db: Session = Depends(get_db),
 ):
     """List drug interaction records."""
     from models.drug_interaction import DrugInteraction
@@ -243,7 +232,7 @@ def update_interaction(
     interaction_id: str,
     payload: DrugInteractionUpdate,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: get_db()),
+    db: Session = Depends(get_db),
 ):
     """Update a drug interaction record."""
     interaction = service.update_interaction(db, interaction_id, payload)
@@ -256,7 +245,7 @@ def update_interaction(
 def delete_interaction(
     interaction_id: str,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: get_db()),
+    db: Session = Depends(get_db),
 ):
     """Delete a drug interaction record."""
     deleted = service.delete_interaction(db, interaction_id)
@@ -273,7 +262,7 @@ def delete_interaction(
 def create_movement(
     payload: StockMovementCreate,
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: get_db()),
+    db: Session = Depends(get_db),
 ):
     """Record a manual stock movement (purchase, adjustment, transfer, etc.)."""
     movement = service.create_stock_movement(db, payload, user.tenant_id)
@@ -287,7 +276,7 @@ def list_movements(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: get_db()),
+    db: Session = Depends(get_db),
 ):
     """List stock movements with optional filters."""
     items, total = service.list_stock_movements(db, pharmacy_stock_id, movement_type, skip, limit)
@@ -305,7 +294,7 @@ def list_movements(
 def get_expiry_alerts(
     days: int = Query(30, ge=1, le=365, description="Days threshold for expiring soon"),
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: get_db()),
+    db: Session = Depends(get_db),
 ):
     """Get expired and soon-to-expire medications."""
     result = service.get_expiry_alerts(db, days_threshold=days)
@@ -315,7 +304,7 @@ def get_expiry_alerts(
 @router.get("/reports/narcotics", response_model=ResponseEnvelope)
 def get_narcotic_report(
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: get_db()),
+    db: Session = Depends(get_db),
 ):
     """Get narcotic/controlled substance inventory report."""
     result = service.get_narcotic_report(db)
@@ -328,7 +317,7 @@ def get_patient_medication_history(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     user: CurrentUser = Depends(get_current_user),
-    db: Session = Depends(lambda: get_db()),
+    db: Session = Depends(get_db),
 ):
     """Get medication dispensing history for a specific patient."""
     items, total = service.get_patient_medication_history(db, patient_id, skip, limit)

@@ -14,5 +14,5 @@ export default async function SectorPage({ params }: Props) {
 }
 
 export function generateStaticParams() {
-  return ["hearing", "pharmacy", "hospital", "hotel", "medical", "optic", "general"].map((sector) => ({ sector }));
+  return ["hearing", "pharmacy", "hospital", "hotel", "medical", "optic", "beauty", "general"].map((sector) => ({ sector }));
 }

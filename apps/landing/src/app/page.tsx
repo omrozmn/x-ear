@@ -8,9 +8,11 @@ import { FeatureCards } from "@/components/ui/FeatureCards";
 import { FeatureShowcase } from "@/components/ui/FeatureShowcase";
 import { SpotlightDemo } from "@/components/ui/SpotlightDemo";
 import { IntegrationOrbit } from "@/components/ui/IntegrationOrbit";
+import { AutomationShowcase } from "@/components/ui/AutomationShowcase";
 import { InteractiveRoi } from "@/components/ui/InteractiveRoi";
 import { SectorCards } from "@/components/ui/SectorCards";
 import { PainPoints } from "@/components/ui/PainPoints";
+import { SectionConnector } from "@/components/ui/SectionConnector";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { useLocale } from "@/lib/i18n";
@@ -31,7 +33,7 @@ function HomeContent() {
         {/* 3D WebGL Background Scene */}
         <Scene />
 
-        {/* Narrative DOM Layers - Hero */}
+        {/* Hero */}
         <section className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 pointer-events-none">
           <div className="space-y-6 text-center flex flex-col items-center pointer-events-auto mt-[-10vh]">
             <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm font-medium backdrop-blur-md mb-4 glass-panel">
@@ -68,27 +70,45 @@ function HomeContent() {
           </div>
         </section>
 
+        {/* Pain Points */}
         <PainPoints />
 
-        {/* Narrative DOM Layers - Sentient AI */}
+        <SectionConnector />
+
+        {/* AI Assistant Demo */}
         <SentientDemo />
 
-        {/* Feature Showcase - App Window Animations */}
+        <SectionConnector flip />
+
+        {/* Feature Showcase — App Window Animations */}
         <FeatureShowcase />
 
-        {/* Spotlight Demo - ⌘K Search */}
+        <SectionConnector />
+
+        {/* Spotlight ⌘K Search */}
         <SpotlightDemo />
 
-        {/* Integration Orbit - Ecosystem */}
+        <SectionConnector flip />
+
+        {/* Smart Automation */}
+        <AutomationShowcase />
+
+        <SectionConnector />
+
+        {/* Integration Orbit */}
         <IntegrationOrbit />
 
-        {/* Narrative DOM Layers - Ecosystem Cards */}
+        <SectionConnector flip />
+
+        {/* Ecosystem Feature Cards */}
         <FeatureCards />
 
-        {/* Narrative DOM Layers - Interactive ROI */}
+        <SectionConnector />
+
+        {/* ROI Calculator */}
         <InteractiveRoi />
 
-        {/* Sector showcase - bottom */}
+        {/* Sector Selector */}
         <SectorCards />
 
       </main>

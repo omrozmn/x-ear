@@ -11,6 +11,7 @@ import {
   Glasses,
   Hotel,
   Briefcase,
+  Scissors,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -90,6 +91,17 @@ const SECTORS: Array<{
     activeBorder: "border-orange-500",
     ring: "ring-orange-500/40",
     iconColor: "text-orange-400",
+  },
+  {
+    id: "beauty",
+    icon: Scissors,
+    name: { tr: "Güzellik Salonu", en: "Beauty Salon" },
+    desc: { tr: "Randevu, müşteri, personel ve stok yönetimi", en: "Appointment, customer, staff, and inventory management" },
+    color: "from-pink-500/20 to-rose-500/20",
+    border: "border-pink-500/30",
+    activeBorder: "border-pink-500",
+    ring: "ring-pink-500/40",
+    iconColor: "text-pink-400",
   },
   {
     id: "general",

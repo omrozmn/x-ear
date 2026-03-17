@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useSectorStore, type SectorId } from "@/lib/sector-store";
 
-const VALID_SECTORS: SectorId[] = ["hearing", "pharmacy", "hospital", "hotel", "medical", "optic", "general"];
+const VALID_SECTORS: SectorId[] = ["hearing", "pharmacy", "hospital", "hotel", "medical", "optic", "beauty", "general"];
 
 export function SectorInit({ sector }: { sector: string }) {
   const setSector = useSectorStore((s) => s.setSector);

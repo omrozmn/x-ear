@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { DataTable, Column, Badge } from '@x-ear/ui-web';
 import { formatCurrency, formatDate } from '@/utils/format';
-import type { IncomingInvoiceResponse } from '@/api/generated/schemas';
+import type { IncomingInvoiceResponse } from '@/api/client/invoices.client';
 
 interface PurchasesListProps {
   purchases: IncomingInvoiceResponse[];

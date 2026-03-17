@@ -123,7 +123,7 @@ export function ActivityTab({ filters }: ActivityTabProps) {
             title: t('branch', 'Şube'),
             render: (_: unknown, record: ActivityLogRead) => (
                 <span className="text-sm text-muted-foreground">
-                    {record.branchName || record.branchId || '-'}
+                    {(record as any).branchName || (record as any).branchId || '-'}
                 </span>
             )
         },

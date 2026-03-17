@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Loader2, Save, Plus, Trash2, AlertCircle, Hash, Key, Eye, EyeOff, RefreshCw, CheckCircle, XCircle } from 'lucide-react';
 import { Button, Input, Select, useToastHelpers } from '@x-ear/ui-web';
 import { useAuthStore } from '@/stores/authStore';
-import { useGetCurrentTenant, useUpdateTenantSettings } from '@/api/generated';
+import { useListSettings, useUpdateSettings } from '@/api/generated';
 import { GOVERNMENT_EXEMPTION_REASONS } from '@/constants/governmentInvoiceConstants';
 import { useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/api/orval-mutator';
@@ -66,12 +66,12 @@ export function InvoiceSettings() {
     const isTenantAdmin = user?.role === 'tenant_admin' || user?.isImpersonatingTenant === true;
 
     // Fetch current tenant settings
-    const { data: tenantData, isLoading: loading } = useGetCurrentTenant();
-    const updateMutation = useUpdateTenantSettings({
+    const { data: tenantData, isLoading: loading } = useListSettings();
+    const updateMutation = useUpdateSettings({
         mutation: {
             onSuccess: (data: any) => {
                 // Update query cache with new data (optimistic update)
-                queryClient.setQueryData(['getCurrentTenant'], data);
+                queryClient.setQueryData(['/api/settings'], data);
                 console.log('✅ Mutation successful, cache updated:', data);
             }
         }
@@ -82,8 +82,8 @@ export function InvoiceSettings() {
         console.log('📥 useEffect triggered, tenantData:', tenantData);
         
         if (tenantData?.data) {
-            // tenantData is ResponseEnvelope, so tenantData.data is the actual tenant object
-            const tenant = tenantData.data;
+            // tenantData is ResponseEnvelope, so tenantData.data is the actual tenant/settings object
+            const tenant = tenantData.data as any;
             const settings = (tenant.settings as TenantSettings) || {};
             const companyInfo = (tenant.companyInfo as CompanyInfo) || {};
             // Backend returns camelCase (invoiceIntegration), not snake_case
@@ -244,7 +244,7 @@ export function InvoiceSettings() {
             console.log('💾 Saving payload:', JSON.stringify(payload, null, 2));
             
             // Optimistic update - update UI immediately
-            const currentData = queryClient.getQueryData<CurrentTenantQueryData>(['getCurrentTenant']);
+            const currentData = queryClient.getQueryData<CurrentTenantQueryData>(['/api/settings']);
             if (currentData) {
                 const optimisticData = {
                     ...currentData,
@@ -267,7 +267,7 @@ export function InvoiceSettings() {
                         },
                     },
                 };
-                queryClient.setQueryData(['getCurrentTenant'], optimisticData);
+                queryClient.setQueryData(['/api/settings'], optimisticData);
                 console.log('✨ Optimistic update applied');
             }
             
@@ -275,12 +275,12 @@ export function InvoiceSettings() {
             
             console.log('✅ Save successful, result:', result);
             console.log('✅ Result data:', result?.data);
-            console.log('✅ Result companyInfo:', result?.data?.companyInfo);
-            console.log('✅ Result settings:', result?.data?.settings);
+            console.log('✅ Result companyInfo:', (result?.data as any)?.companyInfo);
+            console.log('✅ Result settings:', (result?.data as any)?.settings);
             
             // Update local state from server response to ensure consistency
             if (result?.data) {
-                const tenant = result.data;
+                const tenant = result.data as any;
                 const savedSettings = (tenant.settings?.invoiceIntegration || tenant.settings?.invoice_integration) as InvoiceIntegrationSettings | undefined;
                 const savedCompanyInfo = tenant.companyInfo as CompanyInfo | undefined;
                 
@@ -316,7 +316,7 @@ export function InvoiceSettings() {
         } catch (error) {
             console.error('❌ Failed to save invoice settings:', error);
             // Rollback optimistic update on error
-            queryClient.invalidateQueries({ queryKey: ['getCurrentTenant'] });
+            queryClient.invalidateQueries({ queryKey: ['/api/settings'] });
             showErrorToast(t('settings.messages.save_error', { error: error instanceof Error ? error.message : t('settings.messages.unknown_error') }));
         }
     };

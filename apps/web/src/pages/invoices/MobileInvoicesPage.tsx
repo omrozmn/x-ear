@@ -14,7 +14,7 @@ import toast from 'react-hot-toast';
 import { apiClient } from '@/api/orval-mutator';
 import { useDebounce } from '@/hooks/useDebounce';
 import { listOutgoingInvoices } from '@/api/client/invoices.client';
-import type { OutgoingInvoiceResponse } from '@/api/generated/schemas';
+import type { OutgoingInvoiceResponse } from '@/api/client/invoices.client';
 import { useTranslation } from 'react-i18next';
 
 async function fetchInvoiceDocument(invoiceId: string | number, format: 'pdf' | 'html' | 'xml', renderMode: 'auto' | 'local' | 'remote' = 'auto'): Promise<{ data: ArrayBuffer; contentType: string }> {

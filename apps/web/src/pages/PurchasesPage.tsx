@@ -6,7 +6,7 @@ import { ShoppingCart, Search, FileText, X, RefreshCw, Filter, CheckSquare, Cred
 import { formatCurrency, formatDate } from '@/utils/format';
 import { useNavigate } from '@tanstack/react-router';
 import { useListIncomingInvoices } from '@/api/client/invoices.client';
-import type { IncomingInvoiceResponse, SchemasInvoicesNewInvoiceStatus } from '@/api/generated/schemas';
+import type { IncomingInvoiceResponse, SchemasInvoicesNewInvoiceStatus } from '@/api/client/invoices.client';
 import { ONBOARDING_PURCHASES_DISMISSED } from '@/constants/storage-keys';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useIsMobile } from '@/hooks/useBreakpoint';

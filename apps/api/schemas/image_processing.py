@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from pydantic import Field
 from .base import AppBaseModel
 
@@ -53,7 +53,7 @@ class StockImageResult(AppBaseModel):
 
 
 class StockImageSearchResponse(AppBaseModel):
-    results: list[StockImageResult]
+    results: List[StockImageResult]
     total: int
     page: int
     per_page: int = Field(..., alias="perPage")

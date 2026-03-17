@@ -5,7 +5,7 @@ import { FileText, Download, Filter, Search, AlertCircle, CheckCircle, ShoppingC
 import { formatCurrency, formatDate } from '@/utils/format';
 import { cn } from '@/lib/utils';
 import { useListIncomingInvoices } from '@/api/client/invoices.client';
-import type { IncomingInvoiceResponse, SchemasInvoicesNewInvoiceStatus } from '@/api/generated/schemas';
+import type { IncomingInvoiceResponse, SchemasInvoicesNewInvoiceStatus } from '@/api/client/invoices.client';
 import toast from 'react-hot-toast';
 import { ONBOARDING_INCOMING_INVOICES_DISMISSED } from '@/constants/storage-keys';
 import { useDebounce } from '@/hooks/useDebounce';
