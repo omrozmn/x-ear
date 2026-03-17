@@ -203,7 +203,7 @@ export const ECommerceIntegrationSettings: React.FC = () => {
           onClose={() => setSelectedMarketplace(null)}
           platform={selectedMarketplace}
           platformName={MARKETPLACE_CONFIGS[selectedMarketplace]?.name || selectedMarketplace}
-          existingIntegration={getMktIntegration(selectedMarketplace) as Record<string, unknown> | null}
+          existingIntegration={getMktIntegration(selectedMarketplace) as any}
           onSave={handleSaveMarketplace}
           onDisconnect={handleDisconnectMarketplace}
         />

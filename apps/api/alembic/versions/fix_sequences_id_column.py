@@ -17,9 +17,25 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # SQLite doesn't support ALTER COLUMN, so we need to recreate the table
-    
-    # Create new table with correct schema
+    # This migration converts sequences.id from integer to string.
+    # On fresh DBs, ef70430aa16e (parallel branch) may have already created
+    # sequences with string id and uq_sequence_key constraint, so we check first.
+    from sqlalchemy import inspect as sa_inspect
+    conn = op.get_bind()
+    inspector = sa_inspect(conn)
+
+    if 'sequences' not in inspector.get_table_names():
+        # sequences doesn't exist at all (shouldn't happen, but be safe)
+        return
+
+    # Check if id column is already a string type (already migrated)
+    columns = {c['name']: c for c in inspector.get_columns('sequences')}
+    id_col = columns.get('id')
+    if id_col and str(id_col['type']).upper().startswith('VARCHAR'):
+        # Already has string id - nothing to do
+        return
+
+    # Need to migrate: create temp table, copy data, swap
     op.create_table('sequences_new',
         sa.Column('id', sa.String(50), nullable=False),
         sa.Column('tenant_id', sa.String(36), nullable=False),
@@ -30,22 +46,19 @@ def upgrade() -> None:
         sa.Column('created_at', sa.DateTime(), nullable=True),
         sa.Column('updated_at', sa.DateTime(), nullable=True),
         sa.PrimaryKeyConstraint('id'),
-        sa.UniqueConstraint('tenant_id', 'seq_type', 'year', 'prefix', name='uq_sequence_key')
+        sa.UniqueConstraint('tenant_id', 'seq_type', 'year', 'prefix', name='uq_sequence_key_new')
     )
     op.create_index(op.f('ix_sequences_new_tenant_id'), 'sequences_new', ['tenant_id'], unique=False)
-    
-    # Copy data from old table (if any exists)
+
+    # Copy data from old table
     op.execute("""
         INSERT INTO sequences_new (id, tenant_id, seq_type, year, prefix, last_number, created_at, updated_at)
         SELECT CAST(id AS TEXT), tenant_id, seq_type, year, prefix, last_number, created_at, updated_at
         FROM sequences
     """)
-    
-    # Drop old table
-    op.drop_index(op.f('ix_sequences_tenant_id'), table_name='sequences')
-    op.drop_table('sequences')
-    
-    # Rename new table to original name
+
+    # Drop old table and rename
+    op.execute('DROP TABLE sequences CASCADE')
     op.rename_table('sequences_new', 'sequences')
 
 

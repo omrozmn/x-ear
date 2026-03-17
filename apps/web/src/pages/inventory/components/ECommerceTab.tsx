@@ -5,7 +5,8 @@ import { MARKETPLACE_CONFIGS } from '../config/marketplaceFields';
 import {
   useListMarketplaceListings, useCreateMarketplaceListing,
   useUpdateMarketplaceListing, useDeleteMarketplaceListing,
-  useAIAutoFillListings, type MarketplaceListing, type AIFillResponse
+  useAIAutoFillListings, type MarketplaceListing, type MarketplaceListingCreate,
+  type MarketplaceListingUpdate, type AIFillResponse
 } from '@/api/client/marketplace-listings.client';
 import { MarketplaceListingModal } from './MarketplaceListingModal';
 import { AIAutoFillPreviewModal } from './AIAutoFillPreviewModal';
@@ -37,7 +38,7 @@ export const ECommerceTab: React.FC<ECommerceTabProps> = ({ inventoryId, integra
   const handleAIFillAll = async () => {
     setIsAIPreviewOpen(true);
     try {
-      const result = await aiAutoFill.mutateAsync();
+      const result = await aiAutoFill.mutateAsync(undefined);
       setAiResults(result?.data || []);
     } catch {
       toast.error('AI doldurma başarısız');
@@ -84,13 +85,13 @@ export const ECommerceTab: React.FC<ECommerceTabProps> = ({ inventoryId, integra
     toast.success('AI içerikleri uygulandı');
   };
 
-  const handleSaveListing = async (data: Record<string, unknown>) => {
+  const handleSaveListing = async (data: MarketplaceListingCreate | MarketplaceListingUpdate) => {
     if (!selectedIntegrationId) return;
     const existingListing = getListingForIntegration(selectedIntegrationId);
     if (existingListing) {
-      await updateListing.mutateAsync({ listingId: existingListing.id, data: data as Parameters<typeof updateListing.mutateAsync>[0]['data'] });
+      await updateListing.mutateAsync({ listingId: existingListing.id, data: data as MarketplaceListingUpdate });
     } else {
-      await createListing.mutateAsync(data as Parameters<typeof createListing.mutateAsync>[0]);
+      await createListing.mutateAsync(data as MarketplaceListingCreate);
     }
     refetch();
   };
