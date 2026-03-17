@@ -405,9 +405,9 @@ def analyze_patient_labs(
     else:
         trend_direction = "decreasing"
 
-    # Days to critical threshold
+    # Days to critical threshold (only meaningful when actively trending)
     days_to_critical: dict | None = None
-    if test_code and test_code.lower() in REFERENCE_RANGES:
+    if trend_direction != "stable" and test_code and test_code.lower() in REFERENCE_RANGES:
         ref = REFERENCE_RANGES[test_code.lower()]
         last_day = (df["date"].iloc[-1] - df["date"].iloc[0]).total_seconds() / 86400.0
         current_projected = intercept + slope * last_day

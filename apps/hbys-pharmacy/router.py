@@ -325,3 +325,90 @@ def get_patient_medication_history(
         data=[i.model_dump(by_alias=True) for i in items],
         meta=ResponseMeta(total=total, page=skip // limit + 1, per_page=limit),
     )
+
+
+# ===========================================================================
+# AI-POWERED ENDPOINTS
+# ===========================================================================
+
+import ai_service
+from pydantic import BaseModel
+
+
+class ForecastRequest(BaseModel):
+    history: List[dict]
+    periods: int = 30
+
+
+class ReorderPointRequest(BaseModel):
+    history: List[dict]
+    lead_time_days: int = 7
+    safety_stock_days: int = 3
+    current_stock: Optional[int] = None
+
+
+class ExpiryOptimizationRequest(BaseModel):
+    stock_items: List[dict]
+
+
+class AnomalyDetectionRequest(BaseModel):
+    history: List[dict]
+
+
+class ProcurementPlanRequest(BaseModel):
+    items: List[dict]
+    budget: float
+
+
+@router.post("/ai/forecast", response_model=ResponseEnvelope)
+def ai_forecast(
+    payload: ForecastRequest,
+    user: CurrentUser = Depends(get_current_user),
+):
+    """Forecast drug consumption using Prophet time-series model."""
+    try:
+        result = ai_service.forecast_consumption(payload.history, payload.periods)
+        return ResponseEnvelope.ok(data=result)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/ai/reorder-point", response_model=ResponseEnvelope)
+def ai_reorder_point(
+    payload: ReorderPointRequest,
+    user: CurrentUser = Depends(get_current_user),
+):
+    """Calculate reorder point and quantity based on historical consumption."""
+    try:
+        result = ai_service.calculate_reorder_point(
+            payload.history,
+            payload.lead_time_days,
+            payload.safety_stock_days,
+            payload.current_stock,
+        )
+        return ResponseEnvelope.ok(data=result)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/ai/expiry-optimization", response_model=ResponseEnvelope)
+def ai_expiry_optimization(
+    payload: ExpiryOptimizationRequest,
+    user: CurrentUser = Depends(get_current_user),
+):
+    """Optimize stock rotation using FEFO (First Expiry First Out) strategy."""
+    result = ai_service.optimize_expiry_rotation(payload.stock_items)
+    return ResponseEnvelope.ok(data=result)
+
+
+@router.post("/ai/anomaly-detection", response_model=ResponseEnvelope)
+def ai_anomaly_detection(
+    payload: AnomalyDetectionRequest,
+    user: CurrentUser = Depends(get_current_user),
+):
+    """Detect unusual consumption patterns (theft, waste, seasonal spikes)."""
+    try:
+        result = ai_service.detect_consumption_anomaly(payload.history)
+        return ResponseEnvelope.ok(data=result)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))

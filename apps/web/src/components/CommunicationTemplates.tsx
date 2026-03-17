@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import {
   listCommunicationTemplates,
   updateCommunicationTemplate,
-  createCommunicationTemplate,
+  createCommunicationTemplates,
   deleteCommunicationTemplate,
-  // RoutersCommunicationsTemplateCreate is likely named SchemasCommunicationsTemplateCreate or similar in exports
-  SchemasCommunicationsTemplateCreate
+  RoutersCommunicationsTemplateCreate
 } from '@/api/client/communications.client';
 // CommunicationTemplate type defined locally since schema may not export it
 import { Button, Input, Select, Textarea, Checkbox } from '@x-ear/ui-web';
@@ -222,7 +221,7 @@ const CommunicationTemplates: React.FC = () => {
         // Update existing template
         const response: ResponseEnvelope<CommunicationTemplate> = await updateCommunicationTemplate(
           selectedTemplate.id,
-          formData as unknown as SchemasCommunicationsTemplateCreate
+          formData as unknown as RoutersCommunicationsTemplateCreate
         ) as unknown as ResponseEnvelope<CommunicationTemplate>;
 
         if (response?.success) {
@@ -234,7 +233,7 @@ const CommunicationTemplates: React.FC = () => {
         }
       } else {
         // Create new template
-        const response: ResponseEnvelope<CommunicationTemplate> = await createCommunicationTemplate(formData as unknown as SchemasCommunicationsTemplateCreate) as unknown as ResponseEnvelope<CommunicationTemplate>;
+        const response: ResponseEnvelope<CommunicationTemplate> = await createCommunicationTemplates(formData as unknown as RoutersCommunicationsTemplateCreate) as unknown as ResponseEnvelope<CommunicationTemplate>;
 
         if (response?.success) {
           await loadTemplates();

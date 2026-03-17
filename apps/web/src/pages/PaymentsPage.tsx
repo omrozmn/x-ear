@@ -5,7 +5,7 @@ import type { Column } from '@x-ear/ui-web';
 import { CreditCard, DollarSign, Search, Download, RefreshCw, Filter, CheckSquare, Square, X, FileText } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
-import { useListPaymentRecords } from '@/api/client/payments.client';
+import { useListPartyPaymentRecords } from '@/api/client/payments.client';
 import type { PaymentRecordRead } from '@/api/generated/schemas';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useIsMobile } from '@/hooks/useBreakpoint';
@@ -45,7 +45,7 @@ export function PaymentsPage() {
 
   const debouncedSearch = useDebounce(searchTerm, 300);
 
-  const { data, isLoading, isFetching, refetch } = useListPaymentRecords({
+  const { data, isLoading, isFetching, refetch } = useListPartyPaymentRecords({
     page: isMobile ? 1 : currentPage,
     per_page: isMobile ? mobileVisibleCount : perPage,
   });

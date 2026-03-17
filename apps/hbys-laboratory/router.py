@@ -1,10 +1,11 @@
 """
 Laboratory Service Router
 REST API endpoints for lab orders, specimen collection, result entry/verification,
-patient lab history, and test definition management.
+patient lab history, test definition management, and AI-powered trend analysis.
 """
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from hbys_common.auth import get_current_user, CurrentUser
@@ -24,6 +25,7 @@ from schemas import (
     TestDefinitionRead,
 )
 import service
+import ai_service
 
 router = APIRouter(prefix="/api/hbys/laboratory", tags=["HBYS - Laboratory"])
 
@@ -327,3 +329,69 @@ def update_definition(
         raise HTTPException(status_code=404, detail="Test definition not found")
     def_data = TestDefinitionRead.model_validate(definition)
     return ResponseEnvelope.ok(data=def_data)
+
+
+# ─── AI Request/Response Schemas ───────────────────────────────────────────
+
+class LabDataPoint(BaseModel):
+    date: str = Field(..., description="ISO date string")
+    value: float = Field(..., description="Numeric lab value")
+
+
+class PredictTrendRequest(BaseModel):
+    results: List[LabDataPoint] = Field(..., description="Historical lab results")
+    periods: int = Field(30, ge=1, le=365, description="Days to forecast")
+
+
+class DetectAnomaliesRequest(BaseModel):
+    results: List[LabDataPoint] = Field(..., description="Historical lab results")
+    method: str = Field("zscore", description="Detection method: zscore or iqr")
+    threshold: Optional[float] = Field(None, description="Custom threshold")
+
+
+class AnalyzeLabsRequest(BaseModel):
+    results: List[LabDataPoint] = Field(..., description="Historical lab results")
+    test_code: Optional[str] = Field(None, description="Test code for reference ranges")
+
+
+# ─── AI Endpoints ──────────────────────────────────────────────────────────
+
+@router.post(
+    "/ai/predict-trend",
+    response_model=ResponseEnvelope,
+    summary="Predict future lab values using AI",
+    tags=["HBYS - Laboratory AI"],
+)
+def ai_predict_trend(body: PredictTrendRequest):
+    results_dicts = [r.model_dump() for r in body.results]
+    prediction = ai_service.predict_lab_trend(results_dicts, periods=body.periods)
+    return ResponseEnvelope.ok(data=prediction)
+
+
+@router.post(
+    "/ai/detect-anomalies",
+    response_model=ResponseEnvelope,
+    summary="Detect anomalous lab results",
+    tags=["HBYS - Laboratory AI"],
+)
+def ai_detect_anomalies(body: DetectAnomaliesRequest):
+    results_dicts = [r.model_dump() for r in body.results]
+    try:
+        anomalies = ai_service.detect_anomalies(
+            results_dicts, method=body.method, threshold=body.threshold
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return ResponseEnvelope.ok(data=anomalies)
+
+
+@router.post(
+    "/ai/analyze",
+    response_model=ResponseEnvelope,
+    summary="Comprehensive AI analysis of patient lab history",
+    tags=["HBYS - Laboratory AI"],
+)
+def ai_analyze_labs(body: AnalyzeLabsRequest):
+    results_dicts = [r.model_dump() for r in body.results]
+    analysis = ai_service.analyze_patient_labs(results_dicts, test_code=body.test_code)
+    return ResponseEnvelope.ok(data=analysis)

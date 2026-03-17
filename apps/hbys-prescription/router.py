@@ -448,3 +448,90 @@ def delete_medication(
         raise HTTPException(status_code=404, detail="Medication not found")
     service.delete_medication(db, med)
     return ResponseEnvelope.ok()
+
+
+# =========================================================================
+# AI Drug Interaction Endpoints
+# =========================================================================
+
+from pydantic import BaseModel
+from typing import List
+
+import ai_service
+
+
+class AIInteractionCheckRequest(BaseModel):
+    """Request body for checking drug interactions in a prescription."""
+    medications: List[dict] = []
+
+
+class AIInteractionResult(BaseModel):
+    """Single interaction result."""
+    drug_a: str
+    drug_b: str
+    interaction_type: str
+    severity: str
+    confidence: float
+    is_known: bool
+    source: str
+
+
+class AIInteractionCheckResponse(BaseModel):
+    """Response for prescription interaction check."""
+    total_medications: int
+    total_interactions: int
+    interactions: List[AIInteractionResult]
+    has_contraindicated: bool
+    has_major: bool
+
+
+class AIPairInteractionResponse(BaseModel):
+    """Response for single pair interaction check."""
+    drug_a: str
+    drug_b: str
+    interaction_type: str
+    severity: str
+    confidence: float
+    is_known: bool
+    source: str
+    explanation_tr: str
+
+
+@prescription_router.post(
+    "/ai/check-interactions",
+    response_model=AIInteractionCheckResponse,
+    summary="AI: Check drug interactions in a prescription",
+    tags=["HBYS - AI Drug Interactions"],
+)
+def ai_check_interactions(body: AIInteractionCheckRequest):
+    """
+    Check all pairwise drug interactions in a prescription using AI.
+    Returns interactions sorted by severity (most severe first).
+    """
+    interactions = ai_service.check_prescription_interactions(body.medications)
+    return AIInteractionCheckResponse(
+        total_medications=len(body.medications),
+        total_interactions=len(interactions),
+        interactions=[AIInteractionResult(**i) for i in interactions],
+        has_contraindicated=any(i["severity"] == "contraindicated" for i in interactions),
+        has_major=any(i["severity"] == "major" for i in interactions),
+    )
+
+
+@prescription_router.get(
+    "/ai/interaction/{drug_a}/{drug_b}",
+    response_model=AIPairInteractionResponse,
+    summary="AI: Check interaction between two specific drugs",
+    tags=["HBYS - AI Drug Interactions"],
+)
+def ai_check_pair(drug_a: str, drug_b: str):
+    """
+    Check the interaction between two specific drugs using AI.
+    Returns interaction type, severity, confidence, and a Turkish explanation.
+    """
+    interaction = ai_service.predict_interaction(drug_a, drug_b)
+    explanation = ai_service.get_interaction_explanation(drug_a, drug_b)
+    return AIPairInteractionResponse(
+        **interaction,
+        explanation_tr=explanation,
+    )

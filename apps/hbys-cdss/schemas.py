@@ -268,3 +268,86 @@ class DuplicateOrderCheckResponse(AppBaseModel):
     patient_id: str
     duplicates_found: bool
     alerts: List[CDSSAlertItem]
+
+
+# --- AI CDSS Schemas --------------------------------------------------------
+
+
+class PatientParams(AppBaseModel):
+    """Patient parameters for AI dose calculation."""
+    age: int = Field(..., ge=0, le=150, description="Patient age in years")
+    weight_kg: float = Field(..., gt=0, le=500, description="Weight in kg")
+    height_cm: Optional[float] = Field(None, gt=0, le=300, description="Height in cm")
+    gender: Optional[str] = Field(None, max_length=10, description="male/female")
+    creatinine: Optional[float] = Field(None, ge=0, description="Serum creatinine mg/dL")
+    gfr: Optional[float] = Field(None, ge=0, description="GFR mL/min")
+    liver_function: str = Field(
+        "normal", description="normal / mild / moderate / severe"
+    )
+    known_allergies: Optional[List[str]] = Field(None, description="List of known drug allergies")
+
+
+class SafeDoseRequest(AppBaseModel):
+    """Request for AI safe dose calculation."""
+    drug: str = Field(..., max_length=200, description="Drug name (English or Turkish)")
+    patient: PatientParams
+
+
+class SafeDoseResponse(AppBaseModel):
+    """Response from AI safe dose calculation."""
+    drug: str
+    found: bool
+    recommended_dose: Optional[float] = None
+    max_dose: Optional[float] = None
+    unit: str = "mg"
+    frequency: Optional[str] = None
+    adjustment_reason: List[str] = []
+    warnings: List[str] = []
+
+
+class AllergyCheckRequest(AppBaseModel):
+    """Request for allergy cross-reactivity check."""
+    known_allergies: List[str] = Field(..., min_length=1, description="Known drug allergies")
+    new_drug: str = Field(..., max_length=200, description="Drug to check")
+
+
+class AllergyCheckResponse(AppBaseModel):
+    """Response from allergy cross-reactivity check."""
+    cross_reactivity_risk: float = Field(..., ge=0, le=1)
+    related_allergens: List[str]
+    recommendation: str
+
+
+class SafetyScoreRequest(AppBaseModel):
+    """Request for prescription safety scoring."""
+    medications: List[dict] = Field(..., min_length=1, description="List of medications with 'name' key")
+    patient: PatientParams
+
+
+class SafetyScoreResponse(AppBaseModel):
+    """Response from prescription safety scoring."""
+    safety_score: int = Field(..., ge=0, le=100)
+    risk_factors: List[str]
+    suggestions: List[str]
+
+
+class AlternativesRequest(AppBaseModel):
+    """Request for drug alternative suggestions."""
+    drug: str = Field(..., max_length=200)
+    reason: str = Field(..., max_length=200, description="Reason: allergy, renal, hepatic, etc.")
+    patient: PatientParams
+
+
+class AlternativeItem(AppBaseModel):
+    """A single drug alternative."""
+    drug_name: str
+    drug_name_tr: str
+    drug_class: str
+    reason_tr: str
+    suitability_score: int
+    notes_tr: str = ""
+
+
+class AlternativesResponse(AppBaseModel):
+    """Response from drug alternatives suggestion."""
+    alternatives: List[AlternativeItem]

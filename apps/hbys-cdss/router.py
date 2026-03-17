@@ -34,7 +34,17 @@ from schemas import (
     LabResultCheckResponse,
     DuplicateOrderCheckRequest,
     DuplicateOrderCheckResponse,
+    # AI CDSS schemas
+    SafeDoseRequest,
+    SafeDoseResponse,
+    AllergyCheckRequest,
+    AllergyCheckResponse,
+    SafetyScoreRequest,
+    SafetyScoreResponse,
+    AlternativesRequest,
+    AlternativesResponse,
 )
+import ai_service
 
 router = APIRouter(prefix="/api/hbys/cdss", tags=["HBYS - CDSS"])
 
@@ -430,3 +440,79 @@ def delete_protocol(
             detail=f"Protokol '{protocol_id}' bulunamadı.",
         )
     return ResponseEnvelope.ok(data=None)
+
+
+# ============================================================================
+# AI-POWERED CDSS ENDPOINTS
+# ============================================================================
+
+
+@router.post(
+    "/ai/safe-dose",
+    response_model=ResponseEnvelope[SafeDoseResponse],
+    summary="AI: Calculate safe dose for patient",
+    description="Calculate recommended and maximum doses based on patient parameters "
+                "(age, weight, renal function, hepatic function).",
+)
+def ai_safe_dose(
+    data: SafeDoseRequest,
+    user: CurrentUser = Depends(get_current_user),
+):
+    result = ai_service.calculate_safe_dose(
+        drug=data.drug,
+        patient=data.patient.model_dump(),
+    )
+    return ResponseEnvelope.ok(data=SafeDoseResponse(**result))
+
+
+@router.post(
+    "/ai/allergy-check",
+    response_model=ResponseEnvelope[AllergyCheckResponse],
+    summary="AI: Check allergy cross-reactivity",
+    description="Predict cross-reactivity risk between known allergies and a new drug.",
+)
+def ai_allergy_check(
+    data: AllergyCheckRequest,
+    user: CurrentUser = Depends(get_current_user),
+):
+    result = ai_service.check_allergy_cross_reactivity(
+        known_allergies=data.known_allergies,
+        new_drug=data.new_drug,
+    )
+    return ResponseEnvelope.ok(data=AllergyCheckResponse(**result))
+
+
+@router.post(
+    "/ai/safety-score",
+    response_model=ResponseEnvelope[SafetyScoreResponse],
+    summary="AI: Score prescription safety",
+    description="Evaluate overall safety of a multi-drug prescription considering "
+                "patient factors, interactions, and contraindications.",
+)
+def ai_safety_score(
+    data: SafetyScoreRequest,
+    user: CurrentUser = Depends(get_current_user),
+):
+    result = ai_service.score_prescription_safety(
+        medications=data.medications,
+        patient=data.patient.model_dump(),
+    )
+    return ResponseEnvelope.ok(data=SafetyScoreResponse(**result))
+
+
+@router.post(
+    "/ai/alternatives",
+    response_model=ResponseEnvelope[AlternativesResponse],
+    summary="AI: Suggest drug alternatives",
+    description="Suggest safer alternative drugs when a drug is contraindicated.",
+)
+def ai_alternatives(
+    data: AlternativesRequest,
+    user: CurrentUser = Depends(get_current_user),
+):
+    result = ai_service.suggest_alternatives(
+        drug=data.drug,
+        reason=data.reason,
+        patient=data.patient.model_dump(),
+    )
+    return ResponseEnvelope.ok(data=AlternativesResponse(alternatives=result))

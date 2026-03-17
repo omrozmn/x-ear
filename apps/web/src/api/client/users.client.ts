@@ -16,7 +16,8 @@ export {
   // TODO: removed from API
   // useGetUserMeImpersonationConsent,
   // getGetUserMeImpersonationConsentQueryKey,
-  useUpdateUserMeImpersonationConsent,
+  // TODO: removed from API
+  // useUpdateUserMeImpersonationConsent,
 } from '@/api/generated/index';
 
 export type { } from '@/api/generated/schemas';

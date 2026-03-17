@@ -6,7 +6,8 @@ import { Button, Card, DataTable, Input, useToastHelpers } from '@x-ear/ui-web';
 
 import { useIsMobile } from '@/hooks/useBreakpoint';
 import { useAddUtsSerialToInventory, useUtsConfig, useUtsSerialStates } from '@/hooks/uts/useUts';
-import { useSyncUtsAlmaBekleyenler } from '@/api/client/uts.client';
+// TODO: useSyncUtsAlmaBekleyenler removed from API
+// import { useSyncUtsAlmaBekleyenler } from '@/api/client/uts.client';
 import type { UtsSerialState } from '@/services/uts/uts.service';
 import { DesktopPageHeader } from '@/components/layout/DesktopPageHeader';
 
@@ -67,11 +68,11 @@ export function UtsWorkbench() {
     search: search.trim() || undefined,
   });
 
-  const syncAlmaBekleyenler = useSyncUtsAlmaBekleyenler({
-    mutation: {
-      onSuccess: () => qc.invalidateQueries({ queryKey: ['uts', 'serial-states'] }),
-    },
-  });
+  // TODO: useSyncUtsAlmaBekleyenler removed from API - stubbed out
+  const syncAlmaBekleyenler = {
+    mutate: () => { qc.invalidateQueries({ queryKey: ['uts', 'serial-states'] }); },
+    isPending: false,
+  };
 
   const rawItems = useMemo(() => query.data?.items || [], [query.data?.items]);
   const items = rawItems;

@@ -30,6 +30,7 @@ from schemas import (
     DashboardStats,
 )
 from service import EmergencyService
+from ai_service import predict_sepsis_risk, calculate_qsofa, calculate_news2
 
 logger = logging.getLogger(__name__)
 
@@ -372,3 +373,58 @@ def get_dashboard(
 ):
     stats = EmergencyService.get_dashboard_stats(db, user.tenant_id)
     return ResponseEnvelope.ok(data=stats)
+
+
+# --- AI Sepsis Early Warning --------------------------------------------------
+
+
+@router.post(
+    "/ai/sepsis-risk",
+    summary="Predict sepsis risk from vital signs using AI",
+    tags=["HBYS - Emergency AI"],
+)
+def ai_sepsis_risk(body: dict):
+    """
+    Accepts a JSON body with vital sign keys (heart_rate, systolic_bp, etc.)
+    and returns an AI-powered sepsis risk prediction.
+    """
+    try:
+        result = predict_sepsis_risk(body)
+        return ResponseEnvelope.ok(data=result)
+    except Exception as e:
+        logger.exception("AI sepsis risk prediction failed")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/ai/qsofa",
+    summary="Calculate qSOFA score",
+    tags=["HBYS - Emergency AI"],
+)
+def ai_qsofa(body: dict):
+    """
+    Calculate quick SOFA score from respiratory_rate, systolic_bp, gcs_score.
+    """
+    try:
+        result = calculate_qsofa(body)
+        return ResponseEnvelope.ok(data=result)
+    except Exception as e:
+        logger.exception("qSOFA calculation failed")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post(
+    "/ai/news2",
+    summary="Calculate NEWS2 score",
+    tags=["HBYS - Emergency AI"],
+)
+def ai_news2(body: dict):
+    """
+    Calculate National Early Warning Score 2 from vital signs.
+    """
+    try:
+        result = calculate_news2(body)
+        return ResponseEnvelope.ok(data=result)
+    except Exception as e:
+        logger.exception("NEWS2 calculation failed")
+        raise HTTPException(status_code=500, detail=str(e))
