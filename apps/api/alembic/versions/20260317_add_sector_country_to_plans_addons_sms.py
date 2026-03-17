@@ -12,7 +12,7 @@ from sqlalchemy import inspect
 revision = "20260317_010000"
 down_revision = "20260312_180500"
 branch_labels = None
-depends_on = None
+depends_on = "a1b2c3d4e5f6"  # requires countries table from 20260316_add_countries
 
 
 def upgrade():
@@ -27,8 +27,10 @@ def upgrade():
         op.add_column("plans", sa.Column("sector", sa.String(30), nullable=True))
 
     if "country_code" not in plans_cols:
-        if dialect == "sqlite":
+        countries_exists = "countries" in inspector.get_table_names()
+        if dialect == "sqlite" or not countries_exists:
             # SQLite does not support ALTER ADD with FK constraint
+            # Also skip FK if countries table doesn't exist yet
             op.add_column("plans", sa.Column("country_code", sa.String(2), nullable=True))
         else:
             op.add_column(
@@ -43,7 +45,7 @@ def upgrade():
         op.add_column("addons", sa.Column("sector", sa.String(30), nullable=True))
 
     if "country_code" not in addons_cols:
-        if dialect == "sqlite":
+        if dialect == "sqlite" or not countries_exists:
             op.add_column("addons", sa.Column("country_code", sa.String(2), nullable=True))
         else:
             op.add_column(
@@ -55,7 +57,7 @@ def upgrade():
     sms_cols = {c["name"] for c in inspector.get_columns("sms_packages")}
 
     if "country_code" not in sms_cols:
-        if dialect == "sqlite":
+        if dialect == "sqlite" or not countries_exists:
             op.add_column("sms_packages", sa.Column("country_code", sa.String(2), nullable=True))
         else:
             op.add_column(
