@@ -1,4 +1,10 @@
 const api = require('../../api');
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
 class AdminRolesModule {
     constructor(containerSelector){
         this.container = document.querySelector(containerSelector);
@@ -109,7 +115,7 @@ class AdminRolesModule {
             if (!res.ok) { list.innerHTML = 'Başarısız'; return; }
             const body = await res.json();
             const roles = body.data || [];
-            list.innerHTML = roles.map(r=>`<div class="p-2 border-b flex items-center justify-between"><div>${r.name}</div><div><button data-role-detail="${r.id}" class="btn btn-sm">Detaylar</button></div></div>`).join('');
+            list.innerHTML = roles.map(r=>`<div class="p-2 border-b flex items-center justify-between"><div>${escapeHtml(r.name)}</div><div><button data-role-detail="${escapeHtml(r.id)}" class="btn btn-sm">Detaylar</button></div></div>`).join('');
         } catch (error) {
             console.error('Error loading roles:', error);
             list.innerHTML = 'Yükleme hatası';
@@ -134,7 +140,7 @@ class AdminRolesModule {
             const role = (rolesData.data || []).find(x => x.id === roleId);
             if (!role){ permList.innerHTML = 'Bulunamadı'; return; }
             
-            permList.innerHTML = (role.permissions || []).map(p=>`<div class="flex items-center justify-between p-2 border-b"><div>${p.name}</div><div><button data-remove-perm="${roleId}:::${p.id}" class="btn btn-sm">Kaldır</button></div></div>`).join('');
+            permList.innerHTML = (role.permissions || []).map(p=>`<div class="flex items-center justify-between p-2 border-b"><div>${escapeHtml(p.name)}</div><div><button data-remove-perm="${escapeHtml(roleId)}:::${escapeHtml(p.id)}" class="btn btn-sm">Kaldır</button></div></div>`).join('');
             
             // bind remove
             permList.querySelectorAll('[data-remove-perm]').forEach(btn => btn.addEventListener('click', async (e)=>{

@@ -54,7 +54,7 @@ async def get_stats(
         })
     except Exception as e:
         logger.error(f"Get BirFatura stats error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/invoices", operation_id="listAdminBirfaturaInvoices", response_model=ResponseEnvelope[BirFaturaInvoicesResponse])
 async def get_invoices(
@@ -95,7 +95,7 @@ async def get_invoices(
         })
     except Exception as e:
         logger.error(f"Get BirFatura invoices error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/logs", operation_id="listAdminBirfaturaLogs", response_model=ResponseEnvelope[BirFaturaLogsResponse])
 async def get_logs(
@@ -128,7 +128,7 @@ async def get_logs(
         })
     except Exception as e:
         logger.error(f"Get BirFatura logs error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/sync/{tenant_id}", operation_id="createAdminBirfaturaSync", response_model=ResponseEnvelope[InvoiceSyncResponse])
@@ -155,7 +155,7 @@ async def admin_sync_invoices(
         ))
     except Exception as e:
         logger.error(f"Admin sync error for tenant {tenant_id}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/backfill/{tenant_id}", operation_id="createAdminBirfaturaBackfill")
@@ -178,4 +178,4 @@ async def admin_backfill_invoices(
         })
     except Exception as e:
         logger.error(f"Admin backfill error for tenant {tenant_id}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

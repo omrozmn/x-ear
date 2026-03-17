@@ -412,7 +412,7 @@ class HeaderWidget {
                 const adminLink = document.getElementById('adminPanelLink');
                 
                 // Try the backend config endpoint directly since frontend proxy doesn't exist
-                const configEndpoint = 'http://localhost:5003/api/config';
+                const configEndpoint = (window.__API_BASE_URL__ || 'http://localhost:5003') + '/api/config';
                 
                 let adminUrl = '/admin-panel/';
                 let configFound = false;

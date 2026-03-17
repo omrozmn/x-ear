@@ -349,8 +349,10 @@ export const useAuthStore = create<AuthStore>()(
           }
         } catch (err: unknown) {
           const error = asApiError(err);
-          console.log('=== LOGIN ERROR ===');
-          console.error('Login error:', error);
+          if (import.meta.env.DEV) {
+            console.log('=== LOGIN ERROR ===');
+            console.error('Login error:', error);
+          }
 
           let errorMessage = 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.';
 
@@ -370,7 +372,9 @@ export const useAuthStore = create<AuthStore>()(
             errorMessage = 'Bağlantı hatası. İnternet bağlantınızı kontrol edin.';
           }
 
-          console.log('Setting error message:', errorMessage);
+          if (import.meta.env.DEV) {
+            console.log('Setting error message:', errorMessage);
+          }
 
           // Reset authentication state on error AND preserve error message
           set({
@@ -493,37 +497,48 @@ export const useAuthStore = create<AuthStore>()(
           setLoading(true);
           setError(null);
 
-          console.log('=== FORGOT PASSWORD DEBUG ===');
-          console.log('Phone:', phone);
-          console.log('Making request to:', '/api/auth/forgot-password');
+          if (import.meta.env.DEV) {
+            console.log('=== FORGOT PASSWORD DEBUG ===');
+            console.log('Phone:', phone);
+            console.log('Making request to:', '/api/auth/forgot-password');
+          }
 
           const responseEnvelope = await forgotPasswordApi({
             identifier: phone,
-            captchaToken: 'dummy' // TODO: Implement proper captcha
           });
 
-          console.log('Response received:', responseEnvelope);
+          if (import.meta.env.DEV) {
+            console.log('Response received:', responseEnvelope);
+          }
 
           if (responseEnvelope?.success) {
             // OTP sent successfully - no error, function completes successfully
-            console.log('OTP sent successfully');
+            if (import.meta.env.DEV) {
+              console.log('OTP sent successfully');
+            }
           } else {
-            console.log('Response not successful, throwing error');
+            if (import.meta.env.DEV) {
+              console.log('Response not successful, throwing error');
+            }
             throw new Error(typeof responseEnvelope?.error === 'string' ? responseEnvelope.error : 'OTP gönderilemedi');
           }
         } catch (err: unknown) {
           const error = asApiError(err);
-          console.log('=== FORGOT PASSWORD ERROR ===');
-          console.error('Forgot password error:', error);
-          console.error('Error response:', error.response);
-          console.error('Error status:', error.response?.status);
-          console.error('Error data:', error.response?.data);
+          if (import.meta.env.DEV) {
+            console.log('=== FORGOT PASSWORD ERROR ===');
+            console.error('Forgot password error:', error);
+            console.error('Error response:', error.response);
+            console.error('Error status:', error.response?.status);
+            console.error('Error data:', error.response?.data);
+          }
 
           let errorMessage = 'OTP gönderilemedi';
 
           if (error.response?.status === 404) {
             errorMessage = 'Bu telefon numarasına kayıtlı kullanıcı bulunamadı';
-            console.log('404 error detected, message:', errorMessage);
+            if (import.meta.env.DEV) {
+              console.log('404 error detected, message:', errorMessage);
+            }
           } else if (error.response?.data?.error) {
             // Translate common backend errors
             const backendError = error.response.data.error;
@@ -532,13 +547,19 @@ export const useAuthStore = create<AuthStore>()(
             } else {
               errorMessage = backendError;
             }
-            console.log('Backend error message:', errorMessage);
+            if (import.meta.env.DEV) {
+              console.log('Backend error message:', errorMessage);
+            }
           } else if (error.message) {
             errorMessage = error.message;
-            console.log('Generic error message:', errorMessage);
+            if (import.meta.env.DEV) {
+              console.log('Generic error message:', errorMessage);
+            }
           }
 
-          console.log('Final error message:', errorMessage);
+          if (import.meta.env.DEV) {
+            console.log('Final error message:', errorMessage);
+          }
           setError(errorMessage);
           throw new Error(errorMessage);
         } finally {
@@ -701,12 +722,14 @@ export const useAuthStore = create<AuthStore>()(
         const storedToken = tokenManager.accessToken;
         const storedRefreshToken = tokenManager.createAuthRefresh;
 
-        console.log('[initializeAuth] TokenManager state:', {
-          hasAccessToken: !!storedToken,
-          hasRefreshToken: !!storedRefreshToken,
-          isExpired: tokenManager.isAccessTokenExpired(),
-          ttl: tokenManager.getAccessTokenTTL()
-        });
+        if (import.meta.env.DEV) {
+          console.log('[initializeAuth] TokenManager state:', {
+            hasAccessToken: !!storedToken,
+            hasRefreshToken: !!storedRefreshToken,
+            isExpired: tokenManager.isAccessTokenExpired(),
+            ttl: tokenManager.getAccessTokenTTL()
+          });
+        }
 
         if (storedToken && !tokenManager.isAccessTokenExpired()) {
           try {
@@ -728,7 +751,9 @@ export const useAuthStore = create<AuthStore>()(
               isPhoneVerified?: boolean;
             }>(rawResponse);
 
-            console.log('[initializeAuth] API response:', rawResponse);
+            if (import.meta.env.DEV) {
+              console.log('[initializeAuth] API response:', rawResponse);
+            }
 
             if (userData && (userData.id || userData.email)) {
               // Get impersonation status from TokenManager
@@ -771,7 +796,9 @@ export const useAuthStore = create<AuthStore>()(
                 }
               }
 
-              console.log('[initializeAuth] Transformed user:', transformedUser, { isAdmin });
+              if (import.meta.env.DEV) {
+                console.log('[initializeAuth] Transformed user:', transformedUser, { isAdmin });
+              }
 
               set({
                 user: transformedUser,
@@ -792,7 +819,9 @@ export const useAuthStore = create<AuthStore>()(
                 } catch (e) { /* ignore */ }
               }
 
-              console.log('Auth state restored successfully with user:', transformedUser);
+              if (import.meta.env.DEV) {
+                console.log('Auth state restored successfully with user:', transformedUser);
+              }
               return;
             }
           } catch (err) {
@@ -804,7 +833,9 @@ export const useAuthStore = create<AuthStore>()(
           }
         } else if (storedToken && tokenManager.isAccessTokenExpired() && storedRefreshToken) {
           // Token expired but we have refresh token - try to refresh
-          console.log('[initializeAuth] Token expired, attempting refresh...');
+          if (import.meta.env.DEV) {
+            console.log('[initializeAuth] Token expired, attempting refresh...');
+          }
           try {
             await get().refreshAuth();
             // If refresh succeeded, retry initialization

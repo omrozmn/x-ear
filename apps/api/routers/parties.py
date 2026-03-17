@@ -139,7 +139,7 @@ def list_parties(
             f.write(f"Error: {str(e)}\n")
             f.write(traceback.format_exc())
         print(f"CRITICAL 500 ERROR IN LIST PARTIES: {e}", flush=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 # ... imports ...
 
 @router.post("/parties", operation_id="createParties", response_model=ResponseEnvelope[PartyRead], status_code=201)
@@ -199,7 +199,7 @@ def create_party(
         # Service might raise HTTPException or others, safe to re-raise or wrap
         if isinstance(e, HTTPException):
             raise e
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/parties/export", operation_id="listPartyExport")
 def export_parties(
@@ -385,7 +385,7 @@ def update_party(
         logger.error(f"Update patient error: {e}")
         if isinstance(e, HTTPException):
             raise e
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.delete("/parties/{party_id}", operation_id="deleteParty")
 def delete_party(
@@ -426,7 +426,7 @@ def delete_party(
         logger.error(f"Delete patient error: {e}")
         if isinstance(e, HTTPException):
             raise e
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/parties/bulk-upload", operation_id="createPartyBulkUpload", response_model=ResponseEnvelope[BulkUploadResponse])
@@ -496,7 +496,7 @@ async def bulk_upload_parties(
                         rows.append(obj)
             except Exception as e:
                 logger.error(f"XLSX parse error: {e}")
-                raise HTTPException(status_code=400, detail=f"Failed to parse XLSX: {str(e)}")
+                raise HTTPException(status_code=400, detail="XLSX parse error")
         else:
             # CSV assumption
             try:
@@ -524,7 +524,7 @@ async def bulk_upload_parties(
                 
             except Exception as e:
                 logger.error(f"CSV parse error: {e}")
-                raise HTTPException(status_code=400, detail=f"Failed to parse CSV: {str(e)}")
+                raise HTTPException(status_code=400, detail="CSV parse error")
 
         # Process Rows
         created = 0
@@ -743,7 +743,7 @@ async def bulk_upload_parties(
     except Exception as e:
         db.rollback()
         logger.error(f"Bulk upload patient error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 
@@ -829,7 +829,7 @@ async def bulk_update_parties(
         raise
     except Exception as e:
         logger.error(f"Bulk update error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/parties/bulk-email", operation_id="bulkEmailParties", response_model=ResponseEnvelope[BulkEmailResponse])
@@ -906,4 +906,4 @@ async def bulk_email_parties(
         raise
     except Exception as e:
         logger.error(f"Bulk email error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

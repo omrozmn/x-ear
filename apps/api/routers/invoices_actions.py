@@ -129,7 +129,7 @@ async def issue_invoice(
             invoice.edocument_status = "failed"
             invoice.remote_message = str(e)
             db.commit()
-            raise HTTPException(status_code=502, detail=f"Birfatura Integration Error: {str(e)}")
+            raise HTTPException(status_code=502, detail="Integration error")
         
         try:
             log = ActivityLog(
@@ -152,7 +152,7 @@ async def issue_invoice(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/{invoice_id}/copy", operation_id="createInvoiceCopy", response_model=ResponseEnvelope[InvoiceRead])
 async def copy_invoice(
@@ -186,7 +186,7 @@ async def copy_invoice(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/{invoice_id}/copy-cancel", operation_id="createInvoiceCopyCancel", response_model=ResponseEnvelope[InvoiceCopyCancelResponse])
 async def copy_invoice_cancel(
@@ -230,7 +230,7 @@ async def copy_invoice_cancel(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/{invoice_id}/pdf", operation_id="listInvoicePdf")
 async def serve_invoice_pdf(
@@ -303,7 +303,7 @@ async def serve_invoice_pdf(
         raise
     except Exception as e:
         logger.error(f"PDF generation error: {e}")
-        raise HTTPException(status_code=500, detail=f"PDF generation failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/{invoice_id}/shipping-pdf", operation_id="listInvoiceShippingPdf")
 async def serve_shipping_pdf(invoice_id: int, db: Session = Depends(get_db)):
@@ -317,4 +317,4 @@ async def serve_shipping_pdf(invoice_id: int, db: Session = Depends(get_db)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

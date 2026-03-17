@@ -77,7 +77,7 @@ def get_timeline(
         
     except Exception as e:
         logger.error(f"Error getting timeline: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/parties/{party_id}/timeline", operation_id="listPartyTimeline", response_model=ResponseEnvelope[TimelineListResponse])
 def get_party_timeline(
@@ -283,7 +283,7 @@ def get_party_timeline(
         raise
     except Exception as e:
         logger.error(f"Error getting patient timeline: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/parties/{party_id}/timeline", operation_id="createPartyTimeline", status_code=201, response_model=ResponseEnvelope[TimelineEventRead])
 def add_timeline_event(
@@ -362,7 +362,7 @@ def add_timeline_event(
     except Exception as e:
         db.rollback()
         logger.error(f"Error adding timeline event: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/parties/{party_id}/activities", operation_id="createPartyActivities", status_code=201, response_model=ResponseEnvelope[TimelineEventRead])
 def log_party_activity(
@@ -417,4 +417,4 @@ def delete_timeline_event(
     except Exception as e:
         db.rollback()
         logger.error(f"Error deleting timeline event: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

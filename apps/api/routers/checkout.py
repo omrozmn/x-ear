@@ -134,7 +134,7 @@ async def create_checkout_session(data: CheckoutSessionCreate, request: Request,
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/confirm", operation_id="createCheckoutConfirm", response_model=ResponseEnvelope[PaymentConfirmResponse])
 async def confirm_payment(data: PaymentConfirmRequest, request: Request, db: Session = Depends(get_db)):
@@ -190,4 +190,4 @@ async def confirm_payment(data: PaymentConfirmRequest, request: Request, db: Ses
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

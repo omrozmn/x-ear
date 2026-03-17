@@ -851,7 +851,7 @@ def create_sale_payment_plan(
     except Exception as e:
         db.rollback()
         logger.error(f"Create payment plan error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/sales/{sale_id}/installments/{installment_id}/pay", operation_id="createSaleInstallmentPay")
 def pay_installment(
@@ -1839,7 +1839,7 @@ def recalc_sales(
         db.commit()
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Commit failed: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
         
     return ResponseEnvelope(
         data=SaleRecalcResponse(

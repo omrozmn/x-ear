@@ -484,7 +484,9 @@ class TokenManager {
         this.LEGACY_ACCESS_KEYS.forEach(key => {
           if (localStorage.getItem(key)) {
             localStorage.removeItem(key);
-            console.log(`[TokenManager] Cleaned up legacy key: ${key}`);
+            if (import.meta.env.DEV) {
+              console.log(`[TokenManager] Cleaned up legacy key: ${key}`);
+            }
           }
         });
       }
@@ -493,7 +495,9 @@ class TokenManager {
         this.LEGACY_REFRESH_KEYS.forEach(key => {
           if (localStorage.getItem(key)) {
             localStorage.removeItem(key);
-            console.log(`[TokenManager] Cleaned up legacy key: ${key}`);
+            if (import.meta.env.DEV) {
+              console.log(`[TokenManager] Cleaned up legacy key: ${key}`);
+            }
           }
         });
       }

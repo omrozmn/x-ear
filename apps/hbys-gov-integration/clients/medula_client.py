@@ -29,9 +29,9 @@ def _build_soap_envelope(operation: str, body_xml: str) -> str:
     xmlns:soapenv="{SOAP_NS}"
     xmlns:has="{MEDULA_NS}">
     <soapenv:Header>
-        <has:kullaniciAdi>{MEDULA_USERNAME}</has:kullaniciAdi>
-        <has:sifre>{MEDULA_PASSWORD}</has:sifre>
-        <has:tesisKodu>{MEDULA_FACILITY_CODE}</has:tesisKodu>
+        <has:kullaniciAdi>{xml_escape(MEDULA_USERNAME)}</has:kullaniciAdi>
+        <has:sifre>{xml_escape(MEDULA_PASSWORD)}</has:sifre>
+        <has:tesisKodu>{xml_escape(MEDULA_FACILITY_CODE)}</has:tesisKodu>
     </soapenv:Header>
     <soapenv:Body>
         <has:{operation}>
@@ -94,9 +94,9 @@ class MedulaClient:
         In production, zeep would handle WSDL discovery and call automatically.
         """
         body_xml = f"""
-            <has:kullaniciAdi>{MEDULA_USERNAME}</has:kullaniciAdi>
-            <has:sifre>{MEDULA_PASSWORD}</has:sifre>
-            <has:tesisKodu>{MEDULA_FACILITY_CODE}</has:tesisKodu>
+            <has:kullaniciAdi>{xml_escape(MEDULA_USERNAME)}</has:kullaniciAdi>
+            <has:sifre>{xml_escape(MEDULA_PASSWORD)}</has:sifre>
+            <has:tesisKodu>{xml_escape(MEDULA_FACILITY_CODE)}</has:tesisKodu>
         """
         envelope = _build_soap_envelope("login", body_xml)
         logger.info("Medula login request built for facility %s", MEDULA_FACILITY_CODE)
@@ -234,22 +234,22 @@ class MedulaClient:
             for tani in tani_listesi:
                 tani_xml += f"""
                 <has:tani>
-                    <has:taniKodu>{tani.get('kod', '')}</has:taniKodu>
-                    <has:taniTipi>{tani.get('tip', 'A')}</has:taniTipi>
+                    <has:taniKodu>{xml_escape(tani.get('kod', ''))}</has:taniKodu>
+                    <has:taniTipi>{xml_escape(tani.get('tip', 'A'))}</has:taniTipi>
                 </has:tani>"""
 
         body_xml = f"""
-            <has:takipNo>{takip_no}</has:takipNo>
+            <has:takipNo>{xml_escape(takip_no)}</has:takipNo>
             <has:islemListesi>
                 <has:islem>
-                    <has:sutKodu>{sut_kodu}</has:sutKodu>
-                    <has:adet>{adet}</has:adet>
-                    <has:tarih>{tarih}</has:tarih>
-                    {"<has:drTcKimlikNo>" + doktor_tc + "</has:drTcKimlikNo>" if doktor_tc else ""}
+                    <has:sutKodu>{xml_escape(sut_kodu)}</has:sutKodu>
+                    <has:adet>{int(adet)}</has:adet>
+                    <has:tarih>{xml_escape(tarih)}</has:tarih>
+                    {"<has:drTcKimlikNo>" + xml_escape(doktor_tc) + "</has:drTcKimlikNo>" if doktor_tc else ""}
                 </has:islem>
             </has:islemListesi>
             {f"<has:taniListesi>{tani_xml}</has:taniListesi>" if tani_xml else ""}
-            <has:tesisKodu>{MEDULA_FACILITY_CODE}</has:tesisKodu>
+            <has:tesisKodu>{xml_escape(MEDULA_FACILITY_CODE)}</has:tesisKodu>
         """
         envelope = _build_soap_envelope("hizmetKaydet", body_xml)
         logger.info("Medula hizmetKaydet SUT=%s for takip: %s", sut_kodu, takip_no)
@@ -277,14 +277,14 @@ class MedulaClient:
     ) -> Dict[str, Any]:
         """Register invoice information with Medula for reimbursement."""
         body_xml = f"""
-            <has:takipNo>{takip_no}</has:takipNo>
+            <has:takipNo>{xml_escape(takip_no)}</has:takipNo>
             <has:faturaBilgisi>
-                <has:faturaNo>{fatura_no}</has:faturaNo>
-                <has:faturaTarihi>{fatura_tarihi}</has:faturaTarihi>
-                <has:toplamTutar>{toplam_tutar:.2f}</has:toplamTutar>
-                <has:kdvTutari>{kdv_tutari:.2f}</has:kdvTutari>
+                <has:faturaNo>{xml_escape(fatura_no)}</has:faturaNo>
+                <has:faturaTarihi>{xml_escape(fatura_tarihi)}</has:faturaTarihi>
+                <has:toplamTutar>{float(toplam_tutar):.2f}</has:toplamTutar>
+                <has:kdvTutari>{float(kdv_tutari):.2f}</has:kdvTutari>
             </has:faturaBilgisi>
-            <has:tesisKodu>{MEDULA_FACILITY_CODE}</has:tesisKodu>
+            <has:tesisKodu>{xml_escape(MEDULA_FACILITY_CODE)}</has:tesisKodu>
         """
         envelope = _build_soap_envelope("faturaBilgisiKaydet", body_xml)
         logger.info("Medula faturaBilgisiKaydet invoice=%s for takip: %s", fatura_no, takip_no)

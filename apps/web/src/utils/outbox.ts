@@ -456,7 +456,7 @@ export class IndexedDBOutbox {
     const { method, endpoint, data, headers = {} } = operation;
 
     // Resolve relative endpoints against the correct API base URL
-    const API_BASE_URL = 'http://localhost:5003';
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5003';
     const resolvedEndpoint = endpoint.startsWith('http')
       ? endpoint
       : `${API_BASE_URL}${endpoint}`;

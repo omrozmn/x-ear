@@ -178,7 +178,7 @@ def get_suppliers(
         )
     except Exception as e:
         logger.error(f"Get suppliers error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/suppliers/search", operation_id="listSupplierSearch", response_model=ResponseEnvelope[SupplierSearchResponse])
 def search_suppliers(
@@ -212,7 +212,7 @@ def search_suppliers(
         ))
     except Exception as e:
         logger.error(f"Search suppliers error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/suppliers/stats", operation_id="listSupplierStats", response_model=ResponseEnvelope[SupplierStats])
 def get_supplier_stats(
@@ -257,7 +257,7 @@ def get_supplier_stats(
         )
     except Exception as e:
         logger.error(f"Get supplier stats error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/suppliers/{supplier_id}", operation_id="getSupplier", response_model=ResponseEnvelope[SupplierRead])
 def get_supplier(
@@ -299,7 +299,7 @@ def get_supplier(
         raise
     except Exception as e:
         logger.error(f"Get supplier error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/suppliers", operation_id="createSuppliers", status_code=201, response_model=ResponseEnvelope[SupplierRead])
 def create_supplier(
@@ -368,7 +368,7 @@ def create_supplier(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Create supplier error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/suppliers/{supplier_id}", operation_id="updateSupplier", response_model=ResponseEnvelope[SupplierRead])
 def update_supplier(
@@ -423,7 +423,7 @@ def update_supplier(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Update supplier error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.delete("/suppliers/{supplier_id}", operation_id="deleteSupplier", response_model=ResponseEnvelope[None])
 def delete_supplier(
@@ -456,7 +456,7 @@ def delete_supplier(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Delete supplier error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/suppliers/bulk-upload", operation_id="createSupplierBulkUpload", response_model=ResponseEnvelope[Dict[str, Any]])
@@ -505,7 +505,7 @@ async def bulk_upload_suppliers(
                     if any(v not in (None, '') for v in obj.values()):
                         rows.append(obj)
             except Exception as e:
-                raise HTTPException(status_code=400, detail=f"XLSX parse error: {e}")
+                raise HTTPException(status_code=400, detail="XLSX parse error")
         else:
             try:
                 try: text_content = content.decode('utf-8-sig')
@@ -515,7 +515,7 @@ async def bulk_upload_suppliers(
                 rows = [r for r in csv.DictReader(io.StringIO(text_content), delimiter=delimiter)]
                 rows = [{k: _sanitize_cell(v) for k, v in r.items()} for r in rows]
             except Exception as e:
-                raise HTTPException(status_code=400, detail=f"CSV parse error: {e}")
+                raise HTTPException(status_code=400, detail="CSV parse error")
 
         created = 0
         updated = 0
@@ -634,4 +634,4 @@ async def bulk_upload_suppliers(
     except Exception as e:
         db.rollback()
         logger.error(f"Bulk supplier upload error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

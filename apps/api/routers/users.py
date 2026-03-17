@@ -134,7 +134,7 @@ def create_user(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
     
     # Validate username is provided
     if not user_in.username:

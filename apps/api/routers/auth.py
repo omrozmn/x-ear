@@ -184,7 +184,7 @@ def lookup_phone(
         raise
     except Exception as e:
         logger.error(f"Lookup phone error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/auth/forgot-password", operation_id="createAuthForgotPassword", response_model=ResponseEnvelope[MessageResponse])
 def forgot_password(
@@ -235,7 +235,7 @@ def forgot_password(
         raise
     except Exception as e:
         logger.error(f"Forgot password error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/auth/verify-otp", operation_id="createAuthVerifyOtp", response_model=ResponseEnvelope[VerifyOtpResponse])
 def verify_otp(
@@ -353,7 +353,7 @@ def verify_otp(
         raise
     except Exception as e:
         logger.error(f"Verify OTP error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/auth/reset-password", operation_id="createAuthResetPassword", response_model=ResponseEnvelope[ResetPasswordResponse])
 async def reset_password(
@@ -630,7 +630,7 @@ def login(
         raise
     except Exception as e:
         logger.error(f"Login error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/auth/refresh", operation_id="createAuthRefresh", response_model=ResponseEnvelope[RefreshTokenResponse])
 def refresh_token(
@@ -757,7 +757,7 @@ def refresh_token(
         raise
     except Exception as e:
         logger.error(f"Token refresh error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/auth/me", operation_id="getAuthMe", response_model=ResponseEnvelope[Union[AuthUserRead, AuthAdminUserRead]])
 def get_current_user(
@@ -789,7 +789,7 @@ def get_current_user(
         raise
     except Exception as e:
         logger.error(f"Get current user error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/auth/send-verification-otp", operation_id="createAuthSendVerificationOtp", response_model=ResponseEnvelope[MessageResponse])
 def send_verification_otp(
@@ -862,7 +862,7 @@ def send_verification_otp(
         raise
     except Exception as e:
         logger.error(f"Send OTP error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/auth/set-password", operation_id="createAuthSetPassword", response_model=ResponseEnvelope[MessageResponse])
 def set_password(
@@ -892,7 +892,7 @@ def set_password(
         raise
     except Exception as e:
         logger.error(f"Set password error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 if os.getenv('ENVIRONMENT', 'production').lower() in ('development', 'test', 'testing'):
 

@@ -102,7 +102,7 @@ def get_pricing_settings(
         return ResponseEnvelope(data=PricingSettingsResponse.model_validate(pricing_settings))
     except Exception as e:
         logger.error(f"Get pricing settings error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/settings", operation_id="listSettings", response_model=ResponseEnvelope[SystemSettingsResponse])
 def get_settings(
@@ -156,7 +156,7 @@ def get_settings(
         
     except Exception as e:
         logger.error(f"Get settings error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/settings", operation_id="updateSettings", response_model=ResponseEnvelope[SystemSettingsResponse])
 def update_settings(
@@ -206,7 +206,7 @@ def update_settings(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Update settings error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # --- Party Segments & Acquisition Types ---
@@ -269,7 +269,7 @@ def get_party_segments(
         
     except Exception as e:
         logger.error(f"Get party segments error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/settings/party-segments", operation_id="updatePartySegments", response_model=ResponseEnvelope[PartySegmentsResponse])
 def update_party_segments(
@@ -304,7 +304,7 @@ def update_party_segments(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Update party segments error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/settings/party-segments/usage/{segment_type}/{value}", operation_id="getSegmentUsage", response_model=ResponseEnvelope[Dict[str, Any]])
@@ -340,7 +340,7 @@ def get_segment_usage(
         
     except Exception as e:
         logger.error(f"Get segment usage error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # --- Automation Settings ---
@@ -452,7 +452,7 @@ def get_anamnesis_questions(
         return ResponseEnvelope(data={"questions": [], "useDefaults": True})
     except Exception as e:
         logger.error(f"Get anamnesis questions error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/settings/anamnesis-questions", operation_id="updateAnamnesisQuestions")
@@ -474,7 +474,7 @@ def update_anamnesis_questions(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Update anamnesis questions error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/settings/anamnesis-questions/defaults", operation_id="getAnamnesisDefaults")

@@ -13,6 +13,11 @@
 
 // X-Ear CRM Application JavaScript
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
 // Global state management
 const AppState = {
   currentUser: null,
@@ -572,12 +577,12 @@ const KeyboardShortcuts = {
 
     container.innerHTML = results.map(result => `
       <div class="search-result p-3 hover:bg-gray-50 cursor-pointer border-b"
-           onclick="window.location.href='${result.url}'; this.closest('.modal-overlay').remove();">
+           onclick="window.location.href='${escapeHtml(result.url)}'; this.closest('.modal-overlay').remove();">
         <div class="flex items-center">
           <span class="result-type badge mr-3">${result.type === 'patient' ? '👤' : '📦'}</span>
           <div>
-            <div class="font-semibold">${result.title}</div>
-            <div class="text-sm text-gray-600">${result.subtitle}</div>
+            <div class="font-semibold">${escapeHtml(result.title)}</div>
+            <div class="text-sm text-gray-600">${escapeHtml(result.subtitle)}</div>
           </div>
         </div>
       </div>
@@ -1031,7 +1036,7 @@ const UI = {
     modal.className = 'modal-overlay';
     modal.innerHTML = `
       <div class="modal-content p-6">
-        ${title ? `<h3 class="text-lg font-semibold mb-4">${title}</h3>` : ''}
+        ${title ? `<h3 class="text-lg font-semibold mb-4">${escapeHtml(title)}</h3>` : ''}
         <div class="modal-body">${content}</div>
         <div class="flex justify-end mt-6 space-x-3">
           <button class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">İptal</button>
@@ -1058,14 +1063,14 @@ const UI = {
   // Render patient card
   renderPatientCard(patient) {
     return `
-      <div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" onclick="window.location.href='patient-details.html?id=${patient.id}'">
+      <div class="card p-4 hover:shadow-md transition-shadow cursor-pointer" onclick="window.location.href='patient-details.html?id=${escapeHtml(patient.id)}'">
         <div class="flex items-center justify-between mb-3">
-          <h3 class="font-semibold text-gray-900">${patient.name}</h3>
-          <span class="status-badge status-${patient.status}">${patient.status}</span>
+          <h3 class="font-semibold text-gray-900">${escapeHtml(patient.name)}</h3>
+          <span class="status-badge status-${escapeHtml(patient.status)}">${escapeHtml(patient.status)}</span>
         </div>
         <div class="text-sm text-gray-600 space-y-1">
-          <p><strong>TC:</strong> ${patient.tcNumber}</p>
-          <p><strong>Telefon:</strong> ${patient.phone}</p>
+          <p><strong>TC:</strong> ${escapeHtml(patient.tcNumber)}</p>
+          <p><strong>Telefon:</strong> ${escapeHtml(patient.phone)}</p>
           <p><strong>Son Ziyaret:</strong> ${Utils.formatDate(patient.lastVisit)}</p>
         </div>
       </div>
@@ -1078,13 +1083,13 @@ const UI = {
     return `
       <div class="card p-4 border-l-4 border-blue-500">
         <div class="flex items-center justify-between mb-2">
-          <h4 class="font-semibold">${patient ? patient.name : 'Bilinmeyen Hasta'}</h4>
-          <span class="status-badge status-${appointment.status}">${appointment.status}</span>
+          <h4 class="font-semibold">${patient ? escapeHtml(patient.name) : 'Bilinmeyen Hasta'}</h4>
+          <span class="status-badge status-${escapeHtml(appointment.status)}">${escapeHtml(appointment.status)}</span>
         </div>
         <div class="text-sm text-gray-600">
-          <p><strong>Saat:</strong> ${appointment.time}</p>
-          <p><strong>Klinisyen:</strong> ${appointment.clinician}</p>
-          <p><strong>Tür:</strong> ${appointment.type}</p>
+          <p><strong>Saat:</strong> ${escapeHtml(appointment.time)}</p>
+          <p><strong>Klinisyen:</strong> ${escapeHtml(appointment.clinician)}</p>
+          <p><strong>Tür:</strong> ${escapeHtml(appointment.type)}</p>
         </div>
       </div>
     `;

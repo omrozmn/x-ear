@@ -46,7 +46,7 @@ def list_public_packages(
         
     except Exception as e:
         logger.error(f"List SMS packages error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 # --- Admin Routes ---
 
@@ -89,7 +89,7 @@ def list_admin_packages(
         raise
     except Exception as e:
         logger.error(f"List admin SMS packages error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/admin/sms/packages", operation_id="createAdminSmPackages", status_code=201, response_model=ResponseEnvelope[DetailedSmsPackageRead])
 def create_package(
@@ -121,7 +121,7 @@ def create_package(
     except Exception as e:
         db.rollback()
         logger.error(f"Create SMS package error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/admin/sms/packages/{package_id}", operation_id="updateAdminSmPackage", response_model=ResponseEnvelope[DetailedSmsPackageRead])
 def update_package(
@@ -163,7 +163,7 @@ def update_package(
     except Exception as e:
         db.rollback()
         logger.error(f"Update SMS package error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.delete("/admin/sms/packages/{package_id}", operation_id="deleteAdminSmPackage")
 def delete_package(
@@ -190,4 +190,4 @@ def delete_package(
     except Exception as e:
         db.rollback()
         logger.error(f"Delete SMS package error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

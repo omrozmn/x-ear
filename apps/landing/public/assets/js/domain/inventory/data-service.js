@@ -47,7 +47,7 @@ export const initialInventoryData = [
 export class InventoryDataService {
     constructor() {
         this.storageKey = window.STORAGE_KEYS?.CRM_INVENTORY || 'xear_crm_inventory';
-        this.apiBaseUrl = 'http://localhost:5003/api/inventory';
+        this.apiBaseUrl = (window.__API_BASE_URL__ || 'http://localhost:5003') + '/api/inventory';
         this.useApi = true; // API'yi kullanmayı varsayılan yap
     }
     
@@ -85,7 +85,7 @@ export class InventoryDataService {
                     if (result.success && result.data) {
                         localStorage.setItem(this.storageKey, JSON.stringify(result.data));
                         console.log(`✅ [INVENTORY] Loaded ${result.data.length} items from API (Backend)`);
-                        console.log(`📊 [INVENTORY] Data source: Backend API (http://localhost:5003)`);
+                        console.log(`📊 [INVENTORY] Data source: Backend API (${this.apiBaseUrl})`);
                         return;
                     }
                 }

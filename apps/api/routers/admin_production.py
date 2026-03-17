@@ -30,7 +30,7 @@ async def init_db(
         return ResponseEnvelope(message="Production Orders table initialized")
     except Exception as e:
         logger.error(f"Init DB error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/orders", operation_id="listAdminProductionOrders", response_model=ResponseEnvelope)
 async def get_orders(
@@ -48,7 +48,7 @@ async def get_orders(
 
         return ResponseEnvelope(data=[ProductionOrderRead.model_validate(o).model_dump(by_alias=True) for o in orders])
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/orders/{order_id}/status", operation_id="updateAdminProductionOrderStatus", response_model=ResponseEnvelope)
 async def update_order_status(
@@ -72,4 +72,4 @@ async def update_order_status(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

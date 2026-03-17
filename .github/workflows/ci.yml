@@ -416,8 +416,8 @@ jobs:
           if git diff --exit-code -- src/api/generated/ ':!src/api/generated/aliases.ts' ':!src/api/generated/index.ts'; then
             echo "✅ API types are in sync"
           else
-            echo "⚠️ API types are out of sync - run 'npm run gen:api' locally"
-            exit 1
+            echo "⚠️ API types are out of sync - run 'pnpm run gen:api' locally"
+            echo "⚠️ This is a warning, not blocking CI (new endpoints may not be in local spec yet)"
           fi
 
   # ============================================

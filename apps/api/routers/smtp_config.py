@@ -175,7 +175,7 @@ async def create_or_update_smtp_config(
         logger.exception(f"Error creating/updating SMTP config: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to save SMTP configuration: {str(e)}"
+            detail="Internal server error"
         )
 
 
@@ -259,7 +259,7 @@ async def get_smtp_config(
         logger.exception(f"Error retrieving SMTP config: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to retrieve SMTP configuration: {str(e)}"
+            detail="Internal server error"
         )
 
 
@@ -390,7 +390,7 @@ async def send_test_email(
         logger.exception(f"Error sending test email: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to send test email: {str(e)}"
+            detail="Internal server error"
         )
 
 
@@ -455,5 +455,5 @@ async def get_email_metrics(
         logger.exception(f"Error retrieving email metrics: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to retrieve email metrics: {str(e)}"
+            detail="Internal server error"
         )

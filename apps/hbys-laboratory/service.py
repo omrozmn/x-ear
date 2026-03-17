@@ -214,7 +214,11 @@ def create_lab_order(
         )
         db.add(lab_test)
 
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(order)
     return order
 
@@ -280,7 +284,11 @@ def update_lab_order(
     for field, value in update_data.items():
         setattr(order, field, value)
 
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(order)
     return order
 
@@ -301,7 +309,11 @@ def cancel_lab_order(db: Session, order_id: str, tenant_id: Optional[str] = None
         if test.status in ("pending", "in_progress"):
             test.status = "cancelled"
 
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(order)
     return order
 
@@ -333,7 +345,11 @@ def collect_specimen(
     if data.specimen_type:
         order.specimen_type = data.specimen_type
 
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(order)
     return order
 
@@ -394,7 +410,11 @@ def enter_test_result(
     if order:
         _update_order_status(db, order)
 
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(test)
     return test
 
@@ -427,7 +447,11 @@ def verify_test_result(
     if order:
         _update_order_status(db, order)
 
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(test)
     return test
 
@@ -476,7 +500,11 @@ def create_test_definition(
         **data.model_dump(),
     )
     db.add(definition)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(definition)
     return definition
 
@@ -499,7 +527,11 @@ def update_test_definition(
     for field, value in update_data.items():
         setattr(definition, field, value)
 
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(definition)
     return definition
 

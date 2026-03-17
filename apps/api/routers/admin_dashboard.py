@@ -307,7 +307,7 @@ def get_dashboard_metrics(
         ))
     except Exception as e:
         logger.error(f"Dashboard metrics error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/stats", operation_id="listAdminDashboardStats", response_model=ResponseEnvelope[AdminDashboardStats])
@@ -353,4 +353,4 @@ def get_dashboard_stats(
         ))
     except Exception as e:
         logger.error(f"Dashboard stats error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

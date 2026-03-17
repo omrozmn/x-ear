@@ -2695,7 +2695,7 @@ def repair_form_data(
         db.commit()
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Repair commit failed: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
     msg = f"{repaired} fatura onarıldı, {skipped} atlandı, {errors} hata"
     return ResponseEnvelope(

@@ -41,7 +41,7 @@ def get_addons(
         
     except Exception as e:
         logger.error(f"Error getting addons: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/admin", operation_id="listAddonAdmin", response_model=ResponseEnvelope[List[AddonRead]])
 def get_admin_addons(
@@ -64,7 +64,7 @@ def get_admin_addons(
         raise
     except Exception as e:
         logger.error(f"Error getting admin addons: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("", operation_id="createAddon", status_code=201, response_model=ResponseEnvelope[AddonRead])
 def create_addon(
@@ -106,7 +106,7 @@ def create_addon(
     except Exception as e:
         db.rollback()
         logger.error(f"Error creating addon: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 @router.put("/{addon_id}", operation_id="updateAddon", response_model=ResponseEnvelope[AddonRead])
 def update_addon(
@@ -147,7 +147,7 @@ def update_addon(
     except Exception as e:
         db.rollback()
         logger.error(f"Error updating addon: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 @router.delete("/{addon_id}", operation_id="deleteAddon")
 def delete_addon(
@@ -176,4 +176,4 @@ def delete_addon(
     except Exception as e:
         db.rollback()
         logger.error(f"Error deleting addon: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

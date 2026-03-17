@@ -38,7 +38,7 @@ async def get_patient_replacements(
         )
     except Exception as e:
         logger.error(f"Get patient replacements error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/parties/{party_id}/replacements", operation_id="createPatientReplacements", response_model=ResponseEnvelope[ReplacementRead])
 async def create_patient_replacement(
@@ -81,7 +81,7 @@ async def create_patient_replacement(
     except Exception as e:
         db.rollback()
         logger.error(f"Create replacement error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/replacements/{replacement_id}", operation_id="getReplacement", response_model=ResponseEnvelope[ReplacementRead])
 async def get_replacement(
@@ -175,4 +175,4 @@ async def send_return_invoice_to_gib(
         return {"success": True, "data": result}
     except Exception as e:
         logger.error(f"Send to GIB error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

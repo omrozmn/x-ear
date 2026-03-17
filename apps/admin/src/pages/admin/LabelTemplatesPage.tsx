@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import DOMPurify from 'dompurify';
 import {
   Plus,
   Edit3,
@@ -278,7 +279,7 @@ const LabelTemplatesPage: React.FC = () => {
               {previewLoading ? (
                 <RefreshCw className="w-6 h-6 animate-spin text-gray-400" />
               ) : (
-                <div dangerouslySetInnerHTML={{ __html: previewSvg }} className="max-w-full overflow-auto" />
+                <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(previewSvg, { USE_PROFILES: { svg: true } }) }} className="max-w-full overflow-auto" />
               )}
             </div>
           </div>

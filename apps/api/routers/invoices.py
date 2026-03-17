@@ -76,7 +76,7 @@ def get_invoices(
         )
     except Exception as e:
         logger.error(f"Get invoices error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/invoices/print-queue", operation_id="listInvoicePrintQueue", response_model=ResponseEnvelope[InvoicePrintQueueResponse])
 def get_print_queue(
@@ -118,7 +118,7 @@ def get_print_queue(
         })
     except Exception as e:
         logger.error(f"Get print queue error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/invoices/print-queue", operation_id="createInvoicePrintQueue")
 def add_to_print_queue(
@@ -153,7 +153,7 @@ def add_to_print_queue(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Add to print queue error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/invoices/templates", operation_id="listInvoiceTemplates", response_model=ResponseEnvelope[List[InvoiceTemplate]])
 def get_invoice_templates(
@@ -314,7 +314,7 @@ def batch_generate_invoices(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Batch generate invoices error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/invoices/{invoice_id}", operation_id="getInvoice", response_model=ResponseEnvelope[InvoiceRead])
 def get_invoice(
@@ -406,7 +406,7 @@ def create_invoice(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Create invoice error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/invoices/{invoice_id}", operation_id="updateInvoice", response_model=ResponseEnvelope[InvoiceRead])
 def update_invoice(
@@ -443,7 +443,7 @@ def update_invoice(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Update invoice error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 @router.delete("/invoices/{invoice_id}", operation_id="deleteInvoice", response_model=ResponseEnvelope[None])
 def delete_invoice(
@@ -471,7 +471,7 @@ def delete_invoice(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Delete invoice error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 @router.get("/parties/{party_id}/invoices", operation_id="listPartyInvoices", response_model=ResponseEnvelope[List[InvoiceRead]])
 def get_party_invoices(
@@ -501,7 +501,7 @@ def get_party_invoices(
         raise
     except Exception as e:
         logger.error(f"Get patient invoices error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/invoices/{invoice_id}/send-to-gib", operation_id="createInvoiceSendToGib", response_model=ResponseEnvelope[dict])
 def send_to_gib(
@@ -597,7 +597,7 @@ def send_to_gib(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Send to GIB error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/invoices/bulk-upload", operation_id="createInvoiceBulkUpload", response_model=ResponseEnvelope[BulkUploadResponse])
 async def bulk_upload_invoices(
@@ -647,7 +647,7 @@ async def bulk_upload_invoices(
                     if any(v not in (None, '') for v in obj.values()):
                         rows.append(obj)
             except Exception as e:
-                raise HTTPException(status_code=400, detail=f"XLSX Parsing error: {e}")
+                raise HTTPException(status_code=400, detail="XLSX parse error")
         else:
              try:
                 try: text = content.decode('utf-8-sig')
@@ -666,7 +666,7 @@ async def bulk_upload_invoices(
                 # Sanitize
                 rows = [{k: _sanitize_cell(v) for k, v in r.items()} for r in rows]
              except Exception as e:
-                raise HTTPException(status_code=400, detail=f"CSV Parsing error: {e}")
+                raise HTTPException(status_code=400, detail="CSV parse error")
 
         created = 0
         updated = 0
@@ -811,6 +811,6 @@ async def bulk_upload_invoices(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Bulk invoice upload error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 

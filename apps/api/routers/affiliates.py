@@ -94,7 +94,7 @@ async def check_affiliate(code: str, db: Session = Depends(get_db)):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/register", operation_id="createAffiliateRegister", response_model=ResponseEnvelope[AffiliateRead], status_code=201)
 async def register_affiliate(data: AffiliateCreate, db: Session = Depends(get_db)):
@@ -103,7 +103,7 @@ async def register_affiliate(data: AffiliateCreate, db: Session = Depends(get_db
         affiliate = AffiliateService.create_affiliate(db, data.email, data.password, data.iban)
         return ResponseEnvelope(data=affiliate)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 @router.post("/login", operation_id="createAffiliateLogin")
 async def login_affiliate(data: AffiliateLoginRequest, db: Session = Depends(get_db)):
@@ -125,7 +125,7 @@ async def login_affiliate(data: AffiliateLoginRequest, db: Session = Depends(get
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 @router.get("/me", operation_id="listAffiliateMe", response_model=ResponseEnvelope[AffiliateRead])
 async def get_me(
@@ -151,7 +151,7 @@ async def get_me(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.patch("/{affiliate_id}", operation_id="updateAffiliate", response_model=ResponseEnvelope[AffiliateRead])
 async def update_affiliate_payment(
@@ -167,7 +167,7 @@ async def update_affiliate_payment(
         user = AffiliateService.update_payment_info(db, affiliate_id, data.iban, data.company_name, data.phone)
         return ResponseEnvelope(data=user)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 @router.get("/{affiliate_id}/commissions", operation_id="listAffiliateCommissions", response_model=ResponseEnvelope[List[CommissionRead]])
 async def get_affiliate_commissions(
@@ -183,7 +183,7 @@ async def get_affiliate_commissions(
         commissions = AffiliateService.get_commissions(db, affiliate_id)
         return ResponseEnvelope(data=[{"id": c.id, "event": c.event, "amount": float(c.amount), "status": c.status, "createdAt": c.created_at.isoformat() if c.created_at else None} for c in commissions])
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/{affiliate_id}/details", operation_id="listAffiliateDetails", response_model=ResponseEnvelope[AffiliateDetailRead])
 async def get_affiliate_details(affiliate_id: int, db: Session = Depends(get_db)):
@@ -274,7 +274,7 @@ async def get_affiliate_details(affiliate_id: int, db: Session = Depends(get_db)
     except Exception as e:
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.patch("/{affiliate_id}/toggle-status", operation_id="updateAffiliateToggleStatus", response_model=ResponseEnvelope[AffiliateRead])
 async def toggle_affiliate_status(affiliate_id: int, db: Session = Depends(get_db)):
@@ -292,7 +292,7 @@ async def toggle_affiliate_status(affiliate_id: int, db: Session = Depends(get_d
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/list", operation_id="listAffiliateList", response_model=ResponseEnvelope[List[AffiliateRead]])
 async def list_affiliates(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
@@ -301,7 +301,7 @@ async def list_affiliates(skip: int = 0, limit: int = 100, db: Session = Depends
         users = AffiliateService.list_affiliates(db, skip, limit)
         return ResponseEnvelope(data=users)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/lookup", operation_id="listAffiliateLookup")
 async def lookup_affiliate(
@@ -335,4 +335,4 @@ async def lookup_affiliate(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

@@ -55,7 +55,7 @@ def get_plans(
         
     except Exception as e:
         logger.error(f"Error getting plans: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/admin", operation_id="listPlanAdmin", response_model=ResponseEnvelope[List[DetailedPlanRead]])
 def get_admin_plans(
@@ -81,7 +81,7 @@ def get_admin_plans(
         raise
     except Exception as e:
         logger.error(f"Error getting admin plans: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("", operation_id="createPlan", status_code=201, response_model=ResponseEnvelope[DetailedPlanRead])
 def create_plan(
@@ -121,7 +121,7 @@ def create_plan(
     except Exception as e:
         db.rollback()
         logger.error(f"Error creating plan: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 @router.put("/{plan_id}", operation_id="updatePlan", response_model=ResponseEnvelope[DetailedPlanRead])
 def update_plan(
@@ -167,7 +167,7 @@ def update_plan(
     except Exception as e:
         db.rollback()
         logger.error(f"Error updating plan: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 
 @router.delete("/{plan_id}", operation_id="deletePlan")
@@ -198,4 +198,4 @@ def delete_plan(
     except Exception as e:
         db.rollback()
         logger.error(f"Error deleting plan: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

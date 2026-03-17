@@ -24,7 +24,7 @@ async def init_db(
         return ResponseEnvelope(message="Scan Queue table initialized")
     except Exception as e:
         logger.error(f"Init DB error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("", operation_id="listAdminScanQueue", response_model=ResponseEnvelope[List[ScanQueueRead]])
 async def get_scan_queue(
@@ -40,7 +40,7 @@ async def get_scan_queue(
         items = query.order_by(ScanQueue.created_at.desc()).all()
         return ResponseEnvelope(data=[ScanQueueRead.model_validate(i) for i in items])
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/{scan_id}/retry", operation_id="createAdminScanQueueRetry", response_model=ResponseEnvelope[ScanQueueRead])
 async def retry_scan(
@@ -64,5 +64,5 @@ async def retry_scan(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 

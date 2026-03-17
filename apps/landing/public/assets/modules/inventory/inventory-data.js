@@ -46,7 +46,7 @@ class InventoryData {
         // Priority 2: Try direct API call if prefetch failed
         try {
             console.log('🔄 [INVENTORY DATA] Attempting direct API call...');
-            const response = await fetch('http://localhost:5003/api/inventory');
+            const response = await fetch((window.__API_BASE_URL__ || 'http://localhost:5003') + '/api/inventory');
             if (response.ok) {
                 const result = await response.json();
                 if (result.success && Array.isArray(result.data)) {

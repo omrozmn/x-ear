@@ -631,4 +631,4 @@ def register_and_subscribe(
     except Exception as e:
         db.rollback()
         logger.error(f"Registration failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

@@ -1,5 +1,10 @@
 import api from '../../api/index.js';
 
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
 class AdminAppsModule {
     constructor(containerSelector){
         this.container = document.querySelector(containerSelector);
@@ -107,7 +112,7 @@ class AdminAppsModule {
                 try{
                     const users = await api.searchUsers({query: q});
                     const userList = users.data || [];
-                    resultsBox.innerHTML = userList.slice(0,10).map(u=>`<div class="p-1 hover:bg-gray-100 cursor-pointer" data-user-id="${u.id}" data-user-label="${u.fullName || u.username} ">${u.fullName || u.username} <span class="text-xs text-gray-400">${u.email || ''}</span></div>`).join('');
+                    resultsBox.innerHTML = userList.slice(0,10).map(u=>`<div class="p-1 hover:bg-gray-100 cursor-pointer" data-user-id="${escapeHtml(u.id)}" data-user-label="${escapeHtml(u.fullName || u.username)} ">${escapeHtml(u.fullName || u.username)} <span class="text-xs text-gray-400">${escapeHtml(u.email || '')}</span></div>`).join('');
                     resultsBox.querySelectorAll('[data-user-id]').forEach(el=> el.addEventListener('click', ()=>{
                         const uid = el.dataset.userId; const label = el.dataset.userLabel;
                         modal.querySelector('#assignUserId').value = uid;
@@ -130,7 +135,7 @@ class AdminAppsModule {
         try{
             const roles = await api.getRoles();
             const roleList = roles.data || [];
-            select.innerHTML = roleList.map(r=>`<option value="${r.name}">${r.name}</option>`).join('');
+            select.innerHTML = roleList.map(r=>`<option value="${escapeHtml(r.name)}">${escapeHtml(r.name)}</option>`).join('');
         }catch(e){ console.error('failed load roles', e); }
     }
 
@@ -147,11 +152,11 @@ class AdminAppsModule {
             list.innerHTML = apps.map(a => `
                 <div class="p-3 border-b flex items-center justify-between">
                     <div>
-                        <div class="font-medium">${a.name} <span class="text-xs text-gray-500">(${a.slug})</span></div>
-                        <div class="text-xs text-gray-500">Sahip: ${a.ownerUserId || '—'}</div>
+                        <div class="font-medium">${escapeHtml(a.name)} <span class="text-xs text-gray-500">(${escapeHtml(a.slug)})</span></div>
+                        <div class="text-xs text-gray-500">Sahip: ${escapeHtml(a.ownerUserId || '—')}</div>
                     </div>
                     <div>
-                        <button data-assign-app="${a.id}" class="btn btn-sm">Rol Ata</button>
+                        <button data-assign-app="${escapeHtml(a.id)}" class="btn btn-sm">Rol Ata</button>
                     </div>
                 </div>
             `).join('');

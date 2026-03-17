@@ -8,9 +8,12 @@
   
   // Environment-based configuration
   const getApiBaseUrl = () => {
-    // 1. Check if explicitly set via window.API_BASE_URL
+    // 1. Check if explicitly set via window.API_BASE_URL or window.__API_BASE_URL__
     if (typeof window !== 'undefined' && window.API_BASE_URL) {
       return window.API_BASE_URL;
+    }
+    if (typeof window !== 'undefined' && window.__API_BASE_URL__) {
+      return window.__API_BASE_URL__;
     }
     
     // 2. Check for environment variable (for deployment)
@@ -369,7 +372,7 @@
                 let path = endpoint;
                 // Normalize endpoint to extract path - handle both full URLs and relative paths
                 try { 
-                    const u = new URL(endpoint, this.BACKEND_BASE_URL || window.API_BASE_URL || 'http://localhost:5003'); 
+                    const u = new URL(endpoint, this.BACKEND_BASE_URL || window.API_BASE_URL || window.__API_BASE_URL__ || 'http://localhost:5003');
                     path = u.pathname + (u.search || ''); 
                 } catch (err) { 
                     const idx = endpoint.indexOf('/api/'); 

@@ -1,5 +1,11 @@
 (function(){
   if (typeof SGKDocumentPipeline === 'undefined') return;
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+  }
+
   const proto = SGKDocumentPipeline.prototype;
 
   proto.showInPatientDocuments = function(document) {
@@ -25,7 +31,7 @@
                 ${nlpBadge}
               </div>
               <div class="text-sm text-gray-600 mb-2">
-                <p><strong>Dosya:</strong> ${document.filename}</p>
+                <p><strong>Dosya:</strong> ${escapeHtml(document.filename)}</p>
                 <p><strong>Yüklenme:</strong> ${new Date(document.uploadDate).toLocaleString('tr-TR')}</p>
               </div>
             </div>
@@ -68,7 +74,7 @@
       let candidatesHTML = '';
       if (candidates.length > 0) {
         // Make suggested candidates scrollable so the UI isn't limited to a small fixed number
-        const suggestedItems = candidates.map(candidate => `\n            <div class="border rounded p-3 mb-2 cursor-pointer hover:bg-gray-50" onclick="sgkPipeline.selectPatientForDocument('${document.id}', '${candidate.patient.id}')">\n              <div class=\"font-medium\">${candidate.patient.name}</div>\n              <div class=\"text-xs text-gray-500\">TC: ${candidate.patient.tcNumber || '—'} • Olasılık: ${candidate.confidence ? Math.round(candidate.confidence * 100) + '%' : '—'}</div>\n            </div>`).join('');
+        const suggestedItems = candidates.map(candidate => `\n            <div class="border rounded p-3 mb-2 cursor-pointer hover:bg-gray-50" onclick="sgkPipeline.selectPatientForDocument('${escapeHtml(document.id)}', '${escapeHtml(candidate.patient.id)}')">\n              <div class=\"font-medium\">${escapeHtml(candidate.patient.name)}</div>\n              <div class=\"text-xs text-gray-500\">TC: ${escapeHtml(candidate.patient.tcNumber || '—')} • Olasılık: ${candidate.confidence ? Math.round(candidate.confidence * 100) + '%' : '—'}</div>\n            </div>`).join('');
         candidatesHTML = `<div class="mb-4"><h4 class="font-medium mb-2">Önerilen Hastalar</h4><div id="suggestedPatientList" class="max-h-80 overflow-auto space-y-2">${suggestedItems}</div></div>`;
       }
      const modalContent = `<div>...${candidatesHTML}<div><h4 class="font-medium mb-2">Tüm Hastalar</h4>
@@ -90,7 +96,7 @@
        }
 
        const renderResults = (list) => {
-         resultsContainer.innerHTML = list && list.length ? list.map(p => `\n          <div class="p-2 border-b cursor-pointer hover:bg-gray-100" data-patient-id="${p.id}" data-patient-name="${p.name}">\n            <div class=\"text-sm font-medium\">${p.name}</div>\n            <div class=\"text-xs text-gray-500\">TC: ${p.tcNumber||'N/A'} • ${p.phone||''}</div>\n          </div>`).join('') : '<div class="text-sm text-gray-500 p-2">Sonuç yok</div>';
+         resultsContainer.innerHTML = list && list.length ? list.map(p => `\n          <div class="p-2 border-b cursor-pointer hover:bg-gray-100" data-patient-id="${escapeHtml(p.id)}" data-patient-name="${escapeHtml(p.name)}">\n            <div class=\"text-sm font-medium\">${escapeHtml(p.name)}</div>\n            <div class=\"text-xs text-gray-500\">TC: ${escapeHtml(p.tcNumber||'N/A')} • ${escapeHtml(p.phone||'')}</div>\n          </div>`).join('') : '<div class="text-sm text-gray-500 p-2">Sonuç yok</div>';
          // Attach click handlers
          Array.from(resultsContainer.children).forEach(el => {
            el.addEventListener('click', () => {

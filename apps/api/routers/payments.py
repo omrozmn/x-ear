@@ -202,7 +202,7 @@ def create_payment_record(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Create payment record error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/payment-records", operation_id="listPaymentRecords", response_model=ResponseEnvelope[List[PaymentRecordRead]])
 def list_payment_records(
@@ -246,7 +246,7 @@ def list_payment_records(
         )
     except Exception as e:
         logger.error(f"List payment records error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/parties/{party_id}/payment-records", operation_id="listPartyPaymentRecords", response_model=ResponseEnvelope[List[PaymentRecordRead]])
 def get_party_payment_records(
@@ -275,7 +275,7 @@ def get_party_payment_records(
         )
     except Exception as e:
         logger.error(f"Get patient payment records error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.patch("/payment-records/{record_id}", operation_id="updatePaymentRecord", response_model=ResponseEnvelope[PaymentRecordRead])
 def update_payment_record(
@@ -312,7 +312,7 @@ def update_payment_record(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Update payment record error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/parties/{party_id}/promissory-notes", operation_id="listPartyPromissoryNotes", response_model=ResponseEnvelope[List[PromissoryNoteRead]])
 def get_party_promissory_notes(
@@ -337,7 +337,7 @@ def get_party_promissory_notes(
         )
     except Exception as e:
         logger.error(f"Get patient promissory notes error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/promissory-notes", operation_id="createPromissoryNotes", status_code=201, response_model=ResponseEnvelope[List[PromissoryNoteRead]])
 def create_promissory_notes(
@@ -427,7 +427,7 @@ def create_promissory_notes(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Create promissory notes error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.patch("/promissory-notes/{note_id}", operation_id="updatePromissoryNote", response_model=ResponseEnvelope[PromissoryNoteRead])
 def update_promissory_note(
@@ -464,7 +464,7 @@ def update_promissory_note(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Update promissory note error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/promissory-notes/{note_id}/collect", operation_id="createPromissoryNoteCollect", status_code=201, response_model=ResponseEnvelope[PromissoryNoteCollectionResponse])
 def collect_promissory_note(
@@ -581,7 +581,7 @@ def collect_promissory_note(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Collect promissory note error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/sales/{sale_id}/promissory-notes", operation_id="listSalePromissoryNotes", response_model=ResponseEnvelope[List[PromissoryNoteRead]])
 def get_sale_promissory_notes(
@@ -600,4 +600,4 @@ def get_sale_promissory_notes(
         )
     except Exception as e:
         logger.error(f"Get sale promissory notes error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

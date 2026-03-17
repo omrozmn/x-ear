@@ -4,6 +4,11 @@
  * Dependencies: None (self-contained)
  */
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
 class QuickLookModal {
     constructor(options = {}) {
         this.debug = options.debug || false;
@@ -270,7 +275,7 @@ class QuickLookModal {
                         </div>
                         <div class="document-info mt-3">
                             <p class="text-xs text-gray-500">
-                                <strong>Dosya:</strong> ${doc.fileName || 'Bilinmeyen'}
+                                <strong>Dosya:</strong> ${escapeHtml(doc.fileName || 'Bilinmeyen')}
                             </p>
                             ${doc.ocrConfidence ? `
                                 <p class="text-xs text-gray-500">
@@ -288,7 +293,7 @@ class QuickLookModal {
                             <div class="classification-result mb-4">
                                 <div class="current-classification">
                                     <span class="classification-badge bg-${typeInfo.color}-100 text-${typeInfo.color}-800">
-                                        ${docType.name || 'Bilinmeyen'}
+                                        ${escapeHtml(docType.name || 'Bilinmeyen')}
                                     </span>
                                     ${docType.confidence ? `
                                         <span class="confidence-score text-xs text-gray-500 ml-2">
@@ -321,19 +326,19 @@ class QuickLookModal {
                                     <label class="block text-sm font-medium text-gray-700 mb-1">
                                         Çıkarılan Ad Soyad:
                                     </label>
-                                    <input type="text" 
-                                           class="patient-name-input" 
+                                    <input type="text"
+                                           class="patient-name-input"
                                            data-field="patientName"
-                                           value="${patientInfo.name || ''}" 
+                                           value="${escapeHtml(patientInfo.name || '')}"
                                            placeholder="Hasta adı bulunamadı">
-                                    
+
                                     <label class="block text-sm font-medium text-gray-700 mb-1 mt-3">
                                         TC Kimlik No:
                                     </label>
-                                    <input type="text" 
-                                           class="patient-tc-input" 
+                                    <input type="text"
+                                           class="patient-tc-input"
                                            data-field="patientTc"
-                                           value="${patientInfo.tcNo || ''}" 
+                                           value="${escapeHtml(patientInfo.tcNo || '')}"
                                            placeholder="TC No bulunamadı"
                                            maxlength="11">
                                 </div>
@@ -352,10 +357,10 @@ class QuickLookModal {
                                             </div>
                                             <div class="ml-3">
                                                 <p class="text-sm font-medium text-green-800">
-                                                    ${matchedPatient.name}
+                                                    ${escapeHtml(matchedPatient.name)}
                                                 </p>
                                                 <p class="text-xs text-green-600">
-                                                    TC: ${matchedPatient.tcNo || 'Yok'} • ID: ${matchedPatient.id}
+                                                    TC: ${escapeHtml(matchedPatient.tcNo || 'Yok')} • ID: ${escapeHtml(matchedPatient.id)}
                                                 </p>
                                             </div>
                                         </div>
@@ -646,7 +651,7 @@ class QuickLookModal {
                 for (const p of list) {
                     const item = document.createElement('div');
                     item.className = 'p-2 border-b cursor-pointer hover:bg-gray-50 flex justify-between items-center';
-                    item.innerHTML = `<div><div class="font-medium">${p.name}</div><div class="text-xs text-gray-500">TC: ${p.tcNumber || p.tcNo || '—'} • ${p.phone||''}</div></div><div><button class="px-2 py-1 bg-blue-600 text-white text-xs rounded">Seç</button></div>`;
+                    item.innerHTML = `<div><div class="font-medium">${escapeHtml(p.name)}</div><div class="text-xs text-gray-500">TC: ${escapeHtml(p.tcNumber || p.tcNo || '—')} • ${escapeHtml(p.phone||'')}</div></div><div><button class="px-2 py-1 bg-blue-600 text-white text-xs rounded">Seç</button></div>`;
                     item.addEventListener('click', (e) => {
                         e.preventDefault();
                         hiddenSel.value = p.id;

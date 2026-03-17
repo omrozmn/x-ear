@@ -132,7 +132,7 @@ def admin_login(request_data: AdminLoginRequest, db: Session = Depends(get_db)):
         raise
     except Exception as e:
         logger.error(f"Admin login error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 # --- User Management (Global) ---
 
@@ -182,7 +182,7 @@ def create_admin_user(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Create admin user error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 @router.get("/users", operation_id="listAdminUsers")
 def list_admin_users(
@@ -223,7 +223,7 @@ def list_admin_users(
         })
     except Exception as e:
         logger.error(f"List admin users error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/users/all", operation_id="listAdminUserAll")
 def list_all_tenant_users(
@@ -278,7 +278,7 @@ def list_all_tenant_users(
         })
     except Exception as e:
         logger.error(f"List all tenant users error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/users/{user_id}", operation_id="getAdminUser", response_model=ResponseEnvelope[UserRead])
 def get_admin_user(
@@ -329,7 +329,7 @@ def update_any_tenant_user(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Update any tenant user error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 # --- Party Management (Cross-tenant) ---
 
@@ -427,7 +427,7 @@ def impersonate_tenant(
         raise
     except Exception as e:
         logger.error(f"Impersonate error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 # --- Debug Tenant Switch ---
 
@@ -548,7 +548,7 @@ def debug_switch_tenant(
         raise
     except Exception as e:
         logger.error(f"Tenant switch error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/debug/exit-impersonation", operation_id="createAdminDebugExitImpersonation")
 def debug_exit_impersonation(
@@ -581,7 +581,7 @@ def debug_exit_impersonation(
         })
     except Exception as e:
         logger.error(f"Exit impersonation error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 # --- Sales Management (Cross-tenant) ---
 

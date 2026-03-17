@@ -355,7 +355,7 @@ def create_inventory(
         logger.error(f"[CREATE_INVENTORY] Error message: {str(e)}")
         import traceback
         logger.error(f"[CREATE_INVENTORY] Traceback:\n{traceback.format_exc()}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/inventory/categories", operation_id="listInventoryCategories", response_model=ResponseEnvelope[List[str]])
 def get_inventory_categories(
@@ -471,7 +471,7 @@ async def bulk_upload_inventory(
                     if any(v not in (None, '') for v in obj.values()):
                         rows.append(obj)
             except Exception as e:
-                raise HTTPException(status_code=400, detail=f"XLSX parse error: {e}")
+                raise HTTPException(status_code=400, detail="XLSX parse error")
         else:
             try:
                 try: text = content.decode('utf-8-sig')
@@ -481,7 +481,7 @@ async def bulk_upload_inventory(
                 rows = [r for r in csv.DictReader(io.StringIO(text), delimiter=delimiter)]
                 rows = [{k: _sanitize_cell(v) for k, v in r.items()} for r in rows]
             except Exception as e:
-                raise HTTPException(status_code=400, detail=f"CSV parse error: {e}")
+                raise HTTPException(status_code=400, detail="CSV parse error")
 
         created = 0
         updated = 0
@@ -624,7 +624,7 @@ async def bulk_upload_inventory(
     except Exception as e:
         db.rollback()
         logger.error(f"Bulk inventory upload error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/inventory/{item_id}/serials", operation_id="createInventorySerials")
 def add_serials(
@@ -677,58 +677,83 @@ def get_movements(
     total = query.count()
     movements = query.order_by(StockMovement.created_at.desc()).offset((page - 1) * limit).limit(limit).all()
     
-    # Enrich with patient info (Flask parity)
+    # Batch-fetch related entities to avoid N+1 queries
+    assign_ids = [m.transaction_id for m in movements if m.transaction_id and m.transaction_id.startswith('assign_')]
+    sale_ids = [m.transaction_id for m in movements if m.transaction_id and m.transaction_id.startswith('sale_')]
+    serial_numbers = [m.serial_number for m in movements if m.serial_number]
+
+    assignments_map = {a.id: a for a in db.query(DeviceAssignment).filter(DeviceAssignment.id.in_(assign_ids)).all()} if assign_ids else {}
+    sales_map = {s.id: s for s in db.query(Sale).filter(Sale.id.in_(sale_ids)).all()} if sale_ids else {}
+
+    # Collect party IDs from assignments and sales
+    party_ids = set()
+    for a in assignments_map.values():
+        if a.party_id:
+            party_ids.add(a.party_id)
+    for s in sales_map.values():
+        if s.party_id:
+            party_ids.add(s.party_id)
+    parties_map = {p.id: p for p in db.query(Party).filter(Party.id.in_(party_ids)).all()} if party_ids else {}
+
+    # Batch-fetch device assignments for sales (prescription info)
+    sale_assignments = {}
+    if sale_ids:
+        for da in db.query(DeviceAssignment).filter(
+            DeviceAssignment.sale_id.in_(sale_ids),
+            DeviceAssignment.inventory_id == item_id,
+            DeviceAssignment.sgk_scheme.isnot(None),
+        ).all():
+            if da.sale_id not in sale_assignments:
+                sale_assignments[da.sale_id] = da
+
+    # Batch-fetch serial-based prescription info
+    serial_da_map = {}
+    if serial_numbers:
+        for da in db.query(DeviceAssignment).filter(
+            DeviceAssignment.tenant_id == access.tenant_id,
+            DeviceAssignment.sgk_scheme.isnot(None),
+            or_(
+                DeviceAssignment.serial_number.in_(serial_numbers),
+                DeviceAssignment.serial_number_left.in_(serial_numbers),
+                DeviceAssignment.serial_number_right.in_(serial_numbers),
+            ),
+        ).all():
+            for sn in [da.serial_number, da.serial_number_left, da.serial_number_right]:
+                if sn and sn in serial_numbers:
+                    serial_da_map[sn] = da
+
     results = []
     for m in movements:
-        # Use Pydantic schema for type-safe serialization (NO to_dict())
         m_dict = StockMovementRead.model_validate(m).model_dump(by_alias=True)
-        
-        # Enrich with patient info from transaction
+
         if m.transaction_id:
             try:
-                # If transaction is a device assignment, get party info
                 if m.transaction_id.startswith('assign_'):
-                    assignment = db.get(DeviceAssignment, m.transaction_id)
+                    assignment = assignments_map.get(m.transaction_id)
                     if assignment and assignment.party_id:
-                        party = db.get(Party, assignment.party_id)
+                        party = parties_map.get(assignment.party_id)
                         if party:
                             m_dict['partyId'] = party.id
                             m_dict['partyName'] = f"{party.first_name} {party.last_name}".strip()
                         if assignment.sgk_scheme:
                             m_dict['prescriptionStatus'] = assignment.report_status or 'raporlu'
-                # If transaction is a sale
                 elif m.transaction_id.startswith('sale_'):
-                    sale = db.get(Sale, m.transaction_id)
+                    sale = sales_map.get(m.transaction_id)
                     if sale and sale.party_id:
-                        party = db.get(Party, sale.party_id)
+                        party = parties_map.get(sale.party_id)
                         if party:
                             m_dict['partyId'] = party.id
                             m_dict['partyName'] = f"{party.first_name} {party.last_name}".strip()
-                        # Check assignments under this sale for prescription info
-                        for da in db.query(DeviceAssignment).filter(
-                            DeviceAssignment.sale_id == sale.id,
-                            DeviceAssignment.inventory_id == item_id,
-                        ).all():
-                            if da.sgk_scheme:
-                                m_dict['prescriptionStatus'] = da.report_status or 'raporlu'
-                                break
+                        da = sale_assignments.get(sale.id)
+                        if da:
+                            m_dict['prescriptionStatus'] = da.report_status or 'raporlu'
             except Exception as enrich_err:
                 logger.warning(f"Failed to enrich movement {m.id}: {enrich_err}")
 
-        # For serial-based movements, also check if serial was used in any prescription
         if not m_dict.get('prescriptionStatus') and m.serial_number:
-            try:
-                da = db.query(DeviceAssignment).filter(
-                    DeviceAssignment.tenant_id == access.tenant_id,
-                    DeviceAssignment.sgk_scheme.isnot(None),
-                    (DeviceAssignment.serial_number == m.serial_number) |
-                    (DeviceAssignment.serial_number_left == m.serial_number) |
-                    (DeviceAssignment.serial_number_right == m.serial_number),
-                ).first()
-                if da:
-                    m_dict['prescriptionStatus'] = da.report_status or 'raporlu'
-            except Exception:
-                pass
+            da = serial_da_map.get(m.serial_number)
+            if da:
+                m_dict['prescriptionStatus'] = da.report_status or 'raporlu'
 
         results.append(m_dict)
     

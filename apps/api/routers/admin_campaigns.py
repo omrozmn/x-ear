@@ -70,7 +70,7 @@ async def get_campaigns(
         }
     except Exception as e:
         logger.error(f"Get campaigns error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("", response_model=CampaignDetailResponse, operation_id="adminCreateCampaign")
 async def create_campaign(
@@ -114,7 +114,7 @@ async def create_campaign(
     except Exception as e:
         db.rollback()
         logger.error(f"Create campaign error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 @router.get("/{campaign_id}", response_model=CampaignDetailResponse, operation_id="getAdminCampaign")
 async def get_campaign(
@@ -135,7 +135,7 @@ async def get_campaign(
         raise
     except Exception as e:
         logger.error(f"Get campaign error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/{campaign_id}", response_model=CampaignDetailResponse, operation_id="updateAdminCampaign")
 async def update_campaign(
@@ -179,7 +179,7 @@ async def update_campaign(
     except Exception as e:
         db.rollback()
         logger.error(f"Update campaign error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 @router.delete("/{campaign_id}", response_model=ResponseEnvelope, operation_id="deleteAdminCampaign")
 async def delete_campaign(
@@ -203,4 +203,4 @@ async def delete_campaign(
     except Exception as e:
         db.rollback()
         logger.error(f"Delete campaign error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")

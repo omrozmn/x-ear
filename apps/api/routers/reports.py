@@ -311,7 +311,7 @@ def report_overview(
         return ResponseEnvelope(data=ReportOverviewResponse(**overview_data))
     except Exception as e:
         logger.error(f"Overview report error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/reports/patients", operation_id="listReportPatients", response_model=ResponseEnvelope[ReportPatientsResponse])
 def report_patients(
@@ -467,7 +467,7 @@ def report_patients(
         return ResponseEnvelope(data=ReportPatientsResponse(**patients_data))
     except Exception as e:
         logger.error(f"Patients report error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/reports/financial", operation_id="listReportFinancial", response_model=ResponseEnvelope[ReportFinancialResponse])
 def report_financial(
@@ -573,7 +573,7 @@ def report_financial(
         )
     except Exception as e:
         logger.error(f"Financial report error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/reports/campaigns", operation_id="listReportCampaigns", response_model=ResponseEnvelope[ReportCampaignsResponse])
 def report_campaigns(
@@ -640,7 +640,7 @@ def report_campaigns(
         )
     except Exception as e:
         logger.error(f"Campaigns report error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/reports/revenue", operation_id="listReportRevenue", response_model=ResponseEnvelope[ReportRevenueResponse])
 def report_revenue(
@@ -817,7 +817,7 @@ def report_promissory_notes(
         )
     except Exception as e:
         logger.error(f"Promissory notes report error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/reports/promissory-notes/by-patient", operation_id="listReportPromissoryNoteByPatient", response_model=ResponseEnvelope[List[PromissoryNotePatientItem]])
 def report_promissory_notes_by_patient(
@@ -934,7 +934,7 @@ def report_promissory_notes_by_patient(
         )
     except Exception as e:
         logger.error(f"Promissory notes by patient report error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/reports/promissory-notes/list", operation_id="listReportPromissoryNoteList", response_model=ResponseEnvelope[List[PromissoryNoteListItem]])
 def report_promissory_notes_list(
@@ -1026,7 +1026,7 @@ def report_promissory_notes_list(
         )
     except Exception as e:
         logger.error(f"Promissory notes list report error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/reports/remaining-payments", operation_id="listReportRemainingPayments", response_model=ResponseEnvelope[List[RemainingPaymentItem]])
 def report_remaining_payments(
@@ -1140,7 +1140,7 @@ def report_remaining_payments(
         )
     except Exception as e:
         logger.error(f"Remaining payments report error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/reports/cashflow-summary", operation_id="listReportCashflowSummary", response_model=ResponseEnvelope[ReportCashflowResponse])
 def report_cashflow_summary(
@@ -1219,7 +1219,7 @@ def report_cashflow_summary(
         )
     except Exception as e:
         logger.error(f"Cashflow summary report error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/reports/pos-movements", operation_id="listReportPosMovements", response_model=ResponseEnvelope[List[PosMovementItem]])
 def report_pos_movements(
@@ -1349,7 +1349,7 @@ def report_pos_movements(
         )
     except Exception as e:
         logger.error(f"POS movements report error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/reports/report-tracking", operation_id="listReportTracking", response_model=ResponseEnvelope[List[ReportTrackingItem]])
 def report_tracking(
@@ -1447,4 +1447,4 @@ def report_tracking(
         )
     except Exception as e:
         logger.error(f"Report tracking error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

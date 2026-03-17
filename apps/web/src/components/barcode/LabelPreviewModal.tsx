@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import DOMPurify from 'dompurify';
 import { Button, Modal } from '@x-ear/ui-web';
 import { Printer, RefreshCw } from 'lucide-react';
 import { useLabelPrint } from '../../hooks/useLabelPrint';
@@ -193,7 +194,7 @@ export const LabelPreviewModal: React.FC<LabelPreviewModalProps> = ({
           )}
           {!previewLoading && !previewError && svgPreview && (
             <div
-              dangerouslySetInnerHTML={{ __html: svgPreview }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(svgPreview, { USE_PROFILES: { svg: true } }) }}
               className="label-preview"
             />
           )}

@@ -89,7 +89,7 @@ def get_admin_roles(
         raise
     except Exception as e:
         logger.error(f"Get admin roles error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/roles/{role_id}", response_model=ResponseEnvelope[RoleResponse], operation_id="getAdminRole")
 def get_admin_role(
@@ -123,7 +123,7 @@ def get_admin_role(
         raise
     except Exception as e:
         logger.error(f"Get admin role error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/roles", response_model=ResponseEnvelope[RoleResponse], operation_id="createAdminRoles", status_code=201)
 def create_admin_role(
@@ -182,7 +182,7 @@ def create_admin_role(
     except Exception as e:
         db.rollback()
         logger.error(f"Create admin role error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/roles/{role_id}", response_model=ResponseEnvelope[RoleResponse], operation_id="updateAdminRole")
 def update_admin_role(
@@ -237,7 +237,7 @@ def update_admin_role(
     except Exception as e:
         db.rollback()
         logger.error(f"Update admin role error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.delete("/roles/{role_id}", operation_id="deleteAdminRole")
 def delete_admin_role(
@@ -279,7 +279,7 @@ def delete_admin_role(
     except Exception as e:
         db.rollback()
         logger.error(f"Delete admin role error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/roles/{role_id}/permissions", response_model=ResponseEnvelope[RoleResponse], operation_id="listAdminRolePermissions")
 def get_admin_role_permissions(
@@ -313,7 +313,7 @@ def get_admin_role_permissions(
         raise
     except Exception as e:
         logger.error(f"Get role permissions error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/roles/{role_id}/permissions", response_model=ResponseEnvelope[RoleResponse], operation_id="updateAdminRolePermissions")
 def update_admin_role_permissions(
@@ -368,7 +368,7 @@ def update_admin_role_permissions(
     except Exception as e:
         db.rollback()
         logger.error(f"Update role permissions error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/permissions", response_model=ResponseEnvelope[PermissionListResponse], operation_id="listAdminPermissions")
 def get_admin_permissions(
@@ -433,7 +433,7 @@ def get_admin_permissions(
         raise
     except Exception as e:
         logger.error(f"Get admin permissions error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/admin-users", operation_id="listAdminAdminUsers")
 def get_admin_users_with_roles(
@@ -459,7 +459,7 @@ def get_admin_users_with_roles(
         raise
     except Exception as e:
         logger.error(f"Get admin users error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/admin-users/{user_id}", operation_id="getAdminAdminUser")
 def get_admin_user_detail(
@@ -484,7 +484,7 @@ def get_admin_user_detail(
         raise
     except Exception as e:
         logger.error(f"Get admin user detail error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/admin-users/{user_id}/roles", operation_id="updateAdminAdminUserRoles")
 def update_admin_user_roles(
@@ -537,7 +537,7 @@ def update_admin_user_roles(
     except Exception as e:
         db.rollback()
         logger.error(f"Update admin user roles error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/my-permissions", operation_id="listAdminMyPermissions")
 def get_my_admin_permissions(
@@ -589,4 +589,4 @@ def get_my_admin_permissions(
         raise
     except Exception as e:
         logger.error(f"Get my admin permissions error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

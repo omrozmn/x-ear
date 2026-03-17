@@ -10,12 +10,14 @@
  * 5. Log activity for audit trail
  * 6. Update UI and provide feedback
  */
+var API_BASE = window.__API_BASE_URL__ || 'http://localhost:5003';
+
 class FormPipeline {
     constructor() {
         this.retryAttempts = 3;
         this.retryDelay = 1000; // 1 second
         this.apiEndpoints = [
-            'http://localhost:5003',
+            API_BASE,
             'http://localhost:5000',
             'http://127.0.0.1:5003',
             'http://127.0.0.1:5000'

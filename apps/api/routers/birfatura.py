@@ -267,7 +267,7 @@ async def send_document(
         resp = client.send_document(body)
         return {"success": True, "data": resp}
     except Exception as e:
-        raise HTTPException(status_code=502, detail=str(e))
+        raise HTTPException(status_code=502, detail="Internal server error")
 
 @router.post("/EFatura/sendBasicInvoice", operation_id="createEfaturaSendbasicinvoice")
 async def send_basic_invoice(
@@ -287,7 +287,7 @@ async def send_basic_invoice(
         resp = client.send_basic_invoice(body)
         return {"success": True, "data": resp}
     except Exception as e:
-        raise HTTPException(status_code=502, detail=str(e))
+        raise HTTPException(status_code=502, detail="Internal server error")
 
 @router.post("/EFatura/Create", operation_id="createEfaturaCreate")
 async def create_invoice(
@@ -428,7 +428,7 @@ async def backfill_invoice_items(
             "message": f"{stats.get('updated', 0)} faturanın kalemleri güncellendi"
         })
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/birfatura/backfill-outgoing-detail", operation_id="createBirfaturaBackfillOutgoingDetail")
@@ -466,7 +466,7 @@ async def backfill_outgoing_detail(
             "message": f"{stats.get('updated', 0)} giden faturanın detayı güncellendi"
         })
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # --- OutEBelgeV2 Endpoints (Migrated from Flask) ---

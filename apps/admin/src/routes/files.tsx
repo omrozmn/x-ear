@@ -1,6 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
-import FileManager from '../pages/admin/FileManager'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/files')({
-    component: FileManager,
+    beforeLoad: () => {
+        throw redirect({ to: '/activity-logs' })
+    },
 })

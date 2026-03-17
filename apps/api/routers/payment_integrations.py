@@ -273,7 +273,7 @@ def initiate_paytr_payment(
         raise
     except Exception as e:
         logger.error(f"PayTR Initiate Error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/paytr/callback", operation_id="createPaymentPoPaytrCallback", response_class=PlainTextResponse)
 async def paytr_callback(

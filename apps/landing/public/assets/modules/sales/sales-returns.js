@@ -28,7 +28,7 @@ export class SalesReturnsModule {
       } else {
         console.warn('No API client available for replacements fetch');
         // Fallback to direct fetch with localhost
-        const response = await fetch(`http://localhost:5003/api/patients/${patientId}/replacements`);
+        const response = await fetch(`${window.__API_BASE_URL__ || 'http://localhost:5003'}/api/patients/${patientId}/replacements`);
         result = await response.json();
       }
       

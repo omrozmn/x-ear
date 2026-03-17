@@ -68,4 +68,4 @@ async def get_pos_transactions(
         ])
     except Exception as e:
         logger.error(f"Admin get POS transactions error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

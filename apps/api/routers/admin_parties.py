@@ -72,7 +72,7 @@ async def get_all_parties(
             )
     except Exception as e:
         logger.error(f"Get all patients error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/{party_id}", operation_id="getAdminPartyDetail", response_model=PartyDetailResponse)
 async def get_party_detail(
@@ -97,7 +97,7 @@ async def get_party_detail(
         raise
     except Exception as e:
         logger.error(f"Get patient detail error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/{party_id}/devices", operation_id="listAdminPartyDevices", response_model=ResponseEnvelope)
 async def get_party_devices(
@@ -118,7 +118,7 @@ async def get_party_devices(
         raise
     except Exception as e:
         logger.error(f"Get patient devices error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/{party_id}/sales", operation_id="listAdminPartySales", response_model=ResponseEnvelope[List[SaleRead]])
 async def get_party_sales(
@@ -146,7 +146,7 @@ async def get_party_sales(
         raise
     except Exception as e:
         logger.error(f"Get patient sales error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/{party_id}/timeline", operation_id="listAdminPartyTimeline", response_model=ResponseEnvelope)
 async def get_party_timeline(
@@ -168,7 +168,7 @@ async def get_party_timeline(
         raise
     except Exception as e:
         logger.error(f"Get patient timeline error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/{party_id}/documents", operation_id="listAdminPartyDocuments", response_model=ResponseEnvelope)
 async def get_party_documents(
@@ -200,4 +200,4 @@ async def get_party_documents(
         raise
     except Exception as e:
         logger.error(f"Get patient documents error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

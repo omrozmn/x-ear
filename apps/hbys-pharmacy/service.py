@@ -55,7 +55,11 @@ def create_stock(db: Session, data: PharmacyStockCreate, tenant_id: str) -> Phar
         tenant_id=tenant_id,
     )
     db.add(stock)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(stock)
     return stock
 
@@ -88,24 +92,32 @@ def list_stocks(
     return items, total
 
 
-def update_stock(db: Session, stock_id: str, data: PharmacyStockUpdate) -> Optional[PharmacyStock]:
-    stock = get_stock(db, stock_id)
+def update_stock(db: Session, stock_id: str, data: PharmacyStockUpdate, tenant_id: Optional[str] = None) -> Optional[PharmacyStock]:
+    stock = get_stock(db, stock_id, tenant_id=tenant_id)
     if not stock:
         return None
     update_data = data.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(stock, key, value)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(stock)
     return stock
 
 
-def delete_stock(db: Session, stock_id: str) -> bool:
-    stock = get_stock(db, stock_id)
+def delete_stock(db: Session, stock_id: str, tenant_id: Optional[str] = None) -> bool:
+    stock = get_stock(db, stock_id, tenant_id=tenant_id)
     if not stock:
         return False
     db.delete(stock)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     return True
 
 
@@ -160,7 +172,11 @@ def create_dispensing(db: Session, data: PharmacyDispensingCreate, tenant_id: st
             )
             db.add(movement)
 
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(dispensing)
     return dispensing
 
@@ -235,7 +251,11 @@ def process_return(
             )
             db.add(movement)
 
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(dispensing)
     return dispensing
 
@@ -301,7 +321,11 @@ def create_interaction(db: Session, data: DrugInteractionCreate) -> DrugInteract
         management=data.management,
     )
     db.add(interaction)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(interaction)
     return interaction
 
@@ -313,7 +337,11 @@ def update_interaction(db: Session, interaction_id: str, data: DrugInteractionUp
     update_data = data.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(interaction, key, value)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(interaction)
     return interaction
 
@@ -323,7 +351,11 @@ def delete_interaction(db: Session, interaction_id: str) -> bool:
     if not interaction:
         return False
     db.delete(interaction)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     return True
 
 
@@ -349,7 +381,11 @@ def create_stock_movement(db: Session, data: StockMovementCreate, tenant_id: str
     if stock:
         stock.quantity_on_hand += data.quantity
 
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(movement)
     return movement
 

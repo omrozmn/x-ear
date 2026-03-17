@@ -123,7 +123,7 @@ def list_tenants(
         })
     except Exception as e:
         logger.error(f"List tenants error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("", operation_id="createAdminTenant", response_model=ResponseEnvelope[TenantRead])
 def create_tenant(
@@ -191,7 +191,7 @@ def create_tenant(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Create tenant error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 @router.get("/{tenant_id}", operation_id="getAdminTenant", response_model=ResponseEnvelope[TenantRead])
 def get_tenant(
@@ -234,7 +234,7 @@ def update_tenant(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Update tenant error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 @router.delete("/{tenant_id}", operation_id="deleteAdminTenant")
 def delete_tenant(
@@ -256,7 +256,7 @@ def delete_tenant(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Delete tenant error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 @router.get("/{tenant_id}/users", operation_id="listAdminTenantUsers")
 def get_tenant_users(
@@ -324,7 +324,7 @@ def create_tenant_user(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Create tenant user error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 @router.put("/{tenant_id}/users/{user_id}", operation_id="updateAdminTenantUser", response_model=ResponseEnvelope[UserResponse])
 def update_tenant_user(
@@ -374,7 +374,7 @@ def update_tenant_user(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Update tenant user error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 @router.post("/{tenant_id}/subscribe", operation_id="createAdminTenantSubscribe")
 def subscribe_tenant(
@@ -430,7 +430,7 @@ def subscribe_tenant(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Subscribe tenant error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/{tenant_id}/addons", operation_id="createAdminTenantAddons")
 def add_tenant_addon(
@@ -483,7 +483,7 @@ def add_tenant_addon(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Add tenant addon error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.delete("/{tenant_id}/addons", operation_id="deleteAdminTenantAddons")
 def remove_tenant_addon(
@@ -532,7 +532,7 @@ def remove_tenant_addon(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Remove tenant addon error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/{tenant_id}/status", operation_id="updateAdminTenantStatus")
 def update_tenant_status(
@@ -559,7 +559,7 @@ def update_tenant_status(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Update tenant status error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 # --- SMS Config Endpoints (Migrated from Flask - Full Implementation) ---
 
@@ -591,7 +591,7 @@ def get_tenant_sms_config(
         raise
     except Exception as e:
         logger.error(f"Get tenant SMS config error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/{tenant_id}/sms-documents", operation_id="listAdminTenantSmsDocuments")
 def get_tenant_sms_documents(
@@ -623,7 +623,7 @@ def get_tenant_sms_documents(
         raise
     except Exception as e:
         logger.error(f"Get tenant SMS documents error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 import os
 @router.get("/{tenant_id}/sms-documents/{document_type}/download", operation_id="listAdminTenantSmsDocumentDownload")
@@ -663,7 +663,7 @@ def download_tenant_sms_document(
         raise
     except Exception as e:
         logger.error(f"Download tenant SMS document error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 class DocumentStatusUpdate(BaseModel):
     status: str  # 'approved' or 'revision_requested'
@@ -722,7 +722,7 @@ def update_tenant_sms_document_status(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Update SMS document status error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 @router.post("/{tenant_id}/sms-documents/send-email", operation_id="createAdminTenantSmsDocumentSendEmail")
 async def send_tenant_sms_documents_email(
@@ -869,7 +869,7 @@ Belgeler:
         raise
     except Exception as e:
         logger.error(f"Send SMS documents email error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # --- Party Management (Tenant-specific) ---
@@ -916,7 +916,7 @@ def list_tenant_parties(
         raise
     except Exception as e:
         logger.error(f"[ADMIN_TENANTS] Error in list_tenant_parties: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # --- Sales Management (Tenant-specific) ---

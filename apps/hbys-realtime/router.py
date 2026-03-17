@@ -1,6 +1,7 @@
 """
 Notification & Realtime Router - FastAPI endpoints and WebSocket handler.
 """
+import asyncio
 import json
 import logging
 from typing import Optional
@@ -55,8 +56,12 @@ async def websocket_clinical_notifications(websocket: WebSocket):
     await websocket.accept()
 
     try:
-        # Wait for auth message (with 30s timeout via client contract)
-        raw = await websocket.receive_text()
+        # Wait for auth message with server-enforced timeout
+        try:
+            raw = await asyncio.wait_for(websocket.receive_text(), timeout=10.0)
+        except asyncio.TimeoutError:
+            await websocket.close(code=4001, reason="Authentication timeout")
+            return
         auth_data = json.loads(raw)
 
         if auth_data.get("type") != "auth" or not auth_data.get("token"):

@@ -102,7 +102,7 @@ def get_party_devices(
         raise he
     except Exception as e:
         logger.error(f"Error getting patient devices: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 
@@ -158,7 +158,7 @@ def list_party_hearing_tests(
         )
     except Exception as e:
         logger.error(f"Error listing hearing tests: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get(
@@ -1135,7 +1135,7 @@ def get_party_notes(
         raise he
     except Exception as e:
         logger.error(f"Error getting party notes: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/parties/{party_id}/notes", operation_id="createPartyNotes", status_code=201, response_model=ResponseEnvelope[PartyNoteRead])
 def create_party_note(
@@ -1182,7 +1182,7 @@ def create_party_note(
         raise he
     except Exception as e:
         logger.error(f"Error creating patient note: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/parties/{party_id}/notes/{note_id}", operation_id="updatePartyNote", response_model=ResponseEnvelope[PartyNoteRead])
 def update_party_note(
@@ -1217,7 +1217,7 @@ def update_party_note(
         raise he
     except Exception as e:
         logger.error(f"Error updating patient note: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.delete("/parties/{party_id}/notes/{note_id}", operation_id="deletePartyNote", response_model=ResponseEnvelope)
 def delete_party_note(
@@ -1250,7 +1250,7 @@ def delete_party_note(
         raise he
     except Exception as e:
         logger.error(f"Error deleting patient note: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 
@@ -1310,7 +1310,7 @@ def get_party_sales(
         raise
     except Exception as e:
         logger.error(f"Error getting party sales: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 # --- Party Appointments ---
 
@@ -1349,7 +1349,7 @@ def get_party_appointments(
         raise
     except Exception as e:
         logger.error(f"Error getting patient appointments: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -1451,7 +1451,7 @@ def get_party_anamnesis(
         raise
     except Exception as e:
         logger.error(f"Error getting anamnesis: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/parties/{party_id}/anamnesis", operation_id="savePartyAnamnesis")
@@ -1509,4 +1509,4 @@ async def save_party_anamnesis(
     except Exception as e:
         db.rollback()
         logger.error(f"Error saving anamnesis: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

@@ -682,7 +682,7 @@ class OCREngine {
     // Try PaddleOCR backend extraction
     async tryPaddleOCRExtraction(text) {
         try {
-            const response = await fetch('http://localhost:5003/extract_patient', {
+            const response = await fetch((window.__API_BASE_URL__ || 'http://localhost:5003') + '/extract_patient', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

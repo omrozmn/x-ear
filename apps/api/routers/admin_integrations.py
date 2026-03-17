@@ -45,7 +45,7 @@ async def get_integrations(
         })
     except Exception as e:
         logger.error(f"Get integrations error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 class VatanSmsConfigUpdate(BaseModel):
     approvalEmail: Optional[str] = ""
@@ -78,7 +78,7 @@ async def init_db(
         return ResponseEnvelope(message="Integration config tables initialized")
     except Exception as e:
         logger.error(f"Init DB error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/vatan-sms/config", operation_id="listAdminIntegrationVatanSmConfig", response_model=IntegrationDetailResponse)
 async def get_vatan_sms_config(
@@ -117,7 +117,7 @@ async def get_vatan_sms_config(
         })
     except Exception as e:
         logger.error(f"Get VatanSMS config error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/vatan-sms/config", operation_id="updateAdminIntegrationVatanSmConfig", response_model=ResponseEnvelope)
 async def update_vatan_sms_config(
@@ -159,7 +159,7 @@ async def update_vatan_sms_config(
     except Exception as e:
         db.rollback()
         logger.error(f"Update VatanSMS config error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/birfatura/config", operation_id="listAdminIntegrationBirfaturaConfig", response_model=IntegrationDetailResponse)
 async def get_birfatura_config(
@@ -196,7 +196,7 @@ async def get_birfatura_config(
         })
     except Exception as e:
         logger.error(f"Get BirFatura config error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/birfatura/config", operation_id="updateAdminIntegrationBirfaturaConfig", response_model=ResponseEnvelope)
 async def update_birfatura_config(
@@ -237,7 +237,7 @@ async def update_birfatura_config(
     except Exception as e:
         db.rollback()
         logger.error(f"Update BirFatura config error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/telegram/config", operation_id="listAdminIntegrationTelegramConfig", response_model=IntegrationDetailResponse)
 async def get_telegram_config(
@@ -267,7 +267,7 @@ async def get_telegram_config(
         })
     except Exception as e:
         logger.error(f"Get Telegram config error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/telegram/config", operation_id="updateAdminIntegrationTelegramConfig", response_model=ResponseEnvelope)
 async def update_telegram_config(
@@ -307,4 +307,4 @@ async def update_telegram_config(
     except Exception as e:
         db.rollback()
         logger.error(f"Update Telegram config error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

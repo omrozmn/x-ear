@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import DOMPurify from 'dompurify';
 import {
   DndContext,
   DragOverlay,
@@ -326,7 +327,7 @@ const LabelEditorPage: React.FC<LabelEditorPageProps> = ({ templateId }) => {
             </div>
             <div className="p-6 flex items-center justify-center bg-gray-50 dark:bg-gray-900 min-h-[300px]">
               <div
-                dangerouslySetInnerHTML={{ __html: previewSvg }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(previewSvg, { USE_PROFILES: { svg: true } }) }}
                 className="max-w-full overflow-auto"
               />
             </div>

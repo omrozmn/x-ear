@@ -1,5 +1,10 @@
 // Patient actions glue: saved views, bulk actions and exports
 (function(){
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+  }
+
   const patientActions = {
     renderSavedViews() {
       try {
@@ -12,7 +17,7 @@
         let views = [];
         try { views = JSON.parse(localStorage.getItem('xear_saved_views') || '[]'); } catch(e) { views = []; }
         if (!Array.isArray(views) || views.length === 0) { container.innerHTML = '<div class="text-sm text-gray-500">Kayıtlı görünüm yok</div>'; return; }
-        container.innerHTML = views.map(v => `<button class="px-3 py-1 text-sm border border-gray-200 rounded-md bg-white hover:bg-gray-50" data-view-id="${v.id}">${v.name}</button>`).join(' ');
+        container.innerHTML = views.map(v => `<button class="px-3 py-1 text-sm border border-gray-200 rounded-md bg-white hover:bg-gray-50" data-view-id="${escapeHtml(v.id)}">${escapeHtml(v.name)}</button>`).join(' ');
         container.querySelectorAll('[data-view-id]').forEach(btn => btn.addEventListener('click', () => {
           const id = btn.dataset.viewId; try { const viewsLocal = JSON.parse(localStorage.getItem('xear_saved_views') || '[]'); const view = (viewsLocal||[]).find(x=>x.id===id); if (!view) return; if (window.patientManager && typeof window.patientManager.applyFilters === 'function') { Object.keys(view.filters||{}).forEach(k=>{ window.patientManager.currentFilters[k]=view.filters[k]; }); window.patientManager.applyFilters(); } } catch(e){console.error(e);} }));
       } catch(err){ console.error('patientActions.renderSavedViews failed', err); }

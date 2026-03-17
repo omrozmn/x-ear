@@ -70,7 +70,7 @@ async def get_sms_config(
         
         return ResponseEnvelope(data=None)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/config", operation_id="updateSmConfig", response_model=ResponseEnvelope[Optional[SmsProviderConfigRead]])
 async def update_sms_config(
@@ -102,7 +102,7 @@ async def update_sms_config(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/headers", operation_id="listSmHeaders", response_model=ResponseEnvelope[List[SmsHeaderRequestRead]])
 async def list_sms_headers(
@@ -119,7 +119,7 @@ async def list_sms_headers(
         # Use Pydantic schema for type-safe serialization (NO to_dict())
         return ResponseEnvelope(data=[SmsHeaderRequestRead.model_validate(h).model_dump(by_alias=True) for h in headers])
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/headers", operation_id="createSmHeaders", response_model=ResponseEnvelope[SmsHeaderRequestRead])
 async def request_sms_header(
@@ -159,7 +159,7 @@ async def request_sms_header(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/headers/{header_id}/set-default", operation_id="updateSmHeaderSetDefault", response_model=ResponseEnvelope[SmsHeaderRequestRead])
 async def set_default_header(
@@ -189,7 +189,7 @@ async def set_default_header(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/packages", operation_id="listSmPackages", response_model=ResponseEnvelope[List[SmsPackageRead]])
 async def list_sms_packages(db: Session = Depends(get_db)):
@@ -199,7 +199,7 @@ async def list_sms_packages(db: Session = Depends(get_db)):
         # Use Pydantic schema for type-safe serialization (NO to_dict())
         return ResponseEnvelope(data=[SmsPackageRead.model_validate(p).model_dump(by_alias=True) for p in packages])
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/credit", operation_id="listSmCredit", response_model=ResponseEnvelope[Optional[TenantSmsCreditRead]])
 async def get_sms_credit(
@@ -218,7 +218,7 @@ async def get_sms_credit(
         # Use Pydantic schema for type-safe serialization (NO to_dict())
         return ResponseEnvelope(data=TenantSmsCreditRead.model_validate(credit).model_dump(by_alias=True) if credit else None)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/audiences", operation_id="listSmAudiences", response_model=ResponseEnvelope[List[TargetAudienceRead]])
 async def list_target_audiences(
@@ -235,7 +235,7 @@ async def list_target_audiences(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/audiences", operation_id="createSmAudiences", response_model=ResponseEnvelope[TargetAudienceRead])
 async def create_target_audience(
@@ -268,7 +268,7 @@ async def create_target_audience(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 # --- Additional SMS Endpoints (Migrated from Flask) ---
 
@@ -335,7 +335,7 @@ async def upload_sms_document(
     except Exception as e:
         db.rollback()
         logging.error(f"Error uploading SMS document: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/documents/{document_type}/download", operation_id="listSmDocumentDownload")
 async def download_sms_document(
@@ -382,7 +382,7 @@ async def download_sms_document(
         raise
     except Exception as e:
         logging.error(f"Error downloading SMS document: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.delete("/documents/{document_type}", operation_id="deleteSmDocument")
 async def delete_sms_document(
@@ -409,7 +409,7 @@ async def delete_sms_document(
         
         return ResponseEnvelope(message=f"Document {document_type} deleted")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 class DocumentSubmitRequest(BaseModel):
     document_type: str
@@ -454,7 +454,7 @@ async def submit_sms_documents(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/audiences/upload", operation_id="createSmAudienceUpload")
 async def upload_audience_file(
@@ -490,7 +490,7 @@ async def upload_audience_file(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 # --- Admin SMS Endpoints ---
 
@@ -518,7 +518,7 @@ async def list_admin_sms_headers(
             }
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 class HeaderStatusUpdate(BaseModel):
     status: str
@@ -550,7 +550,7 @@ async def update_header_status(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/documents/file/{filepath:path}", operation_id="getSmDocumentFile")
 async def get_sms_document_file(
@@ -575,4 +575,4 @@ async def get_sms_document_file(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

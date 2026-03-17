@@ -38,6 +38,12 @@ dist/
 .env
 .env.*
 
+# Auth tokens and secrets (security)
+admin_token.txt
+auth_token.json
+*_token.txt
+*_token.json
+
 # Vast.ai SSH keys (security)
 vast_temp_key
 vast_temp_key.pub

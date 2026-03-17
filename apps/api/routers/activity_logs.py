@@ -153,7 +153,7 @@ def get_activity_logs(
         
     except Exception as e:
         logger.error(f"Error fetching activity logs: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/activity-logs/stats", operation_id="listActivityLogStats", response_model=ResponseEnvelope[ActivityLogStats])
@@ -200,7 +200,7 @@ def get_activity_stats(
         
     except Exception as e:
         logger.error(f"Error fetching activity stats: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/activity-logs/filter-options", operation_id="listActivityLogFilterOptions")
@@ -259,7 +259,7 @@ def get_activity_log_filter_options(
         
     except Exception as e:
         logger.error(f"Error fetching filter options: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # Alias endpoint for /audit (backward compatibility)

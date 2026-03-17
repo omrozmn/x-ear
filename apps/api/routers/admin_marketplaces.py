@@ -47,7 +47,7 @@ async def init_db(
         return {"success": True, "message": "Marketplace tables initialized"}
     except Exception as e:
         logger.error(f"Init DB error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/integrations", operation_id="listAdminMarketplaceIntegrations", response_model=MarketplaceListResponse)
 async def get_integrations(
@@ -65,7 +65,7 @@ async def get_integrations(
         # Use Pydantic schema for type-safe serialization (NO to_dict())
         return {"success": True, "data": [MarketplaceIntegrationRead.model_validate(i).model_dump(by_alias=True) for i in integrations]}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/integrations", operation_id="createAdminMarketplaceIntegrations", response_model=MarketplaceDetailResponse)
 async def create_integration(
@@ -101,7 +101,7 @@ async def create_integration(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 @router.post("/integrations/{integration_id}/sync", operation_id="createAdminMarketplaceIntegrationSync", response_model=ResponseEnvelope)
 async def sync_integration(
@@ -125,4 +125,4 @@ async def sync_integration(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

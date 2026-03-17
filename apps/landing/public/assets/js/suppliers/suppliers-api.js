@@ -4,7 +4,7 @@
  */
 
 // Get API base from global config
-const API_BASE = window.APIConfig?.BACKEND_BASE_URL + '/api' || 'http://localhost:5003/api';
+const API_BASE = (window.APIConfig?.BACKEND_BASE_URL ? window.APIConfig.BACKEND_BASE_URL + '/api' : null) || (window.__API_BASE_URL__ || 'http://localhost:5003') + '/api';
 
 /**
  * Generic API call handler with error handling

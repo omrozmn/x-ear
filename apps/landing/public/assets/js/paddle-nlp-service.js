@@ -11,6 +11,8 @@
  * - Medical terminology understanding
  */
 
+var API_BASE = window.__API_BASE_URL__ || 'http://localhost:5003';
+
 class PaddleNLPService {
     constructor(options = {}) {
         this.debug = options.debug || false;
@@ -20,12 +22,12 @@ class PaddleNLPService {
         this.entityCache = new Map();
         this.similarityCache = new Map();
         this.initialized = false;
-        
+
                 // Initialize real PaddleOCR backend client
         this.backendClient = new PaddleBackendClient({
             baseURL: (window.APIConfig && window.APIConfig.BACKEND_BASE_URL) ||
                      options.backendURL ||
-                     'http://localhost:5003',
+                     API_BASE,
             debug: this.debug,
             fallbackService: this // Use this class as fallback
         });

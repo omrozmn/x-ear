@@ -126,7 +126,7 @@ async def create_dynamic_invoice(
         }
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/invoices/{invoice_id}/xml", operation_id="listInvoiceXml")
 async def generate_invoice_xml(
@@ -167,7 +167,7 @@ async def generate_invoice_xml(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/invoices/{invoice_id}/send-gib", operation_id="createInvoiceSendGib")
 async def send_invoice_to_gib(
@@ -203,7 +203,7 @@ async def send_invoice_to_gib(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/invoice-settings", operation_id="listInvoiceSettings")
 async def get_invoice_settings(
@@ -227,7 +227,7 @@ async def get_invoice_settings(
         
         return {"success": True, "data": settings, "requestId": str(uuid.uuid4()), "timestamp": now_utc().isoformat()}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/invoice-settings", operation_id="createInvoiceSettings")
 async def update_invoice_settings(
@@ -268,4 +268,4 @@ async def update_invoice_settings(
         }
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

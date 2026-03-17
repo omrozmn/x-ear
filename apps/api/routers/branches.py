@@ -96,7 +96,7 @@ def get_branches(
         return ResponseEnvelope(data=[BranchRead.model_validate(b) for b in branches])
     except Exception as e:
         logger.error(f"Get branches error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/branches", operation_id="createBranches", status_code=201, response_model=ResponseEnvelope[BranchRead])
 def create_branch(
@@ -166,7 +166,7 @@ def create_branch(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Create branch error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/branches/{branch_id}", operation_id="updateBranch", response_model=ResponseEnvelope[BranchRead])
 def update_branch(
@@ -204,7 +204,7 @@ def update_branch(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Update branch error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.delete("/branches/{branch_id}", operation_id="deleteBranch")
 def delete_branch(
@@ -232,4 +232,4 @@ def delete_branch(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Delete branch error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

@@ -658,7 +658,7 @@ class OptimisticAPIClient {
             return endpoint;
         }
         
-        const baseUrl = window.APIConfig?.baseUrl || 'http://localhost:5003/api';
+        const baseUrl = window.APIConfig?.baseUrl || (window.__API_BASE_URL__ || 'http://localhost:5003') + '/api';
         return `${baseUrl}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
     }
 

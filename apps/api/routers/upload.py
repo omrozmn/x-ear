@@ -158,7 +158,7 @@ def get_presigned_upload_url(
         raise
     except Exception as e:
         logger.error(f"Error generating presigned URL: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/files", operation_id="listUploadFiles", response_model=ResponseEnvelope[FileListResponse])
 def list_files(
@@ -204,7 +204,7 @@ def list_files(
         raise
     except Exception as e:
         logger.error(f"Error listing files: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.delete("/files", operation_id="deleteUploadFiles")
 def delete_file(
@@ -265,4 +265,4 @@ def delete_file(
         raise
     except Exception as e:
         logger.error(f"Error deleting file: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

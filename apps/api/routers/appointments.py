@@ -127,7 +127,7 @@ def get_appointments(
         )
     except Exception as e:
         logger.error(f"Get appointments error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/appointments", operation_id="createAppointments", status_code=201, response_model=ResponseEnvelope[AppointmentRead])
 def create_appointment(
@@ -242,7 +242,7 @@ def create_appointment(
                  detail=ApiError(message="This slot is already booked.", code="SLOT_OCCUPIED").model_dump(mode="json")
              )
         logger.error(f"Create appointment error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/appointments/availability", operation_id="listAppointmentAvailability", response_model=ResponseEnvelope[AppointmentAvailability])
 def get_availability(
@@ -302,7 +302,7 @@ def get_availability(
         )
     except Exception as e:
         logger.error(f"Get availability error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/appointments/list", operation_id="listAppointmentList", response_model=ResponseEnvelope[List[AppointmentRead]])
@@ -354,7 +354,7 @@ def list_appointments(
         )
     except Exception as e:
         logger.error(f"List appointments error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 @router.get("/appointments/{appointment_id}", operation_id="getAppointment", response_model=ResponseEnvelope[AppointmentRead])
 def get_appointment(
     appointment_id: str,
@@ -413,7 +413,7 @@ def update_appointment(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Update appointment error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.delete("/appointments/{appointment_id}", operation_id="deleteAppointment")
 def delete_appointment(
@@ -445,7 +445,7 @@ def delete_appointment(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Delete appointment error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/appointments/{appointment_id}/reschedule", operation_id="createAppointmentReschedule", response_model=ResponseEnvelope[AppointmentRead])
 def reschedule_appointment(
@@ -481,7 +481,7 @@ def reschedule_appointment(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Reschedule appointment error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/appointments/{appointment_id}/cancel", operation_id="createAppointmentCancel", response_model=ResponseEnvelope[AppointmentRead])
 def cancel_appointment(
@@ -513,7 +513,7 @@ def cancel_appointment(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Cancel appointment error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/appointments/{appointment_id}/complete", operation_id="createAppointmentComplete", response_model=ResponseEnvelope[AppointmentRead])
 def complete_appointment(
@@ -545,5 +545,5 @@ def complete_appointment(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Complete appointment error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 

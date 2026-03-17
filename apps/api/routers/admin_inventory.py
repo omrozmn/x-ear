@@ -70,5 +70,5 @@ async def get_all_inventory(
         )
     except Exception as e:
         logger.error(f"Get all inventory error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 

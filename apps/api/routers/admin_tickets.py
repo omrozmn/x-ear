@@ -191,7 +191,7 @@ async def get_admin_tickets(
         )
     except Exception as e:
         logger.error(f"Error listing tickets: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("", operation_id="createAdminTicket", response_model=ResponseEnvelope[dict])
@@ -241,7 +241,7 @@ async def create_admin_ticket(
     except Exception as e:
         db.rollback()
         logger.error(f"Error creating ticket: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/{ticket_id}", operation_id="updateAdminTicket", response_model=ResponseEnvelope[dict])
@@ -302,7 +302,7 @@ async def update_admin_ticket(
     except Exception as e:
         db.rollback()
         logger.error(f"Error updating ticket: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/{ticket_id}/responses", operation_id="createAdminTicketResponse", response_model=ResponseEnvelope[dict])
@@ -348,4 +348,4 @@ async def create_ticket_response(
     except Exception as e:
         db.rollback()
         logger.error(f"Error creating ticket response: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

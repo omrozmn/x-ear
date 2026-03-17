@@ -63,7 +63,7 @@ async def init_db(
         return ResponseEnvelope(message="Notification tables initialized")
     except Exception as e:
         logger.error(f"Init DB error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("", operation_id="listAdminNotifications", response_model=ResponseEnvelope[List[NotificationRead]])
 async def get_notifications(
@@ -92,7 +92,7 @@ async def get_notifications(
         )
     except Exception as e:
         logger.error(f"Get notifications error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/send", operation_id="createAdminNotificationSend", response_model=ResponseEnvelope)
 async def send_notification(
@@ -174,7 +174,7 @@ async def send_notification(
     except Exception as e:
         db.rollback()
         logger.error(f"Send notification error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 # --- Template Endpoints (Migrated from Flask) ---
 
@@ -207,7 +207,7 @@ async def get_templates(
         )
     except Exception as e:
         logger.error(f"Get templates error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/templates", operation_id="createAdminNotificationTemplates", response_model=ResponseEnvelope[EmailTemplateRead])
 async def create_template(
@@ -254,7 +254,7 @@ async def create_template(
     except Exception as e:
         db.rollback()
         logger.error(f"Create template error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/templates/{template_id}", operation_id="updateAdminNotificationTemplate", response_model=ResponseEnvelope[EmailTemplateRead])
 async def update_template(
@@ -310,7 +310,7 @@ async def update_template(
     except Exception as e:
         db.rollback()
         logger.error(f"Update template error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.delete("/templates/{template_id}", operation_id="deleteAdminNotificationTemplate", response_model=ResponseEnvelope)
 async def delete_template(
@@ -334,4 +334,4 @@ async def delete_template(
     except Exception as e:
         db.rollback()
         logger.error(f"Delete template error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

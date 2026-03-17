@@ -1,4 +1,5 @@
 // Cashflow Management JavaScript
+var API_BASE = window.__API_BASE_URL__ || 'http://localhost:5003';
 // Global variables
 let allCashRecords = [];
 let filteredRecords = [];
@@ -128,9 +129,9 @@ async function loadCashData() {
     
     // API candidates to try - prioritize unified endpoint
     const apiCandidates = [
-      'http://localhost:5003/api/unified-cash-records',
-      'http://localhost:5003/api/cash-records/unified',
-      'http://localhost:5003/api/cash-records',
+      API_BASE + '/api/unified-cash-records',
+      API_BASE + '/api/cash-records/unified',
+      API_BASE + '/api/cash-records',
       window.location.origin + '/api/unified-cash-records',
       // Fallback to old endpoints
       'http://localhost:5100/api/unified-cash-records',
@@ -681,7 +682,7 @@ async function confirmDeleteCashRecord(recordId) {
 
 async function updateRecordAPI(record) {
   const apiCandidates = [
-    'http://localhost:5003/api/cash-records',
+    API_BASE + '/api/cash-records',
     'http://localhost:5100/api/cash-records',
     window.location.origin + '/api/cash-records'
   ];
@@ -708,7 +709,7 @@ async function updateRecordAPI(record) {
 
 async function deleteRecordAPI(recordId) {
   const apiCandidates = [
-    'http://localhost:5003/api/cash-records',
+    API_BASE + '/api/cash-records',
     'http://localhost:5100/api/cash-records',
     window.location.origin + '/api/cash-records'
   ];
@@ -785,7 +786,7 @@ function exportCashData() {
     }
 
     const candidates = [
-      'http://localhost:5003/api/cash-records?limit=1',
+      API_BASE + '/api/cash-records?limit=1',
       'http://localhost:5100/api/cash-records?limit=1',
       window.location.origin + '/api/cash-records?limit=1'
     ];
@@ -855,7 +856,7 @@ function initializePatientSearch() {
 
 async function loadPatients() {
   const apiCandidates = [
-    'http://localhost:5003/api/patients',
+    API_BASE + '/api/patients',
     'http://localhost:5100/api/patients',
     window.location.origin + '/api/patients'
   ];
@@ -1297,7 +1298,7 @@ async function createTimelineEntry(patientId, record) {
 
     // Try multiple API endpoints for timeline creation
     const apiCandidates = [
-      `http://localhost:5003/api/patients/${patientId}/timeline`,
+      `${API_BASE}/api/patients/${patientId}/timeline`,
       `http://localhost:5100/api/patients/${patientId}/timeline`,
       `${window.location.origin}/api/patients/${patientId}/timeline`
     ];
@@ -1331,7 +1332,7 @@ async function createTimelineEntry(patientId, record) {
 // Save record via API
 async function saveRecordAPI(record) {
   const apiCandidates = [
-    'http://localhost:5003/api/cash-records',
+    API_BASE + '/api/cash-records',
     'http://localhost:5100/api/cash-records',
     window.location.origin + '/api/cash-records'
   ];

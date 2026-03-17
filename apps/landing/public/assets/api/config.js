@@ -5,7 +5,7 @@ exports.getApiConfig = getApiConfig;
 exports.updateApiConfig = updateApiConfig;
 // Default configuration
 const defaultConfig = {
-    baseUrl: 'http://localhost:5003',
+    baseUrl: (typeof window !== 'undefined' && window.__API_BASE_URL__) || 'http://localhost:5003',
     timeout: 30000,
     retries: 3,
     useGeneratedClient: false,

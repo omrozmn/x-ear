@@ -3,12 +3,14 @@
  * Connects to Python PaddleOCR backend service for advanced NLP processing
  */
 
+var API_BASE = window.__API_BASE_URL__ || 'http://localhost:5003';
+
 class PaddleBackendClient {
     constructor(options = {}) {
         // Use centralized API config if available, fallback to options
         this.baseURL = (window.APIConfig && window.APIConfig.BACKEND_BASE_URL) ||
                       options.baseURL ||
-                      'http://localhost:5003';
+                      API_BASE;
         this.timeout = options.timeout || 30000; // 30 seconds
         this.debug = options.debug || false;
         this.fallbackService = options.fallbackService; // Your existing JS simulation

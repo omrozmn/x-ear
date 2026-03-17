@@ -232,7 +232,7 @@ def get_unified_cash_records(
         
     except Exception as e:
         logger.error(f"Unified cash records error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/unified-cash-records/summary", operation_id="listUnifiedCashRecordSummary")
 def get_cash_summary(
@@ -360,4 +360,4 @@ def get_cash_summary(
         
     except Exception as e:
         logger.error(f"Cash summary error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

@@ -150,7 +150,7 @@ async def list_messages(
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/messages/send-sms", response_model=ResponseEnvelope[SmsLogRead], operation_id="createCommunicationMessageSendSms")
 async def send_sms(
@@ -190,7 +190,7 @@ async def send_sms(
         return ResponseEnvelope(data=SmsLogRead.model_validate(sms_log))
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/messages/send-email", response_model=ResponseEnvelope[EmailLogRead], operation_id="createCommunicationMessageSendEmail")
 async def send_email(
@@ -239,7 +239,7 @@ async def send_email(
         return {"success": True, "data": EmailLogRead.from_orm_with_json(email_log), "timestamp": now_utc().isoformat()}
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/templates", response_model=ResponseEnvelope[List[CommunicationTemplateRead]], operation_id="listCommunicationTemplates")
 async def list_templates(
@@ -280,7 +280,7 @@ async def list_templates(
             "timestamp": now_utc().isoformat()
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/templates", response_model=ResponseEnvelope[CommunicationTemplateRead], operation_id="createCommunicationTemplate")
 async def create_template(
@@ -316,7 +316,7 @@ async def create_template(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/templates/{template_id}", response_model=ResponseEnvelope[CommunicationTemplateRead], operation_id="getCommunicationTemplate")
 async def get_template(template_id: str, db: Session = Depends(get_db), access: UnifiedAccess = Depends(require_access())):
@@ -376,7 +376,7 @@ async def update_template(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.delete("/templates/{template_id}", operation_id="deleteCommunicationTemplate")
 async def delete_template(template_id: str, db: Session = Depends(get_db), access: UnifiedAccess = Depends(require_access())):
@@ -441,7 +441,7 @@ async def list_communication_history(
             "timestamp": now_utc().isoformat()
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/history", response_model=ResponseEnvelope[CommunicationHistoryRead], operation_id="createCommunicationHistory")
 async def create_communication_history(
@@ -478,7 +478,7 @@ async def create_communication_history(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/stats", operation_id="listCommunicationStats")
 async def communication_stats(
@@ -528,4 +528,4 @@ async def communication_stats(
         
         return {"success": True, "data": stats, "timestamp": now_utc().isoformat()}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

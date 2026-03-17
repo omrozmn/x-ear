@@ -97,7 +97,7 @@ def init_db(
         raise
     except Exception as e:
         logger.error(f"Init DB error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("", operation_id="listAdminSettings", response_model=ResponseEnvelope[List[SystemSettingRead]])
 def get_settings(
@@ -158,7 +158,7 @@ def get_settings(
         raise
     except Exception as e:
         logger.error(f"Get settings error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("", operation_id="updateAdminSettings", response_model=ResponseEnvelope)
 def update_settings(
@@ -209,7 +209,7 @@ def update_settings(
     except Exception as e:
         db.rollback()
         logger.error(f"Update settings error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 @router.post("/cache/clear", operation_id="createAdminSettingCacheClear", response_model=ResponseEnvelope)
 def clear_cache(

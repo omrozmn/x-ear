@@ -414,7 +414,7 @@ def issue_invoice_draft(
     except Exception as exc:
         db.rollback()
         logger.error("Error issuing invoice draft %s: %s", draft_id, exc)
-        raise HTTPException(status_code=500, detail=f"Failed to issue draft: {exc}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
     return ResponseEnvelope(
         success=True,

@@ -70,7 +70,7 @@ def get_patient_documents(
         raise
     except Exception as e:
         logger.error(f"Error getting patient documents: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/parties/{party_id}/documents", operation_id="createPatientDocuments", status_code=201, response_model=ResponseEnvelope[DocumentRead])
 def add_patient_document(
@@ -104,7 +104,7 @@ def add_patient_document(
         try:
             file_content = base64.b64decode(request_data.content)
         except Exception as e:
-            raise HTTPException(status_code=400, detail=f"Invalid base64 content: {str(e)}")
+            raise HTTPException(status_code=400, detail="Invalid base64 content")
         
         # Use original filename or generate safe filename
         file_name = request_data.file_name or f'document_{doc_id}'
@@ -172,7 +172,7 @@ def add_patient_document(
     except Exception as e:
         db.rollback()
         logger.error(f"Error adding patient document: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/parties/{party_id}/documents/{document_id}", operation_id="getPatientDocument")
 def get_patient_document(
@@ -222,7 +222,7 @@ def get_patient_document(
         raise
     except Exception as e:
         logger.error(f"Error getting patient document: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.delete("/parties/{party_id}/documents/{document_id}", operation_id="deletePatientDocument")
 def delete_patient_document(
@@ -279,4 +279,4 @@ def delete_patient_document(
     except Exception as e:
         db.rollback()
         logger.error(f"Error deleting patient document: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

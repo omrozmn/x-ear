@@ -115,37 +115,41 @@ def build_branch_filter_condition(column, branch_ids: Optional[List[str]]):
     return column.in_(branch_ids)
 
 def enrich_activity_logs(logs: List[ActivityLog], session: Session) -> List[Dict[str, Any]]:
-    """Enrich activity logs with user, tenant, branch details (replacing to_dict_with_user)"""
+    """Enrich activity logs with user, tenant, branch details - batch fetched to avoid N+1"""
+    if not logs:
+        return []
+
+    # Collect all unique IDs
+    user_ids = {log.user_id for log in logs if log.user_id}
+    tenant_ids = {log.tenant_id for log in logs if log.tenant_id}
+    branch_ids = {log.branch_id for log in logs if log.branch_id}
+    party_ids = {log.entity_id for log in logs if log.entity_type == 'patient' and log.entity_id}
+
+    # Batch fetch all related entities (4 queries instead of up to 4*N)
+    users_map = {u.id: u for u in session.query(User).filter(User.id.in_(user_ids)).all()} if user_ids else {}
+    tenants_map = {t.id: t for t in session.query(Tenant).filter(Tenant.id.in_(tenant_ids)).all()} if tenant_ids else {}
+    branches_map = {b.id: b for b in session.query(Branch).filter(Branch.id.in_(branch_ids)).all()} if branch_ids else {}
+    parties_map = {p.id: p for p in session.query(Party).filter(Party.id.in_(party_ids)).all()} if party_ids else {}
+
     results = []
-    # Collect IDs for bulk fetch could be optimized here, but keeping it simple for now (N+1) as per original implementation
     for log in logs:
         data = AuditLogRead.model_validate(log).model_dump(by_alias=True)
-        
-        # User details
-        if log.user_id:
-            user = session.get(User, log.user_id)
-            if user:
-                data['userName'] = f"{user.first_name} {user.last_name}" if user.first_name else user.username
-                data['userEmail'] = user.email
-        
-        # Tenant details
-        if log.tenant_id:
-            tenant = session.get(Tenant, log.tenant_id)
-            if tenant:
-                data['tenantName'] = tenant.name
-        
-        # Branch details
-        if log.branch_id:
-            branch = session.get(Branch, log.branch_id)
-            if branch:
-                data['branchName'] = branch.name
-        
-        # Patient details
-        if log.entity_type == 'patient' and log.entity_id:
-            party = session.get(Party, log.entity_id)
-            if party:
-                data['patientName'] = f"{party.first_name} {party.last_name}"
-        
+
+        if log.user_id and log.user_id in users_map:
+            user = users_map[log.user_id]
+            data['userName'] = f"{user.first_name} {user.last_name}" if user.first_name else user.username
+            data['userEmail'] = user.email
+
+        if log.tenant_id and log.tenant_id in tenants_map:
+            data['tenantName'] = tenants_map[log.tenant_id].name
+
+        if log.branch_id and log.branch_id in branches_map:
+            data['branchName'] = branches_map[log.branch_id].name
+
+        if log.entity_type == 'patient' and log.entity_id and log.entity_id in parties_map:
+            party = parties_map[log.entity_id]
+            data['patientName'] = f"{party.first_name} {party.last_name}"
+
         results.append(data)
     return results
 
@@ -316,7 +320,7 @@ def get_dashboard(
         )
     except Exception as e:
         logger.error(f"Get dashboard error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/dashboard/kpis", operation_id="listDashboardKpis", response_model=ResponseEnvelope[DashboardKPIs])
 def get_kpis(
@@ -344,7 +348,7 @@ def get_kpis(
         )
     except Exception as e:
         logger.error(f"Get KPIs error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/dashboard/charts/patient-trends", operation_id="listDashboardChartPatientTrends", response_model=ResponseEnvelope[ChartData])
 def patient_trends(
@@ -376,7 +380,7 @@ def patient_trends(
         )
     except Exception as e:
         logger.error(f"Patient trends error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/dashboard/charts/revenue-trends", operation_id="listDashboardChartRevenueTrends", response_model=ResponseEnvelope[ChartData])
 def revenue_trends(
@@ -410,7 +414,7 @@ def revenue_trends(
         )
     except Exception as e:
         logger.error(f"Revenue trends error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/dashboard/recent-activity", operation_id="listDashboardRecentActivity", response_model=ResponseEnvelope[RecentActivityResponse])
 def recent_activity(
@@ -425,7 +429,7 @@ def recent_activity(
         )
     except Exception as e:
         logger.error(f"Recent activity error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/dashboard/charts/patient-distribution", operation_id="listDashboardChartPatientDistribution", response_model=ResponseEnvelope[List[BranchDistribution]])
 def patient_distribution(
@@ -537,4 +541,4 @@ def patient_distribution(
         return ResponseEnvelope(data=results)
     except Exception as e:
         logger.error(f"Patient distribution error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

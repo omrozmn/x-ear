@@ -399,7 +399,7 @@ async def start_session(
         data = manager.start(tenant_id)
     except Exception as exc:
         logger.error("WhatsApp session baslatma hatasi: %s", exc)
-        raise HTTPException(status_code=500, detail=str(exc))
+        raise HTTPException(status_code=500, detail="Internal server error")
     return ResponseEnvelope(data=data, message="WhatsApp session hazir")
 
 
@@ -413,7 +413,7 @@ async def disconnect_session(
         data = manager.disconnect(tenant_id)
     except Exception as exc:
         logger.error("WhatsApp session kapatma hatasi: %s", exc)
-        raise HTTPException(status_code=500, detail=str(exc))
+        raise HTTPException(status_code=500, detail="Internal server error")
     return ResponseEnvelope(data=data, message="WhatsApp session kapatildi")
 
 
@@ -479,7 +479,7 @@ async def send_message(
     except Exception as exc:
         db.rollback()
         logger.error("WhatsApp mesaj gonderim hatasi: %s", exc)
-        raise HTTPException(status_code=500, detail=str(exc))
+        raise HTTPException(status_code=500, detail="Internal server error")
     return ResponseEnvelope(data=data, message="WhatsApp mesaji gonderildi")
 
 
@@ -553,7 +553,7 @@ async def send_bulk(
     except Exception as exc:
         db.rollback()
         logger.error("WhatsApp toplu gonderim hatasi: %s", exc)
-        raise HTTPException(status_code=500, detail=str(exc))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
     return ResponseEnvelope(data=result, message="WhatsApp toplu gonderim tamamlandi")
 
@@ -587,7 +587,7 @@ async def send_ai_message(
     except Exception as exc:
         db.rollback()
         logger.error("WhatsApp AI mesaj hatasi: %s", exc)
-        raise HTTPException(status_code=500, detail=str(exc))
+        raise HTTPException(status_code=500, detail="Internal server error")
     return ResponseEnvelope(data=result, message="AI talebi WhatsApp uzerinden gonderildi")
 
 
@@ -601,7 +601,7 @@ async def sync_inbox(
         payload = await sync_whatsapp_inbox_for_tenant(tenant_id, limit=limit)
     except Exception as exc:
         logger.error("WhatsApp inbox sync hatasi: %s", exc)
-        raise HTTPException(status_code=500, detail=str(exc))
+        raise HTTPException(status_code=500, detail="Internal server error")
     return ResponseEnvelope(data=payload, message="WhatsApp inbox senkronize edildi")
 
 

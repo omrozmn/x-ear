@@ -59,7 +59,7 @@ def get_campaigns(
         )
     except Exception as e:
         logger.error(f"Get campaigns error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/campaigns", operation_id="createCampaigns", response_model=ResponseEnvelope[CampaignRead], status_code=201)
@@ -101,7 +101,7 @@ def create_campaign(
     except Exception as e:
         db.rollback()
         logger.error(f"Create campaign error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/campaigns/{campaign_id}", operation_id="getCampaign", response_model=ResponseEnvelope[CampaignRead])
@@ -134,7 +134,7 @@ def get_campaign(
         raise
     except Exception as e:
         logger.error(f"Get campaign error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/campaigns/{campaign_id}", operation_id="updateCampaign", response_model=ResponseEnvelope[CampaignRead])
@@ -181,7 +181,7 @@ def update_campaign(
     except Exception as e:
         db.rollback()
         logger.error(f"Update campaign error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/campaigns/{campaign_id}", operation_id="deleteCampaign")
@@ -216,7 +216,7 @@ def delete_campaign(
     except Exception as e:
         db.rollback()
         logger.error(f"Delete campaign error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/campaigns/{campaign_id}/send", operation_id="createCampaignSend")
@@ -334,14 +334,14 @@ def send_campaign(
              except Exception as inner_e:
                  logger.critical(f"CRITICAL: Failed to refund credit for campaign {camp.id}: {inner_e}")
             
-             raise HTTPException(status_code=500, detail=f"SMS Provider Error: {str(e)}")
+             raise HTTPException(status_code=500, detail="Internal server error")
 
     except HTTPException:
         raise
     except Exception as e:
         db.rollback()
         logger.error(f"Send campaign error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # --- ADMIN ROUTES ---
@@ -406,4 +406,4 @@ def admin_get_campaigns(
             
     except Exception as e:
         logger.error(f"Admin get campaigns error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

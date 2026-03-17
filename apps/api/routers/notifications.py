@@ -59,7 +59,7 @@ def create_notification(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Create notification error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/notifications", operation_id="listNotifications", response_model=ResponseEnvelope[List[NotificationRead]])
 def list_notifications(
@@ -98,7 +98,7 @@ def list_notifications(
         )
     except Exception as e:
         logger.error(f"List notifications error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/notifications/{notification_id}/read", operation_id="updateNotificationRead", response_model=ResponseEnvelope[NotificationRead])
 def mark_notification_read(
@@ -125,7 +125,7 @@ def mark_notification_read(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Mark notification read error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/notifications/{notification_id}", operation_id="updateNotification", response_model=ResponseEnvelope[NotificationRead])
 def update_notification(
@@ -154,7 +154,7 @@ def update_notification(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Update notification error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/notifications/stats", operation_id="listNotificationStats", response_model=ResponseEnvelope[NotificationStats])
 def notification_stats(
@@ -181,7 +181,7 @@ def notification_stats(
         )
     except Exception as e:
         logger.error(f"Notification stats error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.delete("/notifications/{notification_id}", operation_id="deleteNotification", response_model=ResponseEnvelope[None])
 def delete_notification(
@@ -207,7 +207,7 @@ def delete_notification(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Delete notification error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/notifications/settings", operation_id="listNotificationSettings", response_model=ResponseEnvelope[NotificationSettings])
 def get_user_notification_settings(
@@ -232,7 +232,7 @@ def get_user_notification_settings(
         return ResponseEnvelope(data=NotificationSettings(**user_settings))
     except Exception as e:
         logger.error(f"Get user notification settings error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/notifications/settings", operation_id="updateNotificationSettings", response_model=ResponseEnvelope[NotificationSettings])
 def set_user_notification_settings(
@@ -270,4 +270,4 @@ def set_user_notification_settings(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Set user notification settings error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

@@ -46,7 +46,7 @@ def create_commission(
         return {"id": commission.id, "status": commission.status}
     except Exception as e:
         logger.error(f"Create commission error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 @router.post("/update-status", operation_id="createCommissionUpdateStatus")
 def update_commission_status(
@@ -69,7 +69,7 @@ def update_commission_status(
         raise
     except Exception as e:
         logger.error(f"Update commission status error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 @router.get("/by-affiliate", operation_id="listCommissionByAffiliate")
 def get_commissions_by_affiliate(
@@ -93,7 +93,7 @@ def get_commissions_by_affiliate(
         } for c in commissions]
     except Exception as e:
         logger.error(f"Get commissions by affiliate error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/audit", operation_id="listCommissionAudit")
 def audit_trail(
@@ -119,4 +119,4 @@ def audit_trail(
         raise
     except Exception as e:
         logger.error(f"Commission audit error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

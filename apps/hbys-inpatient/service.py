@@ -56,7 +56,11 @@ def create_ward(db: Session, data: WardCreate, tenant_id: str) -> Ward:
         tenant_id=tenant_id,
     )
     db.add(ward)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(ward)
     logger.info("Ward created: id=%s, name=%s", ward.id, ward.name)
     return ward
@@ -93,7 +97,11 @@ def update_ward(
         return None
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(ward, field, value)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(ward)
     logger.info("Ward updated: id=%s", ward_id)
     return ward
@@ -104,7 +112,11 @@ def delete_ward(db: Session, ward_id: str, tenant_id: str) -> bool:
     if not ward:
         return False
     db.delete(ward)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     logger.info("Ward deleted: id=%s", ward_id)
     return True
 
@@ -126,7 +138,11 @@ def create_bed(db: Session, data: BedCreate, tenant_id: str) -> Bed:
         tenant_id=tenant_id,
     )
     db.add(bed)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(bed)
     logger.info("Bed created: id=%s, ward=%s, bed_number=%s", bed.id, bed.ward_id, bed.bed_number)
     return bed
@@ -168,7 +184,11 @@ def update_bed(
         update_data["features"] = json_dump(update_data["features"]) if update_data["features"] else None
     for field, value in update_data.items():
         setattr(bed, field, value)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(bed)
     logger.info("Bed updated: id=%s", bed_id)
     return bed
@@ -179,7 +199,11 @@ def delete_bed(db: Session, bed_id: str, tenant_id: str) -> bool:
     if not bed:
         return False
     db.delete(bed)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     logger.info("Bed deleted: id=%s", bed_id)
     return True
 
@@ -243,7 +267,11 @@ def create_admission(db: Session, data: AdmissionCreate, tenant_id: str) -> Admi
             bed.status = "occupied"
             bed.current_patient_id = data.patient_id
 
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(admission)
     logger.info("Admission created: id=%s, patient=%s", admission.id, admission.patient_id)
     return admission
@@ -305,7 +333,11 @@ def update_admission(
             new_bed.status = "occupied"
             new_bed.current_patient_id = admission.patient_id
 
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(admission)
     logger.info("Admission updated: id=%s", admission_id)
     return admission
@@ -345,7 +377,11 @@ def discharge_admission(
     for order in active_orders:
         order.status = "completed"
 
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(admission)
     logger.info("Admission discharged: id=%s, type=%s", admission_id, data.discharge_type)
     return admission
@@ -376,7 +412,11 @@ def transfer_admission(
             new_bed.status = "occupied"
             new_bed.current_patient_id = admission.patient_id
 
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(admission)
     logger.info(
         "Admission transferred: id=%s, to_ward=%s, to_bed=%s",
@@ -396,7 +436,11 @@ def delete_admission(db: Session, admission_id: str, tenant_id: str) -> bool:
             bed.status = "available"
             bed.current_patient_id = None
     db.delete(admission)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     logger.info("Admission deleted: id=%s", admission_id)
     return True
 
@@ -427,7 +471,11 @@ def create_nursing_observation(
         tenant_id=tenant_id,
     )
     db.add(obs)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(obs)
     logger.info("Nursing observation created: id=%s, type=%s", obs.id, obs.observation_type)
     return obs
@@ -474,7 +522,11 @@ def update_nursing_observation(
         update_data["vital_data"] = json_dump(update_data["vital_data"]) if update_data["vital_data"] else None
     for field, value in update_data.items():
         setattr(obs, field, value)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(obs)
     logger.info("Nursing observation updated: id=%s", observation_id)
     return obs
@@ -487,7 +539,11 @@ def delete_nursing_observation(
     if not obs:
         return False
     db.delete(obs)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     logger.info("Nursing observation deleted: id=%s", observation_id)
     return True
 
@@ -537,7 +593,11 @@ def create_nurse_order(
         tenant_id=tenant_id,
     )
     db.add(order)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(order)
     logger.info("Nurse order created: id=%s, type=%s", order.id, order.order_type)
     return order
@@ -586,7 +646,11 @@ def update_nurse_order(
         )
     for field, value in update_data.items():
         setattr(order, field, value)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(order)
     logger.info("Nurse order updated: id=%s", order_id)
     return order
@@ -604,7 +668,11 @@ def execute_nurse_order(
     if data.notes:
         existing = order.notes or ""
         order.notes = f"{existing}\n[Executed] {data.notes}".strip()
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(order)
     logger.info("Nurse order executed: id=%s, by=%s", order_id, data.executed_by)
     return order
@@ -617,7 +685,11 @@ def delete_nurse_order(
     if not order:
         return False
     db.delete(order)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     logger.info("Nurse order deleted: id=%s", order_id)
     return True
 

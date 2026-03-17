@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from '@tanstack/react-router';
 import {
-  Home, Building2, Users, User, Calendar, Box, Truck, Megaphone,
-  Package, ShoppingBag, Bell, Key, Shield, CreditCard, PlusCircle,
-  MessageSquare, Bot, BarChart3, Activity, FileText, Settings, X, Globe2,
+  Home, Building2, Users, User, Calendar, Box, Megaphone,
+  ShoppingBag, Bell, CreditCard,
+  Bot, BarChart3, Activity, FileText, X, ToggleRight, Settings,
   ChevronDown, ChevronRight, ScanLine
 } from 'lucide-react';
 import { useAdminResponsive } from '../../hooks/useAdminResponsive';
@@ -31,8 +31,7 @@ const navigationGroups: NavGroup[] = [
   {
     name: 'Yönetim',
     items: [
-      { name: 'Aboneler', href: '/tenants', icon: Building2 },
-      { name: 'Kullanıcılar', href: '/users', icon: Users },
+      { name: 'Aboneler & Kullanıcılar', href: '/tenants', icon: Building2 },
       { name: 'Hastalar', href: '/patients', icon: User },
       { name: 'Randevular', href: '/appointments', icon: Calendar },
     ],
@@ -40,10 +39,8 @@ const navigationGroups: NavGroup[] = [
   {
     name: 'Operasyon',
     items: [
-      { name: 'Cihaz & Stok', href: '/inventory', icon: Box },
-      { name: 'Tedarikçiler', href: '/suppliers', icon: Truck },
+      { name: 'Envanter & Operasyon', href: '/inventory', icon: Box },
       { name: 'Kampanyalar', href: '/campaigns', icon: Megaphone },
-      { name: 'Üretim Takibi', href: '/production', icon: Package },
       { name: 'Pazaryerleri', href: '/marketplaces', icon: ShoppingBag },
       { name: 'Barkod & Yazdırma', href: '/barcodes', icon: ScanLine },
     ],
@@ -52,26 +49,18 @@ const navigationGroups: NavGroup[] = [
     name: 'Sistem',
     items: [
       { name: 'Bildirimler', href: '/notifications', icon: Bell },
-      { name: 'API Anahtarları', href: '/api-keys', icon: Key },
-      { name: 'Roller', href: '/roles', icon: Shield },
-      { name: 'Planlar', href: '/plans', icon: CreditCard },
+      { name: 'Planlar & Eklentiler', href: '/plans', icon: CreditCard },
       { name: 'Affiliateler', href: '/affiliates', icon: Users },
-      { name: 'Eklentiler', href: '/addons', icon: PlusCircle },
-    ],
-  },
-  {
-    name: 'İletişim',
-    items: [
-      { name: 'SMS Yönetimi', href: '/sms/headers', icon: MessageSquare },
+      { name: 'Faturalar & Ödemeler', href: '/billing', icon: CreditCard },
+      { name: 'Özellik & Yerelleştirme', href: '/features', icon: ToggleRight },
     ],
   },
   {
     name: 'AI & Gelişmiş',
     items: [
       { name: 'AI Yönetimi', href: '/ai', icon: Bot },
-      { name: 'Web Yonetim', href: '/web-management', icon: Globe2 },
-      { name: 'Aktivite Logları', href: '/activity-logs', icon: Activity },
-      { name: 'Dosyalar', href: '/files', icon: FileText },
+      { name: 'İçerik Yönetimi', href: '/blog', icon: FileText },
+      { name: 'Sistem Logları', href: '/activity-logs', icon: Activity },
     ],
   },
 ];

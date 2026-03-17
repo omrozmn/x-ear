@@ -1,4 +1,5 @@
 // Dashboard Cashflow Management JavaScript
+var API_BASE = window.__API_BASE_URL__ || 'http://localhost:5003';
 // Global variables
 let allPatients = [];
 let allCashRecords = JSON.parse(localStorage.getItem('dashboardCashRecords') || '[]');
@@ -34,7 +35,7 @@ function initializePatientSearch() {
 // Load patients from API
 async function loadPatients() {
   const endpoints = [
-    'http://localhost:5003/api/patients',
+    API_BASE + '/api/patients',
     'http://localhost:5100/api/patients',
     window.location.origin + '/api/patients'
   ];
@@ -387,7 +388,7 @@ async function submitCashflowRecord(event) {
 // Save record via API
 async function saveRecordAPI(record) {
   const apiCandidates = [
-    'http://localhost:5003/api/cash-records',
+    API_BASE + '/api/cash-records',
     'http://localhost:5100/api/cash-records',
     window.location.origin + '/api/cash-records'
   ];

@@ -493,7 +493,7 @@ class InventoryData {
             params.append('page', page.toString());
             params.append('per_page', perPage.toString());
             
-            const baseUrl = window.APIConfig?.endpoints?.inventory || 'http://localhost:5003/api/inventory';
+            const baseUrl = window.APIConfig?.endpoints?.inventory || (window.__API_BASE_URL__ || 'http://localhost:5003') + '/api/inventory';
             const response = await fetch(`${baseUrl}?${params}`);
             
             if (!response.ok) {

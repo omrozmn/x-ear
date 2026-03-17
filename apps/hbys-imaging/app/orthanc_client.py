@@ -12,9 +12,15 @@ import httpx
 logger = logging.getLogger(__name__)
 
 ORTHANC_URL = os.getenv("ORTHANC_URL", "http://localhost:8042")
-ORTHANC_USERNAME = os.getenv("ORTHANC_USERNAME", "orthanc")
-ORTHANC_PASSWORD = os.getenv("ORTHANC_PASSWORD", "orthanc")
+ORTHANC_USERNAME = os.getenv("ORTHANC_USERNAME", "")
+ORTHANC_PASSWORD = os.getenv("ORTHANC_PASSWORD", "")
 OHIF_VIEWER_URL = os.getenv("OHIF_VIEWER_URL", "http://localhost:3000/viewer")
+
+if not ORTHANC_USERNAME or not ORTHANC_PASSWORD:
+    raise RuntimeError(
+        "Orthanc credentials not configured. "
+        "Set ORTHANC_USERNAME and ORTHANC_PASSWORD environment variables."
+    )
 
 
 class OrthancClient:

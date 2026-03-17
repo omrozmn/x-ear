@@ -50,7 +50,7 @@ async def get_automation_status(
         ))
     except Exception as e:
         logger.error(f"Get automation status error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/sgk/process", operation_id="createAutomationSgkProcess", response_model=ResponseEnvelope[AutomationJobResponse])
 async def trigger_sgk_processing(
@@ -67,7 +67,7 @@ async def trigger_sgk_processing(
         ))
     except Exception as e:
         logger.error(f"Trigger SGK processing error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/backup", operation_id="createAutomationBackup", response_model=ResponseEnvelope[AutomationJobResponse])
 async def trigger_backup(
@@ -84,7 +84,7 @@ async def trigger_backup(
         ))
     except Exception as e:
         logger.error(f"Trigger backup error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/logs", operation_id="listAutomationLogs", response_model=ResponseEnvelope[AutomationLogsResponse])
 async def get_automation_logs(
@@ -108,4 +108,4 @@ async def get_automation_logs(
         )
     except Exception as e:
         logger.error(f"Get automation logs error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

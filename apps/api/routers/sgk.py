@@ -90,7 +90,7 @@ def list_sgk_documents(
         ))
     except Exception as e:
         logger.error(f"List SGK docs error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/sgk/documents", operation_id="createSgkDocuments")
 def upload_sgk_document(
@@ -114,7 +114,7 @@ def upload_sgk_document(
             return ResponseEnvelope(data=SgkDocumentResponse(document=doc_data))
     except Exception as e:
         logger.error(f"Upload SGK doc error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 # TODO: SGK model not implemented yet - endpoints disabled
 # @router.get("/sgk/documents/{document_id}", operation_id="getSgkDocument")
@@ -134,7 +134,7 @@ def upload_sgk_document(
 #         raise
 #     except Exception as e:
 #         logger.error(f"Get SGK doc error: {e}")
-#         raise HTTPException(status_code=500, detail=str(e))
+#         raise HTTPException(status_code=500, detail="Internal server error")
 
 # @router.delete("/sgk/documents/{document_id}", operation_id="deleteSgkDocument")
 # def delete_sgk_document(
@@ -156,7 +156,7 @@ def upload_sgk_document(
 #     except Exception as e:
 #         db_session.rollback()
 #         logger.error(f"Delete SGK doc error: {e}")
-#         raise HTTPException(status_code=500, detail=str(e))
+#         raise HTTPException(status_code=500, detail="Internal server error")
 
 # Note: /ocr/process endpoint moved to ocr.py to avoid duplication
 
@@ -178,7 +178,7 @@ async def upload_and_process_files(
         try:
             svc.initialize()
         except Exception as e:
-            raise HTTPException(status_code=503, detail=f"OCR init failed: {e}")
+            raise HTTPException(status_code=503, detail="OCR service initialization failed")
         
         results = []
         for f in files:
@@ -274,7 +274,7 @@ async def upload_and_process_files(
         raise
     except Exception as e:
         logger.error(f"Upload and process error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 # --- Additional SGK Endpoints (Migrated from Flask) ---
 
@@ -300,7 +300,7 @@ def get_party_sgk_documents(
         raise
     except Exception as e:
         logger.error(f"Get patient SGK docs error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 class EReceiptQueryRequest(BaseModel):
     receiptNumber: str
@@ -346,7 +346,7 @@ def query_e_receipt(
         raise
     except Exception as e:
         logger.error(f"E-receipt query error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/sgk/e-receipts/delivered", operation_id="listSgkEReceiptDelivered")
 def list_delivered_ereceipts(
@@ -422,7 +422,7 @@ def list_delivered_ereceipts(
         return ResponseEnvelope(data=SgkEReceiptListResponse(patients=mock_patients))
     except Exception as e:
         logger.error(f"List delivered e-receipts error: {e}") 
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 class PatientRightsQueryRequest(BaseModel):
     tcNumber: str
@@ -492,7 +492,7 @@ def query_patient_rights(
         raise
     except Exception as e:
         logger.error(f"Patient rights query error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 class WorkflowCreateRequest(BaseModel):
     partyId: str
@@ -551,7 +551,7 @@ def create_sgk_workflow(
         raise
     except Exception as e:
         logger.error(f"SGK workflow creation error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 class WorkflowUpdateRequest(BaseModel):
     stepId: str
@@ -582,7 +582,7 @@ def update_sgk_workflow(
         return ResponseEnvelope(data=updated_workflow)
     except Exception as e:
         logger.error(f"SGK workflow update error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/sgk/workflow/{workflow_id}", operation_id="getSgkWorkflow")
 def get_sgk_workflow(
@@ -621,7 +621,7 @@ def get_sgk_workflow(
         ))
     except Exception as e:
         logger.error(f"SGK workflow get error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 class WorkflowStatusUpdate(BaseModel):
     status: str
@@ -641,7 +641,7 @@ def update_workflow_status(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 # NOTE: POST /patients/{patient_id}/ereceipts endpoint moved to patient_subresources.py
 # This duplicate was causing OpenAPI conflicts
@@ -812,5 +812,5 @@ def seed_test_patients(
         raise
     except Exception as e:
         logger.error(f'Seeding test patients failed: {e}')
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 

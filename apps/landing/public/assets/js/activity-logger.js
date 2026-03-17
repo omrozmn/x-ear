@@ -3,10 +3,12 @@
  * Centralized activity logging utility for all forms
  * Logs activities to backend API with fallback to localStorage
  */
+var API_BASE = window.__API_BASE_URL__ || 'http://localhost:5003';
+
 class ActivityLogger {
     constructor() {
         this.apiCandidates = [
-            'http://localhost:5003/api/activity-logs',
+            API_BASE + '/api/activity-logs',
             `${window.location.origin}/api/activity-logs`
         ];
     }

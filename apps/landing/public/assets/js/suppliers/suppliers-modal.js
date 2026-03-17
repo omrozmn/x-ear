@@ -444,7 +444,7 @@ export function validateField(field) {
 async function checkCompanyNameDuplicate(companyName, field) {
     try {
         // Simple check by searching existing suppliers
-        const response = await fetch(`${window.APIConfig?.BACKEND_BASE_URL || 'http://localhost:5003'}/api/suppliers?search=${encodeURIComponent(companyName)}`);
+        const response = await fetch(`${window.APIConfig?.BACKEND_BASE_URL || window.__API_BASE_URL__ || 'http://localhost:5003'}/api/suppliers?search=${encodeURIComponent(companyName)}`);
         if (response.ok) {
             const data = await response.json();
             const exactMatch = data.data?.find(supplier => 

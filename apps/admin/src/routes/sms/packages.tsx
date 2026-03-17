@@ -1,13 +1,7 @@
-import { lazy, Suspense } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
-import PageLoadingFallback from '../../components/PageLoadingFallback'
-
-const SmsManagementPage = lazy(() => import('../../pages/admin/SmsManagementPage'))
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/sms/packages')({
-    component: () => (
-        <Suspense fallback={<PageLoadingFallback />}>
-            <SmsManagementPage />
-        </Suspense>
-    ),
+    beforeLoad: () => {
+        throw redirect({ to: '/plans' })
+    },
 })

@@ -61,7 +61,7 @@ def resize_image(
     except ImportError:
         raise HTTPException(status_code=501, detail="Pillow not installed")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/remove-bg", operation_id="removeBackground",
@@ -103,7 +103,7 @@ def remove_background(
     except ImportError:
         raise HTTPException(status_code=501, detail="rembg not installed")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/ai-generate", operation_id="aiGenerateImage",

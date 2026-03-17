@@ -1,4 +1,10 @@
 const api = require('../../api');
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
 class AdminPermissionsModule {
     constructor(containerSelector){
         this.container = document.querySelector(containerSelector);
@@ -62,7 +68,7 @@ class AdminPermissionsModule {
                 return; 
             }
             const perms = result.data || [];
-            list.innerHTML = perms.map(p=>`<div class="p-2 border-b">${p.name}</div>`).join('') || '<div class="text-gray-500">İzin bulunamadı</div>';
+            list.innerHTML = perms.map(p=>`<div class="p-2 border-b">${escapeHtml(p.name)}</div>`).join('') || '<div class="text-gray-500">İzin bulunamadı</div>';
         } catch (error) {
             console.error('Error loading permissions:', error);
             list.innerHTML = 'Hata oluştu';

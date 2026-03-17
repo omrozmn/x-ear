@@ -76,7 +76,7 @@ def list_roles(
         return ResponseEnvelope(data=[RoleRead.model_validate(r) for r in roles])
     except Exception as e:
         logger.error(f"List roles error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/roles", operation_id="createRoles", status_code=201, response_model=ResponseEnvelope[RoleRead])
 def create_role(
@@ -125,7 +125,7 @@ def create_role(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Create role error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/roles/{role_id}", operation_id="updateRole", response_model=ResponseEnvelope[RoleRead])
 def update_role(
@@ -173,7 +173,7 @@ def update_role(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Update role error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.delete("/roles/{role_id}", operation_id="deleteRole")
 def delete_role(
@@ -205,7 +205,7 @@ def delete_role(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Delete role error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 # NOTE: GET /permissions endpoint is now in permissions.py
 # This duplicate was causing OpenAPI conflicts
@@ -249,7 +249,7 @@ def add_permission_to_role(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Add permission to role error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/roles/{role_id}/permissions/{permission_name}", operation_id="deleteRolePermission")
@@ -288,7 +288,7 @@ def remove_permission_from_role(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Remove permission from role error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/roles/{role_id}/permissions", operation_id="updateRolePermissions", response_model=ResponseEnvelope[RoleRead])
@@ -329,4 +329,4 @@ def set_role_permissions(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Set role permissions error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

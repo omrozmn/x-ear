@@ -91,7 +91,11 @@ class ImagingService:
         # Generate a unique accession number
         order.accession_number = gen_id("ACC")
         db.add(order)
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         db.refresh(order)
         logger.info("Created imaging order %s for patient %s", order.id, order.patient_id)
         return order
@@ -109,7 +113,11 @@ class ImagingService:
             setattr(order, field, value)
 
         order.updated_at = datetime.now(timezone.utc)
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         db.refresh(order)
         return order
 
@@ -119,7 +127,11 @@ class ImagingService:
         if not order:
             return False
         db.delete(order)
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         return True
 
     @staticmethod
@@ -132,7 +144,11 @@ class ImagingService:
         order.scheduled_date = data.scheduled_date
         order.status = "scheduled"
         order.updated_at = datetime.now(timezone.utc)
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         db.refresh(order)
         return order
 
@@ -152,7 +168,11 @@ class ImagingService:
         if data.dicom_study_uid:
             order.dicom_study_uid = data.dicom_study_uid
         order.updated_at = datetime.now(timezone.utc)
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         db.refresh(order)
         return order
 
@@ -163,7 +183,11 @@ class ImagingService:
             return None
         order.status = "cancelled"
         order.updated_at = datetime.now(timezone.utc)
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         db.refresh(order)
         return order
 
@@ -253,7 +277,11 @@ class ImagingService:
         if order.status == "completed":
             order.status = "reported"
 
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         db.refresh(report)
         logger.info("Created radiology report %s for order %s", report.id, report.imaging_order_id)
         return report
@@ -271,7 +299,11 @@ class ImagingService:
             setattr(report, field, value)
 
         report.updated_at = datetime.now(timezone.utc)
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         db.refresh(report)
         return report
 
@@ -281,7 +313,11 @@ class ImagingService:
         if not report:
             return False
         db.delete(report)
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         return True
 
     @staticmethod
@@ -298,7 +334,11 @@ class ImagingService:
         report.verified_at = datetime.now(timezone.utc)
         report.status = "final"
         report.updated_at = datetime.now(timezone.utc)
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         db.refresh(report)
         logger.info("Verified report %s by user %s", report.id, verified_by)
         return report
@@ -357,7 +397,11 @@ class ImagingService:
             is_active=data.is_active,
         )
         db.add(template)
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         db.refresh(template)
         return template
 
@@ -374,7 +418,11 @@ class ImagingService:
             setattr(template, field, value)
 
         template.updated_at = datetime.now(timezone.utc)
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         db.refresh(template)
         return template
 
@@ -384,5 +432,9 @@ class ImagingService:
         if not template:
             return False
         db.delete(template)
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         return True

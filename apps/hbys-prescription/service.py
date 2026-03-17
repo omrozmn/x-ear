@@ -94,13 +94,20 @@ def create_prescription(
         for item_data in data.items:
             _add_item(db, prx, item_data, tenant_id)
 
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(prx)
     return prx
 
 
-def get_prescription(db: Session, prescription_id: str) -> Optional[Prescription]:
-    return db.query(Prescription).filter(Prescription.id == prescription_id).first()
+def get_prescription(db: Session, prescription_id: str, tenant_id: Optional[str] = None) -> Optional[Prescription]:
+    query = db.query(Prescription).filter(Prescription.id == prescription_id)
+    if tenant_id:
+        query = query.filter(Prescription.tenant_id == tenant_id)
+    return query.first()
 
 
 def list_prescriptions(
@@ -144,7 +151,11 @@ def update_prescription(
             setattr(prescription, field_name, value)
 
     prescription.updated_at = _now()
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(prescription)
     return prescription
 
@@ -154,7 +165,11 @@ def delete_prescription(db: Session, prescription: Prescription) -> None:
     if prescription.status != "draft":
         raise ValueError("Only draft prescriptions can be deleted")
     db.delete(prescription)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
 
 
 # ---------------------------------------------------------------------------
@@ -198,7 +213,11 @@ def add_prescription_item(
         raise ValueError("Items can only be added to draft prescriptions")
 
     item = _add_item(db, prescription, data, tenant_id)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(item)
     return item
 
@@ -221,7 +240,11 @@ def update_prescription_item(
             setattr(item, field_name, value)
 
     item.updated_at = _now()
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(item)
     return item
 
@@ -235,13 +258,20 @@ def remove_prescription_item(
     if prx and prx.status != "draft":
         raise ValueError("Items can only be removed from draft prescriptions")
     db.delete(item)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
 
 
 def get_prescription_item(
-    db: Session, item_id: str
+    db: Session, item_id: str, tenant_id: Optional[str] = None
 ) -> Optional[PrescriptionItem]:
-    return db.query(PrescriptionItem).filter(PrescriptionItem.id == item_id).first()
+    query = db.query(PrescriptionItem).filter(PrescriptionItem.id == item_id)
+    if tenant_id:
+        query = query.filter(PrescriptionItem.tenant_id == tenant_id)
+    return query.first()
 
 
 # ---------------------------------------------------------------------------
@@ -310,7 +340,11 @@ def send_to_medula(
 
     prescription.medula_response_dict = result.raw
     prescription.updated_at = _now()
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(prescription)
 
     return result
@@ -346,7 +380,11 @@ def cancel_on_medula(
         prescription.status = "cancelled"
         prescription.medula_response_dict = result.raw
         prescription.updated_at = _now()
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         db.refresh(prescription)
 
     return result
@@ -404,7 +442,11 @@ def create_medication(db: Session, data) -> Medication:
         **data.model_dump(),
     )
     db.add(med)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(med)
     return med
 
@@ -413,11 +455,19 @@ def update_medication(db: Session, medication: Medication, data) -> Medication:
     for field_name, value in data.model_dump(exclude_unset=True).items():
         setattr(medication, field_name, value)
     medication.updated_at = _now()
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     db.refresh(medication)
     return medication
 
 
 def delete_medication(db: Session, medication: Medication) -> None:
     db.delete(medication)
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise

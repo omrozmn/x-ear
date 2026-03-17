@@ -64,7 +64,7 @@ async def get_admin_invoices(
         )
     except Exception as e:
         logger.error(f"Get invoices error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("", operation_id="createAdminInvoice", response_model=InvoiceDetailResponse)
 async def create_admin_invoice(
@@ -103,7 +103,7 @@ async def create_admin_invoice(
     except Exception as e:
         db.rollback()
         logger.error(f"Create invoice error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 @router.get("/{invoice_id}", operation_id="getAdminInvoice", response_model=InvoiceDetailResponse)
 async def get_admin_invoice(
@@ -126,7 +126,7 @@ async def get_admin_invoice(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/{invoice_id}/payment", operation_id="createAdminInvoicePayment", response_model=InvoiceDetailResponse)
 async def record_payment(
@@ -148,7 +148,7 @@ async def record_payment(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/{invoice_id}/pdf", operation_id="listAdminInvoicePdf", response_model=ResponseEnvelope)
 async def get_invoice_pdf(
@@ -169,4 +169,4 @@ async def get_invoice_pdf(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

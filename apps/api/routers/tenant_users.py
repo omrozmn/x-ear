@@ -385,7 +385,7 @@ def get_current_tenant(
         raise
     except Exception as e:
         logger.error(f"Get current tenant error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/tenant/company", operation_id="getTenantCompany", response_model=ResponseEnvelope[TenantCompanyResponse])
@@ -413,7 +413,7 @@ def get_tenant_company(
         raise
     except Exception as e:
         logger.error(f"Get tenant company error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.patch("/tenants/current", operation_id="updateTenantSettings", response_model=ResponseEnvelope[TenantCompanyResponse])
 def update_tenant_settings(
@@ -470,7 +470,7 @@ def update_tenant_settings(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Update tenant settings error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.put("/tenant/company", operation_id="updateTenantCompany", response_model=ResponseEnvelope[TenantCompanyResponse])
@@ -515,7 +515,7 @@ def update_tenant_company(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Update tenant company error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/tenant/company/upload/{asset_type}", operation_id="uploadCompanyAsset")
@@ -580,7 +580,7 @@ async def upload_company_asset(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Upload company asset error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/tenant/company/upload/{asset_type}", operation_id="deleteCompanyAsset")
@@ -633,7 +633,7 @@ def delete_company_asset(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Delete company asset error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/tenant/company/assets/{filename}", operation_id="getCompanyAsset")
@@ -661,4 +661,4 @@ def get_company_asset(
         raise
     except Exception as e:
         logger.error(f"Get company asset error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

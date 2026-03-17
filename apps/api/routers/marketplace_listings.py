@@ -140,7 +140,7 @@ def ai_auto_fill_listings(
     except ImportError:
         raise HTTPException(status_code=501, detail="E-commerce AI service not available")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/inventory/{inventory_id}/marketplace-listings/{listing_id}/publish",

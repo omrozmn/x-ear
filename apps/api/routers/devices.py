@@ -164,7 +164,7 @@ def get_devices(
         )
     except Exception as e:
         logger.error(f"Get devices error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/devices", operation_id="createDevices", response_model=ResponseEnvelope[DeviceRead], status_code=201)
 def create_device(
@@ -325,7 +325,7 @@ def create_device(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Create device error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/devices/categories", operation_id="listDeviceCategories")
 def get_device_categories(
@@ -363,7 +363,7 @@ def get_device_categories(
         return ResponseEnvelope(data={'categories': category_list})
     except Exception as e:
         logger.error(f"Get device categories error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/devices/brands", operation_id="listDeviceBrands")
 def get_device_brands(
@@ -412,7 +412,7 @@ def get_device_brands(
         return ResponseEnvelope(data={'brands': brand_list})
     except Exception as e:
         logger.error(f"Get device brands error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/devices/brands", operation_id="createDeviceBrands", status_code=201)
 def create_device_brand(
@@ -470,7 +470,7 @@ def create_device_brand(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Create device brand error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/devices/low-stock", operation_id="listDeviceLowStock", response_model=ResponseEnvelope[DeviceLowStockResponse])
 def get_low_stock_devices(
@@ -493,7 +493,7 @@ def get_low_stock_devices(
         )
     except Exception as e:
         logger.error(f"Get low stock devices error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/devices/{device_id}", operation_id="getDevice")
 def get_device(
@@ -580,7 +580,7 @@ def update_device(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Update device error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.delete("/devices/{device_id}", operation_id="deleteDevice")
 def delete_device(
@@ -662,7 +662,7 @@ def delete_device(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Delete device error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/devices/{device_id}/stock-update", operation_id="createDeviceStockUpdate")
 def update_device_stock(
@@ -700,4 +700,4 @@ def update_device_stock(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Update device stock error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

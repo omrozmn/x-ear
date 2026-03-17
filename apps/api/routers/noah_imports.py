@@ -166,7 +166,7 @@ def upload_payload(
             message="İçe aktarım tamamlandı",
         )
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 
 # ────────────────────────────────────────────────────────────
@@ -222,7 +222,7 @@ def enroll_agent(
             message="Cihaz başarıyla kaydedildi",
         )
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
     except Exception:
         db.rollback()
         raise
@@ -257,7 +257,7 @@ def agent_heartbeat(
         )
         return ResponseEnvelope.create_success(data=AgentDeviceRead.model_validate(updated).model_dump(by_alias=True))
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 
 @router.post(
@@ -306,7 +306,7 @@ def agent_sync(
             message="Otomatik senkronizasyon tamamlandı",
         )
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
     except Exception as e:
         logger.error(f"Agent sync failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Senkronizasyon sırasında hata oluştu")
@@ -406,7 +406,7 @@ def resolve_duplicate(
             message="Çift kayıt çözümlendi",
         )
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 
 # ────────────────────────────────────────────────────────────

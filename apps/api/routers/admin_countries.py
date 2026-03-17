@@ -83,7 +83,7 @@ def update_country(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Update country error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 
 @router.post("/seed", operation_id="seedAdminCountries")
@@ -106,4 +106,4 @@ def seed_countries(
     except Exception as e:
         db_session.rollback()
         logger.error(f"Seed countries error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

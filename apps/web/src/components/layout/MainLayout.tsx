@@ -386,11 +386,13 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 </div>
               </AIFeatureWrapper>
 
-              {/* Debug Switchers - Hidden on mobile */}
-              <div className="hidden md:flex items-center gap-2">
-                <DebugTenantSwitcher darkMode={isDark} />
-                <DebugRoleSwitcher darkMode={isDark} />
-              </div>
+              {/* Debug Switchers - Only in development */}
+              {import.meta.env.DEV && (
+                <div className="hidden md:flex items-center gap-2">
+                  <DebugTenantSwitcher darkMode={isDark} />
+                  <DebugRoleSwitcher darkMode={isDark} />
+                </div>
+              )}
 
               {/* User Menu */}
               <div className="relative">

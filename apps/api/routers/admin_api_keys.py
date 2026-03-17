@@ -31,7 +31,7 @@ async def init_db(
         return {"success": True, "message": "API Key table initialized"}
     except Exception as e:
         logger.error(f"Init DB error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("", operation_id="listAdminApiKeys", response_model=ApiKeyListResponse)
 async def get_api_keys(
@@ -66,7 +66,7 @@ async def get_api_keys(
         }
     except Exception as e:
         logger.error(f"Get API keys error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("", operation_id="createAdminApiKey", response_model=ApiKeyDetailResponse)
 async def create_api_key(
@@ -98,7 +98,7 @@ async def create_api_key(
     except Exception as e:
         db.rollback()
         logger.error(f"Create API key error: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 @router.delete("/{key_id}", operation_id="deleteAdminApiKey", response_model=ResponseEnvelope)
 async def revoke_api_key(
@@ -121,4 +121,4 @@ async def revoke_api_key(
     except Exception as e:
         db.rollback()
         logger.error(f"Revoke API key error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

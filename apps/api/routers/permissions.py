@@ -115,7 +115,7 @@ def list_permissions(
         
     except Exception as e:
         logger.error(f"Error listing permissions: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/permissions/my", operation_id="listPermissionMy", response_model=ResponseEnvelope[UserPermissionsResponse])
 def get_my_permissions(
@@ -174,7 +174,7 @@ def get_my_permissions(
         raise
     except Exception as e:
         logger.error(f"Error getting my permissions: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get("/permissions/role/{role_name}", operation_id="getPermissionRole", response_model=ResponseEnvelope[RolePermissionsResponse])
 def get_role_permissions(
@@ -199,7 +199,7 @@ def get_role_permissions(
         raise
     except Exception as e:
         logger.error(f"Error getting role permissions: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/permissions/role/{role_name}", operation_id="updatePermissionRole", response_model=ResponseEnvelope[RolePermissionsResponse])
 def update_role_permissions(
@@ -245,7 +245,7 @@ def update_role_permissions(
     except Exception as e:
         db.rollback()
         logger.error(f"Error updating role permissions: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/permissions", operation_id="createPermissions", status_code=201, response_model=ResponseEnvelope[PermissionRead])
 def create_permission(
@@ -286,4 +286,4 @@ def create_permission(
     except Exception as e:
         db.rollback()
         logger.error(f"Error creating permission: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

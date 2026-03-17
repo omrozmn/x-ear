@@ -81,7 +81,7 @@ async def get_suppliers(
             }
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("", operation_id="createAdminSupplier", response_model=SupplierDetailResponse)
 async def create_supplier(
@@ -116,7 +116,7 @@ async def create_supplier(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 @router.get("/{supplier_id}", operation_id="getAdminSupplier", response_model=SupplierDetailResponse)
 async def get_supplier(
@@ -135,7 +135,7 @@ async def get_supplier(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.put("/{supplier_id}", operation_id="updateAdminSupplier", response_model=SupplierDetailResponse)
 async def update_supplier(
@@ -180,7 +180,7 @@ async def update_supplier(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 @router.delete("/{supplier_id}", operation_id="deleteAdminSupplier", response_model=ResponseEnvelope)
 async def delete_supplier(
@@ -202,4 +202,4 @@ async def delete_supplier(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")

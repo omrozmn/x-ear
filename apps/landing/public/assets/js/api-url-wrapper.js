@@ -25,7 +25,7 @@
 
   // Get the base URL from configuration
   function getBaseURL() {
-    return window.API_BASE_URL || 'http://localhost:5003';
+    return window.API_BASE_URL || window.__API_BASE_URL__ || 'http://localhost:5003';
   }
 
   // Wrap a function to use absolute URLs

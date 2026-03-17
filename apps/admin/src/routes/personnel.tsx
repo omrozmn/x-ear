@@ -1,6 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
-import AdminPersonnelPage from '../pages/admin/AdminPersonnelPage'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/personnel')({
-  component: AdminPersonnelPage,
+    beforeLoad: () => {
+        throw redirect({ to: '/tenants' })
+    },
 })

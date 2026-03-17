@@ -23,7 +23,7 @@ def init_db(access: UnifiedAccess = Depends(require_access("system.manage", admi
         return {"success": True}
     except Exception as e:
         logger.error(f"Init DB error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("", status_code=201, operation_id="createOrder", response_model=ResponseEnvelope[OrderRead])
@@ -51,7 +51,7 @@ def create_order(req: CreateOrderRequest, access: UnifiedAccess = Depends(requir
     except Exception as e:
         db.rollback()
         logger.error(f"Create order failed: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Internal server error")
 
 
 @router.get("/{order_id}", operation_id="getOrder", response_model=ResponseEnvelope[OrderRead])

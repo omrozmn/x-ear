@@ -232,7 +232,7 @@ async def get_email_logs(
         logger.exception(f"Error retrieving email logs: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to retrieve email logs: {str(e)}"
+            detail="Internal server error"
         )
 
 
@@ -425,7 +425,7 @@ async def send_manual_email(
         logger.exception(f"Error sending manual email: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to send manual email: {str(e)}"
+            detail="Internal server error"
         )
 
 

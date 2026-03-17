@@ -160,7 +160,7 @@ def get_admin_analytics(
         ))
     except Exception as e:
         logger.error(f"Analytics error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/revenue", operation_id="listAdminAnalyticRevenue", response_model=ResponseEnvelope[RevenueAnalytics])
@@ -200,7 +200,7 @@ def get_revenue_analytics(
         ))
     except Exception as e:
         logger.error(f"Revenue analytics error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/users", operation_id="listAdminAnalyticUsers", response_model=ResponseEnvelope[UserAnalytics])
@@ -224,7 +224,7 @@ def get_user_analytics(
         ))
     except Exception as e:
         logger.error(f"User analytics error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/tenants", operation_id="listAdminAnalyticTenants", response_model=ResponseEnvelope[TenantAnalytics])
@@ -248,4 +248,4 @@ def get_tenant_analytics(
         ))
     except Exception as e:
         logger.error(f"Tenant analytics error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

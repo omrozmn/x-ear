@@ -55,7 +55,11 @@ class SurgeryService:
             surgical_notes=data.surgical_notes,
         )
         db.add(surgery)
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         db.refresh(surgery)
         logger.info("Surgery created: %s for patient %s", surgery.id, surgery.patient_id)
         return surgery
@@ -112,7 +116,11 @@ class SurgeryService:
             setattr(surgery, field, value)
 
         surgery.updated_at = datetime.now(timezone.utc)
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         db.refresh(surgery)
         return surgery
 
@@ -126,7 +134,11 @@ class SurgeryService:
         if not surgery:
             return False
         db.delete(surgery)
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         return True
 
     # -- Start / Complete Surgery ------------------------------------------
@@ -167,7 +179,11 @@ class SurgeryService:
         surgery.status = SurgeryStatus.in_progress
         surgery.actual_start = datetime.now(timezone.utc)
         surgery.updated_at = datetime.now(timezone.utc)
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         db.refresh(surgery)
         logger.info("Surgery started: %s", surgery.id)
         return surgery
@@ -209,7 +225,11 @@ class SurgeryService:
         if surgical_notes is not None:
             surgery.surgical_notes = surgical_notes
         surgery.updated_at = datetime.now(timezone.utc)
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         db.refresh(surgery)
         logger.info("Surgery completed: %s", surgery.id)
         return surgery
@@ -237,7 +257,11 @@ class SurgeryService:
             notes=data.notes,
         )
         db.add(member)
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         db.refresh(member)
         return member
 
@@ -272,7 +296,11 @@ class SurgeryService:
             setattr(member, field, value)
 
         member.updated_at = datetime.now(timezone.utc)
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         db.refresh(member)
         return member
 
@@ -286,7 +314,11 @@ class SurgeryService:
         if not member:
             return False
         db.delete(member)
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         return True
 
     # -- WHO Surgical Checklist --------------------------------------------
@@ -318,7 +350,11 @@ class SurgeryService:
                 surgery_id=surgery_id,
             )
             db.add(checklist)
-            db.commit()
+            try:
+                db.commit()
+            except Exception:
+                db.rollback()
+                raise
             db.refresh(checklist)
         return checklist
 
@@ -344,7 +380,11 @@ class SurgeryService:
         checklist.sign_in_completed_at = datetime.now(timezone.utc)
         checklist.updated_at = datetime.now(timezone.utc)
 
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         db.refresh(checklist)
         return checklist
 
@@ -369,7 +409,11 @@ class SurgeryService:
         checklist.time_out_completed_at = datetime.now(timezone.utc)
         checklist.updated_at = datetime.now(timezone.utc)
 
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         db.refresh(checklist)
         return checklist
 
@@ -393,7 +437,11 @@ class SurgeryService:
         checklist.sign_out_completed_at = datetime.now(timezone.utc)
         checklist.updated_at = datetime.now(timezone.utc)
 
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         db.refresh(checklist)
         return checklist
 
@@ -432,7 +480,11 @@ class SurgeryService:
             post_op_instructions=data.post_op_instructions,
         )
         db.add(record)
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         db.refresh(record)
         return record
 
@@ -477,7 +529,11 @@ class SurgeryService:
             setattr(record, field, value)
 
         record.updated_at = datetime.now(timezone.utc)
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
         db.refresh(record)
         return record
 

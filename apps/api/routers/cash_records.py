@@ -155,7 +155,7 @@ def get_cash_records(
         
     except Exception as e:
         logger.error(f"Error fetching cash records: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/cash-records", operation_id="createCashRecords", status_code=201)
 def create_cash_record(
@@ -254,7 +254,7 @@ def create_cash_record(
     except Exception as e:
         db.rollback()
         logger.error(f"Create cash record error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.delete("/cash-records/{record_id}", operation_id="deleteCashRecord")
 def delete_cash_record(
@@ -286,4 +286,4 @@ def delete_cash_record(
     except Exception as e:
         db.rollback()
         logger.error(f"Delete cash record error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")

@@ -31,5 +31,5 @@ async def list_audit(
         return ResponseEnvelope(data=[AuditLogRead.model_validate(i) for i in items])
     except Exception as e:
         logger.error(f"List audit error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 

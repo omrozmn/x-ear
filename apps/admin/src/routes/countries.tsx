@@ -1,13 +1,7 @@
-import { lazy, Suspense } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
-import PageLoadingFallback from '../components/PageLoadingFallback'
-
-const CountriesPage = lazy(() => import('../pages/admin/CountriesPage'))
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/countries')({
-    component: () => (
-        <Suspense fallback={<PageLoadingFallback />}>
-            <CountriesPage />
-        </Suspense>
-    ),
+    beforeLoad: () => {
+        throw redirect({ to: '/features' })
+    },
 })
