@@ -33,7 +33,7 @@ export const ECommerceTab: React.FC<ECommerceTabProps> = ({ inventoryId, integra
   const activeIntegrations = integrations.filter(i => i.isActive && i.status === 'connected');
 
   const getListingForIntegration = (integrationId: string): MarketplaceListingRead | undefined =>
-    listings.find(l => l.integrationId === integrationId);
+    listings.find((l: any) => l.integrationId === integrationId);
 
   const handleAIFillAll = async () => {
     setIsAIPreviewOpen(true);

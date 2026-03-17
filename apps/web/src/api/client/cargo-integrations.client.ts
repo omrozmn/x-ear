@@ -1,22 +1,3 @@
-/**
- * Cargo Integrations API Client Adapter
- */
-export {
-  listCargoIntegrations,
-  createCargoIntegration,
-  updateCargoIntegration,
-  deleteCargoIntegration,
-  testCargoIntegration,
-  getListCargoIntegrationsQueryKey,
-  useListCargoIntegrations,
-  useCreateCargoIntegration,
-  useUpdateCargoIntegration,
-  useDeleteCargoIntegration,
-  useTestCargoIntegration,
-} from '@/api/generated/index';
-
-export type {
-  CargoIntegrationCreate,
-  CargoIntegrationUpdate,
-  CargoIntegrationRead,
-} from '@/api/generated/schemas';
+// TODO: Backend endpoints not yet in OpenAPI spec
+// Stubbed to prevent build errors
+export {};

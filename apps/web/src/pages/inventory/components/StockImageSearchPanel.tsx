@@ -97,7 +97,7 @@ export const StockImageSearchPanel: React.FC<StockImageSearchPanelProps> = ({
         ) : results.length > 0 ? (
           <>
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-h-[400px] overflow-y-auto">
-              {results.map((img) => (
+              {results.map((img: any) => (
                 <div key={img.id} className="group relative rounded-lg overflow-hidden border border-border">
                   <img
                     src={img.thumbnailUrl}

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import { HyperGlassCard } from "./HyperGlassCard";
 import { TextReveal } from "./TextReveal";
 import { useLocale } from "@/lib/i18n";
@@ -241,8 +242,14 @@ export function IntegrationOrbit() {
                 transition={{ duration: 2, repeat: Infinity, ease: "easeOut", delay: 1 }}
               />
               {/* Logo circle */}
-              <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center shadow-[0_0_40px_rgba(59,130,246,0.3)]">
-                <span className="text-white font-display font-bold text-2xl select-none">X</span>
+              <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center shadow-[0_0_40px_rgba(59,130,246,0.3)] p-3">
+                <Image
+                  src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/logo/x.svg`}
+                  alt="X-EAR"
+                  width={48}
+                  height={48}
+                  className="brightness-0 invert select-none"
+                />
               </div>
             </div>
 
