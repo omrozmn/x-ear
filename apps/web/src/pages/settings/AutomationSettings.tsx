@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Loader2, Zap, Package, Users, RefreshCw } from 'lucide-react';
 import { customInstance } from '@/api/orval-mutator';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 interface AutomationSettings {
   autoAddSuppliers: boolean;
@@ -12,6 +13,7 @@ interface AutomationSettings {
 }
 
 export function AutomationSettings() {
+  const { t } = useTranslation('settings_extra');
   const [settings, setSettings] = useState<AutomationSettings>({
       autoAddSuppliers: false,
       autoAddInvoiceProducts: false,
@@ -69,10 +71,10 @@ export function AutomationSettings() {
         method: 'PUT',
         data: { [keyMap[key]]: value },
       });
-      toast.success(value ? 'Otomasyon aktifleştirildi' : 'Otomasyon devre dışı bırakıldı');
+      toast.success(value ? t('automationEnabled', 'Otomasyon aktifleştirildi') : t('automationDisabled', 'Otomasyon devre dışı bırakıldı'));
     } catch {
       setSettings(s => ({ ...s, [key]: prev }));
-      toast.error('Ayar güncellenemedi');
+      toast.error(t('settingUpdateFailed', 'Ayar güncellenemedi'));
     } finally {
       setSaving(false);
     }

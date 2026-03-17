@@ -3,6 +3,7 @@
  * Main cashflow management page
  */
 import React, { useEffect, useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button, Modal, Pagination } from '@x-ear/ui-web';
 import { Plus, RefreshCw, Download, Filter, Trash2 } from 'lucide-react';
 import { useLocation, useNavigate } from '@tanstack/react-router';
@@ -32,6 +33,7 @@ export function CashflowPage() {
 }
 
 function DesktopCashflowPage() {
+  const { t } = useTranslation('cashflow');
   const navigate = useNavigate();
   const location = useLocation();
   const [filters, setFilters] = useState<CashflowFiltersType>({});
@@ -176,12 +178,12 @@ function DesktopCashflowPage() {
 
   const handleExport = () => {
     // Prepare CSV data
-    const headers = ['Tarih', 'İşlem Türü', 'Kayıt Türü', 'Hasta', 'Tutar', 'Açıklama'];
+    const headers = [t('columns.date', 'Tarih'), t('columns.transactionType', 'İşlem Türü'), t('columns.recordType', 'Kayıt Türü'), t('columns.patient', 'Hasta'), t('columns.amount', 'Tutar'), t('columns.description', 'Açıklama')];
     const csvData = [
       headers.join(','),
       ...records.map((record) => {
         const date = new Date(record.date).toLocaleDateString('tr-TR');
-        const type = record.transactionType === 'income' ? 'Gelir' : 'Gider';
+        const type = record.transactionType === 'income' ? t('income', 'Gelir') : t('expense', 'Gider');
         const amount = record.amount.toFixed(2);
         return [
           date,
@@ -214,25 +216,25 @@ function DesktopCashflowPage() {
       <div className="mb-6">
         <DesktopPageHeader
           className="mb-6"
-          title="Kasa Yönetimi"
-          description="Gelir ve gider kayıtlarınızı yönetin"
+          title={t('pageTitle', 'Kasa Yönetimi')}
+          description={t('pageDescription', 'Gelir ve gider kayıtlarınızı yönetin')}
           eyebrow={{ tr: 'Nakit Akışı', en: 'Cashflow' }}
           actions={(
             <>
               <Button variant="outline" onClick={handleRefresh}>
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Yenile
+                {t('refresh', 'Yenile')}
               </Button>
               <PermissionGate permission="finance.payments.export.view">
                 <Button variant="outline" onClick={handleExport}>
                   <Download className="h-4 w-4 mr-2" />
-                  Dışa Aktar
+                  {t('export', 'Dışa Aktar')}
                 </Button>
               </PermissionGate>
               <PermissionGate permission="finance.cash_register">
                 <Button onClick={() => setShowNewRecordModal(true)} className="premium-gradient tactile-press">
                   <Plus className="h-4 w-4 mr-2" />
-                  Yeni Kayıt
+                  {t('newRecord', 'Yeni Kayıt')}
                 </Button>
               </PermissionGate>
             </>
@@ -246,14 +248,14 @@ function DesktopCashflowPage() {
       {/* Filters */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-border p-4 mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Filtreler</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('filters', 'Filtreler')}</h3>
           <Button
             variant={showFilters ? 'default' : 'outline'}
             size="sm"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="h-4 w-4 mr-2" />
-            {showFilters ? 'Gizle' : 'Göster'}
+            {showFilters ? t('hide', 'Gizle') : t('show', 'Göster')}
           </Button>
         </div>
 
@@ -269,16 +271,16 @@ function DesktopCashflowPage() {
       {/* Records Table */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-border">
         <div className="px-6 py-4 border-b border-border">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Kasa Kayıtları</h3>
-          <p className="text-sm text-muted-foreground mt-1">{records.length} kayıt</p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('cashRecords', 'Kasa Kayıtları')}</h3>
+          <p className="text-sm text-muted-foreground mt-1">{records.length} {t('records', 'kayıt')}</p>
         </div>
 
         {error ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <p className="text-sm text-destructive">Bir hata oluştu</p>
+              <p className="text-sm text-destructive">{t('error', 'Bir hata oluştu')}</p>
               <Button variant="outline" size="sm" onClick={handleRefresh} className="mt-2">
-                Tekrar Dene
+                {t('retry', 'Tekrar Dene')}
               </Button>
             </div>
           </div>
@@ -326,7 +328,7 @@ function DesktopCashflowPage() {
       <Modal
         isOpen={!!recordToDelete}
         onClose={() => setRecordToDelete(null)}
-        title="Kaydı Sil"
+        title={t('deleteRecord', 'Kaydı Sil')}
         size="md"
       >
         <div className="space-y-4 dark:text-gray-200">
@@ -338,23 +340,23 @@ function DesktopCashflowPage() {
             </div>
             <div className="flex-1">
               <h3 className="text-sm font-medium text-red-900 dark:text-red-400">
-                Bu kaydı silmek istediğinizden emin misiniz?
+                {t('deleteConfirm', 'Bu kaydı silmek istediğinizden emin misiniz?')}
               </h3>
               <p className="mt-1 text-sm text-destructive">
-                {recordToDelete?.partyName || 'Kayıt'} - {recordToDelete?.amount} ₺
+                {recordToDelete?.partyName || t('record', 'Kayıt')} - {recordToDelete?.amount} ₺
               </p>
             </div>
           </div>
           <p className="text-sm text-muted-foreground">
-            Bu işlem geri alınamaz. Kayıt kalıcı olarak silinecektir.
+            {t('deleteWarning', 'Bu işlem geri alınamaz. Kayıt kalıcı olarak silinecektir.')}
           </p>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => setRecordToDelete(null)}>
-              İptal
+              {t('cancel', 'İptal')}
             </Button>
             <PermissionGate permission="finance.cash_register">
               <Button variant="danger" onClick={confirmDelete} disabled={deleteMutation.isPending}>
-                {deleteMutation.isPending ? 'Siliniyor...' : 'Sil'}
+                {deleteMutation.isPending ? t('deleting', 'Siliniyor...') : t('delete', 'Sil')}
               </Button>
             </PermissionGate>
           </div>

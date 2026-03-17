@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
 import { Package, DollarSign, AlertTriangle, TrendingUp } from 'lucide-react';
 import { Card, Badge } from '@x-ear/ui-web';
@@ -8,13 +9,14 @@ interface InventoryStockInfoProps {
 }
 
 export const InventoryStockInfo: React.FC<InventoryStockInfoProps> = ({ item }) => {
+  const { t } = useTranslation('inventory');
   const getStockStatus = () => {
     if (item.availableInventory === 0) {
-      return { label: 'Tükendi', color: 'danger' as const };
+      return { label: t('status.out_of_stock'), color: 'danger' as const };
     } else if (item.availableInventory <= item.reorderLevel) {
-      return { label: 'Düşük Stok', color: 'warning' as const };
+      return { label: t('status.low_stock'), color: 'warning' as const };
     } else {
-      return { label: 'Stokta', color: 'success' as const };
+      return { label: t('status.in_stock'), color: 'success' as const };
     }
   };
 
@@ -85,7 +87,7 @@ export const InventoryStockInfo: React.FC<InventoryStockInfoProps> = ({ item }) 
             </div>
             {item.vatIncludedPrice && (
               <p className="text-xs text-muted-foreground mt-2">
-                KDV Dahil: ₺{item.vatIncludedPrice.toFixed(2)}
+                {t('pricing.tax_included')}: ₺{item.vatIncludedPrice.toFixed(2)}
               </p>
             )}
           </div>

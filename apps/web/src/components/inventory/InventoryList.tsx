@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Button, Badge, DataTable, Checkbox } from '@x-ear/ui-web';
 // UniversalImporter moved to page header; keep schemas imported where needed elsewhere
 import BulkOperationsModal, { BulkOperation } from '../../pages/inventory/components/BulkOperationsModal';
@@ -56,6 +57,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
   refreshKey
 }) => {
   const queryClient = useQueryClient();
+  const { t } = useTranslation('inventory');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [failureModalOpen, setFailureModalOpen] = useState(false);
@@ -218,8 +220,8 @@ export const InventoryList: React.FC<InventoryListProps> = ({
     const selectedItems = items.filter(i => selectedIds.includes(i.id));
 
     const headers = [
-      'ID', 'Ürün Adı', 'Marka', 'Model', 'Kategori', 'Stok',
-      'Fiyat', 'Barkod', 'Tedarikçi'
+      'ID', t('columns.product_name'), t('columns.brand'), 'Model', t('columns.category'), t('columns.stock'),
+      t('columns.sale_price'), t('columns.barcode'), t('form.description')
     ];
 
     const csvContent = [
@@ -248,7 +250,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
 
   const deleteSelected = async () => {
     if (selectedIds.length === 0) return;
-    if (!window.confirm(`${selectedIds.length} ürünü silmek istediğinizden emin misiniz?`)) return;
+    if (!window.confirm(t('delete.confirm'))) return;
 
     try {
       await Promise.all(selectedIds.map(id => deleteItemMutation.mutateAsync({ itemId: id })));
@@ -257,7 +259,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
       await queryClient.invalidateQueries({ queryKey: getListInventoryQueryKey() });
     } catch (err) {
       console.error('Bulk delete failed:', err);
-      toast.error('Toplu silme başarısız oldu');
+      toast.error(t('messages.save_failed'));
     }
   };
 
@@ -391,7 +393,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
     },
     {
       key: 'name',
-      title: 'Ürün Adı',
+      title: t('columns.product_name'),
       sortable: true,
       render: (value: string, record: FrontendInventoryItem) => (
         <div className="flex flex-col">
@@ -408,7 +410,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
     },
     {
       key: 'category',
-      title: 'Kategori',
+      title: t('columns.category'),
       sortable: true,
       render: (value: string) => (
         <Badge variant="secondary">{CATEGORY_LABELS[value] || value}</Badge>
@@ -416,7 +418,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
     },
     {
       key: 'availableInventory',
-      title: 'Stok',
+      title: t('columns.stock'),
       sortable: true,
       render: (value: number, record: FrontendInventoryItem) => (
         <div className="flex items-center space-x-2">
@@ -431,41 +433,41 @@ export const InventoryList: React.FC<InventoryListProps> = ({
     },
     {
       key: 'reorderLevel',
-      title: 'Min Stok',
+      title: t('stock.min_stock'),
       sortable: true
     },
     {
       key: 'price',
-      title: 'Birim Fiyat',
+      title: t('columns.purchase_price'),
       sortable: true,
       render: (value: number) => formatCurrencyTR(value)
     },
     {
       key: 'kdv',
-      title: 'KDV Oranı',
+      title: t('form.vat_rate'),
       sortable: true,
       render: (_value: number, record: FrontendInventoryItem) => `${record.taxRate ?? 0}%`
     },
     {
       key: 'vatIncludedPrice',
-      title: 'KDV Dahil Fiyat',
+      title: t('pricing.tax_included'),
       sortable: true,
       render: (value: number) => formatCurrencyTR(value)
     },
     {
       key: 'totalValue',
-      title: 'Toplam Değer',
+      title: t('pricing.title'),
       sortable: true,
       render: (value: number) => formatCurrencyTR(value)
     },
     {
       key: 'status',
-      title: 'Durum',
+      title: t('columns.status'),
       render: (value: string) => (
         <Badge
           variant={value === 'available' ? 'success' : value === 'low_stock' ? 'warning' : 'danger'}
         >
-          {value === 'available' ? 'Mevcut' : value === 'low_stock' ? 'Düşük Stok' : 'Tükendi'}
+          {value === 'available' ? t('status.in_stock') : value === 'low_stock' ? t('status.low_stock') : t('status.out_of_stock')}
         </Badge>
       )
     }
@@ -474,7 +476,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
   const actions = [
     {
       key: 'edit',
-      label: 'Düzenle',
+      label: t('actions.edit'),
       icon: <Edit className="w-4 h-4" />,
       onClick: (record: FrontendInventoryItem) => {
         onItemEdit?.(record);
@@ -482,11 +484,11 @@ export const InventoryList: React.FC<InventoryListProps> = ({
     },
     {
       key: 'delete',
-      label: 'Sil',
+      label: t('actions.delete'),
       icon: <Trash2 className="w-4 h-4" />,
       variant: 'danger' as const,
       onClick: async (record: FrontendInventoryItem) => {
-        if (window.confirm(`${record.name} ürününü silmek istediğinizden emin misiniz?`)) {
+        if (window.confirm(t('delete.confirm'))) {
           if (onItemDelete) {
             onItemDelete(record);
           } else {
@@ -496,7 +498,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
               await queryClient.invalidateQueries({ queryKey: getListInventoryQueryKey() });
             } catch (e) {
               console.error("Delete failed", e);
-              toast.error("Silme başarısız");
+              toast.error(t('delete.failed'));
             }
           }
         }
@@ -508,7 +510,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
     return (
       <div className={`flex items-center justify-center p-8 ${className}`}>
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2 text-muted-foreground">Envanter yükleniyor...</span>
+        <span className="ml-2 text-muted-foreground">{t('products.loading')}</span>
       </div>
     );
   }
@@ -524,7 +526,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
             </svg>
           </div>
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800 dark:text-red-300">Envanter yüklenirken hata</h3>
+            <h3 className="text-sm font-medium text-red-800 dark:text-red-300">{t('messages.load_failed')}</h3>
             <div className="mt-2 text-sm text-destructive">{errorMsg}</div>
           </div>
         </div>
@@ -538,8 +540,8 @@ export const InventoryList: React.FC<InventoryListProps> = ({
         <svg className="mx-auto h-12 w-12 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
         </svg>
-        <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Envanter öğesi yok</h3>
-        <p className="mt-1 text-sm text-muted-foreground">İlk envanter öğenizi ekleyerek başlayın.</p>
+        <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">{t('products.not_found')}</h3>
+        <p className="mt-1 text-sm text-muted-foreground">{t('products.not_found')}</p>
       </div>
     );
   }
@@ -548,11 +550,11 @@ export const InventoryList: React.FC<InventoryListProps> = ({
     <div className={className}>
       {selectedIds.length > 0 && (
         <div className="flex items-center justify-between mb-4">
-          <div className="text-sm text-foreground">{selectedIds.length} seçili</div>
+          <div className="text-sm text-foreground">{t('bulk_operations.selected_count', { count: selectedIds.length })}</div>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" onClick={() => setIsBulkModalOpen(true)}>Toplu İşlemler</Button>
-            <Button variant="outline" onClick={exportSelected}>Dışa Aktar</Button>
-            <Button variant="danger" onClick={deleteSelected}>Seçilenleri Sil</Button>
+            <Button variant="outline" onClick={() => setIsBulkModalOpen(true)}>{t('bulk_operations.title')}</Button>
+            <Button variant="outline" onClick={exportSelected}>{t('actions.export')}</Button>
+            <Button variant="danger" onClick={deleteSelected}>{t('actions.bulk_delete')}</Button>
           </div>
         </div>
       )}
@@ -584,7 +586,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({
       <WarningModal
         isOpen={failureModalOpen}
         onClose={() => setFailureModalOpen(false)}
-        title="Toplu İşlem Hataları"
+        title={t('bulk_operations.title')}
         failures={failureDetails}
       />
     </div>

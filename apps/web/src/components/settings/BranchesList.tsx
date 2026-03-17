@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { DataTable, Column, Badge } from '@x-ear/ui-web';
+import { useTranslation } from 'react-i18next';
 
 interface Branch {
   id: string;
@@ -27,10 +28,11 @@ interface BranchesListProps {
 }
 
 export function BranchesList({ branches, isLoading, pagination, onEdit, onDelete }: BranchesListProps) {
+  const { t } = useTranslation('settings_extra');
   const columns: Column<Branch>[] = useMemo(() => [
     {
       key: 'name',
-      title: 'Şube Adı',
+      title: t('branchName', 'Şube Adı'),
       sortable: true,
       render: (_, branch) => (
         <span className="text-sm font-medium text-gray-900 dark:text-white">
@@ -40,7 +42,7 @@ export function BranchesList({ branches, isLoading, pagination, onEdit, onDelete
     },
     {
       key: 'code',
-      title: 'Kod',
+      title: t('code', 'Kod'),
       sortable: true,
       render: (_, branch) => (
         <span className="text-sm font-mono text-muted-foreground">
@@ -50,7 +52,7 @@ export function BranchesList({ branches, isLoading, pagination, onEdit, onDelete
     },
     {
       key: 'city',
-      title: 'Şehir',
+      title: t('city', 'Şehir'),
       sortable: true,
       render: (_, branch) => (
         <span className="text-sm text-muted-foreground">
@@ -60,7 +62,7 @@ export function BranchesList({ branches, isLoading, pagination, onEdit, onDelete
     },
     {
       key: 'phone',
-      title: 'Telefon',
+      title: t('phone', 'Telefon'),
       render: (_, branch) => (
         <span className="text-sm text-muted-foreground">
           {branch.phone || '-'}
@@ -69,7 +71,7 @@ export function BranchesList({ branches, isLoading, pagination, onEdit, onDelete
     },
     {
       key: 'address',
-      title: 'Adres',
+      title: t('address', 'Adres'),
       render: (_, branch) => (
         <span className="text-sm text-muted-foreground truncate max-w-xs">
           {branch.address || '-'}
@@ -78,7 +80,7 @@ export function BranchesList({ branches, isLoading, pagination, onEdit, onDelete
     },
     {
       key: 'isActive',
-      title: 'Durum',
+      title: t('status', 'Durum'),
       sortable: true,
       render: (_, branch) => (
         <Badge variant={branch.isActive ? 'success' : 'secondary'} size="sm">
@@ -110,7 +112,7 @@ export function BranchesList({ branches, isLoading, pagination, onEdit, onDelete
       loading={isLoading}
       pagination={pagination}
       rowKey="id"
-      emptyText="Şube bulunamadı"
+      emptyText={t('noBranchesFound', 'Şube bulunamadı')}
     />
   );
 }

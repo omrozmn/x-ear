@@ -15,12 +15,14 @@ import type { PosMovementItem, ResponseMeta } from '@/api/generated/schemas';
 import { PosMovementsList } from '@/components/reports/PosMovementsList';
 import { TabExportButton } from '../components/TabExportButton';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useTranslation } from 'react-i18next';
 
 interface PosMovementsTabProps {
     filters: FilterState;
 }
 
 export function PosMovementsTab({ filters }: PosMovementsTabProps) {
+  const { t } = useTranslation('reports');
     const { hasPermission } = usePermissions();
     const canViewFinancials = hasPermission('sensitive.reports.pos_movements.financials.view');
     const [page, setPage] = useState(1);
@@ -46,7 +48,7 @@ export function PosMovementsTab({ filters }: PosMovementsTabProps) {
     };
 
     const formatProtectedCurrency = (amount: number) => (
-        canViewFinancials ? formatCurrency(amount) : 'Bu rol icin gizli'
+        canViewFinancials ? formatCurrency(amount) : t('hiddenForRole', 'Bu rol icin gizli')
     );
 
     if (isLoading) {
@@ -76,7 +78,7 @@ export function PosMovementsTab({ filters }: PosMovementsTabProps) {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-foreground">POS Hareketleri</h3>
+                <h3 className="text-lg font-semibold text-foreground">{t('posMovements', 'POS Hareketleri')}</h3>
                 <TabExportButton filename="pos-hareketleri" rows={data as unknown as Array<Record<string, unknown>>} />
             </div>
 

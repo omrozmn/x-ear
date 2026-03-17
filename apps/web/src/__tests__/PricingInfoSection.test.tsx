@@ -1,9 +1,43 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PricingInfoSection } from '../pages/inventory/components/PricingInfoSection';
 import { InventoryItem } from '../types/inventory';
+
+// Mock usePermissions to allow cost view
+vi.mock('@/hooks/usePermissions', () => ({
+  usePermissions: () => ({
+    hasPermission: () => true,
+    hasAnyPermission: () => true,
+    hasAllPermissions: () => true,
+    permissions: ['*'],
+    role: 'admin',
+    isSuperAdmin: true,
+    isLoading: false,
+  }),
+}));
+
+// Mock @x-ear/ui-web so Checkbox, Select, Card, Input render real HTML elements
+vi.mock('@x-ear/ui-web', () => ({
+  Card: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  Input: React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement> & { fullWidth?: boolean }>(
+    ({ fullWidth, ...props }, ref) => { void fullWidth; return <input ref={ref} {...props} />; }
+  ),
+  Checkbox: React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
+    (props, ref) => <input ref={ref} type="checkbox" {...props} />
+  ),
+  Select: React.forwardRef<HTMLSelectElement, React.SelectHTMLAttributes<HTMLSelectElement> & { options?: Array<{ value: string; label: string }>; fullWidth?: boolean }>(
+    ({ options, fullWidth, ...props }, ref) => {
+      void fullWidth;
+      return (
+        <select ref={ref} {...props}>
+          {options?.map((o: { value: string; label: string }) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+      );
+    }
+  ),
+}));
 
 const createQueryClient = () =>
   new QueryClient({

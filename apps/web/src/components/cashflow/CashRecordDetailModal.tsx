@@ -3,6 +3,7 @@
  * View and edit cash record details
  */
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, Button, Input } from '@x-ear/ui-web';
 import { Edit2, Save, X } from 'lucide-react';
 import type { CashRecord, TransactionType, RecordType } from '../../types/cashflow';
@@ -31,6 +32,7 @@ export function CashRecordDetailModal({
   onUpdate,
   isLoading,
 }: CashRecordDetailModalProps) {
+  const { t } = useTranslation('cashflow');
   const [isEditing, setIsEditing] = useState(false);
   const [transactionType, setTransactionType] = useState<TransactionType | ''>('');
   const [recordType, setRecordType] = useState<RecordType | ''>('');
@@ -106,14 +108,14 @@ export function CashRecordDetailModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Kayıt Detayları" size="lg" showFooter={false}>
+    <Modal isOpen={isOpen} onClose={handleClose} title={t('recordDetails', 'Kayıt Detayları')} size="lg" showFooter={false}>
       <div className="space-y-6">
         {/* Header Actions */}
         <div className="flex justify-end">
           {!isEditing ? (
             <Button onClick={() => setIsEditing(true)} size="sm">
               <Edit2 className="h-4 w-4 mr-2" />
-              Düzenle
+              {t('edit', 'Düzenle')}
             </Button>
           ) : (
             <div className="flex gap-2">

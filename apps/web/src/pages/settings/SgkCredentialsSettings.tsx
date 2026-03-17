@@ -4,6 +4,7 @@ import { customInstance } from '@/api/orval-mutator';
 import { SettingsSectionHeader } from '../../components/layout/SettingsSectionHeader';
 import { Button, Input, useToastHelpers } from '@x-ear/ui-web';
 import { extractErrorMessage } from '@/utils/error-utils';
+import { useTranslation } from 'react-i18next';
 
 interface SgkCredentialsData {
   tesisKodu: string | null;
@@ -20,6 +21,7 @@ interface SgkCredsForm {
 }
 
 export default function SgkCredentialsSettings() {
+  const { t } = useTranslation('settings_extra');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [stored, setStored] = useState<SgkCredentialsData | null>(null);
@@ -51,7 +53,7 @@ export default function SgkCredentialsSettings() {
         // Don't overwrite password fields — they're never returned
       }));
     } catch (err) {
-      showError('SGK bilgileri yüklenemedi: ' + extractErrorMessage(err));
+      showError(t('sgkCredentialsLoadFailed', 'SGK bilgileri yüklenemedi') + ': ' + extractErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -78,9 +80,9 @@ export default function SgkCredentialsSettings() {
       setStored(res.data);
       // Clear password fields after save
       setForm(prev => ({ ...prev, tesisSifresi: '', mesulMudurSifresi: '' }));
-      showSuccess('SGK giriş bilgileri kaydedildi');
+      showSuccess(t('sgkCredentialsSaved', 'SGK giriş bilgileri kaydedildi'));
     } catch (err) {
-      showError('Kayıt hatası: ' + extractErrorMessage(err));
+      showError(t('saveError', 'Kayıt hatası') + ': ' + extractErrorMessage(err));
     } finally {
       setSaving(false);
     }

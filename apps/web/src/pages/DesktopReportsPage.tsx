@@ -18,6 +18,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { useListBranches } from '@/api/client/branches.client';
 import { unwrapArray } from '../utils/response-unwrap';
 import type { BranchRead } from '@/api/generated/schemas';
+import { useTranslation } from 'react-i18next';
 
 import { OverviewTab } from './reports/tabs/OverviewTab';
 import { SalesTab } from './reports/tabs/SalesTab';
@@ -31,11 +32,11 @@ import { NoPermission } from './reports/components/NoPermission';
 import { FilterState, TabId } from './reports/types';
 import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 
-const PRESET_OPTIONS = [
-  { value: 7, label: 'Son 7 Gün' },
-  { value: 30, label: 'Son 30 Gün' },
-  { value: 90, label: 'Son 90 Gün' },
-  { value: 365, label: 'Son 1 Yıl' }
+const PRESET_OPTIONS_BASE = [
+  { value: 7, key: 'last7Days' },
+  { value: 30, key: 'last30Days' },
+  { value: 90, key: 'last90Days' },
+  { value: 365, key: 'last1Year' }
 ] as const;
 
 function formatDateInput(date: Date) {
@@ -66,6 +67,7 @@ function getDayCount(start?: string, end?: string) {
 }
 
 export function DesktopReportsPage() {
+  const { t } = useTranslation('reports');
   const { hasAnyPermission, isLoading: permissionsLoading } = usePermissions();
   const search = useSearch({ from: '/reports/' });
   const navigate = useNavigate();
@@ -112,15 +114,15 @@ export function DesktopReportsPage() {
 
   // Tab definitions with permissions
   const tabs = useMemo(() => [
-    { id: 'overview' as const, label: 'Genel Bakış', icon: BarChart3, permission: 'reports.overview.view' },
-    { id: 'sales' as const, label: 'Satış Raporları', icon: TrendingUp, permission: 'reports.sales.view' },
-    { id: 'parties' as const, label: 'Hasta Raporları', icon: Users, permission: 'reports.parties.view' },
-    { id: 'promissory' as const, label: 'Senet Raporları', icon: Receipt, permission: 'reports.promissory.view' },
-    { id: 'remaining' as const, label: 'Kalan Ödemeler', icon: Wallet, permission: 'reports.remaining.view' },
-    { id: 'pos_movements' as const, label: 'POS Hareketleri', icon: CreditCard, permission: 'reports.pos_movements.view' },
-    { id: 'report_tracking' as const, label: 'Rapor Takibi', icon: FileText, permission: 'reports.report_tracking.view' },
-    { id: 'activity' as const, label: 'İşlem Dökümü', icon: Activity, permission: 'reports.activity.view' }
-  ], []);
+    { id: 'overview' as const, label: t('tabs.overview', 'Genel Bakış'), icon: BarChart3, permission: 'reports.overview.view' },
+    { id: 'sales' as const, label: t('tabs.sales', 'Satış Raporları'), icon: TrendingUp, permission: 'reports.sales.view' },
+    { id: 'parties' as const, label: t('tabs.parties', 'Hasta Raporları'), icon: Users, permission: 'reports.parties.view' },
+    { id: 'promissory' as const, label: t('tabs.promissory', 'Senet Raporları'), icon: Receipt, permission: 'reports.promissory.view' },
+    { id: 'remaining' as const, label: t('tabs.remaining', 'Kalan Ödemeler'), icon: Wallet, permission: 'reports.remaining.view' },
+    { id: 'pos_movements' as const, label: t('tabs.posMovements', 'POS Hareketleri'), icon: CreditCard, permission: 'reports.pos_movements.view' },
+    { id: 'report_tracking' as const, label: t('tabs.reportTracking', 'Rapor Takibi'), icon: FileText, permission: 'reports.report_tracking.view' },
+    { id: 'activity' as const, label: t('tabs.activity', 'İşlem Dökümü'), icon: Activity, permission: 'reports.activity.view' }
+  ], [t]);
 
   // Filter allowed tabs based on permissions
   const allowedTabs = useMemo(() => {
@@ -138,6 +140,8 @@ export function DesktopReportsPage() {
       setActiveTab(allowedTabs[0].id);
     }
   }, [allowedTabs, activeTab]);
+
+  const PRESET_OPTIONS = PRESET_OPTIONS_BASE.map(o => ({ value: o.value, label: t(`presets.${o.key}`, o.key) }));
 
   const selectedPreset = PRESET_OPTIONS.find((option) => option.value === filters.days)
     && getPresetRange(filters.days).start === filters.dateRange.start
@@ -166,8 +170,8 @@ export function DesktopReportsPage() {
     <div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <DesktopPageHeader
-          title="Raporlar ve Analizler"
-          description="Satış performansı, hasta analizleri ve işlem dökümleri"
+          title={t('pageTitle', 'Raporlar ve Analizler')}
+          description={t('pageDescription', 'Satış performansı, hasta analizleri ve işlem dökümleri')}
           icon={<PieChart className="w-6 h-6" />}
           eyebrow={{ tr: 'İçgörüler', en: 'Insights' }}
           actions={null}
@@ -181,7 +185,7 @@ export function DesktopReportsPage() {
             <div className="flex items-center gap-4 flex-wrap">
               <div className="flex items-center gap-2">
                 <Filter className="w-5 h-5 text-muted-foreground" />
-                <span className="text-sm font-medium text-foreground">Filtreler:</span>
+                <span className="text-sm font-medium text-foreground">{t('filters', 'Filtreler')}:</span>
               </div>
               <div>
                 <Select
@@ -202,7 +206,7 @@ export function DesktopReportsPage() {
                   }}
                   options={[
                     ...PRESET_OPTIONS.map((option) => ({ value: String(option.value), label: option.label })),
-                    { value: 'custom', label: 'Özel Aralık' }
+                    { value: 'custom', label: t('presets.custom', 'Özel Aralık') }
                   ]}
                 />
               </div>
@@ -241,19 +245,19 @@ export function DesktopReportsPage() {
               </div>
               <div>
                 <MultiSelect
-                  label="Şube"
-                  placeholder="Tüm şubeler"
+                  label={t('branch', 'Şube')}
+                  placeholder={t('allBranches', 'Tüm şubeler')}
                   selectAll
-                  selectAllText="Tüm Şubeleri Seç"
-                  clearAllText="Temizle"
+                  selectAllText={t('selectAllBranches', 'Tüm Şubeleri Seç')}
+                  clearAllText={t('clear', 'Temizle')}
                   options={branches.map((branch) => ({
                     id: branch.id,
                     value: branch.id,
-                    label: branch.name || 'Şube'
+                    label: branch.name || t('branch', 'Şube')
                   }))}
                   value={branches
                     .filter((branch) => filters.branches?.includes(branch.id))
-                    .map((branch) => ({ id: branch.id, value: branch.id, label: branch.name || 'Şube' }))}
+                    .map((branch) => ({ id: branch.id, value: branch.id, label: branch.name || t('branch', 'Şube') }))}
                   onChange={(selected) => setFilters((prev) => ({
                     ...prev,
                     branches: selected.map((item) => item.value),

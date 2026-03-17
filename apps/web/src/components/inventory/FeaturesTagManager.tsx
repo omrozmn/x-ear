@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState } from 'react';
 import { X, Plus, Tag } from 'lucide-react';
 import { Button, Input } from '@x-ear/ui-web';
@@ -13,6 +14,7 @@ export const FeaturesTagManager: React.FC<FeaturesTagManagerProps> = ({
   onChange,
   isEditMode = false
 }) => {
+  const { t } = useTranslation('inventory');
   const [inputValue, setInputValue] = useState('');
 
   const handleAddFeature = () => {
@@ -60,7 +62,7 @@ export const FeaturesTagManager: React.FC<FeaturesTagManagerProps> = ({
                   variant="ghost"
                   size="sm"
                   className="ml-2 hover:text-blue-900 dark:hover:text-blue-200"
-                  title="Kaldır"
+                  title={t('actions.delete')}
                 >
                   <X className="w-3 h-3" />
                 </Button>

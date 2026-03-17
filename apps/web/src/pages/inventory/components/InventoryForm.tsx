@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState } from 'react';
 import { InventoryItem, InventoryCategory, InventoryType, EarDirection } from '../../../types/inventory';
 import { Button, Input, Select, Textarea, Checkbox } from '@x-ear/ui-web';
@@ -15,6 +16,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
   onCancel,
   isLoading = false,
 }) => {
+  const { t } = useTranslation('inventory');
   const [formData, setFormData] = useState({
     name: item?.name || '',
     brand: item?.brand || '',
@@ -54,22 +56,22 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Ürün adı zorunludur';
+      newErrors.name = t('validation.name_required');
     }
     if (!formData.brand.trim()) {
-      newErrors.brand = 'Marka zorunludur';
+      newErrors.brand = t('validation.name_required');
     }
     if (!formData.category) {
-      newErrors.category = 'Kategori seçimi zorunludur';
+      newErrors.category = t('validation.category_required');
     }
     if (formData.price <= 0) {
-      newErrors.price = 'Fiyat 0\'dan büyük olmalıdır';
+      newErrors.price = t('validation.price_positive');
     }
     if (formData.availableInventory < 0) {
-      newErrors.availableInventory = 'Stok miktarı negatif olamaz';
+      newErrors.availableInventory = t('validation.stock_positive');
     }
     if (formData.reorderLevel < 0) {
-      newErrors.reorderLevel = 'Minimum stok seviyesi negatif olamaz';
+      newErrors.reorderLevel = t('validation.stock_positive');
     }
 
     setErrors(newErrors);
@@ -94,12 +96,12 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
   };
 
   const categoryOptions = [
-    { value: 'hearing_aid', label: 'İşitme Cihazı' },
-    { value: 'battery', label: 'Pil' },
-    { value: 'accessory', label: 'Aksesuar' },
-    { value: 'ear_mold', label: 'Kulak Kalıbı' },
-    { value: 'cleaning_supplies', label: 'Temizlik Malzemeleri' },
-    { value: 'amplifiers', label: 'Amplifikatör' },
+    { value: 'hearing_aid', label: t('categories.title') },
+    { value: 'battery', label: t('form.description') },
+    { value: 'accessory', label: t('form.description') },
+    { value: 'ear_mold', label: t('form.description') },
+    { value: 'cleaning_supplies', label: t('form.description') },
+    { value: 'amplifiers', label: t('form.description') },
   ];
 
   const typeOptions = [
@@ -118,7 +120,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
   ];
 
   const brandOptions = [
-    { value: '', label: 'Marka seçin' },
+    { value: '', label: t('form.brand') },
     { value: 'Phonak', label: 'Phonak' },
     { value: 'Oticon', label: 'Oticon' },
     { value: 'Widex', label: 'Widex' },
@@ -133,11 +135,11 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Basic Information */}
       <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Temel Bilgiler</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{t('form.product_name')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-foreground mb-1">
-              Ürün Adı *
+              {t('form.product_name')} *
             </label>
             <Input
               type="text"
@@ -152,7 +154,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
 
           <div>
             <label className="block text-sm font-medium text-foreground mb-1">
-              Marka *
+              {t('form.brand')} *
             </label>
             <Select
               value={formData.brand}
@@ -219,11 +221,11 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
 
       {/* Inventory Information */}
       <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Stok Bilgileri</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{t('stock.title')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-foreground mb-1">
-              Mevcut Stok *
+              {t('stock.current_stock')} *
             </label>
             <Input
               type="number"
@@ -253,7 +255,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
 
           <div>
             <label className="block text-sm font-medium text-foreground mb-1">
-              Minimum Stok Seviyesi *
+              {t('stock.min_stock')} *
             </label>
             <Input
               type="number"
@@ -271,11 +273,11 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
 
       {/* Pricing Information */}
       <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Fiyat Bilgileri</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{t('pricing.title')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-foreground mb-1">
-              Satış Fiyatı (₺) *
+              {t('pricing.sale_price')} *
             </label>
             <Input
               type="number"
@@ -339,7 +341,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
 
       {/* Additional Information */}
       <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Ek Bilgiler</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{t('form.description')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-foreground mb-1">
@@ -472,7 +474,7 @@ const InventoryForm: React.FC<InventoryFormProps> = ({
           type="submit"
           disabled={isLoading}
         >
-          {isLoading ? 'Kaydediliyor...' : (item ? 'Güncelle' : 'Kaydet')}
+          {isLoading ? t('form.save') : (item ? t('form.save') : t('form.save'))}
         </Button>
       </div>
     </form>

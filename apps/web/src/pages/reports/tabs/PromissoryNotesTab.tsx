@@ -29,12 +29,14 @@ import type { FilterState } from '../types';
 import { TabExportButton } from '../components/TabExportButton';
 import PieChartSimple from '@/components/charts/PieChartSimple';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useTranslation } from 'react-i18next';
 
 interface PromissoryNotesTabProps {
     filters: FilterState;
 }
 
 export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
+  const { t } = useTranslation('reports');
     const { hasPermission } = usePermissions();
     const canViewFinancials = hasPermission('sensitive.reports.promissory.financials.view');
     const canViewContact = hasPermission('sensitive.parties.list.contact.view');
@@ -100,7 +102,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
     };
 
     const formatProtectedCurrency = (amount: number) => (
-        canViewFinancials ? formatCurrency(amount) : 'Bu rol icin gizli'
+        canViewFinancials ? formatCurrency(amount) : t('hiddenForRole', 'Bu rol icin gizli')
     );
 
     const getMonthName = (month: number) => {
@@ -118,7 +120,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
         }
     ) => {
         if (!items.length) {
-            return <p className="text-muted-foreground text-center py-8">Veri bulunamadı</p>;
+            return <p className="text-muted-foreground text-center py-8">{t('noData', 'Veri bulunamadı')}</p>;
         }
 
         return (
@@ -154,7 +156,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
     const byPartyColumns = useMemo<Column<ReportPromissoryNoteByParty>[]>(() => [
         {
             key: 'partyName',
-            title: 'Hasta',
+            title: t('patient', 'Hasta'),
             render: (_: unknown, record: ReportPromissoryNoteByParty) => (
                 <>
                     <p className="font-medium text-gray-900 dark:text-white">{record.partyName}</p>
@@ -168,7 +170,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
         },
         {
             key: 'totalNotes',
-            title: 'Toplam Senet',
+            title: t('totalNotes', t('totalNotes', 'Toplam Senet')),
             align: 'center',
             render: (_: unknown, record: ReportPromissoryNoteByParty) => (
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-blue-800 dark:text-blue-300">
@@ -178,7 +180,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
         },
         {
             key: 'firstDueDate',
-            title: 'İlk Vade',
+            title: t('firstDue', 'İlk Vade'),
             render: (_: unknown, record: ReportPromissoryNoteByParty) => (
                 <span className="text-sm text-foreground">
                     {record.firstDueDate ? new Date(record.firstDueDate).toLocaleDateString('tr-TR') : '-'}
@@ -187,7 +189,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
         },
         {
             key: 'lastDueDate',
-            title: 'Son Vade',
+            title: t('lastDue', 'Son Vade'),
             render: (_: unknown, record: ReportPromissoryNoteByParty) => (
                 <span className="text-sm text-foreground">
                     {record.lastDueDate ? new Date(record.lastDueDate).toLocaleDateString('tr-TR') : '-'}
@@ -196,13 +198,13 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
         },
         {
             key: 'totalAmount',
-            title: 'Toplam Tutar',
+            title: t('totalAmount', 'Toplam Tutar'),
             align: 'right',
             render: (_: unknown, record: ReportPromissoryNoteByParty) => formatProtectedCurrency(record.totalAmount)
         },
         {
             key: 'remainingAmount',
-            title: 'Kalan',
+            title: t('remaining', 'Kalan'),
             align: 'right',
             render: (_: unknown, record: ReportPromissoryNoteByParty) => (
                 <span className="font-medium text-destructive">{formatProtectedCurrency(record.remainingAmount)}</span>
@@ -213,27 +215,27 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
     const listColumns = useMemo<Column<ReportPromissoryNoteListItem>[]>(() => [
         {
             key: 'noteNumber',
-            title: 'Senet No',
+            title: t('noteNumber', 'Senet No'),
             render: (_: unknown, record: ReportPromissoryNoteListItem) => (
                 <span className="font-mono text-xs">{record.noteNumber || '-'}</span>
             )
         },
         {
             key: 'party',
-            title: 'Hasta',
+            title: t('patient', 'Hasta'),
             render: (_: unknown, record: ReportPromissoryNoteListItem) => (
                 <span className="font-medium">{record.party?.name || '-'}</span>
             )
         },
         {
             key: 'amount',
-            title: 'Tutar',
+            title: t('amount', 'Tutar'),
             align: 'right',
             render: (_: unknown, record: ReportPromissoryNoteListItem) => formatProtectedCurrency(record.amount)
         },
         {
             key: 'remainingAmount',
-            title: 'Kalan',
+            title: t('remaining', 'Kalan'),
             align: 'right',
             render: (_: unknown, record: ReportPromissoryNoteListItem) => (
                 <span className="font-medium text-destructive">
@@ -243,13 +245,13 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
         },
         {
             key: 'dueDate',
-            title: 'Vade',
+            title: t('dueDate', 'Vade'),
             render: (_: unknown, record: ReportPromissoryNoteListItem) =>
                 record.dueDate ? new Date(record.dueDate).toLocaleDateString('tr-TR') : '-'
         },
         {
             key: 'status',
-            title: 'Durum',
+            title: t('status', 'Durum'),
             render: (_: unknown, record: ReportPromissoryNoteListItem) => (
                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                     record.status === 'paid' ? 'bg-success/10 text-success' :
@@ -257,9 +259,9 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
                     record.status === 'partial' ? 'bg-warning/10 text-yellow-800 dark:text-yellow-300' :
                     'bg-primary/10 text-blue-800 dark:text-blue-300'
                 }`}>
-                    {record.status === 'paid' ? 'Ödendi' :
-                     record.status === 'overdue' ? 'Vadesi Geçti' :
-                     record.status === 'partial' ? 'Kısmi' : 'Aktif'}
+                    {record.status === 'paid' ? t('paid', 'Ödendi') :
+                     record.status === 'overdue' ? t('overdue', 'Vadesi Geçti') :
+                     record.status === 'partial' ? t('partial', 'Kısmi') : t('active', 'Aktif')}
                 </span>
             )
         },
@@ -301,7 +303,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-foreground">Senet Raporları</h3>
+                <h3 className="text-lg font-semibold text-foreground">{t('promissoryReports', 'Senet Raporları')}</h3>
                 <div className="flex items-center gap-2">
                     <TabExportButton filename="senet-raporu" rows={byParty as unknown as Array<Record<string, unknown>>} />
                     <Button
@@ -369,7 +371,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Monthly Note Count */}
                 <div className="bg-white dark:bg-gray-800 rounded-xl border border-border p-6">
-                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Aylık Senet Sayısı</h4>
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">{t('monthlyNoteCount', 'Aylık Senet Sayısı')}</h4>
                     {renderMonthlyDonut(
                         (notes?.monthlyCounts || []).map((item) => ({
                             month: item.month,
@@ -386,7 +388,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
 
                 {/* Monthly Revenue */}
                 <div className="bg-white dark:bg-gray-800 rounded-xl border border-border p-6">
-                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Aylık Senet Tahsilatı</h4>
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">{t('monthlyNoteCollection', 'Aylık Senet Tahsilatı')}</h4>
                     {renderMonthlyDonut(
                         (notes?.monthlyRevenue || []).map((item) => ({
                             month: item.month,
@@ -406,7 +408,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
             {/* Parties with Notes */}
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-border overflow-hidden">
                 <div className="px-6 py-4 border-b border-border">
-                    <h4 className="text-md font-medium text-gray-900 dark:text-white">Hasta Bazlı Senet Özeti</h4>
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white">{t('patientBasedNoteSummary', 'Hasta Bazlı Senet Özeti')}</h4>
                     <p className="text-sm text-muted-foreground">Aktif senedi olan hastalar</p>
                 </div>
                 {partyLoading ? (
@@ -418,7 +420,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
                         data={byParty}
                         columns={byPartyColumns}
                         rowKey="partyId"
-                        emptyText="Aktif senedi olan hasta bulunamadı"
+                        emptyText=t('noActiveNotePatients', 'Aktif senedi olan hasta bulunamadı')
                         striped
                         hoverable
                         size="medium"
@@ -432,7 +434,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
                     <div className="bg-white dark:bg-gray-800 rounded-xl w-full max-w-4xl mx-4 max-h-[85vh] flex flex-col">
                         <div className="flex items-center justify-between p-4 border-b">
                             <div>
-                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Senet Listesi</h2>
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('notesList', 'Senet Listesi')}</h2>
                                 <p className="text-sm text-muted-foreground">Tüm senetleri görüntüle ve filtrele</p>
                             </div>
                             <Button
@@ -448,10 +450,10 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
                         <div className="px-4 pt-3 border-b border-border">
                             <div className="flex gap-2">
                                 {[
-                                    { key: 'active', label: 'Aktif' },
-                                    { key: 'overdue', label: 'Vadesi Geçmiş' },
-                                    { key: 'paid', label: 'Ödendi' },
-                                    { key: 'all', label: 'Tümü' }
+                                    { key: 'active', label: t('active', 'Aktif') },
+                                    { key: 'overdue', label: t('overdueLabel', 'Vadesi Geçmiş') },
+                                    { key: 'paid', label: t('paid', 'Ödendi') },
+                                    { key: 'all', label: t('all', 'Tümü') }
                                 ].map(tab => (
                                     <Button
                                         key={tab.key}
@@ -485,7 +487,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
                                 columns={listColumns}
                                 loading={listLoading}
                                 rowKey="id"
-                                emptyText="Senet bulunamadı"
+                                emptyText=t('noNotes', t('noNotes', 'Senet bulunamadı'))
                                 striped
                                 hoverable
                                 size="medium"
@@ -500,7 +502,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
 
                         <div className="p-4 border-t">
                             <Button onClick={() => setShowListModal(false)} variant="outline" className="w-full">
-                                Kapat
+                                {t('close', 'Kapat')}
                             </Button>
                         </div>
                     </div>
@@ -512,9 +514,9 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
                     <div className="w-full max-w-2xl rounded-xl bg-white dark:bg-gray-800 p-6 mx-4">
                         <div className="flex items-center justify-between mb-4">
                             <div>
-                                <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Senet Detayı</h4>
+                                <h4 className="text-lg font-semibold text-gray-900 dark:text-white">{t('noteDetail', 'Senet Detayı')}</h4>
                                 <p className="text-sm text-muted-foreground">
-                                    {selectedNote.noteNumber || 'Numarasız senet'}
+                                    {selectedNote.noteNumber || t('unnumberedNote', 'Numarasız senet')}
                                 </p>
                             </div>
                             <Button
@@ -522,7 +524,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
                                 onClick={() => setSelectedNote(null)}
                                 className="!w-auto !h-auto px-2 py-1"
                             >
-                                Kapat
+                                {t('close', 'Kapat')}
                             </Button>
                         </div>
 
@@ -533,7 +535,7 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
                             </div>
                             <div>
                                 <span className="text-muted-foreground">Telefon</span>
-                                <p className="font-medium text-gray-900 dark:text-white">{canViewContact ? (selectedNote.party?.phone || '-') : 'Bu rol icin gizli'}</p>
+                                <p className="font-medium text-gray-900 dark:text-white">{canViewContact ? (selectedNote.party?.phone || '-') : t('hiddenForRole', 'Bu rol icin gizli')}</p>
                             </div>
                             <div>
                                 <span className="text-muted-foreground">Senet Tutarı</span>
@@ -556,9 +558,9 @@ export function PromissoryNotesTab({ filters }: PromissoryNotesTabProps) {
                             <div className="md:col-span-2">
                                 <span className="text-muted-foreground">Durum</span>
                                 <p className="font-medium text-gray-900 dark:text-white">
-                                    {selectedNote.status === 'paid' ? 'Ödendi' :
-                                     selectedNote.status === 'overdue' ? 'Vadesi Geçti' :
-                                     selectedNote.status === 'partial' ? 'Kısmi Tahsilat' : 'Aktif'}
+                                    {selectedNote.status === 'paid' ? t('paid', 'Ödendi') :
+                                     selectedNote.status === 'overdue' ? t('overdue', 'Vadesi Geçti') :
+                                     selectedNote.status === 'partial' ? t('partialCollection', 'Kısmi Tahsilat') : t('active', 'Aktif')}
                                 </p>
                             </div>
                         </div>

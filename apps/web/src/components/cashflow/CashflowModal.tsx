@@ -3,6 +3,7 @@
  * Modal for creating new cash records with party search and product selection
  */
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@x-ear/ui-web';
 import { TrendingUp, TrendingDown, X } from 'lucide-react';
 import type { CashRecordFormData, TransactionType, RecordType } from '../../types/cashflow';
@@ -46,14 +47,18 @@ export function CashflowModal({
   onClose,
   onSave,
   isLoading,
-  title = 'Yeni Kasa Kaydı',
-  saveButtonText = 'Kaydet',
+  title: titleProp,
+  saveButtonText: saveButtonTextProp,
   lockedTransactionType,
-  transactionTypeLabels = {
-    income: 'Gelir',
-    expense: 'Gider',
-  },
+  transactionTypeLabels: transactionTypeLabelsProp,
 }: CashflowModalProps) {
+  const { t } = useTranslation('cashflow');
+  const title = titleProp ?? t('newCashRecord', 'Yeni Kasa Kaydı');
+  const saveButtonText = saveButtonTextProp ?? t('save', 'Kaydet');
+  const transactionTypeLabels = transactionTypeLabelsProp ?? {
+    income: t('income', 'Gelir'),
+    expense: t('expense', 'Gider'),
+  };
   const [transactionType, setTransactionType] = useState<TransactionType | ''>(lockedTransactionType ?? '');
   const [recordType, setRecordType] = useState<RecordType | ''>('');
   const [selectedParty, setSelectedParty] = useState<Party | null>(null);
@@ -85,15 +90,15 @@ export function CashflowModal({
     const newErrors: Record<string, string> = {};
 
     if (!transactionType) {
-      newErrors.transactionType = 'İşlem türü seçiniz';
+      newErrors.transactionType = t('validation.transactionTypeRequired', 'İşlem türü seçiniz');
     }
 
     if (!recordType) {
-      newErrors.recordType = 'Kayıt türü seçiniz';
+      newErrors.recordType = t('validation.recordTypeRequired', 'Kayıt türü seçiniz');
     }
 
     if (!amount || parseFloat(amount) <= 0) {
-      newErrors.amount = 'Geçerli bir tutar giriniz';
+      newErrors.amount = t('validation.validAmountRequired', 'Geçerli bir tutar giriniz');
     }
 
     setErrors(newErrors);
@@ -143,7 +148,7 @@ export function CashflowModal({
           <div className="mb-6 flex items-center justify-between border-b border-slate-200/80 pb-4 dark:border-slate-800">
             <div>
               <h3 className="text-xl font-semibold text-slate-900 dark:text-white">{title}</h3>
-              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Hizli kayit akisi</p>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{t('quickRecordFlow', 'Hizli kayit akisi')}</p>
             </div>
             <button data-allow-raw="true" onClick={handleClose} className="text-muted-foreground hover:text-muted-foreground dark:text-slate-400 dark:hover:text-white">
               <X className="h-5 w-5" />
@@ -154,7 +159,7 @@ export function CashflowModal({
             {showTransactionSelector ? (
               <div>
                 <label className="mb-3 block text-sm font-semibold text-slate-800 dark:text-gray-300">
-                  İşlem Türü *
+                  {t('transactionType', 'İşlem Türü')} *
                 </label>
                 <div className="flex space-x-4">
                   <button data-allow-raw="true"
@@ -205,7 +210,7 @@ export function CashflowModal({
             {transactionType === 'income' ? (
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-800 dark:text-gray-300">
-                  Hasta (İsteğe Bağlı)
+                  {t('patientOptional', 'Hasta (İsteğe Bağlı)')}
                 </label>
                 <PartySearchInput
                   selectedParty={selectedParty}
@@ -224,8 +229,8 @@ export function CashflowModal({
                     setSupplierInput(supplierName);
                     setSelectedSupplier({ id: supplierId, name: supplierName });
                   }}
-                  placeholder="Tedarikçi seçin veya ekleyin"
-                  label="Tedarikçi (İsteğe Bağlı)"
+                  placeholder={t('supplierPlaceholder', 'Tedarikçi seçin veya ekleyin')}
+                  label={t('supplierOptional', 'Tedarikçi (İsteğe Bağlı)')}
                 />
               </div>
             )}
@@ -233,7 +238,7 @@ export function CashflowModal({
             {/* Product Search */}
             <div>
               <label className="mb-2 block text-sm font-semibold text-slate-800 dark:text-gray-300">
-                Ürün (İsteğe Bağlı)
+                {t('productOptional', 'Ürün (İsteğe Bağlı)')}
               </label>
               <ProductSearchInput
                 selectedProduct={selectedProduct}
@@ -246,7 +251,7 @@ export function CashflowModal({
             {/* Amount */}
             <div>
               <label className="mb-2 block text-sm font-semibold text-slate-800 dark:text-gray-300">
-                Tutar (₺) *
+                {t('amountLabel', 'Tutar (₺)')} *
               </label>
               <input data-allow-raw="true"
                 type="text"
@@ -268,11 +273,11 @@ export function CashflowModal({
             {/* Description */}
             <div>
               <label className="mb-2 block text-sm font-semibold text-slate-800 dark:text-gray-300">
-                Açıklama (İsteğe Bağlı)
+                {t('descriptionOptional', 'Açıklama (İsteğe Bağlı)')}
               </label>
               <textarea data-allow-raw="true"
                 rows={3}
-                placeholder="İşlem açıklaması..."
+                placeholder={t('descriptionPlaceholder', 'İşlem açıklaması...')}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="w-full rounded-2xl border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm shadow-slate-200/60 placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-ring/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-50 dark:placeholder:text-slate-500"
@@ -282,10 +287,10 @@ export function CashflowModal({
             {/* Action Buttons */}
             <div className="flex justify-end space-x-3 border-t border-slate-200/90 pt-4 dark:border-slate-800">
               <Button type="button" variant="outline" onClick={handleClose} className="border-slate-300 bg-white text-slate-800 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800">
-                İptal
+                {t('cancel', 'İptal')}
               </Button>
               <Button type="submit" disabled={isLoading} className="bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400">
-                {isLoading ? 'Kaydediliyor...' : saveButtonText}
+                {isLoading ? t('saving', 'Kaydediliyor...') : saveButtonText}
               </Button>
             </div>
           </form>

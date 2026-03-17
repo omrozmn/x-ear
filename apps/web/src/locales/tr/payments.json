@@ -1,0 +1,125 @@
+{
+  "page": {
+    "title": "Ödemeler",
+    "description": "Ödeme takibi ve yönetimi",
+    "eyebrow": "Finans",
+    "loading": "Ödemeler yükleniyor...",
+    "not_found": "Ödeme bulunamadı"
+  },
+  "stats": {
+    "total_receivable": "Toplam Alacak",
+    "total_payable": "Toplam Borç",
+    "overdue_receivable": "Vadesi Geçmiş Alacak",
+    "overdue_payable": "Vadesi Geçmiş Borç",
+    "collected_this_month": "Bu Ay Tahsil Edilen",
+    "paid_this_month": "Bu Ay Ödenen",
+    "pending_payments": "Bekleyen Ödemeler",
+    "completed_payments": "Tamamlanan Ödemeler"
+  },
+  "columns": {
+    "party": "Kişi/Kurum",
+    "amount": "Tutar",
+    "due_date": "Vade Tarihi",
+    "payment_date": "Ödeme Tarihi",
+    "status": "Durum",
+    "method": "Ödeme Yöntemi",
+    "reference": "Referans",
+    "description": "Açıklama",
+    "type": "Tür",
+    "remaining": "Kalan",
+    "actions": "İşlemler"
+  },
+  "actions": {
+    "add_payment": "Ödeme Ekle",
+    "receive_payment": "Tahsilat Ekle",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "view": "Görüntüle",
+    "mark_paid": "Ödendi İşaretle",
+    "send_reminder": "Hatırlatma Gönder",
+    "export": "Dışa Aktar",
+    "print_receipt": "Makbuz Yazdır",
+    "partial_payment": "Kısmi Ödeme",
+    "refund": "İade",
+    "extend_due_date": "Vade Uzat",
+    "add_note": "Not Ekle"
+  },
+  "filters": {
+    "search_placeholder": "Kişi adı veya referans ara...",
+    "all_statuses": "Tüm Durumlar",
+    "all_types": "Tüm Türler",
+    "receivable": "Alacak",
+    "payable": "Borç",
+    "all_methods": "Tüm Yöntemler",
+    "start_date": "Başlangıç",
+    "end_date": "Bitiş",
+    "overdue_only": "Sadece Vadesi Geçmiş",
+    "this_month": "Bu Ay",
+    "this_week": "Bu Hafta"
+  },
+  "status": {
+    "pending": "Bekliyor",
+    "partial": "Kısmi Ödeme",
+    "paid": "Ödendi",
+    "overdue": "Vadesi Geçti",
+    "cancelled": "İptal Edildi",
+    "refunded": "İade Edildi"
+  },
+  "payment_methods": {
+    "cash": "Nakit",
+    "credit_card": "Kredi Kartı",
+    "debit_card": "Banka Kartı",
+    "bank_transfer": "Havale/EFT",
+    "check": "Çek",
+    "promissory_note": "Senet",
+    "online": "Online Ödeme",
+    "other": "Diğer"
+  },
+  "tracking": {
+    "title": "Ödeme Takibi",
+    "installments": "Taksitler",
+    "installment_number": "Taksit No",
+    "installment_amount": "Taksit Tutarı",
+    "installment_date": "Taksit Tarihi",
+    "paid_installments": "Ödenen Taksitler",
+    "remaining_installments": "Kalan Taksitler",
+    "next_payment": "Sonraki Ödeme",
+    "payment_plan": "Ödeme Planı",
+    "create_plan": "Plan Oluştur",
+    "total_installments": "Toplam Taksit",
+    "payment_history": "Ödeme Geçmişi"
+  },
+  "promissory_notes": {
+    "title": "Senet ve Çek Takibi",
+    "note_number": "Senet/Çek No",
+    "drawer": "Düzenleyen",
+    "beneficiary": "Lehtar",
+    "amount": "Tutar",
+    "issue_date": "Düzenleme Tarihi",
+    "due_date": "Vade Tarihi",
+    "status": "Durum",
+    "in_portfolio": "Portföyde",
+    "in_collection": "Tahsilde",
+    "endorsed": "Ciro Edildi",
+    "cashed": "Tahsil Edildi",
+    "bounced": "Karşılıksız",
+    "actions": {
+      "endorse": "Ciro Et",
+      "send_to_collection": "Tahsile Gönder",
+      "mark_cashed": "Tahsil Edildi",
+      "mark_bounced": "Karşılıksız"
+    }
+  },
+  "remaining": {
+    "title": "Kalan Bakiyeler",
+    "total_remaining": "Toplam Kalan",
+    "by_party": "Kişiye Göre",
+    "by_due_date": "Vadeye Göre",
+    "aging_report": "Yaşlandırma Raporu",
+    "current": "Güncel",
+    "days_30": "0-30 Gün",
+    "days_60": "31-60 Gün",
+    "days_90": "61-90 Gün",
+    "days_over_90": "90+ Gün"
+  }
+}

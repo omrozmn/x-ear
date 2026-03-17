@@ -6,7 +6,7 @@ from core.models.base import Base
 import uuid
 from datetime import datetime
 from enum import Enum as PyEnum
-from sqlalchemy import Column, String, Boolean, DateTime, Text, JSON, Numeric, Integer, Index, Enum as SQLEnum
+from sqlalchemy import Column, String, Boolean, DateTime, Text, JSON, Numeric, Integer, Index, Enum as SQLEnum, ForeignKey
 
 
 class PlanType(PyEnum):
@@ -49,6 +49,10 @@ class Plan(Base):
     max_storage_gb = Column(Integer, nullable=True)  # null = unlimited
     retention_days = Column(Integer, nullable=True, default=365)  # Data retention period (Phase 0)
     
+    # Sector & Country scoping
+    sector = Column(String(30), nullable=True, index=True)  # hearing, pharmacy, hospital, hotel, beauty, general, medical, optic
+    country_code = Column(String(2), ForeignKey('countries.code'), nullable=True, index=True)  # ISO 3166-1 alpha-2
+
     # Status
     is_active = Column(Boolean, default=True, nullable=False, index=True)
     is_public = Column(Boolean, default=True, nullable=False)  # Public or private plan
@@ -67,6 +71,9 @@ class Plan(Base):
         Index('idx_plans_plan_type', 'plan_type'),
         Index('idx_plans_is_active', 'is_active'),
         Index('idx_plans_is_public', 'is_public'),
+        Index('idx_plans_sector', 'sector'),
+        Index('idx_plans_country_code', 'country_code'),
+        Index('idx_plans_sector_country', 'sector', 'country_code'),
     )
     
     def __init__(self, **kwargs):

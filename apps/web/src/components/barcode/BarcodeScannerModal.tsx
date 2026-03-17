@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useId } from 'react';
+import React, { useState, useEffect, useId, useCallback } from 'react';
 import { Button, Modal } from '@x-ear/ui-web';
 import { Camera, CameraOff, Keyboard, CheckCircle } from 'lucide-react';
 import { useBarcodeScanner } from '../../hooks/useBarcodeScanner';
 import { detectBarcodeFormat } from '../../utils/barcodeUtils';
+import { generateBarcodeImage } from '../../utils/barcodeUtils';
 
 interface BarcodeScannerModalProps {
   isOpen: boolean;
@@ -10,6 +11,8 @@ interface BarcodeScannerModalProps {
   onScan: (barcode: string) => void;
   mode?: 'input' | 'lookup';
   title?: string;
+  /** When true, fetches a barcode image preview from the service after scan */
+  showBarcodePreview?: boolean;
 }
 
 export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
@@ -18,6 +21,7 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
   onScan,
   mode = 'input',
   title = 'Barkod Tara',
+  showBarcodePreview = true,
 }) => {
   const uniqueId = useId();
   const elementId = `barcode-scanner-${uniqueId.replace(/:/g, '-')}`;
@@ -25,11 +29,25 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
   const [scanStatus, setScanStatus] = useState<'scanning' | 'found' | 'error'>('scanning');
   const [detectedFormat, setDetectedFormat] = useState<string | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [barcodePreviewUrl, setBarcodePreviewUrl] = useState<string | null>(null);
+  const [scannedBarcode, setScannedBarcode] = useState<string | null>(null);
 
-  const handleScanResult = (barcode: string) => {
+  const fetchBarcodePreview = useCallback(async (barcode: string) => {
+    if (!showBarcodePreview) return;
+    try {
+      const url = await generateBarcodeImage(barcode, 'code128', 'svg');
+      setBarcodePreviewUrl(url);
+    } catch {
+      // Service not available - no preview shown
+    }
+  }, [showBarcodePreview]);
+
+  const handleScanResult = useCallback((barcode: string) => {
     setScanStatus('found');
+    setScannedBarcode(barcode);
     const format = detectBarcodeFormat(barcode);
     setDetectedFormat(format);
+    fetchBarcodePreview(barcode);
 
     // Brief pause to show success state, then callback
     setTimeout(() => {
@@ -37,10 +55,22 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
       if (mode === 'input') {
         handleClose();
       }
-    }, 500);
-  };
+    }, 800);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onScan, mode, fetchBarcodePreview]);
 
   const { isScanning, isLoading, startScanning, stopScanning } = useBarcodeScanner(handleScanResult);
+
+  const handleClose = useCallback(() => {
+    stopScanning();
+    // Revoke blob URL to avoid memory leaks
+    if (barcodePreviewUrl) {
+      URL.revokeObjectURL(barcodePreviewUrl);
+      setBarcodePreviewUrl(null);
+    }
+    setScannedBarcode(null);
+    onClose();
+  }, [stopScanning, onClose, barcodePreviewUrl]);
 
   useEffect(() => {
     if (isOpen) {
@@ -48,6 +78,8 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
       setDetectedFormat(null);
       setCameraError(null);
       setManualInput('');
+      setBarcodePreviewUrl(null);
+      setScannedBarcode(null);
 
       // Delay to let modal DOM render
       const timer = setTimeout(async () => {
@@ -64,11 +96,6 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
-
-  const handleClose = () => {
-    stopScanning();
-    onClose();
-  };
 
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,6 +143,20 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
             </div>
           )}
         </div>
+
+        {/* Barcode image preview from service */}
+        {scannedBarcode && barcodePreviewUrl && (
+          <div className="flex flex-col items-center gap-2 p-3 bg-muted/50 rounded-xl">
+            <img
+              src={barcodePreviewUrl}
+              alt={`Barkod: ${scannedBarcode}`}
+              className="h-14 border border-border rounded p-1 bg-white"
+            />
+            <span className="text-xs font-mono text-muted-foreground">
+              {scannedBarcode}
+            </span>
+          </div>
+        )}
 
         {/* Status bar */}
         <div className="flex items-center justify-between text-sm">

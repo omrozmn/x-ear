@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, Button, Input, Textarea, DataTable } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
 import type { Party } from '../../../types/party/party-base.types';
@@ -81,14 +82,15 @@ export const SGKEReceiptModal: React.FC<SGKEReceiptModalProps> = ({
   mode = 'view',
   title = 'SGK E-Reçete Detayları'
 }) => {
+  const { t } = useTranslation('sgk');
   const [receiptData, setReceiptData] = useState<SGKEReceiptData>(mockEReceipt);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const statusOptions = [
-    { value: 'draft', label: 'Taslak' },
-    { value: 'sent', label: 'Gönderildi' },
-    { value: 'approved', label: 'Onaylandı' },
-    { value: 'rejected', label: 'Reddedildi' }
+    { value: 'draft', label: t('status.draft', 'Taslak') },
+    { value: 'sent', label: t('status.sent', 'Gönderildi') },
+    { value: 'approved', label: t('status.approved', 'Onaylandı') },
+    { value: 'rejected', label: t('status.rejected', 'Reddedildi') }
   ];
 
   const handleSave = async () => {
@@ -191,7 +193,7 @@ export const SGKEReceiptModal: React.FC<SGKEReceiptModalProps> = ({
         {/* Hasta Bilgileri */}
         {party && (
           <div className="bg-muted p-4 rounded-2xl">
-            <h4 className="font-medium text-foreground mb-2">Hasta Bilgileri</h4>
+            <h4 className="font-medium text-foreground mb-2">{t('patientInfo', 'Hasta Bilgileri')}</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-muted-foreground">Ad Soyad:</span>
@@ -248,7 +250,7 @@ export const SGKEReceiptModal: React.FC<SGKEReceiptModalProps> = ({
 
         {/* Durum */}
         <div className="flex items-center justify-between">
-          <h4 className="font-medium text-foreground">Reçete Durumu</h4>
+          <h4 className="font-medium text-foreground">{t('receiptStatus', 'Reçete Durumu')}</h4>
           <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(receiptData.status)}`}>
             {getStatusText(receiptData.status)}
           </span>
@@ -256,7 +258,7 @@ export const SGKEReceiptModal: React.FC<SGKEReceiptModalProps> = ({
 
         {/* İlaçlar */}
         <div>
-          <h4 className="font-medium text-foreground mb-3">İlaçlar ve Malzemeler</h4>
+          <h4 className="font-medium text-foreground mb-3">{t('medicationsAndMaterials', 'İlaçlar ve Malzemeler')}</h4>
           <DataTable<SGKMedication>
             data={receiptData.medications}
             columns={medicationColumns}
@@ -268,18 +270,18 @@ export const SGKEReceiptModal: React.FC<SGKEReceiptModalProps> = ({
 
         {/* Ödeme Bilgileri */}
         <div className="bg-primary/10 p-4 rounded-2xl">
-          <h4 className="font-medium text-blue-900 mb-3">Ödeme Bilgileri</h4>
+          <h4 className="font-medium text-blue-900 mb-3">{t('paymentInfo', 'Ödeme Bilgileri')}</h4>
           <div className="grid grid-cols-3 gap-4 text-sm">
             <div>
-              <span className="text-primary">Toplam Tutar:</span>
+              <span className="text-primary">{t('totalAmount', 'Toplam Tutar')}:</span>
               <p className="font-medium text-blue-900">₺{receiptData.totalAmount.toFixed(2)}</p>
             </div>
             <div>
-              <span className="text-primary">SGK Karşılığı:</span>
+              <span className="text-primary">{t('sgkCoverage', 'SGK Karşılığı')}:</span>
               <p className="font-medium text-blue-900">₺{receiptData.sgkCoverage.toFixed(2)}</p>
             </div>
             <div>
-              <span className="text-primary">Hasta Ödemesi:</span>
+              <span className="text-primary">{t('patientPayment', 'Hasta Ödemesi')}:</span>
               <p className="font-medium text-blue-900">₺{receiptData.partyPayment.toFixed(2)}</p>
             </div>
           </div>
@@ -304,8 +306,8 @@ export const SGKEReceiptModal: React.FC<SGKEReceiptModalProps> = ({
           <div className="flex space-x-3">
             {mode === 'view' && (
               <>
-                <Button variant="outline">Yazdır</Button>
-                <Button variant="outline">İndir</Button>
+                <Button variant="outline">{t('print', 'Yazdır')}</Button>
+                <Button variant="outline">{t('download', 'İndir')}</Button>
               </>
             )}
           </div>
@@ -314,7 +316,7 @@ export const SGKEReceiptModal: React.FC<SGKEReceiptModalProps> = ({
               variant="outline"
               onClick={handleClose}
             >
-              {mode === 'view' ? 'Kapat' : 'İptal'}
+              {mode === 'view' ? t('close', 'Kapat') : t('cancel', 'İptal')}
             </Button>
             {mode !== 'view' && (
               <Button
@@ -323,7 +325,7 @@ export const SGKEReceiptModal: React.FC<SGKEReceiptModalProps> = ({
                 disabled={isSubmitting}
                 loading={isSubmitting}
               >
-                Kaydet
+                {t('save', 'Kaydet')}
               </Button>
             )}
           </div>

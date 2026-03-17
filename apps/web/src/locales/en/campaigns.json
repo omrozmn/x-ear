@@ -1,0 +1,165 @@
+{
+  "sms": {
+    "page": {
+      "title": "SMS Management",
+      "description": "SMS campaigns and single message sending"
+    },
+    "tabs": {
+      "bulk": "Bulk SMS",
+      "single": "Single SMS",
+      "campaigns": "Campaigns",
+      "credits": "Credits"
+    },
+    "bulk": {
+      "title": "Bulk SMS Sending",
+      "recipient_count": "{{count}} recipients selected",
+      "select_recipients": "Select Recipients",
+      "select_all_patients": "Select All Patients",
+      "filter_by_group": "Filter by Group",
+      "filter_by_tag": "Filter by Tag",
+      "send": "Send",
+      "schedule": "Schedule",
+      "schedule_date": "Send Date",
+      "schedule_time": "Send Time",
+      "confirm_send": "Are you sure you want to send SMS to {{count}} people?",
+      "sending": "Sending...",
+      "sent_success": "SMS sent successfully",
+      "sent_failed": "SMS sending failed"
+    },
+    "single": {
+      "title": "Single SMS Sending",
+      "recipient": "Recipient",
+      "phone_number": "Phone Number",
+      "select_patient": "Select Patient",
+      "send": "Send",
+      "sent_success": "SMS sent",
+      "sent_failed": "Failed to send SMS"
+    },
+    "credit": {
+      "title": "SMS Credits",
+      "remaining": "Remaining Credits",
+      "used": "Used",
+      "total": "Total",
+      "buy_credits": "Buy Credits",
+      "credit_history": "Credit History",
+      "low_credit_warning": "Your SMS credits are running low"
+    },
+    "message": {
+      "content": "Message Content",
+      "char_count": "{{count}} characters",
+      "sms_count": "{{count}} SMS",
+      "max_chars": "Maximum {{max}} characters",
+      "template": "Select Template",
+      "save_as_template": "Save as Template",
+      "insert_variable": "Insert Variable",
+      "preview": "Preview"
+    },
+    "preview": {
+      "title": "SMS Preview",
+      "sender": "Sender",
+      "recipient": "Recipient",
+      "message": "Message",
+      "cost": "Cost",
+      "credits_needed": "Credits Needed"
+    },
+    "filters": {
+      "date_range": "Date Range",
+      "status": "Status",
+      "all": "All",
+      "delivered": "Delivered",
+      "failed": "Failed",
+      "pending": "Pending",
+      "scheduled": "Scheduled"
+    },
+    "campaigns": {
+      "title": "SMS Campaigns",
+      "new_campaign": "New Campaign",
+      "campaign_name": "Campaign Name",
+      "status": "Status",
+      "recipients": "Recipients",
+      "sent_count": "Sent",
+      "delivered_count": "Delivered",
+      "failed_count": "Failed",
+      "created_at": "Created At",
+      "actions": "Actions",
+      "view_details": "View Details",
+      "duplicate": "Duplicate",
+      "delete": "Delete",
+      "no_campaigns": "No campaigns created yet"
+    }
+  },
+  "automation": {
+    "stats": {
+      "title": "Automation Statistics",
+      "active_automations": "Active Automations",
+      "total_sent": "Total Sent",
+      "success_rate": "Success Rate",
+      "pending": "Pending"
+    },
+    "triggers": {
+      "title": "Triggers",
+      "appointment_reminder": "Appointment Reminder",
+      "birthday_greeting": "Birthday Greeting",
+      "follow_up": "Follow-up Message",
+      "payment_reminder": "Payment Reminder",
+      "welcome_message": "Welcome Message",
+      "custom": "Custom Trigger",
+      "days_before": "{{count}} days before",
+      "days_after": "{{count}} days after",
+      "on_event": "On event"
+    },
+    "categories": {
+      "all": "All",
+      "appointment": "Appointment",
+      "marketing": "Marketing",
+      "reminder": "Reminder",
+      "notification": "Notification"
+    }
+  },
+  "variables": {
+    "title": "Variables",
+    "patient_name": "Patient Name",
+    "patient_surname": "Patient Surname",
+    "patient_full_name": "Patient Full Name",
+    "appointment_date": "Appointment Date",
+    "appointment_time": "Appointment Time",
+    "doctor_name": "Doctor Name",
+    "clinic_name": "Clinic Name",
+    "clinic_phone": "Clinic Phone",
+    "balance": "Balance",
+    "next_appointment": "Next Appointment"
+  },
+  "whatsapp": {
+    "title": "WhatsApp Messaging",
+    "description": "Send messages via WhatsApp",
+    "not_configured": "WhatsApp integration is not configured",
+    "configure": "Configure",
+    "send_message": "Send Message",
+    "template_message": "Template Message",
+    "free_text": "Free Text",
+    "media": "Attach Media",
+    "sent_success": "WhatsApp message sent",
+    "sent_failed": "Failed to send WhatsApp message",
+    "connection_status": "Connection Status",
+    "connected": "Connected",
+    "disconnected": "Disconnected"
+  },
+  "email": {
+    "title": "Email Campaigns",
+    "description": "Bulk communication via email",
+    "new_campaign": "New Email Campaign",
+    "subject": "Subject",
+    "body": "Body",
+    "recipients": "Recipients",
+    "send": "Send",
+    "schedule": "Schedule",
+    "draft": "Draft",
+    "sent": "Sent",
+    "template": "Template",
+    "select_template": "Select Template",
+    "preview": "Preview",
+    "test_send": "Test Send",
+    "sent_success": "Email campaign sent",
+    "sent_failed": "Email sending failed"
+  }
+}

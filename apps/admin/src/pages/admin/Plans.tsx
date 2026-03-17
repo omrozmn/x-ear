@@ -10,6 +10,7 @@ import Pagination from '@/components/ui/Pagination';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
 import { extractPagination, isRecord } from '@/lib/orval-response';
+import { SectorCountryFilter, SectorCountryFormFields, getSectorLabel, getCountryLabel } from '@/components/ui/SectorCountryFilter';
 
 const PLAN_TYPES = ['BASIC', 'PRO', 'ENTERPRISE', 'CUSTOM'] as const;
 const BILLING_INTERVALS = ['MONTHLY', 'YEARLY', 'QUARTERLY'] as const;
@@ -48,6 +49,8 @@ interface PlanFormState {
   maxUsers: number;
   maxStorageGb: number;
   features: FeatureFormItem[];
+  sector: string;
+  countryCode: string;
   isActive: boolean;
 }
 
@@ -127,8 +130,15 @@ const Plans: React.FC = () => {
   const [limit, setLimit] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPlanIds, setSelectedPlanIds] = useState<string[]>([]);
+  const [filterSector, setFilterSector] = useState('');
+  const [filterCountry, setFilterCountry] = useState('');
 
-  const params: ListAdminPlansParams = { page, limit };
+  const params: ListAdminPlansParams & { sector?: string; countryCode?: string } = {
+    page,
+    limit,
+    ...(filterSector ? { sector: filterSector } : {}),
+    ...(filterCountry ? { countryCode: filterCountry } : {}),
+  };
   const { data: plansData, isLoading, error } = useListAdminPlans(params);
 
   const plans = getPlans(plansData).filter((plan) => {
@@ -178,6 +188,7 @@ const Plans: React.FC = () => {
     if (plan) {
       setEditingPlan(plan);
 
+      const planAny = plan as PlanRead & { sector?: string; countryCode?: string };
       setFormData({
         name: plan.name,
         description: plan.description || '',
@@ -187,6 +198,8 @@ const Plans: React.FC = () => {
         maxUsers: plan.maxUsers || 1,
         maxStorageGb: plan.maxStorageGb || 1,
         features: normalizeFeatures(plan.features),
+        sector: planAny.sector || '',
+        countryCode: planAny.countryCode || '',
         isActive: plan.isActive ?? true
       });
     } else {
@@ -200,6 +213,8 @@ const Plans: React.FC = () => {
         maxUsers: 1,
         maxStorageGb: 1,
         features: [],
+        sector: '',
+        countryCode: '',
         isActive: true
       });
     }
@@ -237,8 +252,10 @@ const Plans: React.FC = () => {
         maxUsers: formData.maxUsers,
         maxStorageGb: formData.maxStorageGb,
         features: featuresObject,
+        sector: formData.sector || undefined,
+        countryCode: formData.countryCode || undefined,
         isActive: formData.isActive
-      };
+      } as PlanCreate | PlanUpdate;
 
       if (editingPlan) {
         await updatePlan({ planId: editingPlan.id, data: payload as PlanUpdate });
@@ -359,6 +376,31 @@ const Plans: React.FC = () => {
       )
     },
     {
+      key: 'sectorCountry',
+      header: 'Sektör / Ülke',
+      mobileHidden: true,
+      render: (plan: PlanRead) => {
+        const planAny = plan as PlanRead & { sector?: string; countryCode?: string };
+        return (
+          <div className="flex flex-col gap-0.5">
+            {planAny.sector && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 w-fit">
+                {getSectorLabel(planAny.sector)}
+              </span>
+            )}
+            {planAny.countryCode && (
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {getCountryLabel(planAny.countryCode)}
+              </span>
+            )}
+            {!planAny.sector && !planAny.countryCode && (
+              <span className="text-xs text-gray-400 dark:text-gray-500">Genel</span>
+            )}
+          </div>
+        );
+      }
+    },
+    {
       key: 'price',
       header: 'Fiyat',
       sortable: true,
@@ -451,19 +493,27 @@ const Plans: React.FC = () => {
             {!isMobile && 'Plan Ekle'}
           </button>
         </div>
-        <div className="max-w-md">
-          <div className="relative rounded-xl shadow-sm">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+        <div className="flex flex-wrap gap-3 items-end">
+          <div className="flex-1 min-w-[200px] max-w-md">
+            <div className="relative rounded-xl shadow-sm">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Plan adı, açıklama veya tip ara..."
+                className="block w-full rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white pl-10 pr-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
+              />
             </div>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Plan adı, açıklama veya tip ara..."
-              className="block w-full rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white pl-10 pr-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
-            />
           </div>
+          <SectorCountryFilter
+            sector={filterSector}
+            countryCode={filterCountry}
+            onSectorChange={(v) => { setFilterSector(v); setPage(1); }}
+            onCountryChange={(v) => { setFilterCountry(v); setPage(1); }}
+          />
         </div>
 
         {isLoading ? (
@@ -600,6 +650,15 @@ const Plans: React.FC = () => {
                       {BILLING_INTERVALS.map((t) => <option key={t} value={t}>{t}</option>)}
                     </select>
                   </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6">
+                  <SectorCountryFormFields
+                    sector={formData.sector}
+                    countryCode={formData.countryCode}
+                    onSectorChange={(v) => setFormData({ ...formData, sector: v })}
+                    onCountryChange={(v) => setFormData({ ...formData, countryCode: v })}
+                  />
                 </div>
 
                 <div className="grid grid-cols-2 gap-6">

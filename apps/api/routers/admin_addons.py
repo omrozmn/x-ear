@@ -33,17 +33,23 @@ def list_addons(
     limit: int = Query(20, ge=1, le=100),
     type: Optional[str] = Query(None),
     is_active: Optional[str] = Query(None),
+    sector: Optional[str] = Query(None, description="Filter by sector code"),
+    country_code: Optional[str] = Query(None, alias="countryCode", description="Filter by country code"),
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
 ):
     """List all add-ons"""
     try:
         query = db_session.query(AddOn)
-        
+
         if type:
             query = query.filter_by(addon_type=AddOnType[type.upper()])
         if is_active:
             query = query.filter_by(is_active=is_active.lower() == 'true')
+        if sector:
+            query = query.filter_by(sector=sector.lower())
+        if country_code:
+            query = query.filter_by(country_code=country_code.upper())
         
         query = query.order_by(AddOn.created_at.desc())
         total = query.count()
@@ -88,6 +94,8 @@ def create_addon(
             currency=request_data.currency,
             unit_name=request_data.unit_name,
             limit_amount=request_data.limit_amount,
+            sector=request_data.sector,
+            country_code=request_data.country_code,
             is_active=request_data.is_active
         )
         db_session.add(addon)

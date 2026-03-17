@@ -9,6 +9,7 @@ import {
     translateActivityMessage
 } from '../utils/activityLogPresentation';
 import { usePermissions } from '../../../hooks/usePermissions';
+import { useTranslation } from 'react-i18next';
 
 interface ActivityLogDetailModalProps {
     log: ActivityLogRead;
@@ -16,6 +17,7 @@ interface ActivityLogDetailModalProps {
 }
 
 export function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalProps) {
+  const { t } = useTranslation('reports');
     const { hasPermission } = usePermissions();
     const canViewDetails = hasPermission('sensitive.reports.activity.details.view');
     const actionLabel = translateActivityAction(log.action);
@@ -28,7 +30,7 @@ export function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalP
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 rounded-xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col">
                 <div className="flex items-center justify-between p-4 border-b border-border">
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">İşlem Kaydı Detayı</h2>
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('activityRecordDetail', 'İşlem Kaydı Detayı')}</h2>
                     <Button
                         onClick={onClose}
                         variant="ghost"
@@ -51,7 +53,7 @@ export function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalP
                                 <p className="font-medium text-gray-900 dark:text-white">{actionLabel}</p>
                             </div>
                             <div>
-                                <label className="text-xs text-muted-foreground">Kullanıcı</label>
+                                <label className="text-xs text-muted-foreground">{t('user', 'Kullanıcı')}</label>
                                 <p className="font-medium text-gray-900 dark:text-white">{log.userName || log.userId || '-'}</p>
                                 {canViewDetails && log.userEmail && <p className="text-xs text-muted-foreground">{log.userEmail}</p>}
                             </div>
@@ -76,7 +78,7 @@ export function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalP
 
                         {canViewDetails && log.details && (
                             <div>
-                                <label className="text-xs text-muted-foreground">İşlem Detayları</label>
+                                <label className="text-xs text-muted-foreground">{t('operationDetails', 'İşlem Detayları')}</label>
                                 {detailEntries.length > 0 ? (
                                     <div className="rounded-2xl bg-muted/50 p-3 space-y-2">
                                         {detailEntries.map((entry) => (
@@ -105,7 +107,7 @@ export function ActivityLogDetailModal({ log, onClose }: ActivityLogDetailModalP
                 </div>
                 <div className="p-4 border-t border-border">
                     <Button onClick={onClose} variant="outline" className="w-full">
-                        Kapat
+                        {t('close', 'Kapat')}
                     </Button>
                 </div>
             </div>

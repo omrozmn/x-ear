@@ -14,10 +14,12 @@ import { PartyDocumentsTab } from '@/components/parties/PartyDocumentsTab';
 import { PartyHearingTestsTab } from '@/components/parties/PartyHearingTestsTab';
 import { PartyTimelineTab } from '@/components/parties/PartyTimelineTab';
 import { PartyOverviewTab } from '@/components/parties/PartyOverviewTab';
+import { useTranslation } from 'react-i18next';
 
 type Tab = 'overview' | 'notes' | 'documents' | 'devices' | 'sales' | 'hearing-tests' | 'timeline';
 
 export const MobilePartyDetailPage: React.FC = () => {
+    const { t } = useTranslation(['parties_extra', 'patients', 'common']);
     const { partyId } = useParams({ strict: false }) as { partyId?: string };
     const { party, isLoading } = useParty(partyId);
     const [activeTab, setActiveTab] = useState<Tab>('overview');
@@ -26,7 +28,7 @@ export const MobilePartyDetailPage: React.FC = () => {
     if (isLoading || !party) {
         return (
             <MobileLayout>
-                <MobileHeader title="Hasta Detayı" />
+                <MobileHeader title={t('details.mobile_title')} />
                 <div className="flex justify-center p-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
                 </div>
@@ -38,13 +40,13 @@ export const MobilePartyDetailPage: React.FC = () => {
     const handleMessage = () => window.location.href = `sms:${party.phone}`;
 
     const tabs = [
-        { id: 'overview', label: 'Genel', icon: <User className="h-4 w-4" /> },
-        { id: 'sales', label: 'Satışlar', icon: <FileText className="h-4 w-4" /> },
-        { id: 'hearing-tests', label: 'İşitme Testleri', icon: <Stethoscope className="h-4 w-4" /> },
-        { id: 'devices', label: 'Cihaz', icon: <Package className="h-4 w-4" /> },
-        { id: 'notes', label: 'Notlar', icon: <StickyNote className="h-4 w-4" /> },
-        { id: 'documents', label: 'Belgeler', icon: <FolderOpen className="h-4 w-4" /> },
-        { id: 'timeline', label: 'Zaman Çizelgesi', icon: <Clock className="h-4 w-4" /> },
+        { id: 'overview', label: t('tabs.overview'), icon: <User className="h-4 w-4" /> },
+        { id: 'sales', label: t('tabs.sales'), icon: <FileText className="h-4 w-4" /> },
+        { id: 'hearing-tests', label: t('tabs.hearing_tests'), icon: <Stethoscope className="h-4 w-4" /> },
+        { id: 'devices', label: t('tabs.devices'), icon: <Package className="h-4 w-4" /> },
+        { id: 'notes', label: t('tabs.notes'), icon: <StickyNote className="h-4 w-4" /> },
+        { id: 'documents', label: t('tabs.documents'), icon: <FolderOpen className="h-4 w-4" /> },
+        { id: 'timeline', label: t('tabs.timeline'), icon: <Clock className="h-4 w-4" /> },
     ];
 
     return (
@@ -61,7 +63,7 @@ export const MobilePartyDetailPage: React.FC = () => {
                     </div>
                     <div>
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white">{party.firstName} {party.lastName}</h2>
-                        <p className="text-sm text-muted-foreground">{party.phone || 'Telefon yok'}</p>
+                        <p className="text-sm text-muted-foreground">{party.phone || t('card.no_phone')}</p>
                         <div className="flex gap-2 mt-1">
                             <span className="bg-success/10 text-success text-xs px-2 py-0.5 rounded-full font-medium">
                                 {party.status || 'Aktif'}
@@ -78,7 +80,7 @@ export const MobilePartyDetailPage: React.FC = () => {
                         className="flex items-center justify-center gap-2 py-2.5 bg-success/10 text-success rounded-2xl font-medium active:bg-success/10 dark:active:bg-green-900/40 transition-colors hover:bg-success/10 dark:hover:bg-green-900/30"
                     >
                         <Phone className="h-4 w-4" />
-                        Ara
+                        {t('mobile.call')}
                     </Button>
                     <Button
                         onClick={handleMessage}
@@ -86,7 +88,7 @@ export const MobilePartyDetailPage: React.FC = () => {
                         className="flex items-center justify-center gap-2 py-2.5 bg-primary/10 text-primary rounded-2xl font-medium active:bg-primary/10 dark:active:bg-blue-900/40 transition-colors hover:bg-primary/10 dark:hover:bg-blue-900/30"
                     >
                         <MessageCircle className="h-4 w-4" />
-                        Mesaj
+                        {t('mobile.message')}
                     </Button>
                 </div>
             </div>

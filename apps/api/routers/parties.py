@@ -605,16 +605,16 @@ async def bulk_upload_parties(
                 payload = {k: v for k, v in payload.items() if v is not None}
                 
                 # Address
-                address_city = get_val(['address_city', 'city', 'il', 'sehir', 'Şehir', 'şehir', 'City'])
-                address_district = get_val(['address_district', 'district', 'ilce', 'İlçe', 'ilçe', 'District'])
-                address_full = get_val(['address_full', 'fullAddress', 'address', 'adres', 'Adres', 'Address'])
-                
+                address_city = get_val(['address_city', 'addressCity', 'city', 'il', 'sehir', 'Şehir', 'şehir', 'City'])
+                address_district = get_val(['address_district', 'addressDistrict', 'district', 'ilce', 'İlçe', 'ilçe', 'District'])
+                address_full = get_val(['address_full', 'addressFull', 'fullAddress', 'address', 'adres', 'Adres', 'Address'])
+
                 if address_city: payload['address_city'] = address_city
                 if address_district: payload['address_district'] = address_district
                 if address_full: payload['address_full'] = address_full
-                
+
                 # Tags
-                tags_val = get_val(['tags', 'etiketler'])
+                tags_val = get_val(['tags', 'etiketler', 'Etiketler'])
                 if tags_val:
                     if isinstance(tags_val, str):
                         payload['tags_json'] = [t.strip() for t in tags_val.split(',') if t.strip()]

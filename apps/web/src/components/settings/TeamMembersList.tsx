@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { DataTable, Column, Badge } from '@x-ear/ui-web';
+import { useTranslation } from 'react-i18next';
 
 interface TeamMember {
   id: string;
@@ -26,10 +27,11 @@ interface TeamMembersListProps {
 }
 
 export function TeamMembersList({ members, isLoading, pagination, onEdit, onDelete }: TeamMembersListProps) {
+  const { t } = useTranslation('settings_extra');
   const columns: Column<TeamMember>[] = useMemo(() => [
     {
       key: 'name',
-      title: 'Ad Soyad',
+      title: t('fullName', 'Ad Soyad'),
       sortable: true,
       render: (_, member) => (
         <span className="text-sm font-medium text-gray-900 dark:text-white">
@@ -39,7 +41,7 @@ export function TeamMembersList({ members, isLoading, pagination, onEdit, onDele
     },
     {
       key: 'email',
-      title: 'E-posta',
+      title: t('email', 'E-posta'),
       sortable: true,
       render: (_, member) => (
         <span className="text-sm text-muted-foreground">
@@ -49,7 +51,7 @@ export function TeamMembersList({ members, isLoading, pagination, onEdit, onDele
     },
     {
       key: 'role',
-      title: 'Rol',
+      title: t('role', 'Rol'),
       sortable: true,
       render: (_, member) => (
         <Badge variant="default" size="sm">
@@ -59,7 +61,7 @@ export function TeamMembersList({ members, isLoading, pagination, onEdit, onDele
     },
     {
       key: 'status',
-      title: 'Durum',
+      title: t('status', 'Durum'),
       sortable: true,
       render: (_, member) => (
         <Badge variant={member.status === 'active' ? 'success' : 'secondary'} size="sm">
@@ -69,7 +71,7 @@ export function TeamMembersList({ members, isLoading, pagination, onEdit, onDele
     },
     {
       key: 'lastActive',
-      title: 'Son Aktivite',
+      title: t('lastActivity', 'Son Aktivite'),
       sortable: true,
       render: (_, member) => (
         <span className="text-sm text-muted-foreground">
@@ -101,7 +103,7 @@ export function TeamMembersList({ members, isLoading, pagination, onEdit, onDele
       loading={isLoading}
       pagination={pagination}
       rowKey="id"
-      emptyText="Ekip üyesi bulunamadı"
+      emptyText={t('noTeamMembersFound', 'Ekip üyesi bulunamadı')}
     />
   );
 }

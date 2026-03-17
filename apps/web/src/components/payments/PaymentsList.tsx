@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { DataTable, Column, Badge } from '@x-ear/ui-web';
 import { formatCurrency, formatDate } from '@/utils/format';
 
@@ -27,6 +28,8 @@ interface PaymentsListProps {
 }
 
 export function PaymentsList({ payments, isLoading, pagination, onRowClick }: PaymentsListProps) {
+  const { t } = useTranslation('payments');
+
   const getStatusBadge = (status?: string) => {
     const variants: Record<string, 'default' | 'success' | 'warning' | 'danger' | 'secondary'> = {
       pending: 'warning',
@@ -37,7 +40,7 @@ export function PaymentsList({ payments, isLoading, pagination, onRowClick }: Pa
     const s = (status || 'pending').toLowerCase();
     return (
       <Badge variant={variants[s] || 'secondary'} size="sm">
-        {status || 'Bekliyor'}
+        {status || t('status.pending', 'Bekliyor')}
       </Badge>
     );
   };
@@ -45,7 +48,7 @@ export function PaymentsList({ payments, isLoading, pagination, onRowClick }: Pa
   const columns: Column<Payment>[] = useMemo(() => [
     {
       key: 'date',
-      title: 'Tarih',
+      title: t('columns.date', 'Tarih'),
       sortable: true,
       render: (_, payment) => (
         <span className="text-sm text-muted-foreground">
@@ -55,7 +58,7 @@ export function PaymentsList({ payments, isLoading, pagination, onRowClick }: Pa
     },
     {
       key: 'partyName',
-      title: 'Müşteri',
+      title: t('columns.customer', 'Müşteri'),
       sortable: true,
       render: (_, payment) => (
         <span className="text-sm text-gray-900 dark:text-white">
@@ -65,7 +68,7 @@ export function PaymentsList({ payments, isLoading, pagination, onRowClick }: Pa
     },
     {
       key: 'amount',
-      title: 'Tutar',
+      title: t('columns.amount', 'Tutar'),
       sortable: true,
       render: (_, payment) => (
         <span className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -75,7 +78,7 @@ export function PaymentsList({ payments, isLoading, pagination, onRowClick }: Pa
     },
     {
       key: 'paymentMethod',
-      title: 'Ödeme Yöntemi',
+      title: t('columns.paymentMethod', 'Ödeme Yöntemi'),
       sortable: true,
       render: (_, payment) => (
         <span className="text-sm text-muted-foreground">
@@ -85,7 +88,7 @@ export function PaymentsList({ payments, isLoading, pagination, onRowClick }: Pa
     },
     {
       key: 'reference',
-      title: 'Referans',
+      title: t('columns.reference', 'Referans'),
       render: (_, payment) => (
         <span className="text-xs font-mono text-muted-foreground">
           {payment.reference || '-'}
@@ -94,7 +97,7 @@ export function PaymentsList({ payments, isLoading, pagination, onRowClick }: Pa
     },
     {
       key: 'status',
-      title: 'Durum',
+      title: t('columns.status', 'Durum'),
       sortable: true,
       render: (_, payment) => getStatusBadge(payment.status)
     }
@@ -108,7 +111,7 @@ export function PaymentsList({ payments, isLoading, pagination, onRowClick }: Pa
       pagination={pagination}
       onRowClick={onRowClick}
       rowKey="id"
-      emptyText="Ödeme bulunamadı"
+      emptyText={t('noPaymentsFound', 'Ödeme bulunamadı')}
     />
   );
 }

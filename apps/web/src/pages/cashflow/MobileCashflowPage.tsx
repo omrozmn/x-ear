@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Search, Download, ArrowUpCircle, ArrowDownCircle, TrendingUp, Filter } from 'lucide-react';
 import { MobileLayout } from '@/components/mobile/MobileLayout';
 import { MobileHeader } from '@/components/mobile/MobileHeader';
@@ -21,6 +22,7 @@ import { PermissionGate } from '@/components/PermissionGate';
 import { useLocation, useNavigate } from '@tanstack/react-router';
 
 export const MobileCashflowPage: React.FC = () => {
+  const { t } = useTranslation('cashflow');
   const navigate = useNavigate();
   const location = useLocation();
   const [searchValue, setSearchValue] = useState('');
@@ -122,12 +124,12 @@ export const MobileCashflowPage: React.FC = () => {
   };
 
   const handleExport = () => {
-    const headers = ['Tarih', 'İşlem Türü', 'Kayıt Türü', 'Hasta', 'Tutar', 'Açıklama'];
+    const headers = [t('columns.date', 'Tarih'), t('columns.transactionType', 'İşlem Türü'), t('columns.recordType', 'Kayıt Türü'), t('columns.patient', 'Hasta'), t('columns.amount', 'Tutar'), t('columns.description', 'Açıklama')];
     const csvData = [
       headers.join(','),
       ...records.map((record) => {
         const date = new Date(record.date).toLocaleDateString('tr-TR');
-        const type = record.transactionType === 'income' ? 'Gelir' : 'Gider';
+        const type = record.transactionType === 'income' ? t('income', 'Gelir') : t('expense', 'Gider');
         const amount = record.amount.toFixed(2);
         return [date, type, record.recordType, record.partyName || '', amount, record.description || '']
           .map((field) => `"${field}"`)
@@ -155,7 +157,7 @@ export const MobileCashflowPage: React.FC = () => {
   return (
     <MobileLayout>
       <MobileHeader
-        title="Kasa Yönetimi"
+        title={t('pageTitle', 'Kasa Yönetimi')}
         showBack={false}
         actions={
           <div className="flex items-center gap-1">
@@ -182,7 +184,7 @@ export const MobileCashflowPage: React.FC = () => {
           <input
             data-allow-raw="true"
             type="text"
-            placeholder="Kayıt ara..."
+            placeholder={t('searchPlaceholder', 'Kayıt ara...')}
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:bg-white dark:focus:bg-gray-700 transition-all border border-transparent focus:border-primary-100 dark:focus:border-primary-900 dark:text-white dark:placeholder-gray-400"
@@ -199,7 +201,7 @@ export const MobileCashflowPage: React.FC = () => {
                 !filterType ? 'bg-blue-600 text-white' : 'bg-muted text-muted-foreground'
               }`}
             >
-              Tümü
+              {t('all', 'Tümü')}
             </button>
             <button
               data-allow-raw="true"
@@ -208,7 +210,7 @@ export const MobileCashflowPage: React.FC = () => {
                 filterType === 'income' ? 'bg-green-600 text-white' : 'bg-muted text-muted-foreground'
               }`}
             >
-              Gelir
+              {t('income', 'Gelir')}
             </button>
             <button
               data-allow-raw="true"
@@ -217,7 +219,7 @@ export const MobileCashflowPage: React.FC = () => {
                 filterType === 'expense' ? 'bg-red-600 text-white' : 'bg-muted text-muted-foreground'
               }`}
             >
-              Gider
+              {t('expense', 'Gider')}
             </button>
           </div>
         )}
@@ -231,14 +233,14 @@ export const MobileCashflowPage: React.FC = () => {
               <ArrowUpCircle className="h-5 w-5 opacity-80" />
               <div>
                 <p className="text-lg font-bold">{formatCurrency(stats.totalIncome)}</p>
-                <p className="text-xs opacity-80">Gelir</p>
+                <p className="text-xs opacity-80">{t('income', 'Gelir')}</p>
               </div>
             </div>
             <div className="min-w-[140px] bg-red-500 bg-opacity-90 p-4 rounded-2xl text-white snap-start flex flex-col justify-between h-24 active:scale-95 transition-all">
               <ArrowDownCircle className="h-5 w-5 opacity-80" />
               <div>
                 <p className="text-lg font-bold">{formatCurrency(stats.totalExpense)}</p>
-                <p className="text-xs opacity-80">Gider</p>
+                <p className="text-xs opacity-80">{t('expense', 'Gider')}</p>
               </div>
             </div>
             <div className={`min-w-[140px] ${stats.netCashFlow >= 0 ? 'bg-blue-500' : 'bg-amber-500'} bg-opacity-90 p-4 rounded-2xl text-white snap-start flex flex-col justify-between h-24 active:scale-95 transition-all`}>
@@ -252,7 +254,7 @@ export const MobileCashflowPage: React.FC = () => {
 
           {/* Records List */}
           <div>
-            <p className="text-xs text-muted-foreground mb-3 px-1">{records.length} kayıt</p>
+            <p className="text-xs text-muted-foreground mb-3 px-1">{records.length} {t('records', 'kayıt')}</p>
 
             {isLoading ? (
               <div className="flex justify-center py-10">
@@ -281,7 +283,7 @@ export const MobileCashflowPage: React.FC = () => {
                         </div>
                         <div className="min-w-0">
                           <h3 className="font-semibold text-gray-900 dark:text-white truncate text-sm">
-                            {record.partyName || record.description || 'Kayıt'}
+                            {record.partyName || record.description || t('record', 'Kayıt')}
                           </h3>
                           <div className="flex items-center gap-2 mt-0.5">
                             <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
@@ -289,7 +291,7 @@ export const MobileCashflowPage: React.FC = () => {
                                 ? 'bg-success/10 text-success'
                                 : 'bg-destructive/10 text-destructive'
                             }`}>
-                              {record.transactionType === 'income' ? 'Gelir' : 'Gider'}
+                              {record.transactionType === 'income' ? t('income', 'Gelir') : t('expense', 'Gider')}
                             </span>
                             {record.recordType && (
                               <span className="text-[10px] text-muted-foreground">
@@ -324,7 +326,7 @@ export const MobileCashflowPage: React.FC = () => {
                       onClick={() => setVisibleCount(prev => prev + 20)}
                       className="rounded-xl"
                     >
-                      Daha Fazla Yükle ({records.length - visibleCount} kalan)
+                      {t('loadMore', 'Daha Fazla Yükle')} ({records.length - visibleCount} {t('remaining', 'kalan')})
                     </Button>
                   </div>
                 )}
@@ -334,9 +336,9 @@ export const MobileCashflowPage: React.FC = () => {
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-full shadow-sm mb-4">
                   <TrendingUp className="h-8 w-8 text-gray-300" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Kayıt Bulunamadı</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t('noRecordsFound', 'Kayıt Bulunamadı')}</h3>
                 <p className="text-muted-foreground text-sm mt-1">
-                  Henüz kasa kaydı eklenmemiş.
+                  {t('noRecordsYet', 'Henüz kasa kaydı eklenmemiş.')}
                 </p>
               </div>
             )}
@@ -368,7 +370,7 @@ export const MobileCashflowPage: React.FC = () => {
       <Modal
         isOpen={!!recordToDelete}
         onClose={() => setRecordToDelete(null)}
-        title="Kaydı Sil"
+        title={t('deleteRecord', 'Kaydı Sil')}
         size="md"
       >
         <div className="space-y-4 dark:text-gray-200">
@@ -380,18 +382,18 @@ export const MobileCashflowPage: React.FC = () => {
             </div>
             <div className="flex-1">
               <h3 className="text-sm font-medium text-red-900 dark:text-red-400">
-                Bu kaydı silmek istediğinizden emin misiniz?
+                {t('deleteConfirm', 'Bu kaydı silmek istediğinizden emin misiniz?')}
               </h3>
               <p className="mt-1 text-sm text-destructive">
-                {recordToDelete?.partyName || 'Kayıt'} - {recordToDelete?.amount} ₺
+                {recordToDelete?.partyName || t('record', 'Kayıt')} - {recordToDelete?.amount} ₺
               </p>
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={() => setRecordToDelete(null)}>İptal</Button>
+            <Button variant="outline" onClick={() => setRecordToDelete(null)}>{t('cancel', 'İptal')}</Button>
             <PermissionGate permission="finance.cash_register">
               <Button variant="danger" onClick={confirmDelete} disabled={deleteMutation.isPending}>
-                {deleteMutation.isPending ? 'Siliniyor...' : 'Sil'}
+                {deleteMutation.isPending ? t('deleting', 'Siliniyor...') : t('delete', 'Sil')}
               </Button>
             </PermissionGate>
           </div>

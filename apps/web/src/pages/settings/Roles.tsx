@@ -10,6 +10,7 @@ import {
 import { unwrapArray } from '../../utils/response-unwrap';
 import { SettingsSectionHeader } from '../../components/layout/SettingsSectionHeader';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 interface Role {
     id: string;
@@ -23,6 +24,7 @@ interface Role {
 // Manual hooks replaced by Orval generated hooks
 
 export default function RolesSettings() {
+  const { t } = useTranslation('settings_extra');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedRole, setSelectedRole] = useState<Role | null>(null);
@@ -53,7 +55,7 @@ export default function RolesSettings() {
 
         try {
             await createRoleMutation.mutateAsync({ data: roleData });
-            setCreateSuccess('Rol başarıyla oluşturuldu!');
+            setCreateSuccess(t('roleCreatedSuccess', 'Rol başarıyla oluşturuldu!'));
             setRoleData({ name: '', description: '' });
             refetch();
             setTimeout(() => {
@@ -117,7 +119,7 @@ export default function RolesSettings() {
         { category: 'Envanter', permissions: ['inventory:read', 'inventory:create', 'inventory:update', 'inventory:delete'] },
         { category: 'Faturalar', permissions: ['invoices:read', 'invoices:create', 'invoices:update', 'invoices:delete'] },
         { category: 'Raporlar', permissions: ['reports:read', 'reports:export'] },
-        { category: 'Ayarlar', permissions: ['settings:read', 'settings:update'] },
+        { category: t('settings', 'Ayarlar'), permissions: ['settings:read', 'settings:update'] },
         { category: 'Kullanıcılar', permissions: ['users:read', 'users:create', 'users:update', 'users:delete'] },
     ];
 
@@ -252,7 +254,7 @@ export default function RolesSettings() {
             {isCreateModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Yeni Rol Oluştur</h2>
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">{t('createNewRole', 'Yeni Rol Oluştur')}</h2>
 
                         {createSuccess ? (
                             <div className="mb-6 p-4 bg-success/10 border border-green-200 rounded-2xl">

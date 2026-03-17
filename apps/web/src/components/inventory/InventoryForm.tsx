@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Button, Input, Select, Textarea, FieldWrapper, VStack } from '@x-ear/ui-web';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
@@ -36,6 +37,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
   className = ''
 }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation('inventory');
   const [formData, setFormData] = useState<InventoryFormData>({
     name: '', brand: '', model: '', category: 'hearing_aid', type: undefined,
     barcode: '', stockCode: '', supplier: '', unit: 'adet', packageQuantity: undefined,
@@ -83,10 +85,10 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
   const validateForm = (): boolean => {
     const e: Record<string, string> = {};
     if (!formData.name.trim()) e.name = 'Urun adi gereklidir';
-    if (!formData.brand.trim()) e.brand = 'Marka gereklidir';
-    if (formData.availableInventory < 0) e.availableInventory = 'Stok miktari negatif olamaz';
+    if (!formData.brand.trim()) e.brand = t('validation.name_required');
+    if (formData.availableInventory < 0) e.availableInventory = t('validation.stock_positive');
     if (formData.reorderLevel < 0) e.reorderLevel = 'Yeniden siparis seviyesi negatif olamaz';
-    if (formData.price <= 0) e.price = 'Fiyat sifirdan buyuk olmalidir';
+    if (formData.price <= 0) e.price = t('validation.price_positive');
     if (formData.cost && formData.cost < 0) e.cost = 'Maliyet negatif olamaz';
     if (formData.warranty && formData.warranty < 0) e.warranty = 'Garanti suresi negatif olamaz';
     setErrors(e);
@@ -113,7 +115,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
       }
       onSave(savedItem);
     } catch (error) {
-      setErrors({ submit: error instanceof Error ? error.message : 'Kaydetme islemi basarisiz oldu' });
+      setErrors({ submit: error instanceof Error ? error.message : t('messages.save_failed') });
     } finally {
       setLoading(false);
     }
@@ -331,7 +333,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
           <div className="flex justify-end gap-3 pt-6 border-t border-border">
             <Button type="button" onClick={onCancel} variant="outline">Iptal</Button>
             <Button type="submit" disabled={loading} variant="primary" icon={<Save className="h-4 w-4" />}>
-              {loading ? 'Kaydediliyor...' : 'Kaydet'}
+              {loading ? t('form.save') : t('form.save')}
             </Button>
           </div>
         </VStack>

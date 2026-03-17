@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
 import { Modal, Button, Alert } from '@x-ear/ui-web';
 
@@ -17,6 +18,7 @@ interface WarningModalProps {
 }
 
 const WarningModal: React.FC<WarningModalProps> = ({ isOpen, onClose, title = 'Uyarı', message, failures = [] }) => {
+  const { t } = useTranslation('inventory');
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} size="md">
       <div className="space-y-4">
@@ -24,7 +26,7 @@ const WarningModal: React.FC<WarningModalProps> = ({ isOpen, onClose, title = 'U
           <div>
             {message && <p className="font-medium">{message}</p>}
             {!message && failures.length > 0 && (
-              <p className="font-medium">{failures.length} işlem başarısız oldu.</p>
+              <p className="font-medium">{t('messages.save_failed')}</p>
             )}
           </div>
         </Alert>
@@ -53,7 +55,7 @@ const WarningModal: React.FC<WarningModalProps> = ({ isOpen, onClose, title = 'U
         )}
 
         <div className="flex justify-end space-x-2">
-          <Button variant="outline" onClick={onClose}>Kapat</Button>
+          <Button variant="outline" onClick={onClose}>{t('form.cancel')}</Button>
         </div>
       </div>
     </Modal>

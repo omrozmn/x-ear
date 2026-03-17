@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '@x-ear/ui-web';
 import { Users, Zap, MessageSquare, MessageCircleMore } from 'lucide-react';
 import { useListSmCredit } from '@/api/client/sms.client';
@@ -21,16 +22,17 @@ interface Tab {
     icon: React.ReactNode;
 }
 
-const TABS: Tab[] = [
-    { id: 'single', label: 'Tekil SMS', icon: <MessageSquare className="w-4 h-4" /> },
-    { id: 'bulk', label: 'Toplu SMS', icon: <Users className="w-4 h-4" /> },
-    { id: 'automation', label: 'SMS Otomasyonu', icon: <Zap className="w-4 h-4" /> },
-];
-
 export default function SmsPage() {
+    const { t } = useTranslation('campaigns');
     const [activeChannel, setActiveChannel] = useState<ChannelTabId>('sms');
     const [activeTab, setActiveTab] = useState<TabId>('single');
     const isMobile = useIsMobile();
+
+    const TABS: Tab[] = [
+        { id: 'single', label: t('sms.tabs.single'), icon: <MessageSquare className="w-4 h-4" /> },
+        { id: 'bulk', label: t('sms.tabs.bulk'), icon: <Users className="w-4 h-4" /> },
+        { id: 'automation', label: t('sms.tabs.automation'), icon: <Zap className="w-4 h-4" /> },
+    ];
 
     // Fetch SMS credit - shared across all tabs
     const { data: creditData, isLoading: creditLoading } = useListSmCredit();
@@ -39,13 +41,13 @@ export default function SmsPage() {
     const pageContent = (
         <div className={`${isMobile ? 'p-4' : 'p-6'} max-w-7xl mx-auto space-y-6`}>
             {isMobile ? (
-                <MobileHeader title="Mesajlaşma" showBack={false} />
+                <MobileHeader title={t('sms.page.mobileTitle')} showBack={false} />
             ) : (
                 <DesktopPageHeader
-                    title="Mesajlaşma Yönetimi"
-                    description="SMS, WhatsApp ve e-posta kanallarini tek ekrandan yonetin"
+                    title={t('sms.page.messagingTitle')}
+                    description={t('sms.page.messagingDescription')}
                     icon={<MessageCircleMore className="w-6 h-6" />}
-                    eyebrow={{ tr: 'İletişim', en: 'Messaging' }}
+                    eyebrow={{ tr: t('sms.page.messagingEyebrow'), en: 'Messaging' }}
                 />
             )}
 

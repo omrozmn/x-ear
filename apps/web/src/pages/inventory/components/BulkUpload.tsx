@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useRef } from 'react';
 import { Card, Button, Badge, DataTable } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
@@ -36,6 +37,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
   const [showPreview, setShowPreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const { t } = useTranslation('inventory');
   if (!isOpen) return null;
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,7 +97,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
             case 'ürün adı':
             case 'product name':
               item.name = value;
-              if (!value) errors.push('Ürün adı gerekli');
+              if (!value) errors.push(t('validation.name_required'));
               break;
             case 'brand':
             case 'marka':
@@ -119,7 +121,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
               if (!isNaN(stock)) {
                 item.availableInventory = stock;
               } else if (value) {
-                errors.push('Stok sayısı geçersiz');
+                errors.push(t('validation.stock_positive'));
               }
               break;
             }
@@ -139,7 +141,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
               if (!isNaN(price)) {
                 item.price = price;
               } else if (value) {
-                errors.push('Fiyat geçersiz');
+                errors.push(t('validation.price_positive'));
               }
               break;
             }
@@ -397,32 +399,32 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
   const previewColumns: Column<PreviewItem>[] = [
     {
       key: 'row',
-      title: 'Satır',
+      title: t('form.description'),
       render: (_, item) => item.row,
     },
     {
       key: '_name',
-      title: 'Ürün Adı',
+      title: t('form.product_name'),
       render: (_, item) => String(item.data.name || '-'),
     },
     {
       key: '_brand',
-      title: 'Marka',
+      title: t('form.brand'),
       render: (_, item) => String(item.data.brand || '-'),
     },
     {
       key: '_stock',
-      title: 'Stok',
+      title: t('columns.stock'),
       render: (_, item) => String(item.data.availableInventory || '-'),
     },
     {
       key: '_price',
-      title: 'Fiyat',
+      title: t('columns.sale_price'),
       render: (_, item) => item.data.price ? `₺${item.data.price}` : '-',
     },
     {
       key: '_status',
-      title: 'Durum',
+      title: t('columns.status'),
       render: (_, item) => item.isValid ? (
         <Badge variant="success" className="flex items-center">
           <CheckCircle className="w-3 h-3 mr-1" />
@@ -561,14 +563,14 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
                 <div className="flex items-center space-x-2">
                   <CheckCircle className="w-5 h-5 text-success" />
                   <span className="text-sm text-foreground">
-                    {uploadResult.success} ürün başarıyla yüklendi
+                    {t('import_export.import_completed')}
                   </span>
                 </div>
                 {uploadResult.errors > 0 && (
                   <div className="flex items-center space-x-2">
                     <AlertCircle className="w-5 h-5 text-destructive" />
                     <span className="text-sm text-foreground">
-                      {uploadResult.errors} hatada ürün yüklenemedi
+                      {t('import_export.import_failed')}
                     </span>
                   </div>
                 )}
@@ -602,7 +604,7 @@ export const BulkUpload: React.FC<BulkUploadProps> = ({
             disabled={!selectedFile || isUploading}
             loading={isUploading}
           >
-            {isUploading ? 'Yükleniyor...' : 'Ürünleri Yükle'}
+            {isUploading ? t('import_export.import_started') : t('actions.import')}
           </Button>
         </div>
       </div>

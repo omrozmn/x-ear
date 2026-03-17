@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useRef } from 'react';
 import { Badge, Button, Input } from '@x-ear/ui-web';
 
@@ -18,6 +19,7 @@ export const FeatureTagInput: React.FC<FeatureTagInputProps> = ({
   className = '',
   error
 }) => {
+  const { t } = useTranslation('inventory');
   const [inputValue, setInputValue] = useState('');
   const [isInputFocused, setIsInputFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -158,7 +160,7 @@ export const FeatureTagInput: React.FC<FeatureTagInputProps> = ({
       {/* Common features as quick add buttons */}
       {value.length === 0 && !isInputFocused && (
         <div className="flex flex-wrap gap-1 mt-2">
-          <span className="text-xs text-muted-foreground mr-2">Hızlı ekle:</span>
+          <span className="text-xs text-muted-foreground mr-2">{t('form.description')}:</span>
           {commonFeatures.slice(0, 6).map((feature, index) => (
             <Button
               key={index}

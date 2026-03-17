@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button, Input, Select, Textarea, Card, CardHeader, CardContent, DatePicker } from '@x-ear/ui-web';
 import { useToastHelpers } from '@x-ear/ui-web';
 import { Calendar, FileText, User, Stethoscope, Building2, Hash, Save, X } from 'lucide-react';
@@ -47,6 +48,7 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
   initialData,
   mode = 'create'
 }) => {
+  const { t } = useTranslation('sgk');
   const [formData, setFormData] = useState({
     partyId: party?.id || '',
     partyName: party ? `${party.firstName} ${party.lastName}` : '',
@@ -105,23 +107,23 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.partyId) newErrors.partyId = 'Hasta seçimi zorunludur';
-    if (!formData.partyName) newErrors.partyName = 'Hasta adı zorunludur';
-    if (!formData.tcNumber) newErrors.tcNumber = 'TC Kimlik No zorunludur';
-    if (!formData.reportNumber) newErrors.reportNumber = 'Rapor numarası zorunludur';
-    if (!formData.reportDate) newErrors.reportDate = 'Rapor tarihi zorunludur';
-    if (!formData.doctorName) newErrors.doctorName = 'Doktor adı zorunludur';
-    if (!formData.hospitalName) newErrors.hospitalName = 'Hastane adı zorunludur';
-    if (!formData.diagnosis) newErrors.diagnosis = 'Tanı bilgisi zorunludur';
+    if (!formData.partyId) newErrors.partyId = t('validation.patientRequired', 'Hasta seçimi zorunludur');
+    if (!formData.partyName) newErrors.partyName = t('validation.patientNameRequired', 'Hasta adı zorunludur');
+    if (!formData.tcNumber) newErrors.tcNumber = t('validation.tcRequired', 'TC Kimlik No zorunludur');
+    if (!formData.reportNumber) newErrors.reportNumber = t('validation.reportNumberRequired', 'Rapor numarası zorunludur');
+    if (!formData.reportDate) newErrors.reportDate = t('validation.reportDateRequired', 'Rapor tarihi zorunludur');
+    if (!formData.doctorName) newErrors.doctorName = t('validation.doctorNameRequired', 'Doktor adı zorunludur');
+    if (!formData.hospitalName) newErrors.hospitalName = t('validation.hospitalNameRequired', 'Hastane adı zorunludur');
+    if (!formData.diagnosis) newErrors.diagnosis = t('validation.diagnosisRequired', 'Tanı bilgisi zorunludur');
 
     // TC Number validation
     if (formData.tcNumber && formData.tcNumber.length !== 11) {
-      newErrors.tcNumber = 'TC Kimlik No 11 haneli olmalıdır';
+      newErrors.tcNumber = t('validation.tcLength', 'TC Kimlik No 11 haneli olmalıdır');
     }
 
     // Report number format validation
     if (formData.reportNumber && !/^RPT-\d{8}-\d{4}$/.test(formData.reportNumber)) {
-      newErrors.reportNumber = 'Rapor numarası formatı: RPT-YYYYMMDD-HHMM';
+      newErrors.reportNumber = t('validation.reportNumberFormat', 'Rapor numarası formatı: RPT-YYYYMMDD-HHMM');
     }
 
     setErrors(newErrors);
@@ -132,7 +134,7 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
     e.preventDefault();
 
     if (!validateForm()) {
-      showError('Lütfen tüm zorunlu alanları doldurun');
+      showError(t('fillRequiredFields', 'Lütfen tüm zorunlu alanları doldurun'));
       return;
     }
 
@@ -161,11 +163,11 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
       };
 
       const document = await sgkService.createDocument(documentData);
-      showSuccess('SGK raporu başarıyla oluşturuldu');
+      showSuccess(t('reportCreatedSuccess', 'SGK raporu başarıyla oluşturuldu'));
       onSubmit?.(document);
     } catch (error) {
       console.error('Error creating SGK report:', error);
-      showError('SGK raporu oluşturulurken hata oluştu');
+      showError(t('reportCreatedError', 'SGK raporu oluşturulurken hata oluştu'));
     } finally {
       setLoading(false);
     }
@@ -185,7 +187,7 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
           <div className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-semibold">
-              {mode === 'create' ? 'Yeni SGK Raporu Oluştur' : 'SGK Raporu Düzenle'}
+              {mode === 'create' ? t('createNewReport', 'Yeni SGK Raporu Oluştur') : t('editReport', 'SGK Raporu Düzenle')}
             </h2>
           </div>
           {onCancel && (
@@ -203,12 +205,12 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm font-medium">
                 <User className="h-4 w-4" />
-                Hasta Adı *
+                {t('patientName', 'Hasta Adı')} *
               </label>
               <Input
                 value={formData.partyName}
                 onChange={(e) => handleInputChange('partyName', e.target.value)}
-                placeholder="Hasta adı ve soyadı"
+                placeholder={t('patientNamePlaceholder', 'Hasta adı ve soyadı')}
                 error={errors.partyName}
                 disabled={!!party}
               />
@@ -217,12 +219,12 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm font-medium">
                 <Hash className="h-4 w-4" />
-                TC Kimlik No *
+                {t('tcIdNo', 'TC Kimlik No')} *
               </label>
               <Input
                 value={formData.tcNumber}
                 onChange={(e) => handleInputChange('tcNumber', e.target.value)}
-                placeholder="11 haneli TC kimlik numarası"
+                placeholder={t('tcIdPlaceholder', '11 haneli TC kimlik numarası')}
                 maxLength={11}
                 error={errors.tcNumber}
                 disabled={!!party}
@@ -233,7 +235,7 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
           {/* Report Information */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Belge Türü *</label>
+              <label className="text-sm font-medium">{t('documentType', 'Belge Türü')} *</label>
               <Select
                 value={formData.documentType}
                 onChange={(e) => handleInputChange('documentType', e.target.value)}
@@ -246,7 +248,7 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Rapor Numarası *</label>
+              <label className="text-sm font-medium">{t('reportNumber', 'Rapor Numarası')} *</label>
               <Input
                 value={formData.reportNumber}
                 onChange={(e) => handleInputChange('reportNumber', e.target.value)}
@@ -256,7 +258,7 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Öncelik</label>
+              <label className="text-sm font-medium">{t('priority', 'Öncelik')}</label>
               <Select
                 value={formData.priority}
                 onChange={(e) => handleInputChange('priority', e.target.value)}
@@ -270,7 +272,7 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm font-medium">
                 <Calendar className="h-4 w-4" />
-                Rapor Tarihi *
+                {t('reportDate', 'Rapor Tarihi')} *
               </label>
               <DatePicker
                 value={formData.reportDate}
@@ -282,7 +284,7 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm font-medium">
                 <Calendar className="h-4 w-4" />
-                Geçerlilik Tarihi
+                {t('validityDate', 'Geçerlilik Tarihi')}
               </label>
               <DatePicker
                 value={formData.validityDate}
@@ -290,7 +292,7 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
                 disabled
                 className="bg-muted"
               />
-              <p className="text-xs text-muted-foreground">Otomatik olarak 6 ay sonrası hesaplanır</p>
+              <p className="text-xs text-muted-foreground">{t('autoCalculated6Months', 'Otomatik olarak 6 ay sonrası hesaplanır')}</p>
             </div>
           </div>
 
@@ -299,7 +301,7 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm font-medium">
                 <Stethoscope className="h-4 w-4" />
-                Doktor Adı *
+                {t('doctorName', 'Doktor Adı')} *
               </label>
               <div className="flex gap-2">
                 <Select
@@ -316,7 +318,7 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
                 <Input
                   value={formData.doctorName}
                   onChange={(e) => handleInputChange('doctorName', e.target.value)}
-                  placeholder="Doktor adı ve soyadı"
+                  placeholder={t('doctorNamePlaceholder', 'Doktor adı ve soyadı')}
                   error={errors.doctorName}
                   className="flex-1"
                 />
@@ -326,34 +328,34 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm font-medium">
                 <Building2 className="h-4 w-4" />
-                Hastane Adı *
+                {t('hospitalName', 'Hastane Adı')} *
               </label>
               <Input
                 value={formData.hospitalName}
                 onChange={(e) => handleInputChange('hospitalName', e.target.value)}
-                placeholder="Hastane/klinik adı"
+                placeholder={t('hospitalNamePlaceholder', 'Hastane/klinik adı')}
                 error={errors.hospitalName}
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Hastane Kodu</label>
+            <label className="text-sm font-medium">{t('hospitalCode', 'Hastane Kodu')}</label>
             <Input
               value={formData.hospitalCode}
               onChange={(e) => handleInputChange('hospitalCode', e.target.value)}
-              placeholder="SGK hastane kodu (opsiyonel)"
+              placeholder={t('hospitalCodePlaceholder', 'SGK hastane kodu (opsiyonel)')}
             />
           </div>
 
           {/* Medical Information */}
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Tanı *</label>
+              <label className="text-sm font-medium">{t('diagnosis', 'Tanı')} *</label>
               <Textarea
                 value={formData.diagnosis}
                 onChange={(e) => handleInputChange('diagnosis', e.target.value)}
-                placeholder="Hasta tanısı ve durumu"
+                placeholder={t('diagnosisPlaceholder', 'Hasta tanısı ve durumu')}
                 rows={3}
                 error={errors.diagnosis}
               />
@@ -361,7 +363,7 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">İşitme Kaybı Seviyesi</label>
+                <label className="text-sm font-medium">{t('hearingLossLevel', 'İşitme Kaybı Seviyesi')}</label>
                 <Select
                   value={formData.hearingLossLevel}
                   onChange={(e) => handleInputChange('hearingLossLevel', e.target.value)}
@@ -377,7 +379,7 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Cihaz Türü</label>
+                <label className="text-sm font-medium">{t('deviceType', 'Cihaz Türü')}</label>
                 <Select
                   value={formData.hearingAidType}
                   onChange={(e) => handleInputChange('hearingAidType', e.target.value)}
@@ -389,7 +391,7 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Cihaz Tarafı</label>
+                <label className="text-sm font-medium">{t('deviceSide', 'Cihaz Tarafı')}</label>
                 <Select
                   value={formData.hearingAidSide}
                   onChange={(e) => handleInputChange('hearingAidSide', e.target.value)}
@@ -403,11 +405,11 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Rapor Detayları</label>
+              <label className="text-sm font-medium">{t('reportDetails', 'Rapor Detayları')}</label>
               <Textarea
                 value={formData.reportDetails}
                 onChange={(e) => handleInputChange('reportDetails', e.target.value)}
-                placeholder="Ek rapor detayları ve açıklamalar"
+                placeholder={t('reportDetailsPlaceholder', 'Ek rapor detayları ve açıklamalar')}
                 rows={4}
               />
             </div>
@@ -417,7 +419,7 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
               <Textarea
                 value={formData.notes}
                 onChange={(e) => handleInputChange('notes', e.target.value)}
-                placeholder="İç notlar ve açıklamalar"
+                placeholder={t('notesPlaceholder', 'İç notlar ve açıklamalar')}
                 rows={2}
               />
             </div>
@@ -427,19 +429,19 @@ export const SGKReportForm: React.FC<SGKReportFormProps> = ({
           <div className="flex justify-end gap-3 pt-4 border-t">
             {onCancel && (
               <Button type="button" variant="outline" onClick={onCancel}>
-                İptal
+                {t('cancel', 'İptal')}
               </Button>
             )}
             <Button type="submit" disabled={loading}>
               {loading ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                  Kaydediliyor...
+                  {t('saving', 'Kaydediliyor...')}
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  {mode === 'create' ? 'Rapor Oluştur' : 'Değişiklikleri Kaydet'}
+                  {mode === 'create' ? t('createReport', 'Rapor Oluştur') : t('saveChanges', 'Değişiklikleri Kaydet')}
                 </>
               )}
             </Button>

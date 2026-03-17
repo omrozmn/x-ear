@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Input, Select, Button, Checkbox, Badge, DatePicker } from '@x-ear/ui-web';
 import BrandAutocomplete from './BrandAutocomplete';
@@ -86,6 +87,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
   isExpanded = false,
   onToggleExpanded
 }) => {
+  const { t } = useTranslation('inventory');
   const [localExpanded, setLocalExpanded] = useState(isExpanded);
 
   const handlePriceRangeChange = (field: 'min' | 'max', value: string) => {
@@ -201,10 +203,10 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
   }).length;
 
   const stockStatusOptions = [
-    { value: 'all', label: 'Tüm Durumlar' },
-    { value: 'in_stock', label: 'Stokta Var' },
-    { value: 'low_stock', label: 'Düşük Stok' },
-    { value: 'out_of_stock', label: 'Stok Yok' },
+    { value: 'all', label: t('filters.all_statuses') },
+    { value: 'in_stock', label: t('filters.in_stock') },
+    { value: 'low_stock', label: t('filters.low_stock') },
+    { value: 'out_of_stock', label: t('filters.out_of_stock') },
     { value: 'on_trial', label: 'Denemede' }
   ];
 
@@ -214,7 +216,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
   ];
 
   const warrantyOptions = [
-    { value: '', label: 'Tüm Garantiler' },
+    { value: '', label: t('filters.all_statuses') },
     { value: '1', label: '1 Yıl' },
     { value: '2', label: '2 Yıl' },
     { value: '3', label: '3 Yıl' },
@@ -225,11 +227,11 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
     <Card className="mb-6">
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle className="text-lg font-semibold">Gelişmiş Filtreler</CardTitle>
+          <CardTitle className="text-lg font-semibold">{t('filters.all_statuses')}</CardTitle>
           <div className="flex items-center gap-2">
             {activeFilterCount > 0 && (
               <Badge variant="secondary">
-                {activeFilterCount} filtre aktif
+                {t('filters.all_statuses')}
               </Badge>
             )}
             <Button
@@ -258,7 +260,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Price Range Filter */}
             <div className="space-y-3">
-              <h4 className="font-medium text-gray-900 dark:text-white">Fiyat Aralığı</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white">{t('filters.price_range')}</h4>
               <div className="flex gap-2">
                 <Input
                   type="number"
@@ -279,7 +281,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
 
             {/* Date Range Filter */}
             <div className="space-y-3">
-              <h4 className="font-medium text-gray-900 dark:text-white">Tarih Aralığı</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white">{t('form.description')}</h4>
               <div className="flex gap-2">
                 <DatePicker
                   placeholder="Başlangıç"
@@ -328,7 +330,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
 
             {/* Stock Status Filter */}
             <div className="space-y-3">
-              <h4 className="font-medium text-gray-900 dark:text-white">Stok Durumu</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white">{t('status.in_stock')}</h4>
               <Select
                 value={filters.stockStatus || 'all'}
                 onChange={handleStockStatusChange}
@@ -338,12 +340,12 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
 
             {/* Supplier Filter */}
             <div className="space-y-3">
-              <h4 className="font-medium text-gray-900 dark:text-white">Tedarikçi</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white">{t('form.description')}</h4>
               <Select
                 value={filters.supplier || ''}
                 onChange={(e) => onFiltersChange({ ...filters, supplier: e.target.value || undefined })}
                 options={[
-                  { value: '', label: 'Tüm Tedarikçiler' },
+                  { value: '', label: t('filters.all_statuses') },
                   ...suppliers.map(supplier => ({ value: supplier, label: supplier }))
                 ]}
               />
@@ -351,7 +353,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
 
             {/* Brand Filter (typeahead) */}
             <div className="space-y-3">
-              <h4 className="font-medium text-gray-900 dark:text-white">Marka</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white">{t('form.brand')}</h4>
               <BrandAutocomplete
                 value={filters.brand || ''}
                 onChange={(v) => onFiltersChange({ ...filters, brand: v || undefined })}
@@ -361,7 +363,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
 
             {/* Category Filter (typeahead showing human labels) */}
             <div className="space-y-3">
-              <h4 className="font-medium text-gray-900 dark:text-white">Kategori</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white">{t('form.category')}</h4>
               <CategoryAutocomplete
                 categories={categories}
                 value={filters.category || ''}
@@ -371,7 +373,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
 
             {/* Warranty Period Filter */}
             <div className="space-y-3">
-              <h4 className="font-medium text-gray-900 dark:text-white">Garanti Süresi</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white">{t('form.description')}</h4>
               <Select
                 value={filters.warrantyPeriod || ''}
                 onChange={(e) => onFiltersChange({ ...filters, warrantyPeriod: e.target.value || undefined })}
@@ -381,7 +383,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
 
             {/* Features Filter */}
             <div className="space-y-3">
-              <h4 className="font-medium text-gray-900 dark:text-white">Özellikler</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white">{t('form.description')}</h4>
               <div className="grid grid-cols-2 gap-2">
                 {commonFeatures.map(feature => (
                   <label key={feature} className="flex items-center space-x-2">
@@ -410,7 +412,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
             <div className="flex items-center gap-2">
               {activeFilterCount > 0 && (
                 <Badge variant="secondary">
-                  {activeFilterCount} filtre aktif
+                  {t('filters.all_statuses')}
                 </Badge>
               )}
             </div>

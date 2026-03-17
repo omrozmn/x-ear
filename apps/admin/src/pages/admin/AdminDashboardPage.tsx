@@ -352,6 +352,69 @@ export default function AdminDashboardPage() {
                 </div>
             </div>
 
+            {/* Charts Section - Desktop only */}
+            {!isMobile && (tenantTrend.length > 0 || revenueTrend.length > 0 || statusDistribution.length > 0) && (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+                    {/* Tenant Growth Trend */}
+                    {tenantTrend.length > 0 && (
+                        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+                            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3">Abone Büyüme Trendi</h3>
+                            <ResponsiveContainer width="100%" height={200}>
+                                <AreaChart data={tenantTrend}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                    <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                                    <YAxis tick={{ fontSize: 11 }} />
+                                    <Tooltip />
+                                    <Area type="monotone" dataKey="count" stroke="#6366f1" fill="#e0e7ff" strokeWidth={2} name="Abone" />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </div>
+                    )}
+
+                    {/* Revenue Trend */}
+                    {revenueTrend.length > 0 && (
+                        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+                            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3">Gelir Trendi</h3>
+                            <ResponsiveContainer width="100%" height={200}>
+                                <BarChart data={revenueTrend}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                    <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                                    <YAxis tick={{ fontSize: 11 }} />
+                                    <Tooltip formatter={(value: number) => [formatCurrency(value), 'Gelir']} />
+                                    <Bar dataKey="revenue" fill="#10b981" radius={[4, 4, 0, 0]} name="Gelir" />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    )}
+
+                    {/* Status Distribution Pie */}
+                    {statusDistribution.length > 0 && (
+                        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+                            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3">Abone Durumu</h3>
+                            <ResponsiveContainer width="100%" height={200}>
+                                <PieChart>
+                                    <Pie
+                                        data={statusDistribution}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={50}
+                                        outerRadius={75}
+                                        paddingAngle={3}
+                                        dataKey="value"
+                                        label={({ name, percent }: { name?: string; percent?: number }) => `${name || ''} ${((percent || 0) * 100).toFixed(0)}%`}
+                                    >
+                                        {statusDistribution.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* Recent Errors Table */}
             <PermissionGate permissions={[AdminPermissions.SYSTEM_READ, AdminPermissions.AUDIT_READ]} mode="any">
             {recentErrors && recentErrors.length > 0 && (
@@ -467,6 +530,10 @@ type DashboardRecentError = {
     user_email: string;
 };
 
+type TrendPoint = { month: string; count: number };
+type RevenueTrendPoint = { month: string; revenue: number };
+type StatusDistPoint = { name: string; value: number; color: string };
+
 type DashboardMetrics = {
     overview: DashboardOverview | null;
     revenue: DashboardRevenue | null;
@@ -475,6 +542,9 @@ type DashboardMetrics = {
     daily_stats: DashboardDailyStats | null;
     recent_activity: DashboardRecentActivity | null;
     recent_errors: DashboardRecentError[];
+    tenant_trend: TrendPoint[];
+    revenue_trend: RevenueTrendPoint[];
+    status_distribution: StatusDistPoint[];
 };
 
 function getDashboardMetrics(
@@ -489,6 +559,9 @@ function getDashboardMetrics(
         daily_stats: parseDailyStats(rawMetrics?.daily_stats),
         recent_activity: parseRecentActivity(rawMetrics?.recent_activity),
         recent_errors: parseRecentErrors(rawMetrics?.recent_errors),
+        tenant_trend: parseTrendPoints(rawMetrics?.tenant_trend),
+        revenue_trend: parseRevenueTrend(rawMetrics?.revenue_trend),
+        status_distribution: parseStatusDistribution(rawMetrics?.status_distribution),
     };
 }
 
@@ -600,5 +673,32 @@ function parseRecentErrors(value: unknown): DashboardRecentError[] {
             tenant_name: getString(record.tenant_name),
             user_email: getString(record.user_email),
         }];
+    });
+}
+
+function parseTrendPoints(value: unknown): TrendPoint[] {
+    if (!Array.isArray(value)) return [];
+    return value.flatMap((item) => {
+        const record = asRecord(item);
+        if (!record) return [];
+        return [{ month: getString(record.month), count: getNumber(record.count) }];
+    });
+}
+
+function parseRevenueTrend(value: unknown): RevenueTrendPoint[] {
+    if (!Array.isArray(value)) return [];
+    return value.flatMap((item) => {
+        const record = asRecord(item);
+        if (!record) return [];
+        return [{ month: getString(record.month), revenue: getNumber(record.revenue) }];
+    });
+}
+
+function parseStatusDistribution(value: unknown): StatusDistPoint[] {
+    if (!Array.isArray(value)) return [];
+    return value.flatMap((item) => {
+        const record = asRecord(item);
+        if (!record) return [];
+        return [{ name: getString(record.name), value: getNumber(record.value), color: getString(record.color) }];
     });
 }

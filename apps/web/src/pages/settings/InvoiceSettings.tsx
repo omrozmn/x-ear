@@ -6,6 +6,7 @@ import { useGetCurrentTenant, useUpdateTenantSettings } from '@/api/generated';
 import { GOVERNMENT_EXEMPTION_REASONS } from '@/constants/governmentInvoiceConstants';
 import { useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/api/orval-mutator';
+import { useTranslation } from 'react-i18next';
 
 // Type definitions for tenant settings structure
 interface InvoiceIntegrationSettings {
@@ -45,6 +46,7 @@ type CurrentTenantQueryData = {
 };
 
 export function InvoiceSettings() {
+    const { t } = useTranslation('invoices');
     const [defaultPrefix, setDefaultPrefix] = useState('XER');
     const [additionalPrefixes, setAdditionalPrefixes] = useState<string[]>([]);
     const [defaultExemptionCode, setDefaultExemptionCode] = useState('');
@@ -154,7 +156,7 @@ export function InvoiceSettings() {
 
     const handleSync = async () => {
         if (!apiKey || !secretKey) {
-            showErrorToast('Senkronizasyon için API Key ve Secret Key gereklidir');
+            showErrorToast(t('settings.sync_requires_keys'));
             return;
         }
         setSyncing(true);
@@ -168,10 +170,10 @@ export function InvoiceSettings() {
             apiClient.post('/api/birfatura/backfill-outgoing-detail', {}).catch(() => {});
             
             const total = incoming + outgoing;
-            setSyncResult({ success: true, message: `${total} fatura senkronize edildi (${incoming} gelen, ${outgoing} giden)` });
-            showSuccessToast(`Senkronizasyon tamamlandı: ${total} fatura`);
+            setSyncResult({ success: true, message: t('settings.sync_success', { count: total, incoming, outgoing }) });
+            showSuccessToast(t('settings.sync_completed', { count: total }));
         } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : 'Senkronizasyon başarısız';
+            const msg = error instanceof Error ? error.message : t('settings.sync_failed_default');
             setSyncResult({ success: false, message: msg });
             showErrorToast(msg);
         } finally {
@@ -181,7 +183,7 @@ export function InvoiceSettings() {
 
     const handleSave = async () => {
         if (!isTenantAdmin) {
-            showErrorToast('Sadece Tenant Admin ayarları değiştirebilir');
+            showErrorToast(t('settings.admin_only_save'));
             return;
         }
 
@@ -201,7 +203,7 @@ export function InvoiceSettings() {
         // Check for duplicates
         const uniquePrefixes = [...new Set(allPrefixes)];
         if (allPrefixes.length !== uniquePrefixes.length) {
-            showErrorToast('Ön ekler benzersiz olmalıdır');
+            showErrorToast(t('settings.prefixes_must_be_unique'));
             return;
         }
 
@@ -210,14 +212,14 @@ export function InvoiceSettings() {
             // Must be exactly 3 characters
             if (prefix.length !== 3) {
                 console.error('Validation failed: length', prefix, prefix.length);
-                showErrorToast(`Ön ek tam 3 karakter olmalıdır: "${prefix}" (${prefix.length} karakter)`);
+                showErrorToast(t('settings.prefix_length_error', { prefix, length: prefix.length }));
                 return;
             }
             
             // Must contain only A-Z and 0-9
             if (!/^[A-Z0-9]{3}$/.test(prefix)) {
                 console.error('Validation failed: format', prefix);
-                showErrorToast(`Ön ek sadece büyük harf (A-Z) ve rakam (0-9) içerebilir: "${prefix}"`);
+                showErrorToast(t('settings.prefix_format_error', { prefix }));
                 return;
             }
         }
@@ -310,18 +312,18 @@ export function InvoiceSettings() {
                 }
             }
             
-            showSuccessToast('Fatura ayarları kaydedildi');
+            showSuccessToast(t('settings.messages.saved'));
         } catch (error) {
             console.error('❌ Failed to save invoice settings:', error);
             // Rollback optimistic update on error
             queryClient.invalidateQueries({ queryKey: ['getCurrentTenant'] });
-            showErrorToast('Kaydetme başarısız: ' + (error instanceof Error ? error.message : 'Bilinmeyen hata'));
+            showErrorToast(t('settings.messages.save_error', { error: error instanceof Error ? error.message : t('settings.messages.unknown_error') }));
         }
     };
 
     const handleAddPrefix = () => {
         if (!isTenantAdmin) {
-            showErrorToast('Sadece Tenant Admin ön ek ekleyebilir');
+            showErrorToast(t('settings.admin_only_add_prefix'));
             return;
         }
         console.log('➕ Adding new prefix field');
@@ -330,7 +332,7 @@ export function InvoiceSettings() {
 
     const handleRemovePrefix = (index: number) => {
         if (!isTenantAdmin) {
-            showErrorToast('Sadece Tenant Admin ön ek silebilir');
+            showErrorToast(t('settings.admin_only_delete_prefix'));
             return;
         }
         console.log('➖ Removing prefix at index:', index);
@@ -358,7 +360,7 @@ export function InvoiceSettings() {
                 <div className="p-4 bg-warning/10 border border-yellow-200 dark:border-yellow-800 rounded-2xl flex items-start gap-3">
                     <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
                     <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                        Fatura ayarlarını sadece Tenant Admin düzenleyebilir. Sadece görüntüleme modundasınız.
+                        {t('settings.admin_only_warning')}
                     </p>
                 </div>
             )}
@@ -369,10 +371,10 @@ export function InvoiceSettings() {
                     <div>
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                             <Key className="w-5 h-5" />
-                            E-Fatura API Bilgileri
+                            {t('settings.api_title')}
                         </h3>
                         <p className="text-sm text-muted-foreground mt-1">
-                            E-Fatura entegrasyon sağlayıcınızdan aldığınız API ve Secret anahtarlarını girin
+                            {t('settings.api_description')}
                         </p>
                     </div>
                     <Button 
@@ -383,12 +385,12 @@ export function InvoiceSettings() {
                         {updateMutation.isPending ? (
                             <>
                                 <Loader2 className="w-4 h-4 animate-spin" />
-                                Kaydediliyor...
+                                {t('common.saving')}
                             </>
                         ) : (
                             <>
                                 <Save className="w-4 h-4" />
-                                Kaydet
+                                {t('settings.save')}
                             </>
                         )}
                     </Button>
@@ -446,7 +448,7 @@ export function InvoiceSettings() {
                     {apiKey && secretKey && (
                         <div className="flex items-center gap-2 text-success text-sm">
                             <div className="w-2 h-2 bg-green-500 rounded-full" />
-                            API bilgileri tanımlı
+                            {t('settings.api_defined')}
                         </div>
                     )}
 
@@ -454,9 +456,9 @@ export function InvoiceSettings() {
                     <div className="pt-4 border-t border-border">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-foreground">Fatura Senkronizasyonu</p>
+                                <p className="text-sm font-medium text-foreground">{t('settings.sync_title')}</p>
                                 <p className="text-xs text-muted-foreground mt-0.5">
-                                    Gelen ve giden faturaları entegrasyon sağlayıcıdan çek
+                                    {t('settings.sync_description')}
                                 </p>
                             </div>
                             <Button
@@ -468,12 +470,12 @@ export function InvoiceSettings() {
                                 {syncing ? (
                                     <>
                                         <Loader2 className="w-4 h-4 animate-spin" />
-                                        Senkronize ediliyor...
+                                        {t('settings.syncing')}
                                     </>
                                 ) : (
                                     <>
                                         <RefreshCw className="w-4 h-4" />
-                                        Senkronizasyonu Başlat
+                                        {t('settings.sync_start')}
                                     </>
                                 )}
                             </Button>
@@ -500,10 +502,10 @@ export function InvoiceSettings() {
                 <div className="flex items-center justify-between mb-6">
                     <div>
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                            Fatura Numaralandırma
+                            {t('settings.numbering_title')}
                         </h3>
                         <p className="text-sm text-muted-foreground mt-1">
-                            Fatura numaralarınız için ön ek tanımlayın
+                            {t('settings.numbering_description')}
                         </p>
                     </div>
                     <Button 
@@ -514,12 +516,12 @@ export function InvoiceSettings() {
                         {updateMutation.isPending ? (
                             <>
                                 <Loader2 className="w-4 h-4 animate-spin" />
-                                Kaydediliyor...
+                                {t('common.saving')}
                             </>
                         ) : (
                             <>
                                 <Save className="w-4 h-4" />
-                                Kaydet
+                                {t('settings.save')}
                             </>
                         )}
                     </Button>
@@ -528,7 +530,7 @@ export function InvoiceSettings() {
                 {/* Varsayılan Ön Ek */}
                 <div className="mb-6">
                     <label className="block text-sm font-medium text-foreground mb-2">
-                        Varsayılan Fatura Ön Eki
+                        {t('settings.default_prefix_label')}
                     </label>
                     <Input
                         type="text"

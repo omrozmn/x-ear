@@ -23,6 +23,36 @@ import validationEn from './locales/en/validation.json';
 import validationTr from './locales/tr/validation.json';
 import personnelEn from './locales/en/personnel.json';
 import personnelTr from './locales/tr/personnel.json';
+import invoicesEn from './locales/en/invoices.json';
+import invoicesTr from './locales/tr/invoices.json';
+import inventoryEn from './locales/en/inventory.json';
+import inventoryTr from './locales/tr/inventory.json';
+import campaignsEn from './locales/en/campaigns.json';
+import campaignsTr from './locales/tr/campaigns.json';
+import cashflowEn from './locales/en/cashflow.json';
+import cashflowTr from './locales/tr/cashflow.json';
+import paymentsEn from './locales/en/payments.json';
+import paymentsTr from './locales/tr/payments.json';
+import salesEn from './locales/en/sales.json';
+import salesTr from './locales/tr/sales.json';
+import suppliersEn from './locales/en/suppliers.json';
+import suppliersTr from './locales/tr/suppliers.json';
+import purchasesEn from './locales/en/purchases.json';
+import purchasesTr from './locales/tr/purchases.json';
+import dashboardEn from './locales/en/dashboard.json';
+import dashboardTr from './locales/tr/dashboard.json';
+import sgkEn from './locales/en/sgk.json';
+import sgkTr from './locales/tr/sgk.json';
+import reportsEn from './locales/en/reports.json';
+import reportsTr from './locales/tr/reports.json';
+import settingsExtraEn from './locales/en/settings_extra.json';
+import settingsExtraTr from './locales/tr/settings_extra.json';
+import appointmentsExtraEn from './locales/en/appointments_extra.json';
+import appointmentsExtraTr from './locales/tr/appointments_extra.json';
+import websiteEn from './locales/en/website.json';
+import websiteTr from './locales/tr/website.json';
+import partiesExtraEn from './locales/en/parties_extra.json';
+import partiesExtraTr from './locales/tr/parties_extra.json';
 
 // Sector terminology overlays
 import sectorHearingTr from './locales/tr/sectors/hearing.json';
@@ -55,6 +85,21 @@ const resources = {
         settings: settingsEn,
         validation: validationEn,
         personnel: personnelEn,
+        invoices: invoicesEn,
+        inventory: inventoryEn,
+        campaigns: campaignsEn,
+        cashflow: cashflowEn,
+        payments: paymentsEn,
+        sales: salesEn,
+        suppliers: suppliersEn,
+        purchases: purchasesEn,
+        dashboard: dashboardEn,
+        sgk: sgkEn,
+        reports: reportsEn,
+        settings_extra: settingsExtraEn,
+        appointments_extra: appointmentsExtraEn,
+        website: websiteEn,
+        parties_extra: partiesExtraEn,
         // Sector namespaces
         sector_hearing: sectorHearingEn,
         sector_pharmacy: sectorPharmacyEn,
@@ -76,6 +121,21 @@ const resources = {
         settings: settingsTr,
         validation: validationTr,
         personnel: personnelTr,
+        invoices: invoicesTr,
+        inventory: inventoryTr,
+        campaigns: campaignsTr,
+        cashflow: cashflowTr,
+        payments: paymentsTr,
+        sales: salesTr,
+        suppliers: suppliersTr,
+        purchases: purchasesTr,
+        dashboard: dashboardTr,
+        sgk: sgkTr,
+        reports: reportsTr,
+        settings_extra: settingsExtraTr,
+        appointments_extra: appointmentsExtraTr,
+        website: websiteTr,
+        parties_extra: partiesExtraTr,
         // Sector namespaces
         sector_hearing: sectorHearingTr,
         sector_pharmacy: sectorPharmacyTr,

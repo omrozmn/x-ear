@@ -115,6 +115,7 @@ class SmsPackageBase(AppBaseModel):
     sms_count: int = Field(..., gt=0, alias="smsCount")
     price: float = Field(..., gt=0)
     currency: str = "TRY"
+    country_code: Optional[str] = Field(None, alias="countryCode", description="ISO 3166-1 alpha-2 country code")
     is_active: bool = Field(True, alias="isActive")
 
 class SmsPackageCreate(SmsPackageBase):
@@ -134,6 +135,7 @@ class SmsPackageUpdate(AppBaseModel):
     sms_count: Optional[int] = Field(None, gt=0, alias="smsCount")
     price: Optional[float] = Field(None, gt=0)
     currency: Optional[str] = None
+    country_code: Optional[str] = Field(None, alias="countryCode")
     is_active: Optional[bool] = Field(None, alias="isActive")
 
 class SmsPackageRead(SmsPackageBase, IDMixin, TimestampMixin):

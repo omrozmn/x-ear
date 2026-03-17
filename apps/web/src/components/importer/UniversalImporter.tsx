@@ -387,21 +387,31 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
             <h4 className="font-medium">Yükleme ve Sonuçlar</h4>
             {importResult ? (
               <div className="mt-3">
-                <div className="text-sm">Oluşturulan: <strong>{importResult.created}</strong></div>
-                <div className="text-sm">Güncellenen: <strong>{importResult.updated}</strong></div>
-                <div className="text-sm">Hatalı satır sayısı: <strong>{importResult.errors?.length || 0}</strong></div>
+                <div className="text-sm text-green-700">Oluşturulan: <strong>{importResult.created}</strong></div>
+                <div className="text-sm text-blue-700">Güncellenen: <strong>{importResult.updated}</strong></div>
                 {importResult.errors && importResult.errors.length > 0 && (
-                  <div className="mt-2 max-h-48 overflow-auto text-sm border rounded p-2">
-                    {importResult.errors.map((err, i) => (
-                      <div key={i} className="mb-2">
-                        Satır {err.row || i + 1}: {err.issues.join(', ')}
-                      </div>
-                    ))}
-                  </div>
+                  <>
+                    <div className="text-sm text-amber-600 mt-2">
+                      Uyarılar: <strong>{importResult.errors.length}</strong> satırda eksik veya hatalı alanlar var.
+                      Var olan veriler kaydedildi. Eksik alanları tamamlamak için tekrar yükleme yapabilirsiniz.
+                    </div>
+                    <div className="mt-2 max-h-48 overflow-auto text-sm border border-amber-200 bg-amber-50 rounded p-2">
+                      {importResult.errors.map((err, i) => (
+                        <div key={i} className="mb-1 text-amber-800">
+                          Satır {err.row || i + 1}: {err.issues.join(', ')}
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {(!importResult.errors || importResult.errors.length === 0) && (
+                  <div className="text-sm text-green-600 mt-2">Tüm satırlar başarıyla işlendi.</div>
                 )}
               </div>
             ) : (
-              <div className="mt-3 text-sm text-foreground">Hazırsanız verileri sunucuya yükleyin. Geçerli satırlar gönderilecek ve sonuç burada listelenecek.</div>
+              <div className="mt-3 text-sm text-foreground">
+                Hazırsanız verileri sunucuya yükleyin. Tüm satırlar gönderilecek — mevcut kayıtlar güncellenir, yeni kayıtlar oluşturulur. Eksik alanlar uyarı olarak gösterilir.
+              </div>
             )}
           </div>
         )}

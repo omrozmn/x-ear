@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { DataTable, Column, Badge } from '@x-ear/ui-web';
 import type { PosMovementItem } from '@/api/generated/schemas';
+import { useTranslation } from 'react-i18next';
 
 interface PosMovementsListProps {
   movements: PosMovementItem[];
@@ -17,6 +18,7 @@ interface PosMovementsListProps {
 }
 
 export function PosMovementsList({ movements, isLoading, pagination, canViewFinancials = true }: PosMovementsListProps) {
+  const { t } = useTranslation('reports');
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('tr-TR', {
       style: 'currency',
@@ -26,13 +28,13 @@ export function PosMovementsList({ movements, isLoading, pagination, canViewFina
   };
 
   const formatProtectedCurrency = (amount: number) => (
-    canViewFinancials ? formatCurrency(amount) : 'Bu rol icin gizli'
+    canViewFinancials ? formatCurrency(amount) : t('hiddenForRole', 'Bu rol icin gizli')
   );
 
   const columns: Column<PosMovementItem>[] = useMemo(() => [
     {
       key: 'date',
-      title: 'Tarih',
+      title: t('date', 'Tarih'),
       sortable: true,
       render: (_, item) => (
         <span className="text-sm text-muted-foreground">
@@ -42,26 +44,26 @@ export function PosMovementsList({ movements, isLoading, pagination, canViewFina
     },
     {
       key: 'posTransactionId',
-      title: 'İşlem ID',
+      title: t('transactionId', 'İşlem ID'),
       render: (_, item) => (
         <span className="text-xs font-mono text-muted-foreground">
-          {canViewFinancials ? (item.posTransactionId || '-') : 'Bu rol icin gizli'}
+          {canViewFinancials ? (item.posTransactionId || '-') : t('hiddenForRole', 'Bu rol icin gizli')}
         </span>
       )
     },
     {
       key: 'patientName',
-      title: 'Hasta',
+      title: t('patient', 'Hasta'),
       sortable: true,
       render: (_, item) => (
         <span className="text-sm text-gray-900 dark:text-white">
-          {canViewFinancials ? (item.patientName || '-') : 'Bu rol icin gizli'}
+          {canViewFinancials ? (item.patientName || '-') : t('hiddenForRole', 'Bu rol icin gizli')}
         </span>
       )
     },
     {
       key: 'amount',
-      title: 'Tutar',
+      title: t('amount', 'Tutar'),
       sortable: true,
       render: (_, item) => (
         <span className="text-sm font-medium text-gray-900 dark:text-white">
@@ -71,21 +73,21 @@ export function PosMovementsList({ movements, isLoading, pagination, canViewFina
     },
     {
       key: 'installment',
-      title: 'Taksit',
+      title: t('installment', 'Taksit'),
       render: (_, item) => (
         <span className="text-sm text-muted-foreground">
-          {item.installment && item.installment > 1 ? `${item.installment} Taksit` : 'Tek Çekim'}
+          {item.installment && item.installment > 1 ? `${item.installment} Taksit` : t('singlePayment', 'Tek Çekim')}
         </span>
       )
     },
     {
       key: 'status',
-      title: 'Durum',
+      title: t('status', 'Durum'),
       sortable: true,
       render: (_, item) => (
         <div>
           <Badge variant={item.status === 'paid' ? 'success' : 'danger'} size="sm">
-            {item.status === 'paid' ? 'Başarılı' : 'Başarısız'}
+            {item.status === 'paid' ? t('successful', 'Başarılı') : t('failed', 'Başarısız')}
           </Badge>
           {canViewFinancials && item.errorMessage && (
             <p className="text-xs text-destructive mt-1 max-w-[200px] truncate" title={item.errorMessage}>
@@ -97,10 +99,10 @@ export function PosMovementsList({ movements, isLoading, pagination, canViewFina
     },
     {
       key: 'saleId',
-      title: 'Satış Ref',
+      title: t('saleRef', 'Satış Ref'),
       render: (_, item) => (
         <span className="text-xs font-mono text-muted-foreground">
-          {canViewFinancials ? (item.saleId || '-') : 'Bu rol icin gizli'}
+          {canViewFinancials ? (item.saleId || '-') : t('hiddenForRole', 'Bu rol icin gizli')}
         </span>
       )
     }
@@ -113,7 +115,7 @@ export function PosMovementsList({ movements, isLoading, pagination, canViewFina
       loading={isLoading}
       pagination={pagination}
       rowKey="id"
-      emptyText="Bu tarih aralığında POS işlemi bulunamadı"
+      emptyText={t('noPosMovements', 'Bu tarih aralığında POS işlemi bulunamadı')}
     />
   );
 }

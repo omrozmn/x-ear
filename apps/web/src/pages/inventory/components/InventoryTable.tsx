@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
 import { InventoryItem } from '../../../types/inventory';
 import { Button, DataTable } from '@x-ear/ui-web';
@@ -47,24 +48,25 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
   onPageChange,
   onItemsPerPageChange,
 }) => {
+  const { t } = useTranslation('inventory');
   const getStockStatus = (item: InventoryItem) => {
     if (item.availableInventory === 0) {
-      return { label: 'Stok Yok', color: 'bg-destructive/10 text-red-800' };
+      return { label: t('status.out_of_stock'), color: 'bg-destructive/10 text-red-800' };
     } else if (item.availableInventory <= item.reorderLevel) {
-      return { label: 'Düşük Stok', color: 'bg-warning/10 text-yellow-800' };
+      return { label: t('status.low_stock'), color: 'bg-warning/10 text-yellow-800' };
     } else {
-      return { label: 'Stokta', color: 'bg-success/10 text-success' };
+      return { label: t('status.in_stock'), color: 'bg-success/10 text-success' };
     }
   };
 
   const getCategoryLabel = (category: string) => {
     const categoryMap: Record<string, string> = {
-      'hearing_aid': 'İşitme Cihazı',
-      'battery': 'Pil',
-      'accessory': 'Aksesuar',
-      'ear_mold': 'Kulak Kalıbı',
-      'cleaning_supplies': 'Temizlik Malzemeleri',
-      'amplifiers': 'Amplifikatör',
+      'hearing_aid': t('categories.title'),
+      'battery': t('form.description'),
+      'accessory': t('form.description'),
+      'ear_mold': t('form.description'),
+      'cleaning_supplies': t('form.description'),
+      'amplifiers': t('form.description'),
     };
     return categoryMap[category] || category;
   };
@@ -72,7 +74,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
   const inventoryColumns: Column<InventoryItem>[] = [
     {
       key: 'name',
-      title: 'Ürün Adı',
+      title: t('columns.product_name'),
       sortable: true,
       render: (_: unknown, item: InventoryItem) => (
         <div
@@ -90,7 +92,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
     },
     {
       key: 'brand',
-      title: 'Marka',
+      title: t('columns.brand'),
       sortable: true,
       render: (_: unknown, item: InventoryItem) => (
         <span className="text-sm text-gray-900 dark:text-gray-100">{item.brand}</span>
@@ -106,7 +108,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
     },
     {
       key: 'category',
-      title: 'Kategori',
+      title: t('columns.category'),
       sortable: true,
       render: (_: unknown, item: InventoryItem) => (
         <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-primary/10 text-blue-800">
@@ -116,7 +118,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
     },
     {
       key: 'barcode',
-      title: 'Barkod',
+      title: t('columns.barcode'),
       sortable: true,
       render: (_: unknown, item: InventoryItem) => (
         <span className="text-sm text-gray-900 dark:text-gray-100 font-mono">{item.barcode || '-'}</span>
@@ -124,7 +126,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
     },
     {
       key: 'availableInventory',
-      title: 'Stok',
+      title: t('columns.stock'),
       sortable: true,
       render: (_: unknown, item: InventoryItem) => (
         <div className="flex flex-col">
@@ -135,7 +137,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
     },
     {
       key: 'reorderLevel',
-      title: 'Min. Stok',
+      title: t('stock.min_stock'),
       sortable: true,
       render: (_: unknown, item: InventoryItem) => (
         <span className="text-sm text-gray-900 dark:text-gray-100">{item.reorderLevel}</span>
@@ -143,7 +145,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
     },
     {
       key: 'price',
-      title: 'Fiyat',
+      title: t('columns.sale_price'),
       sortable: true,
       render: (_: unknown, item: InventoryItem) => (
         <span className="text-sm text-gray-900 dark:text-gray-100">
@@ -153,7 +155,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
     },
     {
       key: 'status',
-      title: 'Durum',
+      title: t('columns.status'),
       sortable: true,
       render: (_: unknown, item: InventoryItem) => {
         const stockStatus = getStockStatus(item);
@@ -166,14 +168,14 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
     },
     {
       key: '_actions',
-      title: 'İşlemler',
+      title: t('columns.status'),
       render: (_: unknown, item: InventoryItem) => (
         <div className="flex items-center space-x-2">
           <Button
             variant="ghost"
             onClick={() => onView(item)}
             className="text-primary hover:text-blue-900 dark:hover:text-blue-300 p-1 rounded hover:bg-primary/10 dark:hover:bg-blue-900/30"
-            title="Detayları Görüntüle"
+            title={t('actions.view_details')}
           >
             <Eye className="w-4 h-4" />
           </Button>
@@ -181,7 +183,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
             variant="ghost"
             onClick={() => onEdit(item)}
             className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 p-1 rounded hover:bg-indigo-100 dark:hover:bg-indigo-900/30"
-            title="Düzenle"
+            title={t('actions.edit')}
           >
             <Edit className="w-4 h-4" />
           </Button>
@@ -190,7 +192,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
               variant="ghost"
               onClick={() => onDuplicate(item)}
               className="text-success hover:text-green-900 dark:hover:text-green-300 p-1 rounded hover:bg-success/10 dark:hover:bg-green-900/30"
-              title="Kopyala"
+              title={t('actions.duplicate')}
             >
               <Copy className="w-4 h-4" />
             </Button>
@@ -199,7 +201,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
             variant="ghost"
             onClick={() => onUpdateStock(item)}
             className="text-orange-600 hover:text-orange-900 dark:text-orange-400 dark:hover:text-orange-300 p-1 rounded hover:bg-orange-100 dark:hover:bg-orange-900/30"
-            title="Stok Güncelle"
+            title={t('actions.adjust_stock')}
           >
             <Printer className="w-4 h-4" />
           </Button>
@@ -207,7 +209,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
             variant="ghost"
             onClick={() => onGenerateBarcode(item)}
             className="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300 p-1 rounded hover:bg-purple-100 dark:hover:bg-purple-900/30"
-            title="Barkod Oluştur"
+            title={t('actions.print_barcode')}
           >
             <Printer className="w-4 h-4" />
           </Button>
@@ -220,7 +222,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
                   ? 'text-success hover:text-green-900 hover:bg-success/10 dark:hover:text-green-300 dark:hover:bg-green-900/30'
                   : 'text-muted-foreground hover:text-gray-900 hover:bg-muted dark:hover:text-gray-300 dark:hover:bg-gray-800'
               }`}
-              title={item.status === 'available' ? 'Pasif Yap' : 'Aktif Yap'}
+              title={item.status === 'available' ? t('actions.deactivate') : t('actions.activate')}
             >
               {item.status === 'available' ? (
                 <ToggleRight className="w-4 h-4" />
@@ -233,7 +235,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
             variant="ghost"
             onClick={() => onDelete(item)}
             className="text-destructive hover:text-red-900 dark:hover:text-red-300 p-1 rounded hover:bg-destructive/10 dark:hover:bg-red-900/30"
-            title="Sil"
+            title={t('actions.delete')}
           >
             <Trash2 className="w-4 h-4" />
           </Button>
@@ -282,7 +284,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
         },
       }}
       loading={false}
-      emptyText="Ürün bulunamadı."
+      emptyText={t('products.not_found')}
     />
   );
 };

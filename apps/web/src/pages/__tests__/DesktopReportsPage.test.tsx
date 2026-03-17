@@ -48,12 +48,33 @@ vi.mock('@/api/client/reports.client', () => ({
     getListReportPromissoryNoteListQueryKey: () => ['test'],
 }));
 
+// Mock useListBranches
+vi.mock('@/api/client/branches.client', () => ({
+    useListBranches: () => ({ data: { data: [] }, isLoading: false }),
+}));
+
+// Mock all tab components to avoid cascading production code issues
+vi.mock('../reports/tabs/OverviewTab', () => ({ OverviewTab: () => null }));
+vi.mock('../reports/tabs/SalesTab', () => ({ SalesTab: () => null }));
+vi.mock('../reports/tabs/PartiesTab', () => ({ PartiesTab: () => null }));
+vi.mock('../reports/tabs/PromissoryNotesTab', () => ({ PromissoryNotesTab: () => null }));
+vi.mock('../reports/tabs/RemainingPaymentsTab', () => ({ RemainingPaymentsTab: () => null }));
+vi.mock('../reports/tabs/PosMovementsTab', () => ({ PosMovementsTab: () => null }));
+vi.mock('../reports/tabs/ActivityTab', () => ({ ActivityTab: () => null }));
+vi.mock('../reports/tabs/ReportTrackingTab', () => ({ ReportTrackingTab: () => null }));
+vi.mock('../reports/components/NoPermission', () => ({ NoPermission: () => null }));
+
 // Mock UI components
 vi.mock('@x-ear/ui-web', async () => {
     return {
-        Button: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => <button data-allow-raw="true" onClick={onClick}>{children}</button>,
+        Button: ({ children, onClick, className, ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: string }) => <button data-allow-raw="true" onClick={onClick} className={className} {...rest}>{children}</button>,
         Input: (props: React.InputHTMLAttributes<HTMLInputElement>) => <input data-allow-raw="true" {...props} />,
-        Select: (props: React.SelectHTMLAttributes<HTMLSelectElement>) => <select data-allow-raw="true" {...props} />,
+        Select: ({ options, ...props }: React.SelectHTMLAttributes<HTMLSelectElement> & { options?: Array<{ value: string; label: string }> }) => (
+            <select data-allow-raw="true" {...props}>
+                {options?.map((o: { value: string; label: string }) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+        ),
+        MultiSelect: () => <div>MultiSelect</div>,
         Modal: ({ isOpen, children }: { isOpen: boolean; children: React.ReactNode }) => isOpen ? <div>{children}</div> : null,
         Pagination: () => <div>Pagination</div>
     };

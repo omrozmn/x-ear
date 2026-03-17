@@ -5,6 +5,7 @@ import { Button, Input, Textarea, DataTable } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
 import toast from 'react-hot-toast';
 import { SettingsSectionHeader } from '../../components/layout/SettingsSectionHeader';
+import { useTranslation } from 'react-i18next';
 
 interface ConfirmationModal {
     isOpen: boolean;
@@ -15,6 +16,7 @@ interface ConfirmationModal {
 }
 
 export function BranchesTab() {
+  const { t } = useTranslation('settings_extra');
     const [branches, setBranches] = useState<Branch[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
@@ -91,8 +93,8 @@ export function BranchesTab() {
     const handleDelete = (id: string) => {
         setConfirmationModal({
             isOpen: true,
-            title: 'Subeyi Sil',
-            message: 'Bu subeyi silmek istediginize emin misiniz? Bu islem geri alinamaz.',
+            title: t('deleteBranch', 'Subeyi Sil'),
+            message: t('deleteBranchConfirm', 'Bu subeyi silmek istediginize emin misiniz? Bu islem geri alinamaz.'),
             type: 'danger',
             onConfirm: async () => {
                 try {
@@ -141,7 +143,7 @@ export function BranchesTab() {
     const branchColumns: Column<Branch>[] = [
         {
             key: 'name',
-            title: 'Şube Adı',
+            title: t('branchName', 'Şube Adı'),
             render: (_, branch) => (
                 <div className="flex items-center">
                     <div className="w-10 h-10 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mr-3">
@@ -153,7 +155,7 @@ export function BranchesTab() {
         },
         {
             key: 'address',
-            title: 'Adres',
+            title: t('address', 'Adres'),
             render: (_, branch) => branch.address ? (
                 <div className="flex items-center text-sm text-muted-foreground">
                     <MapPin className="w-4 h-4 mr-1 text-muted-foreground" />
@@ -163,7 +165,7 @@ export function BranchesTab() {
         },
         {
             key: 'contact',
-            title: 'İletişim',
+            title: t('contact', 'İletişim'),
             render: (_, branch) => (
                 <div className="space-y-1 text-sm text-muted-foreground">
                     {branch.phone && (
@@ -178,7 +180,7 @@ export function BranchesTab() {
         },
         {
             key: '_actions',
-            title: 'İşlemler',
+            title: t('actions', 'İşlemler'),
             align: 'right',
             render: (_, branch) => (
                 <div className="flex justify-end">
@@ -222,7 +224,7 @@ export function BranchesTab() {
                 columns={branchColumns}
                 loading={isLoading}
                 rowKey="id"
-                emptyText="Henuz sube eklenmemis."
+                emptyText=t('noBranches', 'Henuz sube eklenmemis.')
             />
 
             {/* Create/Edit Modal */}
@@ -230,7 +232,7 @@ export function BranchesTab() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full p-6">
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                            {editingBranch ? 'Subeyi Duzenle' : 'Yeni Sube Ekle'}
+                            {editingBranch ? t('editBranch', 'Subeyi Duzenle') : t('addNewBranch', 'Yeni Sube Ekle')}
                         </h2>
 
                         <form onSubmit={handleSubmit} className="space-y-4">

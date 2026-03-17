@@ -16,6 +16,8 @@ class AddonBase(AppBaseModel):
     currency: str = Field("TRY", description="Currency")
     unit_name: Optional[str] = Field(None, alias="unitName", description="Unit name")
     limit_amount: Optional[int] = Field(None, alias="limitAmount", description="Limit amount")
+    sector: Optional[str] = Field(None, description="Sector code (hearing, pharmacy, hospital, etc.)")
+    country_code: Optional[str] = Field(None, alias="countryCode", description="ISO 3166-1 alpha-2 country code")
     is_active: bool = Field(True, alias="isActive", description="Is addon active")
     features: Optional[List] = Field(default_factory=list, description="Addon features")
 
@@ -35,6 +37,8 @@ class AddonUpdate(AppBaseModel):
     currency: Optional[str] = None
     unit_name: Optional[str] = Field(None, alias="unitName")
     limit_amount: Optional[int] = Field(None, alias="limitAmount")
+    sector: Optional[str] = None
+    country_code: Optional[str] = Field(None, alias="countryCode")
     is_active: Optional[bool] = Field(None, alias="isActive")
 
 

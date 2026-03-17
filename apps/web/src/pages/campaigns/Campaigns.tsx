@@ -1,4 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button, Card, DatePicker, Select, Textarea, useToastHelpers, DataTable } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
 import {
@@ -49,37 +50,39 @@ type ExcelPreview = {
     fileName: string;
 };
 
-// Dynamic fields for SMS personalization
-const DYNAMIC_FIELDS = [
-    { key: '{{AD}}', label: 'Hasta Adı', description: 'Hastanın adı' },
-    { key: '{{SOYAD}}', label: 'Hasta Soyadı', description: 'Hastanın soyadı' },
-    { key: '{{AD_SOYAD}}', label: 'Ad Soyad', description: 'Tam isim' },
-    { key: '{{TELEFON}}', label: 'Telefon', description: 'Telefon numarası' },
-    { key: '{{SUBE}}', label: 'Şube', description: 'Bağlı olduğu şube' }
-];
-
-const segmentOptions = [
-    { value: 'NEW', label: 'Yeni' },
-    { value: 'TRIAL', label: 'Deneme' },
-    { value: 'PURCHASED', label: 'Satın Alındı' },
-    { value: 'CONTROL', label: 'Kontrol' },
-    { value: 'RENEWAL', label: 'Yenileme' },
-    { value: 'EXISTING', label: 'Mevcut' },
-    { value: 'VIP', label: 'VIP' }
-];
-
-const acquisitionOptions = [
-    { value: 'advertisement', label: 'Reklam' },
-    { value: 'referral', label: 'Referans' },
-    { value: 'social-media', label: 'Sosyal Medya' },
-    { value: 'walk-in', label: 'Mağaza' },
-    { value: 'online', label: 'Online' },
-    { value: 'other', label: 'Diğer' }
-];
-
 const SMS_SEGMENT_LENGTH = 155;
 
 const CampaignsPage: React.FC = () => {
+    const { t } = useTranslation('campaigns');
+
+    // Dynamic fields for SMS personalization
+    const DYNAMIC_FIELDS = [
+        { key: '{{AD}}', label: t('variables.patient_name'), description: t('variables.patient_name') },
+        { key: '{{SOYAD}}', label: t('variables.patient_surname'), description: t('variables.patient_surname') },
+        { key: '{{AD_SOYAD}}', label: t('variables.patient_full_name'), description: t('variables.patient_full_name') },
+        { key: '{{TELEFON}}', label: t('variables.phone'), description: t('variables.phone') },
+        { key: '{{SUBE}}', label: t('variables.branch'), description: t('variables.branch') }
+    ];
+
+    const segmentOptions = [
+        { value: 'NEW', label: t('sms.segments.NEW') },
+        { value: 'TRIAL', label: t('sms.segments.TRIAL') },
+        { value: 'PURCHASED', label: t('sms.segments.PURCHASED') },
+        { value: 'CONTROL', label: t('sms.segments.CONTROL') },
+        { value: 'RENEWAL', label: t('sms.segments.RENEWAL') },
+        { value: 'EXISTING', label: t('sms.segments.EXISTING') },
+        { value: 'VIP', label: t('sms.segments.VIP') }
+    ];
+
+    const acquisitionOptions = [
+        { value: 'advertisement', label: t('sms.acquisition.advertisement') },
+        { value: 'referral', label: t('sms.acquisition.referral') },
+        { value: 'social-media', label: t('sms.acquisition.social-media') },
+        { value: 'walk-in', label: t('sms.acquisition.walk-in') },
+        { value: 'online', label: t('sms.acquisition.online') },
+        { value: 'other', label: t('sms.acquisition.other') }
+    ];
+
     const [audienceFilters, setAudienceFilters] = useState<AudienceFilters>({ status: 'active' });
     const [mode, setMode] = useState<AudienceMode>('filters');
     const [message, setMessage] = useState('');
@@ -96,8 +99,6 @@ const CampaignsPage: React.FC = () => {
     // Handle credit balance with strict type checking
     const creditBalance = useMemo(() => {
         if (!creditData) return 0;
-        // The generated client might need regeneration, but we expect: { data: { balance: number } }
-        // We safely access path: data -> balance
         if (typeof creditData === 'object' && 'data' in creditData) {
             const data = (creditData as { data?: { balance?: number } }).data;
             return data?.balance ?? 0;
@@ -114,7 +115,6 @@ const CampaignsPage: React.FC = () => {
         const items: Array<{ id: string; name?: string }> = [];
 
         if (branchesData && typeof branchesData === 'object' && 'data' in branchesData) {
-            // Canonical access: branchesData.data which is array
             const data = (branchesData as { data?: unknown }).data;
             if (Array.isArray(data)) {
                 items.push(...data.map((item: unknown) => {
@@ -127,8 +127,8 @@ const CampaignsPage: React.FC = () => {
             }
         }
 
-        return items.map((branch) => ({ value: branch.id, label: branch.name ?? 'Şube' }));
-    }, [branchesData]);
+        return items.map((branch) => ({ value: branch.id, label: branch.name ?? t('sms.filters.branchDefault') }));
+    }, [branchesData, t]);
 
     // Fetch first party for preview
     const { data: partiesData } = useListParties(
@@ -153,7 +153,6 @@ const CampaignsPage: React.FC = () => {
     const normalizedParams = useMemo<ListPartiesParams>(() => {
         const params: ListPartiesParams = {};
         if (audienceFilters.status) params.status = audienceFilters.status;
-        // Strictly add segment if it exists
         if (audienceFilters.segment) {
             // @ts-expect-error - 'segment' might not be in ListPartiesParams definition yet, but backend supports it
             params.segment = audienceFilters.segment;
@@ -221,7 +220,7 @@ const CampaignsPage: React.FC = () => {
             );
 
             if (phoneColumnIndex === -1) {
-                setExcelError('Telefon sütunu bulunamadı. Lütfen "Telefon" başlıklı bir sütun ekleyin.');
+                setExcelError(t('sms.excel.phoneColumnNotFound'));
             }
 
             const validPhoneCount = phoneColumnIndex === -1
@@ -243,7 +242,7 @@ const CampaignsPage: React.FC = () => {
             setMode('excel');
         } catch (error) {
             console.error('Excel parse error', error);
-            setExcelError('Excel dosyası okunamadı. Lütfen dosya formatını kontrol edin.');
+            setExcelError(t('sms.excel.readError'));
             setExcelPreview(null);
         } finally {
             setExcelLoading(false);
@@ -253,19 +252,19 @@ const CampaignsPage: React.FC = () => {
 
     const handleCampaignCreate = () => {
         if (recipients === 0) {
-            showWarningToast('Hedef kitle seçilmedi', 'Lütfen filtrelerden veya Excel dosyasından en az bir alıcı belirleyin.');
+            showWarningToast(t('sms.bulk.noAudienceSelected'), t('sms.bulk.noAudienceSelectedDesc'));
             return;
         }
         if (smsSegments === 0) {
-            showWarningToast('Mesaj metni eksik', 'SMS gönderimi yapmadan önce bir mesaj yazmalısınız.');
+            showWarningToast(t('sms.bulk.messageEmpty'), t('sms.bulk.messageEmptyDesc'));
             return;
         }
         if (!creditEnough) {
-            showErrorToast('Yetersiz SMS kredisi', 'Lütfen kredi satın alın veya alıcı sayısını azaltın.');
+            showErrorToast(t('sms.bulk.insufficientCredits'), t('sms.bulk.insufficientCreditsDesc'));
             return;
         }
 
-        showSuccessToast('Kampanya hazır', `${recipients} alıcı için ${creditsNeeded.toLocaleString('tr-TR')} kredi kullanımı hesaplandı.`);
+        showSuccessToast(t('sms.bulk.campaignReady'), t('sms.bulk.campaignReadyDesc', { count: recipients, credits: creditsNeeded.toLocaleString('tr-TR') }));
     };
 
     const handleFiltersReset = () => {
@@ -305,7 +304,7 @@ const CampaignsPage: React.FC = () => {
                 .replace(/\{\{SOYAD\}\}/g, firstParty.lastName || 'Soyad')
                 .replace(/\{\{AD_SOYAD\}\}/g, `${firstParty.firstName || 'Ad'} ${firstParty.lastName || 'Soyad'}`)
                 .replace(/\{\{TELEFON\}\}/g, firstParty.phone || '05XX XXX XX XX')
-                .replace(/\{\{SUBE\}\}/g, 'Şube');
+                .replace(/\{\{SUBE\}\}/g, t('sms.filters.branchDefault'));
         } else if (mode === 'excel' && excelPreview && excelPreview.rows.length > 0) {
             const firstRow = excelPreview.rows[0];
             const headers = excelPreview.headers.map((h) => String(h).toLowerCase());
@@ -323,19 +322,19 @@ const CampaignsPage: React.FC = () => {
                 .replace(/\{\{SOYAD\}\}/g, surname)
                 .replace(/\{\{AD_SOYAD\}\}/g, `${name} ${surname}`)
                 .replace(/\{\{TELEFON\}\}/g, phone)
-                .replace(/\{\{SUBE\}\}/g, 'Şube');
+                .replace(/\{\{SUBE\}\}/g, t('sms.filters.branchDefault'));
         } else {
             // Default placeholders
             preview = preview
                 .replace(/\{\{AD\}\}/g, 'Ahmet')
-                .replace(/\{\{SOYAD\}\}/g, 'Yılmaz')
-                .replace(/\{\{AD_SOYAD\}\}/g, 'Ahmet Yılmaz')
+                .replace(/\{\{SOYAD\}\}/g, 'Yilmaz')
+                .replace(/\{\{AD_SOYAD\}\}/g, 'Ahmet Yilmaz')
                 .replace(/\{\{TELEFON\}\}/g, '0532 123 45 67')
-                .replace(/\{\{SUBE\}\}/g, 'Merkez Şube');
+                .replace(/\{\{SUBE\}\}/g, 'Merkez');
         }
 
         return preview;
-    }, [message, mode, firstParty, excelPreview]);
+    }, [message, mode, firstParty, excelPreview, t]);
 
     const formatNumber = (value: number) => value.toLocaleString('tr-TR');
 
@@ -343,7 +342,7 @@ const CampaignsPage: React.FC = () => {
         <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
-                    <label className="text-xs font-semibold text-muted-foreground">Durum</label>
+                    <label className="text-xs font-semibold text-muted-foreground">{t('sms.filters.status')}</label>
                     <Select
                         value={audienceFilters.status || ''}
                         onChange={(event) => setAudienceFilters((prev) => ({
@@ -351,39 +350,39 @@ const CampaignsPage: React.FC = () => {
                             status: event.target.value ? (event.target.value as 'active' | 'passive') : undefined
                         }))}
                         options={[
-                            { value: '', label: 'Tümü' },
-                            { value: 'active', label: 'Aktif' },
-                            { value: 'passive', label: 'Pasif' }
+                            { value: '', label: t('sms.filters.all') },
+                            { value: 'active', label: t('sms.filters.active') },
+                            { value: 'passive', label: t('sms.filters.passive') }
                         ]}
                         fullWidth
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-semibold text-muted-foreground">Segment</label>
+                    <label className="text-xs font-semibold text-muted-foreground">{t('sms.filters.segment')}</label>
                     <Select
                         value={audienceFilters.segment || ''}
                         onChange={(event) => setAudienceFilters((prev) => ({
                             ...prev,
                             segment: event.target.value || undefined
                         }))}
-                        options={[{ value: '', label: 'Tümü' }, ...segmentOptions]}
+                        options={[{ value: '', label: t('sms.filters.all') }, ...segmentOptions]}
                         fullWidth
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-semibold text-muted-foreground">Kazanım Türü</label>
+                    <label className="text-xs font-semibold text-muted-foreground">{t('sms.filters.acquisitionType')}</label>
                     <Select
                         value={audienceFilters.acquisitionType || ''}
                         onChange={(event) => setAudienceFilters((prev) => ({
                             ...prev,
                             acquisitionType: event.target.value || undefined
                         }))}
-                        options={[{ value: '', label: 'Tümü' }, ...acquisitionOptions]}
+                        options={[{ value: '', label: t('sms.filters.all') }, ...acquisitionOptions]}
                         fullWidth
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-semibold text-muted-foreground">Şube</label>
+                    <label className="text-xs font-semibold text-muted-foreground">{t('sms.filters.branch')}</label>
                     <Select
                         value={audienceFilters.branchId || ''}
                         onChange={(event) => setAudienceFilters((prev) => ({
@@ -391,36 +390,36 @@ const CampaignsPage: React.FC = () => {
                             branchId: event.target.value || undefined
                         }))}
                         options={branchesLoading
-                            ? [{ value: '', label: 'Şubeler Yükleniyor...' }]
+                            ? [{ value: '', label: t('sms.filters.branchesLoading') }]
                             : branchesError
-                                ? [{ value: '', label: 'Şube Hatası' }]
-                                : [{ value: '', label: 'Tümü' }, ...branchOptions]
+                                ? [{ value: '', label: t('sms.filters.branchError') }]
+                                : [{ value: '', label: t('sms.filters.all') }, ...branchOptions]
                         }
                         fullWidth
                         disabled={branchesLoading}
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-semibold text-muted-foreground">Başlangıç Tarihi</label>
+                    <label className="text-xs font-semibold text-muted-foreground">{t('sms.filters.startDate')}</label>
                     <DatePicker
                         value={audienceFilters.dateStart ? new Date(audienceFilters.dateStart) : null}
                         onChange={(date) => setAudienceFilters((prev) => ({
                             ...prev,
                             dateStart: date ? date.toISOString().split('T')[0] : undefined
                         }))}
-                        placeholder="YYYY-AA-GG"
+                        placeholder={t('sms.filters.datePlaceholder')}
                         fullWidth
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-semibold text-muted-foreground">Bitiş Tarihi</label>
+                    <label className="text-xs font-semibold text-muted-foreground">{t('sms.filters.endDate')}</label>
                     <DatePicker
                         value={audienceFilters.dateEnd ? new Date(audienceFilters.dateEnd) : null}
                         onChange={(date) => setAudienceFilters((prev) => ({
                             ...prev,
                             dateEnd: date ? date.toISOString().split('T')[0] : undefined
                         }))}
-                        placeholder="YYYY-AA-GG"
+                        placeholder={t('sms.filters.datePlaceholder')}
                         fullWidth
                     />
                 </div>
@@ -430,27 +429,27 @@ const CampaignsPage: React.FC = () => {
                     {partiesCountQuery.isFetching ? (
                         <>
                             <Loader2 className="w-4 h-4 animate-spin text-indigo-500 dark:text-indigo-400" />
-                            Alıcı sayısı hesaplanıyor...
+                            {t('sms.bulk.calculatingRecipients')}
                         </>
                     ) : (
                         <>
-                            Filtrelenen alıcı sayısı:
+                            {t('sms.bulk.filteredRecipientCount')}
                             <span className="font-semibold">{formatNumber(filterRecipientCount)}</span>
                         </>
                     )}
                 </div>
                 <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={handleFiltersReset}>
-                        Temizle
+                        {t('sms.bulk.clear')}
                     </Button>
                     <Button size="sm" variant="primary" onClick={() => setMode('filters')}>
-                        Filtreyi uygula
+                        {t('sms.bulk.applyFilter')}
                     </Button>
                 </div>
             </div>
             {partiesCountQuery.isError && (
                 <p className="text-xs text-destructive flex items-center gap-1">
-                    <AlertTriangle className="w-3 h-3" /> Hedef kitle sayısı alınamadı.
+                    <AlertTriangle className="w-3 h-3" /> {t('sms.bulk.audienceCountError')}
                 </p>
             )}
         </>
@@ -459,9 +458,9 @@ const CampaignsPage: React.FC = () => {
     const renderExcelArea = () => (
         <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-3">
-                <p className="text-sm text-muted-foreground">Telefon sütunu içeren Excel dosyasını yükleyin.</p>
+                <p className="text-sm text-muted-foreground">{t('sms.excel.uploadInstruction')}</p>
                 <Button variant="secondary" size="sm" className="flex items-center gap-1" onClick={handleTemplateDownload}>
-                    <Download className="w-4 h-4" /> Örnek Excel
+                    <Download className="w-4 h-4" /> {t('sms.excel.sampleExcel')}
                 </Button>
                 <Button
                     variant="ghost"
@@ -469,7 +468,7 @@ const CampaignsPage: React.FC = () => {
                     className="flex items-center gap-1"
                     onClick={() => fileInputRef.current?.click()}
                 >
-                    <UploadCloud className="w-4 h-4" /> Dosya Yükle
+                    <UploadCloud className="w-4 h-4" /> {t('sms.excel.uploadFile')}
                 </Button>
                 <input
                     data-allow-raw="true"
@@ -482,13 +481,13 @@ const CampaignsPage: React.FC = () => {
             </div>
             <div className="rounded-2xl border border-dashed border-border p-4 space-y-2 text-sm bg-white dark:bg-gray-800">
                 <ul className="list-disc pl-5 text-muted-foreground text-xs space-y-1">
-                    <li>"Telefon" başlıklı sütun zorunludur.</li>
-                    <li>Önizleme ilk 8 satırı gösterir.</li>
-                    <li>Geçerli telefonların sayısı kredi hesabına eklenir.</li>
+                    <li>{t('sms.excel.phoneColumnRequired')}</li>
+                    <li>{t('sms.excel.previewRows')}</li>
+                    <li>{t('sms.excel.validPhoneCredit')}</li>
                 </ul>
                 {excelLoading && (
                     <p className="text-indigo-600 text-sm flex items-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" /> Dosya analiz ediliyor...
+                        <Loader2 className="w-4 h-4 animate-spin" /> {t('sms.excel.analyzing')}
                     </p>
                 )}
                 {excelError && (
@@ -499,11 +498,11 @@ const CampaignsPage: React.FC = () => {
                 {excelPreview && (
                     <div className="space-y-2 text-sm">
                         <div className="flex items-center justify-between text-foreground">
-                            <span>Satır sayısı</span>
+                            <span>{t('sms.excel.rowCount')}</span>
                             <span className="font-medium">{formatNumber(excelPreview.totalRows)}</span>
                         </div>
                         <div className="flex items-center justify-between text-foreground">
-                            <span>Telefonu olan kayıt</span>
+                            <span>{t('sms.excel.phoneRecordCount')}</span>
                             <span className="font-medium">{formatNumber(excelPreview.validPhoneCount)}</span>
                         </div>
                     </div>
@@ -512,7 +511,7 @@ const CampaignsPage: React.FC = () => {
             {excelPreview && (() => {
                 const excelCols = excelPreview.headers.map((hdr, ci): Column<{ _k: number; _row: (string | number | undefined)[] }> => ({
                     key: `c${ci}`,
-                    title: String(hdr || `Sütun ${ci + 1}`),
+                    title: String(hdr || `${t('sms.excel.columnPrefix')} ${ci + 1}`),
                     render: (_, item) => <span className="text-xs">{String(item._row[ci] ?? '')}</span>,
                 }));
                 const excelData = excelPreview.rows.map((_row, i) => ({ _k: i, _row }));
@@ -536,12 +535,12 @@ const CampaignsPage: React.FC = () => {
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-2 text-sm font-medium text-indigo-600">
-                        <Megaphone className="w-4 h-4" /> SMS Kampanyaları
+                        <Megaphone className="w-4 h-4" /> {t('sms.campaigns.title')}
                     </div>
                     <div>
-                        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Kampanya Oluştur</h1>
+                        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{t('sms.campaigns.createCampaign')}</h1>
                         <p className="text-sm text-muted-foreground">
-                            Hedef kitleyi belirleyin, mesajı yazın ve kalan kredinize göre maliyeti görün.
+                            {t('sms.campaigns.campaignDesc')}
                         </p>
                     </div>
                 </div>
@@ -550,9 +549,9 @@ const CampaignsPage: React.FC = () => {
                         <Wallet className="w-5 h-5" />
                     </div>
                     <div>
-                        <p className="text-xs uppercase text-muted-foreground">Kalan SMS Kredisi</p>
+                        <p className="text-xs uppercase text-muted-foreground">{t('sms.credit.remainingCredits')}</p>
                         <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                            {creditLoading ? 'Yükleniyor...' : `${formatNumber(creditBalance)} kredi`}
+                            {creditLoading ? t('sms.credit.loading') : `${formatNumber(creditBalance)} ${t('sms.credit.creditUnit')}`}
                         </p>
                     </div>
                 </Card>
@@ -563,9 +562,9 @@ const CampaignsPage: React.FC = () => {
                     <div className="flex flex-col gap-3">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-muted-foreground">Hedef Kaynağı</p>
+                                <p className="text-sm text-muted-foreground">{t('sms.bulk.targetSource')}</p>
                                 <p className="text-xl font-semibold text-gray-900 dark:text-white">
-                                    {mode === 'filters' ? 'Hasta Filtreleri' : 'Excel Listesi'}
+                                    {mode === 'filters' ? t('sms.bulk.patientFilters') : t('sms.bulk.excelList')}
                                 </p>
                             </div>
                             <div className="flex gap-2">
@@ -574,33 +573,33 @@ const CampaignsPage: React.FC = () => {
                                     size="sm"
                                     onClick={() => setMode('filters')}
                                 >
-                                    Liste
+                                    {t('sms.bulk.list')}
                                 </Button>
                                 <Button
                                     variant={mode === 'excel' ? 'primary' : 'ghost'}
                                     size="sm"
                                     onClick={() => setMode('excel')}
                                 >
-                                    Excel
+                                    {t('sms.bulk.excel')}
                                 </Button>
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <p className="text-xs text-muted-foreground">Alıcı Sayısı</p>
+                                <p className="text-xs text-muted-foreground">{t('sms.bulk.recipientCount')}</p>
                                 <p className="text-3xl font-semibold text-gray-900 dark:text-white">
                                     {recipients ? formatNumber(recipients) : '-'}
                                 </p>
                                 <p className="text-xs text-muted-foreground">
-                                    {mode === 'filters' ? 'Filtrelenen hastalar' : 'Telefonu bulunan satırlar'}
+                                    {mode === 'filters' ? t('sms.bulk.filteredPatients') : t('sms.bulk.rowsWithPhone')}
                                 </p>
                             </div>
                             <div>
-                                <p className="text-xs text-muted-foreground">Kaynak Detayı</p>
+                                <p className="text-xs text-muted-foreground">{t('sms.bulk.sourceDetail')}</p>
                                 <p className="text-sm font-medium text-gray-900 dark:text-white">
                                     {mode === 'filters'
-                                        ? `${Object.keys(normalizedParams).length === 0 ? 'Tüm hastalar' : 'Özel filtreler'}`
-                                        : excelPreview?.fileName || 'Dosya seçilmedi'}
+                                        ? `${Object.keys(normalizedParams).length === 0 ? t('sms.bulk.allPatients') : t('sms.bulk.customFilters')}`
+                                        : excelPreview?.fileName || t('sms.bulk.noFileSelected')}
                                 </p>
                             </div>
                         </div>
@@ -610,14 +609,14 @@ const CampaignsPage: React.FC = () => {
                         {mode === 'filters' ? (
                             <>
                                 <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                                    <Users className="w-4 h-4 text-indigo-500" /> Hedef Kitleler
+                                    <Users className="w-4 h-4 text-indigo-500" /> {t('sms.bulk.audiences')}
                                 </div>
                                 {renderFilters()}
                             </>
                         ) : (
                             <>
                                 <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                                    <FileSpreadsheet className="w-4 h-4 text-indigo-500" /> Excel Listesi
+                                    <FileSpreadsheet className="w-4 h-4 text-indigo-500" /> {t('sms.bulk.excelList')}
                                 </div>
                                 {renderExcelArea()}
                             </>
@@ -628,8 +627,8 @@ const CampaignsPage: React.FC = () => {
                 <Card className="p-6 space-y-4 flex flex-col">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-muted-foreground">SMS Mesajı</p>
-                            <p className="text-lg font-semibold text-gray-900 dark:text-white">Metin ve Kredi</p>
+                            <p className="text-sm text-muted-foreground">{t('sms.message.smsMessage')}</p>
+                            <p className="text-lg font-semibold text-gray-900 dark:text-white">{t('sms.message.textAndCredit')}</p>
                         </div>
                         {creditEnough ? (
                             <CheckCircle className="w-6 h-6 text-emerald-500" />
@@ -640,7 +639,7 @@ const CampaignsPage: React.FC = () => {
 
                     {/* Dynamic Fields */}
                     <div className="space-y-2">
-                        <p className="text-xs font-medium text-muted-foreground">Dinamik Alanlar</p>
+                        <p className="text-xs font-medium text-muted-foreground">{t('variables.dynamicFields')}</p>
                         <div className="flex flex-wrap gap-2">
                             {DYNAMIC_FIELDS.map((field) => (
                                 <button
@@ -656,7 +655,7 @@ const CampaignsPage: React.FC = () => {
                                 </button>
                             ))}
                         </div>
-                        <p className="text-xs text-muted-foreground">Tıklayarak mesaja dinamik alan ekleyin</p>
+                        <p className="text-xs text-muted-foreground">{t('variables.clickToInsert')}</p>
                     </div>
 
                     {/* Message Textarea - Full Height */}
@@ -666,13 +665,11 @@ const CampaignsPage: React.FC = () => {
                             className="flex-1 min-h-[180px] resize-none"
                             value={message}
                             onChange={(event) => setMessage(event.target.value)}
-                            placeholder="Gönderilecek SMS metnini buraya yazın. Dinamik alanları kullanarak kişiselleştirilmiş mesajlar oluşturabilirsiniz.
-
-Örnek: Sayın {{AD}} {{SOYAD}}, randevunuzu hatırlatmak isteriz."
+                            placeholder={t('sms.message.placeholder')}
                         />
                         <div className="flex items-center justify-between">
                             <p className="text-xs text-muted-foreground">
-                                {smsSegments || 0} SMS / kişi ({message.length} karakter)
+                                {t('sms.message.smsPerPerson', { sms: smsSegments || 0, chars: message.length })}
                             </p>
                             <Button
                                 variant="outline"
@@ -682,7 +679,7 @@ const CampaignsPage: React.FC = () => {
                                 className="flex items-center gap-1"
                             >
                                 <Eye className="w-4 h-4" />
-                                Mesajı Önizle
+                                {t('sms.message.previewMessage')}
                             </Button>
                         </div>
                     </div>
@@ -690,21 +687,21 @@ const CampaignsPage: React.FC = () => {
                     {/* Credit Summary */}
                     <div className="rounded-2xl border border-border p-4 space-y-2 bg-gray-50 dark:bg-gray-800">
                         <div className="flex justify-between text-sm">
-                            <span>Toplam alıcı</span>
+                            <span>{t('sms.credit.totalRecipients')}</span>
                             <span className="font-semibold">{recipients ? formatNumber(recipients) : '-'}</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                            <span>SMS / kişi</span>
+                            <span>{t('sms.credit.smsPerPerson')}</span>
                             <span className="font-semibold">{smsSegments || '-'}</span>
                         </div>
                         <div className="flex justify-between text-base font-semibold text-gray-900 dark:text-white">
-                            <span>Toplam kredi</span>
+                            <span>{t('sms.credit.totalCredits')}</span>
                             <span>{creditsNeeded ? formatNumber(creditsNeeded) : '-'}</span>
                         </div>
                         <p className={`text-xs ${creditEnough ? 'text-emerald-600' : 'text-destructive'}`}>
                             {creditEnough
-                                ? 'Kredi yeterli'
-                                : `Eksik kredi: ${formatNumber(Math.abs(creditDelta))}`}
+                                ? t('sms.credit.creditSufficient')
+                                : t('sms.credit.insufficientCredit', { count: formatNumber(Math.abs(creditDelta)) })}
                         </p>
                     </div>
 
@@ -714,7 +711,7 @@ const CampaignsPage: React.FC = () => {
                         disabled={!creditEnough || recipients === 0 || smsSegments === 0}
                         onClick={handleCampaignCreate}
                     >
-                        <Calculator className="w-4 h-4" /> Kampanyayı Başlat
+                        <Calculator className="w-4 h-4" /> {t('sms.bulk.startCampaign')}
                     </Button>
                 </Card>
             </div>
@@ -724,7 +721,7 @@ const CampaignsPage: React.FC = () => {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full mx-4 overflow-hidden">
                         <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">SMS Önizleme</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('sms.preview.title')}</h3>
                             <button
                                 data-allow-raw="true"
                                 onClick={() => setShowPreview(false)}
@@ -737,18 +734,18 @@ const CampaignsPage: React.FC = () => {
                             <div className="bg-muted rounded-2xl p-4">
                                 <p className="text-xs text-muted-foreground mb-2">
                                     {mode === 'filters' && firstParty
-                                        ? `İlk hasta: ${firstParty.firstName} ${firstParty.lastName}`
+                                        ? t('sms.preview.firstPatient', { name: `${firstParty.firstName} ${firstParty.lastName}` })
                                         : mode === 'excel' && excelPreview
-                                            ? 'Excel listesinden ilk kayıt'
-                                            : 'Örnek verilerle'}
+                                            ? t('sms.preview.excelFirstRecord')
+                                            : t('sms.preview.sampleData')}
                                 </p>
                                 <div className="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-sm border border-border">
                                     <p className="text-sm text-foreground whitespace-pre-wrap">{getPreviewMessage}</p>
                                 </div>
                             </div>
                             <div className="text-xs text-muted-foreground space-y-1">
-                                <p>Karakter sayısı: {getPreviewMessage.length}</p>
-                                <p>SMS sayısı: {Math.max(1, Math.ceil(getPreviewMessage.length / SMS_SEGMENT_LENGTH))}</p>
+                                <p>{t('sms.preview.charCount', { count: getPreviewMessage.length })}</p>
+                                <p>{t('sms.preview.smsCount', { count: Math.max(1, Math.ceil(getPreviewMessage.length / SMS_SEGMENT_LENGTH)) })}</p>
                             </div>
                         </div>
                         <div className="p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
@@ -757,7 +754,7 @@ const CampaignsPage: React.FC = () => {
                                 className="w-full"
                                 onClick={() => setShowPreview(false)}
                             >
-                                Tamam
+                                {t('sms.preview.ok')}
                             </Button>
                         </div>
                     </div>

@@ -27,10 +27,12 @@ import { useListSmConfig, useListSmCredit } from '../api/generated/sms-integrati
 import { useCreateCommunicationMessageSendSms, useCreateCommunicationMessageSendEmail } from '../api/generated/communications/communications';
 import { useCreateWhatsAppSendBulk } from '../api/generated/whats-app/whats-app';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
+import { useTranslation } from 'react-i18next';
 
 
 
 export function DesktopPartiesPage() {
+  const { t } = useTranslation(['parties_extra', 'patients', 'common']);
   const { success: showSuccess, error: showError } = useToastHelpers();
   const navigate = useNavigate();
   useParams({ strict: false });
@@ -347,15 +349,15 @@ export function DesktopPartiesPage() {
       <div className="mb-6">
         <DesktopPageHeader
           className="mb-4"
-          title="Hastalar"
-          description="Hasta kayıtlarını yönetin"
+          title={t('page.title')}
+          description={t('page.description')}
           icon={<Users className="h-6 w-6" />}
-          eyebrow={{ tr: 'Hasta Yönetimi', en: 'Patient Hub' }}
+          eyebrow={{ tr: t('page.eyebrow_tr'), en: t('page.eyebrow_en') }}
           actions={(
             <>
               <Button variant="outline" size="sm" onClick={handleRefresh}>
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Yenile
+                {t('page.refresh')}
               </Button>
               <Button
                 variant="outline"
@@ -365,19 +367,19 @@ export function DesktopPartiesPage() {
                 }}
               >
                 <Settings className="h-4 w-4 mr-2" />
-                Hasta Ayarları
+                {t('page.patient_settings')}
               </Button>
               <Button variant="outline" size="sm" onClick={() => setShowCSVModal(true)}>
                 <Upload className="h-4 w-4 mr-2" />
-                Toplu Yükle
+                {t('page.bulk_upload')}
               </Button>
               <Button variant="outline" size="sm" onClick={() => setShowNoahImport(true)}>
                 <Download className="h-4 w-4 mr-2" />
-                Noah'tan İçe Aktar
+                {t('page.noah_import')}
               </Button>
               <Button onClick={handleNewParty}>
                 <Plus className="h-4 w-4 mr-2" />
-                Yeni Hasta
+                {t('page.new_patient')}
               </Button>
             </>
           )}
@@ -388,7 +390,7 @@ export function DesktopPartiesPage() {
           <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Toplam</p>
+                <p className="text-sm text-muted-foreground">{t('stats.total')}</p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
               </div>
               <Users className="h-8 w-8 text-primary" />
@@ -397,7 +399,7 @@ export function DesktopPartiesPage() {
           <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Aktif</p>
+                <p className="text-sm text-muted-foreground">{t('stats.active')}</p>
                 <p className="text-2xl font-bold text-success">{stats.active}</p>
               </div>
               <CheckCircle className="h-8 w-8 text-success" />
@@ -406,7 +408,7 @@ export function DesktopPartiesPage() {
           <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Pasif</p>
+                <p className="text-sm text-muted-foreground">{t('stats.inactive')}</p>
                 <p className="text-2xl font-bold text-muted-foreground">{stats.inactive}</p>
               </div>
               <Flame className="h-8 w-8 text-muted-foreground" />
@@ -415,7 +417,7 @@ export function DesktopPartiesPage() {
           <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Yeni (30 Gün)</p>
+                <p className="text-sm text-muted-foreground">{t('stats.new_30_days')}</p>
                 <p className="text-2xl font-bold text-primary">{stats.newThisMonth}</p>
               </div>
               <Flame className="h-8 w-8 text-primary" />
@@ -431,7 +433,7 @@ export function DesktopPartiesPage() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Ad, soyad, telefon veya TC ile ara..."
+                placeholder={t('search.placeholder_full')}
                 value={searchValue}
                 onChange={(e) => handleSearch(e.target.value)}
                 className="pl-10 dark:bg-slate-800 dark:text-white dark:border-slate-700"
@@ -443,7 +445,7 @@ export function DesktopPartiesPage() {
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="h-4 w-4 mr-2" />
-            Filtreler
+            {t('search.filters_button')}
           </Button>
         </div>
 
@@ -466,15 +468,15 @@ export function DesktopPartiesPage() {
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Yükleniyor...</p>
+              <p className="text-sm text-muted-foreground">{t('messages.loading')}</p>
             </div>
           </div>
         ) : error ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <p className="text-sm text-destructive">Bir hata oluştu</p>
+              <p className="text-sm text-destructive">{t('messages.error_occurred')}</p>
               <Button variant="outline" size="sm" onClick={handleRefresh} className="mt-2">
-                Tekrar Dene
+                {t('messages.retry')}
               </Button>
             </div>
           </div>
@@ -482,10 +484,10 @@ export function DesktopPartiesPage() {
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <Users className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Hasta bulunamadı</p>
+              <p className="text-sm text-muted-foreground">{t('messages.no_patient_found')}</p>
               <Button variant="outline" size="sm" onClick={handleNewParty} className="mt-2">
                 <Plus className="h-4 w-4 mr-2" />
-                Yeni Hasta Ekle
+                {t('messages.add_new_patient')}
               </Button>
             </div>
           </div>
@@ -497,9 +499,9 @@ export function DesktopPartiesPage() {
                 {/* Header row */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="text-sm font-bold text-primary">{selectedParties.length} hasta secildi</span>
+                    <span className="text-sm font-bold text-primary">{t('bulk_actions.selected_count', { count: selectedParties.length })}</span>
                     <Button variant="ghost" size="sm" onClick={() => setSelectedParties([])} className="text-xs text-muted-foreground h-7">
-                      <X className="h-3 w-3 mr-1" /> Temizle
+                      <X className="h-3 w-3 mr-1" /> {t('bulk_actions.clear_selection')}
                     </Button>
                   </div>
                 </div>
@@ -515,9 +517,9 @@ export function DesktopPartiesPage() {
                     className="gap-1.5"
                   >
                     <Phone className="h-4 w-4" />
-                    SMS
+                    {t('bulk_actions.sms_label')}
                     {smsActive && smsCredits > 0 && <span className="text-[10px] text-muted-foreground">({smsCredits})</span>}
-                    {!smsActive && <span className="text-[10px] text-destructive">kapal??</span>}
+                    {!smsActive && <span className="text-[10px] text-destructive">{t('bulk_actions.sms_closed')}</span>}
                   </Button>
 
                   {/* WhatsApp */}
@@ -529,9 +531,9 @@ export function DesktopPartiesPage() {
                     className="gap-1.5"
                   >
                     <MessageSquare className="h-4 w-4" />
-                    WhatsApp
+                    {t('bulk_actions.whatsapp_label')}
                     {whatsappConnected && <span className="w-2 h-2 bg-success rounded-full" />}
-                    {!whatsappConnected && <span className="text-[10px] text-destructive">baglanti yok</span>}
+                    {!whatsappConnected && <span className="text-[10px] text-destructive">{t('bulk_actions.whatsapp_no_connection')}</span>}
                   </Button>
 
                   {/* Email */}
@@ -543,7 +545,7 @@ export function DesktopPartiesPage() {
                     className="gap-1.5"
                   >
                     <Mail className="h-4 w-4" />
-                    E-posta
+                    {t('bulk_actions.email_label')}
                   </Button>
 
                   <div className="w-px h-6 bg-border mx-1" />
@@ -558,21 +560,21 @@ export function DesktopPartiesPage() {
                     const a = document.createElement('a');
                     a.href = url; a.download = 'hastalar.csv'; a.click();
                     URL.revokeObjectURL(url);
-                    showSuccess('CSV indirildi');
+                    showSuccess(t('bulk_message.csv_downloaded'));
                   }} className="gap-1.5">
-                    <Download className="h-4 w-4" /> Disari Aktar
+                    <Download className="h-4 w-4" /> {t('bulk_actions.export_label')}
                   </Button>
 
                   {/* Tag Update */}
                   <Button variant="outline" size="sm" onClick={() => {
                     setTagUpdateParty(selectedPartiesData[0] || null);
                   }} className="gap-1.5">
-                    <Settings className="h-4 w-4" /> Etiket
+                    <Settings className="h-4 w-4" /> {t('bulk_actions.tag_label')}
                   </Button>
 
                   {/* Delete */}
                   <Button variant="danger" size="sm" onClick={() => setConfirmDeleteBulk(true)} className="gap-1.5">
-                    <Trash2 className="h-4 w-4" /> Sil ({selectedParties.length})
+                    <Trash2 className="h-4 w-4" /> {t('bulk_actions.delete_label', { count: selectedParties.length })}
                   </Button>
                 </div>
               </div>
@@ -581,7 +583,7 @@ export function DesktopPartiesPage() {
             {/* Bulk Message Modal */}
             {bulkMessageModal && (
               <Modal isOpen={true} onClose={() => { setBulkMessageModal(null); setBulkMessageText(''); setBulkEmailSubject(''); }}
-                title={bulkMessageModal === 'sms' ? `SMS Gonder` : bulkMessageModal === 'whatsapp' ? `WhatsApp Mesaj` : `E-posta Gonder`}
+                title={bulkMessageModal === 'sms' ? t('bulk_message.sms_title') : bulkMessageModal === 'whatsapp' ? t('bulk_message.whatsapp_title') : t('bulk_message.email_title')}
                 size="lg"
               >
                 <VStack spacing={5}>
@@ -592,12 +594,12 @@ export function DesktopPartiesPage() {
                     </div>
                     <div>
                       <h4 className="text-sm font-semibold text-foreground">
-                        {selectedParties.length} hastaya {bulkMessageModal === 'sms' ? 'SMS' : bulkMessageModal === 'whatsapp' ? 'WhatsApp mesaji' : 'e-posta'} gonder
+                        {bulkMessageModal === 'sms' ? t('bulk_message.send_sms_to', { count: selectedParties.length }) : bulkMessageModal === 'whatsapp' ? t('bulk_message.send_whatsapp_to', { count: selectedParties.length }) : t('bulk_message.send_email_to', { count: selectedParties.length })}
                       </h4>
                       <p className="text-xs text-muted-foreground">
                         {bulkMessageModal !== 'email'
-                          ? `${selectedPartiesData.filter(p => p.phone).length} hastanin telefon numarasi mevcut`
-                          : `${selectedPartiesData.filter(p => p.email).length} hastanin e-posta adresi mevcut`
+                          ? t('bulk_message.phone_available', { count: selectedPartiesData.filter(p => p.phone).length })
+                          : t('bulk_message.email_available', { count: selectedPartiesData.filter(p => p.email).length })
                         }
                       </p>
                     </div>
@@ -607,15 +609,15 @@ export function DesktopPartiesPage() {
                   {bulkMessageModal === 'sms' && smsCredits < selectedParties.length && (
                     <div className="flex items-center gap-2 p-3 bg-warning/10 border border-warning/20 rounded-xl text-sm text-foreground">
                       <AlertTriangle className="h-4 w-4 text-warning shrink-0" />
-                      <span>Yetersiz SMS kredisi. Mevcut: <strong>{smsCredits}</strong>, Gerekli: <strong>{selectedParties.length}</strong></span>
+                      <span>{t('bulk_message.insufficient_sms_credit', { available: smsCredits, required: selectedParties.length })}</span>
                     </div>
                   )}
 
                   {/* Recipients */}
-                  <FieldWrapper label="Alicilar" hint={
+                  <FieldWrapper label={t('bulk_message.recipients')} hint={
                     bulkMessageModal !== 'email'
-                      ? `${selectedPartiesData.filter(p => !p.phone).length} hastanin telefonu yok, atlanacak`
-                      : `${selectedPartiesData.filter(p => !p.email).length} hastanin e-postasi yok, atlanacak`
+                      ? t('bulk_message.no_phone_hint', { count: selectedPartiesData.filter(p => !p.phone).length })
+                      : t('bulk_message.no_email_hint', { count: selectedPartiesData.filter(p => !p.email).length })
                   }>
                     <div className="p-3 bg-muted/50 border border-border rounded-xl max-h-24 overflow-y-auto">
                       <div className="flex flex-wrap gap-1.5">
@@ -627,7 +629,7 @@ export function DesktopPartiesPage() {
                         ))}
                         {selectedPartiesData.length > 8 && (
                           <span className="px-2.5 py-1 bg-primary/10 text-primary rounded-full text-xs font-semibold">
-                            +{selectedPartiesData.length - 8} daha
+                            {t('bulk_message.more_recipients', { count: selectedPartiesData.length - 8 })}
                           </span>
                         )}
                       </div>
@@ -636,9 +638,9 @@ export function DesktopPartiesPage() {
 
                   {/* Email subject */}
                   {bulkMessageModal === 'email' && (
-                    <FieldWrapper label="Konu" required>
+                    <FieldWrapper label={t('bulk_message.subject_label')} required>
                       <Input
-                        placeholder="E-posta konusunu yazin..."
+                        placeholder={t('bulk_message.subject_placeholder')}
                         value={bulkEmailSubject}
                         onChange={(e) => setBulkEmailSubject(e.target.value)}
                         className="w-full"
@@ -648,7 +650,7 @@ export function DesktopPartiesPage() {
 
                   {/* Message body */}
                   <FieldWrapper
-                    label={bulkMessageModal === 'sms' ? 'SMS Metni' : bulkMessageModal === 'whatsapp' ? 'Mesaj' : 'E-posta Icerigi'}
+                    label={bulkMessageModal === 'sms' ? t('bulk_message.sms_text_label') : bulkMessageModal === 'whatsapp' ? t('bulk_message.message_label') : t('bulk_message.email_body_label')}
                     required
                     hint={bulkMessageModal === 'sms'
                       ? `${bulkMessageText.length} karakter / ${Math.ceil(bulkMessageText.length / 155) || 1} segment — Tahmini: ${(Math.ceil(bulkMessageText.length / 155) || 1) * selectedPartiesData.filter(p => p.phone).length} kredi`
@@ -657,9 +659,9 @@ export function DesktopPartiesPage() {
                   >
                     <Textarea
                       placeholder={
-                        bulkMessageModal === 'sms' ? 'Merhaba {{AD}}, randevunuz...'
-                        : bulkMessageModal === 'whatsapp' ? 'Merhaba, size X-EAR olarak ulasmak istedik...'
-                        : 'E-posta icerigini buraya yazin...'
+                        bulkMessageModal === 'sms' ? t('bulk_message.sms_placeholder')
+                        : bulkMessageModal === 'whatsapp' ? t('bulk_message.whatsapp_placeholder')
+                        : t('bulk_message.email_placeholder')
                       }
                       value={bulkMessageText}
                       onChange={(e) => setBulkMessageText(e.target.value)}
@@ -671,7 +673,7 @@ export function DesktopPartiesPage() {
                   {/* Footer actions */}
                   <div className="flex items-center justify-end gap-2 pt-4 border-t border-border">
                     <Button variant="ghost" size="md" onClick={() => { setBulkMessageModal(null); setBulkMessageText(''); setBulkEmailSubject(''); }}>
-                      Iptal
+                      {t('bulk_message.cancel')}
                     </Button>
                     <Button
                       variant="primary"
@@ -712,20 +714,20 @@ export function DesktopPartiesPage() {
                             }
                           }
 
-                          if (sent > 0) showSuccess(`${sent} mesaj gonderildi${failed > 0 ? `, ${failed} basarisiz` : ''}`);
-                          else showError('Mesaj gonderilemedi');
+                          if (sent > 0) showSuccess(failed > 0 ? t('bulk_message.messages_sent_with_failures', { sent, failed }) : t('bulk_message.messages_sent', { sent }));
+                          else showError(t('bulk_message.send_failed'));
 
                           setBulkMessageModal(null);
                           setBulkMessageText('');
                           setBulkEmailSubject('');
                         } catch (e) {
-                          showError('Toplu gonderim hatasi');
+                          showError(t('bulk_message.bulk_send_error'));
                         } finally {
                           setBulkSending(false);
                         }
                       }}
                     >
-                      {bulkSending ? 'Gonderiliyor...' : `Gonder (${bulkMessageModal === 'email' ? selectedPartiesData.filter(p => p.email).length : selectedPartiesData.filter(p => p.phone).length})`}
+                      {bulkSending ? t('bulk_message.sending') : t('bulk_message.send_count', { count: bulkMessageModal === 'email' ? selectedPartiesData.filter(p => p.email).length : selectedPartiesData.filter(p => p.phone).length })}
                     </Button>
                   </div>
                 </VStack>
@@ -735,8 +737,8 @@ export function DesktopPartiesPage() {
             {/* Bulk Delete Confirm */}
             <ConfirmDialog
               isOpen={confirmDeleteBulk}
-              title="Toplu Silme"
-              description={`${selectedParties.length} hastayi silmek istediginizden emin misiniz? Bu islem geri alinamaz.`}
+              title={t('bulk_delete.title')}
+              description={t('bulk_delete.confirm_message', { count: selectedParties.length })}
               onClose={() => setConfirmDeleteBulk(false)}
               onConfirm={async () => {
                 for (const id of selectedParties) {
@@ -746,8 +748,8 @@ export function DesktopPartiesPage() {
                 setSelectedParties([]);
                 setConfirmDeleteBulk(false);
               }}
-              confirmLabel="Sil"
-              cancelLabel="Iptal"
+              confirmLabel={t('bulk_delete.confirm')}
+              cancelLabel={t('bulk_delete.cancel')}
               variant="danger"
             />
             <PartyList
@@ -794,7 +796,7 @@ export function DesktopPartiesPage() {
             throw e;
           }
         }}
-        title="Yeni Hasta"
+        title={t('form.new_patient')}
         isLoading={createPartyMutation.isPending}
       />
 
@@ -812,33 +814,32 @@ export function DesktopPartiesPage() {
         isOpen={showCSVModal}
         onClose={() => setShowCSVModal(false)}
         entityFields={[
-          { key: 'firstName', label: 'Ad' },
-          { key: 'lastName', label: 'Soyad' },
-          { key: 'tcNumber', label: 'TC Kimlik No' },
-          { key: 'identityNumber', label: 'Kimlik No' },
-          { key: 'phone', label: 'Telefon' },
-          { key: 'email', label: 'E-posta' },
-          { key: 'birthDate', label: 'Doğum Tarihi' },
-          { key: 'gender', label: 'Cinsiyet' },
-          { key: 'status', label: 'Durum' },
-          { key: 'segment', label: 'Segment' },
-          { key: 'acquisitionType', label: 'Kazanım Tipi' },
-          { key: 'referredBy', label: 'Referans' },
-          { key: 'addressCity', label: 'Şehir' },
-          { key: 'addressDistrict', label: 'İlçe' },
-          { key: 'addressFull', label: 'Adres' },
-          { key: 'tags', label: 'Etiketler' },
-          { key: 'notes', label: 'Notlar' },
+          { key: 'firstName', label: t('import.field_first_name') },
+          { key: 'lastName', label: t('import.field_last_name') },
+          { key: 'tcNumber', label: t('import.field_tc') },
+          { key: 'identityNumber', label: t('import.field_tc') },
+          { key: 'phone', label: t('import.field_phone') },
+          { key: 'email', label: t('import.field_email') },
+          { key: 'birthDate', label: t('import.field_birth_date') },
+          { key: 'gender', label: t('import.field_gender') },
+          { key: 'status', label: t('filters.status_label') },
+          { key: 'segment', label: t('filters.segment_label') },
+          { key: 'acquisitionType', label: t('filters.acquisition_type_label') },
+          { key: 'referredBy', label: t('acquisition.referral') },
+          { key: 'addressCity', label: t('form.city') },
+          { key: 'addressDistrict', label: t('form.district') },
+          { key: 'addressFull', label: t('form.address') },
+          { key: 'tags', label: t('header.tags_label') },
         ]}
         zodSchema={partiesSchema}
         uploadEndpoint={'/api/parties/bulk-upload'}
-        modalTitle={'Toplu Hasta Yükleme'}
+        modalTitle={t('import.modal_title')}
         sampleDownloadUrl={'/import_samples/parties_sample.csv'}
         onComplete={(res) => {
           if (res.errors && res.errors.length > 0) {
-            showError(`Hasta import tamamlandı — Hatalı satır: ${res.errors.length}`);
+            showError(t('import.complete_with_errors', { count: res.errors.length }));
           } else {
-            showSuccess(`Hasta import tamamlandı — Oluşturulan: ${res.created}`);
+            showSuccess(t('import.complete_success', { count: res.created }));
           }
           // refresh page data simply
           handleRefresh();
@@ -868,7 +869,7 @@ export function DesktopPartiesPage() {
       <Modal
         isOpen={!!partyToDelete}
         onClose={() => setPartyToDelete(null)}
-        title="Hastayı Sil"
+        title={t('delete_modal.title')}
         size="md"
       >
         <div className="space-y-4">
@@ -880,7 +881,7 @@ export function DesktopPartiesPage() {
             </div>
             <div className="flex-1">
               <h3 className="text-sm font-medium text-red-900">
-                Bu hastayı silmek istediğinizden emin misiniz?
+                {t('delete_modal.confirm_question')}
               </h3>
               <p className="mt-1 text-sm text-destructive">
                 {partyToDelete?.firstName} {partyToDelete?.lastName}
@@ -888,11 +889,11 @@ export function DesktopPartiesPage() {
             </div>
           </div>
           <p className="text-sm text-muted-foreground">
-            Bu işlem geri alınamaz. Hasta kaydı ve tüm ilişkili veriler silinecektir.
+            {t('delete_modal.irreversible_warning')}
           </p>
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={() => setPartyToDelete(null)}>İptal</Button>
-            <Button variant="danger" onClick={confirmDelete}>Sil</Button>
+            <Button variant="outline" onClick={() => setPartyToDelete(null)}>{t('delete_modal.cancel')}</Button>
+            <Button variant="danger" onClick={confirmDelete}>{t('delete_modal.confirm')}</Button>
           </div>
         </div>
       </Modal>

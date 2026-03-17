@@ -3,7 +3,7 @@ FastAPI SMS Packages Router - Migrated from Flask routes/sms_packages.py
 Handles SMS package management
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import List
+from typing import List, Optional
 import logging
 
 from sqlalchemy.orm import Session
@@ -26,13 +26,19 @@ router = APIRouter(tags=["SMS"])
 # --- Public Routes ---
 
 @router.get("/sms-packages", operation_id="listSmsPackages", response_model=ResponseEnvelope[List[BaseSmsPackageRead]])
-def list_public_packages(db: Session = Depends(get_db)):
+def list_public_packages(
+    country_code: Optional[str] = Query(None, alias="countryCode", description="Filter by country code"),
+    db: Session = Depends(get_db)
+):
     """List all active SMS packages (Public)"""
     try:
         from models.sms_package import SmsPackage
-        
-        packages = db.query(SmsPackage).filter_by(is_active=True).order_by(SmsPackage.price).all()
-        
+
+        query = db.query(SmsPackage).filter_by(is_active=True)
+        if country_code:
+            query = query.filter_by(country_code=country_code.upper())
+        packages = query.order_by(SmsPackage.price).all()
+
         return ResponseEnvelope(data=[
             BaseSmsPackageRead.model_validate(p)
             for p in packages
@@ -48,6 +54,7 @@ def list_public_packages(db: Session = Depends(get_db)):
 def list_admin_packages(
     page: int = Query(1, ge=1, le=1000000),
     limit: int = Query(10, ge=1, le=100),
+    country_code: Optional[str] = Query(None, alias="countryCode", description="Filter by country code"),
     admin_user=Depends(get_current_admin_user),
     db: Session = Depends(get_db)
 ):
@@ -55,8 +62,11 @@ def list_admin_packages(
     try:
 
         from models.sms_package import SmsPackage
-        
-        query = db.query(SmsPackage).order_by(SmsPackage.price)
+
+        query = db.query(SmsPackage)
+        if country_code:
+            query = query.filter_by(country_code=country_code.upper())
+        query = query.order_by(SmsPackage.price)
         total = query.count()
         
         offset = (page - 1) * limit
@@ -97,6 +107,8 @@ def create_package(
             description=request_data.description,
             sms_count=request_data.sms_count,
             price=request_data.price,
+            currency=request_data.currency,
+            country_code=request_data.country_code,
             is_active=request_data.is_active
         )
         db.add(pkg)
@@ -135,6 +147,10 @@ def update_package(
             pkg.sms_count = request_data.sms_count
         if request_data.price is not None:
             pkg.price = request_data.price
+        if request_data.currency is not None:
+            pkg.currency = request_data.currency
+        if request_data.country_code is not None:
+            pkg.country_code = request_data.country_code
         if request_data.is_active is not None:
             pkg.is_active = request_data.is_active
         

@@ -1,0 +1,113 @@
+{
+  "builder": {
+    "ai_questions": {
+      "business_name": "İşletmenizin adı nedir?",
+      "business_type": "Ne tür bir işletmeniz var?",
+      "target_audience": "Hedef kitleniz kimlerdir?",
+      "key_services": "Sunduğunuz temel hizmetler nelerdir?",
+      "unique_value": "Sizi rakiplerinizden ayıran özellikler nelerdir?",
+      "contact_info": "İletişim bilgileriniz nelerdir?",
+      "color_preference": "Tercih ettiğiniz renkler var mı?",
+      "tone": "Web sitenizin tonu nasıl olsun?",
+      "professional": "Profesyonel",
+      "friendly": "Samimi",
+      "modern": "Modern",
+      "classic": "Klasik"
+    },
+    "feature_cards": {
+      "appointment_booking": "Online Randevu",
+      "appointment_booking_desc": "Müşterileriniz 7/24 online randevu alabilir",
+      "product_catalog": "Ürün Kataloğu",
+      "product_catalog_desc": "Ürünlerinizi sergileyin ve tanıtın",
+      "contact_form": "İletişim Formu",
+      "contact_form_desc": "Müşterilerinizden kolayca mesaj alın",
+      "gallery": "Galeri",
+      "gallery_desc": "İşletmenizin fotoğraflarını paylaşın",
+      "testimonials": "Müşteri Yorumları",
+      "testimonials_desc": "Müşteri memnuniyetinizi gösterin",
+      "map": "Harita",
+      "map_desc": "İşletmenizin konumunu gösterin",
+      "social_media": "Sosyal Medya",
+      "social_media_desc": "Sosyal medya hesaplarınızı bağlayın",
+      "blog": "Blog",
+      "blog_desc": "İçerik paylaşarak SEO'nuzu güçlendirin"
+    },
+    "tabs": {
+      "design": "Tasarım",
+      "content": "İçerik",
+      "pages": "Sayfalar",
+      "settings": "Ayarlar",
+      "preview": "Önizleme",
+      "publish": "Yayınla",
+      "seo": "SEO",
+      "analytics": "Analitik"
+    },
+    "suggested_commands": {
+      "change_color": "Renk değiştir",
+      "add_section": "Bölüm ekle",
+      "edit_text": "Metin düzenle",
+      "add_image": "Resim ekle",
+      "change_layout": "Düzen değiştir",
+      "add_page": "Sayfa ekle",
+      "update_menu": "Menü güncelle",
+      "add_form": "Form ekle"
+    },
+    "errors": {
+      "generation_failed": "Web sitesi oluşturma başarısız oldu",
+      "save_failed": "Kaydetme başarısız oldu",
+      "publish_failed": "Yayınlama başarısız oldu",
+      "invalid_domain": "Geçersiz domain adı",
+      "image_upload_failed": "Resim yükleme başarısız",
+      "template_load_failed": "Şablon yüklenemedi",
+      "ai_error": "AI yanıt üretemedi, lütfen tekrar deneyin",
+      "unsaved_changes": "Kaydedilmemiş değişiklikler var"
+    },
+    "actions": {
+      "generate": "Web Sitesi Oluştur",
+      "regenerate": "Yeniden Oluştur",
+      "save_draft": "Taslak Kaydet",
+      "publish": "Yayınla",
+      "unpublish": "Yayından Kaldır",
+      "preview": "Önizle",
+      "edit": "Düzenle",
+      "delete": "Sil",
+      "duplicate": "Kopyala",
+      "export": "Dışa Aktar",
+      "import_content": "İçerik Aktar",
+      "undo": "Geri Al",
+      "redo": "İleri Al",
+      "add_section": "Bölüm Ekle",
+      "remove_section": "Bölüm Kaldır",
+      "move_up": "Yukarı Taşı",
+      "move_down": "Aşağı Taşı",
+      "choose_template": "Şablon Seç",
+      "custom_domain": "Özel Domain"
+    },
+    "content_labels": {
+      "hero_title": "Ana Başlık",
+      "hero_subtitle": "Alt Başlık",
+      "about_title": "Hakkımızda Başlığı",
+      "about_text": "Hakkımızda Metni",
+      "services_title": "Hizmetler Başlığı",
+      "contact_title": "İletişim Başlığı",
+      "footer_text": "Alt Bilgi Metni",
+      "cta_button": "Aksiyon Butonu",
+      "phone": "Telefon",
+      "email": "E-posta",
+      "address": "Adres",
+      "working_hours": "Çalışma Saatleri",
+      "section_title": "Bölüm Başlığı",
+      "section_content": "Bölüm İçeriği"
+    },
+    "default_values": {
+      "hero_title": "İşletmenize Hoş Geldiniz",
+      "hero_subtitle": "Size en iyi hizmeti sunmak için buradayız",
+      "about_title": "Hakkımızda",
+      "about_text": "Yıllarca tecrübe ile müşterilerimize en iyi hizmeti sunuyoruz.",
+      "services_title": "Hizmetlerimiz",
+      "contact_title": "Bize Ulaşın",
+      "footer_text": "Tüm hakları saklıdır.",
+      "cta_button": "Randevu Al"
+    }
+  }
+}

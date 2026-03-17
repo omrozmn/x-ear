@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { InventoryItem } from '../../../types/inventory';
 import Button from '../../../components/ui/Button';
 import { DataTable } from '@x-ear/ui-web';
@@ -19,31 +20,32 @@ const InventoryTable: React.FC<Props> = ({
   selectedItems = [],
   onSelectionChange
 }) => {
+  const { t } = useTranslation('inventory');
   const inventoryColumns: Column<InventoryItem>[] = [
     {
       key: 'name',
-      title: 'Ürün',
+      title: t('columns.product_name'),
       render: (_: unknown, item: InventoryItem) => (
         <span className="text-sm font-medium text-gray-900 dark:text-white">{item.name}</span>
       ),
     },
     {
       key: '_barcode',
-      title: 'SKU',
+      title: t('form.product_code'),
       render: (_: unknown, item: InventoryItem) => (
         <span className="text-sm text-muted-foreground">{item.barcode ?? '-'}</span>
       ),
     },
     {
       key: 'availableInventory',
-      title: 'Miktar',
+      title: t('columns.stock'),
       render: (_: unknown, item: InventoryItem) => (
         <span className="text-sm text-gray-900 dark:text-gray-100">{item.availableInventory}</span>
       ),
     },
     {
       key: 'price',
-      title: 'Fiyat',
+      title: t('columns.sale_price'),
       render: (_: unknown, item: InventoryItem) => (
         <span className="text-sm text-gray-900 dark:text-gray-100">
           {(item.price ?? 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TRY
@@ -52,31 +54,31 @@ const InventoryTable: React.FC<Props> = ({
     },
     {
       key: 'status',
-      title: 'Durum',
+      title: t('columns.status'),
       render: (_: unknown, item: InventoryItem) => (
         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
           item.status === 'available' ? 'bg-success/10 text-success' :
           item.status === 'low_stock' ? 'bg-warning/10 text-yellow-800 dark:text-yellow-200' :
           'bg-destructive/10 text-red-800 dark:text-red-200'
         }`}>
-          {item.status === 'available' ? 'Mevcut' :
-            item.status === 'low_stock' ? 'Düşük Stok' :
-            item.status === 'out_of_stock' ? 'Stok Yok' : item.status || '—'}
+          {item.status === 'available' ? t('status.in_stock') :
+            item.status === 'low_stock' ? t('status.low_stock') :
+            item.status === 'out_of_stock' ? t('status.out_of_stock') : item.status || '—'}
         </span>
       ),
     },
     {
       key: '_actions',
-      title: 'İşlemler',
+      title: t('columns.status'),
       render: (_: unknown, item: InventoryItem) => (
         <div className="flex space-x-2">
           {onViewDetails && (
             <Button variant="secondary" onClick={() => onViewDetails(item)}>
-              Detay
+              {t('actions.view_details')}
             </Button>
           )}
           <Button variant="secondary" onClick={() => onEdit(item.id)}>
-            Düzenle
+            {t('actions.edit')}
           </Button>
         </div>
       ),
@@ -93,7 +95,7 @@ const InventoryTable: React.FC<Props> = ({
         onChange: (newKeys) => onSelectionChange(newKeys.map(String)),
       } : undefined}
       loading={false}
-      emptyText="Ürün bulunamadı."
+      emptyText={t('products.not_found')}
     />
   );
 };

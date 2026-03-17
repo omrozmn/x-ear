@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState } from 'react';
 import { Modal, Button, Input, Select, Textarea, Alert } from '@x-ear/ui-web';
 import { InventoryItem } from '../../../types/inventory';
@@ -41,6 +42,7 @@ export const StockUpdateModal: React.FC<StockUpdateModalProps> = ({
   onUpdateStock,
   isLoading = false
 }) => {
+  const { t } = useTranslation('inventory');
   const [formData, setFormData] = useState<StockUpdateData>({
     type: 'add',
     quantity: 0,
@@ -86,7 +88,7 @@ export const StockUpdateModal: React.FC<StockUpdateModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Stok Güncelle"
+      title={t('actions.adjust_stock')}
       size="md"
     >
       <div className="space-y-6 dark:text-white">
@@ -94,7 +96,7 @@ export const StockUpdateModal: React.FC<StockUpdateModalProps> = ({
           <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
             <h3 className="font-medium text-gray-900 dark:text-white">{product.name}</h3>
             <p className="text-sm text-muted-foreground">
-              Mevcut Stok: <span className="font-medium">{product.availableInventory}</span>
+              {t('stock.current_stock')}: <span className="font-medium">{product.availableInventory}</span>
             </p>
             <p className="text-sm text-muted-foreground">
               Model: {product.model} | Marka: {product.brand}
@@ -104,7 +106,7 @@ export const StockUpdateModal: React.FC<StockUpdateModalProps> = ({
 
         <div>
           <Select
-            label="İşlem Türü"
+            label={t('bulk_operations.title')}
             value={formData.type}
             onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as StockUpdateData['type'] }))}
             options={UPDATE_TYPES.map(type => ({
@@ -120,7 +122,7 @@ export const StockUpdateModal: React.FC<StockUpdateModalProps> = ({
 
         <div>
           <Input
-            label={formData.type === 'set' ? 'Yeni Stok Miktarı' : 'Miktar'}
+            label={formData.type === 'set' ? t('stock.current_stock') : t('stock.current_stock')}
             type="number"
             min="0"
             value={formData.quantity}
@@ -132,7 +134,7 @@ export const StockUpdateModal: React.FC<StockUpdateModalProps> = ({
 
         <div>
           <Select
-            label="Sebep"
+            label={t('form.description')}
             value={formData.reason}
             onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
             options={STOCK_REASONS.map(reason => ({ value: reason, label: reason }))}
@@ -143,7 +145,7 @@ export const StockUpdateModal: React.FC<StockUpdateModalProps> = ({
 
         <div>
           <Textarea
-            label="Notlar (Opsiyonel)"
+            label={t('form.notes')}
             value={formData.notes}
             onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
             placeholder="Ek açıklama..."
@@ -153,7 +155,7 @@ export const StockUpdateModal: React.FC<StockUpdateModalProps> = ({
 
         {formData.quantity > 0 && product && (
           <Alert variant={formData.type === 'remove' && calculateNewStock() === 0 ? 'warning' : 'info'}>
-            <strong>Yeni Stok:</strong> {calculateNewStock()} adet
+            <strong>{t('stock.current_stock')}:/strong> {calculateNewStock()} adet
             {formData.type === 'remove' && calculateNewStock() === 0 && (
               <div className="mt-1 text-sm">⚠️ Bu işlem sonrası stok sıfır olacak!</div>
             )}
@@ -174,7 +176,7 @@ export const StockUpdateModal: React.FC<StockUpdateModalProps> = ({
             loading={isLoading}
             variant="primary"
           >
-            {selectedType?.icon} Stok Güncelle
+            {selectedType?.icon} {t('actions.adjust_stock')}
           </Button>
         </div>
       </div>

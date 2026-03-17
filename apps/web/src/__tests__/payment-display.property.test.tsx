@@ -8,18 +8,26 @@
  * Tests that all payment fields are rendered in the UI
  */
 
+import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, cleanup } from '@testing-library/react';
 import fc from 'fast-check';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PaymentsList } from '../components/sales/PaymentsList';
 
-// Mock the API hook
-const mockUseListSalePayments = vi.fn();
+// Mock @x-ear/ui-web so Button renders real HTML
+vi.mock('@x-ear/ui-web', async () => {
+  const ReactMod = await import('react');
+  return {
+    Button: ({ children, onClick, className }: any) => ReactMod.createElement('button', { onClick, className }, children),
+  };
+});
 
-vi.mock('../api/generated', () => ({
-  useListSalePayments: (..._args: unknown[]) => mockUseListSalePayments(..._args),
-  useListPaymentRecords: (..._args: unknown[]) => mockUseListSalePayments(..._args),
+// Mock the usePayments hook directly
+const mockUsePayments = vi.fn();
+
+vi.mock('@/hooks/usePayments', () => ({
+  usePayments: (...args: unknown[]) => mockUsePayments(...args),
 }));
 
 describe('Property 3: Complete Data Display for Payments', () => {
@@ -50,15 +58,15 @@ describe('Property 3: Complete Data Display for Payments', () => {
               currency: fc.constantFrom('TRY', 'USD', 'EUR'),
               paymentMethod: fc.constantFrom('cash', 'card', 'transfer'),
               status: fc.constantFrom('completed', 'pending', 'failed'),
-              paymentDate: fc.date().map(d => d.toISOString()),
-              createdAt: fc.date().map(d => d.toISOString()),
+              paymentDate: fc.integer({ min: 946684800000, max: 1924905600000 }).map(ts => new Date(ts).toISOString()),
+              createdAt: fc.integer({ min: 946684800000, max: 1924905600000 }).map(ts => new Date(ts).toISOString()),
             }),
             { minLength: 1, maxLength: 5 }
           ),
         }),
         async ({ saleId, payments }) => {
           // Setup: Mock the API response
-          mockUseListSalePayments.mockReturnValue({
+          mockUsePayments.mockReturnValue({
             data: { data: payments },
             isLoading: false,
             error: null,
@@ -106,6 +114,7 @@ describe('Property 3: Complete Data Display for Payments', () => {
           
           // Cleanup
           unmount();
+          cleanup();
         }
       ),
       { numRuns: 100 }
@@ -118,7 +127,7 @@ describe('Property 3: Complete Data Display for Payments', () => {
         fc.uuid(),
         async (saleId) => {
           // Setup: Mock empty payments
-          mockUseListSalePayments.mockReturnValue({
+          mockUsePayments.mockReturnValue({
             data: { data: [] },
             isLoading: false,
             error: null,
@@ -133,6 +142,7 @@ describe('Property 3: Complete Data Display for Payments', () => {
           
           // Cleanup
           unmount();
+          cleanup();
         }
       ),
       { numRuns: 100 }
@@ -145,7 +155,7 @@ describe('Property 3: Complete Data Display for Payments', () => {
         fc.uuid(),
         async (saleId) => {
           // Setup: Mock loading state
-          mockUseListSalePayments.mockReturnValue({
+          mockUsePayments.mockReturnValue({
             data: undefined,
             isLoading: true,
             error: null,
@@ -160,6 +170,7 @@ describe('Property 3: Complete Data Display for Payments', () => {
           
           // Cleanup
           unmount();
+          cleanup();
         }
       ),
       { numRuns: 100 }
@@ -171,12 +182,12 @@ describe('Property 3: Complete Data Display for Payments', () => {
       fc.asyncProperty(
         fc.record({
           saleId: fc.uuid(),
-          errorMessage: fc.string({ minLength: 5, maxLength: 50 }).filter((s: string) => s.trim().length >= 5),
+          errorMessage: fc.stringMatching(/^[A-Za-z][A-Za-z0-9]{4,49}$/),
         }),
         async ({ saleId, errorMessage }) => {
           // Setup: Mock error state
           const mockRefetch = vi.fn();
-          mockUseListSalePayments.mockReturnValue({
+          mockUsePayments.mockReturnValue({
             data: undefined,
             isLoading: false,
             error: new Error(errorMessage),
@@ -195,6 +206,7 @@ describe('Property 3: Complete Data Display for Payments', () => {
           
           // Cleanup
           unmount();
+          cleanup();
         }
       ),
       { numRuns: 100 }

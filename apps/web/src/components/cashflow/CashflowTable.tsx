@@ -3,6 +3,7 @@
  * Displays cash records in a table format
  */
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button, DataTable } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
 import { TrendingUp, TrendingDown, Trash2 } from 'lucide-react';
@@ -22,6 +23,7 @@ export function CashflowTable({
   onRecordClick,
   onDeleteRecord,
 }: CashflowTableProps) {
+  const { t } = useTranslation('cashflow');
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('tr-TR', {
       style: 'currency',
@@ -49,21 +51,21 @@ export function CashflowTable({
   const cashflowColumns: Column<CashRecord>[] = [
     {
       key: 'date',
-      title: 'Tarih',
+      title: t('columns.date', 'Tarih'),
       render: (_, record) => (
         <span className="text-sm text-gray-900 dark:text-gray-200">{formatDate(record.date)}</span>
       ),
     },
     {
       key: 'time',
-      title: 'Saat',
+      title: t('columns.time', 'Saat'),
       render: (_, record) => (
         <span className="text-sm text-gray-900 dark:text-gray-200">{formatTime(record.date)}</span>
       ),
     },
     {
       key: 'transactionType',
-      title: 'İşlem Türü',
+      title: t('columns.transactionType', 'İşlem Türü'),
       render: (_, record) => (
         <span
           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -77,13 +79,13 @@ export function CashflowTable({
           ) : (
             <TrendingDown className="h-3 w-3 mr-1" />
           )}
-          {record.transactionType === 'income' ? 'Gelir' : 'Gider'}
+          {record.transactionType === 'income' ? t('income', 'Gelir') : t('expense', 'Gider')}
         </span>
       ),
     },
     {
       key: 'recordType',
-      title: 'Kayıt Türü',
+      title: t('columns.recordType', 'Kayıt Türü'),
       render: (_, record) => (
         <span className="text-sm text-gray-900 dark:text-gray-200">
           {RECORD_TYPE_LABELS[record.recordType] || record.recordType}
@@ -92,14 +94,14 @@ export function CashflowTable({
     },
     {
       key: 'partyName',
-      title: 'Hasta',
+      title: t('columns.patient', 'Hasta'),
       render: (_, record) => (
         <span className="text-sm text-gray-900 dark:text-gray-200">{record.partyName || '-'}</span>
       ),
     },
     {
       key: 'amount',
-      title: 'Tutar',
+      title: t('columns.amount', 'Tutar'),
       align: 'right',
       render: (_, record) => (
         <span
@@ -116,7 +118,7 @@ export function CashflowTable({
     },
     {
       key: '_actions',
-      title: 'İşlemler',
+      title: t('columns.actions', 'İşlemler'),
       render: (_, record) => (
         <Button
           variant="outline"
@@ -128,7 +130,7 @@ export function CashflowTable({
           className="text-destructive hover:text-destructive dark:hover:text-red-300 hover:bg-destructive/10 dark:hover:bg-red-900/20"
         >
           <Trash2 className="h-4 w-4 mr-1" />
-          Sil
+          {t('delete', 'Sil')}
         </Button>
       ),
     },
@@ -141,7 +143,7 @@ export function CashflowTable({
       rowKey="id"
       loading={isLoading}
       onRowClick={onRecordClick}
-      emptyText="Kayıt bulunamadı"
+      emptyText={t('noRecordsFound', 'Kayıt bulunamadı')}
     />
   );
 }

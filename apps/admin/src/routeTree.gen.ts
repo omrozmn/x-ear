@@ -41,6 +41,8 @@ import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as AiRouteImport } from './routes/ai'
 import { Route as AffiliatesRouteImport } from './routes/affiliates'
 import { Route as AddonsRouteImport } from './routes/addons'
+import { Route as BarcodesRouteImport } from './routes/barcodes'
+import { Route as LabelTemplatesRouteImport } from './routes/label-templates'
 import { Route as ActivityLogsRouteImport } from './routes/activity-logs'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as IntegrationsIndexRouteImport } from './routes/integrations/index'
@@ -212,6 +214,16 @@ const AddonsRoute = AddonsRouteImport.update({
   path: '/addons',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BarcodesRoute = BarcodesRouteImport.update({
+  id: '/barcodes',
+  path: '/barcodes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LabelTemplatesRoute = LabelTemplatesRouteImport.update({
+  id: '/label-templates',
+  path: '/label-templates',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ActivityLogsRoute = ActivityLogsRouteImport.update({
   id: '/activity-logs',
   path: '/activity-logs',
@@ -273,6 +285,7 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AnalyticsRoute
   '/api-keys': typeof ApiKeysRoute
   '/appointments': typeof AppointmentsRoute
+  '/barcodes': typeof BarcodesRoute
   '/billing': typeof BillingRoute
   '/blog': typeof BlogRoute
   '/campaigns': typeof CampaignsRoute
@@ -281,6 +294,7 @@ export interface FileRoutesByFullPath {
   '/features': typeof FeaturesRoute
   '/files': typeof FilesRoute
   '/inventory': typeof InventoryRoute
+  '/label-templates': typeof LabelTemplatesRoute
   '/login': typeof LoginRoute
   '/marketplaces': typeof MarketplacesRoute
   '/notifications': typeof NotificationsRoute
@@ -317,6 +331,7 @@ export interface FileRoutesByTo {
   '/analytics': typeof AnalyticsRoute
   '/api-keys': typeof ApiKeysRoute
   '/appointments': typeof AppointmentsRoute
+  '/barcodes': typeof BarcodesRoute
   '/billing': typeof BillingRoute
   '/blog': typeof BlogRoute
   '/campaigns': typeof CampaignsRoute
@@ -325,6 +340,7 @@ export interface FileRoutesByTo {
   '/features': typeof FeaturesRoute
   '/files': typeof FilesRoute
   '/inventory': typeof InventoryRoute
+  '/label-templates': typeof LabelTemplatesRoute
   '/login': typeof LoginRoute
   '/marketplaces': typeof MarketplacesRoute
   '/notifications': typeof NotificationsRoute
@@ -362,6 +378,7 @@ export interface FileRoutesById {
   '/analytics': typeof AnalyticsRoute
   '/api-keys': typeof ApiKeysRoute
   '/appointments': typeof AppointmentsRoute
+  '/barcodes': typeof BarcodesRoute
   '/billing': typeof BillingRoute
   '/blog': typeof BlogRoute
   '/campaigns': typeof CampaignsRoute
@@ -370,6 +387,7 @@ export interface FileRoutesById {
   '/features': typeof FeaturesRoute
   '/files': typeof FilesRoute
   '/inventory': typeof InventoryRoute
+  '/label-templates': typeof LabelTemplatesRoute
   '/login': typeof LoginRoute
   '/marketplaces': typeof MarketplacesRoute
   '/notifications': typeof NotificationsRoute
@@ -408,6 +426,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/api-keys'
     | '/appointments'
+    | '/barcodes'
     | '/billing'
     | '/blog'
     | '/campaigns'
@@ -416,6 +435,7 @@ export interface FileRouteTypes {
     | '/features'
     | '/files'
     | '/inventory'
+    | '/label-templates'
     | '/login'
     | '/marketplaces'
     | '/notifications'
@@ -452,6 +472,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/api-keys'
     | '/appointments'
+    | '/barcodes'
     | '/billing'
     | '/blog'
     | '/campaigns'
@@ -460,6 +481,7 @@ export interface FileRouteTypes {
     | '/features'
     | '/files'
     | '/inventory'
+    | '/label-templates'
     | '/login'
     | '/marketplaces'
     | '/notifications'
@@ -496,6 +518,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/api-keys'
     | '/appointments'
+    | '/barcodes'
     | '/billing'
     | '/blog'
     | '/campaigns'
@@ -504,6 +527,7 @@ export interface FileRouteTypes {
     | '/features'
     | '/files'
     | '/inventory'
+    | '/label-templates'
     | '/login'
     | '/marketplaces'
     | '/notifications'
@@ -541,6 +565,7 @@ export interface RootRouteChildren {
   AnalyticsRoute: typeof AnalyticsRoute
   ApiKeysRoute: typeof ApiKeysRoute
   AppointmentsRoute: typeof AppointmentsRoute
+  BarcodesRoute: typeof BarcodesRoute
   BillingRoute: typeof BillingRoute
   BlogRoute: typeof BlogRoute
   CampaignsRoute: typeof CampaignsRoute
@@ -549,6 +574,7 @@ export interface RootRouteChildren {
   FeaturesRoute: typeof FeaturesRoute
   FilesRoute: typeof FilesRoute
   InventoryRoute: typeof InventoryRoute
+  LabelTemplatesRoute: typeof LabelTemplatesRoute
   LoginRoute: typeof LoginRoute
   MarketplacesRoute: typeof MarketplacesRoute
   NotificationsRoute: typeof NotificationsRoute
@@ -704,6 +730,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/label-templates': {
+      id: '/label-templates'
+      path: '/label-templates'
+      fullPath: '/label-templates'
+      preLoaderRoute: typeof LabelTemplatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/inventory': {
       id: '/inventory'
       path: '/inventory'
@@ -751,6 +784,13 @@ declare module '@tanstack/react-router' {
       path: '/blog'
       fullPath: '/blog'
       preLoaderRoute: typeof BlogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/barcodes': {
+      id: '/barcodes'
+      path: '/barcodes'
+      fullPath: '/barcodes'
+      preLoaderRoute: typeof BarcodesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/billing': {
@@ -896,6 +936,7 @@ const rootRouteChildren: RootRouteChildren = {
   AnalyticsRoute: AnalyticsRoute,
   ApiKeysRoute: ApiKeysRoute,
   AppointmentsRoute: AppointmentsRoute,
+  BarcodesRoute: BarcodesRoute,
   BillingRoute: BillingRoute,
   BlogRoute: BlogRoute,
   CampaignsRoute: CampaignsRoute,
@@ -904,6 +945,7 @@ const rootRouteChildren: RootRouteChildren = {
   FeaturesRoute: FeaturesRoute,
   FilesRoute: FilesRoute,
   InventoryRoute: InventoryRoute,
+  LabelTemplatesRoute: LabelTemplatesRoute,
   LoginRoute: LoginRoute,
   MarketplacesRoute: MarketplacesRoute,
   NotificationsRoute: NotificationsRoute,

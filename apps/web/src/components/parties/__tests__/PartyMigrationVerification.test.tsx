@@ -4,6 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DesktopPartyDetailsPage } from '../../../pages/DesktopPartyDetailsPage';
 import { PartyDetailResponseData } from '../../../api/generated/schemas/partyDetailResponseData';
 import React from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Mock TanStack Router
 vi.mock('@tanstack/react-router', () => ({
@@ -64,6 +65,41 @@ vi.mock('../../../contexts/GlobalErrorContext', () => ({
 vi.mock('../../../contexts/GlobalErrorContextType', () => ({
     GlobalErrorContext: { _currentValue: { showError: vi.fn(), error: null, clearError: vi.fn() } },
 }));
+vi.mock('../../../hooks/useSector', () => ({
+    useSector: () => ({
+        sector: 'hearing',
+        sectorConfig: { id: 'hearing', name: 'Hearing', modules: [] },
+        enabledModules: [],
+        isModuleEnabled: () => true,
+        isHearingSector: () => true,
+        isLoading: false,
+    }),
+}));
+vi.mock('@x-ear/ui-web', async () => {
+    const ReactMod = await import('react');
+    const TabsComp = Object.assign(
+        ({ children }: any) => ReactMod.createElement('div', null, children),
+        {
+            List: ({ children, className }: any) => ReactMod.createElement('div', { className }, children),
+            Trigger: ({ children, value, onClick, disabled, className, ...rest }: any) => ReactMod.createElement('button', { 'data-value': value, onClick, disabled, className, 'data-testid': rest['data-testid'] }, children),
+            Content: ({ children }: any) => ReactMod.createElement('div', null, children),
+        }
+    );
+    return {
+        Button: ({ children, onClick, className }: any) => ReactMod.createElement('button', { onClick, className }, children),
+        Card: ({ children }: any) => ReactMod.createElement('div', null, children),
+        Badge: ({ children }: any) => ReactMod.createElement('span', null, children),
+        Tabs: TabsComp,
+        TabsList: TabsComp.List,
+        TabsTrigger: TabsComp.Trigger,
+        TabsContent: TabsComp.Content,
+        Input: ReactMod.forwardRef((props: any, ref: any) => ReactMod.createElement('input', { ref, ...props })),
+        Select: ReactMod.forwardRef(({ options, ...props }: any, ref: any) => ReactMod.createElement('select', { ref, ...props }, options?.map((o: any) => ReactMod.createElement('option', { key: o.value, value: o.value }, o.label)))),
+        Textarea: ReactMod.forwardRef((props: any, ref: any) => ReactMod.createElement('textarea', { ref, ...props })),
+        Modal: ({ isOpen, children }: any) => isOpen ? ReactMod.createElement('div', null, children) : null,
+        Pagination: () => ReactMod.createElement('div', null, 'Pagination'),
+    };
+});
 vi.mock('@/api/client/parties.client', () => ({
     useDeleteParty: () => ({ mutateAsync: vi.fn() }),
     useUpdateParty: () => ({ mutateAsync: vi.fn() }),
@@ -97,6 +133,22 @@ vi.mock('../../parties/PartyHeader', () => ({
     },
 }));
 
+vi.mock('../../parties/PartyTabs', () => ({
+    PartyTabs: ({ party }: { party: Record<string, unknown> }) => {
+        const hasHearingProfile = !!(party?.hearingProfile || party?.binding_hearing_profile);
+        const roles = Array.isArray(party?.roles) ? (party.roles as Array<{ role_code?: string }>).map(r => r.role_code) : [];
+        const isPatient = roles.includes('PATIENT');
+        return (
+            <div data-testid="party-tabs">
+                <button>Genel Bilgiler</button>
+                {(isPatient || hasHearingProfile) && <button>İşitme Testleri</button>}
+                <button>Cihazlar</button>
+                <button>Satışlar</button>
+                <button>Belgeler</button>
+            </div>
+        );
+    },
+}));
 vi.mock('../../parties/PartyTabContent', () => ({
     PartyTabContent: () => <div data-testid="tab-content">Content</div>
 }));
@@ -135,6 +187,19 @@ const createMockParty = (roles: string[], hasProfile: boolean): PartyDetailRespo
     } as unknown as PartyDetailResponseData;
 };
 
+const createTestQueryClient = () => new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+});
+
+const renderWithProviders = (ui: React.ReactElement) => {
+    const queryClient = createTestQueryClient();
+    return render(
+        <QueryClientProvider client={queryClient}>
+            {ui}
+        </QueryClientProvider>
+    );
+};
+
 describe('Party Role & Profile Integration Verification', () => {
     const mockUseParams = useParams as unknown as ReturnType<typeof vi.fn>;
 
@@ -150,7 +215,7 @@ describe('Party Role & Profile Integration Verification', () => {
         const mockParty = createMockParty(['CUSTOMER'], false);
         mockUsePartyReturn.party = mockParty;
 
-        render(<DesktopPartyDetailsPage />);
+        renderWithProviders(<DesktopPartyDetailsPage />);
 
         await waitFor(() => {
             expect(screen.getByTestId('party-header')).toBeInTheDocument();
@@ -172,7 +237,7 @@ describe('Party Role & Profile Integration Verification', () => {
         const mockParty = createMockParty(['PATIENT'], true);
         mockUsePartyReturn.party = mockParty;
 
-        render(<DesktopPartyDetailsPage />);
+        renderWithProviders(<DesktopPartyDetailsPage />);
 
         await waitFor(() => {
             expect(screen.getByTestId('party-header')).toBeInTheDocument();

@@ -4,6 +4,7 @@ import { customInstance } from '@/api/orval-mutator';
 import toast from 'react-hot-toast';
 import { extractErrorMessage } from '@/utils/error-utils';
 import { SettingsSectionHeader } from '../../components/layout/SettingsSectionHeader';
+import { useTranslation } from 'react-i18next';
 
 interface SgkScheme {
   name: string;
@@ -68,6 +69,7 @@ const SCHEME_LABELS: Record<string, string> = {
 };
 
 export default function SgkSettingsPage() {
+  const { t } = useTranslation('settings_extra');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState<SgkSettings>({
@@ -135,7 +137,7 @@ export default function SgkSettingsPage() {
         }));
       }
     } catch (error) {
-      toast.error('SGK ayarları yüklenemedi: ' + extractErrorMessage(error));
+      toast.error(t('sgkLoadFailed', 'SGK ayarları yüklenemedi') + ': ' + extractErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -188,9 +190,9 @@ export default function SgkSettingsPage() {
         data: payload,
       });
 
-      toast.success('SGK ayarları kaydedildi');
+      toast.success(t('sgkSettingsSaved', 'SGK ayarları kaydedildi'));
     } catch (error) {
-      toast.error('Kaydetme hatası: ' + extractErrorMessage(error));
+      toast.error(t('saveError', 'Kaydetme hatası') + ': ' + extractErrorMessage(error));
     } finally {
       setSaving(false);
     }

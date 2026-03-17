@@ -70,6 +70,17 @@ const FEATURE_HIERARCHY: FeatureDef[] = [
     { key: 'pos', label: '🏪 POS / Satış Noktası', defaultMode: 'visible' },
     { key: 'automation', label: '⚙️ Otomasyon', defaultMode: 'visible' },
     { key: 'ai_chat', label: '🤖 AI Chat', defaultMode: 'visible' },
+    {
+        key: 'barcode', label: '📊 Barkod Sistemi', defaultMode: 'visible',
+        children: [
+            { key: 'barcode.scanner', label: 'Barkod Okuyucu', defaultMode: 'visible' },
+            { key: 'barcode.camera', label: 'Kamera ile Tarama', defaultMode: 'visible' },
+            { key: 'barcode.generator', label: 'Barkod Uretici', defaultMode: 'visible' },
+            { key: 'barcode.validation', label: 'Barkod Dogrulama', defaultMode: 'visible' },
+            { key: 'barcode.labels', label: 'Etiket Yazdirma', defaultMode: 'visible' },
+            { key: 'barcode.gs1', label: 'GS1/UDI Destegi', defaultMode: 'hidden' },
+        ],
+    },
     { key: 'integrations_ui', label: '🔌 Entegrasyonlar', defaultMode: 'hidden' },
     { key: 'pricing_ui', label: '💲 Fiyatlandırma', defaultMode: 'hidden' },
     { key: 'security_ui', label: '🔒 Güvenlik', defaultMode: 'hidden' },

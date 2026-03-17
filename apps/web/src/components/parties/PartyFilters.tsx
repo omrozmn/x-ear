@@ -7,6 +7,7 @@ import { useListBranches } from '../../api/generated/branches/branches';
 import { BranchRead } from '../../api/generated/schemas';
 import { unwrapArray } from '../../utils/response-unwrap';
 import { getPartySegments, getAcquisitionTypes, loadPartySegmentsFromAPI, type SegmentOption, type AcquisitionOption } from '../../utils/party-segments';
+import { useTranslation } from 'react-i18next';
 
 interface PartyFiltersProps {
   filters: PartyFiltersType;
@@ -37,6 +38,7 @@ export function PartyFilters({
   className = '',
   showCompact = false // Default false to show expanded
 }: PartyFiltersProps) {
+  const { t } = useTranslation(['parties_extra', 'patients', 'common']);
   const [isExpanded, setIsExpanded] = useState(true); // Default true for always expanded
   
   // Load dynamic segments and acquisitions from localStorage
@@ -79,9 +81,9 @@ export function PartyFilters({
   });
 
   const statusOptions: { value: PartyStatus; label: string; count?: number }[] = [
-    { value: 'ACTIVE', label: 'Aktif' },
-    { value: 'INACTIVE', label: 'Pasif' },
-    { value: 'TRIAL', label: 'Deneme' }
+    { value: 'ACTIVE', label: t('status.active') },
+    { value: 'INACTIVE', label: t('status.inactive') },
+    { value: 'TRIAL', label: t('status.trial') }
   ];
 
   const branchOptions: FilterOption[] = branches.map(branch => ({
@@ -99,7 +101,7 @@ export function PartyFilters({
           className="flex items-center space-x-2"
         >
           <Filter className="h-4 w-4" />
-          <span>Filtreler</span>
+          <span>{t('filters.title')}</span>
           {hasActiveFilters && (
             <span className="bg-blue-600 text-white text-xs rounded-full px-2 py-0.5">
               {Object.entries(filters).filter(([key, value]) =>
@@ -117,7 +119,7 @@ export function PartyFilters({
             className="text-muted-foreground hover:text-foreground"
           >
             <X className="h-4 w-4" />
-            <span className="sr-only">Filtreleri temizle</span>
+            <span className="sr-only">{t('filters.clear_filters')}</span>
           </Button>
         )}
       </div>
@@ -130,14 +132,14 @@ export function PartyFilters({
       <div className="flex items-center justify-between px-4 py-2 border-b border-border dark:border-slate-700">
         <div className="flex items-center space-x-2">
           <Filter className="w-4 h-4 text-muted-foreground" />
-          <h3 className="text-sm font-medium text-gray-900 dark:text-white">Filtreler</h3>
+          <h3 className="text-sm font-medium text-gray-900 dark:text-white">{t('filters.title')}</h3>
           {hasActiveFilters && (
             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-blue-800">
-              Aktif
+              {t('filters.active_label')}
             </span>
           )}
           <span className="text-xs text-muted-foreground">
-            ({partyCount} hasta)
+            {t('filters.patient_count', { count: partyCount })}
           </span>
         </div>
 
@@ -151,7 +153,7 @@ export function PartyFilters({
               className="flex items-center space-x-1 text-xs py-1"
             >
               <X className="w-4 h-4" />
-              <span>Temizle</span>
+              <span>{t('filters.clear')}</span>
             </Button>
           )}
 
@@ -173,7 +175,7 @@ export function PartyFilters({
         <div>
           <div className="flex items-center space-x-2 mb-2">
             <Users className="h-3 w-3 text-muted-foreground" />
-            <label className="text-xs font-medium text-foreground">Durum</label>
+            <label className="text-xs font-medium text-foreground">{t('filters.status_label')}</label>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {statusOptions.map((option) => (
@@ -204,7 +206,7 @@ export function PartyFilters({
         <div>
           <div className="flex items-center space-x-2 mb-2">
             <Users className="h-3 w-3 text-muted-foreground" />
-            <label className="text-xs font-medium text-foreground">Segment</label>
+            <label className="text-xs font-medium text-foreground">{t('filters.segment_label')}</label>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {segmentOptions.map((option) => (
@@ -235,7 +237,7 @@ export function PartyFilters({
         <div>
           <div className="flex items-center space-x-2 mb-2">
             <TrendingUp className="h-3 w-3 text-muted-foreground" />
-            <label className="text-xs font-medium text-foreground">Kazanım Türü</label>
+            <label className="text-xs font-medium text-foreground">{t('filters.acquisition_type_label')}</label>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {acquisitionOptions.map((option) => (
@@ -265,7 +267,7 @@ export function PartyFilters({
         <div>
           <div className="flex items-center space-x-2 mb-2">
             <Calendar className="h-3 w-3 text-muted-foreground" />
-            <label className="text-xs font-medium text-foreground">Tarih Aralığı</label>
+            <label className="text-xs font-medium text-foreground">{t('filters.date_range_label')}</label>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <DatePicker
@@ -273,7 +275,7 @@ export function PartyFilters({
               onChange={(date) => handleFilterChange('registrationDateRange',
                 date ? { ...filters.registrationDateRange, start: date.toISOString().split('T')[0] } : { ...filters.registrationDateRange, start: undefined }
               )}
-              placeholder="Başlangıç"
+              placeholder={t('filters.start_date')}
               fullWidth
             />
             <DatePicker
@@ -281,7 +283,7 @@ export function PartyFilters({
               onChange={(date) => handleFilterChange('registrationDateRange',
                 date ? { ...filters.registrationDateRange, end: date.toISOString().split('T')[0] } : { ...filters.registrationDateRange, end: undefined }
               )}
-              placeholder="Bitiş"
+              placeholder={t('filters.end_date')}
               fullWidth
             />
           </div>
@@ -291,7 +293,7 @@ export function PartyFilters({
         <div>
           <div className="flex items-center space-x-2 mb-2">
             <Building className="h-3 w-3 text-muted-foreground" />
-            <label className="text-xs font-medium text-foreground">Şube</label>
+            <label className="text-xs font-medium text-foreground">{t('filters.branch_label')}</label>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {branchOptions.map((option) => (

@@ -1,0 +1,113 @@
+{
+  "builder": {
+    "ai_questions": {
+      "business_name": "What is your business name?",
+      "business_type": "What type of business do you have?",
+      "target_audience": "Who is your target audience?",
+      "key_services": "What are your key services?",
+      "unique_value": "What makes you different from competitors?",
+      "contact_info": "What are your contact details?",
+      "color_preference": "Do you have any color preferences?",
+      "tone": "What tone should your website have?",
+      "professional": "Professional",
+      "friendly": "Friendly",
+      "modern": "Modern",
+      "classic": "Classic"
+    },
+    "feature_cards": {
+      "appointment_booking": "Online Booking",
+      "appointment_booking_desc": "Your customers can book appointments 24/7",
+      "product_catalog": "Product Catalog",
+      "product_catalog_desc": "Showcase and promote your products",
+      "contact_form": "Contact Form",
+      "contact_form_desc": "Receive messages from your customers easily",
+      "gallery": "Gallery",
+      "gallery_desc": "Share photos of your business",
+      "testimonials": "Testimonials",
+      "testimonials_desc": "Showcase your customer satisfaction",
+      "map": "Map",
+      "map_desc": "Show your business location",
+      "social_media": "Social Media",
+      "social_media_desc": "Connect your social media accounts",
+      "blog": "Blog",
+      "blog_desc": "Boost your SEO by sharing content"
+    },
+    "tabs": {
+      "design": "Design",
+      "content": "Content",
+      "pages": "Pages",
+      "settings": "Settings",
+      "preview": "Preview",
+      "publish": "Publish",
+      "seo": "SEO",
+      "analytics": "Analytics"
+    },
+    "suggested_commands": {
+      "change_color": "Change color",
+      "add_section": "Add section",
+      "edit_text": "Edit text",
+      "add_image": "Add image",
+      "change_layout": "Change layout",
+      "add_page": "Add page",
+      "update_menu": "Update menu",
+      "add_form": "Add form"
+    },
+    "errors": {
+      "generation_failed": "Website generation failed",
+      "save_failed": "Save failed",
+      "publish_failed": "Publishing failed",
+      "invalid_domain": "Invalid domain name",
+      "image_upload_failed": "Image upload failed",
+      "template_load_failed": "Failed to load template",
+      "ai_error": "AI could not generate a response, please try again",
+      "unsaved_changes": "You have unsaved changes"
+    },
+    "actions": {
+      "generate": "Generate Website",
+      "regenerate": "Regenerate",
+      "save_draft": "Save Draft",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "preview": "Preview",
+      "edit": "Edit",
+      "delete": "Delete",
+      "duplicate": "Duplicate",
+      "export": "Export",
+      "import_content": "Import Content",
+      "undo": "Undo",
+      "redo": "Redo",
+      "add_section": "Add Section",
+      "remove_section": "Remove Section",
+      "move_up": "Move Up",
+      "move_down": "Move Down",
+      "choose_template": "Choose Template",
+      "custom_domain": "Custom Domain"
+    },
+    "content_labels": {
+      "hero_title": "Hero Title",
+      "hero_subtitle": "Hero Subtitle",
+      "about_title": "About Title",
+      "about_text": "About Text",
+      "services_title": "Services Title",
+      "contact_title": "Contact Title",
+      "footer_text": "Footer Text",
+      "cta_button": "CTA Button",
+      "phone": "Phone",
+      "email": "Email",
+      "address": "Address",
+      "working_hours": "Working Hours",
+      "section_title": "Section Title",
+      "section_content": "Section Content"
+    },
+    "default_values": {
+      "hero_title": "Welcome to Our Business",
+      "hero_subtitle": "We are here to provide you the best service",
+      "about_title": "About Us",
+      "about_text": "With years of experience, we provide the best service to our customers.",
+      "services_title": "Our Services",
+      "contact_title": "Contact Us",
+      "footer_text": "All rights reserved.",
+      "cta_button": "Book Appointment"
+    }
+  }
+}

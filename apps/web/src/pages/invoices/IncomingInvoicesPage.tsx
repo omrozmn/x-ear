@@ -14,6 +14,7 @@ import { useIsMobile } from '@/hooks/useBreakpoint';
 import { DesktopPageHeader } from '../../components/layout/DesktopPageHeader';
 import { ExportDropdown } from '@/components/common/ExportDropdown';
 import { PermissionGate } from '@/components/PermissionGate';
+import { useTranslation } from 'react-i18next';
 
 async function fetchInvoiceDocument(invoiceId: number | string, format: 'pdf' | 'html' | 'xml', renderMode: 'auto' | 'local' | 'remote' = 'auto'): Promise<{ data: ArrayBuffer; contentType: string }> {
   const resp = await apiClient.get<ArrayBuffer>(`/api/invoices/${invoiceId}/document?format=${format}&render_mode=${renderMode}`, {
@@ -37,6 +38,7 @@ async function syncInvoicesFromProvider(): Promise<{ incoming: number; outgoing:
 }
 
 export function IncomingInvoicesPage() {
+  const { t } = useTranslation('invoices');
   const isMobile = useIsMobile();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -141,7 +143,7 @@ export function IncomingInvoicesPage() {
     const style = isProcessed
       ? 'bg-success/10 text-success'
       : 'bg-destructive/10 text-red-800 dark:text-red-400';
-    const label = isProcessed ? 'İşlendi' : 'Reddedildi';
+    const label = isProcessed ? t('incoming.status.processed') : t('incoming.status.rejected');
     const icon = isProcessed
       ? <CheckCircle className="w-3 h-3 mr-1" />
       : <AlertCircle className="w-3 h-3 mr-1" />;
@@ -156,7 +158,7 @@ export function IncomingInvoicesPage() {
 
   const handleViewPdf = async (invoice: IncomingInvoiceResponse) => {
     setActiveMenu(null);
-    const toastId = toast.loading('Fatura yükleniyor...');
+    const toastId = toast.loading(t('incoming.messages.invoice_loading'));
     try {
       void markInvoiceRead(invoice.invoiceId).catch(() => undefined);
       const { data: buf, contentType } = await fetchInvoiceDocument(invoice.invoiceId, 'pdf');
@@ -170,27 +172,27 @@ export function IncomingInvoicesPage() {
       const fileName = `${invoice.invoiceNumber || invoice.invoiceId}${isPdf ? '.pdf' : '.html'}`;
       setPdfModal({ open: true, blobUrl: url, title: `${invoice.invoiceNumber} — ${invoice.supplierName}`, fileName });
     } catch {
-      toast.error('Fatura yüklenemedi', { id: toastId });
+      toast.error(t('incoming.messages.invoice_load_failed'), { id: toastId });
     }
   };
 
   const handleOpenRemoteHtml = async (invoice: IncomingInvoiceResponse) => {
     setActiveMenu(null);
-    const toastId = toast.loading('HTML görünümü hazırlanıyor...');
+    const toastId = toast.loading(t('incoming.messages.html_preparing'));
     try {
       const { data: buf } = await fetchInvoiceDocument(invoice.invoiceId, 'html', 'remote');
       const blob = new Blob([buf], { type: 'text/html' });
       const url = URL.createObjectURL(blob);
       window.open(url, '_blank', 'noopener,noreferrer');
-      toast.success('HTML görünümü açıldı', { id: toastId });
+      toast.success(t('incoming.messages.html_opened'), { id: toastId });
     } catch {
-      toast.error('HTML görünümü açılamadı', { id: toastId });
+      toast.error(t('incoming.messages.html_failed'), { id: toastId });
     }
   };
 
   const handleDownloadPdf = async (invoice: IncomingInvoiceResponse) => {
     setActiveMenu(null);
-    const toastId = toast.loading('PDF indiriliyor...');
+    const toastId = toast.loading(t('incoming.messages.pdf_downloading'));
     try {
       const { data: buf, contentType } = await fetchInvoiceDocument(invoice.invoiceId, 'pdf');
       const isPdf = contentType.includes('application/pdf');
@@ -201,7 +203,7 @@ export function IncomingInvoicesPage() {
       a.download = `${invoice.invoiceNumber || invoice.invoiceId}${isPdf ? '.pdf' : '.html'}`;
       a.click();
       URL.revokeObjectURL(url);
-      toast.success('PDF indirildi', { id: toastId });
+      toast.success(t('incoming.messages.pdf_downloaded'), { id: toastId });
     } catch {
       // PDF not available from BirFatura, fall back to XML download
       try {
@@ -213,9 +215,9 @@ export function IncomingInvoicesPage() {
         a.download = `${invoice.invoiceNumber || invoice.invoiceId}.xml`;
         a.click();
         URL.revokeObjectURL(url);
-        toast.success('Fatura XML olarak indirildi (PDF mevcut değil)', { id: toastId });
+        toast.success(t('incoming.messages.xml_downloaded'), { id: toastId });
       } catch {
-        toast.error('Belge indirilemedi', { id: toastId });
+        toast.error(t('incoming.messages.document_download_failed'), { id: toastId });
       }
     }
   };
@@ -226,10 +228,10 @@ export function IncomingInvoicesPage() {
     try {
       await postInvoiceAction(invoice.invoiceId, 'accept');
       void markInvoiceRead(invoice.invoiceId).catch(() => undefined);
-      toast.success('Fatura kabul edildi');
+      toast.success(t('incoming.messages.accepted'));
       refetch();
     } catch {
-      toast.error('Kabul işlemi başarısız');
+      toast.error(t('incoming.messages.accept_failed'));
     } finally {
       setActionLoading(null);
     }
@@ -239,12 +241,12 @@ export function IncomingInvoicesPage() {
     setActiveMenu(null);
     setActionLoading(`reject-${invoice.invoiceId}`);
     try {
-      await postInvoiceAction(invoice.invoiceId, 'reject', { reason: 'Reddedildi' });
+      await postInvoiceAction(invoice.invoiceId, 'reject', { reason: t('incoming.status.rejected') });
       void markInvoiceRead(invoice.invoiceId).catch(() => undefined);
-      toast.success('Fatura reddedildi');
+      toast.success(t('incoming.messages.rejected'));
       refetch();
     } catch {
-      toast.error('Reddetme işlemi başarısız');
+      toast.error(t('incoming.messages.reject_failed'));
     } finally {
       setActionLoading(null);
     }
@@ -253,8 +255,8 @@ export function IncomingInvoicesPage() {
   const handleCopy = (invoice: IncomingInvoiceResponse) => {
     setActiveMenu(null);
     navigator.clipboard.writeText(invoice.invoiceNumber || String(invoice.invoiceId))
-      .then(() => toast.success('Fatura no kopyalandı'))
-      .catch(() => toast.error('Kopyalanamadı'));
+      .then(() => toast.success(t('incoming.messages.invoice_no_copied')))
+      .catch(() => toast.error(t('incoming.messages.copy_failed')));
   };
 
   const toggleSelect = (id: string) => {
@@ -266,36 +268,36 @@ export function IncomingInvoicesPage() {
   };
   const handleBulkAccept = async () => {
     const count = selectedIds.size;
-    const toastId = toast.loading(`${count} fatura kabul ediliyor...`);
+    const toastId = toast.loading(t('incoming.messages.bulk_accept_loading', { count }));
     try {
       await Promise.all(Array.from(selectedIds).map(id => postInvoiceAction(id, 'accept')));
-      toast.success(`${count} fatura kabul edildi`, { id: toastId });
+      toast.success(t('incoming.messages.bulk_accept_success', { count }), { id: toastId });
       setSelectedIds(new Set()); refetch();
-    } catch { toast.error('Toplu kabul işlemi başarısız', { id: toastId }); }
+    } catch { toast.error(t('incoming.messages.bulk_accept_failed'), { id: toastId }); }
   };
   const handleBulkReject = async () => {
     const count = selectedIds.size;
-    const toastId = toast.loading(`${count} fatura reddediliyor...`);
+    const toastId = toast.loading(t('incoming.messages.bulk_reject_loading', { count }));
     try {
-      await Promise.all(Array.from(selectedIds).map(id => postInvoiceAction(id, 'reject', { reason: 'Toplu reddetme' })));
-      toast.success(`${count} fatura reddedildi`, { id: toastId });
+      await Promise.all(Array.from(selectedIds).map(id => postInvoiceAction(id, 'reject', { reason: t('incoming.actions.bulk_reject') })));
+      toast.success(t('incoming.messages.bulk_reject_success', { count }), { id: toastId });
       setSelectedIds(new Set()); refetch();
-    } catch { toast.error('Toplu reddetme işlemi başarısız', { id: toastId }); }
+    } catch { toast.error(t('incoming.messages.bulk_reject_failed'), { id: toastId }); }
   };
   const handleSyncFromProvider = async () => {
     setSyncLoading(true);
-    const toastId = toast.loading('GİB\'den faturalar çekiliyor...');
+    const toastId = toast.loading(t('incoming.messages.sync_pulling'));
     try {
       await syncInvoicesFromProvider();
-      toast.success('Senkronizasyon başlatıldı. Faturalar birkaç dakika içinde görünecektir.', { id: toastId });
+      toast.success(t('incoming.messages.sync_started'), { id: toastId });
       setTimeout(() => refetch(), 5000);
     } catch {
-      toast.error('Fatura çekme işlemi başarısız', { id: toastId });
+      toast.error(t('incoming.messages.sync_failed'), { id: toastId });
     } finally {
       setSyncLoading(false);
     }
   };
-  const incomingExportHeaders = useMemo(() => ['Fatura No', 'Tedarikçi', 'VKN', 'Tutar', 'Tarih', 'Durum'], []);
+  const incomingExportHeaders = useMemo(() => [t('incoming.export_headers.invoice_no'), t('incoming.export_headers.supplier'), t('incoming.export_headers.vkn'), t('incoming.export_headers.amount'), t('incoming.export_headers.date'), t('incoming.export_headers.status')], [t]);
 
   const getIncomingExportRows = useCallback(() => {
     const selected = selectedIds.size > 0
@@ -311,7 +313,7 @@ export function IncomingInvoicesPage() {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-muted-foreground">Gelen faturalar yükleniyor...</span>
+        <span className="ml-3 text-muted-foreground">{t('incoming.loading')}</span>
       </div>
     );
   }
@@ -319,7 +321,7 @@ export function IncomingInvoicesPage() {
   const incomingInvoiceColumns: Column<IncomingInvoiceResponse>[] = [
     {
       key: 'invoiceNumber',
-      title: 'Fatura No',
+      title: t('incoming.columns.invoice_number'),
       sortable: true,
       render: (_, invoice) => (
         <span className="text-sm font-medium text-gray-900 dark:text-white">{invoice.invoiceNumber}</span>
@@ -327,7 +329,7 @@ export function IncomingInvoicesPage() {
     },
     {
       key: 'supplierName',
-      title: 'Tedarikçi',
+      title: t('incoming.columns.supplier'),
       sortable: true,
       render: (_, invoice) => (
         <div>
@@ -341,7 +343,7 @@ export function IncomingInvoicesPage() {
     },
     {
       key: 'totalAmount',
-      title: 'Tutar',
+      title: t('incoming.columns.amount'),
       sortable: true,
       render: (_, invoice) => (
         <span className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -351,7 +353,7 @@ export function IncomingInvoicesPage() {
     },
     {
       key: 'invoiceDate',
-      title: 'Tarih',
+      title: t('incoming.columns.date'),
       sortable: true,
       render: (_, invoice) => (
         <span className="text-sm text-muted-foreground">{formatDate(invoice.invoiceDate)}</span>
@@ -359,7 +361,7 @@ export function IncomingInvoicesPage() {
     },
     {
       key: 'status',
-      title: 'Durum',
+      title: t('incoming.columns.status'),
       sortable: true,
       render: (_, invoice) => (
         <div>
@@ -367,7 +369,7 @@ export function IncomingInvoicesPage() {
           {invoice.isConvertedToPurchase && (
             <div className="text-xs text-success mt-1 flex items-center gap-1">
               <ShoppingCart className="w-3 h-3" />
-              Alışa dönüştürüldü
+              {t('incoming.messages.converted_to_purchase')}
             </div>
           )}
         </div>
@@ -375,7 +377,7 @@ export function IncomingInvoicesPage() {
     },
     {
       key: '_actions',
-      title: 'İşlemler',
+      title: t('incoming.columns.actions'),
       render: (_, invoice) => (
         <div className="relative" ref={activeMenu === String(invoice.invoiceId) ? menuRef : null}>
           <Button
@@ -389,16 +391,16 @@ export function IncomingInvoicesPage() {
           {activeMenu === String(invoice.invoiceId) && (
             <div className="absolute right-0 z-50 mt-1 w-48 bg-white dark:bg-gray-800 border border-border rounded-2xl shadow-lg">
               <Button variant="ghost" fullWidth onClick={() => handleViewPdf(invoice)} className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 justify-start h-auto">
-                <Eye className="w-4 h-4" /> Fatura Görüntüle
+                <Eye className="w-4 h-4" /> {t('incoming.actions.view_invoice')}
               </Button>
               <Button variant="ghost" fullWidth onClick={() => handleDownloadPdf(invoice)} className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 justify-start h-auto">
-                <Download className="w-4 h-4" /> PDF İndir
+                <Download className="w-4 h-4" /> {t('incoming.actions.download_pdf')}
               </Button>
               <Button variant="ghost" fullWidth onClick={() => handleOpenRemoteHtml(invoice)} className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 justify-start h-auto">
-                <FileText className="w-4 h-4" /> HTML Aç
+                <FileText className="w-4 h-4" /> {t('incoming.actions.open_html')}
               </Button>
               <Button variant="ghost" fullWidth onClick={() => handleCopy(invoice)} className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 justify-start h-auto">
-                <Copy className="w-4 h-4" /> Kopyala
+                <Copy className="w-4 h-4" /> {t('incoming.actions.copy')}
               </Button>
               <div className="border-t border-border" />
               <Button
@@ -409,7 +411,7 @@ export function IncomingInvoicesPage() {
                 className="flex items-center gap-2 px-4 py-2 text-sm text-success hover:bg-success/10 dark:hover:bg-green-900/20 disabled:opacity-50 justify-start h-auto"
               >
                 <CheckCircle className="w-4 h-4" />
-                {actionLoading === `accept-${invoice.invoiceId}` ? 'İşleniyor...' : 'Kabul Et'}
+                {actionLoading === `accept-${invoice.invoiceId}` ? t('common.processing') : t('incoming.actions.accept')}
               </Button>
               <Button
                 variant="ghost"
@@ -419,7 +421,7 @@ export function IncomingInvoicesPage() {
                 className="flex items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 dark:hover:bg-red-900/20 disabled:opacity-50 justify-start h-auto"
               >
                 <XCircle className="w-4 h-4" />
-                {actionLoading === `reject-${invoice.invoiceId}` ? 'İşleniyor...' : 'Reddet'}
+                {actionLoading === `reject-${invoice.invoiceId}` ? t('common.processing') : t('incoming.actions.reject')}
               </Button>
             </div>
           )}
@@ -432,10 +434,10 @@ export function IncomingInvoicesPage() {
     <div className="p-6 space-y-6">
       {/* Header */}
       <DesktopPageHeader
-        title="Gelen Faturalar"
-        description="GİB'den gelen faturalar"
+        title={t('incoming.title')}
+        description={t('incoming.description')}
         icon={<ShoppingCart className="h-6 w-6" />}
-        eyebrow={{ tr: 'Gelen Kuyruğu', en: 'Incoming Queue' }}
+        eyebrow={{ tr: t('incoming.eyebrow'), en: 'Incoming Queue' }}
         actions={(
           <div className="flex items-center gap-2">
             <Button
@@ -445,11 +447,11 @@ export function IncomingInvoicesPage() {
               disabled={syncLoading}
             >
               <RefreshCw size={18} className={syncLoading ? 'animate-spin' : ''} />
-              {syncLoading ? 'Çekiliyor...' : 'Faturaları Çek'}
+              {syncLoading ? t('incoming.actions.fetching') : t('incoming.actions.fetch_invoices')}
             </Button>
             <Button variant="outline" className="flex items-center gap-2" onClick={() => refetch()}>
               <Download size={18} />
-              Yenile
+              {t('common.refresh')}
             </Button>
           </div>
         )}
@@ -460,7 +462,7 @@ export function IncomingInvoicesPage() {
         <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm text-muted-foreground">Toplam Fatura</p>
+              <p className="text-xs md:text-sm text-muted-foreground">{t('incoming.stats.total_invoices')}</p>
               <p className="text-lg md:text-2xl font-bold text-primary mt-1">{totalCount}</p>
             </div>
             <div className="p-2 md:p-3 bg-primary/10 rounded-2xl">
@@ -472,7 +474,7 @@ export function IncomingInvoicesPage() {
         <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm text-muted-foreground">Bekleyen</p>
+              <p className="text-xs md:text-sm text-muted-foreground">{t('incoming.stats.pending')}</p>
               <p className="text-lg md:text-2xl font-bold text-success mt-1">{pendingCount}</p>
             </div>
             <div className="p-2 md:p-3 bg-success/10 rounded-2xl">
@@ -484,7 +486,7 @@ export function IncomingInvoicesPage() {
         <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm text-muted-foreground">Alışa Dönüştürülen</p>
+              <p className="text-xs md:text-sm text-muted-foreground">{t('incoming.stats.converted_to_purchase')}</p>
               <p className="text-lg md:text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">{processedCount}</p>
             </div>
             <div className="p-2 md:p-3 bg-purple-100 dark:bg-purple-900/20 rounded-2xl">
@@ -499,7 +501,7 @@ export function IncomingInvoicesPage() {
         <div className="bg-success/10 border border-green-200 dark:border-green-800 rounded-2xl p-4 flex items-center gap-3">
           <ShoppingCart className="text-success flex-shrink-0" size={20} />
           <p className="text-sm text-success flex-1">
-            Gelen faturalar otomatik olarak alış kaydına dönüştürülmektedir. Manuel işlem gerekmez.
+            {t('incoming.auto_convert_banner')}
           </p>
           <Button
             variant="ghost"
@@ -522,7 +524,7 @@ export function IncomingInvoicesPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
               <Input
                 type="text"
-                placeholder="Tedarikçi adı veya fatura no ara..."
+                placeholder={t('incoming.search_placeholder')}
                 value={searchTerm}
                 onChange={(e) => { setSearchTerm(e.target.value); }}
                 className="w-full pl-10 pr-4"
@@ -531,23 +533,23 @@ export function IncomingInvoicesPage() {
             </div>
             <Button variant="outline" onClick={() => setShowMobileFilters((value) => !value)} className="shrink-0 flex items-center gap-2">
               <Filter size={18} />
-              Filtreler
+              {t('common.filters')}
             </Button>
             <Button variant="outline" onClick={() => setIsMobileSelectionMode((value) => !value)} className="shrink-0 flex items-center gap-2">
               <CheckSquare size={18} />
-              {isMobileSelectionMode ? 'Kapat' : 'Seç'}
+              {isMobileSelectionMode ? t('common.close') : t('common.select')}
             </Button>
           </div>
 
           {showMobileFilters && (
             <div className="grid grid-cols-1 gap-3">
               <DatePicker
-                placeholder="Başlangıç"
+                placeholder={t('outgoing.filters.start_date')}
                 value={dateFrom}
                 onChange={(date) => { setDateFrom(date); setCurrentPage(1); }}
               />
               <DatePicker
-                placeholder="Bitiş"
+                placeholder={t('outgoing.filters.end_date')}
                 value={dateTo}
                 onChange={(date) => { setDateTo(date); setCurrentPage(1); }}
               />
@@ -555,16 +557,16 @@ export function IncomingInvoicesPage() {
                 value={statusFilter}
                 onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
                 options={[
-                  { value: 'all', label: 'Tüm Durumlar' },
-                  { value: 'RECEIVED', label: 'İşlenen' },
-                  { value: 'rejected', label: 'Reddedilen' }
+                  { value: 'all', label: t('incoming.filters.all_statuses') },
+                  { value: 'RECEIVED', label: t('incoming.filters.processed') },
+                  { value: 'rejected', label: t('incoming.filters.rejected') }
                 ]}
               />
               <div className="flex gap-2 justify-end">
-                <Button variant="outline" onClick={() => { setDateFrom(null); setDateTo(null); setStatusFilter('all'); setSearchTerm(''); setCurrentPage(1); }}>Temizle</Button>
+                <Button variant="outline" onClick={() => { setDateFrom(null); setDateTo(null); setStatusFilter('all'); setSearchTerm(''); setCurrentPage(1); }}>{t('common.clear')}</Button>
                 <Button onClick={() => refetch()} className="flex items-center gap-2">
                   <RefreshCw size={18} />
-                  Ara
+                  {t('common.search')}
                 </Button>
               </div>
             </div>
@@ -579,7 +581,7 @@ export function IncomingInvoicesPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
             <Input
               type="text"
-              placeholder="Tedarikçi adı veya fatura no ara..."
+              placeholder={t('incoming.search_placeholder')}
               value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); }}
               className="w-full pl-10 pr-4"
@@ -588,13 +590,13 @@ export function IncomingInvoicesPage() {
           </div>
           <div className="flex gap-2 items-end">
             <DatePicker
-              placeholder="Başlangıç"
+              placeholder={t('outgoing.filters.start_date')}
               value={dateFrom}
               onChange={(date) => { setDateFrom(date); setCurrentPage(1); }}
               className="w-[140px]"
             />
             <DatePicker
-              placeholder="Bitiş"
+              placeholder={t('outgoing.filters.end_date')}
               value={dateTo}
               onChange={(date) => { setDateTo(date); setCurrentPage(1); }}
               className="w-[140px]"
@@ -621,10 +623,10 @@ export function IncomingInvoicesPage() {
       {isMobileSelectionMode && (
         <div className="md:hidden flex items-center justify-between mt-4">
           <Button variant="ghost" size="sm" onClick={() => setIsMobileSelectionMode(false)} className="text-muted-foreground">
-            <X className="w-4 h-4 mr-1" /> Kapat
+            <X className="w-4 h-4 mr-1" /> {t('common.close')}
           </Button>
           <Button variant="ghost" size="sm" onClick={toggleSelectAll} className="text-primary font-medium">
-            {selectedIds.size === filteredInvoices.length && filteredInvoices.length > 0 ? 'Hiçbiri' : 'Tümünü Seç'}
+            {selectedIds.size === filteredInvoices.length && filteredInvoices.length > 0 ? t('common.select_none') : t('common.select_all')}
           </Button>
         </div>
       )}
@@ -634,7 +636,7 @@ export function IncomingInvoicesPage() {
         {filteredInvoices.length === 0 ? (
           <div className="text-center py-12">
             <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Gelen fatura bulunamadı</h3>
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">{t('incoming.not_found')}</h3>
           </div>
         ) : filteredInvoices.map((invoice: IncomingInvoiceResponse) => (
           <IncomingInvoiceMobileCard
@@ -684,8 +686,8 @@ export function IncomingInvoicesPage() {
           <div className="rounded-2xl border border-border bg-white/95 shadow-2xl backdrop-blur dark:bg-gray-800/95">
             <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border md:hidden">
               <div>
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">{selectedIds.size} fatura seçildi</p>
-                <p className="text-xs text-muted-foreground">Toplu işlem seçerek devam edebilirsin</p>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">{t('common.n_invoices_selected', { count: selectedIds.size })}</p>
+                <p className="text-xs text-muted-foreground">{t('common.bulk_action_hint')}</p>
               </div>
               <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="h-9 rounded-xl px-3 text-muted-foreground hover:bg-muted dark:hover:bg-gray-700">
                 <X className="w-4 h-4" />
@@ -694,10 +696,10 @@ export function IncomingInvoicesPage() {
 
             <div className="grid grid-cols-2 gap-2 p-3 md:hidden">
               <Button variant="ghost" onClick={handleBulkAccept} className="flex items-center justify-center gap-2 rounded-xl bg-success/10 px-3 py-3 text-sm font-semibold text-success hover:bg-success/10 dark:hover:bg-green-900/30 h-auto">
-                <CheckCircle className="w-4 h-4" /> Kabul Et
+                <CheckCircle className="w-4 h-4" /> {t('incoming.actions.accept')}
               </Button>
               <Button variant="ghost" onClick={handleBulkReject} className="flex items-center justify-center gap-2 rounded-xl bg-destructive/10 px-3 py-3 text-sm font-semibold text-destructive hover:bg-destructive/10 dark:hover:bg-red-900/30 h-auto">
-                <XCircle className="w-4 h-4" /> Reddet
+                <XCircle className="w-4 h-4" /> {t('incoming.actions.reject')}
               </Button>
               <PermissionGate permission="invoices.documents.download.view">
                 <ExportDropdown
@@ -705,7 +707,7 @@ export function IncomingInvoicesPage() {
                   getRows={getIncomingExportRows}
                   filename="gelen_faturalar"
                   variant="ghost"
-                  label="Dışa Aktar"
+                  label={t('outgoing.actions.export')}
                   compact
                   className="flex items-center justify-center gap-2 rounded-xl bg-primary/10 px-3 py-3 text-sm font-semibold text-primary hover:bg-primary/10 dark:hover:bg-blue-900/30 h-auto"
                 />
@@ -716,13 +718,13 @@ export function IncomingInvoicesPage() {
             </div>
 
             <div className="hidden md:flex items-center gap-4 px-6 py-3 whitespace-nowrap">
-              <span className="text-sm font-medium text-foreground">{selectedIds.size} fatura seçildi</span>
+              <span className="text-sm font-medium text-foreground">{t('common.n_invoices_selected', { count: selectedIds.size })}</span>
               <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
               <Button variant="ghost" onClick={handleBulkAccept} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-success hover:bg-success/10 dark:hover:bg-green-900/20 rounded-2xl transition-colors h-auto">
-                <CheckCircle className="w-4 h-4" /> Toplu Kabul
+                <CheckCircle className="w-4 h-4" /> {t('incoming.actions.bulk_accept')}
               </Button>
               <Button variant="ghost" onClick={handleBulkReject} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/10 dark:hover:bg-red-900/20 rounded-2xl transition-colors h-auto">
-                <XCircle className="w-4 h-4" /> Toplu Reddet
+                <XCircle className="w-4 h-4" /> {t('incoming.actions.bulk_reject')}
               </Button>
               <PermissionGate permission="invoices.documents.download.view">
                 <ExportDropdown
@@ -730,7 +732,7 @@ export function IncomingInvoicesPage() {
                   getRows={getIncomingExportRows}
                   filename="gelen_faturalar"
                   variant="ghost"
-                  label="Dışa Aktar"
+                  label={t('outgoing.actions.export')}
                   compact
                   iconClassName="text-primary"
                   className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/10 dark:hover:bg-blue-900/20 rounded-2xl transition-colors h-auto"
@@ -738,7 +740,7 @@ export function IncomingInvoicesPage() {
               </PermissionGate>
               <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
               <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted dark:hover:bg-gray-700 rounded-2xl transition-colors h-auto">
-                <X className="w-4 h-4" /> Seçimi Kaldır
+                <X className="w-4 h-4" /> {t('common.remove_selection')}
               </Button>
             </div>
           </div>
@@ -775,7 +777,7 @@ export function IncomingInvoicesPage() {
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white premium-gradient tactile-press rounded-xl"
                 >
                   <Download size={15} />
-                  İndir
+                  {t('common.download')}
                 </a>
                 <Button
                   variant="ghost"
@@ -790,7 +792,7 @@ export function IncomingInvoicesPage() {
               <iframe
                 src={pdfModal.blobUrl}
                 className="w-full h-full border-0"
-                title="Fatura PDF"
+                title={t('common.invoice_pdf_title')}
               />
             </div>
           </div>
@@ -815,6 +817,7 @@ interface IncomingInvoiceMobileCardProps {
 }
 
 function IncomingInvoiceMobileCard({ invoice, onView, onAccept, onReject, onDownload, getStatusBadge, actionLoading, isSelectionMode, isSelected, onToggleSelect }: IncomingInvoiceMobileCardProps) {
+  const { t } = useTranslation('invoices');
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -868,10 +871,10 @@ function IncomingInvoiceMobileCard({ invoice, onView, onAccept, onReject, onDown
               {menuOpen && (
                 <div className="absolute right-0 top-8 z-50 w-48 bg-white dark:bg-gray-800 border border-border rounded-2xl shadow-xl">
                   <Button variant="ghost" fullWidth onClick={() => { setMenuOpen(false); onView(); }} className="flex items-center gap-2 px-4 py-3 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 justify-start h-auto">
-                    <Eye className="w-4 h-4" /> Görüntüle
+                    <Eye className="w-4 h-4" /> {t('outgoing.actions.view')}
                   </Button>
                   <Button variant="ghost" fullWidth onClick={() => { setMenuOpen(false); onDownload(); }} className="flex items-center gap-2 px-4 py-3 text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 justify-start h-auto">
-                    <Download className="w-4 h-4" /> PDF İndir
+                    <Download className="w-4 h-4" /> {t('outgoing.actions.download_pdf')}
                   </Button>
                   <div className="border-t border-border" />
                   <Button
@@ -881,7 +884,7 @@ function IncomingInvoiceMobileCard({ invoice, onView, onAccept, onReject, onDown
                     disabled={actionLoading === `accept-${invoice.invoiceId}`}
                     className="flex items-center gap-2 px-4 py-3 text-sm text-success hover:bg-success/10 dark:hover:bg-green-900/20 disabled:opacity-50 justify-start h-auto"
                   >
-                    <CheckCircle className="w-4 h-4" /> Kabul Et
+                    <CheckCircle className="w-4 h-4" /> {t('incoming.actions.accept')}
                   </Button>
                   <Button
                     variant="ghost"
@@ -890,7 +893,7 @@ function IncomingInvoiceMobileCard({ invoice, onView, onAccept, onReject, onDown
                     disabled={actionLoading === `reject-${invoice.invoiceId}`}
                     className="flex items-center gap-2 px-4 py-3 text-sm text-destructive hover:bg-destructive/10 dark:hover:bg-red-900/20 disabled:opacity-50 justify-start h-auto"
                   >
-                    <XCircle className="w-4 h-4" /> Reddet
+                    <XCircle className="w-4 h-4" /> {t('incoming.actions.reject')}
                   </Button>
                 </div>
               )}
@@ -907,7 +910,7 @@ function IncomingInvoiceMobileCard({ invoice, onView, onAccept, onReject, onDown
         </div>
         {invoice.isConvertedToPurchase && (
           <div className="mt-2 text-xs text-success flex items-center gap-1">
-            <ShoppingCart className="w-3 h-3" /> Alışa dönüştürüldü
+            <ShoppingCart className="w-3 h-3" /> {t('incoming.messages.converted_to_purchase')}
           </div>
         )}
       </div>

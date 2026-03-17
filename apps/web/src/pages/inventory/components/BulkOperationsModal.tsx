@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState } from 'react';
 import { Modal, Button, Input, Alert } from '@x-ear/ui-web';
 import { Box, Folder, DollarSign, Tag, Truck, Star } from 'lucide-react';
@@ -52,6 +53,7 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
   onBulkOperation,
   isLoading = false
 }) => {
+  const { t } = useTranslation('inventory');
   const [operationType, setOperationType] = useState<string>('');
   const [formData, setFormData] = useState({
     stock: '',
@@ -130,16 +132,16 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Toplu İşlemler"
+      title={t('bulk_operations.title')}
       size="md"
     >
       <div className="space-y-6">
         <Alert variant="info" className="dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-100">
-          {selectedItems.length} ürün seçildi. Bu işlem geri alınamaz.
+          {t('bulk_operations.selected_count', { count: selectedItems.length })}
         </Alert>
 
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">İşlem Türü</label>
+          <label className="block text-sm font-medium text-foreground mb-2">{t('bulk_operations.title')}</label>
           <div className="grid grid-cols-3 gap-2">
             {OPERATION_TYPES.map(op => (
               <button
@@ -163,7 +165,7 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
         {operationType === 'update_stock' && (
           <div>
             <Input
-              label="Yeni Stok Miktarı"
+              label={t('stock.current_stock')}
               type="number"
               value={formData.stock}
               onChange={(e) => setFormData(prev => ({ ...prev, stock: e.target.value }))}
@@ -188,7 +190,7 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
         {operationType === 'update_price' && (
           <div>
             <Input
-              label="Yeni Fiyat (₺)"
+              label={t('pricing.sale_price')}
               type="number"
               step="0.01"
               value={formData.price}
@@ -197,7 +199,7 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
               className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
             <div className="mt-3">
-              <label className="block text-sm font-medium text-foreground mb-1">KDV Oranı (%)</label>
+              <label className="block text-sm font-medium text-foreground mb-1">{t('form.vat_rate')}</label>
               <select
                 data-allow-raw="true"
                 value={formData.kdv}
@@ -246,7 +248,7 @@ export const BulkOperationsModal: React.FC<BulkOperationsModalProps> = ({
           <div className="space-y-3">
             <div className="flex space-x-2">
               <Input
-                label="Yeni Özellik"
+                label={t('form.description')}
                 value={formData.newFeature}
                 onChange={(e) => setFormData(prev => ({ ...prev, newFeature: e.target.value }))}
                 placeholder="Özellik adını girin..."

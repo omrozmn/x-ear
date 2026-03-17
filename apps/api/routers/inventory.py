@@ -495,47 +495,100 @@ async def bulk_upload_inventory(
                         if k in row and row[k]: return row[k]
                     return None
                 
-                name = get_val(['name', 'itemName', 'product_name'])
-                barcode = get_val(['barcode', 'sku'])
-                
-                if not name:
-                    errors.append({'row': row_num, 'error': 'Missing name'})
+                name = get_val(['name', 'itemName', 'product_name', 'Ürün Adı', 'urun_adi'])
+                barcode = get_val(['barcode', 'sku', 'Barkod', 'barkod'])
+                stock_code = get_val(['stockCode', 'stock_code', 'stok_kodu', 'Stok Kodu'])
+                brand = get_val(['brand', 'manufacturer', 'Marka', 'marka'])
+
+                if not (name or barcode or stock_code):
+                    errors.append({'row': row_num, 'error': 'En az bir tanımlayıcı gerekli (ürün adı, barkod veya stok kodu)'})
                     continue
-                
-                # Check existing
+
+                # Check existing — cascading match (barcode > stock_code > name+brand)
                 existing = None
+
+                # Priority 1: Barcode (strongest identifier)
                 if barcode:
                     existing = db.query(InventoryItem).filter(
                         InventoryItem.barcode == barcode,
                         InventoryItem.tenant_id == effective_tenant
                     ).first()
-                
+
+                # Priority 2: Stock code
+                if not existing and stock_code:
+                    existing = db.query(InventoryItem).filter(
+                        InventoryItem.stock_code == stock_code,
+                        InventoryItem.tenant_id == effective_tenant
+                    ).first()
+
+                # Priority 3: Name + Brand (tenant-scoped)
+                if not existing and name and brand:
+                    existing = db.query(InventoryItem).filter(
+                        InventoryItem.name == name,
+                        InventoryItem.brand == brand,
+                        InventoryItem.tenant_id == effective_tenant
+                    ).first()
+
+                # Priority 4: Name only (weakest)
+                if not existing and name:
+                    existing = db.query(InventoryItem).filter(
+                        InventoryItem.name == name,
+                        InventoryItem.tenant_id == effective_tenant
+                    ).first()
+
+                # Prepare payload — all InventoryItem model fields
                 payload = {
                     'name': name,
                     'barcode': barcode,
-                    'category': get_val(['category', 'type']),
-                    'brand': get_val(['brand', 'manufacturer']),
-                    'model': get_val(['model']),
-                    'price': get_val(['price', 'unitPrice']),
-                    'available_inventory': get_val(['stock', 'quantity', 'available_inventory']),
-                    'reorder_level': get_val(['reorderLevel', 'reorder_level', 'minStock']),
+                    'stock_code': stock_code,
+                    'category': get_val(['category', 'type', 'Kategori', 'kategori']),
+                    'brand': brand,
+                    'model': get_val(['model', 'Model']),
+                    'supplier': get_val(['supplier', 'Tedarikçi', 'tedarikci']),
+                    'unit': get_val(['unit', 'birim', 'Birim']),
+                    'description': get_val(['description', 'aciklama', 'Açıklama']),
+                    'price': get_val(['price', 'unitPrice', 'fiyat', 'Satış Fiyatı', 'satis_fiyati']),
+                    'cost': get_val(['cost', 'alis_fiyati', 'Alış Fiyatı', 'maliyet']),
+                    'kdv_rate': get_val(['kdvRate', 'kdv_rate', 'KDV Oranı', 'kdv']),
+                    'available_inventory': get_val(['stock', 'quantity', 'available_inventory', 'availableInventory', 'Stok Miktarı', 'stok']),
+                    'reorder_level': get_val(['reorderLevel', 'reorder_level', 'minStock', 'Minimum Stok', 'min_stok']),
+                    'warranty': get_val(['warranty', 'garanti', 'Garanti (Ay)']),
+                    'direction': get_val(['direction', 'yon', 'Yön (Sol/Sağ)', 'ear']),
+                    'max_gain': get_val(['maxGain', 'max_gain', 'Max Kazanç (dB)']),
+                    'fitting_range_min': get_val(['fittingRangeMin', 'fitting_range_min', 'Fitting Min (dB)']),
+                    'fitting_range_max': get_val(['fittingRangeMax', 'fitting_range_max', 'Fitting Max (dB)']),
                 }
-                
+
                 # Clean None values
                 payload = {k: v for k, v in payload.items() if v is not None}
-                
+
                 # Convert numeric fields
-                for field in ['price', 'available_inventory', 'reorder_level']:
+                numeric_fields = ['price', 'cost', 'kdv_rate', 'available_inventory', 'reorder_level',
+                                  'warranty', 'max_gain', 'fitting_range_min', 'fitting_range_max']
+                for field in numeric_fields:
                     if field in payload and payload[field]:
                         try: payload[field] = float(payload[field])
                         except: pass
-                
+
+                # Normalize direction
+                if payload.get('direction'):
+                    d = str(payload['direction']).lower().strip()
+                    if d in ['sol', 'left', 'l']: payload['direction'] = 'left'
+                    elif d in ['sağ', 'sag', 'right', 'r']: payload['direction'] = 'right'
+                    elif d in ['her iki', 'both', 'bilateral']: payload['direction'] = 'both'
+
                 if existing:
+                    # Additive update — only fill empty fields, don't overwrite
                     for k, v in payload.items():
                         if hasattr(existing, k) and v is not None:
-                            setattr(existing, k, v)
+                            current_val = getattr(existing, k, None)
+                            if current_val is None or current_val == '' or current_val == 0:
+                                setattr(existing, k, v)
                     updated += 1
                 else:
+                    if not name:
+                        errors.append({'row': row_num, 'error': 'Yeni ürün için ürün adı gerekli'})
+                        continue
                     from uuid import uuid4
                     from datetime import datetime, timezone
                     payload['id'] = f"item_{datetime.now(timezone.utc).strftime('%d%m%Y%H%M%S')}_{uuid4().hex[:6]}"

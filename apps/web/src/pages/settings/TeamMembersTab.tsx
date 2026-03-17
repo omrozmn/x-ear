@@ -22,6 +22,7 @@ import { useAuthStore } from '../../stores/authStore';
 import toast from 'react-hot-toast';
 import { generateUsername } from '../../utils/stringUtils';
 import { SettingsSectionHeader } from '../../components/layout/SettingsSectionHeader';
+import { useTranslation } from 'react-i18next';
 
 interface ConfirmationModal {
     isOpen: boolean;
@@ -32,6 +33,7 @@ interface ConfirmationModal {
 }
 
 export function TeamMembersTab() {
+  const { t } = useTranslation('settings_extra');
     const queryClient = useQueryClient();
     const { user: currentUser } = useAuthStore();
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -139,8 +141,8 @@ export function TeamMembersTab() {
     const handleDelete = (userId: string) => {
         setConfirmationModal({
             isOpen: true,
-            title: 'Kullaniciyi Sil',
-            message: 'Bu kullaniciyi silmek istediginize emin misiniz? Bu islem geri alinamaz.',
+            title: t('deleteUser', 'Kullaniciyi Sil'),
+            message: t('deleteUserConfirm', 'Bu kullaniciyi silmek istediginize emin misiniz? Bu islem geri alinamaz.'),
             type: 'danger',
             onConfirm: () => {
                 deleteMutation.mutate({ userId });
@@ -259,7 +261,7 @@ export function TeamMembersTab() {
     const teamMemberColumns: Column<UserRead>[] = [
         {
             key: 'name',
-            title: 'Kullanıcı',
+            title: t('user', 'Kullanıcı'),
             render: (_, user) => (
                 <div className="flex items-center">
                     <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold mr-3">
@@ -274,7 +276,7 @@ export function TeamMembersTab() {
         },
         {
             key: 'role',
-            title: 'Rol',
+            title: t('role', 'Rol'),
             render: (_, user) => (
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleStyle(user.role || '')}`}>
                     {getRoleLabel(user.role || '')}
@@ -283,7 +285,7 @@ export function TeamMembersTab() {
         },
         {
             key: 'isActive',
-            title: 'Durum',
+            title: t('status', 'Durum'),
             render: (_, user) => (
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isActive ? 'bg-success/10 text-success' : 'bg-destructive/10 text-red-800 dark:text-red-300'}`}>
                     {user.isActive ? 'Aktif' : 'Pasif'}
@@ -292,14 +294,14 @@ export function TeamMembersTab() {
         },
         {
             key: 'createdAt',
-            title: 'Katılma Tarihi',
+            title: t('joinDate', 'Katılma Tarihi'),
             render: (_, user) => (
                 <span className="text-sm text-muted-foreground">{user.createdAt ? new Date(user.createdAt).toLocaleDateString('tr-TR') : '-'}</span>
             ),
         },
         {
             key: '_actions',
-            title: 'İşlemler',
+            title: t('actions', 'İşlemler'),
             align: 'right',
             render: (_, user) => (
                 <div className="flex justify-end items-center space-x-2">
@@ -359,7 +361,7 @@ export function TeamMembersTab() {
                 columns={teamMemberColumns}
                 loading={loading}
                 rowKey="id"
-                emptyText="Henuz ekip uyesi eklenmemis."
+                emptyText=t('noTeamMembers', 'Henuz ekip uyesi eklenmemis.')
             />
 
             {/* Invite Modal */}

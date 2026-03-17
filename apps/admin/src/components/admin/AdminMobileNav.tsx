@@ -4,7 +4,7 @@ import {
   Home, Building2, Users, User, Calendar, Box, Truck, Megaphone,
   Package, ShoppingBag, Bell, Key, Shield, CreditCard, PlusCircle,
   MessageSquare, Bot, BarChart3, Activity, FileText, Settings, X, Globe2,
-  ChevronDown, ChevronRight
+  ChevronDown, ChevronRight, ScanLine, Tag
 } from 'lucide-react';
 import { useAdminResponsive } from '../../hooks/useAdminResponsive';
 
@@ -45,6 +45,8 @@ const navigationGroups: NavGroup[] = [
       { name: 'Kampanyalar', href: '/campaigns', icon: Megaphone },
       { name: 'Üretim Takibi', href: '/production', icon: Package },
       { name: 'Pazaryerleri', href: '/marketplaces', icon: ShoppingBag },
+      { name: 'Barkod Servisi', href: '/barcodes', icon: ScanLine },
+      { name: 'Etiket Sablonlari', href: '/label-templates', icon: Tag },
     ],
   },
   {

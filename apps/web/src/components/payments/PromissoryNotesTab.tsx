@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -62,6 +63,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
   promissoryNotes,
   isLoading
 }) => {
+  const { t } = useTranslation('payments');
   const queryClient = useQueryClient();
 
   // Fetch party data to get full details
@@ -252,32 +254,32 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
   const handleCreateNotes = async () => {
     // Validation
     if (noteCount <= 0 || noteCount > 24) {
-      toast.error('Senet sayısı 1-24 arasında olmalıdır');
+      toast.error(t('promissory.noteCountError', 'Senet sayısı 1-24 arasında olmalıdır'));
       return;
     }
 
     if (totalAmount <= 0) {
-      toast.error('Toplam tutar 0\'dan büyük olmalıdır');
+      toast.error(t('promissory.totalAmountError', 'Toplam tutar 0\'dan büyük olmalıdır'));
       return;
     }
 
     if (!firstDueDate) {
-      toast.error('İlk vade tarihi seçilmelidir');
+      toast.error(t('promissory.dueDateRequired', 'İlk vade tarihi seçilmelidir'));
       return;
     }
 
     if (!debtorName) {
-      toast.error('Borçlu adı girilmelidir');
+      toast.error(t('promissory.debtorNameRequired', 'Borçlu adı girilmelidir'));
       return;
     }
 
     if (!debtorTc || debtorTc.length !== 11) {
-      toast.error('Geçerli bir TC kimlik numarası girilmelidir');
+      toast.error(t('promissory.invalidTcNumber', 'Geçerli bir TC kimlik numarası girilmelidir'));
       return;
     }
 
     if (hasGuarantor && (!guarantorName || !guarantorTc)) {
-      toast.error('Kefil bilgileri eksik');
+      toast.error(t('promissory.guarantorInfoMissing', 'Kefil bilgileri eksik'));
       return;
     }
 
@@ -315,8 +317,8 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
       // Log to timeline
       await logToTimeline(
         'promissory_note_created',
-        'Senet Oluşturuldu',
-        `${noteCount} adet senet oluşturuldu. Toplam tutar: ${formatCurrency(totalAmount)}`,
+        t('promissory.created', 'Senet Oluşturuldu'),
+        `${noteCount} ${t('promissory.notesCreatedDesc', 'adet senet oluşturuldu. Toplam tutar')}: ${formatCurrency(totalAmount)}`,
         {
           noteCount,
           totalAmount,
@@ -326,7 +328,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
         }
       );
 
-      toast.success(`${noteCount} adet senet başarıyla oluşturuldu`);
+      toast.success(t('promissory.createdSuccess', '{{count}} adet senet başarıyla oluşturuldu', { count: noteCount }));
 
       // Reset form
       setNoteCount(1);
@@ -339,7 +341,7 @@ export const PromissoryNotesTab: React.FC<PromissoryNotesTabProps> = ({
       const errorMessage = err?.response?.data?.error?.message ||
         err?.response?.data?.message ||
         err?.message ||
-        'Senet oluşturulurken hata oluştu';
+        t('promissory.createError', 'Senet oluşturulurken hata oluştu');
       toast.error(errorMessage);
     }
   };

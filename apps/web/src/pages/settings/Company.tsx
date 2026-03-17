@@ -17,6 +17,7 @@ import toast from 'react-hot-toast';
 import { companyService, CompanyInfo } from '../../services/company.service';
 import { useAuthStore } from '../../stores/authStore';
 import { LanguageSwitcher } from '../../components/common/LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 type CityData = {
   name: string;
   districts: string[];
@@ -89,11 +90,11 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
 
   const handleFileSelect = async (file: File) => {
     if (!file.type.startsWith('image/')) {
-      toast.error('Sadece resim dosyaları yükleyebilirsiniz');
+      toast.error(t('onlyImages', 'Sadece resim dosyaları yükleyebilirsiniz'));
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Dosya boyutu 5MB\'dan küçük olmalıdır');
+      toast.error(t('fileSizeLimit', 'Dosya boyutu 5MB\'dan küçük olmalıdır'));
       return;
     }
 
@@ -227,7 +228,7 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
             </div>
           )}
           <p className={`${compact ? 'text-xs' : 'text-sm'} font-semibold text-foreground`}>
-            {isDragging ? 'Hemen Bırakın' : 'Görsel Seçin veya Sürükleyin'}
+            {isDragging ? t('dropHere', 'Hemen Bırakın') : t('selectOrDragImage', 'Görsel Seçin veya Sürükleyin')}
           </p>
           <p className={`${compact ? 'text-[10px]' : 'text-xs'} text-muted-foreground mt-2`}>Maximum 5MB • PNG, JPG, WEBP</p>
         </div>
@@ -237,6 +238,7 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
 };
 
 export default function CompanySettings() {
+  const { t } = useTranslation('settings_extra');
   const { user } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -285,7 +287,7 @@ export default function CompanySettings() {
       setFormData(data.companyInfo || {});
     } catch (error) {
       console.error('Failed to load company info:', error);
-      toast.error('Firma bilgileri yüklenemedi');
+      toast.error(t('companyInfoLoadFailed', 'Firma bilgileri yüklenemedi'));
     } finally {
       setLoading(false);
     }
@@ -298,7 +300,7 @@ export default function CompanySettings() {
 
   const handleSave = async () => {
     if (!isTenantAdmin) {
-      toast.error('Sadece Tenant Admin firma bilgilerini güncelleyebilir');
+      toast.error(t('onlyTenantAdminCanUpdate', 'Sadece Tenant Admin firma bilgilerini güncelleyebilir'));
       return;
     }
 
@@ -310,10 +312,10 @@ export default function CompanySettings() {
       // setCompanyData(updated);
       setFormData(updated.companyInfo || {});
       setHasChanges(false);
-      toast.success('Firma bilgileri kaydedildi');
+      toast.success(t('companyInfoSaved', 'Firma bilgileri kaydedildi'));
     } catch (error: unknown) {
       console.error('❌ Failed to save company info:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Firma bilgileri kaydedilemedi';
+      const errorMessage = error instanceof Error ? error.message : t('companyInfoSaveFailed', 'Firma bilgileri kaydedilemedi');
       toast.error(errorMessage);
     } finally {
       setSaving(false);
@@ -322,7 +324,7 @@ export default function CompanySettings() {
 
   const handleAssetUpload = async (type: 'logo' | 'stamp' | 'signature', file: File) => {
     if (!isTenantAdmin) {
-      toast.error('Sadece Tenant Admin dosya yükleyebilir');
+      toast.error(t('onlyTenantAdminCanUpload', 'Sadece Tenant Admin dosya yükleyebilir'));
       return;
     }
 
@@ -334,7 +336,7 @@ export default function CompanySettings() {
       toast.success(`${type === 'logo' ? 'Logo' : type === 'stamp' ? 'Kaşe' : 'İmza'} yüklendi`);
     } catch (error: unknown) {
       console.error(`Failed to upload ${type}:`, error);
-      const errorMessage = error instanceof Error ? error.message : 'Dosya yüklenemedi';
+      const errorMessage = error instanceof Error ? error.message : t('fileUploadFailed', 'Dosya yüklenemedi');
       toast.error(errorMessage);
     } finally {
       setUploadingAsset(null);
@@ -343,7 +345,7 @@ export default function CompanySettings() {
 
   const handleAssetDelete = async (type: 'logo' | 'stamp' | 'signature') => {
     if (!isTenantAdmin) {
-      toast.error('Sadece Tenant Admin dosya silebilir');
+      toast.error(t('onlyTenantAdminCanDelete', 'Sadece Tenant Admin dosya silebilir'));
       return;
     }
 
@@ -358,7 +360,7 @@ export default function CompanySettings() {
       toast.success(`${type === 'logo' ? 'Logo' : type === 'stamp' ? 'Kaşe' : 'İmza'} silindi`);
     } catch (error: unknown) {
       console.error(`Failed to delete ${type}:`, error);
-      const errorMessage = error instanceof Error ? error.message : 'Dosya silinemedi';
+      const errorMessage = error instanceof Error ? error.message : t('fileDeleteFailed', 'Dosya silinemedi');
       toast.error(errorMessage);
     } finally {
       setUploadingAsset(null);
@@ -400,7 +402,7 @@ export default function CompanySettings() {
               variant="primary"
               className="flex items-center premium-gradient hover:scale-[1.02] active:scale-[0.98] transition-all px-8 py-2.5 rounded-xl font-bold shadow-lg shadow-indigo-500/30 border-none"
             >
-              {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+              {saving ? t('saving', 'Kaydediliyor...') : t('saveChanges', 'Değişiklikleri Kaydet')}
             </Button>
           </div>
 
@@ -419,7 +421,7 @@ export default function CompanySettings() {
                   variant="primary"
                   className="flex-shrink-0 !w-auto h-12 px-6 rounded-2xl premium-gradient border-none font-bold text-sm shadow-xl"
                 >
-                  {saving ? '...' : 'Kaydet'}
+                  {saving ? '...' : t('save', 'Kaydet')}
                 </Button>
               </div>
             </div>
@@ -433,7 +435,7 @@ export default function CompanySettings() {
             <AlertCircle className="w-6 h-6 text-amber-600 dark:text-amber-400" />
           </div>
           <div>
-            <p className="font-bold text-amber-900 dark:text-amber-100 text-base">Görüntüleme Modu</p>
+            <p className="font-bold text-amber-900 dark:text-amber-100 text-base">{t('viewMode', 'Görüntüleme Modu')}</p>
             <p className="text-sm text-amber-700/80 dark:text-amber-300/80 mt-1">
               Bu sayfadaki bilgileri düzenleme yetkiniz bulunmamaktadır.
             </p>
@@ -445,7 +447,7 @@ export default function CompanySettings() {
       <section className="space-y-6">
         <div className="flex items-end justify-between px-2">
           <div>
-            <h2 className="text-2xl font-black text-indigo-900 dark:text-indigo-100 tracking-tight">Fatura Görselleri</h2>
+            <h2 className="text-2xl font-black text-indigo-900 dark:text-indigo-100 tracking-tight">{t('invoiceImages', 'Fatura Görselleri')}</h2>
             <p className="text-indigo-700/70 dark:text-indigo-300/70 font-medium">Logonuz, imzanız ve kaşeniz fatura tasarımında yer alır.</p>
           </div>
         </div>
@@ -771,7 +773,7 @@ export default function CompanySettings() {
       {/* Language / Region Setting */}
       <footer className="mt-12 bg-gray-900 dark:bg-gray-950 rounded-[2.5rem] p-10 flex flex-col sm:flex-row items-center justify-between gap-8 text-white shadow-2xl">
         <div className="text-center sm:text-left">
-          <h2 className="text-2xl font-black mb-2">Bölgesel Ayarlar</h2>
+          <h2 className="text-2xl font-black mb-2">{t('regionalSettings', 'Bölgesel Ayarlar')}</h2>
           <p className="text-muted-foreground font-medium font-medium">Uygulama dilini buradan güncelleyebilirsiniz.</p>
         </div>
         <div className="bg-card/10 backdrop-blur-md p-2 rounded-[2rem] w-full sm:w-auto">

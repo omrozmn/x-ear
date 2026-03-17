@@ -32,11 +32,12 @@ import { partyApiService } from '../services/party/party-api.service';
 import { HeaderBackButton } from '../components/layout/HeaderBackButton';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 // import type { Party } from '../types/party'; // Type inferred from useParty hook
+import { useTranslation } from 'react-i18next';
 
 
 
 export const DesktopPartyDetailsPage: React.FC = () => {
-
+  const { t } = useTranslation(['parties_extra', 'patients', 'common']);
 
   const { partyId } = useParams({ strict: false }) as { partyId?: string };
   const navigate = useNavigate();
@@ -89,7 +90,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
 
   // Utility functions
   const formatDate = (dateString?: string) => {
-    if (!dateString) return 'Belirtilmemiş';
+    if (!dateString) return t('details.not_specified');
     return new Date(dateString).toLocaleDateString('tr-TR', {
       year: 'numeric',
       month: 'long',
@@ -105,13 +106,13 @@ export const DesktopPartyDetailsPage: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     const statusMap: Record<string, { label: string; className: string }> = {
-      ACTIVE: { label: 'Aktif', className: 'bg-success/10 text-success' },
-      active: { label: 'Aktif', className: 'bg-success/10 text-success' },
-      INACTIVE: { label: 'Pasif', className: 'bg-warning/10 text-yellow-800' },
-      inactive: { label: 'Pasif', className: 'bg-warning/10 text-yellow-800' },
-      TRIAL: { label: 'Deneme', className: 'bg-primary/10 text-blue-800' },
-      trial: { label: 'Deneme', className: 'bg-primary/10 text-blue-800' },
-      archived: { label: 'Arşiv', className: 'bg-muted text-foreground' },
+      ACTIVE: { label: t('status.active'), className: 'bg-success/10 text-success' },
+      active: { label: t('status.active'), className: 'bg-success/10 text-success' },
+      INACTIVE: { label: t('status.inactive'), className: 'bg-warning/10 text-yellow-800' },
+      inactive: { label: t('status.inactive'), className: 'bg-warning/10 text-yellow-800' },
+      TRIAL: { label: t('status.trial'), className: 'bg-primary/10 text-blue-800' },
+      trial: { label: t('status.trial'), className: 'bg-primary/10 text-blue-800' },
+      archived: { label: t('status.archived'), className: 'bg-muted text-foreground' },
     };
     const statusInfo = statusMap[status] || { label: status, className: 'bg-muted text-foreground' };
     return (
@@ -123,34 +124,34 @@ export const DesktopPartyDetailsPage: React.FC = () => {
 
   const getSegmentText = (segment?: string) => {
     const segmentMap: Record<string, string> = {
-      lead: 'Potansiyel Müşteri',
-      trial: 'Deneme Aşamasında',
-      control: 'Kontrol Hastası',
-      existing: 'Mevcut Hasta',
-      new: 'Yeni',
-      purchased: 'Satın Almış',
-      renewal: 'Yenileme',
-      vip: 'VIP',
+      lead: t('segment.lead'),
+      trial: t('segment.trial'),
+      control: t('segment.control'),
+      existing: t('segment.existing'),
+      new: t('segment.new'),
+      purchased: t('segment.purchased'),
+      renewal: t('segment.renewal'),
+      vip: t('segment.vip'),
     };
     const key = (segment || '').toLowerCase();
-    return segmentMap[key] || segment || 'Belirtilmemiş';
+    return segmentMap[key] || segment || t('segment.not_specified');
   };
 
   const getAcquisitionTypeText = (type?: string) => {
     const typeMap: Record<string, string> = {
-      referral: 'Referans',
-      online: 'Online',
-      'walk-in': 'Ziyaret',
-      'social-media': 'Sosyal Medya',
-      advertisement: 'Reklam',
-      tabela: 'Tabela'
+      referral: t('acquisition.referral'),
+      online: t('acquisition.online'),
+      'walk-in': t('acquisition.walk_in'),
+      'social-media': t('acquisition.social_media'),
+      advertisement: t('acquisition.advertisement'),
+      tabela: t('acquisition.tabela')
     };
-    return typeMap[type || ''] || type || 'Belirtilmemiş';
+    return typeMap[type || ''] || type || t('acquisition.not_specified');
   };
 
   useEffect(() => {
     if (error) {
-      const errorMessage = typeof error === 'string' ? error : error?.message || 'Hasta bilgileri yüklenirken bir hata oluştu';
+      const errorMessage = typeof error === 'string' ? error : error?.message || t('details.load_error');
       showError(errorMessage);
     }
   }, [error, showError]);
@@ -184,7 +185,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
       // Navigation handled by onSuccess callback
     } catch (err) {
       console.error('[DELETE] Error during deletion:', err);
-      showError('Hasta silinirken bir hata oluştu');
+      showError(t('details.delete_error'));
     }
   }, [partyId, deletePartyMutation, showError]);
 
@@ -194,11 +195,11 @@ export const DesktopPartyDetailsPage: React.FC = () => {
     }
 
     if (isLoading) {
-      return <LoadingSpinner size="lg" text="Hasta bilgileri yükleniyor..." fullScreen />;
+      return <LoadingSpinner size="lg" text={t('details.loading')} fullScreen />;
     }
 
     if (error) {
-      const errorMessage = typeof error === 'string' ? error : error.message || 'Hasta bilgileri yüklenirken bir hata oluştu';
+      const errorMessage = typeof error === 'string' ? error : error.message || t('details.load_error');
       const isNetworkError = errorMessage.includes('network') || errorMessage.includes('fetch');
 
       if (isNetworkError) {
@@ -208,11 +209,11 @@ export const DesktopPartyDetailsPage: React.FC = () => {
       return (
         <ErrorMessage
           type="error"
-          title="Hasta Bulunamadı"
-          message="Hasta bilgileri yüklenirken bir hata oluştu veya hasta bulunamadı."
+          title={t('details.not_found_title')}
+          message={t('details.not_found_message')}
           onRetry={() => window.location.reload()}
           onDismiss={handleGoBack}
-          retryText="Tekrar Dene"
+          retryText={t('details.retry')}
         />
       );
     }
@@ -221,8 +222,8 @@ export const DesktopPartyDetailsPage: React.FC = () => {
       return (
         <ErrorMessage
           type="error"
-          title="Hasta Bulunamadı"
-          message="Belirtilen hasta bulunamadı."
+          title={t('details.not_found_title')}
+          message={t('details.not_found_specific')}
           onDismiss={handleGoBack}
         />
       );
@@ -247,7 +248,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
             <div className="flex items-center space-x-2">
               <Calendar className="h-5 w-5 text-primary" />
               <div>
-                <p className="text-sm text-muted-foreground">Kayıt Tarihi</p>
+                <p className="text-sm text-muted-foreground">{t('details.registration_date')}</p>
                 <p className="font-medium text-gray-900 dark:text-white">{formatDate(party.createdAt || undefined)}</p>
               </div>
             </div>
@@ -257,7 +258,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
             <div className="flex items-center space-x-2">
               <Activity className="h-5 w-5 text-success" />
               <div>
-                <p className="text-sm text-muted-foreground">Cihaz Sayısı</p>
+                <p className="text-sm text-muted-foreground">{t('details.device_count')}</p>
                 <p className="font-medium text-gray-900 dark:text-white">{tabCounts.devices}</p>
               </div>
             </div>
@@ -267,7 +268,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
             <div className="flex items-center space-x-2">
               <CreditCard className="h-5 w-5 text-destructive" />
               <div>
-                <p className="text-sm text-muted-foreground">Durum</p>
+                <p className="text-sm text-muted-foreground">{t('details.status_label')}</p>
                 <div className="mt-1">{getStatusBadge(party.status ?? 'active')}</div>
               </div>
             </div>
@@ -277,7 +278,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
             <div className="flex items-center space-x-2">
               <Tag className="h-5 w-5 text-purple-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Segment</p>
+                <p className="text-sm text-muted-foreground">{t('details.segment_label')}</p>
                 <p className="font-medium text-gray-900 dark:text-white">{getSegmentText(party.segment || undefined)}</p>
               </div>
             </div>
@@ -287,7 +288,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
             <div className="flex items-center space-x-2">
               <Users className="h-5 w-5 text-orange-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Kazanım Türü</p>
+                <p className="text-sm text-muted-foreground">{t('details.acquisition_type_label')}</p>
                 <p className="font-medium text-gray-900 dark:text-white">{getAcquisitionTypeText(party.acquisitionType || undefined)}</p>
               </div>
             </div>
@@ -323,7 +324,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="px-6 pt-5">
-        <HeaderBackButton label="Hasta Listesine Dön" onClick={handleGoBack} />
+        <HeaderBackButton label={t('details.back_to_list')} onClick={handleGoBack} />
       </div>
       {renderContent()}
 
@@ -334,7 +335,7 @@ export const DesktopPartyDetailsPage: React.FC = () => {
           onClose={editModal.closeModal}
           onSubmit={editModal.handleSubmit}
           initialData={party}
-          title="Hasta Düzenle"
+          title={t('details.edit_title')}
           isLoading={editModal.isLoading}
         />
       )}
@@ -364,12 +365,12 @@ export const DesktopPartyDetailsPage: React.FC = () => {
       {/* Delete Confirm Dialog */}
       <ConfirmDialog
         isOpen={confirmDelete.open}
-        title="Hasta Silme Onayı"
-        description={party ? `${party.firstName} ${party.lastName} isimli hastayı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.` : 'Bu kaydı silmek istediğinizden emin misiniz?'}
+        title={t('delete_modal.confirm_title')}
+        description={party ? t('delete_modal.confirm_message', { name: `${party.firstName} ${party.lastName}` }) : t('delete_modal.confirm_message_generic')}
         onClose={() => setConfirmDelete({open: false})}
         onConfirm={async () => { await executeDelete(); setConfirmDelete({open: false}); }}
-        confirmLabel="Sil"
-        cancelLabel="İptal"
+        confirmLabel={t('delete_modal.confirm')}
+        cancelLabel={t('delete_modal.cancel')}
         variant="danger"
       />
 

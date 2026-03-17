@@ -18,6 +18,7 @@ import {
   useGenerateEnrollmentToken,
 } from '../../api/noah-import';
 import type { AgentDevice } from '../../api/noah-import/types';
+import { useTranslation } from 'react-i18next';
 
 // ── Sync Mode Types ──────────────────────────────────────
 type SyncMode = 'auto' | 'scheduled' | 'manual';
@@ -67,6 +68,7 @@ function AgentStatusBadge({ status, lastSeenAt }: { status: string; lastSeenAt?:
 
 // ── Main Component ───────────────────────────────────────
 export default function NoahConnectorSettings() {
+  const { t } = useTranslation('settings_extra');
   const { success: showSuccess, error: showError } = useToastHelpers();
   const { data: agents, isLoading: agentsLoading } = useAgentDevices();
   const generateToken = useGenerateEnrollmentToken();
@@ -84,16 +86,16 @@ export default function NoahConnectorSettings() {
       const result = await generateToken.mutateAsync({ branchId: '' });
       setEnrollmentToken(result?.token || 'TOKEN_GENERATED');
       setShowToken(true);
-      showSuccess('Kayıt tokeni oluşturuldu');
+      showSuccess(t('enrollmentTokenCreated', 'Kayıt tokeni oluşturuldu'));
     } catch (err: unknown) {
-      showError(err instanceof Error ? err.message : 'Token oluşturulamadı');
+      showError(err instanceof Error ? err.message : t('tokenCreateFailed', 'Token oluşturulamadı'));
     }
   };
 
   const handleCopyToken = () => {
     if (enrollmentToken) {
       navigator.clipboard.writeText(enrollmentToken);
-      showSuccess('Token kopyalandı');
+      showSuccess(t('tokenCopied', 'Token kopyalandı'));
     }
   };
 
@@ -357,7 +359,7 @@ export default function NoahConnectorSettings() {
           {/* Save Button */}
           <div className="flex justify-end pt-2">
             <Button
-              onClick={() => showSuccess('Senkronizasyon ayarları kaydedildi')}
+              onClick={() => showSuccess(t('syncSettingsSaved', 'Senkronizasyon ayarları kaydedildi'))}
             >
               <CheckCircle className="w-4 h-4 mr-2" />
               Ayarları Kaydet

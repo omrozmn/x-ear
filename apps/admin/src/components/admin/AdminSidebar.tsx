@@ -29,6 +29,8 @@ import {
     Globe2,
     ToggleRight,
     Flag,
+    ScanLine,
+    Tag,
 } from 'lucide-react'
 import { useAdminResponsive } from '../../hooks/useAdminResponsive'
 
@@ -64,6 +66,8 @@ const navigation = [
     { name: 'Destek', href: '/support', icon: LifeBuoy },
     { name: 'Feature Flags', href: '/features', icon: ToggleRight },
     { name: 'Countries', href: '/countries', icon: Flag },
+    { name: 'Barkod Servisi', href: '/barcodes', icon: ScanLine },
+    { name: 'Etiket Sablonlari', href: '/label-templates', icon: Tag },
     { name: 'Entegrasyonlar', href: '/integrations', icon: Zap },
     { name: 'Ayarlar', href: '/settings', icon: Settings },
 ]

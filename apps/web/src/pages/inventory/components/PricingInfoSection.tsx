@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
 import { Input, Select, Card, Checkbox } from '@x-ear/ui-web';
 import { InventoryItem } from '../../../types/inventory';
@@ -29,6 +30,7 @@ export const PricingInfoSection: React.FC<PricingInfoSectionProps> = ({
   onCostKdvIncludedChange,
 }) => {
   const { hasPermission } = usePermissions();
+  const { t } = useTranslation('inventory');
   const canViewCost = hasPermission('sensitive.inventory.overview.cost.view');
   const currentPrice = isEditMode && editedItem.price !== undefined ? editedItem.price : (item?.price || 0);
   const currentStock = isEditMode && editedItem.availableInventory !== undefined ? editedItem.availableInventory : (item?.availableInventory || 0);
@@ -63,7 +65,7 @@ export const PricingInfoSection: React.FC<PricingInfoSectionProps> = ({
                   className="mr-2"
                   disabled={!isEditMode}
                 />
-                <span className="text-sm text-muted-foreground">KDV Dahil</span>
+                <span className="text-sm text-muted-foreground">{t('pricing.tax_included')}</span>
               </label>
             </div>
             {isEditMode ? (
@@ -79,13 +81,13 @@ export const PricingInfoSection: React.FC<PricingInfoSectionProps> = ({
                 {isPriceKdvIncluded ? (
                   editedItem.price && editedItem.price > 0 && (
                     <p className="mt-1 text-xs text-muted-foreground">
-                      KDV Hariç: ₺{(editedItem.price / (1 + kdvRate / 100)).toFixed(2)}
+                      {t('pricing.tax_excluded')}: ₺{(editedItem.price / (1 + kdvRate / 100)).toFixed(2)}
                     </p>
                   )
                 ) : (
                   editedItem.price && editedItem.price > 0 && (
                     <p className="mt-1 text-xs text-primary font-medium">
-                      KDV Dahil Toplam: ₺{(editedItem.price * (1 + kdvRate / 100)).toFixed(2)}
+                      {t('pricing.tax_included')}: ₺{(editedItem.price * (1 + kdvRate / 100)).toFixed(2)}
                     </p>
                   )
                 )}
@@ -96,13 +98,13 @@ export const PricingInfoSection: React.FC<PricingInfoSectionProps> = ({
                 {isPriceKdvIncluded ? (
                   item.price > 0 && (
                     <p className="mt-1 text-xs text-muted-foreground">
-                      KDV Hariç: ₺{(item.price / (1 + kdvRate / 100)).toFixed(2)}
+                      {t('pricing.tax_excluded')}: ₺{(item.price / (1 + kdvRate / 100)).toFixed(2)}
                     </p>
                   )
                 ) : (
                   item.price > 0 && (
                     <p className="mt-1 text-xs text-primary font-medium">
-                      KDV Dahil Toplam: ₺{(item.price * (1 + kdvRate / 100)).toFixed(2)}
+                      {t('pricing.tax_included')}: ₺{(item.price * (1 + kdvRate / 100)).toFixed(2)}
                     </p>
                   )
                 )}
@@ -123,7 +125,7 @@ export const PricingInfoSection: React.FC<PricingInfoSectionProps> = ({
                   className="mr-2"
                   disabled={!isEditMode}
                 />
-                <span className="text-sm text-muted-foreground">KDV Dahil</span>
+                <span className="text-sm text-muted-foreground">{t('pricing.tax_included')}</span>
               </label>
             </div>
             {isEditMode ? (
@@ -139,13 +141,13 @@ export const PricingInfoSection: React.FC<PricingInfoSectionProps> = ({
                 {isCostKdvIncluded ? (
                   editedItem.cost && editedItem.cost > 0 && (
                     <p className="mt-1 text-xs text-muted-foreground">
-                      KDV Hariç: ₺{(editedItem.cost / (1 + kdvRate / 100)).toFixed(2)}
+                      {t('pricing.tax_excluded')}: ₺{(editedItem.cost / (1 + kdvRate / 100)).toFixed(2)}
                     </p>
                   )
                 ) : (
                   editedItem.cost && editedItem.cost > 0 && (
                     <p className="mt-1 text-xs text-primary font-medium">
-                      KDV Dahil Toplam: ₺{(editedItem.cost * (1 + kdvRate / 100)).toFixed(2)}
+                      {t('pricing.tax_included')}: ₺{(editedItem.cost * (1 + kdvRate / 100)).toFixed(2)}
                     </p>
                   )
                 )}
@@ -156,13 +158,13 @@ export const PricingInfoSection: React.FC<PricingInfoSectionProps> = ({
                 {isCostKdvIncluded ? (
                   item.cost && item.cost > 0 && (
                     <p className="mt-1 text-xs text-muted-foreground">
-                      KDV Hariç: ₺{(item.cost / (1 + kdvRate / 100)).toFixed(2)}
+                      {t('pricing.tax_excluded')}: ₺{(item.cost / (1 + kdvRate / 100)).toFixed(2)}
                     </p>
                   )
                 ) : (
                   item.cost && item.cost > 0 && (
                     <p className="mt-1 text-xs text-primary font-medium">
-                      KDV Dahil Toplam: ₺{(item.cost * (1 + kdvRate / 100)).toFixed(2)}
+                      {t('pricing.tax_included')}: ₺{(item.cost * (1 + kdvRate / 100)).toFixed(2)}
                     </p>
                   )
                 )}
@@ -170,7 +172,7 @@ export const PricingInfoSection: React.FC<PricingInfoSectionProps> = ({
             )}
             {item.cost && item.cost > 0 && (
               <p className="text-sm text-success mt-1">
-                Kar Marjı: %{profitMargin.toFixed(1)}
+                {t('pricing.profit_margin')}: %{profitMargin.toFixed(1)}
               </p>
             )}
           </div>

@@ -15,6 +15,7 @@ import { unwrapArray } from '@/utils/response-unwrap';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { cn } from '@/lib/utils';
 import { partyApiService } from '@/services/party/party-api.service';
+import { useTranslation } from 'react-i18next';
 
 interface PartySummary {
   id: string;
@@ -40,7 +41,7 @@ interface ProformaDocumentRow {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
 
-const getPartyName = (party: PartySummary) => party.name?.trim() || 'Bilinmeyen Hasta';
+const getPartyName = (party: PartySummary, fallback = 'Bilinmeyen Hasta') => party.name?.trim() || fallback;
 
 const getDocuments = (response: unknown): Array<Record<string, unknown>> => {
   if (!isRecord(response)) return [];
@@ -52,6 +53,7 @@ const getDocuments = (response: unknown): Array<Record<string, unknown>> => {
 };
 
 export function ProformasPage() {
+  const { t } = useTranslation('invoices');
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [searchTerm, setSearchTerm] = useState('');
@@ -103,7 +105,7 @@ export function ProformasPage() {
       setRows(loadedRows);
     } catch (loadError) {
       console.error('Failed to load proformas:', loadError);
-      toast.error('Proformalar yüklenemedi');
+      toast.error(t('proformas.load_failed'));
       setRows([]);
     } finally {
       setIsLoading(false);
@@ -147,7 +149,7 @@ export function ProformasPage() {
   const handleConvertToSale = async (row: ProformaDocumentRow) => {
     const items = Array.isArray(row.metadata.items) ? row.metadata.items : [];
     if (items.length === 0) {
-      toast.error('Proforma kalemi bulunamadı');
+      toast.error(t('proformas.messages.item_not_found'));
       return;
     }
 
@@ -158,11 +160,11 @@ export function ProformasPage() {
         partyId: row.partyId,
         items: items as Array<Record<string, unknown>>,
         inventory: inventoryItems,
-        notes: `Proforma dönüşümü: ${row.proformaNumber}`,
+        notes: `Proforma: ${row.proformaNumber}`,
       });
 
       if (payloads.length === 0) {
-        toast.error(`Ürün eşleşmedi: ${missingItems.join(', ')}`);
+        toast.error(t('proformas.messages.product_not_matched', { items: missingItems.join(', ') }));
         return;
       }
 
@@ -173,12 +175,12 @@ export function ProformasPage() {
       window.dispatchEvent(new CustomEvent('xEar:dataChanged'));
       toast.success(
         missingItems.length > 0
-          ? `${payloads.length} kalem satışa dönüştürüldü. Eşleşmeyenler: ${missingItems.join(', ')}`
-          : `${payloads.length} kalem satışa dönüştürüldü.`,
+          ? t('proformas.messages.items_converted_with_missing', { count: payloads.length, items: missingItems.join(', ') })
+          : t('proformas.messages.items_converted', { count: payloads.length }),
       );
     } catch (conversionError) {
       console.error('Failed to convert proforma to sale:', conversionError);
-      toast.error('Satışa dönüştürme başarısız');
+      toast.error(t('proformas.messages.conversion_failed'));
     }
   };
 
@@ -189,7 +191,7 @@ export function ProformasPage() {
   const columns: Column<ProformaDocumentRow>[] = [
     {
       key: 'partyName',
-      title: 'Hasta',
+      title: t('proformas.columns.patient'),
       render: (_, row) => (
         <div>
           <div className="font-medium text-gray-900 dark:text-white">{row.partyName}</div>
@@ -199,7 +201,7 @@ export function ProformasPage() {
     },
     {
       key: 'proformaNumber',
-      title: 'Proforma',
+      title: t('proformas.columns.proforma'),
       render: (_, row) => (
         <div>
           <div className="font-medium text-gray-900 dark:text-white">{row.proformaNumber || '-'}</div>
@@ -209,14 +211,14 @@ export function ProformasPage() {
     },
     {
       key: 'uploadDate',
-      title: 'Tarih',
+      title: t('proformas.columns.date'),
       render: (_, row) => (
         <div className="text-sm text-foreground">{formatDate(row.uploadDate)}</div>
       ),
     },
     {
       key: 'grandTotal',
-      title: 'Tutar',
+      title: t('proformas.columns.amount'),
       align: 'right',
       render: (_, row) => (
         <span className="font-semibold text-gray-900 dark:text-white">{formatCurrency(row.grandTotal, 'TRY')}</span>
@@ -224,23 +226,23 @@ export function ProformasPage() {
     },
     {
       key: 'itemCount',
-      title: 'Kalem',
+      title: t('proformas.columns.items'),
       align: 'center',
       render: (_, row) => <span>{row.itemCount}</span>,
     },
     {
       key: 'actions',
-      title: 'İşlemler',
+      title: t('proformas.columns.actions'),
       align: 'right',
       render: (_, row) => (
         <div className="flex items-center justify-end gap-2">
-          <Button variant="ghost" size="sm" onClick={() => handleOpenParty(row)} title="Hastaya Git">
+          <Button variant="ghost" size="sm" onClick={() => handleOpenParty(row)} title={t('proformas.actions.go_to_patient')}>
             <UserRound className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => void handleConvertToSale(row)} title="Satışa Dönüştür">
+          <Button variant="ghost" size="sm" onClick={() => void handleConvertToSale(row)} title={t('proformas.actions.convert_to_sale')}>
             <ShoppingCart className="h-4 w-4 text-emerald-600" />
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => handleCreateInvoice(row)} title="Fatura Kes">
+          <Button variant="ghost" size="sm" onClick={() => handleCreateInvoice(row)} title={t('proformas.actions.create_invoice')}>
             <Receipt className="h-4 w-4 text-primary" />
           </Button>
         </div>
@@ -258,31 +260,31 @@ export function ProformasPage() {
               <div className="mt-1 text-xs text-muted-foreground">{row.proformaNumber || row.fileName}</div>
             </div>
             <span className="rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
-              {row.itemCount} kalem
+              {t('proformas.n_items', { count: row.itemCount })}
             </span>
           </div>
           <div className="mt-4 flex items-end justify-between gap-3 border-t border-border pt-3">
             <div>
-              <div className="text-xs text-muted-foreground">Tarih</div>
+              <div className="text-xs text-muted-foreground">{t('proformas.columns.date')}</div>
               <div className="text-sm font-medium text-foreground">{formatDate(row.uploadDate)}</div>
             </div>
             <div className="text-right">
-              <div className="text-xs text-muted-foreground">Tutar</div>
+              <div className="text-xs text-muted-foreground">{t('proformas.columns.amount')}</div>
               <div className="text-lg font-bold text-gray-900 dark:text-white">{formatCurrency(row.grandTotal, 'TRY')}</div>
             </div>
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
             <Button variant="outline" size="sm" onClick={() => handleOpenParty(row)}>
               <Eye className="mr-1 h-4 w-4" />
-              Hastaya Git
+              {t('proformas.actions.go_to_patient')}
             </Button>
             <Button variant="outline" size="sm" onClick={() => void handleConvertToSale(row)}>
               <ShoppingCart className="mr-1 h-4 w-4" />
-              Satışa Dönüştür
+              {t('proformas.actions.convert_to_sale')}
             </Button>
             <Button size="sm" onClick={() => handleCreateInvoice(row)} className="premium-gradient tactile-press text-white">
               <Receipt className="mr-1 h-4 w-4" />
-              Fatura Kes
+              {t('proformas.actions.create_invoice')}
             </Button>
           </div>
         </div>
@@ -294,26 +296,26 @@ export function ProformasPage() {
     <div className="space-y-6 p-4 md:p-6">
       {isMobile ? (
         <div className="flex items-center justify-between">
-          <h1 className="text-lg font-bold text-gray-900 dark:text-white">Proformalar</h1>
+          <h1 className="text-lg font-bold text-gray-900 dark:text-white">{t('proformas.title')}</h1>
           <Button variant="outline" size="sm" onClick={() => void loadProformas()}>
             <RefreshCw className="h-4 w-4" />
           </Button>
         </div>
       ) : (
         <DesktopPageHeader
-          title="Proformalar"
-          description="Tüm hastalardaki proforma belgeleri"
+          title={t('proformas.title')}
+          description={t('proformas.description')}
           icon={<FileText className="h-6 w-6" />}
-          eyebrow={{ tr: 'Fatura Yönetimi', en: 'Invoice Management' }}
+          eyebrow={{ tr: t('proformas.eyebrow'), en: 'Invoice Management' }}
           actions={(
             <>
               <Button variant="outline" className="flex items-center gap-2" onClick={() => void loadProformas()}>
                 <RefreshCw className="h-4 w-4" />
-                Yenile
+                {t('proformas.actions.refresh')}
               </Button>
               <Button variant="outline" className="flex items-center gap-2" onClick={() => navigate({ to: '/invoices' })}>
                 <Download className="h-4 w-4" />
-                Giden Faturalar
+                {t('proformas.actions.outgoing_invoices')}
               </Button>
             </>
           )}
@@ -322,17 +324,17 @@ export function ProformasPage() {
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <Card className="p-3 md:p-4">
-          <div className="text-sm text-muted-foreground">Toplam Proforma</div>
+          <div className="text-sm text-muted-foreground">{t('proformas.stats.total_proformas')}</div>
           <div className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">{rows.length}</div>
         </Card>
         <Card className="p-4">
-          <div className="text-sm text-muted-foreground">Toplam Tutar</div>
+          <div className="text-sm text-muted-foreground">{t('proformas.stats.total_amount')}</div>
           <div className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
             {formatCurrency(rows.reduce((sum, row) => sum + row.grandTotal, 0), 'TRY')}
           </div>
         </Card>
         <Card className="p-4">
-          <div className="text-sm text-muted-foreground">Ortalama Kalem</div>
+          <div className="text-sm text-muted-foreground">{t('proformas.stats.avg_items')}</div>
           <div className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
             {rows.length > 0 ? (rows.reduce((sum, row) => sum + row.itemCount, 0) / rows.length).toFixed(1) : '0'}
           </div>
@@ -346,7 +348,7 @@ export function ProformasPage() {
             <Input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Hasta, proforma no veya dosya adına göre ara..."
+              placeholder={t('proformas.search_placeholder')}
               className="pl-10"
             />
           </div>
@@ -355,10 +357,10 @@ export function ProformasPage() {
             onChange={(event) => setStatusFilter(event.target.value)}
             className="w-full md:w-56"
             options={[
-              { value: 'all', label: 'Tüm Durumlar' },
-              { value: 'completed', label: 'Tamamlandı' },
-              { value: 'processing', label: 'İşleniyor' },
-              { value: 'error', label: 'Hatalı' },
+              { value: 'all', label: t('proformas.filters.all_statuses') },
+              { value: 'completed', label: t('proformas.filters.completed') },
+              { value: 'processing', label: t('proformas.filters.processing') },
+              { value: 'error', label: t('proformas.filters.error') },
             ]}
           />
         </div>
@@ -371,8 +373,8 @@ export function ProformasPage() {
       ) : filteredRows.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-white py-16 text-center dark:bg-gray-900">
           <FileText className="mb-4 h-10 w-10 text-gray-300" />
-          <div className="text-lg font-medium text-gray-900 dark:text-white">Proforma bulunamadı</div>
-          <div className="mt-1 text-sm text-muted-foreground">Aktif API’de global proforma endpoint’i olmadığı için belge metadata’sından liste oluşturuluyor.</div>
+          <div className="text-lg font-medium text-gray-900 dark:text-white">{t(‘proformas.not_found’)}</div>
+          <div className="mt-1 text-sm text-muted-foreground">{t(‘proformas.not_found_description’)}</div>
         </div>
       ) : (
         <>
@@ -407,7 +409,7 @@ export function ProformasPage() {
                 onClick={() => setCurrentPage((prev) => prev + 1)}
                 disabled={currentPage * pageSize >= filteredRows.length}
               >
-                Daha Fazla
+                {t('proformas.actions.load_more')}
               </Button>
             </div>
           )}

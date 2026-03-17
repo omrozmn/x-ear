@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from 'react';
 import { Button, Input, Select, Textarea, Checkbox, Radio } from '@x-ear/ui-web';
 import { useNavigate } from '@tanstack/react-router';
@@ -17,7 +18,7 @@ interface ProductFormProps {
 }
 
 const CATEGORIES: { value: InventoryCategory; label: string; icon: string }[] = [
-  { value: 'hearing_aid', label: 'İşitme Cihazı', icon: '🦻' },
+  { value: 'hearing_aid', label: t('categories.title'), icon: '🦻' },
   { value: 'battery', label: 'Pil', icon: '🔋' },
   { value: 'accessory', label: 'Aksesuar', icon: '🔌' },
   { value: 'ear_mold', label: 'Kulak Kalıbı', icon: '👂' },
@@ -47,6 +48,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   mode
 }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation('inventory');
+  const { t } = useTranslation('inventory');
   const [formData, setFormData] = useState<InventoryFormData>({
     name: '',
     brand: '',
@@ -189,11 +192,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
   const validateForm = (): boolean => {
     if (!formData.name.trim()) {
-      toast('Ürün adı gereklidir');
+      toast(t('validation.name_required'));
       return false;
     }
     if (!formData.brand.trim()) {
-      toast('Marka gereklidir');
+      toast(t('validation.name_required'));
       return false;
     }
     return true;
@@ -211,7 +214,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       onClose();
     } catch (error) {
       console.error('Form submission error:', error);
-      toast.error('Kayıt sırasında hata oluştu');
+      toast.error(t('messages.save_failed'));
     }
   };
 
@@ -223,7 +226,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-            {mode === 'create' ? 'Yeni Ürün Ekle' : 'Ürün Düzenle'}
+            {mode === 'create' ? t('form.add_product') : t('form.edit_product')}
           </h2>
           <Button
             onClick={onClose}
@@ -258,7 +261,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  Ürün Adı *
+                  {t('form.product_name')} *
                 </label>
                 <Input
                   key="product-name"
@@ -483,7 +486,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
               <div>
                 <Select
-                  label="KDV Oranı"
+                  label={t('form.vat_rate')}
                   value={extendedData.vatRate}
                   onChange={(e) => handleExtendedChange('vatRate', e.target.value)}
                   options={VAT_RATES.map(rate => ({ value: rate.value, label: rate.label }))}
@@ -581,7 +584,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               type="submit"
               className="premium-gradient tactile-press text-white"
             >
-              {mode === 'create' ? 'Kaydet' : 'Güncelle'}
+              {mode === 'create' ? t('form.save') : t('form.save')}
             </Button>
           </div>
         </form>

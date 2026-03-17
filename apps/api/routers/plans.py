@@ -2,8 +2,8 @@
 FastAPI Plans Router - Migrated from Flask routes/plans.py
 Handles subscription plans management
 """
-from fastapi import APIRouter, Depends, HTTPException
-from typing import List
+from fastapi import APIRouter, Depends, HTTPException, Query
+from typing import List, Optional
 import logging
 
 from sqlalchemy.orm import Session
@@ -21,12 +21,21 @@ router = APIRouter(prefix="/plans", tags=["Plans"])
 # --- Routes ---
 
 @router.get("", operation_id="listPlans", response_model=ResponseEnvelope[List[DetailedPlanRead]])
-def get_plans(db: Session = Depends(get_db)):
+def get_plans(
+    sector: Optional[str] = Query(None, description="Filter by sector code"),
+    country_code: Optional[str] = Query(None, alias="countryCode", description="Filter by country code"),
+    db: Session = Depends(get_db)
+):
     """Get all active plans (Public)"""
     try:
         from models.plan import Plan
-        
-        plans = db.query(Plan).filter_by(is_active=True, is_public=True).all()
+
+        query = db.query(Plan).filter_by(is_active=True, is_public=True)
+        if sector:
+            query = query.filter_by(sector=sector.lower())
+        if country_code:
+            query = query.filter_by(country_code=country_code.upper())
+        plans = query.all()
         
         results = []
         for plan in plans:

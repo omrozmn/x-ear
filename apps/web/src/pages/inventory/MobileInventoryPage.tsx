@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Package, Search, Filter, ScanLine, Tag, CheckSquare, Square, X, Trash2, Edit } from 'lucide-react';
 import { MobileLayout } from '@/components/mobile/MobileLayout';
 import { MobileHeader } from '@/components/mobile/MobileHeader';
@@ -29,6 +30,7 @@ interface InventoryItem {
 }
 
 export const MobileInventoryPage: React.FC = () => {
+    const { t } = useTranslation('inventory');
     const [items, setItems] = useState<InventoryItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchValue, setSearchValue] = useState('');
@@ -134,14 +136,14 @@ export const MobileInventoryPage: React.FC = () => {
     return (
         <MobileLayout>
             <MobileHeader
-                title={isSelectionMode ? `${selectedIds.size} Seçilen` : "Envanter"}
+                title={isSelectionMode ? t('bulk_operations.selected_count', { count: selectedIds.size }) : t('products.title')}
                 showBack={false}
                 actions={
                     <div className="flex items-center gap-1">
                         {isSelectionMode ? (
                             <>
                                 <Button variant="ghost" size="sm" onClick={toggleSelectAll} className="px-2 py-1 h-auto text-sm text-primary font-medium">
-                                    {selectedIds.size === items.length && items.length > 0 ? 'Hiçbiri' : 'Tümünü Seç'}
+                                    {selectedIds.size === items.length && items.length > 0 ? t('bulk_operations.deselect_all') : t('bulk_operations.select_all')}
                                 </Button>
                                 <Button variant="ghost" size="sm" onClick={handleCancelSelection} className="p-2 text-muted-foreground">
                                     <X className="h-5 w-5" />
@@ -150,7 +152,7 @@ export const MobileInventoryPage: React.FC = () => {
                         ) : (
                             <>
                                 <Button variant="ghost" size="sm" onClick={() => { setIsSelectionMode(true); triggerSelection(); }} className="px-2 py-1 h-auto text-sm text-primary font-medium">
-                                    Seç
+                                    {t('bulk_operations.select_all')}
                                 </Button>
                                 <Button variant="ghost" size="sm" className="p-2 text-muted-foreground">
                                     <Filter className="h-5 w-5" />
@@ -169,7 +171,7 @@ export const MobileInventoryPage: React.FC = () => {
                         <input
                             data-allow-raw="true"
                             type="text"
-                            placeholder="Ürün, marka, model ara..."
+                            placeholder={t('products.search_placeholder')}
                             value={searchValue}
                             onChange={(e) => setSearchValue(e.target.value)}
                             className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:bg-white dark:focus:bg-gray-700 transition-all border border-transparent focus:border-primary-100 dark:focus:border-primary-900 dark:text-white dark:placeholder-gray-400"
@@ -248,7 +250,7 @@ export const MobileInventoryPage: React.FC = () => {
                                                 (item.availableInventory || item.available_inventory || 0) > 0 ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
                                             )}>
                                                 <Tag className="h-3 w-3" />
-                                                Stok: {item.availableInventory || item.available_inventory || 0}
+                                                {t('columns.stock')}: {item.availableInventory || item.available_inventory || 0}
                                             </div>
 
                                             {item.category && (
@@ -266,9 +268,9 @@ export const MobileInventoryPage: React.FC = () => {
                             <div className="bg-white dark:bg-gray-800 p-4 rounded-full shadow-sm mb-4">
                                 <Package className="h-8 w-8 text-gray-300" />
                             </div>
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Ürün Bulunamadı</h3>
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t('products.not_found')}</h3>
                             <p className="text-muted-foreground text-sm mt-1">
-                                Arama kriterlerinize uygun ürün yok.
+                                {t('products.not_found')}
                             </p>
                         </div>
                     )}
@@ -278,13 +280,13 @@ export const MobileInventoryPage: React.FC = () => {
             {/* Bulk Action Bar */}
             {selectedIds.size > 0 && isSelectionMode && (
                 <div className="fixed bottom-24 left-4 right-4 z-40 bg-gray-900 dark:bg-gray-800 rounded-2xl shadow-xl px-4 py-3 flex items-center justify-between pointer-events-auto transition-transform">
-                    <span className="text-sm font-medium text-white">{selectedIds.size} Ürün</span>
+                    <span className="text-sm font-medium text-white">{t('bulk_operations.selected_count', { count: selectedIds.size })}</span>
                     <div className="flex gap-2">
                         <Button variant="ghost" size="sm" className="text-white hover:bg-gray-800 dark:hover:bg-gray-700 h-8 px-3 rounded-xl border border-gray-700">
-                            <Edit className="w-4 h-4 mr-1.5" /> Düzenle
+                            <Edit className="w-4 h-4 mr-1.5" /> {t('actions.edit')}
                         </Button>
                         <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-300 hover:bg-gray-800 dark:hover:bg-gray-700 h-8 px-3 rounded-xl border border-gray-700">
-                            <Trash2 className="w-4 h-4 mr-1.5" /> Sil
+                            <Trash2 className="w-4 h-4 mr-1.5" /> {t('actions.delete')}
                         </Button>
                     </div>
                 </div>
@@ -299,7 +301,7 @@ export const MobileInventoryPage: React.FC = () => {
             <Modal
                 isOpen={isAddModalOpen}
                 onClose={() => setIsAddModalOpen(false)}
-                title="Yeni Ürün Ekle"
+                title={t('form.add_product')}
                 size="xl"
             >
                 <InventoryForm
@@ -314,7 +316,7 @@ export const MobileInventoryPage: React.FC = () => {
             <Modal
                 isOpen={!!selectedItem}
                 onClose={() => setSelectedItem(null)}
-                title="Ürün Detayı"
+                title={t('actions.view_details')}
                 size="xl"
             >
                 {selectedItem && (

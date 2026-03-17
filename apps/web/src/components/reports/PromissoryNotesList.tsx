@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { DataTable, Column, Badge } from '@x-ear/ui-web';
 import { formatCurrency, formatDate } from '@/utils/format';
+import { useTranslation } from 'react-i18next';
 
 interface PromissoryNote {
   id: string;
@@ -26,6 +27,7 @@ interface PromissoryNotesListProps {
 }
 
 export function PromissoryNotesList({ notes, isLoading, pagination }: PromissoryNotesListProps) {
+  const { t } = useTranslation('reports');
   const getStatusBadge = (status?: string) => {
     const variants: Record<string, 'default' | 'success' | 'warning' | 'danger' | 'secondary'> = {
       active: 'default',
@@ -34,15 +36,15 @@ export function PromissoryNotesList({ notes, isLoading, pagination }: Promissory
       cancelled: 'secondary',
     };
     const labels: Record<string, string> = {
-      active: 'Aktif',
-      overdue: 'Vadesi Geçmiş',
-      paid: 'Ödendi',
-      cancelled: 'İptal',
+      active: t('active', 'Aktif'),
+      overdue: t('overdueLabel', 'Vadesi Geçmiş'),
+      paid: t('paid', 'Ödendi'),
+      cancelled: t('cancelled', 'İptal'),
     };
     const s = (status || 'active').toLowerCase();
     return (
       <Badge variant={variants[s] || 'default'} size="sm">
-        {labels[s] || status || 'Aktif'}
+        {labels[s] || status || t('active', 'Aktif')}
       </Badge>
     );
   };
@@ -50,7 +52,7 @@ export function PromissoryNotesList({ notes, isLoading, pagination }: Promissory
   const columns: Column<PromissoryNote>[] = useMemo(() => [
     {
       key: 'noteNumber',
-      title: 'Senet No',
+      title: t('noteNumber', 'Senet No'),
       sortable: true,
       render: (_, note) => (
         <span className="text-sm font-mono text-gray-900 dark:text-white">
@@ -60,7 +62,7 @@ export function PromissoryNotesList({ notes, isLoading, pagination }: Promissory
     },
     {
       key: 'partyName',
-      title: 'Müşteri',
+      title: t('customer', 'Müşteri'),
       sortable: true,
       render: (_, note) => (
         <span className="text-sm text-gray-900 dark:text-white">
@@ -70,7 +72,7 @@ export function PromissoryNotesList({ notes, isLoading, pagination }: Promissory
     },
     {
       key: 'amount',
-      title: 'Tutar',
+      title: t('amount', 'Tutar'),
       sortable: true,
       render: (_, note) => (
         <span className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -80,7 +82,7 @@ export function PromissoryNotesList({ notes, isLoading, pagination }: Promissory
     },
     {
       key: 'dueDate',
-      title: 'Vade Tarihi',
+      title: t('dueDate', 'Vade Tarihi'),
       sortable: true,
       render: (_, note) => (
         <span className="text-sm text-muted-foreground">
@@ -90,7 +92,7 @@ export function PromissoryNotesList({ notes, isLoading, pagination }: Promissory
     },
     {
       key: 'bankName',
-      title: 'Banka',
+      title: t('bank', 'Banka'),
       render: (_, note) => (
         <span className="text-sm text-muted-foreground">
           {note.bankName || '-'}
@@ -99,7 +101,7 @@ export function PromissoryNotesList({ notes, isLoading, pagination }: Promissory
     },
     {
       key: 'status',
-      title: 'Durum',
+      title: t('status', 'Durum'),
       sortable: true,
       render: (_, note) => getStatusBadge(note.status)
     }
@@ -112,7 +114,7 @@ export function PromissoryNotesList({ notes, isLoading, pagination }: Promissory
       loading={isLoading}
       pagination={pagination}
       rowKey="id"
-      emptyText="Senet bulunamadı"
+      emptyText={t('noNotes', 'Senet bulunamadı')}
     />
   );
 }

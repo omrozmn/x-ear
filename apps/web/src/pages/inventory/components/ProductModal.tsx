@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
 import { Modal } from '@x-ear/ui-web';
 import { ProductForm } from './ProductForm';
@@ -17,7 +18,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   product,
   onSave
 }) => {
-  const title = product ? 'Ürün Düzenle' : 'Yeni Ürün Ekle';
+  const { t } = useTranslation('inventory');
+  const title = product ? t('form.edit_product') : t('form.add_product');
   const mode = product ? 'edit' : 'create';
 
   return (

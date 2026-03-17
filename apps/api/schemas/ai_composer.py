@@ -6,7 +6,11 @@ from ai.capability_registry import Capability
 class EntityItem(BaseModel):
     """Represents a searchable entity in the system."""
     id: str = Field(description="Unique identifier of the entity")
-    type: Literal["patient", "device", "invoice", "user", "supplier"] = Field(description="Type of the entity")
+    type: Literal[
+        "patient", "device", "invoice", "user", "supplier",
+        "appointment", "sale", "order", "promissory_note",
+        "ticket", "purchase_invoice", "campaign"
+    ] = Field(description="Type of the entity")
     label: str = Field(description="Primary display text (e.g. Name)")
     sub_label: Optional[str] = Field(default=None, description="Secondary text (e.g. Phone, ID, Code)")
     metadata: Optional[Dict[str, Any]] = Field(default=None, description="Additional context data")

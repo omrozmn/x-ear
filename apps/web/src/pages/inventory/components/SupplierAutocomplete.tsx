@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { Plus } from 'lucide-react';
@@ -36,6 +37,7 @@ export const SupplierAutocomplete: React.FC<SupplierAutocompleteProps> = ({
   error,
   required = false
 }) => {
+  const { t } = useTranslation('inventory');
   const [isOpen, setIsOpen] = useState(false);
   // Debounce search term to prevent excessive API calls
   const [debouncedSearch, setDebouncedSearch] = useState(value);

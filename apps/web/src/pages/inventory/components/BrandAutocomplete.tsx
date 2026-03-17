@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import { Plus } from 'lucide-react';
@@ -24,6 +25,7 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
   error,
   required = false
 }) => {
+  const { t } = useTranslation('inventory');
   const [isOpen, setIsOpen] = useState(false);
   const [filteredBrands, setFilteredBrands] = useState<string[]>([]);
   const [localBrands, setLocalBrands] = useState<string[]>([]);
@@ -296,13 +298,13 @@ export const BrandAutocomplete: React.FC<BrandAutocompleteProps> = ({
           >
             {isLoading && (
               <div className="px-4 py-2 text-sm text-muted-foreground italic">
-                Yükleniyor...
+                {t('products.loading')}
               </div>
             )}
 
             {isError && (
               <div className="px-4 py-2 text-sm text-destructive">
-                Markalar yüklenirken hata oluştu.
+                {t('messages.load_failed')}
               </div>
             )}
 

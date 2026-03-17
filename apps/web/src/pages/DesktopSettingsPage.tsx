@@ -9,10 +9,12 @@ import PartySegmentsSettings from './settings/PartySegmentsSettings';
 import SgkSettings from './settings/SgkSettings';
 import SubscriptionSettings from './settings/Subscription';
 import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
+import { useTranslation } from 'react-i18next';
 
 type TabId = 'company' | 'integration' | 'team' | 'parties' | 'sgk' | 'subscription';
 
 export function DesktopSettingsPage() {
+  const { t } = useTranslation('settings_extra');
   const search = useSearch({ from: '/settings/' });
   const activeTab = (search.tab as TabId) || 'company';
 
@@ -43,19 +45,19 @@ export function DesktopSettingsPage() {
   const getPageTitle = () => {
     switch (activeTab) {
       case 'company':
-        return 'Firma Bilgileri';
+        return t('companyInfo', 'Firma Bilgileri');
       case 'integration':
-        return 'Entegrasyonlar';
+        return t('integrations', 'Entegrasyonlar');
       case 'team':
-        return 'Ekip Yönetimi';
+        return t('teamManagement', 'Ekip Yönetimi');
       case 'parties':
-        return 'Hasta Ayarları';
+        return t('patientSettings', 'Hasta Ayarları');
       case 'sgk':
-        return 'SGK & Satış Ayarları';
+        return t('sgkSalesSettings', 'SGK & Satış Ayarları');
       case 'subscription':
-        return 'Abonelik';
+        return t('subscription', 'Abonelik');
       default:
-        return 'Ayarlar';
+        return t('settings', 'Ayarlar');
     }
   };
 

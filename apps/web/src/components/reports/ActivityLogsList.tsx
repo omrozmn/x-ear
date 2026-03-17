@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { DataTable, Column, Badge } from '@x-ear/ui-web';
 import { formatDate } from '@/utils/format';
 import type { ActivityLogRead } from '@/api/generated/schemas';
+import { useTranslation } from 'react-i18next';
 
 interface ActivityLogsListProps {
   logs: ActivityLogRead[];
@@ -18,6 +19,7 @@ interface ActivityLogsListProps {
 }
 
 export function ActivityLogsList({ logs, isLoading, pagination, onSort }: ActivityLogsListProps) {
+  const { t } = useTranslation('reports');
   const getSeverityBadge = (severity?: string) => {
     const variants: Record<string, 'default' | 'success' | 'warning' | 'danger' | 'secondary'> = {
       info: 'default',
@@ -43,7 +45,7 @@ export function ActivityLogsList({ logs, isLoading, pagination, onSort }: Activi
   const columns: Column<ActivityLogRead>[] = useMemo(() => [
     {
       key: 'createdAt',
-      title: 'Tarih/Saat',
+      title: t('dateTime', 'Tarih/Saat'),
       sortable: true,
       render: (_, log) => (
         <span className="text-sm text-muted-foreground">
@@ -53,7 +55,7 @@ export function ActivityLogsList({ logs, isLoading, pagination, onSort }: Activi
     },
     {
       key: 'userName',
-      title: 'Kullanıcı',
+      title: t('user', 'Kullanıcı'),
       sortable: true,
       render: (_, log) => (
         <span className="text-sm font-medium text-gray-900 dark:text-white">
@@ -63,7 +65,7 @@ export function ActivityLogsList({ logs, isLoading, pagination, onSort }: Activi
     },
     {
       key: 'action',
-      title: 'İşlem',
+      title: t('operation', 'İşlem'),
       sortable: true,
       render: (_, log) => (
         <span className="text-sm text-muted-foreground">
@@ -73,7 +75,7 @@ export function ActivityLogsList({ logs, isLoading, pagination, onSort }: Activi
     },
     {
       key: 'entityType',
-      title: 'Varlık Tipi',
+      title: t('entityType', 'Varlık Tipi'),
       sortable: true,
       render: (_, log) => (
         <span className="text-sm text-muted-foreground">
@@ -83,7 +85,7 @@ export function ActivityLogsList({ logs, isLoading, pagination, onSort }: Activi
     },
     {
       key: 'details',
-      title: 'Detay',
+      title: t('detail', 'Detay'),
       render: (_, log) => (
         <span className="text-sm text-muted-foreground truncate max-w-xs">
           {formatDetails(log)}
@@ -92,7 +94,7 @@ export function ActivityLogsList({ logs, isLoading, pagination, onSort }: Activi
     },
     {
       key: 'message',
-      title: 'Mesaj',
+      title: t('message', 'Mesaj'),
       render: (_, log) => (
         <span className="text-sm text-muted-foreground font-mono">
           {log.message || '-'}
@@ -101,7 +103,7 @@ export function ActivityLogsList({ logs, isLoading, pagination, onSort }: Activi
     },
     {
       key: 'isCritical',
-      title: 'Önem',
+      title: t('importance', 'Önem'),
       sortable: true,
       render: (_, log) => getSeverityBadge(log.isCritical ? 'Critical' : 'Info')
     }
@@ -116,7 +118,7 @@ export function ActivityLogsList({ logs, isLoading, pagination, onSort }: Activi
       onSort={onSort}
       pagination={pagination}
       rowKey="id"
-      emptyText="Aktivite logu bulunamadı"
+      emptyText={t('noActivityLogs', 'Aktivite logu bulunamadı')}
     />
   );
 }

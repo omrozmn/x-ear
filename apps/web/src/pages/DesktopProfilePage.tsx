@@ -13,9 +13,11 @@ import {
 } from '@/api/client/users.client';
 import { ResponseEnvelopeUserRead, UserUpdate } from '@/api/generated/schemas';
 import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
+import { useTranslation } from 'react-i18next';
 
 
 export const DesktopProfilePage: React.FC = () => {
+  const { t } = useTranslation('settings_extra');
 
 
     const { user, setUser, verifyOtp, sendOtp } = useAuthStore();
@@ -90,7 +92,7 @@ export const DesktopProfilePage: React.FC = () => {
     const updateMeMutation = useUpdateUserMe({
         mutation: {
             onSuccess: (responseData: ResponseEnvelopeUserRead) => {
-                toast.success('Profil bilgileri güncellendi');
+                toast.success(t('profileUpdated', 'Profil bilgileri güncellendi'));
                 const updatedUser = responseData.data;
                 if (updatedUser && user) {
                     setUser({
@@ -106,7 +108,7 @@ export const DesktopProfilePage: React.FC = () => {
                 }
             },
             onError: () => {
-                toast.error('Güncelleme başarısız');
+                toast.error(t('updateFailed', 'Güncelleme başarısız'));
             }
         }
     });
@@ -114,7 +116,7 @@ export const DesktopProfilePage: React.FC = () => {
     const changePasswordMutation = useCreateUserMePassword({
         mutation: {
             onSuccess: () => {
-                toast.success('Şifre başarıyla değiştirildi');
+                toast.success(t('passwordChanged', 'Şifre başarıyla değiştirildi'));
                 setCurrentPassword('');
                 setNewPassword('');
                 setConfirmPassword('');
@@ -129,9 +131,9 @@ export const DesktopProfilePage: React.FC = () => {
                 const passwordError = error as PasswordError;
                 const status = passwordError.response?.status;
                 if (status === 403 || status === 401) {
-                    toast.error('Mevcut şifreniz hatalı.');
+                    toast.error(t('wrongCurrentPassword', 'Mevcut şifreniz hatalı.'));
                 } else {
-                    toast.error(passwordError.response?.data?.error || 'Şifre değiştirilemedi');
+                    toast.error(passwordError.response?.data?.error || t('passwordChangeFailed', 'Şifre değiştirilemedi'));
                 }
             }
         }
@@ -217,9 +219,9 @@ export const DesktopProfilePage: React.FC = () => {
             setIsVerifyingPhone(true);
             await sendOtp(phone);
             setShowOtpInput(true);
-            toast.success('Doğrulama kodu gönderildi');
+            toast.success(t('verificationCodeSent', 'Doğrulama kodu gönderildi'));
         } catch (error: unknown) {
-            toast.error((error as Error).message || 'Kod gönderilemedi');
+            toast.error((error as Error).message || t('codeNotSent', 'Kod gönderilemedi'));
         } finally {
             setIsVerifyingPhone(false);
         }
@@ -230,12 +232,12 @@ export const DesktopProfilePage: React.FC = () => {
         try {
             setIsVerifyingPhone(true);
             await verifyOtp(otpCode);
-            toast.success('Telefon numarası doğrulandı');
+            toast.success(t('phoneVerified', 'Telefon numarası doğrulandı'));
             setShowOtpInput(false);
             setOtpCode('');
             setIsEditingPhone(false);
         } catch (error: unknown) {
-            toast.error((error as Error).message || 'Doğrulama başarısız');
+            toast.error((error as Error).message || t('verificationFailed', 'Doğrulama başarısız'));
         } finally {
             setIsVerifyingPhone(false);
         }
@@ -258,7 +260,7 @@ export const DesktopProfilePage: React.FC = () => {
         e.preventDefault();
 
         if (newPassword !== confirmPassword) {
-            toast.error('Yeni şifreler eşleşmiyor');
+            toast.error(t('passwordsMismatch', 'Yeni şifreler eşleşmiyor'));
             return;
         }
 
@@ -273,8 +275,8 @@ export const DesktopProfilePage: React.FC = () => {
     return (
         <div className="space-y-6 max-w-4xl mx-auto">
             <DesktopPageHeader
-                title="Profil Ayarları"
-                description="Kişisel bilgilerinizi ve hesap güvenliğinizi yönetin."
+                title=t('profileSettings', t('profileSettings', 'Profil Ayarları'))
+                description=t('profileDescription', t('profileDescription', 'Kişisel bilgilerinizi ve hesap güvenliğinizi yönetin.'))
                 icon={<User className="w-6 h-6" />}
                 eyebrow={{ tr: 'Hesap', en: 'Account' }}
             />
@@ -300,7 +302,7 @@ export const DesktopProfilePage: React.FC = () => {
                                         value={username}
                                         onChange={(e) => setUsername(e.target.value)}
                                         className="pl-10"
-                                        placeholder="Kullanıcı Adı"
+                                        placeholder={t('usernamePlaceholder', 'Kullanıcı Adı')}
                                     />
                                 </div>
                             </div>
@@ -320,7 +322,7 @@ export const DesktopProfilePage: React.FC = () => {
                                             // We will update it.
                                             setUsername(generateUsername(newVal, lastName));
                                         }}
-                                        placeholder="Adınız"
+                                        placeholder={t('firstNamePlaceholder', 'Adınız')}
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -334,7 +336,7 @@ export const DesktopProfilePage: React.FC = () => {
                                             setLastName(newVal);
                                             setUsername(generateUsername(firstName, newVal));
                                         }}
-                                        placeholder="Soyadınız"
+                                        placeholder={t('lastNamePlaceholder', 'Soyadınız')}
                                     />
                                 </div>
                             </div>
@@ -349,7 +351,7 @@ export const DesktopProfilePage: React.FC = () => {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         className="pl-10"
-                                        placeholder="ornek@email.com"
+                                        placeholder={t('emailPlaceholder', 'ornek@email.com')}
                                     />
                                 </div>
                             </div>
@@ -361,7 +363,7 @@ export const DesktopProfilePage: React.FC = () => {
                                 <div className="relative">
                                     <Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                     <Input
-                                        value={user?.role || 'Kullanıcı'}
+                                        value={user?.role || t('userRole', 'Kullanıcı')}
                                         disabled
                                         className="pl-10 bg-gray-50 dark:bg-gray-800 capitalize"
                                     />
@@ -371,7 +373,7 @@ export const DesktopProfilePage: React.FC = () => {
                             <div className="pt-4">
                                 <Button type="submit" disabled={updateMeMutation.isPending} className="w-full">
                                     <Save className="w-4 h-4 mr-2" />
-                                    {updateMeMutation.isPending ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+                                    {updateMeMutation.isPending ? t('saving', 'Kaydediliyor...') : t('saveChanges', 'Değişiklikleri Kaydet')}
                                 </Button>
                             </div>
                         </form>
@@ -430,7 +432,7 @@ export const DesktopProfilePage: React.FC = () => {
                                     {user?.isPhoneVerified && !isEditingPhone && (
                                         <div className="flex items-center gap-2 mt-1">
                                             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                            <span className="text-xs text-success font-medium">Numaranız doğrulanmış</span>
+                                            <span className="text-xs text-success font-medium">{t('phoneIsVerified', 'Numaranız doğrulanmış')}</span>
                                         </div>
                                     )}
                                 </div>
@@ -458,11 +460,11 @@ export const DesktopProfilePage: React.FC = () => {
                                                         Onayla
                                                     </Button>
                                                 </div>
-                                                <p className="text-xs text-muted-foreground">Telefonunuza gönderilen 6 haneli kodu giriniz.</p>
+                                                <p className="text-xs text-muted-foreground">{t('enter6DigitCode', 'Telefonunuza gönderilen 6 haneli kodu giriniz.')}</p>
                                             </>
                                         )}
                                         {isEditingPhone && !showOtpInput && (
-                                            <p className="text-xs text-muted-foreground">Yeni numaranızı girdikten sonra 'Doğrula' butonuna basınız.</p>
+                                            <p className="text-xs text-muted-foreground">{t('enterNewPhoneThenVerify', "Yeni numaranızı girdikten sonra 'Doğrula' butonuna basınız.")}</p>
                                         )}
                                     </div>
                                 )}
@@ -532,13 +534,13 @@ export const DesktopProfilePage: React.FC = () => {
                                         className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1"
                                     >
                                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                        {showPassword ? 'Şifreleri Gizle' : 'Şifreleri Göster'}
+                                        {showPassword ? t('hidePasswords', 'Şifreleri Gizle') : t('showPasswords', 'Şifreleri Göster')}
                                     </button>
                                 </div>
 
                                 <div className="pt-4">
                                     <Button type="submit" variant="outline" disabled={changePasswordMutation.isPending} className="w-full">
-                                        {changePasswordMutation.isPending ? 'Güncelleniyor...' : 'Şifreyi Güncelle'}
+                                        {changePasswordMutation.isPending ? t('updating', 'Güncelleniyor...') : t('updatePassword', 'Şifreyi Güncelle')}
                                     </Button>
                                 </div>
                             </form>
@@ -580,9 +582,9 @@ export const DesktopProfilePage: React.FC = () => {
                                                 data: { allowImpersonation: newVal },
                                             });
                                             setAllowImpersonation(newVal);
-                                            toast.success(newVal ? 'Yönetici erişim izni verildi' : 'Yönetici erişim izni kaldırıldı');
+                                            toast.success(newVal ? t('adminAccessGranted', 'Yönetici erişim izni verildi') : t('adminAccessRevoked', 'Yönetici erişim izni kaldırıldı'));
                                         } catch {
-                                            toast.error('İzin güncellenemedi');
+                                            toast.error(t('permissionUpdateFailed', 'İzin güncellenemedi'));
                                         } finally {
                                             setImpersonationLoading(false);
                                         }

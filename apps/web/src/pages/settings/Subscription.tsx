@@ -9,6 +9,7 @@ import {
 import { useListSubscriptionCurrent } from '@/api/client/subscriptions.client';
 import { useListAddons } from '@/api/client/sms.client';
 import { useAuthStore } from '@/stores/authStore';
+import { useTranslation } from 'react-i18next';
 
 type FeatureUsageStats = {
     used?: number;
@@ -16,6 +17,7 @@ type FeatureUsageStats = {
 };
 
 const Subscription: React.FC = () => {
+    const { t } = useTranslation('settings_extra');
     const { token, user } = useAuthStore();
     const { data: subscriptionData, isLoading, isError } = useListSubscriptionCurrent();
     const { data: creditData } = useListSmCredit({
@@ -32,8 +34,8 @@ const Subscription: React.FC = () => {
     }
     const info = (subscriptionData as unknown as { data: SubscriptionResponse['data'] })?.data;
 
-    if (isLoading) return <div className="p-6">Yükleniyor...</div>;
-    if (isError) return <div className="p-6">Abonelik bilgisi yüklenirken hata oluştu.</div>;
+    if (isLoading) return <div className="p-6">{t('loading', 'Yükleniyor...')}</div>;
+    if (isError) return <div className="p-6">{t('subscriptionLoadError', 'Abonelik bilgisi yüklenirken hata oluştu.')}</div>;
 
     // Super admin check
     if (info?.is_super_admin || user?.role === 'super_admin') {
@@ -43,17 +45,17 @@ const Subscription: React.FC = () => {
                     <div className="text-6xl mb-4">👑</div>
                     <h2 className="text-2xl font-bold text-blue-900 dark:text-blue-300 mb-2">Super Admin</h2>
                     <p className="text-primary">
-                        Platform yöneticisi olarak tüm özelliklere sınırsız erişiminiz var.
+                        {t('superAdminAccess', 'Platform yöneticisi olarak tüm özelliklere sınırsız erişiminiz var.')}
                     </p>
                     <p className="text-sm text-primary mt-4">
-                        Tenant aboneliklerini yönetmek için Admin Panel'i kullanın.
+                        {t('useAdminPanelForTenants', "Tenant aboneliklerini yönetmek için Admin Panel'i kullanın.")}
                     </p>
                 </div>
             </div>
         );
     }
 
-    if (!info) return <div className="p-6">Abonelik bilgisi bulunamadı.</div>;
+    if (!info) return <div className="p-6">{t('subscriptionNotFound', 'Abonelik bilgisi bulunamadı.')}</div>;
 
     const { plan, tenant, isExpired, daysRemaining } = info;
 
@@ -101,33 +103,33 @@ const Subscription: React.FC = () => {
                     {plan ? (
                         <div>
                             <div className="text-3xl font-bold text-primary mb-2">{plan.name}</div>
-                            <p className="text-muted-foreground mb-4">{plan.description || 'Plan açıklaması bulunmuyor.'}</p>
+                            <p className="text-muted-foreground mb-4">{plan.description || t('noPlanDescription', 'Plan açıklaması bulunmuyor.')}</p>
                             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                                 <Clock className="w-4 h-4" />
-                                <span>Bitiş Tarihi: {subscriptionEndsAt}</span>
+                                <span>{t('endDate', 'Bitiş Tarihi')}: {subscriptionEndsAt}</span>
                             </div>
                             <div className={`mt-4 p-3 rounded-2xl flex items-center ${isExpired ? 'bg-destructive/10 text-destructive' : 'bg-success/10 text-success'}`}>
                                 {isExpired ? (
                                     <>
                                         <AlertTriangle className="w-5 h-5 mr-2" />
-                                        <span>Aboneliğiniz sona ermiş. Lütfen yenileyin.</span>
+                                        <span>{t('subscriptionExpired', 'Aboneliğiniz sona ermiş. Lütfen yenileyin.')}</span>
                                     </>
                                 ) : (
                                     <>
                                         <CheckCircle className="w-5 h-5 mr-2" />
-                                        <span>Aktif - {daysRemaining ?? 0} gün kaldı</span>
+                                        <span>{t('activeSubscription', 'Aktif')} - {daysRemaining ?? 0} {t('daysRemaining', 'gün kaldı')}</span>
                                     </>
                                 )}
                             </div>
                         </div>
                     ) : (
-                        <div className="text-muted-foreground">Herhangi bir paket tanımlı değil.</div>
+                        <div className="text-muted-foreground">{t('noPlanDefined', 'Herhangi bir paket tanımlı değil.')}</div>
                     )}
                 </div>
 
                 {/* Usage Stats & SMS Credit */}
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-border p-6">
-                    <h2 className="text-lg font-semibold mb-4 text-foreground">Kullanım Hakları</h2>
+                    <h2 className="text-lg font-semibold mb-4 text-foreground">{t('usageRights', 'Kullanım Hakları')}</h2>
 
                     {/* SMS Credit Display */}
                     <div className="mb-6 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-800">
@@ -138,7 +140,7 @@ const Subscription: React.FC = () => {
                             </span>
                         </div>
                         <div className="text-xs text-indigo-600/70 dark:text-indigo-400/70">
-                            Kalan SMS hakkınız
+                            {t('remainingSmsCredits', 'Kalan SMS hakkınız')}
                         </div>
                     </div>
 
@@ -152,7 +154,7 @@ const Subscription: React.FC = () => {
                                 <div key={key}>
                                     <div className="flex justify-between text-sm mb-1">
                                         <span className="font-medium text-foreground capitalize">{key.replace(/_/g, ' ')}</span>
-                                        <span className="text-muted-foreground">{used} / {limit > 0 ? limit : 'Sınırsız'}</span>
+                                        <span className="text-muted-foreground">{used} / {limit > 0 ? limit : t('unlimited', 'Sınırsız')}</span>
                                     </div>
                                     <div className="w-full bg-accent rounded-full h-2.5">
                                         <div
@@ -164,7 +166,7 @@ const Subscription: React.FC = () => {
                             );
                         })}
                         {Object.keys(featureUsage).length === 0 && (
-                            <div className="text-muted-foreground text-sm">Kullanım limiti olan özellik bulunmuyor.</div>
+                            <div className="text-muted-foreground text-sm">{t('noUsageLimits', 'Kullanım limiti olan özellik bulunmuyor.')}</div>
                         )}
                     </div>
                 </div>
@@ -172,13 +174,13 @@ const Subscription: React.FC = () => {
 
             {/* SMS Packages Section */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-border p-6 mb-8">
-                <h2 className="text-lg font-semibold mb-4 text-foreground">SMS Paketleri</h2>
+                <h2 className="text-lg font-semibold mb-4 text-foreground">{t('smsPackages', 'SMS Paketleri')}</h2>
                 <SmsPackagesList />
             </div>
 
             {/* Add-ons Section */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-border p-6 mb-8">
-                <h2 className="text-lg font-semibold mb-4 text-foreground">Ek Özellikler (Add-ons)</h2>
+                <h2 className="text-lg font-semibold mb-4 text-foreground">{t('addOns', 'Ek Özellikler (Add-ons)')}</h2>
                 <AddOnsList />
             </div>
         </div>
@@ -186,9 +188,10 @@ const Subscription: React.FC = () => {
 };
 
 function SmsPackagesList() {
+  const { t } = useTranslation('settings_extra');
     const { data: packagesData, isLoading, isError } = useListSmPackages();
-    if (isLoading) return <div className="text-muted-foreground">SMS Paketleri yükleniyor...</div>;
-    if (isError) return <div className="text-muted-foreground">SMS paketleri yüklenemedi.</div>;
+    if (isLoading) return <div className="text-muted-foreground">{t('smsPackagesLoading', 'SMS Paketleri yükleniyor...')}</div>;
+    if (isError) return <div className="text-muted-foreground">{t('smsPackagesLoadFailed', 'SMS paketleri yüklenemedi.')}</div>;
 
     // Extract packages from nested response structure
     interface SmsPackage {
@@ -199,7 +202,7 @@ function SmsPackagesList() {
     }
     const packagesResponse = packagesData as unknown as { data?: { data?: SmsPackage[] } } | undefined;
     const packages: SmsPackage[] = packagesResponse?.data?.data ?? [];
-    if (packages.length === 0) return <div className="text-muted-foreground">Mevcut SMS paketi bulunmuyor.</div>;
+    if (packages.length === 0) return <div className="text-muted-foreground">{t('noSmsPackages', 'Mevcut SMS paketi bulunmuyor.')}</div>;
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -219,7 +222,7 @@ function SmsPackagesList() {
                             ₺{price.toLocaleString('tr-TR')}
                         </div>
                         <Button variant="primary" className="mt-auto w-full">
-                            Satın Al
+                            {t('purchase', 'Satın Al')}
                         </Button>
                     </div>
                 );
@@ -229,9 +232,10 @@ function SmsPackagesList() {
 }
 
 function AddOnsList() {
+    const { t } = useTranslation('settings_extra');
     const { data: addonsData, isLoading, isError } = useListAddons();
-    if (isLoading) return <div className="text-muted-foreground">Eklentiler yükleniyor...</div>;
-    if (isError) return <div className="text-muted-foreground">Eklentiler yüklenemedi.</div>;
+    if (isLoading) return <div className="text-muted-foreground">{t('addOnsLoading', 'Eklentiler yükleniyor...')}</div>;
+    if (isError) return <div className="text-muted-foreground">{t('addOnsLoadFailed', 'Eklentiler yüklenemedi.')}</div>;
 
     // Extract addons from nested response structure
     interface Addon {
@@ -245,7 +249,7 @@ function AddOnsList() {
     // Backend returns ResponseEnvelope: {success: true, data: [...]}
     // Orval unwraps to {data: [...]}
     const addons = (Array.isArray(addonsData?.data) ? addonsData.data : []).filter((addon) => addon.isActive) as Addon[];
-    if (addons.length === 0) return <div className="text-muted-foreground">Mevcut eklenti bulunmuyor.</div>;
+    if (addons.length === 0) return <div className="text-muted-foreground">{t('noAddOns', 'Mevcut eklenti bulunmuyor.')}</div>;
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -265,7 +269,7 @@ function AddOnsList() {
                             ₺{price.toLocaleString('tr-TR')}
                         </div>
                         <Button variant="primary" className="mt-auto w-full">
-                            Satın Al
+                            {t('purchase', 'Satın Al')}
                         </Button>
                     </div>
                 );

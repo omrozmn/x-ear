@@ -28,6 +28,7 @@ import { SettingsSectionHeader } from '../../components/layout/SettingsSectionHe
 import WhatsAppIntegrationPanel from '@/components/settings/WhatsAppIntegrationPanel';
 import { Activity } from 'lucide-react';
 import SgkCredentialsSettings from './SgkCredentialsSettings';
+import { useTranslation } from 'react-i18next';
 
 interface SmsDocument {
     type: string;
@@ -53,6 +54,7 @@ const HEADER_TYPES = [
 ];
 
 export default function IntegrationSettings() {
+  const { t } = useTranslation('settings_extra');
     const [activeTab, setActiveTab] = useState('sms');
     const [smsSubTab, setSmsSubTab] = useState('docs');
     const [previewDoc, setPreviewDoc] = useState<{ type: string; url: string; filename: string } | null>(null);
@@ -612,7 +614,7 @@ export default function IntegrationSettings() {
                         <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Belgeyi Sil</Dialog.Title>
                         <p className="text-muted-foreground mb-6">Bu belgeyi silmek istediğinizden emin misiniz?</p>
                         <div className="flex justify-end gap-3">
-                            <Button variant="outline" onClick={() => setDeleteConfirmDoc(null)}>İptal</Button>
+                            <Button variant="outline" onClick={() => setDeleteConfirmDoc(null)}>{t('cancel', 'İptal')}</Button>
                             <Button variant="danger" onClick={() => deleteConfirmDoc && handleDeleteDocument(deleteConfirmDoc)}>Sil</Button>
                         </div>
                     </Dialog.Content>

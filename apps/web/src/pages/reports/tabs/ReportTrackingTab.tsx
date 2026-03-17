@@ -8,6 +8,7 @@ import type { ResponseMeta } from '@/api/generated/schemas';
 import type { FilterState, ReportTrackingItem } from '../types';
 import { TabExportButton } from '../components/TabExportButton';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useTranslation } from 'react-i18next';
 
 interface ReportTrackingTabProps {
     filters: FilterState;
@@ -34,6 +35,7 @@ function getStatusLabel(value?: string, fallback = '-') {
 }
 
 export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
+  const { t } = useTranslation('reports');
     const { hasPermission } = usePermissions();
     const canViewDetails = hasPermission('sensitive.reports.report_tracking.details.view');
     const [page, setPage] = useState(1);
@@ -63,27 +65,27 @@ export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
     const columns = useMemo<Column<ReportTrackingItem>[]>(() => [
         {
             key: 'partyName',
-            title: 'Hasta',
+            title: t('patient', 'Hasta'),
             render: (_, item) => (
                 <div>
-                    <p className="font-medium text-gray-900 dark:text-white">{canViewDetails ? item.partyName : 'Bu rol icin gizli'}</p>
-                    <p className="text-xs text-muted-foreground">{item.branchName || 'Şube yok'}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{canViewDetails ? item.partyName : t('hiddenForRole', 'Bu rol icin gizli')}</p>
+                    <p className="text-xs text-muted-foreground">{item.branchName || t('noBranch', 'Şube yok')}</p>
                 </div>
             )
         },
         {
             key: 'deviceName',
-            title: 'Cihaz',
+            title: t('device', 'Cihaz'),
             render: (_, item) => (
                 <div>
-                    <p className="font-medium text-gray-900 dark:text-white">{canViewDetails ? (item.deviceName || '-') : 'Bu rol icin gizli'}</p>
-                    <p className="text-xs text-muted-foreground">{canViewDetails ? (item.serialNumber || 'Seri no yok') : 'Bu rol icin gizli'}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{canViewDetails ? (item.deviceName || '-') : t('hiddenForRole', 'Bu rol icin gizli')}</p>
+                    <p className="text-xs text-muted-foreground">{canViewDetails ? (item.serialNumber || t('noSerialNumber', 'Seri no yok')) : t('hiddenForRole', 'Bu rol icin gizli')}</p>
                 </div>
             )
         },
         {
             key: 'reportStatus',
-            title: 'Rapor Durumu',
+            title: t('reportStatus', 'Rapor Durumu'),
             render: (_, item) => (
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-blue-800 dark:text-blue-300">
                     {getStatusLabel(item.reportStatus)}
@@ -92,7 +94,7 @@ export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
         },
         {
             key: 'deliveryStatus',
-            title: 'Teslim Durumu',
+            title: t('deliveryStatus', 'Teslim Durumu'),
             render: (_, item) => (
                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                     item.deliveryStatus === 'delivered'
@@ -105,12 +107,12 @@ export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
         },
         {
             key: 'saleDate',
-            title: 'Satış Tarihi',
+            title: t('saleDate', 'Satış Tarihi'),
             render: (_, item) => item.saleDate ? new Date(item.saleDate).toLocaleDateString('tr-TR') : '-'
         },
         {
             key: 'assignedDate',
-            title: 'Kayıt Tarihi',
+            title: t('registrationDate', 'Kayıt Tarihi'),
             render: (_, item) => item.assignedDate ? new Date(item.assignedDate).toLocaleString('tr-TR') : '-'
         },
         {
@@ -149,7 +151,7 @@ export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
             <div className="flex items-center gap-3">
                 <FileText className="w-5 h-5 text-primary" />
                 <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Rapor Takibi</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('reportTracking', 'Rapor Takibi')}</h3>
                     <p className="text-sm text-muted-foreground">Cihaz satışlarındaki rapor ve teslim durumlarını izleyin</p>
                 </div>
                 <TabExportButton filename="rapor-takibi" rows={data as unknown as Array<Record<string, unknown>>} />
@@ -162,10 +164,10 @@ export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
                     onChange={(e) => { setReportStatus(e.target.value); setPage(1); }}
                     className="px-3 py-2 text-sm rounded-lg border border-border bg-white dark:bg-gray-900"
                 >
-                    <option value="all">Tüm Rapor Durumları</option>
-                    <option value="pending">Rapor Beklemede</option>
-                    <option value="received">Rapor Teslim Alındı</option>
-                    <option value="none">Rapor Yok</option>
+                    <option value="all">{t('allReportStatuses', 'Tüm Rapor Durumları')}</option>
+                    <option value="pending">{t('reportPending', 'Rapor Beklemede')}</option>
+                    <option value="received">{t('reportReceived', 'Rapor Teslim Alındı')}</option>
+                    <option value="none">{t('noReport', 'Rapor Yok')}</option>
                 </select>
 
                 <select
@@ -174,9 +176,9 @@ export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
                     onChange={(e) => { setDeliveryStatus(e.target.value); setPage(1); }}
                     className="px-3 py-2 text-sm rounded-lg border border-border bg-white dark:bg-gray-900"
                 >
-                    <option value="all">Tüm Teslim Durumları</option>
-                    <option value="pending">Teslim Bekliyor</option>
-                    <option value="delivered">Teslim Edildi</option>
+                    <option value="all">{t('allDeliveryStatuses', 'Tüm Teslim Durumları')}</option>
+                    <option value="pending">{t('deliveryPending', 'Teslim Bekliyor')}</option>
+                    <option value="delivered">{t('delivered', 'Teslim Edildi')}</option>
                 </select>
 
                 <input
@@ -215,7 +217,7 @@ export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
                     data={data}
                     columns={columns}
                     rowKey="id"
-                    emptyText="Filtrelere uygun kayıt bulunamadı"
+                    emptyText=t('noFilteredRecords', 'Filtrelere uygun kayıt bulunamadı')
                     striped
                     hoverable
                     size="medium"
@@ -232,14 +234,14 @@ export function ReportTrackingTab({ filters }: ReportTrackingTabProps) {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
                     <div className="w-full max-w-2xl rounded-xl bg-white dark:bg-gray-800 p-6 mx-4">
                         <div className="flex items-center justify-between mb-4">
-                            <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Takip Detayı</h4>
-                            <Button variant="ghost" onClick={() => setSelectedRow(null)} className="!w-auto !h-auto px-2 py-1">Kapat</Button>
+                            <h4 className="text-lg font-semibold text-gray-900 dark:text-white">{t('trackingDetail', 'Takip Detayı')}</h4>
+                            <Button variant="ghost" onClick={() => setSelectedRow(null)} className="!w-auto !h-auto px-2 py-1">{t('close', 'Kapat')}</Button>
                         </div>
                         <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div><span className="text-muted-foreground">Hasta</span><p className="font-medium">{canViewDetails ? (selectedRow.partyName || '-') : 'Bu rol icin gizli'}</p></div>
-                            <div><span className="text-muted-foreground">Şube</span><p className="font-medium">{selectedRow.branchName || '-'}</p></div>
-                            <div><span className="text-muted-foreground">Cihaz</span><p className="font-medium">{canViewDetails ? (selectedRow.deviceName || '-') : 'Bu rol icin gizli'}</p></div>
-                            <div><span className="text-muted-foreground">Seri No</span><p className="font-medium">{canViewDetails ? (selectedRow.serialNumber || '-') : 'Bu rol icin gizli'}</p></div>
+                            <div><span className="text-muted-foreground">Hasta</span><p className="font-medium">{canViewDetails ? (selectedRow.partyName || '-') : t('hiddenForRole', 'Bu rol icin gizli')}</p></div>
+                            <div><span className="text-muted-foreground">{t('branch', 'Şube')}</span><p className="font-medium">{selectedRow.branchName || '-'}</p></div>
+                            <div><span className="text-muted-foreground">Cihaz</span><p className="font-medium">{canViewDetails ? (selectedRow.deviceName || '-') : t('hiddenForRole', 'Bu rol icin gizli')}</p></div>
+                            <div><span className="text-muted-foreground">Seri No</span><p className="font-medium">{canViewDetails ? (selectedRow.serialNumber || '-') : t('hiddenForRole', 'Bu rol icin gizli')}</p></div>
                             <div><span className="text-muted-foreground">Rapor Durumu</span><p className="font-medium">{getStatusLabel(selectedRow.reportStatus)}</p></div>
                             <div><span className="text-muted-foreground">Teslim Durumu</span><p className="font-medium">{getStatusLabel(selectedRow.deliveryStatus)}</p></div>
                             <div><span className="text-muted-foreground">Satış Tarihi</span><p className="font-medium">{selectedRow.saleDate ? new Date(selectedRow.saleDate).toLocaleString('tr-TR') : '-'}</p></div>

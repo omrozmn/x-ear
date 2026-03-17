@@ -3,6 +3,7 @@ import { Input, Button, Loading } from '@x-ear/ui-web';
 import { Search, X, Clock, User, Phone, Filter } from 'lucide-react';
 import { PartySearchItem } from '../../types/party/party-search.types';
 import { PARTY_RECENT_SEARCHES } from '../../constants/storage-keys';
+import { useTranslation } from 'react-i18next';
 
 export interface PartySearchFilters {
   query?: string;
@@ -53,7 +54,7 @@ export function PartySearch({
   onClear,
   results = [],
   isSearching = false,
-  placeholder = 'Hasta ara... (ad, soyad, telefon, TC)',
+  placeholder: placeholderProp,
   className = '',
   debounceMs = 300,
   disabled = false,
@@ -61,6 +62,8 @@ export function PartySearch({
   showFilters = false,
   initialFilters = {}
 }: PartySearchProps) {
+  const { t } = useTranslation(['parties_extra', 'patients', 'common']);
+  const placeholder = placeholderProp || t('search.placeholder_default');
   const [localValue, setLocalValue] = useState(value);
   const [isFocused, setIsFocused] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -297,14 +300,14 @@ export function PartySearch({
       {showFilters && showAdvancedFilters && (
         <div className="absolute z-40 w-full mt-1 bg-card border border-border rounded-2xl shadow-lg p-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-foreground">Gelişmiş Filtreler</h3>
+            <h3 className="text-sm font-medium text-foreground">{t('search.advanced_filters')}</h3>
             <Button
               variant="ghost"
               size="sm"
               onClick={clearAllFilters}
               className="text-xs"
             >
-              Temizle
+              {t('search.clear')}
             </Button>
           </div>
 
@@ -312,61 +315,61 @@ export function PartySearch({
             {/* Status Filter */}
             <div>
               <label className="block text-xs font-medium text-foreground mb-1">
-                Durum
+                {t('filters.status_label')}
               </label>
               <select data-allow-raw="true"
                 value={filters.status || ''}
                 onChange={(e) => handleFilterChange('status', e.target.value || undefined)}
                 className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
-                <option value="">Tümü</option>
-                <option value="active">Aktif</option>
-                <option value="inactive">Pasif</option>
-                <option value="pending">Beklemede</option>
+                <option value="">{t('filters.all')}</option>
+                <option value="active">{t('status.active')}</option>
+                <option value="inactive">{t('status.inactive')}</option>
+                <option value="pending">{t('status.pending')}</option>
               </select>
             </div>
 
             {/* Segment Filter */}
             <div>
               <label className="block text-xs font-medium text-foreground mb-1">
-                Segment
+                {t('filters.segment_label')}
               </label>
               <select data-allow-raw="true"
                 value={filters.segment || ''}
                 onChange={(e) => handleFilterChange('segment', e.target.value || undefined)}
                 className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
-                <option value="">Tümü</option>
-                <option value="trial">Deneme</option>
-                <option value="purchased">Satın Alınmış</option>
-                <option value="lead">Potansiyel</option>
-                <option value="follow_up">Takip</option>
+                <option value="">{t('filters.all')}</option>
+                <option value="trial">{t('segment.trial')}</option>
+                <option value="purchased">{t('segment.purchased')}</option>
+                <option value="lead">{t('segment.potential')}</option>
+                <option value="follow_up">{t('segment.follow_up')}</option>
               </select>
             </div>
 
             {/* Acquisition Type Filter */}
             <div>
               <label className="block text-xs font-medium text-foreground mb-1">
-                Kazanım Türü
+                {t('filters.acquisition_type_label')}
               </label>
               <select data-allow-raw="true"
                 value={filters.acquisitionType || ''}
                 onChange={(e) => handleFilterChange('acquisitionType', e.target.value || undefined)}
                 className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
-                <option value="">Tümü</option>
-                <option value="referral">Referans</option>
-                <option value="online">Online</option>
-                <option value="walk-in">Yürüyerek Gelen</option>
-                <option value="social-media">Sosyal Medya</option>
-                <option value="advertisement">Reklam</option>
+                <option value="">{t('filters.all')}</option>
+                <option value="referral">{t('acquisition.referral')}</option>
+                <option value="online">{t('acquisition.online')}</option>
+                <option value="walk-in">{t('acquisition.walk_in_alt')}</option>
+                <option value="social-media">{t('acquisition.social_media')}</option>
+                <option value="advertisement">{t('acquisition.advertisement')}</option>
               </select>
             </div>
 
             {/* Date From */}
             <div>
               <label className="block text-xs font-medium text-foreground mb-1">
-                Başlangıç Tarihi
+                {t('filters.start_date_label')}
               </label>
               <input data-allow-raw="true"
                 type="date"
@@ -379,7 +382,7 @@ export function PartySearch({
             {/* Date To */}
             <div>
               <label className="block text-xs font-medium text-foreground mb-1">
-                Bitiş Tarihi
+                {t('filters.end_date_label')}
               </label>
               <input data-allow-raw="true"
                 type="date"
@@ -392,14 +395,14 @@ export function PartySearch({
             {/* Branch Filter */}
             <div>
               <label className="block text-xs font-medium text-foreground mb-1">
-                Şube
+                {t('filters.branch_label')}
               </label>
               <select data-allow-raw="true"
                 value={filters.branchId || ''}
                 onChange={(e) => handleFilterChange('branchId', e.target.value || undefined)}
                 className="w-full px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
-                <option value="">Tüm Şubeler</option>
+                <option value="">{t('filters.all_branches')}</option>
                 <option value="branch-1">Merkez Şube</option>
                 <option value="branch-2">Kadıköy Şube</option>
                 <option value="branch-3">Beşiktaş Şube</option>
@@ -421,12 +424,12 @@ export function PartySearch({
               {isSearching ? (
                 <div className="p-4 text-center">
                   <Loading className="h-6 w-6 mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">Aranıyor...</p>
+                  <p className="text-sm text-muted-foreground">{t('search.searching')}</p>
                 </div>
               ) : results.length > 0 ? (
                 <div>
                   <div className="px-3 py-2 text-xs font-medium text-muted-foreground bg-muted border-b">
-                    Arama Sonuçları ({results.length})
+                    {t('search.search_results')} ({results.length})
                   </div>
                   {results.slice(0, 8).map((party) => (
                     <div
@@ -492,15 +495,15 @@ export function PartySearch({
                   
                   {results.length > 8 && (
                     <div className="px-3 py-2 text-center text-sm text-muted-foreground bg-muted">
-                      +{results.length - 8} hasta daha
+                      {t('search.more_patients', { count: results.length - 8 })}
                     </div>
                   )}
                 </div>
               ) : localValue.length >= 2 ? (
                 <div className="p-4 text-center text-muted-foreground">
                   <User className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                  <p className="text-sm">Hasta bulunamadı</p>
-                  <p className="text-xs mt-1">Farklı arama terimleri deneyin</p>
+                  <p className="text-sm">{t('search.no_patient_found')}</p>
+                  <p className="text-xs mt-1">{t('search.try_different_terms')}</p>
                 </div>
               ) : null}
             </div>
@@ -510,14 +513,14 @@ export function PartySearch({
           {showRecentSearches && localValue.length === 0 && recentSearches.length > 0 && (
             <div>
               <div className="flex items-center justify-between px-3 py-2 text-xs font-medium text-muted-foreground bg-muted border-b">
-                <span>Son Aramalar</span>
+                <span>{t('search.recent_searches')}</span>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={clearRecentSearches}
                   className="text-xs p-1 h-auto"
                 >
-                  Temizle
+                  {t('search.clear')}
                 </Button>
               </div>
               
@@ -534,7 +537,7 @@ export function PartySearch({
                     </div>
                     
                     <div className="text-xs text-muted-foreground">
-                      {search.resultCount} sonuç
+                      {t('search.results_count', { count: search.resultCount })}
                     </div>
                   </div>
                 </div>
@@ -546,8 +549,8 @@ export function PartySearch({
           {localValue.length === 0 && recentSearches.length === 0 && (
             <div className="p-4 text-center text-muted-foreground">
               <Search className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-              <p className="text-sm">Hasta aramaya başlayın</p>
-              <p className="text-xs mt-1">Ad, soyad, telefon veya TC ile arayabilirsiniz</p>
+              <p className="text-sm">{t('search.start_searching')}</p>
+              <p className="text-xs mt-1">{t('search.search_hint')}</p>
             </div>
           )}
         </div>

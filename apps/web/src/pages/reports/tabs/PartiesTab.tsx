@@ -16,6 +16,7 @@ import {
     getListReportPatientsQueryKey as getListReportPartiesQueryKey
 } from '@/api/client/reports.client';
 import { ReportParties, FilterState } from '../types';
+import { useTranslation } from 'react-i18next';
 
 interface PartiesTabProps {
     filters: FilterState;
@@ -23,7 +24,7 @@ interface PartiesTabProps {
 
 const SEGMENT_LABELS: Record<string, string> = {
     new: 'Yeni',
-    active: 'Aktif',
+    active: t('active', 'Aktif'),
     trial: 'Deneme Sürecinde',
     inactive: 'Pasif',
     vip: 'VIP',
@@ -49,6 +50,7 @@ function humanizeLabel(value: string, labels: Record<string, string>) {
 }
 
 export function PartiesTab({ filters }: PartiesTabProps) {
+  const { t } = useTranslation('reports');
     const reportParams = {
         days: filters.days,
         branch_id: filters.branch,
@@ -104,27 +106,27 @@ export function PartiesTab({ filters }: PartiesTabProps) {
     ];
 
     const appointmentFlow = [
-        { label: 'Tamamlandı', value: statusDistribution.COMPLETED || 0 },
-        { label: 'Planlandı', value: statusDistribution.SCHEDULED || 0 },
-        { label: 'Onaylandı', value: statusDistribution.CONFIRMED || 0 },
-        { label: 'İptal', value: statusDistribution.CANCELLED || 0 },
-        { label: 'Gelmedi', value: statusDistribution.NO_SHOW || 0 },
+        { label: t('completed', 'Tamamlandı'), value: statusDistribution.COMPLETED || 0 },
+        { label: t('scheduled', 'Planlandı'), value: statusDistribution.SCHEDULED || 0 },
+        { label: t('confirmed', 'Onaylandı'), value: statusDistribution.CONFIRMED || 0 },
+        { label: t('cancelled', 'İptal'), value: statusDistribution.CANCELLED || 0 },
+        { label: t('noShow', 'Gelmedi'), value: statusDistribution.NO_SHOW || 0 },
     ];
 
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-foreground">Hasta Performansı</h3>
+                <h3 className="text-lg font-semibold text-foreground">{t('patientPerformance', 'Hasta Performansı')}</h3>
                 <TabExportButton filename="hasta-raporu" rows={exportRows} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
                 {[
-                    { label: 'Toplam Hasta', value: summary?.totalPatients || 0, icon: Users, tone: 'blue' },
-                    { label: 'Yeni Hasta', value: summary?.newPatients || 0, icon: Star, tone: 'green' },
-                    { label: 'Satışa Dönen', value: summary?.patientsWithSales || 0, icon: ShoppingBag, tone: 'emerald' },
-                    { label: 'Yaklaşan Randevu', value: summary?.patientsWithUpcomingAppointments || 0, icon: Calendar, tone: 'amber' },
-                    { label: 'Öncelikli Hasta', value: summary?.highPriorityPatients || 0, icon: AlertTriangle, tone: 'rose' },
+                    { label: t('totalPatients', 'Toplam Hasta'), value: summary?.totalPatients || 0, icon: Users, tone: 'blue' },
+                    { label: t('newPatient', 'Yeni Hasta'), value: summary?.newPatients || 0, icon: Star, tone: 'green' },
+                    { label: t('convertedToSale', 'Satışa Dönen'), value: summary?.patientsWithSales || 0, icon: ShoppingBag, tone: 'emerald' },
+                    { label: t('upcomingAppointment', 'Yaklaşan Randevu'), value: summary?.patientsWithUpcomingAppointments || 0, icon: Calendar, tone: 'amber' },
+                    { label: t('highPriorityPatient', 'Öncelikli Hasta'), value: summary?.highPriorityPatients || 0, icon: AlertTriangle, tone: 'rose' },
                 ].map((item) => {
                     const Icon = item.icon;
                     return (
@@ -141,7 +143,7 @@ export function PartiesTab({ filters }: PartiesTabProps) {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="bg-white dark:bg-gray-800 rounded-xl border border-border p-6">
-                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Randevu Sonuçları</h4>
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">{t('appointmentResults', 'Randevu Sonuçları')}</h4>
                     <div className="space-y-4">
                         {appointmentFlow.map((item) => (
                             <div key={item.label} className="flex items-center justify-between gap-4">
@@ -161,7 +163,7 @@ export function PartiesTab({ filters }: PartiesTabProps) {
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 rounded-xl border border-border p-6">
-                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Hasta Kaynakları</h4>
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">{t('patientSources', 'Hasta Kaynakları')}</h4>
                     <div className="space-y-4">
                         {topAcquisitionSources.length > 0 ? (
                             topAcquisitionSources.map(([source, count]) => (
@@ -171,13 +173,13 @@ export function PartiesTab({ filters }: PartiesTabProps) {
                                 </div>
                             ))
                         ) : (
-                            <p className="text-muted-foreground text-sm">Veri bulunamadı</p>
+                            <p className="text-muted-foreground text-sm">{t('noData', 'Veri bulunamadı')}</p>
                         )}
                     </div>
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 rounded-xl border border-border p-6">
-                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Hasta Segmentleri</h4>
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">{t('patientSegments', 'Hasta Segmentleri')}</h4>
                     <div className="space-y-4">
                         {Object.entries(segmentBreakdown).length > 0 ? Object.entries(segmentBreakdown).map(([segment, count]) => (
                             <div key={segment} className="flex justify-between items-center">
@@ -185,13 +187,13 @@ export function PartiesTab({ filters }: PartiesTabProps) {
                                 <span className="font-semibold text-gray-900 dark:text-white">{count}</span>
                             </div>
                         )) : (
-                            <p className="text-muted-foreground text-sm">Veri bulunamadı</p>
+                            <p className="text-muted-foreground text-sm">{t('noData', 'Veri bulunamadı')}</p>
                         )}
                     </div>
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 rounded-xl border border-border p-6 lg:col-span-2">
-                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Yaş Dağılımı</h4>
+                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">{t('ageDistribution', 'Yaş Dağılımı')}</h4>
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                         {Object.entries(ageDistribution).map(([label, count]) => (
                             <div key={label} className="rounded-lg bg-gray-50 dark:bg-gray-900/40 p-4 text-center">

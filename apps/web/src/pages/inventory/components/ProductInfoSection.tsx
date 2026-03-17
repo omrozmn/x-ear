@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
 import { Input, Textarea, Select, Card } from '@x-ear/ui-web';
 import { useNavigate } from '@tanstack/react-router';
@@ -24,6 +25,7 @@ export const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
   onEditChange,
   onFeaturesChange,
 }) => {
+  const { t } = useTranslation('inventory');
   const navigate = useNavigate();
   return (
     <Card>
@@ -219,11 +221,11 @@ export const ProductInfoSection: React.FC<ProductInfoSectionProps> = ({
 
           <div className="pt-4 border-t border-border">
             <p className="text-sm text-muted-foreground">
-              Oluşturulma: {item.createdAt ? new Date(item.createdAt).toLocaleDateString('tr-TR') : '-'}
+              {t('columns.created_at')}: {item.createdAt ? new Date(item.createdAt).toLocaleDateString('tr-TR') : '-'}
             </p>
             {item.lastUpdated && (
               <p className="text-sm text-muted-foreground mt-1">
-                Son Güncelleme: {new Date(item.lastUpdated).toLocaleDateString('tr-TR')}
+                {t('columns.updated_at')}: {new Date(item.lastUpdated).toLocaleDateString('tr-TR')}
               </p>
             )}
           </div>

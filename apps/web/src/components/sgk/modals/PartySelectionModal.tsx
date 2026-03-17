@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, Button, Input, DataTable } from '@x-ear/ui-web';
 import type { Party, PartyGender } from '../../../types/party/party-base.types';
 
@@ -58,6 +59,7 @@ export const PartySelectionModal: React.FC<PartySelectionModalProps> = ({
   onSelect,
   title = 'Hasta Seçimi'
 }) => {
+  const { t } = useTranslation('sgk');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedParty, setSelectedParty] = useState<Party | null>(null);
 
@@ -78,20 +80,20 @@ export const PartySelectionModal: React.FC<PartySelectionModalProps> = ({
   const columns = [
     {
       key: 'fullName',
-      title: 'Ad Soyad',
+      title: t('fullName', 'Ad Soyad'),
       render: (value: string | null | undefined, record: Party) => `${record.firstName || ''} ${record.lastName || ''}`
     },
     {
       key: 'tcNumber',
-      title: 'TC Kimlik No'
+      title: t('tcIdNo', 'TC Kimlik No')
     },
     {
       key: 'phone',
-      title: 'Telefon'
+      title: t('phone', 'Telefon')
     },
     {
       key: 'addressCity',
-      title: 'Şehir'
+      title: t('city', 'Şehir')
     }
   ];
 
@@ -115,7 +117,7 @@ export const PartySelectionModal: React.FC<PartySelectionModalProps> = ({
   const actions = [
     {
       key: 'select',
-      label: 'Seç',
+      label: t('select', 'Seç'),
       onClick: handleRowClick,
       variant: 'primary' as const
     }
@@ -133,7 +135,7 @@ export const PartySelectionModal: React.FC<PartySelectionModalProps> = ({
         {/* Arama */}
         <div>
           <Input
-            placeholder="Hasta adı, TC kimlik no veya telefon ile ara..."
+            placeholder={t('searchPatientPlaceholder', 'Hasta adı, TC kimlik no veya telefon ile ara...')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             fullWidth
@@ -148,14 +150,14 @@ export const PartySelectionModal: React.FC<PartySelectionModalProps> = ({
             actions={actions}
             rowKey="id"
             hoverable
-            emptyText="Hasta bulunamadı"
+            emptyText={t('patientNotFound', 'Hasta bulunamadı')}
           />
         </div>
 
         {/* Seçili Hasta Bilgisi */}
         {selectedParty && (
           <div className="bg-primary/10 p-4 rounded-2xl">
-            <h4 className="font-medium text-blue-900 mb-2">Seçili Hasta:</h4>
+            <h4 className="font-medium text-blue-900 mb-2">{t('selectedPatient', 'Seçili Hasta')}:</h4>
             <p className="text-blue-800">
               {selectedParty.firstName || ''} {selectedParty.lastName || ''} - {selectedParty.tcNumber || ''}
             </p>
@@ -168,14 +170,14 @@ export const PartySelectionModal: React.FC<PartySelectionModalProps> = ({
             variant="outline"
             onClick={handleClose}
           >
-            İptal
+            {t('cancel', 'İptal')}
           </Button>
           <Button
             variant="primary"
             onClick={handleSelect}
             disabled={!selectedParty}
           >
-            Seç
+            {t('select', 'Seç')}
           </Button>
         </div>
       </div>

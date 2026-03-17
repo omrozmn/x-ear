@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Bot,
   History,
@@ -52,18 +53,6 @@ const DEFAULT_CONFIG: WhatsAppConfig = {
   autoReplyPrompt: '',
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  idle: 'Hazır Değil',
-  starting: 'Başlatılıyor',
-  loading: 'Yükleniyor',
-  qr: 'QR Hazır',
-  awaiting_qr: 'QR Hazırlanıyor',
-  connected: 'Bağlı',
-  disconnected: 'Bağlantı Kesildi',
-  stopped: 'Durduruldu',
-  error: 'Hata',
-};
-
 function parsePhoneList(raw: string): string[] {
   return raw
     .split(/[\n,;]+/)
@@ -72,6 +61,7 @@ function parsePhoneList(raw: string): string[] {
 }
 
 export default function WhatsAppTab() {
+  const { t } = useTranslation('campaigns');
   const [activeTab, setActiveTab] = useState<WhatsAppSubTab>('single');
   const [session, setSession] = useState<WhatsAppStatus>({ status: 'idle', connected: false });
   const [config, setConfig] = useState<WhatsAppConfig>(DEFAULT_CONFIG);
@@ -92,7 +82,7 @@ export default function WhatsAppTab() {
   const { data: partiesData } = useListParties({ page: 1, per_page: 25, search: partySearch || undefined });
   const parties = useMemo(() => unwrapArray<PartyRead>(partiesData), [partiesData]);
   const numbersCount = useMemo(() => parsePhoneList(bulkNumbers).length, [bulkNumbers]);
-  const statusLabel = session.connected ? 'Bağlı' : (STATUS_LABELS[session.status] ?? session.status);
+  const statusLabel = session.connected ? t('whatsapp.status.connected') : (t(`whatsapp.status.${session.status}`, { defaultValue: session.status }));
   const chatThreads = useMemo(() => {
     const grouped = new Map<string, {
       chatId: string;
@@ -150,10 +140,10 @@ export default function WhatsAppTab() {
       setSession(response.data?.data ?? { status: 'idle', connected: false });
     } catch (err) {
       if (showError) {
-        error('WhatsApp durumu alınamadı', err instanceof Error ? err.message : 'Durum bilgisi alınamadı');
+        error(t('whatsapp.toast.statusError'), err instanceof Error ? err.message : t('whatsapp.toast.statusErrorDesc'));
       }
     }
-  }, [error]);
+  }, [error, t]);
 
   const fetchConfig = useCallback(async () => {
     const response = await apiClient.get('/api/whatsapp/config');
@@ -204,7 +194,7 @@ export default function WhatsAppTab() {
       setLoadingAction(key);
       await action();
     } catch (err) {
-      error('WhatsApp hatası', err instanceof Error ? err.message : 'İşlem başarısız oldu');
+      error(t('whatsapp.toast.error'), err instanceof Error ? err.message : t('whatsapp.toast.actionFailed'));
     } finally {
       setLoadingAction(null);
     }
@@ -218,7 +208,7 @@ export default function WhatsAppTab() {
 
   const handleSendSingle = () => runAction('single', async () => {
     if (!singlePhone.trim() || !singleMessage.trim()) {
-      warning('Eksik alan', 'Telefon ve mesaj zorunlu.');
+      warning(t('whatsapp.toast.missingField'), t('whatsapp.toast.phoneAndMessageRequired'));
       return;
     }
     await apiClient.post('/api/whatsapp/messages/send', {
@@ -226,18 +216,18 @@ export default function WhatsAppTab() {
       message: singleMessage,
     });
     await fetchInbox();
-    success('Mesaj gönderildi', 'WhatsApp tekli mesaj gönderildi.');
+    success(t('whatsapp.toast.messageSent'), t('whatsapp.toast.messageSentDesc'));
     setSingleMessage('');
   });
 
   const handleSendBulk = () => runAction('bulk', async () => {
     if (!bulkMessage.trim()) {
-      warning('Eksik alan', 'Toplu gönderim mesajı zorunlu.');
+      warning(t('whatsapp.toast.missingField'), t('whatsapp.toast.bulkMessageRequired'));
       return;
     }
     const phoneNumbers = parsePhoneList(bulkNumbers);
     if (phoneNumbers.length === 0 && selectedPartyIds.length === 0 && !bulkStatus && !bulkSegment) {
-      warning('Hedef seçilmedi', 'Numara listesi, hasta seçimi veya filtre vermelisiniz.');
+      warning(t('whatsapp.toast.noTargetSelected'), t('whatsapp.toast.noTargetSelectedDesc'));
       return;
     }
     await apiClient.post('/api/whatsapp/messages/send-bulk', {
@@ -249,12 +239,12 @@ export default function WhatsAppTab() {
         : undefined,
     });
     await fetchInbox();
-    success('Toplu gönderim tamamlandı', 'WhatsApp toplu mesaj işlemi başlatıldı.');
+    success(t('whatsapp.toast.bulkSent'), t('whatsapp.toast.bulkSentDesc'));
   });
 
   const handleSendAi = () => runAction('ai', async () => {
     if (!aiPrompt.trim()) {
-      warning('Eksik alan', 'AI talep metni zorunlu.');
+      warning(t('whatsapp.toast.missingField'), t('whatsapp.toast.aiRequired'));
       return;
     }
     await apiClient.post('/api/whatsapp/messages/send-ai', {
@@ -262,7 +252,7 @@ export default function WhatsAppTab() {
       phoneNumber: config.aiTargetPhone || undefined,
     });
     await fetchInbox();
-    success('AI talebi gönderildi', 'AI chatbot talebi WhatsApp üzerinden iletildi.');
+    success(t('whatsapp.toast.aiSent'), t('whatsapp.toast.aiSentDesc'));
     setAiPrompt('');
   });
 
@@ -271,10 +261,10 @@ export default function WhatsAppTab() {
       <Card className="p-1 dark:bg-gray-800 dark:border-gray-700">
         <nav className="flex flex-wrap gap-1">
           {([
-            { id: 'single', label: 'Tekil', icon: <Send className="h-4 w-4" /> },
-            { id: 'bulk', label: 'Toplu', icon: <Users className="h-4 w-4" /> },
-            { id: 'automation', label: 'Otomasyon', icon: <Bot className="h-4 w-4" /> },
-            { id: 'inbox', label: 'Sohbetler', icon: <History className="h-4 w-4" /> },
+            { id: 'single', label: t('whatsapp.tabs.single'), icon: <Send className="h-4 w-4" /> },
+            { id: 'bulk', label: t('whatsapp.tabs.bulk'), icon: <Users className="h-4 w-4" /> },
+            { id: 'automation', label: t('whatsapp.tabs.automation'), icon: <Bot className="h-4 w-4" /> },
+            { id: 'inbox', label: t('whatsapp.tabs.inbox'), icon: <History className="h-4 w-4" /> },
           ] as const).map((tab) => (
             <button
               data-allow-raw="true"
@@ -300,10 +290,10 @@ export default function WhatsAppTab() {
           <div>
             <div className="flex items-center gap-2">
               <MessageCircle className="h-5 w-5 text-emerald-600" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">WhatsApp Kanal Durumu</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('whatsapp.channel.title')}</h3>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              QR ile bağlama ve otomatik cevap ayarları artık `Ayarlar &gt; Entegrasyon &gt; WhatsApp Entegrasyonu` altında yönetiliyor.
+              {t('whatsapp.channel.settingsNote')}
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
               <span className={`rounded-full px-3 py-1 font-medium ${
@@ -314,8 +304,8 @@ export default function WhatsAppTab() {
                 {statusLabel}
               </span>
               {session.bridgePid ? <span className="text-muted-foreground">PID: {session.bridgePid}</span> : null}
-              {session.syncInProgress ? <span className="text-sky-600 dark:text-sky-400">Senkronize ediliyor</span> : null}
-              {session.lastSyncAt ? <span className="text-muted-foreground">Son sync: {new Date(session.lastSyncAt * 1000).toLocaleTimeString('tr-TR')}</span> : null}
+              {session.syncInProgress ? <span className="text-sky-600 dark:text-sky-400">{t('whatsapp.channel.syncing')}</span> : null}
+              {session.lastSyncAt ? <span className="text-muted-foreground">{t('whatsapp.channel.lastSync')} {new Date(session.lastSyncAt * 1000).toLocaleTimeString('tr-TR')}</span> : null}
               {session.lastError ? <span className="text-destructive">{session.lastError}</span> : null}
             </div>
           </div>
@@ -323,7 +313,7 @@ export default function WhatsAppTab() {
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => { void fetchStatus(); void fetchInbox(); }} disabled={loadingAction !== null}>
               <RefreshCcw className="mr-2 h-4 w-4" />
-              Yenile
+              {t('whatsapp.channel.refresh')}
             </Button>
           </div>
         </div>
@@ -334,20 +324,20 @@ export default function WhatsAppTab() {
           <Card className="p-6">
             <div className="mb-4 flex items-center gap-2">
               <MessageCircle className="h-5 w-5 text-indigo-600" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Tekil WhatsApp Mesajı</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('whatsapp.singleMessage.title')}</h3>
             </div>
             {!session.connected ? (
               <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-200">
-                WhatsApp henüz bağlı değil. `Ayarlar &gt; Entegrasyon &gt; WhatsApp Entegrasyonu` altından QR taratın.
-                Mevcut durum: <span className="font-semibold">{statusLabel}</span>
+                {t('whatsapp.channel.notConnected')}
+                {' '}{t('whatsapp.channel.currentStatus')} <span className="font-semibold">{statusLabel}</span>
               </div>
             ) : null}
             <div className="space-y-4">
-              <input data-allow-raw="true" value={singlePhone} onChange={(event) => setSinglePhone(event.target.value)} className="w-full rounded-2xl border px-4 py-3" placeholder="Telefon numarası" />
-              <textarea data-allow-raw="true" value={singleMessage} onChange={(event) => setSingleMessage(event.target.value)} className="min-h-[140px] w-full rounded-2xl border px-4 py-3" placeholder="Mesajınız" />
+              <input data-allow-raw="true" value={singlePhone} onChange={(event) => setSinglePhone(event.target.value)} className="w-full rounded-2xl border px-4 py-3" placeholder={t('whatsapp.singleMessage.phonePlaceholder')} />
+              <textarea data-allow-raw="true" value={singleMessage} onChange={(event) => setSingleMessage(event.target.value)} className="min-h-[140px] w-full rounded-2xl border px-4 py-3" placeholder={t('whatsapp.singleMessage.messagePlaceholder')} />
               <Button onClick={handleSendSingle} disabled={!session.connected || loadingAction !== null}>
                 <Send className="mr-2 h-4 w-4" />
-                Tekli Mesaj Gönder
+                {t('whatsapp.singleMessage.sendBtn')}
               </Button>
             </div>
           </Card>
@@ -355,18 +345,18 @@ export default function WhatsAppTab() {
           <Card className="p-6">
             <div className="mb-4 flex items-center gap-2">
               <Bot className="h-5 w-5 text-fuchsia-600" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">AI Chatbot Talebi</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('whatsapp.ai.title')}</h3>
             </div>
             {!session.connected ? (
               <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-200">
-                AI talebi göndermek için önce WhatsApp bağlantısı aktif olmalı. Mevcut durum: <span className="font-semibold">{statusLabel}</span>
+                {t('whatsapp.ai.notConnected')} {t('whatsapp.channel.currentStatus')} <span className="font-semibold">{statusLabel}</span>
               </div>
             ) : null}
             <div className="space-y-4">
-              <textarea data-allow-raw="true" value={aiPrompt} onChange={(event) => setAiPrompt(event.target.value)} className="min-h-[180px] w-full rounded-2xl border px-4 py-3" placeholder="AI chatbot'a gidecek talep veya komut" />
+              <textarea data-allow-raw="true" value={aiPrompt} onChange={(event) => setAiPrompt(event.target.value)} className="min-h-[180px] w-full rounded-2xl border px-4 py-3" placeholder={t('whatsapp.ai.placeholder')} />
               <Button onClick={handleSendAi} disabled={!session.connected || loadingAction !== null}>
                 <Bot className="mr-2 h-4 w-4" />
-                AI Talebi Gönder
+                {t('whatsapp.ai.sendBtn')}
               </Button>
             </div>
           </Card>
@@ -377,17 +367,17 @@ export default function WhatsAppTab() {
         <Card className="p-6">
           <div className="mb-4 flex items-center gap-2">
             <Users className="h-5 w-5 text-emerald-600" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Toplu WhatsApp Gönderimi</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('whatsapp.bulkMessage.title')}</h3>
           </div>
           {!session.connected ? (
             <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-200">
-              Toplu gönderim için aktif WhatsApp oturumu gerekli. Mevcut durum: <span className="font-semibold">{statusLabel}</span>
+              {t('whatsapp.bulkMessage.notConnected')} {t('whatsapp.channel.currentStatus')} <span className="font-semibold">{statusLabel}</span>
             </div>
           ) : null}
           <div className="grid gap-4 lg:grid-cols-[1.2fr,0.8fr]">
             <div className="space-y-4">
-              <textarea data-allow-raw="true" value={bulkNumbers} onChange={(event) => setBulkNumbers(event.target.value)} className="min-h-[120px] w-full rounded-2xl border px-4 py-3" placeholder="Numaraları satır satır, virgül veya noktalı virgülle girin" />
-              <input data-allow-raw="true" value={partySearch} onChange={(event) => setPartySearch(event.target.value)} className="w-full rounded-2xl border px-4 py-3" placeholder="Hasta ara" />
+              <textarea data-allow-raw="true" value={bulkNumbers} onChange={(event) => setBulkNumbers(event.target.value)} className="min-h-[120px] w-full rounded-2xl border px-4 py-3" placeholder={t('whatsapp.bulkMessage.numbersPlaceholder')} />
+              <input data-allow-raw="true" value={partySearch} onChange={(event) => setPartySearch(event.target.value)} className="w-full rounded-2xl border px-4 py-3" placeholder={t('whatsapp.bulkMessage.searchPatient')} />
               <div className="max-h-56 space-y-2 overflow-auto rounded-2xl border p-3">
                 {parties.map((party) => (
                   <label key={party.id} className="flex items-center justify-between rounded-xl border px-3 py-2">
@@ -396,33 +386,33 @@ export default function WhatsAppTab() {
                   </label>
                 ))}
               </div>
-              <textarea data-allow-raw="true" value={bulkMessage} onChange={(event) => setBulkMessage(event.target.value)} className="min-h-[140px] w-full rounded-2xl border px-4 py-3" placeholder="Toplu WhatsApp mesajınız" />
+              <textarea data-allow-raw="true" value={bulkMessage} onChange={(event) => setBulkMessage(event.target.value)} className="min-h-[140px] w-full rounded-2xl border px-4 py-3" placeholder={t('whatsapp.bulkMessage.bulkMessagePlaceholder')} />
             </div>
             <div className="space-y-4 rounded-3xl border border-border bg-gray-50/70 p-4 dark:bg-gray-900/40">
               <div>
-                <label className="mb-2 block text-sm font-medium">Hasta durumu</label>
+                <label className="mb-2 block text-sm font-medium">{t('whatsapp.bulkMessage.patientStatus')}</label>
                 <select data-allow-raw="true" value={bulkStatus} onChange={(event) => setBulkStatus(event.target.value)} className="w-full rounded-2xl border px-4 py-3">
-                  <option value="">Tüm durumlar</option>
-                  <option value="active">Aktif</option>
-                  <option value="inactive">Pasif</option>
+                  <option value="">{t('whatsapp.bulkMessage.allStatuses')}</option>
+                  <option value="active">{t('whatsapp.bulkMessage.active')}</option>
+                  <option value="inactive">{t('whatsapp.bulkMessage.inactive')}</option>
                 </select>
               </div>
               <div>
-                <label className="mb-2 block text-sm font-medium">Segment</label>
+                <label className="mb-2 block text-sm font-medium">{t('whatsapp.bulkMessage.segment')}</label>
                 <select data-allow-raw="true" value={bulkSegment} onChange={(event) => setBulkSegment(event.target.value)} className="w-full rounded-2xl border px-4 py-3">
-                  <option value="">Tüm segmentler</option>
+                  <option value="">{t('whatsapp.bulkMessage.allSegments')}</option>
                   <option value="lead">Lead</option>
-                  <option value="new">Yeni</option>
-                  <option value="trial">Deneme</option>
-                  <option value="existing">Mevcut</option>
-                  <option value="vip">VIP</option>
+                  <option value="new">{t('sms.segments.NEW')}</option>
+                  <option value="trial">{t('sms.segments.TRIAL')}</option>
+                  <option value="existing">{t('sms.segments.EXISTING')}</option>
+                  <option value="vip">{t('sms.segments.VIP')}</option>
                 </select>
               </div>
-              <div className="text-sm text-muted-foreground">Manuel numara listesi: {numbersCount} kayıt</div>
-              <div className="text-sm text-muted-foreground">Seçili hasta: {selectedPartyIds.length}</div>
+              <div className="text-sm text-muted-foreground">{t('whatsapp.bulkMessage.manualNumbers', { count: numbersCount })}</div>
+              <div className="text-sm text-muted-foreground">{t('whatsapp.bulkMessage.selectedPatients', { count: selectedPartyIds.length })}</div>
               <Button onClick={handleSendBulk} disabled={!session.connected || loadingAction !== null} className="w-full">
                 <Users className="mr-2 h-4 w-4" />
-                Toplu WhatsApp Gönder
+                {t('whatsapp.bulkMessage.sendBtn')}
               </Button>
             </div>
           </div>
@@ -438,15 +428,15 @@ export default function WhatsAppTab() {
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <History className="h-5 w-5 text-emerald-600" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">WhatsApp Sohbetleri ve Geçmiş</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('whatsapp.inbox.title')}</h3>
             </div>
             <div className="text-sm text-muted-foreground">
-              Gelen mesajlar arka planda otomatik senkronize edilir.
+              {t('whatsapp.inbox.autoSync')}
             </div>
           </div>
           {chatThreads.length === 0 ? (
             <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
-                Henüz WhatsApp mesaj geçmişi yok.
+                {t('whatsapp.inbox.empty')}
             </div>
           ) : (
             <div className="grid gap-4 lg:grid-cols-[320px,minmax(0,1fr)]">
@@ -482,7 +472,7 @@ export default function WhatsAppTab() {
                         ) : null}
                       </div>
                       <div className="mt-2 truncate text-sm text-muted-foreground">
-                        {lastMessage?.messageText || 'Mesaj yok'}
+                        {lastMessage?.messageText || t('whatsapp.inbox.noMessage')}
                       </div>
                       <div className="mt-2 text-xs text-muted-foreground">
                         {thread.lastMessageAt ? new Date(thread.lastMessageAt).toLocaleString('tr-TR') : '-'}

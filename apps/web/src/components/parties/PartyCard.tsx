@@ -14,6 +14,7 @@ import {
   Shield
 } from 'lucide-react';
 import { PartySearchItem } from '../../types/party/party-search.types';
+import { useTranslation } from 'react-i18next';
 
 interface PartyCardProps {
   party: PartySearchItem;
@@ -45,16 +46,17 @@ export function PartyCard({
   compact = false,
   className = ''
 }: PartyCardProps) {
+  const { t } = useTranslation(['parties_extra', 'patients', 'common']);
   const [showMenu, setShowMenu] = useState(false);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge variant="success" size="sm">Aktif</Badge>;
+        return <Badge variant="success" size="sm">{t('card.active')}</Badge>;
       case 'inactive':
-        return <Badge variant="warning" size="sm">Pasif</Badge>;
+        return <Badge variant="warning" size="sm">{t('card.inactive')}</Badge>;
       case 'archived':
-        return <Badge variant="secondary" size="sm">Arşiv</Badge>;
+        return <Badge variant="secondary" size="sm">{t('card.archived')}</Badge>;
       default:
         return <Badge variant="secondary" size="sm">{status}</Badge>;
     }
@@ -156,7 +158,7 @@ export function PartyCard({
                         className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 flex items-center"
                       >
                         <Eye className="h-4 w-4 mr-2" />
-                        Görüntüle
+                        {t('card.view')}
                       </button>
 
                       {onEdit && (
@@ -170,7 +172,7 @@ export function PartyCard({
                           className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted flex items-center"
                         >
                           <Edit className="h-4 w-4 mr-2" />
-                          Düzenle
+                          {t('card.edit')}
                         </button>
                       )}
 
@@ -185,7 +187,7 @@ export function PartyCard({
                           className="w-full px-3 py-2 text-left text-sm text-destructive hover:bg-destructive/10 flex items-center"
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
-                          Sil
+                          {t('card.delete')}
                         </button>
                       )}
                     </div>
@@ -239,7 +241,7 @@ export function PartyCard({
                 <div className="mt-2">
                   <Badge variant="warning" size="sm">
                     <AlertCircle className="h-3 w-3 mr-1" />
-                    Yüksek Öncelik ({party.priority})
+                    {t('card.high_priority', { score: party.priority })}
                   </Badge>
                 </div>
               )}
@@ -273,7 +275,7 @@ export function PartyCard({
                       className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 flex items-center"
                     >
                       <Eye className="h-4 w-4 mr-3" />
-                      Detayları Görüntüle
+                      {t('card.view_details')}
                     </button>
 
                     {onEdit && (
@@ -287,7 +289,7 @@ export function PartyCard({
                         className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted dark:hover:bg-gray-700 flex items-center"
                       >
                         <Edit className="h-4 w-4 mr-3" />
-                        Düzenle
+                        {t('card.edit')}
                       </button>
                     )}
 
@@ -302,7 +304,7 @@ export function PartyCard({
                         className="w-full px-4 py-2 text-left text-sm text-destructive hover:bg-destructive/10 dark:hover:bg-red-900/20 flex items-center"
                       >
                         <Trash2 className="h-4 w-4 mr-3" />
-                        Sil
+                        {t('card.delete')}
                       </button>
                     )}
                   </div>
@@ -337,20 +339,20 @@ export function PartyCard({
           <div className="space-y-2">
             <div className="flex items-center text-sm text-muted-foreground">
               <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-              Kayıt: {formatDate(party.registrationDate)}
+              {t('card.registration')}: {formatDate(party.registrationDate)}
             </div>
 
             {party.deviceCount > 0 && (
               <div className="flex items-center text-sm text-muted-foreground">
                 <Activity className="h-4 w-4 mr-2 text-muted-foreground" />
-                {party.deviceCount} Cihaz
+                {t('card.device_count', { count: party.deviceCount })}
               </div>
             )}
 
             {party.hasInsurance && (
               <div className="flex items-center text-sm text-success">
                 <Shield className="h-4 w-4 mr-2" />
-                Sigortalı
+                {t('card.insured')}
               </div>
             )}
           </div>
@@ -384,12 +386,12 @@ export function PartyCard({
           <div className="text-right">
             {party.outstandingBalance > 0 ? (
               <div className="text-sm font-medium text-destructive">
-                Borç: {formatCurrency(party.outstandingBalance)}
+                {t('card.debt')}: {formatCurrency(party.outstandingBalance)}
               </div>
             ) : (
               <div className="flex items-center text-sm text-success">
                 <CheckCircle className="h-4 w-4 mr-1" />
-                Bakiye Temiz
+                {t('card.balance_clear')}
               </div>
             )}
           </div>

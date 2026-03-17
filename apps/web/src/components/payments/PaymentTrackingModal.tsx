@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import {
@@ -96,6 +97,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
   onPaymentUpdate,
   embedded = false,
 }) => {
+  const { t } = useTranslation('payments');
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
   const [isPaymentHistoryOpen, setIsPaymentHistoryOpen] = useState(true);
@@ -170,7 +172,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
           paymentDate: sale.saleDate || new Date().toISOString(),
           paymentMethod: sale.paymentMethod || 'cash',
           status: 'paid',
-          notes: 'İlk Ön Ödeme'
+          notes: t('initialDownPayment', 'İlk Ön Ödeme')
         }];
       }
 
@@ -178,8 +180,8 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
 
       // Mock Installments
       const mockInstallments: Installment[] = [
-        { id: '1', installmentNumber: 1, amount: 1000, dueDate: '2024-01-15', status: 'paid', paidDate: '2024-01-15', notes: 'İlk taksit' },
-        { id: '2', installmentNumber: 2, amount: 1000, dueDate: '2024-02-15', status: 'paid', paidDate: '2024-02-15', notes: 'İkinci taksit' }
+        { id: '1', installmentNumber: 1, amount: 1000, dueDate: '2024-01-15', status: 'paid', paidDate: '2024-01-15', notes: t('firstInstallment', 'İlk taksit') },
+        { id: '2', installmentNumber: 2, amount: 1000, dueDate: '2024-02-15', status: 'paid', paidDate: '2024-02-15', notes: t('secondInstallment', 'İkinci taksit') }
       ];
 
       setPaymentRecords(realPaymentRecords);
@@ -225,12 +227,12 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
     }
 
     if (newPayment.amount <= 0) {
-      toast.error('Ödeme tutarı 0\'dan büyük olmalıdır');
+      toast.error(t('amountMustBePositive', 'Ödeme tutarı 0\'dan büyük olmalıdır'));
       return;
     }
 
     if (newPayment.amount > paymentSummary.remainingBalance) {
-      toast.error('Ödeme tutarı kalan bakiyeden fazla olamaz');
+      toast.error(t('amountExceedsBalance', 'Ödeme tutarı kalan bakiyeden fazla olamaz'));
       return;
     }
 
@@ -249,7 +251,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
 
       await createPaymentMutation.mutateAsync({ data: paymentData });
 
-      toast.success('Ödeme başarıyla kaydedildi');
+      toast.success(t('paymentSaved', 'Ödeme başarıyla kaydedildi'));
       window.dispatchEvent(new CustomEvent('dashboard:refresh'));
       window.dispatchEvent(new CustomEvent('party-timeline:refresh', {
         detail: { partyId: sale.partyId }
@@ -272,7 +274,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
       const errorMessage = error?.response?.data?.error?.message ||
         error?.response?.data?.message ||
         error?.message ||
-        'Ödeme kaydedilirken hata oluştu';
+        t('paymentSaveError', 'Ödeme kaydedilirken hata oluştu');
 
       toast.error(errorMessage);
     } finally {
@@ -286,10 +288,10 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
 
   const getPaymentMethodLabel = (method: string): string => {
     const labels: Record<string, string> = {
-      'cash': 'Nakit',
-      'card': 'Kredi Kartı',
-      'bank_transfer': 'Havale',
-      'check': 'Çek'
+      'cash': t('paymentMethods.cash', 'Nakit'),
+      'card': t('paymentMethods.card', 'Kredi Kartı'),
+      'bank_transfer': t('paymentMethods.bank_transfer', 'Havale'),
+      'check': t('paymentMethods.check', 'Çek')
     };
     return labels[method] || method;
   };
@@ -309,11 +311,11 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      paid: { color: 'bg-success/10 text-success', label: 'Ödendi' },
-      pending: { color: 'bg-warning/10 text-yellow-800', label: 'Bekliyor' },
-      overdue: { color: 'bg-destructive/10 text-red-800', label: 'Gecikmiş' },
-      cancelled: { color: 'bg-muted text-foreground', label: 'İptal' },
-      active: { color: 'bg-primary/10 text-blue-800', label: 'Aktif' }
+      paid: { color: 'bg-success/10 text-success', label: t('status.paid', 'Ödendi') },
+      pending: { color: 'bg-warning/10 text-yellow-800', label: t('status.pending', 'Bekliyor') },
+      overdue: { color: 'bg-destructive/10 text-red-800', label: t('status.overdue', 'Gecikmiş') },
+      cancelled: { color: 'bg-muted text-foreground', label: t('status.cancelled', 'İptal') },
+      active: { color: 'bg-primary/10 text-blue-800', label: t('status.active', 'Aktif') }
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
@@ -341,7 +343,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-medium text-foreground flex items-center">
             <CreditCard className="w-5 h-5 mr-2" />
-            Ödeme Takibi - Satış #{sale.id}
+            {t('trackingTitle', 'Ödeme Takibi')} - {t('sale', 'Satış')} #{sale.id}
           </h3>
           <Button
             type="button"
@@ -359,7 +361,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
           <Card>
             <CardContent className="p-3 md:p-4">
-              <div className="text-xs md:text-sm text-muted-foreground">Toplam Tutar</div>
+              <div className="text-xs md:text-sm text-muted-foreground">{t('summary.totalAmount', 'Toplam Tutar')}</div>
               <div className="text-lg md:text-2xl font-bold text-foreground">
                 {formatCurrency(paymentSummary.totalAmount)}
               </div>
@@ -368,7 +370,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
 
           <Card>
             <CardContent className="p-3 md:p-4">
-              <div className="text-xs md:text-sm text-muted-foreground">Ödenen</div>
+              <div className="text-xs md:text-sm text-muted-foreground">{t('summary.paid', 'Ödenen')}</div>
               <div className="text-lg md:text-2xl font-bold text-success">
                 {formatCurrency(paymentSummary.totalPaid)}
               </div>
@@ -377,7 +379,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
 
           <Card>
             <CardContent className="p-3 md:p-4">
-              <div className="text-xs md:text-sm text-muted-foreground">Kalan</div>
+              <div className="text-xs md:text-sm text-muted-foreground">{t('summary.remaining', 'Kalan')}</div>
               <div className="text-lg md:text-2xl font-bold text-primary">
                 {formatCurrency(paymentSummary.remainingBalance)}
               </div>
@@ -386,7 +388,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
 
           <Card>
             <CardContent className="p-3 md:p-4">
-              <div className="text-xs md:text-sm text-muted-foreground">Gecikmiş</div>
+              <div className="text-xs md:text-sm text-muted-foreground">{t('summary.overdue', 'Gecikmiş')}</div>
               <div className="text-lg md:text-2xl font-bold text-destructive">
                 {formatCurrency(paymentSummary.overdueAmount)}
               </div>
@@ -399,7 +401,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
           <Alert className="mb-4 bg-warning/10 border-yellow-200 text-yellow-800">
             <Clock className="w-4 h-4" />
             <span className="text-sm">
-              Sonraki ödeme: {formatDate(paymentSummary.nextDueDate)} - {formatCurrency(paymentSummary.nextDueAmount || 0)}
+              {t('nextPayment', 'Sonraki ödeme')}: {formatDate(paymentSummary.nextDueDate)} - {formatCurrency(paymentSummary.nextDueAmount || 0)}
             </span>
           </Alert>
         )}
@@ -411,7 +413,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
             <CardHeader className="pb-3 md:pb-6">
               <CardTitle className="flex items-center text-base md:text-lg">
                 <Plus className="w-4 h-4 mr-2" />
-                Yeni Ödeme Kaydet
+                {t('newPaymentRecord', 'Yeni Ödeme Kaydet')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -426,7 +428,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
               >
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                   <div>
-                    <Label className="text-xs md:text-sm">Tutar *</Label>
+                    <Label className="text-xs md:text-sm">{t('form.amount', 'Tutar')} *</Label>
                     <Input
                       data-testid="payment-amount-input"
                       type="number"
@@ -442,7 +444,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
                     />
                   </div>
                   <div>
-                    <Label className="text-xs md:text-sm">Ödeme Tarihi *</Label>
+                    <Label className="text-xs md:text-sm">{t('form.paymentDate', 'Ödeme Tarihi')} *</Label>
                     <DatePicker
                       data-testid="payment-date-input"
                       value={newPayment.paymentDate ? new Date(newPayment.paymentDate) : null}
@@ -452,7 +454,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
                     />
                   </div>
                   <div>
-                    <Label className="text-xs md:text-sm">Ödeme Yöntemi *</Label>
+                    <Label className="text-xs md:text-sm">{t('form.paymentMethod', 'Ödeme Yöntemi')} *</Label>
                     <select
                       data-allow-raw="true"
                       data-testid="payment-method-select"
@@ -460,18 +462,18 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
                       onChange={(e) => setNewPayment(prev => ({ ...prev, paymentMethod: e.target.value }))}
                       className="w-full px-3 py-2 text-sm md:text-base border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring bg-card"
                     >
-                      <option value="cash">Nakit</option>
-                      <option value="card">Kredi Kartı</option>
-                      <option value="bank_transfer">Havale</option>
-                      <option value="check">Çek</option>
+                      <option value="cash">{t('paymentMethods.cash', 'Nakit')}</option>
+                      <option value="card">{t('paymentMethods.card', 'Kredi Kartı')}</option>
+                      <option value="bank_transfer">{t('paymentMethods.bank_transfer', 'Havale')}</option>
+                      <option value="check">{t('paymentMethods.check', 'Çek')}</option>
                     </select>
                   </div>
                   <div>
-                    <Label className="text-xs md:text-sm">Notlar</Label>
+                    <Label className="text-xs md:text-sm">{t('form.notes', 'Notlar')}</Label>
                     <Input
                       value={newPayment.notes}
                       onChange={(e) => setNewPayment(prev => ({ ...prev, notes: e.target.value }))}
-                      placeholder="Ödeme notları"
+                      placeholder={t('form.notesPlaceholder', 'Ödeme notları')}
                       className="text-sm md:text-base w-full"
                     />
                   </div>
@@ -489,7 +491,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
                   data-testid="payment-submit-button"
                 >
                   {isLoading && <Spinner className="w-4 h-4 mr-2" />}
-                  Ödeme Kaydet
+                  {t('savePayment', 'Ödeme Kaydet')}
                 </Button>
               </form>
             </CardContent>
@@ -502,7 +504,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
               onClick={() => setIsPaymentHistoryOpen(!isPaymentHistoryOpen)}
             >
               <CardTitle className="flex items-center justify-between text-base md:text-lg">
-                <span>Ödeme Geçmişi</span>
+                <span>{t('paymentHistory', 'Ödeme Geçmişi')}</span>
                 {isPaymentHistoryOpen ? (
                   <ChevronUp className="w-5 h-5 text-muted-foreground" />
                 ) : (
@@ -514,7 +516,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
               <CardContent className="pt-0 md:pt-4">
                 {paymentRecords.length === 0 ? (
                   <div className="text-center py-6 md:py-8 text-muted-foreground text-sm md:text-base">
-                    Henüz ödeme kaydı bulunmuyor
+                    {t('noPaymentRecords', 'Henüz ödeme kaydı bulunmuyor')}
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -569,7 +571,7 @@ export const PaymentTrackingModal: React.FC<PaymentTrackingModalProps> = ({
         {!embedded && (
         <div className="flex justify-end space-x-3 mt-6 pt-6 border-t">
           <Button onClick={onClose} variant="outline">
-            Kapat
+            {t('close', 'Kapat')}
           </Button>
         </div>
         )}

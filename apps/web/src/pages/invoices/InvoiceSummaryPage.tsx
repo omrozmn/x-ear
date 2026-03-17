@@ -6,8 +6,10 @@ import { DesktopPageHeader } from '../../components/layout/DesktopPageHeader';
 import { useIsMobile } from '@/hooks/useBreakpoint';
 import { MobileHeader } from '@/components/mobile/MobileHeader';
 import { MobileLayout } from '@/components/mobile/MobileLayout';
+import { useTranslation } from 'react-i18next';
 
 export function InvoiceSummaryPage() {
+  const { t } = useTranslation('invoices');
   const { data, isLoading } = useGetInvoiceSummary();
   const isMobile = useIsMobile();
   const stats = data?.data;
@@ -16,7 +18,7 @@ export function InvoiceSummaryPage() {
     return (
       <div className="flex items-center justify-center py-16">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-muted-foreground">Fatura özeti yükleniyor...</span>
+        <span className="ml-3 text-muted-foreground">{t('summary.loading')}</span>
       </div>
     );
   }
@@ -33,13 +35,13 @@ export function InvoiceSummaryPage() {
     <div className={`${isMobile ? 'p-4' : 'p-6'} space-y-6`}>
       {/* Header */}
       {isMobile ? (
-        <MobileHeader title="Fatura Özeti" showBack={false} />
+        <MobileHeader title={t('summary.title')} showBack={false} />
       ) : (
         <DesktopPageHeader
-          title="Fatura Özeti"
-          description="Gelen ve giden faturaların genel durumu"
+          title={t('summary.title')}
+          description={t('summary.description')}
           icon={<FileText className="h-6 w-6" />}
-          eyebrow={{ tr: 'Finans Özeti', en: 'Invoice Summary' }}
+          eyebrow={{ tr: t('summary.eyebrow'), en: 'Invoice Summary' }}
         />
       )}
 
@@ -48,11 +50,11 @@ export function InvoiceSummaryPage() {
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Gelen Faturalar</p>
+              <p className="text-sm text-muted-foreground">{t('summary.stats.incoming_invoices')}</p>
               <p className="text-2xl font-bold text-primary mt-1">
                 {formatCurrency(incomingTotal, 'TRY')}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">{pendingIncoming} bekleyen</p>
+              <p className="text-xs text-muted-foreground mt-1">{pendingIncoming} {t('summary.stats.pending')}</p>
             </div>
             <div className="p-3 bg-primary/10 rounded-2xl">
               <TrendingDown className="text-primary" size={24} />
@@ -63,11 +65,11 @@ export function InvoiceSummaryPage() {
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Giden Faturalar</p>
+              <p className="text-sm text-muted-foreground">{t('summary.stats.outgoing_invoices')}</p>
               <p className="text-2xl font-bold text-success mt-1">
                 {formatCurrency(outgoingTotal, 'TRY')}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">{pendingOutgoing} bekleyen</p>
+              <p className="text-xs text-muted-foreground mt-1">{pendingOutgoing} {t('summary.stats.pending')}</p>
             </div>
             <div className="p-3 bg-success/10 rounded-2xl">
               <TrendingUp className="text-success" size={24} />
@@ -78,12 +80,12 @@ export function InvoiceSummaryPage() {
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Net Bakiye</p>
+              <p className="text-sm text-muted-foreground">{t('summary.stats.net_balance')}</p>
               <p className={`text-2xl font-bold mt-1 ${netBalance >= 0 ? 'text-success' : 'text-destructive'}`}>
                 {formatCurrency(Math.abs(netBalance), 'TRY')}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                {netBalance >= 0 ? 'Gelir fazlası' : 'Gider fazlası'}
+                {netBalance >= 0 ? t('summary.stats.income_surplus') : t('summary.stats.expense_surplus')}
               </p>
             </div>
             <div className={`p-3 rounded-2xl ${netBalance >= 0 ? 'bg-success/10' : 'bg-destructive/10'}`}>
@@ -95,12 +97,12 @@ export function InvoiceSummaryPage() {
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Bu Ay</p>
+              <p className="text-sm text-muted-foreground">{t('summary.stats.this_month')}</p>
               <p className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">
                 {formatCurrency(monthlyIncoming + monthlyOutgoing, 'TRY')}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Gelen {formatCurrency(monthlyIncoming, 'TRY')} · Giden {formatCurrency(monthlyOutgoing, 'TRY')}
+                {t('summary.stats.incoming_label')} {formatCurrency(monthlyIncoming, 'TRY')} · {t('summary.stats.outgoing_label')} {formatCurrency(monthlyOutgoing, 'TRY')}
               </p>
             </div>
             <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-2xl">
@@ -113,11 +115,11 @@ export function InvoiceSummaryPage() {
       {/* Monthly Visual */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Bu Ay Karşılaştırma</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('summary.monthly_comparison')}</h2>
           <div className="space-y-4">
             <div>
               <div className="flex justify-between text-sm mb-1">
-                <span className="text-muted-foreground">Gelen Fatura</span>
+                <span className="text-muted-foreground">{t('summary.incoming_invoice')}</span>
                 <span className="font-medium text-primary">{formatCurrency(monthlyIncoming, 'TRY')}</span>
               </div>
               <div className="w-full bg-accent rounded-full h-3">
@@ -129,7 +131,7 @@ export function InvoiceSummaryPage() {
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
-                <span className="text-muted-foreground">Giden Fatura</span>
+                <span className="text-muted-foreground">{t('summary.outgoing_invoice')}</span>
                 <span className="font-medium text-success">{formatCurrency(monthlyOutgoing, 'TRY')}</span>
               </div>
               <div className="w-full bg-accent rounded-full h-3">
@@ -143,11 +145,11 @@ export function InvoiceSummaryPage() {
         </Card>
 
         <Card className="p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Genel Toplam Karşılaştırma</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('summary.total_comparison')}</h2>
           <div className="space-y-4">
             <div>
               <div className="flex justify-between text-sm mb-1">
-                <span className="text-muted-foreground">Toplam Gelen</span>
+                <span className="text-muted-foreground">{t('summary.total_incoming')}</span>
                 <span className="font-medium text-primary">{formatCurrency(incomingTotal, 'TRY')}</span>
               </div>
               <div className="w-full bg-accent rounded-full h-3">
@@ -159,7 +161,7 @@ export function InvoiceSummaryPage() {
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
-                <span className="text-muted-foreground">Toplam Giden</span>
+                <span className="text-muted-foreground">{t('summary.total_outgoing')}</span>
                 <span className="font-medium text-success">{formatCurrency(outgoingTotal, 'TRY')}</span>
               </div>
               <div className="w-full bg-accent rounded-full h-3">
@@ -180,8 +182,8 @@ export function InvoiceSummaryPage() {
             <div className="flex items-center gap-3">
               <TrendingDown className="text-primary" size={20} />
               <div>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">Gelen Faturalar</p>
-                <p className="text-xs text-muted-foreground">{pendingIncoming} bekleyen fatura</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">{t('summary.quick_links.incoming_invoices')}</p>
+                <p className="text-xs text-muted-foreground">{pendingIncoming} {t('summary.stats.pending_invoices')}</p>
               </div>
             </div>
           </Card>
@@ -191,8 +193,8 @@ export function InvoiceSummaryPage() {
             <div className="flex items-center gap-3">
               <TrendingUp className="text-success" size={20} />
               <div>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">Giden Faturalar</p>
-                <p className="text-xs text-muted-foreground">{pendingOutgoing} bekleyen fatura</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">{t('summary.quick_links.outgoing_invoices')}</p>
+                <p className="text-xs text-muted-foreground">{pendingOutgoing} {t('summary.stats.pending_invoices')}</p>
               </div>
             </div>
           </Card>
@@ -202,8 +204,8 @@ export function InvoiceSummaryPage() {
             <div className="flex items-center gap-3">
               <FileText className="text-purple-600" size={20} />
               <div>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">Yeni Fatura</p>
-                <p className="text-xs text-muted-foreground">Yeni e-fatura oluştur</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">{t('summary.quick_links.new_invoice')}</p>
+                <p className="text-xs text-muted-foreground">{t('summary.quick_links.new_invoice_description')}</p>
               </div>
             </div>
           </Card>

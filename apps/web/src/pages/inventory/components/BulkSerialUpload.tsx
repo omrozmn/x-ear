@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useRef } from 'react';
 import { Button, Card, Textarea } from '@x-ear/ui-web';
 import Papa from 'papaparse';
@@ -16,6 +17,7 @@ export const BulkSerialUpload: React.FC<BulkSerialUploadProps> = ({
   onUpload,
   productName = ''
 }) => {
+  const { t } = useTranslation('inventory');
   const [serialNumbers, setSerialNumbers] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);

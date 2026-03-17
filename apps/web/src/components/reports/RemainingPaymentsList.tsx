@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { DataTable, Column, Badge } from '@x-ear/ui-web';
 import { formatCurrency, formatDate } from '@/utils/format';
 
@@ -27,10 +28,12 @@ interface RemainingPaymentsListProps {
 }
 
 export function RemainingPaymentsList({ payments, isLoading, pagination }: RemainingPaymentsListProps) {
+  const { t } = useTranslation('payments');
+
   const columns: Column<RemainingPayment>[] = useMemo(() => [
     {
       key: 'partyName',
-      title: 'Müşteri',
+      title: t('columns.customer', 'Müşteri'),
       sortable: true,
       render: (_, payment) => (
         <span className="text-sm font-medium text-gray-900 dark:text-white">
@@ -40,7 +43,7 @@ export function RemainingPaymentsList({ payments, isLoading, pagination }: Remai
     },
     {
       key: 'invoiceNumber',
-      title: 'Fatura No',
+      title: t('columns.invoiceNumber', 'Fatura No'),
       sortable: true,
       render: (_, payment) => (
         <span className="text-sm font-mono text-muted-foreground">
@@ -50,7 +53,7 @@ export function RemainingPaymentsList({ payments, isLoading, pagination }: Remai
     },
     {
       key: 'totalAmount',
-      title: 'Toplam Tutar',
+      title: t('columns.totalAmount', 'Toplam Tutar'),
       sortable: true,
       render: (_, payment) => (
         <span className="text-sm text-gray-900 dark:text-white">
@@ -60,7 +63,7 @@ export function RemainingPaymentsList({ payments, isLoading, pagination }: Remai
     },
     {
       key: 'paidAmount',
-      title: 'Ödenen',
+      title: t('columns.paid', 'Ödenen'),
       sortable: true,
       render: (_, payment) => (
         <span className="text-sm text-success">
@@ -70,7 +73,7 @@ export function RemainingPaymentsList({ payments, isLoading, pagination }: Remai
     },
     {
       key: 'remainingAmount',
-      title: 'Kalan',
+      title: t('columns.remaining', 'Kalan'),
       sortable: true,
       render: (_, payment) => (
         <span className="text-sm font-semibold text-destructive">
@@ -80,7 +83,7 @@ export function RemainingPaymentsList({ payments, isLoading, pagination }: Remai
     },
     {
       key: 'dueDate',
-      title: 'Vade Tarihi',
+      title: t('columns.dueDate', 'Vade Tarihi'),
       sortable: true,
       render: (_, payment) => (
         <span className="text-sm text-muted-foreground">
@@ -90,13 +93,13 @@ export function RemainingPaymentsList({ payments, isLoading, pagination }: Remai
     },
     {
       key: 'status',
-      title: 'Durum',
+      title: t('columns.status', 'Durum'),
       sortable: true,
       render: (_, payment) => {
         const isOverdue = payment.dueDate && new Date(payment.dueDate) < new Date();
         return (
           <Badge variant={isOverdue ? 'danger' : 'warning'} size="sm">
-            {isOverdue ? 'Vadesi Geçmiş' : 'Bekliyor'}
+            {isOverdue ? t('status.overdue', 'Vadesi Geçmiş') : t('status.pending', 'Bekliyor')}
           </Badge>
         );
       }
@@ -110,7 +113,7 @@ export function RemainingPaymentsList({ payments, isLoading, pagination }: Remai
       loading={isLoading}
       pagination={pagination}
       rowKey="id"
-      emptyText="Kalan ödeme bulunamadı"
+      emptyText={t('noRemainingPayments', 'Kalan ödeme bulunamadı')}
     />
   );
 }

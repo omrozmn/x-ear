@@ -5,11 +5,11 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { Button, Input, Modal, Tabs, TabsList, TabsTrigger, TabsContent, Badge } from '@x-ear/ui-web';
+import { Button, Input, Modal, Tabs, TabsList, TabsTrigger, TabsContent, Badge, useToastHelpers } from '@x-ear/ui-web';
 import { useNavigate } from '@tanstack/react-router';
 import { useSuppliers, useCreateSupplier, useDeleteSupplier, useUpdateSupplier, type SupplierFormData } from '../hooks/useSuppliers';
 import { useSuggestedSuppliers } from '../hooks/useSupplierInvoices';
-import { Users, CheckCircle, Flame, Filter, Search, Plus, RefreshCw, Trash2 } from 'lucide-react';
+import { Users, CheckCircle, Flame, Filter, Search, Plus, RefreshCw, Trash2, Upload } from 'lucide-react';
 import { unwrapPaginated, unwrapArray } from '../utils/response-unwrap';
 import { SupplierFormModal } from '../components/suppliers/SupplierFormModal';
 import { SupplierFilters } from '../components/suppliers/SupplierFilters';
@@ -17,6 +17,8 @@ import { SupplierList } from '../components/suppliers/SupplierList';
 import { SuggestedSuppliersList } from '../components/suppliers/SuggestedSuppliersList';
 import { SupplierFilters as SupplierFiltersType, SupplierExtended } from '../components/suppliers/supplier-search.types';
 import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
+import UniversalImporter from '../components/importer/UniversalImporter';
+import supplierSchema from '../components/importer/schemas/suppliers';
 
 
 export function DesktopSuppliersPage() {
@@ -34,6 +36,8 @@ export function DesktopSuppliersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
   const [supplierToDelete, setSupplierToDelete] = useState<SupplierExtended | null>(null);
+  const [showImporter, setShowImporter] = useState(false);
+  const { success: showSuccess, error: showError } = useToastHelpers();
   const [sortBy, setSortBy] = useState<string>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
@@ -227,6 +231,10 @@ export function DesktopSuppliersPage() {
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Yenile
               </Button>
+              <Button variant="outline" onClick={() => setShowImporter(true)} className="bg-white/80 dark:bg-white/10">
+                <Upload className="h-4 w-4 mr-2" />
+                Toplu Yükle
+              </Button>
               <Button onClick={handleNewSupplier} className="premium-gradient tactile-press text-white shadow-sm">
                 <Plus className="h-4 w-4 mr-2" />
                 Yeni Tedarikçi
@@ -411,6 +419,42 @@ export function DesktopSuppliersPage() {
           onSave={handleSaveSupplier}
           supplier={editingSupplier}
           isLoading={createSupplierMutation.isPending || updateSupplierMutation.isPending}
+        />
+
+        <UniversalImporter
+          isOpen={showImporter}
+          onClose={() => setShowImporter(false)}
+          entityFields={[
+            { key: 'companyName', label: 'Şirket Adı' },
+            { key: 'companyCode', label: 'Şirket Kodu' },
+            { key: 'contactPerson', label: 'Yetkili Kişi' },
+            { key: 'phone', label: 'Telefon' },
+            { key: 'mobile', label: 'Cep Telefon' },
+            { key: 'email', label: 'E-posta' },
+            { key: 'taxNumber', label: 'Vergi No' },
+            { key: 'taxOffice', label: 'Vergi Dairesi' },
+            { key: 'address', label: 'Adres' },
+            { key: 'city', label: 'Şehir' },
+            { key: 'district', label: 'İlçe' },
+            { key: 'country', label: 'Ülke' },
+            { key: 'paymentTerms', label: 'Ödeme Vadesi' },
+            { key: 'currency', label: 'Para Birimi' },
+            { key: 'website', label: 'Web Sitesi' },
+            { key: 'notes', label: 'Notlar' },
+            { key: 'isActive', label: 'Aktif' },
+          ]}
+          zodSchema={supplierSchema}
+          uploadEndpoint="/api/suppliers/bulk-upload"
+          modalTitle="Toplu Tedarikçi Yükleme"
+          onComplete={(res) => {
+            if (res.errors && res.errors.length > 0) {
+              showError(`Tedarikçi import tamamlandı — Hatalı satır: ${res.errors.length}`);
+            } else {
+              showSuccess(`Tedarikçi import tamamlandı — Oluşturulan: ${res.created}, Güncellenen: ${res.updated}`);
+            }
+            handleRefresh();
+            setShowImporter(false);
+          }}
         />
 
         <Modal

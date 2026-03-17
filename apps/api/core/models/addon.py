@@ -5,7 +5,7 @@ from core.models.base import Base
 import uuid
 from datetime import datetime
 from enum import Enum as PyEnum
-from sqlalchemy import Column, String, Boolean, DateTime, Text, Numeric, Integer, Enum as SQLEnum
+from sqlalchemy import Column, String, Boolean, DateTime, Text, Numeric, Integer, Index, Enum as SQLEnum, ForeignKey
 
 class AddOnType(PyEnum):
     """AddOn type enumeration"""
@@ -17,6 +17,12 @@ class AddOnType(PyEnum):
 class AddOn(Base):
     """AddOn model for additional features"""
     __tablename__ = 'addons'
+
+    __table_args__ = (
+        Index('idx_addons_sector', 'sector'),
+        Index('idx_addons_country_code', 'country_code'),
+        Index('idx_addons_sector_country', 'sector', 'country_code'),
+    )
     
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     
@@ -31,7 +37,11 @@ class AddOn(Base):
     # For usage based or limits
     unit_name = Column(String(50), nullable=True) # e.g. "SMS", "GB"
     limit_amount = Column(Integer, nullable=True) # e.g. 1000 SMS
-    
+
+    # Sector & Country scoping
+    sector = Column(String(30), nullable=True, index=True)  # hearing, pharmacy, hospital, etc.
+    country_code = Column(String(2), ForeignKey('countries.code'), nullable=True, index=True)  # ISO 3166-1 alpha-2
+
     is_active = Column(Boolean, default=True, nullable=False)
     
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)

@@ -20,6 +20,7 @@ import { Button, Input, Checkbox } from '@x-ear/ui-web';
 import { AxiosError } from '@/api/orval-mutator';
 import { SettingsSectionHeader } from '../../components/layout/SettingsSectionHeader';
 import { PERMISSION_PAGE_REGISTRY, type PermissionPageDefinition, type PermissionTabDefinition, type PermissionBlockDefinition } from './permissionRegistry';
+import { useTranslation } from 'react-i18next';
 
 // Permission categories with icons
 const CATEGORY_CONFIG: Record<string, { label: string; icon: React.ReactNode }> = {
@@ -31,8 +32,8 @@ const CATEGORY_CONFIG: Record<string, { label: string; icon: React.ReactNode }> 
   inventory: { label: 'Stok', icon: <Package className="w-5 h-5" /> },
   campaigns: { label: 'Kampanyalar', icon: <Megaphone className="w-5 h-5" /> },
   sgk: { label: 'SGK', icon: <Shield className="w-5 h-5" /> },
-  settings: { label: 'Ayarlar', icon: <Settings className="w-5 h-5" /> },
-  team: { label: 'Ekip Yönetimi', icon: <Users className="w-5 h-5" /> },
+  settings: { label: t('settings', 'Ayarlar'), icon: <Settings className="w-5 h-5" /> },
+  team: { label: t('teamManagement', 'Ekip Yönetimi'), icon: <Users className="w-5 h-5" /> },
   reports: { label: 'Raporlar', icon: <BarChart className="w-5 h-5" /> },
   dashboard: { label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
   appointments: { label: 'Randevular', icon: <Calendar className="w-5 h-5" /> },
@@ -46,7 +47,7 @@ const CATEGORY_CONFIG: Record<string, { label: string; icon: React.ReactNode }> 
   tenant: { label: 'Tenant', icon: <Settings className="w-5 h-5" /> },
   user: { label: 'Kullanıcı', icon: <Users className="w-5 h-5" /> },
   users: { label: 'Kullanıcılar', icon: <Users className="w-5 h-5" /> },
-  branches: { label: 'Şubeler', icon: <Settings className="w-5 h-5" /> },
+  branches: { label: t('branches', 'Şubeler'), icon: <Settings className="w-5 h-5" /> },
   payments: { label: 'Ödemeler', icon: <DollarSign className="w-5 h-5" /> },
   cash_records: { label: 'Kasa Kayıtları', icon: <DollarSign className="w-5 h-5" /> },
   campaign: { label: 'Kampanya (Legacy)', icon: <Megaphone className="w-5 h-5" /> },
@@ -216,6 +217,7 @@ function getPagePermissionNames(page: PermissionCardItem) {
 // RoleItem interface removed in favor of RoleRead
 
 export function RolePermissionsTab() {
+  const { t } = useTranslation('settings_extra');
   const queryClient = useQueryClient();
   const [selectedRole, setSelectedRole] = useState<string>('');
   const [localPermissions, setLocalPermissions] = useState<Set<string>>(new Set());
@@ -272,7 +274,7 @@ export function RolePermissionsTab() {
   const createRoleMutation = useCreateRoles({
     mutation: {
       onSuccess: () => {
-        toast.success('Rol başarıyla oluşturuldu');
+        toast.success(t('roleCreated', 'Rol başarıyla oluşturuldu'));
         queryClient.invalidateQueries({ queryKey: getListRolesQueryKey() });
         refetchRoles(); // Force refetch
         setCreateModalOpen(false);
@@ -309,7 +311,7 @@ export function RolePermissionsTab() {
   const updateRoleMutation = useUpdateRole({
     mutation: {
       onSuccess: () => {
-        toast.success('Rol adı başarıyla güncellendi');
+        toast.success(t('roleNameUpdated', 'Rol adı başarıyla güncellendi'));
         queryClient.invalidateQueries({ queryKey: getListRolesQueryKey() });
         // Update selected role if it was renamed
         if (editingRole && selectedRole === editingRole.name) {
@@ -377,7 +379,7 @@ export function RolePermissionsTab() {
   const updateMutation = useUpdatePermissionRole({
     mutation: {
       onSuccess: () => {
-        toast.success('İzinler başarıyla güncellendi');
+        toast.success(t('permissionsUpdated', 'İzinler başarıyla güncellendi'));
         // Invalidate role permissions query
         queryClient.invalidateQueries({ queryKey: getGetPermissionRoleQueryKey(selectedRole || '') });
         queryClient.invalidateQueries({ queryKey: getListPermissionsQueryKey() });
@@ -559,7 +561,7 @@ export function RolePermissionsTab() {
 
   const handleSaveEditRole = () => {
     if (!editingRole || !editRoleName.trim()) {
-      toast.error('Rol adı boş olamaz');
+      toast.error(t('roleNameRequired', 'Rol adı boş olamaz'));
       return;
     }
     updateRoleMutation.mutate({
@@ -570,7 +572,7 @@ export function RolePermissionsTab() {
 
   const handleCreateRole = () => {
     if (!newRoleName.trim()) {
-      toast.error('Rol adı boş olamaz');
+      toast.error(t('roleNameRequired', 'Rol adı boş olamaz'));
       return;
     }
     createRoleMutation.mutate({

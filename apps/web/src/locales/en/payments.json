@@ -1,0 +1,125 @@
+{
+  "page": {
+    "title": "Payments",
+    "description": "Payment tracking and management",
+    "eyebrow": "Finance",
+    "loading": "Loading payments...",
+    "not_found": "No payments found"
+  },
+  "stats": {
+    "total_receivable": "Total Receivable",
+    "total_payable": "Total Payable",
+    "overdue_receivable": "Overdue Receivable",
+    "overdue_payable": "Overdue Payable",
+    "collected_this_month": "Collected This Month",
+    "paid_this_month": "Paid This Month",
+    "pending_payments": "Pending Payments",
+    "completed_payments": "Completed Payments"
+  },
+  "columns": {
+    "party": "Party",
+    "amount": "Amount",
+    "due_date": "Due Date",
+    "payment_date": "Payment Date",
+    "status": "Status",
+    "method": "Payment Method",
+    "reference": "Reference",
+    "description": "Description",
+    "type": "Type",
+    "remaining": "Remaining",
+    "actions": "Actions"
+  },
+  "actions": {
+    "add_payment": "Add Payment",
+    "receive_payment": "Receive Payment",
+    "edit": "Edit",
+    "delete": "Delete",
+    "view": "View",
+    "mark_paid": "Mark as Paid",
+    "send_reminder": "Send Reminder",
+    "export": "Export",
+    "print_receipt": "Print Receipt",
+    "partial_payment": "Partial Payment",
+    "refund": "Refund",
+    "extend_due_date": "Extend Due Date",
+    "add_note": "Add Note"
+  },
+  "filters": {
+    "search_placeholder": "Search by party name or reference...",
+    "all_statuses": "All Statuses",
+    "all_types": "All Types",
+    "receivable": "Receivable",
+    "payable": "Payable",
+    "all_methods": "All Methods",
+    "start_date": "Start Date",
+    "end_date": "End Date",
+    "overdue_only": "Overdue Only",
+    "this_month": "This Month",
+    "this_week": "This Week"
+  },
+  "status": {
+    "pending": "Pending",
+    "partial": "Partial Payment",
+    "paid": "Paid",
+    "overdue": "Overdue",
+    "cancelled": "Cancelled",
+    "refunded": "Refunded"
+  },
+  "payment_methods": {
+    "cash": "Cash",
+    "credit_card": "Credit Card",
+    "debit_card": "Debit Card",
+    "bank_transfer": "Bank Transfer",
+    "check": "Check",
+    "promissory_note": "Promissory Note",
+    "online": "Online Payment",
+    "other": "Other"
+  },
+  "tracking": {
+    "title": "Payment Tracking",
+    "installments": "Installments",
+    "installment_number": "Installment No",
+    "installment_amount": "Installment Amount",
+    "installment_date": "Installment Date",
+    "paid_installments": "Paid Installments",
+    "remaining_installments": "Remaining Installments",
+    "next_payment": "Next Payment",
+    "payment_plan": "Payment Plan",
+    "create_plan": "Create Plan",
+    "total_installments": "Total Installments",
+    "payment_history": "Payment History"
+  },
+  "promissory_notes": {
+    "title": "Promissory Notes & Checks",
+    "note_number": "Note/Check No",
+    "drawer": "Drawer",
+    "beneficiary": "Beneficiary",
+    "amount": "Amount",
+    "issue_date": "Issue Date",
+    "due_date": "Due Date",
+    "status": "Status",
+    "in_portfolio": "In Portfolio",
+    "in_collection": "In Collection",
+    "endorsed": "Endorsed",
+    "cashed": "Cashed",
+    "bounced": "Bounced",
+    "actions": {
+      "endorse": "Endorse",
+      "send_to_collection": "Send to Collection",
+      "mark_cashed": "Mark as Cashed",
+      "mark_bounced": "Mark as Bounced"
+    }
+  },
+  "remaining": {
+    "title": "Remaining Balances",
+    "total_remaining": "Total Remaining",
+    "by_party": "By Party",
+    "by_due_date": "By Due Date",
+    "aging_report": "Aging Report",
+    "current": "Current",
+    "days_30": "0-30 Days",
+    "days_60": "31-60 Days",
+    "days_90": "61-90 Days",
+    "days_over_90": "90+ Days"
+  }
+}

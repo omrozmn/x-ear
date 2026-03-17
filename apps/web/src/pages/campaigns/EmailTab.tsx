@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button, Card, useToastHelpers } from '@x-ear/ui-web';
 import { Mail, Send, Users } from 'lucide-react';
 import { apiClient } from '@/api/orval-mutator';
@@ -10,6 +11,7 @@ import SmsAutomationTab from './SmsAutomationTab';
 type EmailSubTab = 'single' | 'bulk' | 'automation';
 
 export default function EmailTab() {
+  const { t } = useTranslation('campaigns');
   const [activeTab, setActiveTab] = useState<EmailSubTab>('single');
   const [toEmail, setToEmail] = useState('');
   const [subject, setSubject] = useState('');
@@ -29,7 +31,7 @@ export default function EmailTab() {
       setLoading(key);
       await fn();
     } catch (err) {
-      error('E-posta hatası', err instanceof Error ? err.message : 'İşlem başarısız oldu');
+      error(t('email.toast.error'), err instanceof Error ? err.message : t('email.toast.actionFailed'));
     } finally {
       setLoading(null);
     }
@@ -43,7 +45,7 @@ export default function EmailTab() {
 
   const sendSingle = () => runAction('single', async () => {
     if (!toEmail.trim() || !subject.trim() || !body.trim()) {
-      warning('Eksik alan', 'Alıcı, konu ve içerik zorunlu.');
+      warning(t('email.toast.missingField'), t('email.toast.singleRequired'));
       return;
     }
     await apiClient.post('/api/communications/messages/send-email', {
@@ -52,13 +54,13 @@ export default function EmailTab() {
       bodyText: body,
       fromEmail: 'noreply@x-ear.com',
     });
-    success('E-posta gönderildi', 'Tekli e-posta başarıyla gönderildi.');
+    success(t('email.toast.singleSent'), t('email.toast.singleSentDesc'));
     setBody('');
   });
 
   const sendBulk = () => runAction('bulk', async () => {
     if (!bulkSubject.trim() || !bulkBody.trim() || selectedPartyIds.length === 0) {
-      warning('Eksik alan', 'Toplu gönderim için hasta, konu ve içerik seçin.');
+      warning(t('email.toast.missingField'), t('email.toast.bulkRequired'));
       return;
     }
     await apiClient.post('/api/parties/bulk-email', {
@@ -66,7 +68,7 @@ export default function EmailTab() {
       subject: bulkSubject,
       bodyText: bulkBody,
     });
-    success('Toplu e-posta işlendi', `${selectedPartyIds.length} hasta için e-posta işlemi başlatıldı.`);
+    success(t('email.toast.bulkSent'), t('email.toast.bulkSentDesc', { count: selectedPartyIds.length }));
   });
 
   return (
@@ -74,9 +76,9 @@ export default function EmailTab() {
       <Card className="p-1 dark:bg-gray-800 dark:border-gray-700">
         <nav className="flex space-x-1">
           {([
-            { id: 'single', label: 'Tekil', icon: <Send className="h-4 w-4" /> },
-            { id: 'bulk', label: 'Toplu', icon: <Users className="h-4 w-4" /> },
-            { id: 'automation', label: 'Otomasyon', icon: <Mail className="h-4 w-4" /> },
+            { id: 'single', label: t('email.tabs.single'), icon: <Send className="h-4 w-4" /> },
+            { id: 'bulk', label: t('email.tabs.bulk'), icon: <Users className="h-4 w-4" /> },
+            { id: 'automation', label: t('email.tabs.automation'), icon: <Mail className="h-4 w-4" /> },
           ] as const).map((tab) => (
             <button
               data-allow-raw="true"
@@ -101,12 +103,12 @@ export default function EmailTab() {
         <Card className="p-6 space-y-4">
           <div className="flex items-center gap-2">
             <Mail className="h-5 w-5 text-sky-600" />
-            <h3 className="text-lg font-semibold">Tekil E-posta</h3>
+            <h3 className="text-lg font-semibold">{t('email.single.title')}</h3>
           </div>
-          <input data-allow-raw="true" value={toEmail} onChange={(e) => setToEmail(e.target.value)} className="w-full rounded-2xl border px-4 py-3" placeholder="Alıcı e-posta" />
-          <input data-allow-raw="true" value={subject} onChange={(e) => setSubject(e.target.value)} className="w-full rounded-2xl border px-4 py-3" placeholder="Konu" />
-          <textarea data-allow-raw="true" value={body} onChange={(e) => setBody(e.target.value)} className="min-h-[180px] w-full rounded-2xl border px-4 py-3" placeholder="İçerik" />
-          <Button onClick={sendSingle} disabled={loading !== null}>E-posta Gönder</Button>
+          <input data-allow-raw="true" value={toEmail} onChange={(e) => setToEmail(e.target.value)} className="w-full rounded-2xl border px-4 py-3" placeholder={t('email.single.recipientPlaceholder')} />
+          <input data-allow-raw="true" value={subject} onChange={(e) => setSubject(e.target.value)} className="w-full rounded-2xl border px-4 py-3" placeholder={t('email.single.subjectPlaceholder')} />
+          <textarea data-allow-raw="true" value={body} onChange={(e) => setBody(e.target.value)} className="min-h-[180px] w-full rounded-2xl border px-4 py-3" placeholder={t('email.single.bodyPlaceholder')} />
+          <Button onClick={sendSingle} disabled={loading !== null}>{t('email.single.sendBtn')}</Button>
         </Card>
       ) : null}
 
@@ -114,9 +116,9 @@ export default function EmailTab() {
         <Card className="p-6 space-y-4">
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5 text-sky-600" />
-            <h3 className="text-lg font-semibold">Toplu E-posta</h3>
+            <h3 className="text-lg font-semibold">{t('email.bulk.title')}</h3>
           </div>
-          <input data-allow-raw="true" value={partySearch} onChange={(e) => setPartySearch(e.target.value)} className="w-full rounded-2xl border px-4 py-3" placeholder="Hasta ara" />
+          <input data-allow-raw="true" value={partySearch} onChange={(e) => setPartySearch(e.target.value)} className="w-full rounded-2xl border px-4 py-3" placeholder={t('email.bulk.searchPatient')} />
           <div className="max-h-64 space-y-2 overflow-auto rounded-2xl border p-3">
             {parties.map((party) => (
               <label key={party.id} className="flex items-center justify-between rounded-xl border px-3 py-2">
@@ -125,9 +127,9 @@ export default function EmailTab() {
               </label>
             ))}
           </div>
-          <input data-allow-raw="true" value={bulkSubject} onChange={(e) => setBulkSubject(e.target.value)} className="w-full rounded-2xl border px-4 py-3" placeholder="Toplu konu" />
-          <textarea data-allow-raw="true" value={bulkBody} onChange={(e) => setBulkBody(e.target.value)} className="min-h-[180px] w-full rounded-2xl border px-4 py-3" placeholder="Toplu içerik" />
-          <Button onClick={sendBulk} disabled={loading !== null}>Toplu E-posta Gönder</Button>
+          <input data-allow-raw="true" value={bulkSubject} onChange={(e) => setBulkSubject(e.target.value)} className="w-full rounded-2xl border px-4 py-3" placeholder={t('email.bulk.bulkSubjectPlaceholder')} />
+          <textarea data-allow-raw="true" value={bulkBody} onChange={(e) => setBulkBody(e.target.value)} className="min-h-[180px] w-full rounded-2xl border px-4 py-3" placeholder={t('email.bulk.bulkBodyPlaceholder')} />
+          <Button onClick={sendBulk} disabled={loading !== null}>{t('email.bulk.sendBtn')}</Button>
         </Card>
       ) : null}
 

@@ -1,4 +1,10 @@
 import { InventoryItem } from '../types/inventory';
+import {
+  barcodeApiService,
+  type ValidateBarcodeResponse,
+  type Symbology,
+  type OutputFormat,
+} from '../services/barcode-api.service';
 
 export type BarcodeFormat = 'EAN-13' | 'EAN-8' | 'UPC-A' | 'CODE-128' | 'GS1-128' | 'CODE-39' | 'QR' | 'GS1-DATAMATRIX' | 'DATA-MATRIX' | 'UNKNOWN';
 
@@ -315,4 +321,126 @@ export const generateAndAssignBarcode = (item: InventoryItem): InventoryItem => 
     };
   }
   return item;
+};
+
+// ---------------------------------------------------------------------------
+// Remote barcode service helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Validate a barcode against the remote barcode-service.
+ * Falls back gracefully if the service is unavailable.
+ */
+export async function validateBarcodeRemote(
+  barcode: string,
+  symbology?: Symbology,
+): Promise<ValidateBarcodeResponse> {
+  return barcodeApiService.validateBarcode({
+    data: barcode,
+    symbology,
+  });
+}
+
+/**
+ * Generate a barcode image via the barcode-service and return a blob URL
+ * that can be used as an <img> src.
+ *
+ * Caller is responsible for revoking the URL when no longer needed
+ * (`URL.revokeObjectURL`).
+ */
+export async function generateBarcodeImage(
+  data: string,
+  symbology: Symbology = 'code128',
+  format: OutputFormat = 'svg',
+): Promise<string> {
+  const blob = await barcodeApiService.generateBarcode({
+    symbology,
+    data,
+    format,
+  });
+  return URL.createObjectURL(blob);
+}
+
+// ---------------------------------------------------------------------------
+// Label-service based printing
+// ---------------------------------------------------------------------------
+
+/**
+ * Print barcode labels using the label-generation-service.
+ *
+ * Renders each item via the service and creates a combined print window.
+ * Returns `true` on success, `false` if the service is unreachable (caller
+ * should fall back to `printBarcodeLabels`).
+ */
+export const printBarcodeLabelsWithService = async (
+  items: InventoryItem[],
+  templateId?: string,
+): Promise<boolean> => {
+  try {
+    const { labelApiService } = await import('../services/label-api.service');
+
+    const isUp = await labelApiService.healthCheck();
+    if (!isUp) return false;
+
+    // Resolve template id
+    let resolvedId = templateId;
+    if (!resolvedId) {
+      const templates = await labelApiService.listTemplates();
+      const published = templates.filter((t) => t.status === 'published');
+      if (published.length === 0) return false;
+      resolvedId = published[0].id;
+    }
+
+    // Render each item
+    const svgParts: string[] = [];
+    for (const item of items) {
+      const data: Record<string, unknown> = {
+        name: item.name,
+        brand: item.brand,
+        model: item.model ?? '',
+        barcode: item.barcode ?? '',
+        price: item.price != null ? `${item.price} TL` : '',
+        stockCode: item.stockCode ?? '',
+      };
+
+      const svg = await labelApiService.renderTemplate({
+        templateId: resolvedId,
+        data,
+      });
+      svgParts.push(svg);
+    }
+
+    // Open combined print window
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return false;
+
+    const printContent = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Barkod Etiketleri</title>
+  <style>
+    body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+    .label-container { display: flex; flex-wrap: wrap; gap: 10px; }
+    .label-item { page-break-inside: avoid; }
+    @media print { body { padding: 0; } .label-container { gap: 5px; } }
+  </style>
+</head>
+<body>
+  <div class="label-container">
+    ${svgParts.map((svg) => `<div class="label-item">${svg}</div>`).join('\n    ')}
+  </div>
+</body>
+</html>`;
+
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+    }, 500);
+
+    return true;
+  } catch {
+    return false;
+  }
 };

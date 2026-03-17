@@ -1,3 +1,4 @@
+import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -5,6 +6,21 @@ import { render as customRender } from '../../test/utils';
 import { LoginForm } from '../LoginForm';
 import { useAuthStore } from '../../stores/authStore';
 import authTr from '../../locales/tr/auth.json';
+
+// Mock @x-ear/ui-web so Input/Button render real HTML elements
+vi.mock('@x-ear/ui-web', () => ({
+  Input: React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement> & { fullWidth?: boolean; label?: string; error?: string; helperText?: string; leftIcon?: React.ReactNode; rightIcon?: React.ReactNode }>(
+    ({ fullWidth, label, error, helperText, leftIcon, rightIcon, ...props }, ref) => {
+      void fullWidth; void label; void error; void helperText; void leftIcon; void rightIcon;
+      return <input ref={ref} {...props} />;
+    }
+  ),
+  Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: string; size?: string }) => {
+    const { variant, size, ...rest } = props as Record<string, unknown>;
+    void variant; void size;
+    return <button {...rest as React.ButtonHTMLAttributes<HTMLButtonElement>}>{children}</button>;
+  },
+}));
 
 // Mock react-i18next to return actual Turkish translations
 vi.mock('react-i18next', () => ({

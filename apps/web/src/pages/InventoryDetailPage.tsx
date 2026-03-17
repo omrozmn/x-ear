@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from '@tanstack/react-router';
 import {
   getInventory,
@@ -34,6 +35,7 @@ interface InventoryDetailPageProps {
 
 export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation('inventory');
   const toast = useToastHelpers();
   const [item, setItem] = useState<InventoryItem | null>(null);
   const [loading, setLoading] = useState(true);
@@ -170,7 +172,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
       setError(null);
     } catch (err) {
       console.error('Failed to load item:', err);
-      setError(err instanceof Error ? err.message : 'Ürün yüklenemedi');
+      setError(err instanceof Error ? err.message : t('messages.load_failed'));
     } finally {
       setLoading(false);
     }
@@ -189,7 +191,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
       navigate({ to: '/inventory' });
     } catch (err) {
       console.error('Delete failed:', err);
-      toast.error('Silme işlemi başarısız oldu');
+      toast.error(t('delete.failed'));
     }
   };
 
@@ -261,7 +263,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
       }
     } catch (err) {
       console.error('Save failed:', err);
-      toast.error('Kaydetme işlemi başarısız oldu');
+      toast.error(t('messages.save_failed'));
     }
   };
 
@@ -271,10 +273,10 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
     try {
       await createInventorySerials(id, { serials });
       await loadItem();
-      toast.success('Seri numaraları başarıyla kaydedildi');
+      toast.success(t('messages.product_updated'));
     } catch (err) {
       console.error('Save serials failed:', err);
-      toast.error('Seri numaraları kaydetme işlemi başarısız oldu');
+      toast.error(t('messages.save_failed'));
     }
   };
 
@@ -296,7 +298,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
       }
     } catch (err) {
       console.error('Save features failed:', err);
-      toast.error('Özellikler kaydetme işlemi başarısız oldu');
+      toast.error(t('messages.save_failed'));
     }
   };
 
@@ -317,11 +319,11 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
       <div className="p-6">
         <div className="bg-destructive/10 border border-red-200 dark:border-red-800 rounded-xl p-4">
           <h3 className="text-sm font-medium text-red-800 dark:text-red-300">
-            {error || 'Ürün bulunamadı'}
+            {error || t('products.not_found')}
           </h3>
         </div>
         <Button onClick={() => navigate({ to: '/inventory' })} className="mt-4">
-          Geri Dön
+          {t('form.cancel')}
         </Button>
       </div>
     );
@@ -393,7 +395,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
     <div className="p-6 space-y-6">
       {/* Header */}
         <DesktopPageHeader
-          leading={<HeaderBackButton label="Stoğa Dön" onClick={() => navigate({ to: '/inventory' })} />}
+          leading={<HeaderBackButton label={t('form.cancel')} onClick={() => navigate({ to: '/inventory' })} />}
           title={item.name}
           description={`${item.brand} - ${item.model}`}
           icon={<Package className="w-6 h-6" />}
@@ -407,14 +409,14 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
                     onClick={handleEdit}
                     icon={<Edit className="w-4 h-4" />}
                   >
-                    Düzenle
+                    {t('actions.edit')}
                   </Button>
                   <Button
                     variant="danger"
                     onClick={handleDelete}
                     icon={<Trash2 className="w-4 h-4" />}
                   >
-                    Sil
+                    {t('actions.delete')}
                   </Button>
                 </>
               ) : (
@@ -424,13 +426,13 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
                     onClick={handleCancelEdit}
                     icon={<X className="w-4 h-4" />}
                   >
-                    İptal
+                    {t('form.cancel')}
                   </Button>
                   <Button
                     onClick={handleSave}
                     icon={<Save className="w-4 h-4" />}
                   >
-                    Kaydet
+                    {t('form.save')}
                   </Button>
                 </>
               )}
@@ -480,7 +482,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
 
       {/* Inventory Movements Table */}
       <div className="bg-card rounded-2xl shadow p-6">
-        <h2 className="text-lg font-medium text-foreground mb-4">Ürün Hareketleri</h2>
+        <h2 className="text-lg font-medium text-foreground mb-4">{t('stock.stock_history')}</h2>
         <InventoryMovementsTable inventoryId={id} />
       </div>
 
@@ -513,7 +515,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        title="Ürünü Sil"
+        title={t('delete.title')}
       >
         <div className="space-y-4">
           <div className="flex items-start gap-3">
@@ -522,13 +524,13 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                Ürünü silmek istediğinizden emin misiniz?
+                {t('delete.confirm')}
               </h3>
               <p className="text-sm text-muted-foreground mb-2">
-                <span className="font-semibold">{item.name}</span> ürününü silmek üzeresiniz.
+                <span className="font-semibold">{item.name}</span>
               </p>
               <p className="text-sm text-muted-foreground">
-                Bu işlem geri alınamaz. Ürünle ilgili tüm veriler kalıcı olarak silinecektir.
+                {t('delete.warning')}
               </p>
             </div>
           </div>
@@ -539,7 +541,7 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
               onClick={confirmDelete}
             >
               <Trash2 className="w-4 h-4 mr-2" />
-              Ürünü Sil
+              {t('delete.title')}
             </Button>
           </div>
         </div>

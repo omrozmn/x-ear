@@ -25,7 +25,7 @@ describe('useBarcodeKeyboardInput', () => {
   }
 
   it('should call onScan when rapid keystrokes + Enter detected', () => {
-    renderHook(() => useBarcodeKeyboardInput({ onScan }));
+    renderHook(() => useBarcodeKeyboardInput({ onScan, requireTrusted: false }));
 
     simulateScannerInput('4006381333931');
 
@@ -34,7 +34,7 @@ describe('useBarcodeKeyboardInput', () => {
   });
 
   it('should not trigger for short inputs (< 4 chars)', () => {
-    renderHook(() => useBarcodeKeyboardInput({ onScan }));
+    renderHook(() => useBarcodeKeyboardInput({ onScan, requireTrusted: false }));
 
     simulateScannerInput('AB');
 
@@ -50,7 +50,7 @@ describe('useBarcodeKeyboardInput', () => {
   });
 
   it('should reset buffer when keystrokes are too slow (human typing)', () => {
-    renderHook(() => useBarcodeKeyboardInput({ onScan }));
+    renderHook(() => useBarcodeKeyboardInput({ onScan, requireTrusted: false }));
 
     // Type slowly like a human
     window.dispatchEvent(new KeyboardEvent('keydown', { key: '1', bubbles: true }));
@@ -70,7 +70,7 @@ describe('useBarcodeKeyboardInput', () => {
   });
 
   it('should respect custom minLength', () => {
-    renderHook(() => useBarcodeKeyboardInput({ onScan, minLength: 8 }));
+    renderHook(() => useBarcodeKeyboardInput({ onScan, minLength: 8, requireTrusted: false }));
 
     simulateScannerInput('12345'); // 5 chars, less than minLength=8
 

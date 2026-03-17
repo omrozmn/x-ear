@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Power, QrCode, RefreshCcw, Settings2 } from 'lucide-react';
 import { Button, Card, useToastHelpers } from '@x-ear/ui-web';
 import {
@@ -33,23 +34,14 @@ const DEFAULT_CONFIG: WhatsAppConfig = {
   autoReplyPrompt: '',
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  idle: 'Hazır Değil',
-  starting: 'Başlatılıyor',
-  loading: 'Yükleniyor',
-  qr: 'QR Hazır',
-  awaiting_qr: 'QR Hazırlanıyor',
-  connected: 'Bağlı',
-  disconnected: 'Bağlantı Kesildi',
-  stopped: 'Durduruldu',
-  error: 'Hata',
-};
-
 export default function WhatsAppIntegrationPanel() {
+  const { t } = useTranslation('campaigns');
   const [session, setSession] = useState<WhatsAppStatus>({ status: 'idle', connected: false });
   const [config, setConfig] = useState<WhatsAppConfig>(DEFAULT_CONFIG);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const { success, error } = useToastHelpers();
+
+  const statusLabel = session.connected ? t('whatsapp.status.connected') : (t(`whatsapp.status.${session.status}`, { defaultValue: session.status }));
 
   const fetchStatus = useCallback(async (showError = false) => {
     try {
@@ -57,10 +49,10 @@ export default function WhatsAppIntegrationPanel() {
       setSession(response?.data ?? { status: 'idle', connected: false });
     } catch (err) {
       if (showError) {
-        error('WhatsApp durumu alınamadı', err instanceof Error ? err.message : 'Durum bilgisi alınamadı');
+        error(t('whatsapp.toast.statusError'), err instanceof Error ? err.message : t('whatsapp.toast.statusErrorDesc'));
       }
     }
-  }, [error]);
+  }, [error, t]);
 
   const fetchConfig = useCallback(async () => {
     const response = await getWhatsAppConfig() as { data?: WhatsAppConfig };
@@ -93,7 +85,7 @@ export default function WhatsAppIntegrationPanel() {
       setLoadingAction(key);
       await action();
     } catch (err) {
-      error('WhatsApp hatası', err instanceof Error ? err.message : 'İşlem başarısız oldu');
+      error(t('whatsapp.toast.error'), err instanceof Error ? err.message : t('whatsapp.toast.actionFailed'));
     } finally {
       setLoadingAction(null);
     }
@@ -102,19 +94,19 @@ export default function WhatsAppIntegrationPanel() {
   const handleConnect = () => runAction('connect', async () => {
     const response = await createWhatsAppSessionStart() as { data?: WhatsAppStatus };
     setSession(response?.data ?? session);
-    success('WhatsApp başlatıldı', 'QR kod birkaç saniye içinde görünecek. Telefonunuzdan tarayın.');
+    success(t('whatsapp.integration.started'), t('whatsapp.integration.startedDesc'));
   });
 
   const handleDisconnect = () => runAction('disconnect', async () => {
     await createWhatsAppSessionDisconnect();
     await fetchStatus();
-    success('WhatsApp kapatıldı', 'Session bağlantısı sonlandırıldı.');
+    success(t('whatsapp.integration.stopped'), t('whatsapp.integration.stoppedDesc'));
   });
 
   const handleSaveConfig = () => runAction('config', async () => {
     const response = await updateWhatsAppConfig(config) as { data?: WhatsAppConfig };
     setConfig(response?.data ?? DEFAULT_CONFIG);
-    success('Ayarlar kaydedildi', 'WhatsApp ayarları güncellendi.');
+    success(t('whatsapp.integration.settingsSaved'), t('whatsapp.integration.settingsSavedDesc'));
   });
 
   const canDisconnect = session.connected
@@ -126,8 +118,6 @@ export default function WhatsAppIntegrationPanel() {
     || session.status === 'stopped'
     || session.status === 'idle';
 
-  const statusLabel = session.connected ? 'Bağlı' : (STATUS_LABELS[session.status] ?? session.status);
-
   return (
     <div className="space-y-6">
       <Card className="p-6">
@@ -135,10 +125,10 @@ export default function WhatsAppIntegrationPanel() {
           <div>
             <div className="flex items-center gap-2">
               <QrCode className="h-5 w-5 text-emerald-600" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">WhatsApp QR Bağlantısı</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('whatsapp.integration.qrTitle')}</h3>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              Kullanıcı burada QR taratır. Session açıldıktan sonra toplu gönderim, tekli mesaj, inbox sync ve AI cevap akışları çalışır.
+              {t('whatsapp.integration.qrDesc')}
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
               <span className={`rounded-full px-3 py-1 font-medium ${
@@ -149,8 +139,8 @@ export default function WhatsAppIntegrationPanel() {
                 {statusLabel}
               </span>
               {session.bridgePid ? <span className="text-muted-foreground">PID: {session.bridgePid}</span> : null}
-              {session.syncInProgress ? <span className="text-sky-600 dark:text-sky-400">Senkronize ediliyor</span> : null}
-              {session.lastSyncAt ? <span className="text-muted-foreground">Son sync: {new Date(session.lastSyncAt * 1000).toLocaleTimeString('tr-TR')}</span> : null}
+              {session.syncInProgress ? <span className="text-sky-600 dark:text-sky-400">{t('whatsapp.channel.syncing')}</span> : null}
+              {session.lastSyncAt ? <span className="text-muted-foreground">{t('whatsapp.channel.lastSync')} {new Date(session.lastSyncAt * 1000).toLocaleTimeString('tr-TR')}</span> : null}
               {session.lastError ? <span className="text-destructive">{session.lastError}</span> : null}
             </div>
           </div>
@@ -158,17 +148,17 @@ export default function WhatsAppIntegrationPanel() {
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => { void fetchStatus(); }} disabled={loadingAction !== null}>
               <RefreshCcw className="mr-2 h-4 w-4" />
-              Yenile
+              {t('whatsapp.integration.refresh')}
             </Button>
             {canDisconnect ? (
               <Button variant="outline" onClick={handleDisconnect} disabled={loadingAction !== null}>
                 <Power className="mr-2 h-4 w-4" />
-                Bağlantıyı Kes
+                {t('whatsapp.integration.disconnect')}
               </Button>
             ) : null}
             <Button onClick={handleConnect} disabled={loadingAction !== null}>
               <QrCode className="mr-2 h-4 w-4" />
-              QR Başlat
+              {t('whatsapp.integration.startQr')}
             </Button>
           </div>
         </div>
@@ -177,12 +167,12 @@ export default function WhatsAppIntegrationPanel() {
           <div className="mt-6 flex flex-col items-center gap-4 rounded-3xl border border-dashed border-emerald-300 bg-emerald-50/60 px-6 py-8 text-center dark:border-emerald-800 dark:bg-emerald-900/10">
             <img src={session.qrCode} alt="WhatsApp QR" className="h-72 w-72 rounded-2xl bg-card p-3 shadow-sm" />
             <p className="max-w-md text-sm text-muted-foreground">
-              Telefonunuzdan WhatsApp &gt; Bağlı Cihazlar &gt; Cihaz Bağla ile taratın.
+              {t('whatsapp.integration.scanInstructions')}
             </p>
           </div>
         ) : session.status === 'starting' || session.status === 'loading' || session.status === 'awaiting_qr' ? (
           <div className="mt-6 rounded-3xl border border-dashed border-amber-300 bg-amber-50/60 px-6 py-8 text-center text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-900/10 dark:text-amber-200">
-            QR hazırlanıyor. Bu ekran otomatik güncellenecek.
+            {t('whatsapp.integration.qrPreparing')}
           </div>
         ) : null}
       </Card>
@@ -190,12 +180,12 @@ export default function WhatsAppIntegrationPanel() {
       <Card className="p-6">
         <div className="mb-5 flex items-center gap-2">
           <Settings2 className="h-5 w-5 text-emerald-600" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">WhatsApp Ayarları</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('whatsapp.integration.settingsTitle')}</h3>
         </div>
 
         <div className="grid gap-4 lg:grid-cols-2">
           <label className="space-y-2 text-sm font-medium text-foreground">
-            AI Hedef Telefon
+            {t('whatsapp.integration.aiTargetPhone')}
             <input
               data-allow-raw="true"
               value={config.aiTargetPhone}
@@ -205,7 +195,7 @@ export default function WhatsAppIntegrationPanel() {
             />
           </label>
           <label className="space-y-2 text-sm font-medium text-foreground">
-            Varsayılan Ülke Kodu
+            {t('whatsapp.integration.defaultCountryCode')}
             <input
               data-allow-raw="true"
               value={config.defaultCountryCode}
@@ -224,23 +214,23 @@ export default function WhatsAppIntegrationPanel() {
             onChange={(event) => setConfig((prev) => ({ ...prev, autoReplyEnabled: event.target.checked }))}
             className="h-4 w-4 rounded border-border text-emerald-600"
           />
-          AI otomatik cevap aktif
+          {t('whatsapp.integration.autoReplyEnabled')}
         </label>
 
         <label className="mt-4 block space-y-2 text-sm font-medium text-foreground">
-          AI Otomatik Cevap Promptu
+          {t('whatsapp.integration.autoReplyPrompt')}
           <textarea
             data-allow-raw="true"
             value={config.autoReplyPrompt}
             onChange={(event) => setConfig((prev) => ({ ...prev, autoReplyPrompt: event.target.value }))}
             className="min-h-[130px] w-full rounded-2xl border px-4 py-3"
-            placeholder="Ajanın WhatsApp taleplerine nasıl cevap vereceğini tanımlayın"
+            placeholder={t('whatsapp.integration.autoReplyPlaceholder')}
           />
         </label>
 
         <div className="mt-5 flex justify-end">
           <Button onClick={handleSaveConfig} disabled={loadingAction !== null}>
-            Ayarları Kaydet
+            {t('whatsapp.integration.saveSettings')}
           </Button>
         </div>
       </Card>

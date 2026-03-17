@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from 'react';
 import { Card, Input, Select, Button, Checkbox, Badge } from '@x-ear/ui-web';
 import BrandAutocomplete from '../../pages/inventory/components/BrandAutocomplete';
@@ -46,15 +47,15 @@ export interface InventoryFilters {
 }
 
 const stockStatusOptions = [
-  { value: 'all', label: 'Tüm Durumlar' },
-  { value: 'in_stock', label: 'Stokta Var' },
-  { value: 'low_stock', label: 'Düşük Stok' },
-  { value: 'out_of_stock', label: 'Stok Yok' },
-  { value: 'on_trial', label: 'Deneme Aşamasında' }
+  { value: 'all', label: t('filters.all_statuses') },
+  { value: 'in_stock', label: t('filters.in_stock') },
+  { value: 'low_stock', label: t('filters.low_stock') },
+  { value: 'out_of_stock', label: t('filters.out_of_stock') },
+  { value: 'on_trial', label: t('form.description') }
 ];
 
 const warrantyOptions = [
-  { value: '', label: 'Tüm Garanti Süreleri' },
+  { value: '', label: t('filters.all_statuses') },
   { value: '6 months', label: '6 Ay' },
   { value: '1 year', label: '1 Yıl' },
   { value: '2 years', label: '2 Yıl' },
@@ -80,6 +81,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
   isExpanded = false,
   onToggleExpanded
 }) => {
+  const { t } = useTranslation('inventory');
   const [localFilters, setLocalFilters] = useState<InventoryFilters>(filters);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>(filters.features || []);
   const [showCustomDateRange, setShowCustomDateRange] = useState(false);
@@ -208,10 +210,10 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
           <Filter className="w-5 h-5 text-muted-foreground" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Filtreler</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t('filters.all_statuses')}</h3>
           {getActiveFilterCount() > 0 && (
             <Badge variant="secondary" className="ml-2">
-              {getActiveFilterCount()} aktif filtre
+              {t('filters.all_statuses')}
             </Badge>
           )}
         </div>
@@ -266,7 +268,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
           <Select
             value={localFilters.category || ''}
             onChange={(e) => handleFilterChange('category', e.target.value || undefined)}
-            options={[{ value: '', label: 'Tüm Kategoriler' }, ...categoryOptions]}
+            options={[{ value: '', label: t('filters.all_categories') }, ...categoryOptions]}
             placeholder="Kategori seçin"
             fullWidth
           />
@@ -374,7 +376,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               <Select
                 value={localFilters.supplier || ''}
                 onChange={(e) => handleFilterChange('supplier', e.target.value || undefined)}
-                options={[{ value: '', label: 'Tüm Tedarikçiler' }, ...supplierOptions]}
+                options={[{ value: '', label: t('filters.all_statuses') }, ...supplierOptions]}
                 placeholder="Tedarikçi seçin"
               />
             </div>
@@ -428,17 +430,17 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               <Checkbox
                 checked={localFilters.lowStock || false}
                 onChange={(e) => handleFilterChange('lowStock', e.target.checked)}
-                label="Düşük Stok"
+                label={t('filters.low_stock')}
               />
               <Checkbox
                 checked={localFilters.outOfStock || false}
                 onChange={(e) => handleFilterChange('outOfStock', e.target.checked)}
-                label="Stok Yok"
+                label={t('filters.out_of_stock')}
               />
               <Checkbox
                 checked={localFilters.hasTrials || false}
                 onChange={(e) => handleFilterChange('hasTrials', e.target.checked)}
-                label="Deneme Aşamasında"
+                label={t('form.description')}
               />
             </div>
           </div>

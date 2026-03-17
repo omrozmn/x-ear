@@ -22,6 +22,8 @@ interface AddOn {
     limitAmount?: number;
     unitName?: string;
     currency?: string;
+    sector?: string;
+    countryCode?: string;
 }
 import { PlusIcon, PencilIcon, TrashIcon, XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -29,6 +31,7 @@ import Pagination from '@/components/ui/Pagination';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
 import { unwrapData } from '@/lib/orval-response';
+import { SectorCountryFilter, SectorCountryFormFields, getSectorLabel, getCountryLabel } from '@/components/ui/SectorCountryFilter';
 
 interface PaginationInfo {
     totalPages?: number;
@@ -54,6 +57,8 @@ interface AddOnFormData {
     addon_type: AddonType;
     is_active: boolean;
     currency: string;
+    sector: string;
+    countryCode: string;
 }
 
 const addonFormSchema = z.object({
@@ -95,6 +100,8 @@ function normalizeAddon(value: AddonRead | Record<string, unknown>): AddOn | nul
         isActive: typeof value.isActive === 'boolean' ? value.isActive : typeof value.is_active === 'boolean' ? value.is_active : undefined,
         limitAmount: typeof value.limitAmount === 'number' ? value.limitAmount : typeof value.limit_amount === 'number' ? value.limit_amount : undefined,
         unitName: typeof value.unitName === 'string' ? value.unitName : typeof value.unit_name === 'string' ? value.unit_name : undefined,
+        sector: typeof value.sector === 'string' ? value.sector : undefined,
+        countryCode: typeof value.countryCode === 'string' ? value.countryCode : typeof value.country_code === 'string' ? value.country_code : undefined,
     };
 }
 

@@ -33,19 +33,25 @@ def list_plans(
     type: Optional[str] = Query(None),
     is_active: Optional[str] = Query(None),
     is_public: Optional[str] = Query(None),
+    sector: Optional[str] = Query(None, description="Filter by sector code"),
+    country_code: Optional[str] = Query(None, alias="countryCode", description="Filter by country code"),
     db_session: Session = Depends(get_db),
     access: UnifiedAccess = Depends(require_admin())
 ):
     """List all plans"""
     try:
         query = db_session.query(Plan)
-        
+
         if type:
             query = query.filter_by(plan_type=PlanType[type.upper()])
         if is_active:
             query = query.filter_by(is_active=is_active.lower() == 'true')
         if is_public:
             query = query.filter_by(is_public=is_public.lower() == 'true')
+        if sector:
+            query = query.filter_by(sector=sector.lower())
+        if country_code:
+            query = query.filter_by(country_code=country_code.upper())
         
         query = query.order_by(Plan.created_at.desc())
         total = query.count()
@@ -87,6 +93,8 @@ def create_plan(
             features=request_data.features,
             max_users=request_data.max_users,
             max_storage_gb=request_data.max_storage_gb,
+            sector=request_data.sector,
+            country_code=request_data.country_code,
             is_active=request_data.is_active,
             is_public=request_data.is_public
         )

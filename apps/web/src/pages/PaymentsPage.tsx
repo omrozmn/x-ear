@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, Button, DatePicker, Input, DataTable } from '@x-ear/ui-web';
 import type { Column } from '@x-ear/ui-web';
 import { CreditCard, DollarSign, Search, Download, RefreshCw, Filter, CheckSquare, Square, X, FileText } from 'lucide-react';
@@ -14,22 +15,23 @@ import { PermissionGate } from '@/components/PermissionGate';
 
 type PaymentRow = Omit<PaymentRecordRead, 'partyName'> & { partyName?: string };
 
-const paymentMethodLabels: Record<string, string> = {
-  cash: 'Nakit',
-  card: 'Kredi Kartı',
-  credit_card: 'Kredi Kartı',
-  check: 'Çek',
-  bank_transfer: 'Havale/EFT',
-  promissory_note: 'Senet',
-};
-
-function formatPaymentMethod(method?: string): string {
-  if (!method) return '—';
-  return paymentMethodLabels[method.toLowerCase()] ?? method;
-}
-
 export function PaymentsPage() {
+  const { t } = useTranslation('payments');
   const isMobile = useIsMobile();
+
+  const paymentMethodLabels: Record<string, string> = {
+    cash: t('paymentMethods.cash', 'Nakit'),
+    card: t('paymentMethods.card', 'Kredi Kartı'),
+    credit_card: t('paymentMethods.credit_card', 'Kredi Kartı'),
+    check: t('paymentMethods.check', 'Çek'),
+    bank_transfer: t('paymentMethods.bank_transfer', 'Havale/EFT'),
+    promissory_note: t('paymentMethods.promissory_note', 'Senet'),
+  };
+
+  function formatPaymentMethod(method?: string): string {
+    if (!method) return '—';
+    return paymentMethodLabels[method.toLowerCase()] ?? method;
+  }
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(25);
@@ -118,7 +120,7 @@ export function PaymentsPage() {
     const items = selectedIds.size > 0
       ? filteredRecords.filter((r) => selectedIds.has(String(r.id)))
       : filteredRecords;
-    const headers = ['Hasta Adı', 'Tutar', 'Satış ID', 'Ödeme Yöntemi', 'Tarih'];
+    const headers = [t('columns.patientName', 'Hasta Adı'), t('columns.amount', 'Tutar'), t('columns.saleId', 'Satış ID'), t('columns.paymentMethod', 'Ödeme Yöntemi'), t('columns.date', 'Tarih')];
     const rows = items.map((r) => [
       r.partyName || '',
       String(r.amount ?? 0),
@@ -135,7 +137,7 @@ export function PaymentsPage() {
     anchor.download = `odemeler_${new Date().toISOString().slice(0, 10)}.csv`;
     anchor.click();
     URL.revokeObjectURL(url);
-    toast.success('CSV dışa aktarıldı');
+    toast.success(t('csvExported', 'CSV dışa aktarıldı'));
   }, [selectedIds, filteredRecords]);
 
   const toggleSelect = (id: string) => {
@@ -161,8 +163,8 @@ export function PaymentsPage() {
           <div className="bg-white dark:bg-gray-800 p-4 rounded-full shadow-sm mb-4">
             <CreditCard className="h-8 w-8 text-gray-300" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Ödeme kaydı bulunamadı</h3>
-          <p className="text-muted-foreground text-sm mt-1">Kriterlere uygun ödeme yok.</p>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t('noPaymentsFound', 'Ödeme kaydı bulunamadı')}</h3>
+          <p className="text-muted-foreground text-sm mt-1">{t('noPaymentsCriteria', 'Kriterlere uygun ödeme yok.')}</p>
         </div>
       ) : filteredRecords.map((r) => (
         <div
@@ -190,11 +192,11 @@ export function PaymentsPage() {
             </div>
             <div className="border-t border-border pt-3 flex items-end justify-between gap-3">
               <div>
-                <p className="text-xs text-muted-foreground">Tarih</p>
+                <p className="text-xs text-muted-foreground">{t('columns.date', 'Tarih')}</p>
                 <p className="text-sm font-medium text-foreground">{r.paymentDate ? formatDate(r.paymentDate) : '-'}</p>
               </div>
               <div className="text-right">
-                <p className="text-xs text-muted-foreground">Tutar</p>
+                <p className="text-xs text-muted-foreground">{t('columns.amount', 'Tutar')}</p>
                 <p className="text-lg font-bold text-gray-900 dark:text-white">{formatCurrency(r.amount, 'TRY')}</p>
               </div>
             </div>
@@ -208,7 +210,7 @@ export function PaymentsPage() {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-muted-foreground">Ödemeler yükleniyor...</span>
+        <span className="ml-3 text-muted-foreground">{t('loading', 'Ödemeler yükleniyor...')}</span>
       </div>
     );
   }
@@ -216,8 +218,8 @@ export function PaymentsPage() {
   return (
     <div className="p-6 space-y-6">
       <DesktopPageHeader
-        title="Ödeme Takibi"
-        description="Tüm hastalardan alınan ödemeleri takip edin"
+        title={t('pageTitle', 'Ödeme Takibi')}
+        description={t('pageDescription', 'Tüm hastalardan alınan ödemeleri takip edin')}
         icon={<CreditCard className="h-6 w-6" />}
         eyebrow={{ tr: 'Tahsilat', en: 'Collections' }}
         actions={(
@@ -225,12 +227,12 @@ export function PaymentsPage() {
             <PermissionGate permission="finance.payments.export.view">
               <Button variant="outline" className="flex items-center gap-2" onClick={exportToCsv}>
                 <Download size={18} />
-                Dışa Aktar
+                {t('export', 'Dışa Aktar')}
               </Button>
             </PermissionGate>
             <Button variant="outline" className="flex items-center gap-2" onClick={handleRefresh}>
               <RefreshCw size={18} />
-              Yenile
+              {t('refresh', 'Yenile')}
             </Button>
           </>
         )}
@@ -241,7 +243,7 @@ export function PaymentsPage() {
         <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm text-muted-foreground">Toplam Ödeme</p>
+              <p className="text-xs md:text-sm text-muted-foreground">{t('stats.totalPayment', 'Toplam Ödeme')}</p>
               <p className="text-lg md:text-2xl font-bold text-success mt-1">{formatCurrency(totalAmount, 'TRY')}</p>
             </div>
             <div className="p-2 md:p-3 bg-success/10 rounded-2xl">
@@ -253,7 +255,7 @@ export function PaymentsPage() {
         <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm text-muted-foreground">Toplam Kayıt</p>
+              <p className="text-xs md:text-sm text-muted-foreground">{t('stats.totalRecords', 'Toplam Kayıt')}</p>
               <p className="text-lg md:text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">{totalCount}</p>
             </div>
             <div className="p-2 md:p-3 bg-purple-100 dark:bg-purple-900/20 rounded-2xl">
@@ -265,7 +267,7 @@ export function PaymentsPage() {
         <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm text-muted-foreground">Ortalama</p>
+              <p className="text-xs md:text-sm text-muted-foreground">{t('stats.average', 'Ortalama')}</p>
               <p className="text-lg md:text-2xl font-bold text-primary mt-1">{formatCurrency(averageAmount, 'TRY')}</p>
             </div>
             <div className="p-2 md:p-3 bg-primary/10 rounded-2xl">
@@ -283,7 +285,7 @@ export function PaymentsPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
               <Input
                 type="text"
-                placeholder="Hasta adı, satış ID veya ödeme yöntemi ara..."
+                placeholder={t('searchPlaceholder', 'Hasta adı, satış ID veya ödeme yöntemi ara...')}
                 value={searchTerm}
                 onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                 className="w-full pl-10 pr-4"
@@ -292,30 +294,30 @@ export function PaymentsPage() {
             </div>
             <Button variant="outline" onClick={() => setShowFilters((v) => !v)} className="shrink-0 flex items-center gap-2">
               <Filter size={18} />
-              Filtreler
+              {t('filters', 'Filtreler')}
             </Button>
             <Button variant="outline" onClick={() => setIsMobileSelectionMode((v) => !v)} className="shrink-0 flex items-center gap-2 md:hidden">
               <CheckSquare size={18} />
-              {isMobileSelectionMode ? 'Kapat' : 'Seç'}
+              {isMobileSelectionMode ? t('close', 'Kapat') : t('select', 'Seç')}
             </Button>
           </div>
 
           {showFilters && (
             <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto_auto] gap-3">
               <DatePicker
-                placeholder="Başlangıç"
+                placeholder={t('startDate', 'Başlangıç')}
                 value={dateFrom}
                 onChange={(date) => { setDateFrom(date); setCurrentPage(1); }}
               />
               <DatePicker
-                placeholder="Bitiş"
+                placeholder={t('endDate', 'Bitiş')}
                 value={dateTo}
                 onChange={(date) => { setDateTo(date); setCurrentPage(1); }}
               />
-              <Button variant="outline" onClick={clearFilters}>Temizle</Button>
+              <Button variant="outline" onClick={clearFilters}>{t('clear', 'Temizle')}</Button>
               <Button onClick={handleRefresh} className="flex items-center gap-2">
                 <RefreshCw size={18} />
-                Ara
+                {t('search', 'Ara')}
               </Button>
             </div>
           )}
@@ -329,7 +331,7 @@ export function PaymentsPage() {
             data={filteredRecords}
             loading={isLoading}
             rowKey="id"
-            emptyText="Ödeme bulunamadı"
+            emptyText={t('noPaymentsFound', 'Ödeme bulunamadı')}
             hoverable
             striped
             rowSelection={{
@@ -345,11 +347,11 @@ export function PaymentsPage() {
               onChange: (p: number, ps: number) => { setCurrentPage(p); setPerPage(ps); },
             }}
             columns={[
-              { key: 'partyName', title: 'Hasta Adı', render: (_: unknown, r: PaymentRow) => r.partyName || '—' },
-              { key: 'amount', title: 'Tutar', render: (_: unknown, r: PaymentRow) => <span className="font-semibold">{formatCurrency(r.amount, 'TRY')}</span> },
-              { key: 'saleId', title: 'Satış ID', render: (_: unknown, r: PaymentRow) => r.saleId ? <span className="text-xs font-mono">{r.saleId}</span> : '—' },
-              { key: 'paymentMethod', title: 'Ödeme Yöntemi', render: (_: unknown, r: PaymentRow) => formatPaymentMethod(r.paymentMethod) },
-              { key: 'paymentDate', title: 'Tarih', render: (_: unknown, r: PaymentRow) => r.paymentDate ? formatDate(r.paymentDate) : '—' },
+              { key: 'partyName', title: t('columns.patientName', 'Hasta Adı'), render: (_: unknown, r: PaymentRow) => r.partyName || '—' },
+              { key: 'amount', title: t('columns.amount', 'Tutar'), render: (_: unknown, r: PaymentRow) => <span className="font-semibold">{formatCurrency(r.amount, 'TRY')}</span> },
+              { key: 'saleId', title: t('columns.saleId', 'Satış ID'), render: (_: unknown, r: PaymentRow) => r.saleId ? <span className="text-xs font-mono">{r.saleId}</span> : '—' },
+              { key: 'paymentMethod', title: t('columns.paymentMethod', 'Ödeme Yöntemi'), render: (_: unknown, r: PaymentRow) => formatPaymentMethod(r.paymentMethod) },
+              { key: 'paymentDate', title: t('columns.date', 'Tarih'), render: (_: unknown, r: PaymentRow) => r.paymentDate ? formatDate(r.paymentDate) : '—' },
             ] as Column<PaymentRow>[]}
           />
         </Card>
@@ -366,13 +368,13 @@ export function PaymentsPage() {
       {/* Selection floating bar */}
       {selectedIds.size > 0 && (
         <div className={`fixed ${isMobile ? 'bottom-24' : 'bottom-6'} left-1/2 -translate-x-1/2 z-40 bg-white dark:bg-gray-800 border border-border rounded-xl shadow-2xl px-4 md:px-6 py-3 flex items-center gap-3 md:gap-4 w-[90%] md:w-auto overflow-x-auto whitespace-nowrap`}>
-          <span className="text-sm font-medium text-foreground">{selectedIds.size} kayıt seçildi</span>
+          <span className="text-sm font-medium text-foreground">{t('selectedCount', '{{count}} kayıt seçildi', { count: selectedIds.size })}</span>
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
           <PermissionGate permission="finance.payments.export.view">
-            <Button variant="ghost" onClick={exportToCsv} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/10 dark:hover:bg-blue-900/20 rounded-2xl transition-colors h-auto"><Download className="w-4 h-4" /> CSV Dışa Aktar</Button>
+            <Button variant="ghost" onClick={exportToCsv} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/10 dark:hover:bg-blue-900/20 rounded-2xl transition-colors h-auto"><Download className="w-4 h-4" /> {t('csvExport', 'CSV Dışa Aktar')}</Button>
           </PermissionGate>
           <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
-          <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted dark:hover:bg-gray-700 rounded-2xl transition-colors h-auto"><X className="w-4 h-4" /> Seçimi Kaldır</Button>
+          <Button variant="ghost" onClick={() => setSelectedIds(new Set())} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted dark:hover:bg-gray-700 rounded-2xl transition-colors h-auto"><X className="w-4 h-4" /> {t('clearSelection', 'Seçimi Kaldır')}</Button>
         </div>
       )}
     </div>

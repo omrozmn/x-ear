@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState } from 'react';
 import { Modal, Button, Alert, Textarea } from '@x-ear/ui-web';
 import { InventoryItem } from '../../../types/inventory';
@@ -17,6 +18,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
   onConfirm,
   isLoading = false
 }) => {
+  const { t } = useTranslation('inventory');
   const [reason, setReason] = useState('');
   const [requireReason, setRequireReason] = useState(false);
 
@@ -44,7 +46,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={isSingleItem ? 'Ürünü Sil' : 'Ürünleri Sil'}
+      title={t('delete.title')}
       size="md"
     >
       <div className="space-y-6">
@@ -52,12 +54,12 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
           <div className="space-y-2">
             <p className="font-medium">
               {isSingleItem
-                ? 'Bu ürünü silmek istediğinizden emin misiniz?'
-                : `${items.length} ürünü silmek istediğinizden emin misiniz?`
+                ? t('delete.confirm')
+                : t('delete.confirm')
               }
             </p>
             <p className="text-sm">
-              Bu işlem <strong>geri alınamaz</strong> ve tüm ilgili veriler silinecektir.
+              {t('delete.warning')}
             </p>
             {hasStock && (
               <p className="text-sm">
@@ -79,7 +81,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
           </div>
         ) : (
           <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
-            <h3 className="font-medium text-gray-900 dark:text-white mb-3">Silinecek Ürünler:</h3>
+            <h3 className="font-medium text-gray-900 dark:text-white mb-3">{t('delete.title')}:</h3>
             <div className="space-y-2 max-h-40 overflow-y-auto">
               {items.map((item, index) => (
                 <div key={item.id} className="flex justify-between text-sm dark:text-gray-300">
@@ -99,12 +101,12 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
 
         <div>
           <Textarea
-            label="Silme Nedeni (Opsiyonel)"
+            label={t('form.notes')}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder="Bu ürün(ler)i neden siliyorsunuz? (Örn: Hasarlı, Eskimiş, Yanlış kayıt)"
             rows={3}
-            error={requireReason && !reason.trim() ? 'Lütfen silme nedenini belirtin' : undefined}
+            error={requireReason && !reason.trim() ? t('validation.name_required') : undefined}
           />
         </div>
 
@@ -122,7 +124,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
             loading={isLoading}
             variant="danger"
           >
-            🗑️ {isSingleItem ? 'Ürünü Sil' : `${items.length} Ürünü Sil`}
+            {t('delete.title')}
           </Button>
         </div>
       </div>
