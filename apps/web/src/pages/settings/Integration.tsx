@@ -28,7 +28,10 @@ import { SettingsSectionHeader } from '../../components/layout/SettingsSectionHe
 import WhatsAppIntegrationPanel from '@/components/settings/WhatsAppIntegrationPanel';
 import { Activity } from 'lucide-react';
 import SgkCredentialsSettings from './SgkCredentialsSettings';
+import { ECommerceIntegrationSettings } from './ECommerceIntegrationSettings';
+import { useECommerceFeature } from '@/hooks/useECommerceFeature';
 import { useTranslation } from 'react-i18next';
+import { ShoppingBag } from 'lucide-react';
 
 interface SmsDocument {
     type: string;
@@ -55,6 +58,7 @@ const HEADER_TYPES = [
 
 export default function IntegrationSettings() {
   const { t } = useTranslation('settings_extra');
+    const { enabled: ecommerceEnabled } = useECommerceFeature();
     const [activeTab, setActiveTab] = useState('sms');
     const [smsSubTab, setSmsSubTab] = useState('docs');
     const [previewDoc, setPreviewDoc] = useState<{ type: string; url: string; filename: string } | null>(null);
@@ -262,6 +266,11 @@ export default function IntegrationSettings() {
                     <Tabs.Trigger value="sgk-login" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'sgk-login' ? 'border-red-600 text-destructive' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
                         <div className="flex items-center gap-2"><Shield className="w-4 h-4" />SGK Giriş</div>
                     </Tabs.Trigger>
+                    {ecommerceEnabled && (
+                        <Tabs.Trigger value="ecommerce" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'ecommerce' ? 'border-orange-600 text-orange-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+                            <div className="flex items-center gap-2"><ShoppingBag className="w-4 h-4" />E-Ticaret</div>
+                        </Tabs.Trigger>
+                    )}
                 </Tabs.List>
                 <Tabs.Content value="sms" className="space-y-6">
                     {configLoading ? (
@@ -569,6 +578,9 @@ export default function IntegrationSettings() {
                 <Tabs.Content value="uts"><UtsSettingsPanel /></Tabs.Content>
                 <Tabs.Content value="noah"><NoahConnectorSettings /></Tabs.Content>
                 <Tabs.Content value="sgk-login"><SgkCredentialsSettings /></Tabs.Content>
+                {ecommerceEnabled && (
+                    <Tabs.Content value="ecommerce"><ECommerceIntegrationSettings /></Tabs.Content>
+                )}
             </Tabs.Root>
 
             <Dialog.Root open={!!previewDoc} onOpenChange={() => setPreviewDoc(null)}>

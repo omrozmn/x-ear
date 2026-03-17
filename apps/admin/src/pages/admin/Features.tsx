@@ -184,15 +184,6 @@ function buildDefaults(defs: FeatureDef[]): FeatureMap {
 
 const ALL_FEATURE_DEFAULTS = buildDefaults(FEATURE_HIERARCHY);
 
-const modeBadge: Record<FeatureMode, string> = {
-    visible: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
-    hidden: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
-};
-
-const modeColors: Record<FeatureMode, string> = {
-    visible: 'text-green-600 dark:text-green-400',
-    hidden: 'text-red-500 dark:text-red-400',
-};
 
 /* ─── Plan Selection Modal ─── */
 const PlanModal: React.FC<{

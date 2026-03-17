@@ -351,5 +351,21 @@ class S3Service:
         return content_types.get(ext, 'application/octet-stream')
 
 
+    def download_file(self, s3_key: str) -> bytes | None:
+        """Download a file from S3 and return its bytes."""
+        if self._mock_mode:
+            return None
+
+        try:
+            import io
+            buf = io.BytesIO()
+            self.s3_client.download_fileobj(self.bucket_name, s3_key, buf)
+            buf.seek(0)
+            return buf.read()
+        except Exception as e:
+            logger.error(f"Failed to download file from S3: {e}")
+            return None
+
+
 # Singleton instance
 s3_service = S3Service()

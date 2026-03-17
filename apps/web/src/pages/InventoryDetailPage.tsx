@@ -8,8 +8,9 @@ import {
   createInventorySerials,
   InventoryItemUpdate
 } from '@/api/client/inventory.client';
-import { Edit, X, Trash2, Package, Save, AlertTriangle } from 'lucide-react';
+import { Edit, X, Trash2, Package, Save, AlertTriangle, ImageIcon, ShoppingBag } from 'lucide-react';
 import { Button, Modal, useToastHelpers } from '@x-ear/ui-web';
+import * as Tabs from '@radix-ui/react-tabs';
 import { InventoryItem, InventoryCategory } from '../types/inventory';
 import { SerialNumberModal } from '../components/inventory/SerialNumberModal';
 import { UtsSerialStatusModal } from '../components/uts/UtsSerialStatusModal';
@@ -20,6 +21,10 @@ import { WarrantyInfoSection } from './inventory/components/WarrantyInfoSection'
 import { InventoryMovementsTable } from '../components/party/InventoryMovementsTable';
 import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 import { HeaderBackButton } from '../components/layout/HeaderBackButton';
+import { ProductImagesTab } from './inventory/components/ProductImagesTab';
+import { ECommerceTab } from './inventory/components/ECommerceTab';
+import { useECommerceFeature } from '@/hooks/useECommerceFeature';
+import { useListAdminMarketplaceIntegrations } from '@/api/generated/admin-marketplaces/admin-marketplaces';
 
 import {
   INVENTORY_KDV_RATE,
@@ -65,6 +70,18 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
 
   // Delete confirmation modal state
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('general');
+
+  // E-Commerce feature gate
+  const { enabled: ecommerceEnabled } = useECommerceFeature();
+
+  // Marketplace integrations (for E-Commerce tab)
+  const { data: integrationsData } = useListAdminMarketplaceIntegrations(
+    {},
+    { query: { enabled: ecommerceEnabled } }
+  );
+  const integrations = (integrationsData as { data?: Array<{ id: string; platform: string; name: string; status: string; isActive: boolean }> })?.data || [];
+
   const { data: utsConfig } = useUtsConfig();
   const { data: utsSerialStates } = useUtsSerialStates({ inventoryId: id });
   const queryTekilUrun = useQueryUtsTekilUrun();
@@ -440,51 +457,86 @@ export const InventoryDetailPage: React.FC<InventoryDetailPageProps> = ({ id }) 
           )}
         />
 
-      {/* Content - 2 Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* LEFT COLUMN - Product Information & Stock */}
-        <div className="space-y-6">
-          <ProductInfoSection
-            item={item}
-            isEditMode={isEditMode}
-            editedItem={editedItem}
-            onEditChange={handleEditChange}
-            onFeaturesChange={handleFeaturesChange}
-          />
+      {/* Tabs */}
+      <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
+        <Tabs.List className="flex border-b border-border mb-6">
+          <Tabs.Trigger value="general" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'general' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+            <div className="flex items-center gap-2"><Package className="w-4 h-4" />Genel</div>
+          </Tabs.Trigger>
+          <Tabs.Trigger value="images" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'images' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+            <div className="flex items-center gap-2"><ImageIcon className="w-4 h-4" />Ürün Görselleri</div>
+          </Tabs.Trigger>
+          {ecommerceEnabled && (
+            <Tabs.Trigger value="ecommerce" className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'ecommerce' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+              <div className="flex items-center gap-2"><ShoppingBag className="w-4 h-4" />E-Ticaret</div>
+            </Tabs.Trigger>
+          )}
+        </Tabs.List>
 
-          <StockInfoSection
-            item={item}
-            isEditMode={isEditMode}
-            editedItem={editedItem}
-            onEditChange={handleEditChange}
-            onSerialModalOpen={() => setIsSerialModalOpen(true)}
-          />
-        </div>
+        {/* General Tab */}
+        <Tabs.Content value="general" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* LEFT COLUMN - Product Information & Stock */}
+            <div className="space-y-6">
+              <ProductInfoSection
+                item={item}
+                isEditMode={isEditMode}
+                editedItem={editedItem}
+                onEditChange={handleEditChange}
+                onFeaturesChange={handleFeaturesChange}
+              />
 
-        {/* RIGHT COLUMN - Pricing & Warranty */}
-        <div className="space-y-6">
-          <PricingInfoSection
-            item={item}
-            isEditMode={isEditMode}
-            editedItem={editedItem}
-            onEditChange={handleEditChange}
-            kdvRate={kdvRate}
-            onKdvRateChange={setKdvRate}
-            isPriceKdvIncluded={isPriceKdvIncluded}
-            onPriceKdvIncludedChange={setIsPriceKdvIncluded}
-            isCostKdvIncluded={isCostKdvIncluded}
-            onCostKdvIncludedChange={setIsCostKdvIncluded}
-          />
+              <StockInfoSection
+                item={item}
+                isEditMode={isEditMode}
+                editedItem={editedItem}
+                onEditChange={handleEditChange}
+                onSerialModalOpen={() => setIsSerialModalOpen(true)}
+              />
+            </div>
 
-          <WarrantyInfoSection item={item} />
-        </div>
-      </div>
+            {/* RIGHT COLUMN - Pricing & Warranty */}
+            <div className="space-y-6">
+              <PricingInfoSection
+                item={item}
+                isEditMode={isEditMode}
+                editedItem={editedItem}
+                onEditChange={handleEditChange}
+                kdvRate={kdvRate}
+                onKdvRateChange={setKdvRate}
+                isPriceKdvIncluded={isPriceKdvIncluded}
+                onPriceKdvIncludedChange={setIsPriceKdvIncluded}
+                isCostKdvIncluded={isCostKdvIncluded}
+                onCostKdvIncludedChange={setIsCostKdvIncluded}
+              />
 
-      {/* Inventory Movements Table */}
-      <div className="bg-card rounded-2xl shadow p-6">
-        <h2 className="text-lg font-medium text-foreground mb-4">{t('stock.stock_history')}</h2>
-        <InventoryMovementsTable inventoryId={id} />
-      </div>
+              <WarrantyInfoSection item={item} />
+            </div>
+          </div>
+
+          {/* Inventory Movements Table */}
+          <div className="bg-card rounded-2xl shadow p-6">
+            <h2 className="text-lg font-medium text-foreground mb-4">{t('stock.stock_history')}</h2>
+            <InventoryMovementsTable inventoryId={id} />
+          </div>
+        </Tabs.Content>
+
+        {/* Product Images Tab */}
+        <Tabs.Content value="images">
+          <div className="bg-card rounded-2xl shadow p-6">
+            <ProductImagesTab inventoryId={id} />
+          </div>
+        </Tabs.Content>
+
+        {/* E-Commerce Tab */}
+        {ecommerceEnabled && (
+          <Tabs.Content value="ecommerce">
+            <div className="bg-card rounded-2xl shadow p-6">
+              <ECommerceTab inventoryId={id} integrations={integrations} />
+            </div>
+          </Tabs.Content>
+        )}
+      </Tabs.Root>
 
       {/* Serial Number Modal */}
       <SerialNumberModal
