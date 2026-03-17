@@ -8,8 +8,10 @@ import {
   RefreshCw,
   X,
   ChevronDown,
+  Pencil,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useNavigate } from '@tanstack/react-router';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 import {
   labelService,
@@ -55,6 +57,7 @@ const DEFAULT_LAYOUT: LayoutConfig = {
 
 const LabelTemplatesPage: React.FC = () => {
   const { isMobile } = useAdminResponsive();
+  const navigate = useNavigate();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -116,6 +119,10 @@ const LabelTemplatesPage: React.FC = () => {
   };
 
   const handleEdit = (template: Template) => {
+    navigate({ to: '/label-editor/$templateId', params: { templateId: template.id } });
+  };
+
+  const handleEditForm = (template: Template) => {
     setEditingId(template.id);
     setShowForm(true);
   };
@@ -150,7 +157,7 @@ const LabelTemplatesPage: React.FC = () => {
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
           <button
-            onClick={() => { setEditingId(null); setShowForm(true); }}
+            onClick={() => navigate({ to: '/label-editor/$templateId', params: { templateId: 'new' } })}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors text-sm font-medium"
           >
             <Plus className="w-4 h-4" />
@@ -169,7 +176,7 @@ const LabelTemplatesPage: React.FC = () => {
         <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700">
           <p className="text-gray-500 dark:text-gray-400 mb-3">Henuz sablon yok</p>
           <button
-            onClick={() => { setEditingId(null); setShowForm(true); }}
+            onClick={() => navigate({ to: '/label-editor/$templateId', params: { templateId: 'new' } })}
             className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
           >
             Ilk sablonunuzu olusturun
@@ -219,8 +226,15 @@ const LabelTemplatesPage: React.FC = () => {
                         </button>
                         <button
                           onClick={() => handleEdit(t)}
+                          className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                          title="Gorsel Duzenleyici"
+                        >
+                          <Pencil className="w-4 h-4 text-blue-500" />
+                        </button>
+                        <button
+                          onClick={() => handleEditForm(t)}
                           className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                          title="Duzenle"
+                          title="Form ile Duzenle"
                         >
                           <Edit3 className="w-4 h-4 text-gray-500" />
                         </button>

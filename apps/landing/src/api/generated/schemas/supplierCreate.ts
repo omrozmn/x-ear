@@ -17,6 +17,7 @@ import type { SupplierCreateAddress } from './supplierCreateAddress';
 import type { SupplierCreateCity } from './supplierCreateCity';
 import type { SupplierCreateTaxNumber } from './supplierCreateTaxNumber';
 import type { SupplierCreateTaxOffice } from './supplierCreateTaxOffice';
+import type { SupplierCreateInstitutionNumber } from './supplierCreateInstitutionNumber';
 import type { SupplierCreateNotes } from './supplierCreateNotes';
 
 /**
@@ -41,6 +42,7 @@ export interface SupplierCreate {
   city?: SupplierCreateCity;
   taxNumber?: SupplierCreateTaxNumber;
   taxOffice?: SupplierCreateTaxOffice;
+  institutionNumber?: SupplierCreateInstitutionNumber;
   isActive?: boolean;
   notes?: SupplierCreateNotes;
 }

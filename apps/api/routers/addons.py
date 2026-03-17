@@ -2,8 +2,8 @@
 FastAPI Addons Router - Migrated from Flask routes/addons.py
 Handles subscription addons
 """
-from fastapi import APIRouter, Depends, HTTPException
-from typing import List
+from fastapi import APIRouter, Depends, HTTPException, Query
+from typing import List, Optional
 import logging
 
 from sqlalchemy.orm import Session
@@ -20,12 +20,21 @@ router = APIRouter(prefix="/addons", tags=["Addons"])
 # --- Routes ---
 
 @router.get("", operation_id="listAddons", response_model=ResponseEnvelope[List[AddonRead]])
-def get_addons(db: Session = Depends(get_db)):
+def get_addons(
+    sector: Optional[str] = Query(None, description="Filter by sector code"),
+    country_code: Optional[str] = Query(None, alias="countryCode", description="Filter by country code"),
+    db: Session = Depends(get_db)
+):
     """Get all active addons (Public)"""
     try:
         from models.addon import AddOn
-        
-        addons = db.query(AddOn).filter_by(is_active=True).all()
+
+        query = db.query(AddOn).filter_by(is_active=True)
+        if sector:
+            query = query.filter_by(sector=sector.lower())
+        if country_code:
+            query = query.filter_by(country_code=country_code.upper())
+        addons = query.all()
         
         # Use Pydantic schema for type-safe serialization (NO to_dict())
         return ResponseEnvelope(data=[AddonRead.model_validate(addon) for addon in addons])

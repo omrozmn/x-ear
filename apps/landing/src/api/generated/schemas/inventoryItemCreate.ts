@@ -5,10 +5,12 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
+import type { InventoryItemCreateBrand } from './inventoryItemCreateBrand';
 import type { InventoryItemCreateModel } from './inventoryItemCreateModel';
 import type { InventoryItemCreateBarcode } from './inventoryItemCreateBarcode';
 import type { InventoryItemCreateStockCode } from './inventoryItemCreateStockCode';
 import type { InventoryItemCreateSupplier } from './inventoryItemCreateSupplier';
+import type { InventoryItemCreatePackageQuantity } from './inventoryItemCreatePackageQuantity';
 import type { InventoryItemCreateDescription } from './inventoryItemCreateDescription';
 import type { InventoryItemCreateDirection } from './inventoryItemCreateDirection';
 import type { InventoryItemCreateTenantId } from './inventoryItemCreateTenantId';
@@ -16,13 +18,14 @@ import type { InventoryItemCreateBranchId } from './inventoryItemCreateBranchId'
 
 export interface InventoryItemCreate {
   name: string;
-  brand: string;
+  brand?: InventoryItemCreateBrand;
   model?: InventoryItemCreateModel;
   category?: string;
   barcode?: InventoryItemCreateBarcode;
   stockCode?: InventoryItemCreateStockCode;
   supplier?: InventoryItemCreateSupplier;
   unit?: string;
+  packageQuantity?: InventoryItemCreatePackageQuantity;
   description?: InventoryItemCreateDescription;
   availableInventory?: number;
   totalInventory?: number;

@@ -432,10 +432,11 @@ def delete_party(
 @router.post("/parties/bulk-upload", operation_id="createPartyBulkUpload", response_model=ResponseEnvelope[BulkUploadResponse])
 async def bulk_upload_parties(
     file: UploadFile = File(...),
+    update_mode: str = Query(default="fill_empty", description="Update strategy: 'fill_empty' or 'overwrite'"),
     access: UnifiedAccess = Depends(require_access("parties.create")),
     db: Session = Depends(get_db)
 ):
-    """Bulk upload patients from CSV or XLSX"""
+    """Bulk upload patients from CSV or XLSX. update_mode: fill_empty (default) or overwrite."""
     try:
         # Use effective_tenant_id if impersonating, otherwise use tenant_id
         effective_tenant = access.effective_tenant_id or access.tenant_id
@@ -647,33 +648,40 @@ async def bulk_upload_parties(
                     ).first()
 
                 if existing:
-                    # Update Logic — additive: only fill empty fields, don't overwrite
+                    # Update Logic — respects update_mode
+                    def _parse_birth_date(v):
+                        if not isinstance(v, str):
+                            return v
+                        for fmt in ('%Y-%m-%d', '%d.%m.%Y', '%d/%m/%Y', '%Y/%m/%d'):
+                            try:
+                                return datetime.strptime(v, fmt)
+                            except ValueError:
+                                pass
+                        try:
+                            return datetime.fromisoformat(v)
+                        except:
+                            return None
+
                     for k, v in payload.items():
                         if k == 'tags_json':
                             continue  # handled separately below
                         if hasattr(existing, k) and v is not None:
                             current_val = getattr(existing, k, None)
-                            # Only fill if current value is empty/null
-                            if current_val is None or current_val == '':
-                                # Handle Date parsing for birth_date if strictly string
-                                if k == 'birth_date' and isinstance(v, str):
-                                    try:
-                                        dt = None
-                                        for fmt in ('%Y-%m-%d', '%d.%m.%Y', '%d/%m/%Y', '%Y/%m/%d'):
-                                            try:
-                                                dt = datetime.strptime(v, fmt)
-                                                break
-                                            except ValueError:
-                                                pass
-                                        if dt:
-                                             setattr(existing, k, dt)
-                                        else:
-                                             setattr(existing, k, datetime.fromisoformat(v))
-                                    except:
-                                        pass
+                            should_update = False
+                            if update_mode == 'overwrite':
+                                should_update = True
+                            else:
+                                # fill_empty: only fill if current value is empty/null
+                                should_update = current_val is None or current_val == ''
+
+                            if should_update:
+                                if k == 'birth_date':
+                                    parsed = _parse_birth_date(v)
+                                    if parsed:
+                                        setattr(existing, k, parsed)
                                 else:
                                     setattr(existing, k, v)
-                    # Merge tags (union, not replace)
+                    # Merge tags (union, not replace) — regardless of mode
                     if 'tags_json' in payload and payload['tags_json']:
                         existing_tags = existing.tags_json or []
                         merged = list(set(existing_tags + payload['tags_json']))

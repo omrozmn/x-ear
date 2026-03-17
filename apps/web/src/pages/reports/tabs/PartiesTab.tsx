@@ -24,7 +24,7 @@ interface PartiesTabProps {
 
 const SEGMENT_LABELS: Record<string, string> = {
     new: 'Yeni',
-    active: t('active', 'Aktif'),
+    active: 'Aktif',
     trial: 'Deneme Sürecinde',
     inactive: 'Pasif',
     vip: 'VIP',

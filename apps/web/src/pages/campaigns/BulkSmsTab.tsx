@@ -649,7 +649,7 @@ export const BulkSmsTab: React.FC<BulkSmsTabProps> = ({ creditBalance }) => {
                                 <AlertTriangle className="w-4 h-4" />
                             )}
                             <span className="text-sm font-medium">
-                                {creditEnough ? t('sms.credit.creditSufficient') : t('sms.credit.missing', { count: formatNumber(Math.abs(creditDelta)) })}
+                                {creditEnough ? t('sms.credit.creditSufficient') : (t as (key: string, opts?: Record<string, unknown>) => string)('sms.credit.missing', { count: formatNumber(Math.abs(creditDelta)) })}
                             </span>
                         </div>
                     </div>

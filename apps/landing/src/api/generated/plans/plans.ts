@@ -26,6 +26,7 @@ import type {
 
 import type {
   HTTPValidationError,
+  ListPlansParams,
   PlanCreate,
   PlanUpdate,
   ResponseEnvelopeDetailedPlanRead,
@@ -42,13 +43,14 @@ import { customInstance } from '../../orval-mutator';
  * @summary Get Plans
  */
 export const listPlans = (
-    
+    params?: ListPlansParams,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<ResponseEnvelopeListDetailedPlanRead>(
-      {url: `/api/plans`, method: 'GET', signal
+      {url: `/api/plans`, method: 'GET',
+        params, signal
     },
       );
     }
@@ -56,23 +58,23 @@ export const listPlans = (
 
 
 
-export const getListPlansQueryKey = () => {
+export const getListPlansQueryKey = (params?: ListPlansParams,) => {
     return [
-    `/api/plans`
+    `/api/plans`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getListPlansQueryOptions = <TData = Awaited<ReturnType<typeof listPlans>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPlans>>, TError, TData>>, }
+export const getListPlansQueryOptions = <TData = Awaited<ReturnType<typeof listPlans>>, TError = unknown>(params?: ListPlansParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPlans>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListPlansQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListPlansQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPlans>>> = ({ signal }) => listPlans(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPlans>>> = ({ signal }) => listPlans(params, signal);
 
       
 
@@ -86,7 +88,7 @@ export type ListPlansQueryError = unknown
 
 
 export function useListPlans<TData = Awaited<ReturnType<typeof listPlans>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPlans>>, TError, TData>> & Pick<
+ params: undefined |  ListPlansParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPlans>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof listPlans>>,
           TError,
@@ -96,7 +98,7 @@ export function useListPlans<TData = Awaited<ReturnType<typeof listPlans>>, TErr
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useListPlans<TData = Awaited<ReturnType<typeof listPlans>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPlans>>, TError, TData>> & Pick<
+ params?: ListPlansParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPlans>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof listPlans>>,
           TError,
@@ -106,7 +108,7 @@ export function useListPlans<TData = Awaited<ReturnType<typeof listPlans>>, TErr
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useListPlans<TData = Awaited<ReturnType<typeof listPlans>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPlans>>, TError, TData>>, }
+ params?: ListPlansParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPlans>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
@@ -114,11 +116,11 @@ export function useListPlans<TData = Awaited<ReturnType<typeof listPlans>>, TErr
  */
 
 export function useListPlans<TData = Awaited<ReturnType<typeof listPlans>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPlans>>, TError, TData>>, }
+ params?: ListPlansParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPlans>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getListPlansQueryOptions(options)
+  const queryOptions = getListPlansQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

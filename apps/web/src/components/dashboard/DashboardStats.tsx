@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Users, Calendar, TrendingUp, Activity } from 'lucide-react';
 import { useSector } from '../../hooks/useSector';
 import { useSectorTerminology } from '../../hooks/useSectorTerminology';
@@ -17,6 +18,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
   stats,
   onCardClick,
 }) => {
+  const { t } = useTranslation('dashboard');
   const { isModuleEnabled } = useSector();
   const { st } = useSectorTerminology();
 
@@ -31,7 +33,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       show: true,
     },
     {
-      title: "Aktif Denemeler",
+      title: t('activeTrials', 'Aktif Denemeler'),
       value: (stats.activeTrials ?? 0).toString(),
       icon: <Activity className="w-6 h-6 text-white" />,
       background: 'linear-gradient(135deg, rgba(6,182,212,0.96) 0%, rgba(14,165,233,0.94) 52%, rgba(3,105,161,0.92) 100%)',
@@ -40,7 +42,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       show: isModuleEnabled('devices'),
     },
     {
-      title: "Aylık Ciro",
+      title: t('monthlyRevenue', 'Aylık Ciro'),
       value: `₺${stats.monthlyRevenue.toLocaleString()}`,
       icon: <TrendingUp className="w-6 h-6 text-white" />,
       background: 'linear-gradient(135deg, rgba(16,185,129,0.96) 0%, rgba(5,150,105,0.94) 50%, rgba(13,148,136,0.92) 100%)',
@@ -49,7 +51,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       show: true,
     },
     {
-      title: "Bugünkü Randevular",
+      title: t('todayAppointments', 'Bugünkü Randevular'),
       value: stats.todayAppointments.toString(),
       icon: <Calendar className="w-6 h-6 text-white" />,
       background: 'linear-gradient(135deg, rgba(71,85,105,0.96) 0%, rgba(51,65,85,0.94) 50%, rgba(3,105,161,0.9) 100%)',

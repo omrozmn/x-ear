@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, Users, Calendar, Banknote, Clock, TrendingUp, UserCheck, AlertCircle } from 'lucide-react';
 import { MobileLayout } from '@/components/mobile/MobileLayout';
 import { MobileHeader } from '@/components/mobile/MobileHeader';
@@ -12,6 +13,7 @@ import { useSector } from '@/hooks/useSector';
 import { useSectorTerminology } from '@/hooks/useSectorTerminology';
 
 export const MobileDashboard: React.FC = () => {
+    const { t } = useTranslation('dashboard');
     const { stats, recentActivity, loading } = useDashboardData();
     const navigate = useNavigate();
     const { triggerSelection } = useHaptic();
@@ -53,7 +55,7 @@ export const MobileDashboard: React.FC = () => {
         canViewParties && hasDevicesModule && { label: 'Biten Denemeler', value: stats?.endingTrials || 0, color: 'bg-rose-500', icon: <Clock className="h-5 w-5 text-white/80" /> },
     ].filter(Boolean) as Array<{ label: string; value: string | number; color: string; icon: React.ReactNode }>;
 
-    if (loading && !stats) return <div className="flex justify-center p-10 mt-20">Yükleniyor...</div>;
+    if (loading && !stats) return <div className="flex justify-center p-10 mt-20">{t('loading', 'Yükleniyor...')}</div>;
 
     return (
         <MobileLayout className="bg-gray-50 dark:bg-gray-950">
@@ -63,7 +65,7 @@ export const MobileDashboard: React.FC = () => {
                 <div className="p-4 space-y-6 min-h-[calc(100vh-120px)]">
                     {/* Stats Carousel (Horizontal Scroll) */}
                     <section>
-                        <h2 className="text-lg font-semibold mb-3 px-1 text-gray-900 dark:text-white">Genel Bakış</h2>
+                        <h2 className="text-lg font-semibold mb-3 px-1 text-gray-900 dark:text-white">{t('overview', 'Genel Bakış')}</h2>
                         <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x hide-scrollbar">
                             {statCards.map((stat, idx) => (
                                 <div
@@ -85,7 +87,7 @@ export const MobileDashboard: React.FC = () => {
                     {/* Quick Actions Grid */}
                     {quickActions.length > 0 && (
                         <section>
-                            <h2 className="text-lg font-semibold mb-3 px-1 text-gray-900 dark:text-white">Hızlı İşlemler</h2>
+                            <h2 className="text-lg font-semibold mb-3 px-1 text-gray-900 dark:text-white">{t('quickActions', 'Hızlı İşlemler')}</h2>
                             <div className="grid grid-cols-4 gap-4">
                                 {quickActions.map((action, idx) => (
                                     <button
@@ -112,7 +114,7 @@ export const MobileDashboard: React.FC = () => {
                     {/* Recent Activity List */}
                     {canViewActivityLogs && (
                         <section>
-                            <h2 className="text-lg font-semibold mb-3 px-1 text-gray-900 dark:text-white">Son Aktiviteler</h2>
+                            <h2 className="text-lg font-semibold mb-3 px-1 text-gray-900 dark:text-white">{t('recentActivity', 'Son Aktiviteler')}</h2>
                             <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl shadow-sm overflow-hidden border border-border/50/50">
                                 {recentActivity && recentActivity.length > 0 ? (
                                     <div className="divide-y divide-gray-200/30 dark:divide-gray-700/30">
@@ -123,7 +125,7 @@ export const MobileDashboard: React.FC = () => {
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-sm text-gray-900 dark:text-white font-medium truncate">
-                                                        {activity.description || 'İşlem yapıldı'}
+                                                        {activity.description || t('actionPerformed', 'İşlem yapıldı')}
                                                     </p>
                                                     <p className="text-xs text-muted-foreground mt-1">
                                                         {activity.timestamp ? new Date(activity.timestamp).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '-'}
@@ -135,7 +137,7 @@ export const MobileDashboard: React.FC = () => {
                                     </div>
                                 ) : (
                                     <div className="p-8 text-center text-muted-foreground text-sm">
-                                        Henüz aktivite yok
+                                        {t('noActivity', 'Henüz aktivite yok')}
                                     </div>
                                 )}
                             </div>

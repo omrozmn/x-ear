@@ -17,4 +17,8 @@ page?: number;
  * @maximum 100
  */
 limit?: number;
+/**
+ * Filter by country code
+ */
+countryCode?: string | null;
 };

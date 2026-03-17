@@ -26,8 +26,10 @@ import type {
 
 import type {
   HTTPValidationError,
+  ImpersonationConsentUpdate,
   ListUsersParams,
   PasswordChange,
+  ResponseEnvelopeImpersonationConsentRead,
   ResponseEnvelopeListUserRead,
   ResponseEnvelopeUserMeRead,
   ResponseEnvelopeUserRead,
@@ -353,6 +355,163 @@ export const useUpdateUserMe = <TError = HTTPValidationError,
       > => {
 
       const mutationOptions = getUpdateUserMeMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Get the current user's impersonation consent setting.
+ * @summary Get Impersonation Consent
+ */
+export const getUserMeImpersonationConsent = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeImpersonationConsentRead>(
+      {url: `/api/users/me/impersonation-consent`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetUserMeImpersonationConsentQueryKey = () => {
+    return [
+    `/api/users/me/impersonation-consent`
+    ] as const;
+    }
+
+    
+export const getGetUserMeImpersonationConsentQueryOptions = <TData = Awaited<ReturnType<typeof getUserMeImpersonationConsent>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserMeImpersonationConsent>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUserMeImpersonationConsentQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUserMeImpersonationConsent>>> = ({ signal }) => getUserMeImpersonationConsent(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUserMeImpersonationConsent>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUserMeImpersonationConsentQueryResult = NonNullable<Awaited<ReturnType<typeof getUserMeImpersonationConsent>>>
+export type GetUserMeImpersonationConsentQueryError = unknown
+
+
+export function useGetUserMeImpersonationConsent<TData = Awaited<ReturnType<typeof getUserMeImpersonationConsent>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserMeImpersonationConsent>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUserMeImpersonationConsent>>,
+          TError,
+          Awaited<ReturnType<typeof getUserMeImpersonationConsent>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUserMeImpersonationConsent<TData = Awaited<ReturnType<typeof getUserMeImpersonationConsent>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserMeImpersonationConsent>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUserMeImpersonationConsent>>,
+          TError,
+          Awaited<ReturnType<typeof getUserMeImpersonationConsent>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUserMeImpersonationConsent<TData = Awaited<ReturnType<typeof getUserMeImpersonationConsent>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserMeImpersonationConsent>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get Impersonation Consent
+ */
+
+export function useGetUserMeImpersonationConsent<TData = Awaited<ReturnType<typeof getUserMeImpersonationConsent>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserMeImpersonationConsent>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUserMeImpersonationConsentQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Toggle impersonation consent for the current user.
+ * @summary Update Impersonation Consent
+ */
+export const updateUserMeImpersonationConsent = (
+    impersonationConsentUpdate: ImpersonationConsentUpdate,
+ ) => {
+      
+      
+      return customInstance<ResponseEnvelopeImpersonationConsentRead>(
+      {url: `/api/users/me/impersonation-consent`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: impersonationConsentUpdate
+    },
+      );
+    }
+  
+
+
+export const getUpdateUserMeImpersonationConsentMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUserMeImpersonationConsent>>, TError,{data: ImpersonationConsentUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateUserMeImpersonationConsent>>, TError,{data: ImpersonationConsentUpdate}, TContext> => {
+
+const mutationKey = ['updateUserMeImpersonationConsent'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateUserMeImpersonationConsent>>, {data: ImpersonationConsentUpdate}> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateUserMeImpersonationConsent(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateUserMeImpersonationConsentMutationResult = NonNullable<Awaited<ReturnType<typeof updateUserMeImpersonationConsent>>>
+    export type UpdateUserMeImpersonationConsentMutationBody = ImpersonationConsentUpdate
+    export type UpdateUserMeImpersonationConsentMutationError = HTTPValidationError
+
+    /**
+ * @summary Update Impersonation Consent
+ */
+export const useUpdateUserMeImpersonationConsent = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUserMeImpersonationConsent>>, TError,{data: ImpersonationConsentUpdate}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updateUserMeImpersonationConsent>>,
+        TError,
+        {data: ImpersonationConsentUpdate},
+        TContext
+      > => {
+
+      const mutationOptions = getUpdateUserMeImpersonationConsentMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

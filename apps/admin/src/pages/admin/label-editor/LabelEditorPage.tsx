@@ -229,7 +229,7 @@ const LabelEditorPage: React.FC<LabelEditorPageProps> = ({ templateId }) => {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+      <div className="h-full flex items-center justify-center bg-gray-100 dark:bg-gray-900">
         <div className="flex flex-col items-center gap-3">
           <RefreshCw className="w-6 h-6 animate-spin text-gray-400" />
           <p className="text-sm text-gray-500">Sablon yukleniyor...</p>
@@ -244,7 +244,7 @@ const LabelEditorPage: React.FC<LabelEditorPageProps> = ({ templateId }) => {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="h-screen flex flex-col bg-gray-100 dark:bg-gray-900">
+      <div className="h-full flex flex-col bg-gray-100 dark:bg-gray-900">
         {/* Toolbar */}
         <EditorToolbar
           editor={editor}

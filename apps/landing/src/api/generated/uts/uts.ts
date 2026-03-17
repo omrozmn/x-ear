@@ -28,10 +28,27 @@ import type {
   BulkRegistration,
   HTTPValidationError,
   ListUtRegistrationsParams,
+  ListUtsSerialStatesParams,
+  ResponseEnvelopeUtsAddToInventoryResponse,
+  ResponseEnvelopeUtsAlmaBekleyenlerSyncResponse,
   ResponseEnvelopeUtsCancelResponse,
+  ResponseEnvelopeUtsConfigRead,
+  ResponseEnvelopeUtsConnectionTestResult,
   ResponseEnvelopeUtsJobStartResponse,
   ResponseEnvelopeUtsJobStatusResponse,
-  ResponseEnvelopeUtsRegistrationListResponse
+  ResponseEnvelopeUtsMovementExecuteResponse,
+  ResponseEnvelopeUtsRegistrationListResponse,
+  ResponseEnvelopeUtsSerialState,
+  ResponseEnvelopeUtsSerialStateListResponse,
+  ResponseEnvelopeUtsSyncStatus,
+  ResponseEnvelopeUtsTekilUrunQueryResponse,
+  ResponseEnvelopeUtsVermeDraftResponse,
+  UtsAddToInventoryRequest,
+  UtsAlmaRequest,
+  UtsConfigUpdate,
+  UtsSerialStateUpsertRequest,
+  UtsTekilUrunQueryRequest,
+  UtsVermeDraftRequest
 } from '.././schemas';
 
 import { customInstance } from '../../orval-mutator';
@@ -40,7 +57,889 @@ import { customInstance } from '../../orval-mutator';
 
 
 /**
- * List UTS device registrations
+ * @summary Get Uts Config
+ */
+export const getUtsConfig = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeUtsConfigRead>(
+      {url: `/api/uts/config`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetUtsConfigQueryKey = () => {
+    return [
+    `/api/uts/config`
+    ] as const;
+    }
+
+    
+export const getGetUtsConfigQueryOptions = <TData = Awaited<ReturnType<typeof getUtsConfig>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUtsConfig>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUtsConfigQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUtsConfig>>> = ({ signal }) => getUtsConfig(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUtsConfig>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUtsConfigQueryResult = NonNullable<Awaited<ReturnType<typeof getUtsConfig>>>
+export type GetUtsConfigQueryError = unknown
+
+
+export function useGetUtsConfig<TData = Awaited<ReturnType<typeof getUtsConfig>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUtsConfig>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUtsConfig>>,
+          TError,
+          Awaited<ReturnType<typeof getUtsConfig>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUtsConfig<TData = Awaited<ReturnType<typeof getUtsConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUtsConfig>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUtsConfig>>,
+          TError,
+          Awaited<ReturnType<typeof getUtsConfig>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUtsConfig<TData = Awaited<ReturnType<typeof getUtsConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUtsConfig>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get Uts Config
+ */
+
+export function useGetUtsConfig<TData = Awaited<ReturnType<typeof getUtsConfig>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUtsConfig>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUtsConfigQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * @summary Update Uts Config
+ */
+export const updateUtsConfig = (
+    utsConfigUpdate: UtsConfigUpdate,
+ ) => {
+      
+      
+      return customInstance<ResponseEnvelopeUtsConfigRead>(
+      {url: `/api/uts/config`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: utsConfigUpdate
+    },
+      );
+    }
+  
+
+
+export const getUpdateUtsConfigMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUtsConfig>>, TError,{data: UtsConfigUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateUtsConfig>>, TError,{data: UtsConfigUpdate}, TContext> => {
+
+const mutationKey = ['updateUtsConfig'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateUtsConfig>>, {data: UtsConfigUpdate}> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateUtsConfig(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateUtsConfigMutationResult = NonNullable<Awaited<ReturnType<typeof updateUtsConfig>>>
+    export type UpdateUtsConfigMutationBody = UtsConfigUpdate
+    export type UpdateUtsConfigMutationError = HTTPValidationError
+
+    /**
+ * @summary Update Uts Config
+ */
+export const useUpdateUtsConfig = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUtsConfig>>, TError,{data: UtsConfigUpdate}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updateUtsConfig>>,
+        TError,
+        {data: UtsConfigUpdate},
+        TContext
+      > => {
+
+      const mutationOptions = getUpdateUtsConfigMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Test Uts Config
+ */
+export const testUtsConfig = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeUtsConnectionTestResult>(
+      {url: `/api/uts/config/test`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getTestUtsConfigMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof testUtsConfig>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof testUtsConfig>>, TError,void, TContext> => {
+
+const mutationKey = ['testUtsConfig'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof testUtsConfig>>, void> = () => {
+          
+
+          return  testUtsConfig()
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type TestUtsConfigMutationResult = NonNullable<Awaited<ReturnType<typeof testUtsConfig>>>
+    
+    export type TestUtsConfigMutationError = unknown
+
+    /**
+ * @summary Test Uts Config
+ */
+export const useTestUtsConfig = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof testUtsConfig>>, TError,void, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof testUtsConfig>>,
+        TError,
+        void,
+        TContext
+      > => {
+
+      const mutationOptions = getTestUtsConfigMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Run Uts Sync
+ */
+export const runUtsSync = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeUtsSyncStatus>(
+      {url: `/api/uts/sync/run`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getRunUtsSyncMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof runUtsSync>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof runUtsSync>>, TError,void, TContext> => {
+
+const mutationKey = ['runUtsSync'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof runUtsSync>>, void> = () => {
+          
+
+          return  runUtsSync()
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RunUtsSyncMutationResult = NonNullable<Awaited<ReturnType<typeof runUtsSync>>>
+    
+    export type RunUtsSyncMutationError = unknown
+
+    /**
+ * @summary Run Uts Sync
+ */
+export const useRunUtsSync = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof runUtsSync>>, TError,void, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof runUtsSync>>,
+        TError,
+        void,
+        TContext
+      > => {
+
+      const mutationOptions = getRunUtsSyncMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Sync pending receipt items by querying UTS for their current status.
+ * @summary Sync Alma Bekleyenler
+ */
+export const syncUtsAlmaBekleyenler = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeUtsAlmaBekleyenlerSyncResponse>(
+      {url: `/api/uts/sync/alma-bekleyenler`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getSyncUtsAlmaBekleyenlerMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof syncUtsAlmaBekleyenler>>, TError,void, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof syncUtsAlmaBekleyenler>>, TError,void, TContext> => {
+
+const mutationKey = ['syncUtsAlmaBekleyenler'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof syncUtsAlmaBekleyenler>>, void> = () => {
+          
+
+          return  syncUtsAlmaBekleyenler()
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SyncUtsAlmaBekleyenlerMutationResult = NonNullable<Awaited<ReturnType<typeof syncUtsAlmaBekleyenler>>>
+    
+    export type SyncUtsAlmaBekleyenlerMutationError = unknown
+
+    /**
+ * @summary Sync Alma Bekleyenler
+ */
+export const useSyncUtsAlmaBekleyenler = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof syncUtsAlmaBekleyenler>>, TError,void, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof syncUtsAlmaBekleyenler>>,
+        TError,
+        void,
+        TContext
+      > => {
+
+      const mutationOptions = getSyncUtsAlmaBekleyenlerMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Query Tekil Urun
+ */
+export const queryUtsTekilUrun = (
+    utsTekilUrunQueryRequest: UtsTekilUrunQueryRequest,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeUtsTekilUrunQueryResponse>(
+      {url: `/api/uts/query/tekil-urun`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: utsTekilUrunQueryRequest, signal
+    },
+      );
+    }
+  
+
+
+export const getQueryUtsTekilUrunMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof queryUtsTekilUrun>>, TError,{data: UtsTekilUrunQueryRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof queryUtsTekilUrun>>, TError,{data: UtsTekilUrunQueryRequest}, TContext> => {
+
+const mutationKey = ['queryUtsTekilUrun'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof queryUtsTekilUrun>>, {data: UtsTekilUrunQueryRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  queryUtsTekilUrun(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type QueryUtsTekilUrunMutationResult = NonNullable<Awaited<ReturnType<typeof queryUtsTekilUrun>>>
+    export type QueryUtsTekilUrunMutationBody = UtsTekilUrunQueryRequest
+    export type QueryUtsTekilUrunMutationError = HTTPValidationError
+
+    /**
+ * @summary Query Tekil Urun
+ */
+export const useQueryUtsTekilUrun = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof queryUtsTekilUrun>>, TError,{data: UtsTekilUrunQueryRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof queryUtsTekilUrun>>,
+        TError,
+        {data: UtsTekilUrunQueryRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getQueryUtsTekilUrunMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Create Verme Draft
+ */
+export const createUtsVermeDraft = (
+    utsVermeDraftRequest: UtsVermeDraftRequest,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeUtsVermeDraftResponse>(
+      {url: `/api/uts/verme/draft`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: utsVermeDraftRequest, signal
+    },
+      );
+    }
+  
+
+
+export const getCreateUtsVermeDraftMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUtsVermeDraft>>, TError,{data: UtsVermeDraftRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createUtsVermeDraft>>, TError,{data: UtsVermeDraftRequest}, TContext> => {
+
+const mutationKey = ['createUtsVermeDraft'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createUtsVermeDraft>>, {data: UtsVermeDraftRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createUtsVermeDraft(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateUtsVermeDraftMutationResult = NonNullable<Awaited<ReturnType<typeof createUtsVermeDraft>>>
+    export type CreateUtsVermeDraftMutationBody = UtsVermeDraftRequest
+    export type CreateUtsVermeDraftMutationError = HTTPValidationError
+
+    /**
+ * @summary Create Verme Draft
+ */
+export const useCreateUtsVermeDraft = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUtsVermeDraft>>, TError,{data: UtsVermeDraftRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createUtsVermeDraft>>,
+        TError,
+        {data: UtsVermeDraftRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getCreateUtsVermeDraftMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Send Verme
+ */
+export const sendUtsVerme = (
+    utsVermeDraftRequest: UtsVermeDraftRequest,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeUtsConnectionTestResult>(
+      {url: `/api/uts/verme/send`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: utsVermeDraftRequest, signal
+    },
+      );
+    }
+  
+
+
+export const getSendUtsVermeMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendUtsVerme>>, TError,{data: UtsVermeDraftRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof sendUtsVerme>>, TError,{data: UtsVermeDraftRequest}, TContext> => {
+
+const mutationKey = ['sendUtsVerme'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendUtsVerme>>, {data: UtsVermeDraftRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  sendUtsVerme(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SendUtsVermeMutationResult = NonNullable<Awaited<ReturnType<typeof sendUtsVerme>>>
+    export type SendUtsVermeMutationBody = UtsVermeDraftRequest
+    export type SendUtsVermeMutationError = HTTPValidationError
+
+    /**
+ * @summary Send Verme
+ */
+export const useSendUtsVerme = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendUtsVerme>>, TError,{data: UtsVermeDraftRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof sendUtsVerme>>,
+        TError,
+        {data: UtsVermeDraftRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getSendUtsVermeMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary List Serial States
+ */
+export const listUtsSerialStates = (
+    params?: ListUtsSerialStatesParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeUtsSerialStateListResponse>(
+      {url: `/api/uts/serial-states`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getListUtsSerialStatesQueryKey = (params?: ListUtsSerialStatesParams,) => {
+    return [
+    `/api/uts/serial-states`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getListUtsSerialStatesQueryOptions = <TData = Awaited<ReturnType<typeof listUtsSerialStates>>, TError = HTTPValidationError>(params?: ListUtsSerialStatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUtsSerialStates>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListUtsSerialStatesQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listUtsSerialStates>>> = ({ signal }) => listUtsSerialStates(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listUtsSerialStates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListUtsSerialStatesQueryResult = NonNullable<Awaited<ReturnType<typeof listUtsSerialStates>>>
+export type ListUtsSerialStatesQueryError = HTTPValidationError
+
+
+export function useListUtsSerialStates<TData = Awaited<ReturnType<typeof listUtsSerialStates>>, TError = HTTPValidationError>(
+ params: undefined |  ListUtsSerialStatesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUtsSerialStates>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listUtsSerialStates>>,
+          TError,
+          Awaited<ReturnType<typeof listUtsSerialStates>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListUtsSerialStates<TData = Awaited<ReturnType<typeof listUtsSerialStates>>, TError = HTTPValidationError>(
+ params?: ListUtsSerialStatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUtsSerialStates>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listUtsSerialStates>>,
+          TError,
+          Awaited<ReturnType<typeof listUtsSerialStates>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListUtsSerialStates<TData = Awaited<ReturnType<typeof listUtsSerialStates>>, TError = HTTPValidationError>(
+ params?: ListUtsSerialStatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUtsSerialStates>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List Serial States
+ */
+
+export function useListUtsSerialStates<TData = Awaited<ReturnType<typeof listUtsSerialStates>>, TError = HTTPValidationError>(
+ params?: ListUtsSerialStatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listUtsSerialStates>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListUtsSerialStatesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * @summary Upsert Serial State
+ */
+export const upsertUtsSerialState = (
+    utsSerialStateUpsertRequest: UtsSerialStateUpsertRequest,
+ ) => {
+      
+      
+      return customInstance<ResponseEnvelopeUtsSerialState>(
+      {url: `/api/uts/serial-states`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: utsSerialStateUpsertRequest
+    },
+      );
+    }
+  
+
+
+export const getUpsertUtsSerialStateMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof upsertUtsSerialState>>, TError,{data: UtsSerialStateUpsertRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof upsertUtsSerialState>>, TError,{data: UtsSerialStateUpsertRequest}, TContext> => {
+
+const mutationKey = ['upsertUtsSerialState'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof upsertUtsSerialState>>, {data: UtsSerialStateUpsertRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  upsertUtsSerialState(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpsertUtsSerialStateMutationResult = NonNullable<Awaited<ReturnType<typeof upsertUtsSerialState>>>
+    export type UpsertUtsSerialStateMutationBody = UtsSerialStateUpsertRequest
+    export type UpsertUtsSerialStateMutationError = HTTPValidationError
+
+    /**
+ * @summary Upsert Serial State
+ */
+export const useUpsertUtsSerialState = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof upsertUtsSerialState>>, TError,{data: UtsSerialStateUpsertRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof upsertUtsSerialState>>,
+        TError,
+        {data: UtsSerialStateUpsertRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getUpsertUtsSerialStateMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Add a UTS serial state item to inventory (create or update existing).
+ * @summary Add Serial To Inventory
+ */
+export const addUtsSerialToInventory = (
+    utsAddToInventoryRequest: UtsAddToInventoryRequest,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeUtsAddToInventoryResponse>(
+      {url: `/api/uts/serial-states/add-to-inventory`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: utsAddToInventoryRequest, signal
+    },
+      );
+    }
+  
+
+
+export const getAddUtsSerialToInventoryMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addUtsSerialToInventory>>, TError,{data: UtsAddToInventoryRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof addUtsSerialToInventory>>, TError,{data: UtsAddToInventoryRequest}, TContext> => {
+
+const mutationKey = ['addUtsSerialToInventory'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addUtsSerialToInventory>>, {data: UtsAddToInventoryRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  addUtsSerialToInventory(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddUtsSerialToInventoryMutationResult = NonNullable<Awaited<ReturnType<typeof addUtsSerialToInventory>>>
+    export type AddUtsSerialToInventoryMutationBody = UtsAddToInventoryRequest
+    export type AddUtsSerialToInventoryMutationError = HTTPValidationError
+
+    /**
+ * @summary Add Serial To Inventory
+ */
+export const useAddUtsSerialToInventory = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addUtsSerialToInventory>>, TError,{data: UtsAddToInventoryRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof addUtsSerialToInventory>>,
+        TError,
+        {data: UtsAddToInventoryRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getAddUtsSerialToInventoryMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Execute Verme
+ */
+export const executeUtsVerme = (
+    utsVermeDraftRequest: UtsVermeDraftRequest,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeUtsMovementExecuteResponse>(
+      {url: `/api/uts/verme/execute`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: utsVermeDraftRequest, signal
+    },
+      );
+    }
+  
+
+
+export const getExecuteUtsVermeMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof executeUtsVerme>>, TError,{data: UtsVermeDraftRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof executeUtsVerme>>, TError,{data: UtsVermeDraftRequest}, TContext> => {
+
+const mutationKey = ['executeUtsVerme'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof executeUtsVerme>>, {data: UtsVermeDraftRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  executeUtsVerme(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ExecuteUtsVermeMutationResult = NonNullable<Awaited<ReturnType<typeof executeUtsVerme>>>
+    export type ExecuteUtsVermeMutationBody = UtsVermeDraftRequest
+    export type ExecuteUtsVermeMutationError = HTTPValidationError
+
+    /**
+ * @summary Execute Verme
+ */
+export const useExecuteUtsVerme = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof executeUtsVerme>>, TError,{data: UtsVermeDraftRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof executeUtsVerme>>,
+        TError,
+        {data: UtsVermeDraftRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getExecuteUtsVermeMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * @summary Execute Alma
+ */
+export const executeUtsAlma = (
+    utsAlmaRequest: UtsAlmaRequest,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<ResponseEnvelopeUtsMovementExecuteResponse>(
+      {url: `/api/uts/alma/execute`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: utsAlmaRequest, signal
+    },
+      );
+    }
+  
+
+
+export const getExecuteUtsAlmaMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof executeUtsAlma>>, TError,{data: UtsAlmaRequest}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof executeUtsAlma>>, TError,{data: UtsAlmaRequest}, TContext> => {
+
+const mutationKey = ['executeUtsAlma'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof executeUtsAlma>>, {data: UtsAlmaRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  executeUtsAlma(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ExecuteUtsAlmaMutationResult = NonNullable<Awaited<ReturnType<typeof executeUtsAlma>>>
+    export type ExecuteUtsAlmaMutationBody = UtsAlmaRequest
+    export type ExecuteUtsAlmaMutationError = HTTPValidationError
+
+    /**
+ * @summary Execute Alma
+ */
+export const useExecuteUtsAlma = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof executeUtsAlma>>, TError,{data: UtsAlmaRequest}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof executeUtsAlma>>,
+        TError,
+        {data: UtsAlmaRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getExecuteUtsAlmaMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * @summary List Registrations
  */
 export const listUtRegistrations = (
@@ -50,7 +949,7 @@ export const listUtRegistrations = (
       
       
       return customInstance<ResponseEnvelopeUtsRegistrationListResponse>(
-      {url: `/registrations`, method: 'GET',
+      {url: `/api/uts/registrations`, method: 'GET',
         params, signal
     },
       );
@@ -61,7 +960,7 @@ export const listUtRegistrations = (
 
 export const getListUtRegistrationsQueryKey = (params?: ListUtRegistrationsParams,) => {
     return [
-    `/registrations`, ...(params ? [params]: [])
+    `/api/uts/registrations`, ...(params ? [params]: [])
     ] as const;
     }
 
@@ -134,7 +1033,6 @@ export function useListUtRegistrations<TData = Awaited<ReturnType<typeof listUtR
 
 
 /**
- * Start bulk UTS device registration job
  * @summary Start Bulk Registration
  */
 export const createUtRegistrationBulk = (
@@ -144,7 +1042,7 @@ export const createUtRegistrationBulk = (
       
       
       return customInstance<ResponseEnvelopeUtsJobStartResponse>(
-      {url: `/registrations/bulk`, method: 'POST',
+      {url: `/api/uts/registrations/bulk`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: bulkRegistration, signal
     },
@@ -199,7 +1097,6 @@ export const useCreateUtRegistrationBulk = <TError = HTTPValidationError,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * Get UTS registration job status
  * @summary Get Job Status
  */
 export const getUtJob = (
@@ -209,7 +1106,7 @@ export const getUtJob = (
       
       
       return customInstance<ResponseEnvelopeUtsJobStatusResponse>(
-      {url: `/jobs/${jobId}`, method: 'GET', signal
+      {url: `/api/uts/jobs/${jobId}`, method: 'GET', signal
     },
       );
     }
@@ -219,7 +1116,7 @@ export const getUtJob = (
 
 export const getGetUtJobQueryKey = (jobId?: string,) => {
     return [
-    `/jobs/${jobId}`
+    `/api/uts/jobs/${jobId}`
     ] as const;
     }
 
@@ -292,7 +1189,6 @@ export function useGetUtJob<TData = Awaited<ReturnType<typeof getUtJob>>, TError
 
 
 /**
- * Cancel UTS registration job
  * @summary Cancel Job
  */
 export const createUtJobCancel = (
@@ -302,7 +1198,7 @@ export const createUtJobCancel = (
       
       
       return customInstance<ResponseEnvelopeUtsCancelResponse>(
-      {url: `/jobs/${jobId}/cancel`, method: 'POST', signal
+      {url: `/api/uts/jobs/${jobId}/cancel`, method: 'POST', signal
     },
       );
     }

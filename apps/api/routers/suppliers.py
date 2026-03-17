@@ -462,10 +462,11 @@ def delete_supplier(
 @router.post("/suppliers/bulk-upload", operation_id="createSupplierBulkUpload", response_model=ResponseEnvelope[Dict[str, Any]])
 async def bulk_upload_suppliers(
     file: UploadFile = File(...),
+    update_mode: str = Query(default="fill_empty", description="Update strategy: 'fill_empty' or 'overwrite'"),
     access: UnifiedAccess = Depends(require_access("suppliers.manage")),
     db: Session = Depends(get_db)
 ):
-    """Bulk upload suppliers from CSV/XLSX"""
+    """Bulk upload suppliers from CSV/XLSX. update_mode: fill_empty (default) or overwrite."""
     try:
         effective_tenant = access.effective_tenant_id or access.tenant_id
 
@@ -592,12 +593,15 @@ async def bulk_upload_suppliers(
                         payload['is_active'] = False
 
                 if existing:
-                    # Additive update — only fill empty fields
+                    # Update respects update_mode
                     for k, v in payload.items():
                         if hasattr(existing, k) and v is not None:
-                            current_val = getattr(existing, k, None)
-                            if current_val is None or current_val == '':
+                            if update_mode == 'overwrite':
                                 setattr(existing, k, v)
+                            else:
+                                current_val = getattr(existing, k, None)
+                                if current_val is None or current_val == '':
+                                    setattr(existing, k, v)
                     updated += 1
                 else:
                     if not company_name:

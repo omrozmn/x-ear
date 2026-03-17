@@ -10,16 +10,27 @@ import { HyperGlassCard } from "@/components/ui/HyperGlassCard";
 import { useState, useEffect } from "react";
 import { apiClient } from "@/lib/api-client";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSectorStore } from "@/lib/sector-store";
 
 export default function Pricing() {
+    const sector = useSectorStore((s) => s.sector);
     const [plans, setPlans] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [countryCode, setCountryCode] = useState("TR");
 
-    // Fetch plans on mount
+    // Fetch plans filtered by sector + country
     useEffect(() => {
         const fetchPlans = async () => {
+            setLoading(true);
             try {
-                const res = await apiClient.get('/api/plans');
+                const params: Record<string, string> = {};
+                if (sector && sector !== "general") {
+                    params.sector = sector;
+                }
+                if (countryCode) {
+                    params.countryCode = countryCode;
+                }
+                const res = await apiClient.get('/api/plans', { params });
                 const data = res.data;
                 if (data.success) {
                     setPlans(data.data);
@@ -31,7 +42,7 @@ export default function Pricing() {
             }
         };
         fetchPlans();
-    }, []);
+    }, [sector, countryCode]);
 
     return (
         <div className="min-h-screen bg-background text-foreground selection:bg-accent-blue/30 relative flex flex-col">
@@ -128,7 +139,7 @@ export default function Pricing() {
                                 İhtiyacınıza göre paketinizi özelleştirin ve kliniğinizi güçlendirin.
                             </p>
                         </div>
-                        <AddOnsList />
+                        <AddOnsList sector={sector} countryCode={countryCode} />
                     </motion.div>
 
                     {/* SMS Packages Section */}
@@ -146,7 +157,7 @@ export default function Pricing() {
                                 Güçlü iletişim için ihtiyacınıza uygun SMS paketini seçin.
                             </p>
                         </div>
-                        <SmsPackagesList />
+                        <SmsPackagesList countryCode={countryCode} />
                     </motion.div>
                 </div>
             </main>
@@ -236,17 +247,20 @@ function FeatureItem({ text }: { text: string }) {
     );
 }
 
-function AddOnsList() {
+function AddOnsList({ sector, countryCode }: { sector?: string; countryCode?: string }) {
     const [addons, setAddons] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchAddons = async () => {
             try {
-                const res = await apiClient.get('/api/addons');
+                const params: Record<string, string> = {};
+                if (sector && sector !== "general") params.sector = sector;
+                if (countryCode) params.countryCode = countryCode;
+                const res = await apiClient.get('/api/addons', { params });
                 const data = res.data;
                 if (data.success) {
-                    setAddons(data.data.filter((a: any) => a.is_active));
+                    setAddons(data.data.filter((a: any) => a.is_active || a.isActive));
                 }
             } catch (error) {
                 console.error('Failed to fetch addons:', error);
@@ -255,7 +269,7 @@ function AddOnsList() {
             }
         };
         fetchAddons();
-    }, []);
+    }, [sector, countryCode]);
 
     if (loading) return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -293,14 +307,16 @@ function AddOnsList() {
     );
 }
 
-function SmsPackagesList() {
+function SmsPackagesList({ countryCode }: { countryCode?: string }) {
     const [packages, setPackages] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchPackages = async () => {
             try {
-                const res = await apiClient.get('/api/sms-packages');
+                const params: Record<string, string> = {};
+                if (countryCode) params.countryCode = countryCode;
+                const res = await apiClient.get('/api/sms-packages', { params });
                 const data = res.data;
                 if (data.success) {
                     setPackages(data.data);
@@ -312,7 +328,7 @@ function SmsPackagesList() {
             }
         };
         fetchPackages();
-    }, []);
+    }, [countryCode]);
 
     if (loading) return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

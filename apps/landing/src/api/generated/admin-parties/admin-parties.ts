@@ -25,6 +25,7 @@ import type {
   ListAdminPartiesParams,
   PartyDetailResponse,
   PartyListResponse,
+  ResponseEnvelopeListSaleRead,
   SchemasBaseResponseEnvelope
 } from '.././schemas';
 
@@ -37,7 +38,7 @@ import { customInstance } from '../../orval-mutator';
  * Get single party detail
  * @summary Get Party Detail
  */
-export const getAdminParty = (
+export const getAdminPartyDetail = (
     partyId: string,
  signal?: AbortSignal
 ) => {
@@ -52,69 +53,69 @@ export const getAdminParty = (
 
 
 
-export const getGetAdminPartyQueryKey = (partyId?: string,) => {
+export const getGetAdminPartyDetailQueryKey = (partyId?: string,) => {
     return [
     `/api/admin/parties/${partyId}`
     ] as const;
     }
 
     
-export const getGetAdminPartyQueryOptions = <TData = Awaited<ReturnType<typeof getAdminParty>>, TError = HTTPValidationError>(partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminParty>>, TError, TData>>, }
+export const getGetAdminPartyDetailQueryOptions = <TData = Awaited<ReturnType<typeof getAdminPartyDetail>>, TError = HTTPValidationError>(partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminPartyDetail>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminPartyQueryKey(partyId);
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminPartyDetailQueryKey(partyId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminParty>>> = ({ signal }) => getAdminParty(partyId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminPartyDetail>>> = ({ signal }) => getAdminPartyDetail(partyId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(partyId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminParty>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(partyId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminPartyDetail>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetAdminPartyQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminParty>>>
-export type GetAdminPartyQueryError = HTTPValidationError
+export type GetAdminPartyDetailQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminPartyDetail>>>
+export type GetAdminPartyDetailQueryError = HTTPValidationError
 
 
-export function useGetAdminParty<TData = Awaited<ReturnType<typeof getAdminParty>>, TError = HTTPValidationError>(
- partyId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminParty>>, TError, TData>> & Pick<
+export function useGetAdminPartyDetail<TData = Awaited<ReturnType<typeof getAdminPartyDetail>>, TError = HTTPValidationError>(
+ partyId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminPartyDetail>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminParty>>,
+          Awaited<ReturnType<typeof getAdminPartyDetail>>,
           TError,
-          Awaited<ReturnType<typeof getAdminParty>>
+          Awaited<ReturnType<typeof getAdminPartyDetail>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminParty<TData = Awaited<ReturnType<typeof getAdminParty>>, TError = HTTPValidationError>(
- partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminParty>>, TError, TData>> & Pick<
+export function useGetAdminPartyDetail<TData = Awaited<ReturnType<typeof getAdminPartyDetail>>, TError = HTTPValidationError>(
+ partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminPartyDetail>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminParty>>,
+          Awaited<ReturnType<typeof getAdminPartyDetail>>,
           TError,
-          Awaited<ReturnType<typeof getAdminParty>>
+          Awaited<ReturnType<typeof getAdminPartyDetail>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAdminParty<TData = Awaited<ReturnType<typeof getAdminParty>>, TError = HTTPValidationError>(
- partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminParty>>, TError, TData>>, }
+export function useGetAdminPartyDetail<TData = Awaited<ReturnType<typeof getAdminPartyDetail>>, TError = HTTPValidationError>(
+ partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminPartyDetail>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get Party Detail
  */
 
-export function useGetAdminParty<TData = Awaited<ReturnType<typeof getAdminParty>>, TError = HTTPValidationError>(
- partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminParty>>, TError, TData>>, }
+export function useGetAdminPartyDetail<TData = Awaited<ReturnType<typeof getAdminPartyDetail>>, TError = HTTPValidationError>(
+ partyId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminPartyDetail>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetAdminPartyQueryOptions(partyId,options)
+  const queryOptions = getGetAdminPartyDetailQueryOptions(partyId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -323,7 +324,7 @@ export const listAdminPartySales = (
 ) => {
       
       
-      return customInstance<SchemasBaseResponseEnvelope>(
+      return customInstance<ResponseEnvelopeListSaleRead>(
       {url: `/api/admin/parties/${partyId}/sales`, method: 'GET', signal
     },
       );

@@ -13,6 +13,12 @@ import type { ActivityLogReadMessage } from './activityLogReadMessage';
 import type { ActivityLogReadDetails } from './activityLogReadDetails';
 import type { ActivityLogReadUserId } from './activityLogReadUserId';
 import type { ActivityLogReadTenantId } from './activityLogReadTenantId';
+import type { ActivityLogReadBranchId } from './activityLogReadBranchId';
+import type { ActivityLogReadBranchName } from './activityLogReadBranchName';
+import type { ActivityLogReadRole } from './activityLogReadRole';
+import type { ActivityLogReadData } from './activityLogReadData';
+import type { ActivityLogReadIpAddress } from './activityLogReadIpAddress';
+import type { ActivityLogReadUserAgent } from './activityLogReadUserAgent';
 import type { ActivityLogReadUserName } from './activityLogReadUserName';
 import type { ActivityLogReadUserEmail } from './activityLogReadUserEmail';
 
@@ -40,6 +46,12 @@ export interface ActivityLogRead {
   isCritical?: boolean;
   userId?: ActivityLogReadUserId;
   tenantId?: ActivityLogReadTenantId;
+  branchId?: ActivityLogReadBranchId;
+  branchName?: ActivityLogReadBranchName;
+  role?: ActivityLogReadRole;
+  data?: ActivityLogReadData;
+  ipAddress?: ActivityLogReadIpAddress;
+  userAgent?: ActivityLogReadUserAgent;
   userName?: ActivityLogReadUserName;
   userEmail?: ActivityLogReadUserEmail;
 }

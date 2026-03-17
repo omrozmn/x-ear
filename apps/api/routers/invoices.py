@@ -2,7 +2,7 @@
 FastAPI Invoices Router - Migrated from Flask routes/invoices/
 Handles invoice CRUD operations
 """
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query
 from typing import Optional, List
 from datetime import datetime, timezone
 import logging
@@ -602,6 +602,7 @@ def send_to_gib(
 @router.post("/invoices/bulk-upload", operation_id="createInvoiceBulkUpload", response_model=ResponseEnvelope[BulkUploadResponse])
 async def bulk_upload_invoices(
     file: UploadFile = File(...),
+    update_mode: str = Query(default="fill_empty", description="Update strategy: 'fill_empty' or 'overwrite'"),
     access: UnifiedAccess = Depends(require_access("invoices.write")),
     db_session: Session = Depends(get_db)
 ):
@@ -739,13 +740,20 @@ async def bulk_upload_invoices(
                         ).first()
 
                 if existing:
-                    existing.patient_name = party_name or existing.patient_name
-                    existing.patient_tc = patient_tc or existing.patient_tc
-                    existing.currency = currency or existing.currency
-                    if resolved_party and not existing.party_id:
+                    if update_mode == 'overwrite':
+                        if party_name: existing.patient_name = party_name
+                        if patient_tc: existing.patient_tc = patient_tc
+                        if currency: existing.currency = currency
+                        if i_date: existing.issue_date = i_date
+                        if d_date: existing.due_date = d_date
+                    else:
+                        existing.patient_name = party_name or existing.patient_name
+                        existing.patient_tc = patient_tc or existing.patient_tc
+                        existing.currency = currency or existing.currency
+                        if i_date and not existing.issue_date: existing.issue_date = i_date
+                        if d_date and not existing.due_date: existing.due_date = d_date
+                    if resolved_party and (update_mode == 'overwrite' or not existing.party_id):
                         existing.party_id = resolved_party.id
-                    if i_date: existing.issue_date = i_date
-                    if d_date: existing.due_date = d_date
 
                     if grand_total:
                         try: existing.grand_total = float(grand_total); existing.device_price = float(grand_total)

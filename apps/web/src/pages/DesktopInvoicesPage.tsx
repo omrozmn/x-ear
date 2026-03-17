@@ -145,7 +145,7 @@ export const DesktopInvoicesPage: React.FC<InvoiceManagementPageProps> = ({
     return (
       <div className="mt-1 flex flex-wrap gap-1">
         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${invoice.documentKind === 'despatch' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300' : 'bg-sky-100 text-sky-800 dark:bg-sky-900/20 dark:text-sky-300'}`}>
-          {invoice.documentKindLabel || (invoice.documentKind === 'despatch' ? 'E-İrsaliye' : 'E-Fatura')}
+          {invoice.documentKindLabel || (invoice.documentKind === 'despatch' ? t('common.e_despatch') : t('common.e_invoice'))}
         </span>
         {invoice.profileId && (
           <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-muted text-foreground">

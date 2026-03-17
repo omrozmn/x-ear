@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { Button, Card } from '@x-ear/ui-web';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { NormalizerTemplateCard } from '../../components/invoice-normalizer/NormalizerTemplateCard';
 import { CreateTemplateModal } from '../../components/invoice-normalizer/CreateTemplateModal';
 import { NormalizeModal } from '../../components/invoice-normalizer/NormalizeModal';
@@ -19,6 +20,7 @@ import {
 } from '../../services/invoiceNormalizer.service';
 
 export default function InvoiceNormalizerPage() {
+  const { t } = useTranslation('invoices');
   const queryClient = useQueryClient();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -34,13 +36,13 @@ export default function InvoiceNormalizerPage() {
     mutationFn: deleteTemplate,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['normalizer-templates'] });
-      toast.success('Şablon silindi');
+      toast.success(t('normalizer.messages.template_deleted'));
     },
-    onError: () => toast.error('Şablon silinemedi'),
+    onError: () => toast.error(t('normalizer.messages.template_delete_failed')),
   });
 
   const handleDelete = useCallback((id: string) => {
-    if (window.confirm('Bu şablonu silmek istediğinize emin misiniz?')) {
+    if (window.confirm(t('normalizer.confirm_delete'))) {
       deleteMutation.mutate(id);
     }
   }, [deleteMutation]);
@@ -48,7 +50,7 @@ export default function InvoiceNormalizerPage() {
   const handleTemplateCreated = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['normalizer-templates'] });
     setShowCreateModal(false);
-    toast.success('Şablon oluşturuldu');
+    toast.success(t('normalizer.messages.template_created'));
   }, [queryClient]);
 
   const totalNormalizations = templates.reduce(
@@ -62,10 +64,10 @@ export default function InvoiceNormalizerPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Muhasebe Dışa Aktarım
+            {t('normalizer.title')}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Fatura tablolarını istediğiniz muhasebe formatına dönüştürün
+            {t('normalizer.description')}
           </p>
         </div>
         <Button
@@ -73,7 +75,7 @@ export default function InvoiceNormalizerPage() {
           icon={<Plus className="w-4 h-4" />}
           onClick={() => setShowCreateModal(true)}
         >
-          Yeni Şablon
+          {t('normalizer.new_template')}
         </Button>
       </div>
 
@@ -85,7 +87,7 @@ export default function InvoiceNormalizerPage() {
               <FileSpreadsheet className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Şablonlar</p>
+              <p className="text-sm text-muted-foreground">{t('normalizer.stats.templates')}</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {totalTemplates}
               </p>
@@ -99,7 +101,7 @@ export default function InvoiceNormalizerPage() {
               <CheckCircle2 className="w-5 h-5 text-success" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Toplam Dönüşüm</p>
+              <p className="text-sm text-muted-foreground">{t('normalizer.stats.total_conversions')}</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {totalNormalizations}
               </p>
@@ -113,8 +115,8 @@ export default function InvoiceNormalizerPage() {
               <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">AI Eşleştirme</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">Aktif</p>
+              <p className="text-sm text-muted-foreground">{t('normalizer.stats.ai_matching')}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{t('normalizer.stats.active')}</p>
             </div>
           </div>
         </Card>
@@ -130,17 +132,17 @@ export default function InvoiceNormalizerPage() {
           <div className="text-center py-6">
             <FileSpreadsheet className="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              Henüz şablon yok
+              {t('normalizer.no_templates')}
             </h3>
             <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
-              Muhasebe sisteminize uygun bir örnek çıktı dosyası yükleyerek ilk şablonunuzu oluşturun.
+              {t('normalizer.no_templates_description')}
             </p>
             <Button
               variant="primary"
               icon={<Plus className="w-4 h-4" />}
               onClick={() => setShowCreateModal(true)}
             >
-              İlk Şablonu Oluştur
+              {t('normalizer.create_first')}
             </Button>
           </div>
         </Card>
@@ -172,7 +174,7 @@ export default function InvoiceNormalizerPage() {
               <Plus className="w-6 h-6 text-muted-foreground" />
             </div>
             <span className="text-sm font-medium text-muted-foreground">
-              Yeni Şablon Ekle
+              {t('normalizer.add_template')}
             </span>
           </div>
         </div>

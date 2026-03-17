@@ -22,6 +22,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import Pagination from '../../components/ui/Pagination';
 import { useAdminResponsive } from '../../hooks/useAdminResponsive';
 import { unwrapArray, unwrapData } from '@/lib/orval-response';
+import { SectorCountryFilter, SectorCountryFormFields, getCountryLabel } from '@/components/ui/SectorCountryFilter';
 
 interface PackagePagination {
     total?: number;
@@ -34,6 +35,7 @@ interface PackageFormData {
     smsCount: number;
     price: number;
     currency: string;
+    countryCode: string;
     isActive: boolean;
 }
 
@@ -52,12 +54,14 @@ function getPagination(data: ResponseEnvelopeListDetailedSmsPackageRead | undefi
 }
 
 function toFormData(pkg?: DetailedSmsPackageRead | null): PackageFormData {
+    const pkgAny = pkg as (DetailedSmsPackageRead & { countryCode?: string; currency?: string }) | null | undefined;
     return {
         name: pkg?.name ?? '',
         description: pkg?.description ?? '',
         smsCount: pkg?.smsCount ?? 1000,
         price: typeof pkg?.price === 'number' ? pkg.price : Number(pkg?.price ?? 0),
-        currency: 'TRY',
+        currency: pkgAny?.currency ?? 'TRY',
+        countryCode: pkgAny?.countryCode ?? '',
         isActive: pkg?.isActive ?? true,
     };
 }
@@ -69,7 +73,12 @@ export default function SMSPackagesPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
-    const packageParams: ListAdminSmPackagesParams = { page, limit };
+    const [filterCountry, setFilterCountry] = useState('');
+    const packageParams: ListAdminSmPackagesParams = {
+        page,
+        limit,
+        ...(filterCountry ? { countryCode: filterCountry } : {}),
+    };
 
     const { data: packagesData, isLoading, refetch } = useListAdminSmPackages(packageParams);
 
@@ -101,8 +110,9 @@ export default function SMSPackagesPage() {
                 smsCount: formData.smsCount,
                 price: formData.price,
                 currency: formData.currency,
+                countryCode: formData.countryCode || undefined,
                 isActive: formData.isActive,
-            };
+            } as SmsPackageCreate;
 
             if (editingPkg) {
                 const updatePayload: SmsPackageUpdate = payload;
@@ -145,11 +155,20 @@ export default function SMSPackagesPage() {
                     {!isMobile && 'Yeni Paket'}
                 </Button>
             </div>
-            <div className="mb-6 max-w-md">
-                <Input
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Paket adı, açıklama, adet veya fiyat ara..."
+            <div className="flex flex-wrap gap-3 items-end mb-6">
+                <div className="flex-1 min-w-[200px] max-w-md">
+                    <Input
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder="Paket adı, açıklama, adet veya fiyat ara..."
+                    />
+                </div>
+                <SectorCountryFilter
+                    sector=""
+                    countryCode={filterCountry}
+                    onSectorChange={() => {}}
+                    onCountryChange={(v) => { setFilterCountry(v); setPage(1); }}
+                    showSector={false}
                 />
             </div>
 
@@ -177,7 +196,12 @@ export default function SMSPackagesPage() {
                                 </div>
                             </div>
 
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 min-h-[40px]">{pkg.description}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2 min-h-[40px]">{pkg.description}</p>
+                            {(pkg as DetailedSmsPackageRead & { countryCode?: string }).countryCode && (
+                                <span className="text-xs text-gray-500 dark:text-gray-400 mb-4 block">
+                                    {getCountryLabel((pkg as DetailedSmsPackageRead & { countryCode?: string }).countryCode!)}
+                                </span>
+                            )}
 
                             <div className="flex justify-between items-end border-t dark:border-gray-700 pt-4">
                                 <div>
@@ -252,6 +276,16 @@ export default function SMSPackagesPage() {
                                         onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
                                     />
                                 </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4">
+                                <SectorCountryFormFields
+                                    sector=""
+                                    countryCode={formData.countryCode}
+                                    onSectorChange={() => {}}
+                                    onCountryChange={(v) => setFormData({ ...formData, countryCode: v })}
+                                    showSector={false}
+                                />
                             </div>
 
                             <div className="flex items-center gap-2 pt-2">

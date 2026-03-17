@@ -10,6 +10,8 @@ import type { PlanCreateDescription } from './planCreateDescription';
 import type { PlanCreateFeatures } from './planCreateFeatures';
 import type { PlanCreateMaxUsers } from './planCreateMaxUsers';
 import type { PlanCreateMaxStorageGb } from './planCreateMaxStorageGb';
+import type { PlanCreateSector } from './planCreateSector';
+import type { PlanCreateCountryCode } from './planCreateCountryCode';
 
 /**
  * Schema for creating a plan
@@ -33,6 +35,10 @@ export interface PlanCreate {
   maxUsers?: PlanCreateMaxUsers;
   /** Max storage in GB */
   maxStorageGb?: PlanCreateMaxStorageGb;
+  /** Sector code (hearing, pharmacy, hospital, hotel, beauty, general, medical, optic) */
+  sector?: PlanCreateSector;
+  /** ISO 3166-1 alpha-2 country code */
+  countryCode?: PlanCreateCountryCode;
   /** Is plan active */
   isActive?: boolean;
   /** Is plan public */

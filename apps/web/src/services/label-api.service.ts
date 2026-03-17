@@ -168,6 +168,70 @@ export async function healthCheck(): Promise<boolean> {
 }
 
 // ---------------------------------------------------------------------------
+// Printer types
+// ---------------------------------------------------------------------------
+
+export interface PrinterInfo {
+  id: string;
+  name: string;
+  ipAddress: string;
+  port: number;
+  protocol: 'tcp9100' | 'ipp' | 'browser';
+  status: 'online' | 'offline' | 'error';
+  capabilities?: {
+    maxWidth?: number;
+    maxHeight?: number;
+    dpi?: number;
+    supportedFormats?: string[];
+  };
+  lastHealthCheck?: string;
+}
+
+export interface PrintJobInfo {
+  id: string;
+  templateId: string;
+  printerId: string;
+  data: Record<string, unknown>;
+  outputFormat: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  errorMessage?: string;
+  createdAt: string;
+  completedAt?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Printer API methods
+// ---------------------------------------------------------------------------
+
+/** List all registered printers. */
+export async function listPrinters(): Promise<PrinterInfo[]> {
+  const response = await client.get<PrinterInfo[]>('/api/v1/printers');
+  return response.data;
+}
+
+/** Submit a print job to a specific printer. */
+export async function submitPrintJob(
+  templateId: string,
+  printerId: string,
+  data: Record<string, unknown>,
+  copies?: number,
+): Promise<PrintJobInfo | PrintJobInfo[]> {
+  const response = await client.post('/api/v1/print', {
+    templateId,
+    printerId,
+    data,
+    copies: copies ?? 1,
+  });
+  return response.data;
+}
+
+/** Get the status of a print job. */
+export async function getJobStatus(jobId: string): Promise<PrintJobInfo> {
+  const response = await client.get<PrintJobInfo>(`/api/v1/print/jobs/${jobId}`);
+  return response.data;
+}
+
+// ---------------------------------------------------------------------------
 // Convenience namespace export
 // ---------------------------------------------------------------------------
 
@@ -179,4 +243,7 @@ export const labelApiService = {
   publishTemplate,
   renderTemplate,
   healthCheck,
+  listPrinters,
+  submitPrintJob,
+  getJobStatus,
 } as const;

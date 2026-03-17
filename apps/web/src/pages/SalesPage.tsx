@@ -14,6 +14,7 @@ import { ExportDropdown } from '@/components/common/ExportDropdown';
 import { ManualSaleModal } from '@/components/sales/ManualSaleModal';
 import { usePermissions } from '@/hooks/usePermissions';
 import { PermissionGate } from '@/components/PermissionGate';
+import { useTranslation } from 'react-i18next';
 
 interface SalesTableRow {
   id: string;
@@ -32,6 +33,7 @@ interface SalesTableRow {
 }
 
 export function SalesPage() {
+  const { t } = useTranslation('sales');
   const { hasPermission } = usePermissions();
   const canViewAmounts = hasPermission('sensitive.sales.list.amounts.view');
   const navigate = useNavigate();

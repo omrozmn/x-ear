@@ -13,6 +13,7 @@ import type { InventoryItemUpdateBarcode } from './inventoryItemUpdateBarcode';
 import type { InventoryItemUpdateStockCode } from './inventoryItemUpdateStockCode';
 import type { InventoryItemUpdateSupplier } from './inventoryItemUpdateSupplier';
 import type { InventoryItemUpdateUnit } from './inventoryItemUpdateUnit';
+import type { InventoryItemUpdatePackageQuantity } from './inventoryItemUpdatePackageQuantity';
 import type { InventoryItemUpdateDescription } from './inventoryItemUpdateDescription';
 import type { InventoryItemUpdateAvailableInventory } from './inventoryItemUpdateAvailableInventory';
 import type { InventoryItemUpdateTotalInventory } from './inventoryItemUpdateTotalInventory';
@@ -38,6 +39,7 @@ export interface InventoryItemUpdate {
   stockCode?: InventoryItemUpdateStockCode;
   supplier?: InventoryItemUpdateSupplier;
   unit?: InventoryItemUpdateUnit;
+  packageQuantity?: InventoryItemUpdatePackageQuantity;
   description?: InventoryItemUpdateDescription;
   availableInventory?: InventoryItemUpdateAvailableInventory;
   totalInventory?: InventoryItemUpdateTotalInventory;

@@ -6,6 +6,7 @@ import { useState, Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import Image from "next/image";
+import { useSectorStore } from "@/lib/sector-store";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Scene } from "@/components/canvas/Scene";
@@ -33,6 +34,7 @@ function CheckoutContent() {
     const router = useRouter();
     const paramPlanId = searchParams.get("plan");
     const billingCycle = searchParams.get("billing") || "monthly";
+    const sector = useSectorStore((s) => s.sector);
 
     // Payment State
     const [cardData, setCardData] = useState({
@@ -76,7 +78,9 @@ function CheckoutContent() {
     useEffect(() => {
         const fetchPlans = async () => {
             try {
-                const res = await apiClient.get('/api/plans');
+                const params: Record<string, string> = {};
+                if (sector && sector !== "general") params.sector = sector;
+                const res = await apiClient.get('/api/plans', { params });
                 if (res.data.success) {
                     setAllPlans(res.data.data);
                 }
@@ -87,13 +91,15 @@ function CheckoutContent() {
             }
         };
         fetchPlans();
-    }, []);
+    }, [sector]);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
+                const addonParams: Record<string, string> = {};
+                if (sector && sector !== "general") addonParams.sector = sector;
                 const [addonsRes, smsRes] = await Promise.all([
-                    apiClient.get('/api/addons'),
+                    apiClient.get('/api/addons', { params: addonParams }),
                     apiClient.get('/api/sms-packages')
                 ]);
 

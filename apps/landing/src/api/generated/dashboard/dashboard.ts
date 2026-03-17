@@ -21,6 +21,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  HTTPValidationError,
+  ListDashboardChartPatientDistributionParams,
   ResponseEnvelopeChartData,
   ResponseEnvelopeDashboardData,
   ResponseEnvelopeDashboardKPIs,
@@ -503,13 +505,14 @@ export function useListDashboardRecentActivity<TData = Awaited<ReturnType<typeof
  * @summary Patient Distribution
  */
 export const listDashboardChartPatientDistribution = (
-    
+    params?: ListDashboardChartPatientDistributionParams,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<ResponseEnvelopeListBranchDistribution>(
-      {url: `/api/dashboard/charts/patient-distribution`, method: 'GET', signal
+      {url: `/api/dashboard/charts/patient-distribution`, method: 'GET',
+        params, signal
     },
       );
     }
@@ -517,23 +520,23 @@ export const listDashboardChartPatientDistribution = (
 
 
 
-export const getListDashboardChartPatientDistributionQueryKey = () => {
+export const getListDashboardChartPatientDistributionQueryKey = (params?: ListDashboardChartPatientDistributionParams,) => {
     return [
-    `/api/dashboard/charts/patient-distribution`
+    `/api/dashboard/charts/patient-distribution`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getListDashboardChartPatientDistributionQueryOptions = <TData = Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError, TData>>, }
+export const getListDashboardChartPatientDistributionQueryOptions = <TData = Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError = HTTPValidationError>(params?: ListDashboardChartPatientDistributionParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListDashboardChartPatientDistributionQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListDashboardChartPatientDistributionQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>> = ({ signal }) => listDashboardChartPatientDistribution(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>> = ({ signal }) => listDashboardChartPatientDistribution(params, signal);
 
       
 
@@ -543,11 +546,11 @@ const {query: queryOptions} = options ?? {};
 }
 
 export type ListDashboardChartPatientDistributionQueryResult = NonNullable<Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>>
-export type ListDashboardChartPatientDistributionQueryError = unknown
+export type ListDashboardChartPatientDistributionQueryError = HTTPValidationError
 
 
-export function useListDashboardChartPatientDistribution<TData = Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError, TData>> & Pick<
+export function useListDashboardChartPatientDistribution<TData = Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError = HTTPValidationError>(
+ params: undefined |  ListDashboardChartPatientDistributionParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>,
           TError,
@@ -556,8 +559,8 @@ export function useListDashboardChartPatientDistribution<TData = Awaited<ReturnT
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListDashboardChartPatientDistribution<TData = Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError, TData>> & Pick<
+export function useListDashboardChartPatientDistribution<TData = Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError = HTTPValidationError>(
+ params?: ListDashboardChartPatientDistributionParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>,
           TError,
@@ -566,20 +569,20 @@ export function useListDashboardChartPatientDistribution<TData = Awaited<ReturnT
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListDashboardChartPatientDistribution<TData = Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError, TData>>, }
+export function useListDashboardChartPatientDistribution<TData = Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError = HTTPValidationError>(
+ params?: ListDashboardChartPatientDistributionParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Patient Distribution
  */
 
-export function useListDashboardChartPatientDistribution<TData = Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError, TData>>, }
+export function useListDashboardChartPatientDistribution<TData = Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError = HTTPValidationError>(
+ params?: ListDashboardChartPatientDistributionParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listDashboardChartPatientDistribution>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getListDashboardChartPatientDistributionQueryOptions(options)
+  const queryOptions = getListDashboardChartPatientDistributionQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

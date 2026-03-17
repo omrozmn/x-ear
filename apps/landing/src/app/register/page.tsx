@@ -11,10 +11,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 // Use relative path or alias if configured
 import { apiClient } from "../../lib/api-client";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSectorStore } from "@/lib/sector-store";
 
 function RegisterContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const sector = useSectorStore((s) => s.sector);
     const [step, setStep] = useState<"phone" | "otp">("phone");
     const [phone, setPhone] = useState("");
     const [firstName, setFirstName] = useState("");
@@ -105,7 +107,10 @@ function RegisterContent() {
                 if (redirectPath) {
                     router.push(redirectPath);
                 } else {
-                    router.push('/checkout');
+                    const checkoutUrl = sector && sector !== 'general'
+                        ? `/checkout?sector=${sector}`
+                        : '/checkout';
+                    router.push(checkoutUrl);
                 }
             } else {
                 setError(resBody?.error?.message || resBody.message || "Kod doğrulanamadı");

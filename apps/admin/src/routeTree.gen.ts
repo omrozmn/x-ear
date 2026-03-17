@@ -18,6 +18,7 @@ import { Route as SupportRouteImport } from './routes/support'
 import { Route as SuppliersRouteImport } from './routes/suppliers'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RolesRouteImport } from './routes/roles'
+import { Route as PrintersRouteImport } from './routes/printers'
 import { Route as ProductionRouteImport } from './routes/production'
 import { Route as PlansRouteImport } from './routes/plans'
 import { Route as PersonnelRouteImport } from './routes/personnel'
@@ -49,6 +50,7 @@ import { Route as IntegrationsIndexRouteImport } from './routes/integrations/ind
 import { Route as SmsPackagesRouteImport } from './routes/sms/packages'
 import { Route as SmsHeadersRouteImport } from './routes/sms/headers'
 import { Route as IntegrationsVatanSmsRouteImport } from './routes/integrations/vatan-sms'
+import { Route as LabelEditorTemplateIdRouteImport } from './routes/label-editor.$templateId'
 import { Route as AffiliatesAffiliateIdRouteImport } from './routes/affiliates.$affiliateId'
 import { Route as IntegrationsEmailLogsRouteImport } from './routes/integrations/email/logs'
 import { Route as IntegrationsEmailConfigRouteImport } from './routes/integrations/email/config'
@@ -97,6 +99,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const RolesRoute = RolesRouteImport.update({
   id: '/roles',
   path: '/roles',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrintersRoute = PrintersRouteImport.update({
+  id: '/printers',
+  path: '/printers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProductionRoute = ProductionRouteImport.update({
@@ -254,6 +261,11 @@ const IntegrationsVatanSmsRoute = IntegrationsVatanSmsRouteImport.update({
   path: '/integrations/vatan-sms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LabelEditorTemplateIdRoute = LabelEditorTemplateIdRouteImport.update({
+  id: '/label-editor/$templateId',
+  path: '/label-editor/$templateId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AffiliatesAffiliateIdRoute = AffiliatesAffiliateIdRouteImport.update({
   id: '/$affiliateId',
   path: '/$affiliateId',
@@ -294,6 +306,7 @@ export interface FileRoutesByFullPath {
   '/features': typeof FeaturesRoute
   '/files': typeof FilesRoute
   '/inventory': typeof InventoryRoute
+  '/label-editor/$templateId': typeof LabelEditorTemplateIdRoute
   '/label-templates': typeof LabelTemplatesRoute
   '/login': typeof LoginRoute
   '/marketplaces': typeof MarketplacesRoute
@@ -303,6 +316,7 @@ export interface FileRoutesByFullPath {
   '/payments': typeof PaymentsRoute
   '/personnel': typeof PersonnelRoute
   '/plans': typeof PlansRoute
+  '/printers': typeof PrintersRoute
   '/production': typeof ProductionRoute
   '/roles': typeof RolesRoute
   '/settings': typeof SettingsRoute
@@ -340,6 +354,7 @@ export interface FileRoutesByTo {
   '/features': typeof FeaturesRoute
   '/files': typeof FilesRoute
   '/inventory': typeof InventoryRoute
+  '/label-editor/$templateId': typeof LabelEditorTemplateIdRoute
   '/label-templates': typeof LabelTemplatesRoute
   '/login': typeof LoginRoute
   '/marketplaces': typeof MarketplacesRoute
@@ -349,6 +364,7 @@ export interface FileRoutesByTo {
   '/payments': typeof PaymentsRoute
   '/personnel': typeof PersonnelRoute
   '/plans': typeof PlansRoute
+  '/printers': typeof PrintersRoute
   '/production': typeof ProductionRoute
   '/roles': typeof RolesRoute
   '/settings': typeof SettingsRoute
@@ -387,6 +403,7 @@ export interface FileRoutesById {
   '/features': typeof FeaturesRoute
   '/files': typeof FilesRoute
   '/inventory': typeof InventoryRoute
+  '/label-editor/$templateId': typeof LabelEditorTemplateIdRoute
   '/label-templates': typeof LabelTemplatesRoute
   '/login': typeof LoginRoute
   '/marketplaces': typeof MarketplacesRoute
@@ -396,6 +413,7 @@ export interface FileRoutesById {
   '/payments': typeof PaymentsRoute
   '/personnel': typeof PersonnelRoute
   '/plans': typeof PlansRoute
+  '/printers': typeof PrintersRoute
   '/production': typeof ProductionRoute
   '/roles': typeof RolesRoute
   '/settings': typeof SettingsRoute
@@ -435,6 +453,7 @@ export interface FileRouteTypes {
     | '/features'
     | '/files'
     | '/inventory'
+    | '/label-editor/$templateId'
     | '/label-templates'
     | '/login'
     | '/marketplaces'
@@ -444,6 +463,7 @@ export interface FileRouteTypes {
     | '/payments'
     | '/personnel'
     | '/plans'
+    | '/printers'
     | '/production'
     | '/roles'
     | '/settings'
@@ -481,6 +501,7 @@ export interface FileRouteTypes {
     | '/features'
     | '/files'
     | '/inventory'
+    | '/label-editor/$templateId'
     | '/label-templates'
     | '/login'
     | '/marketplaces'
@@ -490,6 +511,7 @@ export interface FileRouteTypes {
     | '/payments'
     | '/personnel'
     | '/plans'
+    | '/printers'
     | '/production'
     | '/roles'
     | '/settings'
@@ -527,6 +549,7 @@ export interface FileRouteTypes {
     | '/features'
     | '/files'
     | '/inventory'
+    | '/label-editor/$templateId'
     | '/label-templates'
     | '/login'
     | '/marketplaces'
@@ -536,6 +559,7 @@ export interface FileRouteTypes {
     | '/payments'
     | '/personnel'
     | '/plans'
+    | '/printers'
     | '/production'
     | '/roles'
     | '/settings'
@@ -574,6 +598,7 @@ export interface RootRouteChildren {
   FeaturesRoute: typeof FeaturesRoute
   FilesRoute: typeof FilesRoute
   InventoryRoute: typeof InventoryRoute
+  LabelEditorTemplateIdRoute: typeof LabelEditorTemplateIdRoute
   LabelTemplatesRoute: typeof LabelTemplatesRoute
   LoginRoute: typeof LoginRoute
   MarketplacesRoute: typeof MarketplacesRoute
@@ -583,6 +608,7 @@ export interface RootRouteChildren {
   PaymentsRoute: typeof PaymentsRoute
   PersonnelRoute: typeof PersonnelRoute
   PlansRoute: typeof PlansRoute
+  PrintersRoute: typeof PrintersRoute
   ProductionRoute: typeof ProductionRoute
   RolesRoute: typeof RolesRoute
   SettingsRoute: typeof SettingsRoute
@@ -667,6 +693,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RolesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/printers': {
+      id: '/printers'
+      path: '/printers'
+      fullPath: '/printers'
+      preLoaderRoute: typeof PrintersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/production': {
       id: '/production'
       path: '/production'
@@ -728,6 +761,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/label-editor/$templateId': {
+      id: '/label-editor/$templateId'
+      path: '/label-editor/$templateId'
+      fullPath: '/label-editor/$templateId'
+      preLoaderRoute: typeof LabelEditorTemplateIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/label-templates': {
@@ -945,6 +985,7 @@ const rootRouteChildren: RootRouteChildren = {
   FeaturesRoute: FeaturesRoute,
   FilesRoute: FilesRoute,
   InventoryRoute: InventoryRoute,
+  LabelEditorTemplateIdRoute: LabelEditorTemplateIdRoute,
   LabelTemplatesRoute: LabelTemplatesRoute,
   LoginRoute: LoginRoute,
   MarketplacesRoute: MarketplacesRoute,
@@ -954,6 +995,7 @@ const rootRouteChildren: RootRouteChildren = {
   PaymentsRoute: PaymentsRoute,
   PersonnelRoute: PersonnelRoute,
   PlansRoute: PlansRoute,
+  PrintersRoute: PrintersRoute,
   ProductionRoute: ProductionRoute,
   RolesRoute: RolesRoute,
   SettingsRoute: SettingsRoute,

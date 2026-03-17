@@ -127,6 +127,13 @@ def generate_import_template(
             required=True,
         ),
         ToolParameter(
+            name="update_mode",
+            type="string",
+            description="Update strategy for existing records: 'fill_empty' (only fill empty fields, default) or 'overwrite' (replace all fields with new values)",
+            required=False,
+            default="fill_empty",
+        ),
+        ToolParameter(
             name="tenant_id",
             type="string",
             description="Tenant ID",
@@ -145,6 +152,7 @@ def execute_smart_bulk_import(
     file_path = params["file_path"]
     target_tool_id = params["target_tool_id"]
     column_mapping = params["column_mapping"]
+    update_mode = params.get("update_mode", "fill_empty")
     tenant_id = params.get("tenant_id", "default")
     
     # Resolve absolute path for the file if it's relative to instance
@@ -198,7 +206,7 @@ def execute_smart_bulk_import(
         # 3. Process Rows
         for index, row in df.iterrows():
             # Construct parameters for the target tool
-            tool_params = {"tenant_id": tenant_id}
+            tool_params = {"tenant_id": tenant_id, "update_mode": update_mode}
             for tool_param, excel_col in column_mapping.items():
                 if excel_col in df.columns:
                     val = row[excel_col]

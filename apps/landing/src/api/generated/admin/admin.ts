@@ -49,6 +49,7 @@ import type {
   ResponseEnvelopeComplaintStatsResponse,
   ResponseEnvelopeDeliverabilityMetricsResponse,
   ResponseEnvelopeImpersonateResponse,
+  ResponseEnvelopeSaleRead,
   ResponseEnvelopeSpamPreviewResponse,
   ResponseEnvelopeSwitchTenantResponse,
   ResponseEnvelopeTrendResponse,
@@ -746,7 +747,7 @@ export const getAdminSale = (
 ) => {
       
       
-      return customInstance<unknown>(
+      return customInstance<ResponseEnvelopeSaleRead>(
       {url: `/api/admin/sales/${saleId}`, method: 'GET', signal
     },
       );

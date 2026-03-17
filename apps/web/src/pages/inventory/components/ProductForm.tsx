@@ -18,7 +18,7 @@ interface ProductFormProps {
 }
 
 const CATEGORIES: { value: InventoryCategory; label: string; icon: string }[] = [
-  { value: 'hearing_aid', label: t('categories.title'), icon: '🦻' },
+  { value: 'hearing_aid', label: 'İşitme Cihazı', icon: '🦻' },
   { value: 'battery', label: 'Pil', icon: '🔋' },
   { value: 'accessory', label: 'Aksesuar', icon: '🔌' },
   { value: 'ear_mold', label: 'Kulak Kalıbı', icon: '👂' },
@@ -48,7 +48,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   mode
 }) => {
   const navigate = useNavigate();
-  const { t } = useTranslation('inventory');
   const { t } = useTranslation('inventory');
   const [formData, setFormData] = useState<InventoryFormData>({
     name: '',

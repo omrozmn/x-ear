@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import type { CashRecordFormData } from '@/types/cashflow';
 import { CashflowModal } from '@/components/cashflow/CashflowModal';
 
@@ -15,17 +16,18 @@ export const CashRegisterModal: React.FC<CashRegisterModalProps> = ({
   onSubmit,
   isLoading,
 }) => {
+  const { t } = useTranslation('dashboard');
   return (
     <CashflowModal
       isOpen={isOpen}
       onClose={onClose}
       onSave={onSubmit}
       isLoading={isLoading}
-      title="Kasa Kaydı"
-      saveButtonText="Kaydet"
+      title={t('cashRecord', 'Kasa Kaydı')}
+      saveButtonText={t('save', 'Kaydet')}
       transactionTypeLabels={{
-        income: 'Satış',
-        expense: 'Alış',
+        income: t('sale', 'Satış'),
+        expense: t('purchase', 'Alış'),
       }}
     />
   );

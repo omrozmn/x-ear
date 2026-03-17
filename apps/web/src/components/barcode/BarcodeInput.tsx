@@ -3,6 +3,7 @@ import { Input } from '@x-ear/ui-web';
 import { ScanLine, RefreshCw, Printer, ShieldCheck, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { BarcodeScannerModal } from './BarcodeScannerModal';
 import { LabelPreviewModal } from './LabelPreviewModal';
+import { PrintDialog } from './PrintDialog';
 import { useBarcodeKeyboardInput } from '../../hooks/useBarcodeKeyboardInput';
 import { useLabelPrint } from '../../hooks/useLabelPrint';
 import { generateBarcode, printSingleBarcodeLabel } from '../../utils/barcodeUtils';
@@ -42,6 +43,7 @@ export const BarcodeInput: React.FC<BarcodeInputProps> = ({
 }) => {
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isLabelPreviewOpen, setIsLabelPreviewOpen] = useState(false);
+  const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
   const { serviceAvailable } = useLabelPrint();
   const [validationStatus, setValidationStatus] = useState<ValidationStatus>('idle');
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
@@ -74,7 +76,7 @@ export const BarcodeInput: React.FC<BarcodeInputProps> = ({
     if (!value || !item) return;
 
     if (serviceAvailable) {
-      setIsLabelPreviewOpen(true);
+      setIsPrintDialogOpen(true);
     } else {
       printSingleBarcodeLabel({ ...item, barcode: value } as InventoryItem);
     }
@@ -233,6 +235,24 @@ export const BarcodeInput: React.FC<BarcodeInputProps> = ({
           isOpen={isLabelPreviewOpen}
           onClose={() => setIsLabelPreviewOpen(false)}
           item={{ ...item, barcode: value }}
+        />
+      )}
+
+      {item && (
+        <PrintDialog
+          isOpen={isPrintDialogOpen}
+          onClose={() => setIsPrintDialogOpen(false)}
+          data={{
+            name: item.name ?? '',
+            brand: item.brand ?? '',
+            model: item.model ?? '',
+            barcode: value,
+            price: item.price != null ? `${item.price} TL` : '',
+            stockCode: item.stockCode ?? '',
+          }}
+          onBrowserPrint={() => {
+            printSingleBarcodeLabel({ ...item, barcode: value } as InventoryItem);
+          }}
         />
       )}
     </>

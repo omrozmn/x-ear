@@ -47,6 +47,7 @@ const AssetUpload: React.FC<AssetUploadProps> = ({
   disabled = false,
   compact = false,
 }) => {
+  const { t } = useTranslation('settings_extra');
   const [preview, setPreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);

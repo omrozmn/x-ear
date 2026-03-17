@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Query
 from typing import List, Optional, Any, Dict
 from datetime import datetime, timezone
 from sqlalchemy import or_, func, desc, asc
@@ -424,10 +424,11 @@ def delete_inventory(
 @router.post("/inventory/bulk-upload", operation_id="createInventoryBulkUpload", response_model=ResponseEnvelope[Dict[str, Any]])
 async def bulk_upload_inventory(
     file: UploadFile = File(...),
+    update_mode: str = Query(default="fill_empty", description="Update strategy: 'fill_empty' or 'overwrite'"),
     access: UnifiedAccess = Depends(require_access("inventory.manage")),
     db: Session = Depends(get_db)
 ):
-    """Bulk upload inventory items from CSV/XLSX"""
+    """Bulk upload inventory items from CSV/XLSX. update_mode: fill_empty (default) or overwrite."""
     try:
         import csv
         import io
@@ -578,12 +579,15 @@ async def bulk_upload_inventory(
                     elif d in ['her iki', 'both', 'bilateral']: payload['direction'] = 'both'
 
                 if existing:
-                    # Additive update — only fill empty fields, don't overwrite
+                    # Update respects update_mode
                     for k, v in payload.items():
                         if hasattr(existing, k) and v is not None:
-                            current_val = getattr(existing, k, None)
-                            if current_val is None or current_val == '' or current_val == 0:
+                            if update_mode == 'overwrite':
                                 setattr(existing, k, v)
+                            else:
+                                current_val = getattr(existing, k, None)
+                                if current_val is None or current_val == '' or current_val == 0:
+                                    setattr(existing, k, v)
                     updated += 1
                 else:
                     if not name:

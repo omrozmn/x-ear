@@ -8,6 +8,7 @@
 import type { SmsPackageReadCreatedAt } from './smsPackageReadCreatedAt';
 import type { SmsPackageReadUpdatedAt } from './smsPackageReadUpdatedAt';
 import type { SmsPackageReadDescription } from './smsPackageReadDescription';
+import type { SmsPackageReadCountryCode } from './smsPackageReadCountryCode';
 
 export interface SmsPackageRead {
   /** Creation timestamp */
@@ -23,5 +24,7 @@ export interface SmsPackageRead {
   /** */
   price: number;
   currency?: string;
+  /** ISO 3166-1 alpha-2 country code */
+  countryCode?: SmsPackageReadCountryCode;
   isActive?: boolean;
 }

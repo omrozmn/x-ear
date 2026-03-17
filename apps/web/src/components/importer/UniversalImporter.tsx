@@ -10,6 +10,7 @@ import { apiClient } from '../../api/orval-mutator';
 
 export type FieldDef = { key: string; label: string };
 export type RowData = Record<string, unknown>;
+export type UpdateMode = 'fill_empty' | 'overwrite';
 
 interface ImportError {
   row: number;
@@ -19,6 +20,7 @@ interface ImportError {
 interface BulkUploadResponse {
   created?: number;
   updated?: number;
+  skipped?: number;
   errors?: Array<{
     row?: number;
     index?: number;
@@ -101,6 +103,7 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState<number>(1);
   const [importResult, setImportResult] = useState<{ created: number; updated: number; errors: ImportError[] } | null>(null);
+  const [updateMode, setUpdateMode] = useState<UpdateMode>('fill_empty');
   const schema = zodSchema || defaultSchema;
   const previewTableRows = preview.map((row, index) => ({ ...row, _idx: index }));
   const previewColumns: Column<RowData & { _idx: number }>[] = entityFields.map((field) => ({
@@ -248,7 +251,10 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
           const form = new FormData();
           form.append('file', blob, 'import.csv');
 
-          const endpoint = (uploadEndpoint && uploadEndpoint.length > 0) ? uploadEndpoint : '/api/parties/bulk-upload';
+          const baseEndpoint = (uploadEndpoint && uploadEndpoint.length > 0) ? uploadEndpoint : '/api/parties/bulk-upload';
+          // Append update_mode as query parameter
+          const separator = baseEndpoint.includes('?') ? '&' : '?';
+          const endpoint = `${baseEndpoint}${separator}update_mode=${updateMode}`;
           const resp = await apiClient.post<BulkUploadResponse>(endpoint, form);
 
           if (resp?.data) {
@@ -292,11 +298,12 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
     setErrors([]);
     setImportResult(null);
     setStep(1);
+    setUpdateMode('fill_empty');
   };
 
   const renderMappingControls = () => (
     <div className="space-y-3">
-      <div className="text-sm text-muted-foreground">Başlık eşleştirmesi: CSV/XLS sütunlarını uygulama alanlarına eşleyin.</div>
+      <div className="text-sm text-muted-foreground">CSV/XLS sütunlarını uygulama alanlarına eşleyin.</div>
       <div className="grid grid-cols-1 gap-2">
         {entityFields.map(f => (
           <div key={f.key} className="flex items-center space-x-2">
@@ -323,7 +330,7 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
 
         {/* Stepper */}
         <div className="flex items-center space-x-4 mb-2">
-          {['Dosya Seç', 'Başlık Eşleştir', 'Önizleme', 'Yükle / Sonuçlar'].map((label, idx) => {
+          {['Dosya Seç', 'Eşleştir & Ayarlar', 'Önizleme', 'Yükle / Sonuçlar'].map((label, idx) => {
             const s = idx + 1;
             return (
               <div key={s} className={`flex items-center space-x-2 ${step === s ? 'text-primary' : step > s ? 'text-success' : 'text-muted-foreground'}`}>
@@ -346,15 +353,56 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
         )}
 
         {step === 2 && (
-          <div>
+          <div className="space-y-4">
             <h4 className="font-medium mb-2">Başlık Eşleştirmesi</h4>
             {renderMappingControls()}
+
+            {/* Update Mode Selection */}
+            <div className="mt-4 p-4 border border-border rounded-xl bg-muted/30">
+              <h4 className="font-medium text-sm mb-3">Güncelleme Stratejisi</h4>
+              <p className="text-xs text-muted-foreground mb-3">Eşleşen mevcut kayıtlar için hangi strateji uygulanacağını seçin.</p>
+              <div className="space-y-2">
+                <label className="flex items-start gap-3 p-3 border border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                  <input
+                    type="radio"
+                    name="updateMode"
+                    value="fill_empty"
+                    checked={updateMode === 'fill_empty'}
+                    onChange={() => setUpdateMode('fill_empty')}
+                    className="mt-0.5"
+                  />
+                  <div>
+                    <div className="text-sm font-medium">Sadece Boş Alanları Doldur</div>
+                    <div className="text-xs text-muted-foreground">Mevcut kayıtlardaki dolu alanlar korunur. Sadece boş olan alanlar dosyadan doldurulur. Sıralı yükleme için idealdir.</div>
+                  </div>
+                </label>
+                <label className="flex items-start gap-3 p-3 border border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                  <input
+                    type="radio"
+                    name="updateMode"
+                    value="overwrite"
+                    checked={updateMode === 'overwrite'}
+                    onChange={() => setUpdateMode('overwrite')}
+                    className="mt-0.5"
+                  />
+                  <div>
+                    <div className="text-sm font-medium">Tüm Alanları Güncelle</div>
+                    <div className="text-xs text-muted-foreground">Dosyadaki tüm değerler mevcut kayıtların üzerine yazılır. Veri düzeltme veya toplu güncelleme için uygundur.</div>
+                  </div>
+                </label>
+              </div>
+            </div>
           </div>
         )}
 
         {step === 3 && (
           <div>
             <h4 className="font-medium">Önizleme (ilk {previewRows} satır)</h4>
+            <div className="mt-1 mb-2">
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${updateMode === 'fill_empty' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'}`}>
+                {updateMode === 'fill_empty' ? 'Sadece boş alanlar doldurulacak' : 'Tüm alanlar güncellenecek'}
+              </span>
+            </div>
             <div className="mt-2">
               <DataTable<RowData & { _idx: number }>
                 data={previewTableRows}
@@ -366,7 +414,7 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
 
             {errors.length > 0 && (
               <div className="mt-3">
-                <Alert variant="warning">Bazı satırlarda doğrulama hataları var. Önizleme ve eşleştirmeyi kontrol edin.</Alert>
+                <Alert variant="warning">Bazı satırlarda eksik alanlar var ama yükleme engellemeyecek. Var olan veriler kaydedilecek.</Alert>
                 <div className="mt-2 max-h-48 overflow-auto text-sm border rounded p-2">
                   {errors.slice(0, 50).map((e, i) => (
                     <div key={i} className="mb-2">
@@ -410,7 +458,7 @@ const UniversalImporter: React.FC<UniversalImporterProps> = ({
               </div>
             ) : (
               <div className="mt-3 text-sm text-foreground">
-                Hazırsanız verileri sunucuya yükleyin. Tüm satırlar gönderilecek — mevcut kayıtlar güncellenir, yeni kayıtlar oluşturulur. Eksik alanlar uyarı olarak gösterilir.
+                Hazırsanız verileri sunucuya yükleyin. Tüm satırlar gönderilecek — mevcut kayıtlar güncellenir, yeni kayıtlar oluşturulur.
               </div>
             )}
           </div>

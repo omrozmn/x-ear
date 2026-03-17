@@ -335,7 +335,7 @@ export function PurchasesPage() {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-muted-foreground">Alış kayıtları yükleniyor...</span>
+        <span className="ml-3 text-muted-foreground">{t('loading', 'Alış kayıtları yükleniyor...')}</span>
       </div>
     );
   }
@@ -380,7 +380,7 @@ export function PurchasesPage() {
         <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm text-muted-foreground">Toplam Alış</p>
+              <p className="text-xs md:text-sm text-muted-foreground">{t('stats.totalPurchases', 'Toplam Alış')}</p>
               <p className="text-lg md:text-2xl font-bold text-primary mt-1">{formatCurrency(totalPurchases, 'TRY')}</p>
             </div>
             <div className="p-2 md:p-3 bg-primary/10 rounded-2xl">
@@ -392,7 +392,7 @@ export function PurchasesPage() {
         <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm text-muted-foreground">Toplam Fatura</p>
+              <p className="text-xs md:text-sm text-muted-foreground">{t('stats.totalInvoices', 'Toplam Fatura')}</p>
               <p className="text-lg md:text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">{totalCount}</p>
             </div>
             <div className="p-2 md:p-3 bg-purple-100 dark:bg-purple-900/20 rounded-2xl">
@@ -404,7 +404,7 @@ export function PurchasesPage() {
         <Card className="p-3 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm text-muted-foreground">Tedarikçi</p>
+              <p className="text-xs md:text-sm text-muted-foreground">{t('stats.suppliers', 'Tedarikçi')}</p>
               <p className="text-lg md:text-2xl font-bold text-success mt-1">{supplierCount}</p>
             </div>
             <div className="p-2 md:p-3 bg-success/10 rounded-2xl">

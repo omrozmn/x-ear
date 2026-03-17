@@ -701,7 +701,7 @@ const CampaignsPage: React.FC = () => {
                         <p className={`text-xs ${creditEnough ? 'text-emerald-600' : 'text-destructive'}`}>
                             {creditEnough
                                 ? t('sms.credit.creditSufficient')
-                                : t('sms.credit.insufficientCredit', { count: formatNumber(Math.abs(creditDelta)) })}
+                                : (t as (key: string, opts?: Record<string, unknown>) => string)('sms.credit.insufficientCredit', { count: formatNumber(Math.abs(creditDelta)) })}
                         </p>
                     </div>
 

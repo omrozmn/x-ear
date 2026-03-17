@@ -9,18 +9,20 @@ interface InventoryFiltersProps {
   onClearFilters: () => void;
 }
 
-const categoryOptions = [
-  { value: '', label: t('filters.all_categories') },
-  { value: 'hearing_aid', label: t('categories.title') },
-  { value: 'battery', label: t('form.description') },
-  { value: 'accessory', label: t('form.description') },
-  { value: 'ear_mold', label: t('form.description') },
-  { value: 'cleaning_supplies', label: t('form.description') },
-  { value: 'amplifiers', label: t('form.description') }
+type TranslatableOption = { value: string; labelKey?: string; label?: string };
+
+const categoryKeys: TranslatableOption[] = [
+  { value: '', labelKey: 'filters.all_categories' },
+  { value: 'hearing_aid', labelKey: 'categories.title' },
+  { value: 'battery', label: 'Pil' },
+  { value: 'accessory', label: 'Aksesuar' },
+  { value: 'ear_mold', label: 'Kulak Kalıbı' },
+  { value: 'cleaning_supplies', label: 'Temizlik Malzemesi' },
+  { value: 'amplifiers', label: 'Amplifikatör' }
 ];
 
-const brandOptions = [
-  { value: '', label: t('filters.all_categories') },
+const brandKeys: TranslatableOption[] = [
+  { value: '', labelKey: 'filters.all_categories' },
   { value: 'Phonak', label: 'Phonak' },
   { value: 'Oticon', label: 'Oticon' },
   { value: 'Widex', label: 'Widex' },
@@ -31,14 +33,14 @@ const brandOptions = [
   { value: 'Bernafon', label: 'Bernafon' }
 ];
 
-const statusOptions = [
-  { value: '', label: t('filters.all_categories') },
-  { value: 'available', label: t('status.in_stock') },
+const statusKeys: TranslatableOption[] = [
+  { value: '', labelKey: 'filters.all_categories' },
+  { value: 'available', labelKey: 'status.in_stock' },
   { value: 'assigned', label: 'Atanmış' },
   { value: 'maintenance', label: 'Bakımda' },
   { value: 'retired', label: 'Emekli' },
-  { value: 'low_stock', label: t('status.low_stock') },
-  { value: 'out_of_stock', label: t('status.out_of_stock') }
+  { value: 'low_stock', labelKey: 'status.low_stock' },
+  { value: 'out_of_stock', labelKey: 'status.out_of_stock' }
 ];
 
 const InventoryFilters: React.FC<InventoryFiltersProps> = ({
@@ -47,6 +49,17 @@ const InventoryFilters: React.FC<InventoryFiltersProps> = ({
   onClearFilters,
 }) => {
   const { t } = useTranslation('inventory');
+
+  const categoryOptions = categoryKeys.map(opt =>
+    ({ value: opt.value, label: opt.labelKey ? t(opt.labelKey) : (opt.label || opt.value) })
+  );
+  const brandOptions = brandKeys.map(opt =>
+    ({ value: opt.value, label: opt.labelKey ? t(opt.labelKey) : (opt.label || opt.value) })
+  );
+  const statusOptions = statusKeys.map(opt =>
+    ({ value: opt.value, label: opt.labelKey ? t(opt.labelKey) : (opt.label || opt.value) })
+  );
+
   const handleFilterChange = (key: keyof IInventoryFilters, value: string | undefined) => {
     onFiltersChange({
       ...filters,

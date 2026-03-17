@@ -40,7 +40,7 @@ import { customInstance } from '../../orval-mutator';
  * Admin endpoint to see all posts (published or not).
  * @summary Admin Get Posts
  */
-export const adminGetPostsApiAdminBlogGet = (
+export const listAdminBlogPosts = (
     
  signal?: AbortSignal
 ) => {
@@ -55,69 +55,69 @@ export const adminGetPostsApiAdminBlogGet = (
 
 
 
-export const getAdminGetPostsApiAdminBlogGetQueryKey = () => {
+export const getListAdminBlogPostsQueryKey = () => {
     return [
     `/api/admin/blog/`
     ] as const;
     }
 
     
-export const getAdminGetPostsApiAdminBlogGetQueryOptions = <TData = Awaited<ReturnType<typeof adminGetPostsApiAdminBlogGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminGetPostsApiAdminBlogGet>>, TError, TData>>, }
+export const getListAdminBlogPostsQueryOptions = <TData = Awaited<ReturnType<typeof listAdminBlogPosts>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminBlogPosts>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getAdminGetPostsApiAdminBlogGetQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListAdminBlogPostsQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof adminGetPostsApiAdminBlogGet>>> = ({ signal }) => adminGetPostsApiAdminBlogGet(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminBlogPosts>>> = ({ signal }) => listAdminBlogPosts(signal);
 
       
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof adminGetPostsApiAdminBlogGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminBlogPosts>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type AdminGetPostsApiAdminBlogGetQueryResult = NonNullable<Awaited<ReturnType<typeof adminGetPostsApiAdminBlogGet>>>
-export type AdminGetPostsApiAdminBlogGetQueryError = unknown
+export type ListAdminBlogPostsQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminBlogPosts>>>
+export type ListAdminBlogPostsQueryError = unknown
 
 
-export function useAdminGetPostsApiAdminBlogGet<TData = Awaited<ReturnType<typeof adminGetPostsApiAdminBlogGet>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminGetPostsApiAdminBlogGet>>, TError, TData>> & Pick<
+export function useListAdminBlogPosts<TData = Awaited<ReturnType<typeof listAdminBlogPosts>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminBlogPosts>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminGetPostsApiAdminBlogGet>>,
+          Awaited<ReturnType<typeof listAdminBlogPosts>>,
           TError,
-          Awaited<ReturnType<typeof adminGetPostsApiAdminBlogGet>>
+          Awaited<ReturnType<typeof listAdminBlogPosts>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAdminGetPostsApiAdminBlogGet<TData = Awaited<ReturnType<typeof adminGetPostsApiAdminBlogGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminGetPostsApiAdminBlogGet>>, TError, TData>> & Pick<
+export function useListAdminBlogPosts<TData = Awaited<ReturnType<typeof listAdminBlogPosts>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminBlogPosts>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminGetPostsApiAdminBlogGet>>,
+          Awaited<ReturnType<typeof listAdminBlogPosts>>,
           TError,
-          Awaited<ReturnType<typeof adminGetPostsApiAdminBlogGet>>
+          Awaited<ReturnType<typeof listAdminBlogPosts>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAdminGetPostsApiAdminBlogGet<TData = Awaited<ReturnType<typeof adminGetPostsApiAdminBlogGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminGetPostsApiAdminBlogGet>>, TError, TData>>, }
+export function useListAdminBlogPosts<TData = Awaited<ReturnType<typeof listAdminBlogPosts>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminBlogPosts>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Admin Get Posts
  */
 
-export function useAdminGetPostsApiAdminBlogGet<TData = Awaited<ReturnType<typeof adminGetPostsApiAdminBlogGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof adminGetPostsApiAdminBlogGet>>, TError, TData>>, }
+export function useListAdminBlogPosts<TData = Awaited<ReturnType<typeof listAdminBlogPosts>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminBlogPosts>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getAdminGetPostsApiAdminBlogGetQueryOptions(options)
+  const queryOptions = getListAdminBlogPostsQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -133,7 +133,7 @@ export function useAdminGetPostsApiAdminBlogGet<TData = Awaited<ReturnType<typeo
  * Create a new blog post.
  * @summary Create Post
  */
-export const createPostApiAdminBlogPost = (
+export const createAdminBlogPost = (
     postCreate: PostCreate,
  signal?: AbortSignal
 ) => {
@@ -149,11 +149,11 @@ export const createPostApiAdminBlogPost = (
   
 
 
-export const getCreatePostApiAdminBlogPostMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPostApiAdminBlogPost>>, TError,{data: PostCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof createPostApiAdminBlogPost>>, TError,{data: PostCreate}, TContext> => {
+export const getCreateAdminBlogPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminBlogPost>>, TError,{data: PostCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof createAdminBlogPost>>, TError,{data: PostCreate}, TContext> => {
 
-const mutationKey = ['createPostApiAdminBlogPost'];
+const mutationKey = ['createAdminBlogPost'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -163,10 +163,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPostApiAdminBlogPost>>, {data: PostCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminBlogPost>>, {data: PostCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  createPostApiAdminBlogPost(data,)
+          return  createAdminBlogPost(data,)
         }
 
         
@@ -174,23 +174,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreatePostApiAdminBlogPostMutationResult = NonNullable<Awaited<ReturnType<typeof createPostApiAdminBlogPost>>>
-    export type CreatePostApiAdminBlogPostMutationBody = PostCreate
-    export type CreatePostApiAdminBlogPostMutationError = HTTPValidationError
+    export type CreateAdminBlogPostMutationResult = NonNullable<Awaited<ReturnType<typeof createAdminBlogPost>>>
+    export type CreateAdminBlogPostMutationBody = PostCreate
+    export type CreateAdminBlogPostMutationError = HTTPValidationError
 
     /**
  * @summary Create Post
  */
-export const useCreatePostApiAdminBlogPost = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPostApiAdminBlogPost>>, TError,{data: PostCreate}, TContext>, }
+export const useCreateAdminBlogPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAdminBlogPost>>, TError,{data: PostCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createPostApiAdminBlogPost>>,
+        Awaited<ReturnType<typeof createAdminBlogPost>>,
         TError,
         {data: PostCreate},
         TContext
       > => {
 
-      const mutationOptions = getCreatePostApiAdminBlogPostMutationOptions(options);
+      const mutationOptions = getCreateAdminBlogPostMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -198,7 +198,7 @@ export const useCreatePostApiAdminBlogPost = <TError = HTTPValidationError,
  * Update an existing blog post.
  * @summary Update Post
  */
-export const updatePostApiAdminBlogPostIdPut = (
+export const updateAdminBlogPost = (
     postId: string,
     postUpdate: PostUpdate,
  ) => {
@@ -214,11 +214,11 @@ export const updatePostApiAdminBlogPostIdPut = (
   
 
 
-export const getUpdatePostApiAdminBlogPostIdPutMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePostApiAdminBlogPostIdPut>>, TError,{postId: string;data: PostUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof updatePostApiAdminBlogPostIdPut>>, TError,{postId: string;data: PostUpdate}, TContext> => {
+export const getUpdateAdminBlogPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminBlogPost>>, TError,{postId: string;data: PostUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof updateAdminBlogPost>>, TError,{postId: string;data: PostUpdate}, TContext> => {
 
-const mutationKey = ['updatePostApiAdminBlogPostIdPut'];
+const mutationKey = ['updateAdminBlogPost'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -228,10 +228,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updatePostApiAdminBlogPostIdPut>>, {postId: string;data: PostUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminBlogPost>>, {postId: string;data: PostUpdate}> = (props) => {
           const {postId,data} = props ?? {};
 
-          return  updatePostApiAdminBlogPostIdPut(postId,data,)
+          return  updateAdminBlogPost(postId,data,)
         }
 
         
@@ -239,23 +239,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UpdatePostApiAdminBlogPostIdPutMutationResult = NonNullable<Awaited<ReturnType<typeof updatePostApiAdminBlogPostIdPut>>>
-    export type UpdatePostApiAdminBlogPostIdPutMutationBody = PostUpdate
-    export type UpdatePostApiAdminBlogPostIdPutMutationError = HTTPValidationError
+    export type UpdateAdminBlogPostMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminBlogPost>>>
+    export type UpdateAdminBlogPostMutationBody = PostUpdate
+    export type UpdateAdminBlogPostMutationError = HTTPValidationError
 
     /**
  * @summary Update Post
  */
-export const useUpdatePostApiAdminBlogPostIdPut = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePostApiAdminBlogPostIdPut>>, TError,{postId: string;data: PostUpdate}, TContext>, }
+export const useUpdateAdminBlogPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminBlogPost>>, TError,{postId: string;data: PostUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updatePostApiAdminBlogPostIdPut>>,
+        Awaited<ReturnType<typeof updateAdminBlogPost>>,
         TError,
         {postId: string;data: PostUpdate},
         TContext
       > => {
 
-      const mutationOptions = getUpdatePostApiAdminBlogPostIdPutMutationOptions(options);
+      const mutationOptions = getUpdateAdminBlogPostMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -263,7 +263,7 @@ export const useUpdatePostApiAdminBlogPostIdPut = <TError = HTTPValidationError,
  * Delete a blog post.
  * @summary Delete Post
  */
-export const deletePostApiAdminBlogPostIdDelete = (
+export const deleteAdminBlogPost = (
     postId: string,
  ) => {
       
@@ -276,11 +276,11 @@ export const deletePostApiAdminBlogPostIdDelete = (
   
 
 
-export const getDeletePostApiAdminBlogPostIdDeleteMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePostApiAdminBlogPostIdDelete>>, TError,{postId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deletePostApiAdminBlogPostIdDelete>>, TError,{postId: string}, TContext> => {
+export const getDeleteAdminBlogPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminBlogPost>>, TError,{postId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteAdminBlogPost>>, TError,{postId: string}, TContext> => {
 
-const mutationKey = ['deletePostApiAdminBlogPostIdDelete'];
+const mutationKey = ['deleteAdminBlogPost'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -290,10 +290,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deletePostApiAdminBlogPostIdDelete>>, {postId: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAdminBlogPost>>, {postId: string}> = (props) => {
           const {postId} = props ?? {};
 
-          return  deletePostApiAdminBlogPostIdDelete(postId,)
+          return  deleteAdminBlogPost(postId,)
         }
 
         
@@ -301,23 +301,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeletePostApiAdminBlogPostIdDeleteMutationResult = NonNullable<Awaited<ReturnType<typeof deletePostApiAdminBlogPostIdDelete>>>
+    export type DeleteAdminBlogPostMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAdminBlogPost>>>
     
-    export type DeletePostApiAdminBlogPostIdDeleteMutationError = HTTPValidationError
+    export type DeleteAdminBlogPostMutationError = HTTPValidationError
 
     /**
  * @summary Delete Post
  */
-export const useDeletePostApiAdminBlogPostIdDelete = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePostApiAdminBlogPostIdDelete>>, TError,{postId: string}, TContext>, }
+export const useDeleteAdminBlogPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAdminBlogPost>>, TError,{postId: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deletePostApiAdminBlogPostIdDelete>>,
+        Awaited<ReturnType<typeof deleteAdminBlogPost>>,
         TError,
         {postId: string},
         TContext
       > => {
 
-      const mutationOptions = getDeletePostApiAdminBlogPostIdDeleteMutationOptions(options);
+      const mutationOptions = getDeleteAdminBlogPostMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

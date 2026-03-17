@@ -31,6 +31,7 @@ import {
     Flag,
     ScanLine,
     Tag,
+    Printer,
 } from 'lucide-react'
 import { useAdminResponsive } from '../../hooks/useAdminResponsive'
 
@@ -68,6 +69,7 @@ const navigation = [
     { name: 'Countries', href: '/countries', icon: Flag },
     { name: 'Barkod Servisi', href: '/barcodes', icon: ScanLine },
     { name: 'Etiket Sablonlari', href: '/label-templates', icon: Tag },
+    { name: 'Yazicilar', href: '/printers', icon: Printer },
     { name: 'Entegrasyonlar', href: '/integrations', icon: Zap },
     { name: 'Ayarlar', href: '/settings', icon: Settings },
 ]

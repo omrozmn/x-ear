@@ -31,6 +31,7 @@ import Pagination from '@/components/ui/Pagination';
 import { useAdminResponsive } from '@/hooks/useAdminResponsive';
 import { ResponsiveTable } from '@/components/responsive/ResponsiveTable';
 import { unwrapData } from '@/lib/orval-response';
+import { SectorCountryFilter, SectorCountryFormFields, getSectorLabel, getCountryLabel } from '@/components/ui/SectorCountryFilter';
 
 interface PaginationInfo {
     totalPages?: number;
@@ -132,7 +133,14 @@ const AddOns: React.FC = () => {
     const queryClient = useQueryClient();
     const [page, setPage] = React.useState(1);
     const [limit, setLimit] = React.useState(10);
-    const params: ListAdminAddonsParams = { page, limit };
+    const [filterSector, setFilterSector] = React.useState('');
+    const [filterCountry, setFilterCountry] = React.useState('');
+    const params: ListAdminAddonsParams = {
+        page,
+        limit,
+        ...(filterSector ? { sector: filterSector } : {}),
+        ...(filterCountry ? { countryCode: filterCountry } : {}),
+    };
     const { data: addonsData, isLoading, error } = useListAdminAddons(params);
     const addons = getAddons(addonsData);
     const pagination = getPagination(addonsData);
@@ -168,8 +176,8 @@ const AddOns: React.FC = () => {
                 addon_type: (addon.addonType || 'FLAT_FEE') as AddonType,
                 is_active: addon.isActive ?? true,
                 currency: addon.currency || 'TRY',
-                sector: (addon as unknown as Record<string, unknown>).sector as string || '',
-                countryCode: (addon as unknown as Record<string, unknown>).countryCode as string || '',
+                sector: addon.sector || '',
+                countryCode: addon.countryCode || '',
             });
         } else {
             setEditingAddon(null);
@@ -208,6 +216,8 @@ const AddOns: React.FC = () => {
                 addonType: formData.addon_type,
                 isActive: formData.is_active,
                 currency: formData.currency,
+                sector: formData.sector || undefined,
+                countryCode: formData.countryCode || undefined,
             };
 
             if (editingAddon) {
@@ -299,6 +309,26 @@ const AddOns: React.FC = () => {
             )
         },
         {
+            key: 'sectorCountry',
+            header: 'Sektör / Ülke',
+            mobileHidden: true,
+            render: (addon: AddOn) => (
+                <div className="flex flex-col gap-0.5">
+                    {addon.sector && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 w-fit">
+                            {getSectorLabel(addon.sector)}
+                        </span>
+                    )}
+                    {addon.countryCode && (
+                        <span className="text-xs text-gray-500 dark:text-gray-400">{getCountryLabel(addon.countryCode)}</span>
+                    )}
+                    {!addon.sector && !addon.countryCode && (
+                        <span className="text-xs text-gray-400 dark:text-gray-500">Genel</span>
+                    )}
+                </div>
+            )
+        },
+        {
             key: 'price',
             header: 'Fiyat (TRY)',
             render: (addon: AddOn) => (
@@ -364,6 +394,13 @@ const AddOns: React.FC = () => {
                         {!isMobile && 'Eklenti Ekle'}
                     </button>
                 </div>
+
+                <SectorCountryFilter
+                    sector={filterSector}
+                    countryCode={filterCountry}
+                    onSectorChange={(v) => { setFilterSector(v); setPage(1); }}
+                    onCountryChange={(v) => { setFilterCountry(v); setPage(1); }}
+                />
 
                 {isLoading ? (
                     <div className="p-6 text-center text-gray-500 dark:text-gray-400">Yükleniyor...</div>
@@ -433,6 +470,14 @@ const AddOns: React.FC = () => {
                                     <option value="PER_USER">Kullanıcı Başına</option>
                                     <option value="USAGE_BASED">Kullanım Bazlı</option>
                                 </select>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <SectorCountryFormFields
+                                    sector={formData.sector}
+                                    countryCode={formData.countryCode}
+                                    onSectorChange={(v) => setFormData({ ...formData, sector: v })}
+                                    onCountryChange={(v) => setFormData({ ...formData, countryCode: v })}
+                                />
                             </div>
                             <div className="mt-6 flex justify-end space-x-3">
                                 <Dialog.Close asChild>

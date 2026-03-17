@@ -19,4 +19,12 @@ page?: number;
 limit?: number;
 type?: string | null;
 is_active?: string | null;
+/**
+ * Filter by sector code
+ */
+sector?: string | null;
+/**
+ * Filter by country code
+ */
+countryCode?: string | null;
 };

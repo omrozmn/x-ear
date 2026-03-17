@@ -5,6 +5,7 @@
  * Auto-generated from Flask backend routes
  * OpenAPI spec version: 1.0.0
  */
+import type { SaleUpdateSalesOwnerUserId } from './saleUpdateSalesOwnerUserId';
 import type { SaleUpdateTotalAmount } from './saleUpdateTotalAmount';
 import type { SaleUpdateListPriceTotal } from './saleUpdateListPriceTotal';
 import type { SaleUpdateUnitListPrice } from './saleUpdateUnitListPrice';
@@ -26,6 +27,7 @@ import type { SaleUpdateDeliveryStatus } from './saleUpdateDeliveryStatus';
 import type { SaleUpdateReportStatus } from './saleUpdateReportStatus';
 
 export interface SaleUpdate {
+  salesOwnerUserId?: SaleUpdateSalesOwnerUserId;
   totalAmount?: SaleUpdateTotalAmount;
   listPriceTotal?: SaleUpdateListPriceTotal;
   unitListPrice?: SaleUpdateUnitListPrice;

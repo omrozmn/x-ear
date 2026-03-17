@@ -46,16 +46,18 @@ export interface InventoryFilters {
   hasTrials?: boolean;
 }
 
-const stockStatusOptions = [
-  { value: 'all', label: t('filters.all_statuses') },
-  { value: 'in_stock', label: t('filters.in_stock') },
-  { value: 'low_stock', label: t('filters.low_stock') },
-  { value: 'out_of_stock', label: t('filters.out_of_stock') },
-  { value: 'on_trial', label: t('form.description') }
+type TranslatableOption = { value: string; labelKey?: string; label?: string };
+
+const stockStatusKeys: TranslatableOption[] = [
+  { value: 'all', labelKey: 'filters.all_statuses' },
+  { value: 'in_stock', labelKey: 'filters.in_stock' },
+  { value: 'low_stock', labelKey: 'filters.low_stock' },
+  { value: 'out_of_stock', labelKey: 'filters.out_of_stock' },
+  { value: 'on_trial', labelKey: 'filters.on_trial' }
 ];
 
-const warrantyOptions = [
-  { value: '', label: t('filters.all_statuses') },
+const warrantyKeys: TranslatableOption[] = [
+  { value: '', labelKey: 'filters.all_statuses' },
   { value: '6 months', label: '6 Ay' },
   { value: '1 year', label: '1 Yıl' },
   { value: '2 years', label: '2 Yıl' },
@@ -82,6 +84,14 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
   onToggleExpanded
 }) => {
   const { t } = useTranslation('inventory');
+
+  const stockStatusOptions = stockStatusKeys.map(opt =>
+    ({ value: opt.value, label: opt.labelKey ? t(opt.labelKey) : (opt.label || opt.value) })
+  );
+  const warrantyOptions = warrantyKeys.map(opt =>
+    ({ value: opt.value, label: opt.labelKey ? t(opt.labelKey) : (opt.label || opt.value) })
+  );
+
   const [localFilters, setLocalFilters] = useState<InventoryFilters>(filters);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>(filters.features || []);
   const [showCustomDateRange, setShowCustomDateRange] = useState(false);

@@ -6921,6 +6921,24 @@ paths:
           - type: string
           - type: 'null'
           title: Is Public
+      - required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sector
+          description: Filter by sector code
+        name: sector
+        in: query
+      - required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Countrycode
+          description: Filter by country code
+        name: countryCode
+        in: query
       responses:
         '200':
           description: Successful Response
@@ -7096,6 +7114,24 @@ paths:
           - type: string
           - type: 'null'
           title: Is Active
+      - required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sector
+          description: Filter by sector code
+        name: sector
+        in: query
+      - required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Countrycode
+          description: Filter by country code
+        name: countryCode
+        in: query
       responses:
         '200':
           description: Successful Response
@@ -11830,6 +11866,25 @@ paths:
       summary: Get Plans
       description: Get all active plans (Public)
       operationId: listPlans
+      parameters:
+      - required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sector
+          description: Filter by sector code
+        name: sector
+        in: query
+      - required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Countrycode
+          description: Filter by country code
+        name: countryCode
+        in: query
       responses:
         '200':
           description: Successful Response
@@ -11949,6 +12004,25 @@ paths:
       summary: Get Addons
       description: Get all active addons (Public)
       operationId: listAddons
+      parameters:
+      - required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sector
+          description: Filter by sector code
+        name: sector
+        in: query
+      - required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Countrycode
+          description: Filter by country code
+        name: countryCode
+        in: query
       responses:
         '200':
           description: Successful Response
@@ -12692,6 +12766,16 @@ paths:
       summary: List Public Packages
       description: List all active SMS packages (Public)
       operationId: listSmsPackages
+      parameters:
+      - required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Countrycode
+          description: Filter by country code
+        name: countryCode
+        in: query
       responses:
         '200':
           description: Successful Response
@@ -12727,6 +12811,15 @@ paths:
           minimum: 1
           default: 10
           title: Limit
+      - required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Countrycode
+          description: Filter by country code
+        name: countryCode
+        in: query
       responses:
         '200':
           description: Successful Response
@@ -20910,6 +21003,18 @@ components:
           - type: 'null'
           title: Limitamount
           description: Limit amount
+        sector:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sector
+          description: Sector code (hearing, pharmacy, hospital, hotel, beauty, general, medical, optic)
+        countryCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Countrycode
+          description: ISO 3166-1 alpha-2 country code
         isActive:
           type: boolean
           title: Isactive
@@ -21064,6 +21169,18 @@ components:
           - type: 'null'
           title: Limitamount
           description: Limit amount
+        sector:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sector
+          description: Sector code (hearing, pharmacy, hospital, hotel, beauty, general, medical, optic)
+        countryCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Countrycode
+          description: ISO 3166-1 alpha-2 country code
         isActive:
           type: boolean
           title: Isactive
@@ -21130,6 +21247,18 @@ components:
           - type: integer
           - type: 'null'
           title: Limitamount
+        sector:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sector
+          description: Sector code (hearing, pharmacy, hospital, hotel, beauty, general, medical, optic)
+        countryCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Countrycode
+          description: ISO 3166-1 alpha-2 country code
         isActive:
           anyOf:
           - type: boolean
@@ -26030,6 +26159,18 @@ components:
           - type: 'null'
           title: Maxstoragegb
           description: Max storage in GB
+        sector:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sector
+          description: Sector code (hearing, pharmacy, hospital, hotel, beauty, general, medical, optic)
+        countryCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Countrycode
+          description: ISO 3166-1 alpha-2 country code
         isActive:
           type: boolean
           title: Isactive
@@ -26089,6 +26230,18 @@ components:
           - type: string
             pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
           title: Price
+        currency:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Currency
+          description: Currency
+        countryCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Countrycode
+          description: ISO 3166-1 alpha-2 country code
         isActive:
           type: boolean
           title: Isactive
@@ -33641,6 +33794,18 @@ components:
           - type: 'null'
           title: Maxstoragegb
           description: Max storage in GB
+        sector:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sector
+          description: Sector code (hearing, pharmacy, hospital, hotel, beauty, general, medical, optic)
+        countryCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Countrycode
+          description: ISO 3166-1 alpha-2 country code
         isActive:
           type: boolean
           title: Isactive
@@ -33787,6 +33952,18 @@ components:
           - type: integer
           - type: 'null'
           title: Maxusers
+        sector:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sector
+          description: Sector code (hearing, pharmacy, hospital, hotel, beauty, general, medical, optic)
+        countryCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Countrycode
+          description: ISO 3166-1 alpha-2 country code
       type: object
       title: PlanUpdate
       description: Schema for updating a plan
@@ -45894,6 +46071,12 @@ components:
           type: string
           title: Currency
           default: TRY
+        countryCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Countrycode
+          description: ISO 3166-1 alpha-2 country code
         isActive:
           type: boolean
           title: Isactive
@@ -45944,6 +46127,12 @@ components:
           type: string
           title: Currency
           default: TRY
+        countryCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Countrycode
+          description: ISO 3166-1 alpha-2 country code
         isActive:
           type: boolean
           title: Isactive
@@ -45984,6 +46173,12 @@ components:
           - type: string
           - type: 'null'
           title: Currency
+        countryCode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Countrycode
+          description: ISO 3166-1 alpha-2 country code
         isActive:
           anyOf:
           - type: boolean

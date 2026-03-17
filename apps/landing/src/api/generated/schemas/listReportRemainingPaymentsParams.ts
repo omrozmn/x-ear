@@ -22,4 +22,6 @@ branch_id?: string | null;
  * @minimum 0
  */
 min_amount?: number;
+startDate?: string | null;
+endDate?: string | null;
 };

@@ -10,6 +10,7 @@ import type { SmsPackageUpdateDescription } from './smsPackageUpdateDescription'
 import type { SmsPackageUpdateSmsCount } from './smsPackageUpdateSmsCount';
 import type { SmsPackageUpdatePrice } from './smsPackageUpdatePrice';
 import type { SmsPackageUpdateCurrency } from './smsPackageUpdateCurrency';
+import type { SmsPackageUpdateCountryCode } from './smsPackageUpdateCountryCode';
 import type { SmsPackageUpdateIsActive } from './smsPackageUpdateIsActive';
 
 export interface SmsPackageUpdate {
@@ -18,5 +19,7 @@ export interface SmsPackageUpdate {
   smsCount?: SmsPackageUpdateSmsCount;
   price?: SmsPackageUpdatePrice;
   currency?: SmsPackageUpdateCurrency;
+  /** ISO 3166-1 alpha-2 country code */
+  countryCode?: SmsPackageUpdateCountryCode;
   isActive?: SmsPackageUpdateIsActive;
 }
