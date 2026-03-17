@@ -363,9 +363,11 @@ export const useAuthStore = create<AuthStore>()(
           } else if (error.response?.status === 500) {
             errorMessage = 'Sunucu hatası. Lütfen daha sonra tekrar deneyin.';
           } else if (error.response?.data?.error) {
-            errorMessage = error.response.data.error;
+            const errData = error.response.data.error;
+            errorMessage = typeof errData === 'string' ? errData : (errData?.message || JSON.stringify(errData));
           } else if (error.response?.data?.message) {
-            errorMessage = error.response.data.message;
+            const msgData = error.response.data.message;
+            errorMessage = typeof msgData === 'string' ? msgData : JSON.stringify(msgData);
           } else if (error.message && !error.message.includes('status code') && !error.message.includes('Network')) {
             errorMessage = error.message;
           } else if (error.code === 'ERR_NETWORK' || error.message?.includes('Network')) {

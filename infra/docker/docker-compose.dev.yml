@@ -1,35 +1,42 @@
 # Docker Compose for Local Development
-# 
-# This file provides optional Postgres for developers who want to test 
-# database compatibility before production migration.
-#
-# Current default: SQLite (no Docker required)
-# Future default: Postgres (this file)
 #
 # Usage:
-#   docker-compose -f infra/docker/docker-compose.dev.yml up -d
-
-version: '3.8'
+#   docker compose -f infra/docker/docker-compose.dev.yml up -d
+#
+# Services: PostgreSQL 16, Redis 7, pgAdmin (optional)
 
 services:
   postgres:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     container_name: xear-postgres-dev
     environment:
       POSTGRES_USER: xear
       POSTGRES_PASSWORD: xear_dev_password
       POSTGRES_DB: xear_dev
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U xear"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD-SHELL", "pg_isready -U xear -d xear_dev"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: xear-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
       retries: 5
 
-  # Optional: pgAdmin for database management
+  # Optional: pgAdmin for database management (http://localhost:5050)
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: xear-pgadmin-dev
@@ -39,7 +46,9 @@ services:
     ports:
       - "5050:80"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
 volumes:
   postgres_data:
+  redis_data:

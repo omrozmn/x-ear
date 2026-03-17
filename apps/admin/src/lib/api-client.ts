@@ -155,3 +155,52 @@ export const useDeleteAdminPost = (options?: UseMutationOptions<unknown, Error, 
     ...options,
   });
 };
+
+// --- Missing integration hooks (not yet in OpenAPI spec) ---
+
+export const useListAdminIntegrationTelegramConfig = (options?: ManualQueryOptions<UnknownRecord>) => {
+  return useQuery({
+    queryKey: ['/api/admin/integrations/telegram/config'],
+    queryFn: () => adminApi<UnknownRecord>({ url: '/admin/integrations/telegram/config', method: 'GET' }),
+    ...options?.query,
+  });
+};
+
+export const useUpdateAdminIntegrationTelegramConfig = (options?: UseMutationOptions<UnknownRecord, Error, UnknownRecord>) => {
+  return useMutation({
+    mutationFn: (data: UnknownRecord) => adminApi<UnknownRecord>({ url: '/admin/integrations/telegram/config', method: 'PUT', data }),
+    ...options,
+  });
+};
+
+export const useListAdminExampleDocuments = (options?: ManualQueryOptions<UnknownRecord[]>) => {
+  return useQuery({
+    queryKey: ['/api/admin/example-documents'],
+    queryFn: () => adminApi<UnknownRecord[]>({ url: '/admin/example-documents', method: 'GET' }),
+    ...options?.query,
+  });
+};
+
+export const useCreateAdminExampleDocumentUpload = (options?: UseMutationOptions<UnknownRecord, Error, { data: FormData; params: UnknownRecord }>) => {
+  return useMutation({
+    mutationFn: ({ data, params }: { data: FormData; params: UnknownRecord }) =>
+      adminApi<UnknownRecord>({ url: '/admin/example-documents/upload', method: 'POST', data, params, headers: { 'Content-Type': 'multipart/form-data' } }),
+    ...options,
+  });
+};
+
+export const useDeleteAdminExampleDocument = (options?: UseMutationOptions<UnknownRecord, Error, { documentId: string }>) => {
+  return useMutation({
+    mutationFn: ({ documentId }: { documentId: string }) =>
+      adminApi<UnknownRecord>({ url: `/admin/example-documents/${documentId}`, method: 'DELETE' }),
+    ...options,
+  });
+};
+
+export const getAdminExampleDocumentDownload = (documentId: string) =>
+  adminApi<Blob>({ url: `/admin/example-documents/${documentId}/download`, method: 'GET', responseType: 'blob' });
+
+// Singular aliases for hooks that Orval generates as plural
+export { useCreateAdminTickets as useCreateAdminTicket } from '../api/generated';
+export { useCreateAdminTicketResponses as useCreateAdminTicketResponse } from '../api/generated';
+export { useCreateAdminUsers as useCreateAdminUser } from '../api/generated';

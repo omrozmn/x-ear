@@ -53,13 +53,23 @@ def upgrade() -> None:
             sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.func.now()),
         )
 
-    # Seed countries using raw SQL (handles server_default correctly for SQLite)
+    # Seed countries - use ON CONFLICT for PostgreSQL, OR IGNORE for SQLite
+    dialect = conn.dialect.name
     for c in SEED_COUNTRIES:
-        conn.execute(sa.text(
-            "INSERT OR IGNORE INTO countries "
-            "(code, name, native_name, enabled, creatable, currency_code, locale, timezone, phone_prefix, flag_emoji, date_format, sort_order, created_at, updated_at) "
-            "VALUES (:code, :name, :native_name, :enabled, :creatable, :currency_code, :locale, :timezone, :phone_prefix, :flag_emoji, :date_format, :sort_order, :created_at, :updated_at)"
-        ), {
+        if dialect == 'sqlite':
+            sql = (
+                "INSERT OR IGNORE INTO countries "
+                "(code, name, native_name, enabled, creatable, currency_code, locale, timezone, phone_prefix, flag_emoji, date_format, sort_order, created_at, updated_at) "
+                "VALUES (:code, :name, :native_name, :enabled, :creatable, :currency_code, :locale, :timezone, :phone_prefix, :flag_emoji, :date_format, :sort_order, :created_at, :updated_at)"
+            )
+        else:
+            sql = (
+                "INSERT INTO countries "
+                "(code, name, native_name, enabled, creatable, currency_code, locale, timezone, phone_prefix, flag_emoji, date_format, sort_order, created_at, updated_at) "
+                "VALUES (:code, :name, :native_name, :enabled, :creatable, :currency_code, :locale, :timezone, :phone_prefix, :flag_emoji, :date_format, :sort_order, :created_at, :updated_at) "
+                "ON CONFLICT (code) DO NOTHING"
+            )
+        conn.execute(sa.text(sql), {
             'code': c[0], 'name': c[1], 'native_name': c[2],
             'enabled': c[3], 'creatable': c[4], 'currency_code': c[5],
             'locale': c[6], 'timezone': c[7], 'phone_prefix': c[8],
