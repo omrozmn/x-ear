@@ -74,7 +74,7 @@ export function SalesList({ sales, isLoading, pagination, onSort }: SalesListPro
       sortable: true,
       render: (_, sale) => (
         <span className="text-sm text-muted-foreground">
-          {sale.productName || sale.brand || '-'}
+          {(sale as any).productName || (sale as any).brand || '-'}
         </span>
       )
     },

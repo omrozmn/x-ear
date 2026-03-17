@@ -283,7 +283,7 @@ export function SpotlightDemo() {
         >
           <HyperGlassCard className="!rounded-2xl !px-0 !py-0 overflow-hidden">
             {/* Search input */}
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-white/5">
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-foreground/5">
               <Search className="w-5 h-5 text-foreground/40 shrink-0" />
               <div className="flex-1 relative">
                 <AnimatePresence mode="wait">
@@ -303,7 +303,7 @@ export function SpotlightDemo() {
                   </motion.span>
                 </AnimatePresence>
               </div>
-              <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-1 rounded-md bg-white/5 border border-white/10 text-[11px] text-foreground/40 font-mono shrink-0">
+              <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-1 rounded-md bg-foreground/5 border border-foreground/10 text-[11px] text-foreground/40 font-mono shrink-0">
                 <span className="text-xs">&#8984;</span>K
               </kbd>
             </div>
@@ -325,7 +325,7 @@ export function SpotlightDemo() {
                         initial={{ opacity: 0, x: -12 }}
                         animate={idx < visibleResults ? { opacity: 1, x: 0 } : { opacity: 0, x: -12 }}
                         transition={{ duration: 0.25, ease: "easeOut" }}
-                        className="flex items-center gap-3 px-5 py-2.5 hover:bg-white/5 transition-colors cursor-default group"
+                        className="flex items-center gap-3 px-5 py-2.5 hover:bg-foreground/5 transition-colors cursor-default group"
                       >
                         <span className="text-accent-blue/70 group-hover:text-accent-blue transition-colors">
                           {result.icon}
@@ -333,7 +333,7 @@ export function SpotlightDemo() {
                         <span className="flex-1 text-sm text-foreground/80 group-hover:text-foreground transition-colors truncate">
                           {result.title[locale]}
                         </span>
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-foreground/30 bg-white/5 px-2 py-0.5 rounded-md shrink-0">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-foreground/30 bg-foreground/5 px-2 py-0.5 rounded-md shrink-0">
                           {result.badge[locale]}
                         </span>
                       </motion.div>

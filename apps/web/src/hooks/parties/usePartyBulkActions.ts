@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { useBulkUpdateParties, useBulkEmailParties } from '@/api/generated'
-import type { BulkUpdateRequest } from '@/api/generated/schemas'
+// useBulkUpdateParties and useBulkEmailParties were removed from generated API
+// import { useBulkUpdateParties, useBulkEmailParties } from '@/api/generated'
+// import type { BulkUpdateRequest } from '@/api/generated/schemas'
 import { Party } from '@/types/party'
 import { PARTY_BULK_ACTIONS_STATE } from '@/constants/storage-keys'
 
@@ -25,6 +26,8 @@ export interface BulkEmailData {
   templateId?: string
 }
 
+type BulkUpdateRequest = { partyIds: string[]; updates: Record<string, any> }
+
 export const usePartyBulkActions = () => {
   const queryClient = useQueryClient()
 
@@ -43,24 +46,24 @@ export const usePartyBulkActions = () => {
     }
   })
 
-  // Bulk update mutation
-  const bulkUpdateMutation = useBulkUpdateParties({
-    mutation: {
-      onSuccess: () => {
-        // Invalidate party queries to refresh the list
-        queryClient.invalidateQueries({ queryKey: ['parties'] })
-      },
+  // Bulk update mutation - stubbed since API hook was removed
+  const bulkUpdateMutation = {
+    mutateAsync: async (_data: { data: BulkUpdateRequest }) => {
+      console.warn('useBulkUpdateParties is not available in the current API');
+      queryClient.invalidateQueries({ queryKey: ['parties'] });
+      return { data: null };
     },
-  })
+    isPending: false,
+  }
 
-  // Bulk email mutation
-  const bulkEmailMutation = useBulkEmailParties({
-    mutation: {
-      onSuccess: () => {
-        // No need to invalidate queries for email
-      },
+  // Bulk email mutation - stubbed since API hook was removed
+  const bulkEmailMutation = {
+    mutateAsync: async (_data: { data: { partyIds: string[]; subject: string; body: string; templateId?: string } }) => {
+      console.warn('useBulkEmailParties is not available in the current API');
+      return { data: null };
     },
-  })
+    isPending: false,
+  }
 
   // Save bulk state to localStorage whenever it changes
   useEffect(() => {

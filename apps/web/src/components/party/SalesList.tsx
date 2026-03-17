@@ -274,7 +274,7 @@ export const SalesList: React.FC<SalesListProps> = ({
       align: 'right',
       render: (_: unknown, sale: SaleRead) => {
         const ext = sale as unknown as ExtendedSaleRead;
-        return <span className="font-medium">{formatCurrency(ext.listPrice || 0)}</span>;
+        return <span className="font-medium">{formatCurrency((ext as any).listPrice || 0)}</span>;
       },
     },
     {

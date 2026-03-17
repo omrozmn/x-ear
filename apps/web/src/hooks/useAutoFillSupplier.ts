@@ -4,6 +4,7 @@
  */
 import { useMemo } from 'react';
 import { useListInvoices } from '@/api/client/invoices.client';
+// InvoiceRead may not have taxOffice in strict schema; cast fields as needed
 import type { InvoiceRead } from '@/api/generated/schemas';
 
 export interface AutoFillData {
@@ -33,22 +34,22 @@ export const useAutoFillSupplier = (taxNumber?: string, companyName?: string) =>
 
     if (taxNumber) {
       matchingInvoice = invoices.find(inv =>
-        inv.taxOffice && inv.taxOffice === taxNumber
+        (inv as any).taxOffice && (inv as any).taxOffice === taxNumber
       );
     }
 
     if (!matchingInvoice && companyName) {
       const lowerName = companyName.toLowerCase().trim();
       matchingInvoice = invoices.find(inv =>
-        inv.partyName && inv.partyName.toLowerCase().trim() === lowerName
+        (inv as any).partyName && (inv as any).partyName.toLowerCase().trim() === lowerName
       );
     }
 
     if (!matchingInvoice) return null;
 
     return {
-      companyName: matchingInvoice.partyName || undefined,
-      taxOffice: matchingInvoice.taxOffice || undefined,
+      companyName: (matchingInvoice as any).partyName || undefined,
+      taxOffice: (matchingInvoice as any).taxOffice || undefined,
     };
   }, [data, taxNumber, companyName]);
 

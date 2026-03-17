@@ -321,7 +321,7 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
         serialNumberLeft: leftDevice?.serialNumber || leftDevice?.serialNumberLeft || firstDevice?.serialNumberLeft || (s.serialNumberLeft as string) || (s.serial_number_left as string) || '',
         serialNumberRight: rightDevice?.serialNumber || rightDevice?.serialNumberRight || firstDevice?.serialNumberRight || (s.serialNumberRight as string) || (s.serial_number_right as string) || '',
         // ✅ FIXED: Use per-unit prices correctly - NEVER divide by device count
-        listPrice: (extendedSale.unitListPrice) ||  // PRIMARY: Explicit unit price
+        listPrice: ((extendedSale as any).unitListPrice) ||  // PRIMARY: Explicit unit price
                    (extendedSale.listPriceTotal) ||  // FALLBACK: This is actually unit price in DB
                    firstDevice?.listPrice ||          // FALLBACK: From device assignment
                    (s.listPrice as number) || (s.list_price as number) || 0,
@@ -333,8 +333,8 @@ export const useEditSale = (sale: Sale, isOpen: boolean) => {
         
         // ✅ FIXED: Initialize discountValue properly for form input
         discountAmount: extendedSale.discountAmount || (s.discount_amount as number) || 0,  // Keep for backward compatibility
-        discountValue: extendedSale.discountValue || (s.discount_value as number) || 0,  // ✅ PRIMARY: This is what the form uses
-        discountType: (extendedSale.discountType || s.discountType || s.discount_type || 'none') as 'none' | 'percentage' | 'amount',
+        discountValue: (extendedSale as any).discountValue || (s.discount_value as number) || 0,  // ✅ PRIMARY: This is what the form uses
+        discountType: ((extendedSale as any).discountType || s.discountType || s.discount_type || 'none') as 'none' | 'percentage' | 'amount',
         // In the calculation hook, total SGK reduction is sgkReductionPerUnit * quantity.
         // Therefore, formData.sgkCoverage isn't strictly used in the calculation, but let's set it accurately.
         sgkCoverage: totalSgkCoverage || extendedSale.sgkCoverage || (s.sgk_coverage as number) || 0,

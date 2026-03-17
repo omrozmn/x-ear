@@ -26,9 +26,9 @@ const Check = () => (
 function MockOCR() {
     return (
         <div className="flex gap-4 p-6 h-full items-center relative">
-            <motion.div className="w-1/2 bg-white/5 rounded-xl p-4 space-y-2 relative overflow-hidden"
+            <motion.div className="w-1/2 bg-foreground/5 rounded-xl p-4 space-y-2 relative overflow-hidden"
                 initial={{ x: -40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.5 }}>
-                {[3/4, 1/2, 5/6, 2/3, 3/5].map((w, i) => <div key={i} className="h-2 bg-white/10 rounded" style={{ width: `${w * 100}%` }} />)}
+                {[3/4, 1/2, 5/6, 2/3, 3/5].map((w, i) => <div key={i} className="h-2 bg-foreground/10 rounded" style={{ width: `${w * 100}%` }} />)}
                 <motion.div className="absolute left-0 right-0 h-0.5 bg-cyan-400"
                     animate={{ top: ["10%", "90%", "10%"] }} transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }} />
             </motion.div>
@@ -48,7 +48,7 @@ function MockInvoice() {
     return (
         <div className="p-6 space-y-3 h-full flex flex-col justify-center">
             {[{ l: "Satis #1024 - Phonak P90", a: true }, { l: "Satis #1023 - Oticon More", a: false }].map((r, i) => (
-                <motion.div key={i} className={`flex items-center justify-between rounded-lg p-3 text-xs border ${r.a ? "bg-cyan-400/10 border-cyan-400/30 text-cyan-400" : "bg-white/5 border-white/10 text-white/40"}`}
+                <motion.div key={i} className={`flex items-center justify-between rounded-lg p-3 text-xs border ${r.a ? "bg-cyan-400/10 border-cyan-400/30 text-cyan-400" : "bg-foreground/5 border-foreground/10 text-foreground/40"}`}
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.3 }}>
                     <span className="font-medium">{r.l}</span>
                     {r.a && <motion.button className="px-3 py-1 rounded-md bg-cyan-400/20 text-cyan-400 font-bold text-[10px]"
@@ -67,19 +67,19 @@ function MockSpotlight() {
     const q = "Ahmet Yilmaz";
     return (
         <div className="p-6 h-full flex flex-col justify-center space-y-3">
-            <motion.div className="rounded-xl border border-white/20 bg-white/5 p-3 flex items-center gap-2"
+            <motion.div className="rounded-xl border border-foreground/20 bg-foreground/5 p-3 flex items-center gap-2"
                 initial={{ scaleX: 0.8, opacity: 0 }} animate={{ scaleX: 1, opacity: 1 }}>
-                <span className="text-white/30 text-sm">&#8984;K</span>
-                <span className="text-sm text-white/80 font-mono">
+                <span className="text-foreground/30 text-sm">&#8984;K</span>
+                <span className="text-sm text-foreground/80 font-mono">
                     {q.split("").map((ch, i) => <motion.span key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 + i * 0.06 }}>{ch}</motion.span>)}
                 </span>
             </motion.div>
             {[{ t: "Ahmet Yilmaz - Hasta #4021", ic: "H", d: 1.2, hi: true },
               { t: "Ahmet Yilmaz - Satis Gecmisi", ic: "S", d: 1.4, hi: false },
               { t: "Ahmet Yilmaz - Randevu", ic: "R", d: 1.6, hi: false }].map((r, i) => (
-                <motion.div key={i} className={`rounded-lg p-2.5 text-xs flex items-center gap-2 ${r.hi ? "bg-cyan-400/10 border border-cyan-400/20 text-cyan-400" : "bg-white/5 text-white/50"}`}
+                <motion.div key={i} className={`rounded-lg p-2.5 text-xs flex items-center gap-2 ${r.hi ? "bg-cyan-400/10 border border-cyan-400/20 text-cyan-400" : "bg-foreground/5 text-foreground/50"}`}
                     initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: r.d }}>
-                    <span className="w-5 h-5 rounded bg-white/10 flex items-center justify-center text-[10px] font-bold">{r.ic}</span>{r.t}
+                    <span className="w-5 h-5 rounded bg-foreground/10 flex items-center justify-center text-[10px] font-bold">{r.ic}</span>{r.t}
                 </motion.div>
             ))}
         </div>
@@ -89,11 +89,11 @@ function MockSpotlight() {
 function MockDeviceAssign() {
     return (
         <div className="p-6 h-full flex items-center gap-4 relative">
-            <motion.div className="flex-1 rounded-xl bg-white/5 border border-white/10 p-3 space-y-1"
+            <motion.div className="flex-1 rounded-xl bg-foreground/5 border border-foreground/10 p-3 space-y-1"
                 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-                <div className="text-[10px] uppercase tracking-wider text-white/40 font-bold">Hasta</div>
-                <div className="text-xs text-white/80 font-medium">Mehmet Ozturk</div>
-                <div className="text-[10px] text-white/40">ID: #4055</div>
+                <div className="text-[10px] uppercase tracking-wider text-foreground/40 font-bold">Hasta</div>
+                <div className="text-xs text-foreground/80 font-medium">Mehmet Ozturk</div>
+                <div className="text-[10px] text-foreground/40">ID: #4055</div>
             </motion.div>
             <motion.div className="text-cyan-400" initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.6 }}><Arrow /></motion.div>
             <motion.div className="flex-1 rounded-xl bg-cyan-400/5 border border-cyan-400/20 p-3 space-y-1"
@@ -111,18 +111,18 @@ function MockDeviceAssign() {
 function MockBarcode() {
     return (
         <div className="p-6 h-full flex flex-col items-center justify-center space-y-4">
-            <motion.div className="w-32 h-24 rounded-xl border-2 border-dashed border-white/20 flex items-center justify-center relative overflow-hidden"
+            <motion.div className="w-32 h-24 rounded-xl border-2 border-dashed border-foreground/20 flex items-center justify-center relative overflow-hidden"
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <div className="flex gap-0.5">{[3,1,2,4,1,3,2,1,4,2,1,3].map((w, i) => <div key={i} className="bg-white/30 rounded-sm" style={{ width: w, height: 40 }} />)}</div>
+                <div className="flex gap-0.5">{[3,1,2,4,1,3,2,1,4,2,1,3].map((w, i) => <div key={i} className="bg-foreground/30 rounded-sm" style={{ width: w, height: 40 }} />)}</div>
                 <motion.div className="absolute left-0 right-0 h-0.5 bg-red-500" animate={{ top: ["30%", "70%", "30%"] }} transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }} />
             </motion.div>
             <motion.div className="text-[10px] text-emerald-400 font-bold flex items-center gap-1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}>
                 <span className="w-2 h-2 rounded-full bg-emerald-400" />Barkod algilandi
             </motion.div>
-            <motion.div className="rounded-xl bg-white/5 border border-white/10 p-3 w-full max-w-[200px] space-y-1"
+            <motion.div className="rounded-xl bg-foreground/5 border border-foreground/10 p-3 w-full max-w-[200px] space-y-1"
                 initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.2 }}>
-                <div className="text-xs text-white/80 font-medium">Phonak P90-R</div>
-                <div className="text-[10px] text-white/40">Stok: 12 adet</div>
+                <div className="text-xs text-foreground/80 font-medium">Phonak P90-R</div>
+                <div className="text-[10px] text-foreground/40">Stok: 12 adet</div>
                 <div className="text-[10px] text-cyan-400">Alis: 32.500 TL</div>
             </motion.div>
         </div>
@@ -132,10 +132,10 @@ function MockBarcode() {
 function MockStockParse() {
     return (
         <div className="p-6 h-full flex items-center gap-4">
-            <motion.div className="w-16 h-16 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <motion.div className="w-16 h-16 rounded-xl bg-foreground/5 border border-foreground/10 flex items-center justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <span className="text-2xl">&#128196;</span>
             </motion.div>
-            <motion.div className="text-white/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}><Arrow /></motion.div>
+            <motion.div className="text-foreground/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}><Arrow /></motion.div>
             <div className="flex-1 grid grid-cols-3 gap-1.5">
                 {["Phonak P90", "Oticon More", "Widex Moment", "Pil 312", "Filtre X", "Dome S"].map((item, i) => (
                     <motion.div key={i} className="rounded-lg bg-cyan-400/5 border border-cyan-400/10 p-1.5 text-[10px] text-cyan-400/80 text-center font-medium"
@@ -147,25 +147,25 @@ function MockStockParse() {
 }
 
 function MockAutomation() {
-    const nodes = [
-        { label: "Tetikleyici", x: 10, y: 40, c: "bg-cyan-400/20 text-cyan-400 border-cyan-400/30" },
-        { label: "Kosul", x: 38, y: 20, c: "bg-amber-400/20 text-amber-400 border-amber-400/30" },
-        { label: "Aksiyon", x: 66, y: 40, c: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" },
-    ];
     return (
-        <div className="p-6 h-full relative">
-            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 80">
-                <motion.path d="M 22 42 Q 36 20 44 24" stroke="rgba(6,182,212,0.3)" strokeWidth="0.5" fill="none"
-                    initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: 0.8, duration: 0.6 }} />
-                <motion.path d="M 52 24 Q 60 20 72 42" stroke="rgba(6,182,212,0.3)" strokeWidth="0.5" fill="none"
-                    initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: 1.4, duration: 0.6 }} />
-            </svg>
-            {nodes.map((n, i) => (
-                <motion.div key={i} className={`absolute rounded-lg border px-3 py-2 text-[10px] font-bold ${n.c}`}
-                    style={{ left: `${n.x}%`, top: `${n.y}%` }} initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.4, type: "spring" }}>{n.label}</motion.div>
-            ))}
-            <motion.div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[10px] text-emerald-400 font-medium"
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }}>Otomasyon aktif</motion.div>
+        <div className="p-6 h-full flex flex-col items-center justify-center gap-4">
+            <div className="flex items-center gap-3 w-full max-w-xs">
+                <motion.div className="rounded-lg border px-3 py-2 text-[10px] font-bold bg-cyan-400/20 text-cyan-400 border-cyan-400/30 dark:bg-cyan-400/20 dark:text-cyan-400"
+                    initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, type: "spring" }}>Tetikleyici</motion.div>
+                <motion.div className="flex-1 h-px bg-gradient-to-r from-cyan-400/40 to-amber-400/40"
+                    initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.6, duration: 0.4 }} style={{ transformOrigin: "left" }} />
+                <motion.div className="rounded-lg border px-3 py-2 text-[10px] font-bold bg-amber-400/20 text-amber-400 border-amber-400/30 dark:bg-amber-400/20 dark:text-amber-400"
+                    initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.8, type: "spring" }}>Kosul</motion.div>
+                <motion.div className="flex-1 h-px bg-gradient-to-r from-amber-400/40 to-emerald-400/40"
+                    initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 1.2, duration: 0.4 }} style={{ transformOrigin: "left" }} />
+                <motion.div className="rounded-lg border px-3 py-2 text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-400"
+                    initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1.4, type: "spring" }}>Aksiyon</motion.div>
+            </div>
+            <motion.div className="flex items-center gap-2 text-[10px] text-emerald-400 font-medium"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }}>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Otomasyon aktif
+            </motion.div>
         </div>
     );
 }
@@ -178,7 +178,7 @@ function MockRBAC() {
                 <motion.div key={i} className="flex items-center gap-3" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.3 }}>
                     <span className={`rounded-lg px-2 py-1 text-[10px] font-bold ${l.c}`}>{l.role}</span>
                     <div className="flex gap-1">{Array.from({ length: 5 }).map((_, j) => (
-                        <motion.div key={j} className={`w-4 h-4 rounded flex items-center justify-center text-[8px] ${j < l.n ? "bg-white/10 text-white/60" : "bg-white/5 text-white/15"}`}
+                        <motion.div key={j} className={`w-4 h-4 rounded flex items-center justify-center text-[8px] ${j < l.n ? "bg-foreground/10 text-foreground/60" : "bg-foreground/5 text-foreground/15"}`}
                             initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: i * 0.3 + j * 0.08 }}>{j < l.n ? "\u2713" : "\u2717"}</motion.div>
                     ))}</div>
                 </motion.div>
@@ -190,9 +190,9 @@ function MockRBAC() {
 function MockSupplierSuggest() {
     return (
         <div className="p-6 h-full flex flex-col justify-center space-y-3">
-            <motion.div className="text-[10px] text-white/40 uppercase tracking-wider font-bold" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>Tedarikci Onerileri</motion.div>
+            <motion.div className="text-[10px] text-foreground/40 uppercase tracking-wider font-bold" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>Tedarikci Onerileri</motion.div>
             {[{ n: "MedSupply A.S.", s: "98%", d: 0.4 }, { n: "PharmaPlus Ltd.", s: "92%", d: 0.7 }, { n: "HealthDist Co.", s: "87%", d: 1.0 }].map((s, i) => (
-                <motion.div key={i} className={`rounded-lg p-2.5 text-xs flex items-center justify-between border ${i === 0 ? "bg-cyan-400/10 border-cyan-400/20 text-cyan-400" : "bg-white/5 border-white/10 text-white/50"}`}
+                <motion.div key={i} className={`rounded-lg p-2.5 text-xs flex items-center justify-between border ${i === 0 ? "bg-cyan-400/10 border-cyan-400/20 text-cyan-400" : "bg-foreground/5 border-foreground/10 text-foreground/50"}`}
                     initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: s.d }}>
                     <span className="font-medium">{s.n}</span><span className="text-[10px] font-bold">{s.s}</span>
                 </motion.div>
@@ -259,12 +259,12 @@ const SECTOR_FEATURES: Record<SectorId, ShowcaseFeature[]> = {
 /* ---- macOS Window Frame ---- */
 function MacWindow({ children, title }: { children: React.ReactNode; title: string }) {
     return (
-        <div className="rounded-2xl bg-[#1a1a24] border border-white/10 overflow-hidden h-full flex flex-col">
-            <div className="h-8 flex items-center gap-1.5 px-3 border-b border-white/5 shrink-0">
+        <div className="rounded-2xl bg-surface border border-foreground/10 overflow-hidden h-full flex flex-col">
+            <div className="h-8 flex items-center gap-1.5 px-3 border-b border-foreground/5 shrink-0">
                 <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
                 <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
                 <div className="w-3 h-3 rounded-full bg-[#28c840]" />
-                <span className="ml-2 text-[10px] text-white/30 font-medium truncate">{title}</span>
+                <span className="ml-2 text-[10px] text-foreground/30 font-medium truncate">{title}</span>
             </div>
             <div className="flex-1 relative min-h-0 overflow-hidden">{children}</div>
         </div>
@@ -323,11 +323,11 @@ export function FeatureShowcase() {
                                 <div className="w-full lg:w-[30%] flex flex-row lg:flex-col gap-1.5 overflow-x-auto lg:overflow-y-auto lg:overflow-x-hidden shrink-0 pb-2 lg:pb-0 lg:pr-2 scrollbar-hide">
                                     {features.map((feat, idx) => (
                                         <button key={`${sector}-${feat.id}`} onClick={() => setActiveIndex(idx)}
-                                            className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left transition-all duration-300 whitespace-nowrap lg:whitespace-normal shrink-0 lg:shrink border ${activeIndex === idx ? "bg-cyan-400/10 border-cyan-400/20 shadow-lg shadow-cyan-400/5" : "bg-transparent border-transparent hover:bg-white/5"}`}>
-                                            <span className={`w-2 h-2 rounded-full shrink-0 transition-all duration-300 ${activeIndex === idx ? "bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.6)]" : "bg-white/15"}`} />
+                                            className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left transition-all duration-300 whitespace-nowrap lg:whitespace-normal shrink-0 lg:shrink border ${activeIndex === idx ? "bg-cyan-400/10 border-cyan-400/20 shadow-lg shadow-cyan-400/5" : "bg-transparent border-transparent hover:bg-foreground/5"}`}>
+                                            <span className={`w-2 h-2 rounded-full shrink-0 transition-all duration-300 ${activeIndex === idx ? "bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.6)]" : "bg-foreground/15"}`} />
                                             <div className="min-w-0">
-                                                <div className={`text-xs md:text-sm font-semibold transition-colors duration-300 ${activeIndex === idx ? "text-cyan-400" : "text-white/50"}`}>{feat.title[locale]}</div>
-                                                <div className={`text-[10px] leading-snug mt-0.5 transition-all duration-300 hidden lg:block ${activeIndex === idx ? "text-white/50 max-h-10 opacity-100" : "text-white/0 max-h-0 opacity-0 overflow-hidden"}`}>{feat.desc[locale]}</div>
+                                                <div className={`text-xs md:text-sm font-semibold transition-colors duration-300 ${activeIndex === idx ? "text-cyan-400" : "text-foreground/50"}`}>{feat.title[locale]}</div>
+                                                <div className={`text-[10px] leading-snug mt-0.5 transition-all duration-300 hidden lg:block ${activeIndex === idx ? "text-foreground/50 max-h-10 opacity-100" : "text-foreground/0 max-h-0 opacity-0 overflow-hidden"}`}>{feat.desc[locale]}</div>
                                             </div>
                                         </button>
                                     ))}

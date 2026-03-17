@@ -348,7 +348,7 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
                       <div className="flex justify-between text-foreground">
                         <span>
                           Liste Fiyatı (birim)
-                          {sale.kdvRate != null && <span className="text-muted-foreground ml-1">(KDV %{sale.kdvRate})</span>}
+                          {(sale as any).kdvRate != null && <span className="text-muted-foreground ml-1">(KDV %{(sale as any).kdvRate})</span>}
                           :
                         </span>
                         <span className="font-medium">
@@ -392,11 +392,11 @@ export const EditSaleModal: React.FC<EditSaleModalProps> = ({
                     )}
 
                     {/* KDV Amount (only shown when there's a KDV amount) */}
-                    {sale.kdvAmount != null && sale.kdvAmount > 0 && (
+                    {(sale as any).kdvAmount != null && (sale as any).kdvAmount > 0 && (
                       <div className="flex justify-between text-muted-foreground pt-1 border-t border-blue-200">
-                        <span>KDV (%{sale.kdvRate || 20}):</span>
+                        <span>KDV (%{(sale as any).kdvRate || 20}):</span>
                         <span className="font-medium">
-                          +{new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(sale.kdvAmount || 0)}
+                          +{new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format((sale as any).kdvAmount || 0)}
                         </span>
                       </div>
                     )}

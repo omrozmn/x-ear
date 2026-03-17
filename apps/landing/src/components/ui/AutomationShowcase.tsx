@@ -137,7 +137,7 @@ function DemoSupplier() {
   return (
     <div className="flex flex-col gap-3 p-4 min-h-[180px] justify-center">
       <AnimStep step={step} at={1}>
-        <div className="flex items-center gap-2 text-xs text-white/60">
+        <div className="flex items-center gap-2 text-xs text-foreground/60">
           <div className="w-8 h-8 rounded-lg bg-amber-500/15 flex items-center justify-center text-amber-400">
             <PackagePlus className="w-4 h-4" />
           </div>
@@ -174,13 +174,13 @@ function DemoInventory() {
   return (
     <div className="flex flex-col gap-3 p-4 min-h-[180px] justify-center">
       <AnimStep step={step} at={1}>
-        <div className="rounded-lg bg-white/5 p-2.5 space-y-1.5">
+        <div className="rounded-lg bg-foreground/5 p-2.5 space-y-1.5">
           {products.map((p, i) => (
-            <div key={i} className="flex items-center gap-2 text-[11px] text-white/50">
-              <div className="w-1.5 h-1.5 rounded-full bg-white/20" /> {p.name}
+            <div key={i} className="flex items-center gap-2 text-[11px] text-foreground/50">
+              <div className="w-1.5 h-1.5 rounded-full bg-foreground/20" /> {p.name}
             </div>
           ))}
-          <p className="text-[10px] text-white/30 pt-1">Fatura kalemleri ayrıştırılıyor...</p>
+          <p className="text-[10px] text-foreground/30 pt-1">Fatura kalemleri ayrıştırılıyor...</p>
         </div>
       </AnimStep>
       <AnimStep step={step} at={2}>
@@ -201,7 +201,7 @@ function DemoInventory() {
               transition={{ delay: i * 0.15, type: "spring", damping: 14 }}
             >
               <p className="text-[10px] font-semibold text-emerald-400">{p.brand}</p>
-              <p className="text-[9px] text-white/40 truncate">{p.name}</p>
+              <p className="text-[9px] text-foreground/40 truncate">{p.name}</p>
             </motion.div>
           ))}
         </div>
@@ -215,9 +215,9 @@ function DemoStock() {
   return (
     <div className="flex flex-col gap-3 p-4 min-h-[180px] justify-center">
       <AnimStep step={step} at={1}>
-        <div className="flex items-center justify-between rounded-lg bg-white/5 p-3">
-          <div className="text-xs text-white/60">Phonak Audéo P90</div>
-          <div className="text-lg font-bold text-white/80 tabular-nums">12</div>
+        <div className="flex items-center justify-between rounded-lg bg-foreground/5 p-3">
+          <div className="text-xs text-foreground/60">Phonak Audéo P90</div>
+          <div className="text-lg font-bold text-foreground/80 tabular-nums">12</div>
         </div>
       </AnimStep>
       <AnimStep step={step} at={2}>
@@ -256,7 +256,7 @@ function DemoUtsReceive() {
       <AnimStep step={step} at={1}>
         <div className="space-y-1.5">
           {items.map((sn, i) => (
-            <div key={i} className="flex items-center justify-between rounded-md bg-white/5 px-3 py-1.5 text-[11px] text-white/50">
+            <div key={i} className="flex items-center justify-between rounded-md bg-foreground/5 px-3 py-1.5 text-[11px] text-foreground/50">
               <span>{sn}</span>
               <Tag color="text-amber-400 bg-amber-400/10">Bekliyor</Tag>
             </div>
@@ -277,7 +277,7 @@ function DemoUtsReceive() {
               initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               transition={{ delay: i * 0.12 }}
             >
-              <span className="text-white/60">{sn}</span>
+              <span className="text-foreground/60">{sn}</span>
               <Tag color="text-emerald-400 bg-emerald-500/15"><Check /> Alındı</Tag>
             </motion.div>
           ))}
@@ -292,10 +292,10 @@ function DemoUtsTransfer() {
   return (
     <div className="flex flex-col gap-3 p-4 min-h-[180px] justify-center">
       <AnimStep step={step} at={1}>
-        <div className="rounded-lg bg-white/5 p-3 space-y-1">
-          <p className="text-xs font-medium text-white/70">Verme Talebi #2847</p>
-          <p className="text-[10px] text-white/40">Kaynak: İstanbul Merkez → Hedef: Ankara Şube</p>
-          <p className="text-[10px] text-white/40">3 ürün · Phonak Audéo P90</p>
+        <div className="rounded-lg bg-foreground/5 p-3 space-y-1">
+          <p className="text-xs font-medium text-foreground/70">Verme Talebi #2847</p>
+          <p className="text-[10px] text-foreground/40">Kaynak: İstanbul Merkez → Hedef: Ankara Şube</p>
+          <p className="text-[10px] text-foreground/40">3 ürün · Phonak Audéo P90</p>
         </div>
       </AnimStep>
       <AnimStep step={step} at={2}>
@@ -359,10 +359,10 @@ export function AutomationShowcase() {
       <div className="max-w-6xl mx-auto space-y-12">
         {/* Header */}
         <div className="text-center space-y-3">
-          <TextReveal className="text-3xl md:text-4xl font-bold tracking-tight text-white justify-center">
+          <TextReveal className="text-3xl md:text-4xl font-bold tracking-tight text-foreground justify-center">
             {l === "tr" ? "Gerçek Otomasyon, Gerçek Sonuçlar" : "Real Automation, Real Results"}
           </TextReveal>
-          <p className="text-sm text-white/40 max-w-lg mx-auto">
+          <p className="text-sm text-foreground/40 max-w-lg mx-auto">
             {l === "tr"
               ? "X-EAR, tekrarlayan işlerinizi tamamen otomatikleştirir. İşte sisteminizin sizin yerinize yaptıkları:"
               : "X-EAR fully automates your repetitive tasks. Here is what the system does for you:"}
@@ -392,7 +392,7 @@ export function AutomationShowcase() {
                   key={item.id}
                   onClick={() => pick(i)}
                   className={`relative flex items-center gap-3 lg:gap-4 px-3 py-3 lg:py-4 rounded-xl transition-colors text-left shrink-0 ${
-                    isActive ? "bg-white/5" : "hover:bg-white/[0.02]"
+                    isActive ? "bg-foreground/5" : "hover:bg-foreground/[0.02]"
                   }`}
                 >
                   {/* Node circle */}
@@ -401,7 +401,7 @@ export function AutomationShowcase() {
                       className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${
                         isActive
                           ? "border-cyan-400 bg-cyan-400/15 text-cyan-400 shadow-[0_0_16px_rgba(34,211,238,.35)]"
-                          : "border-white/15 bg-white/5 text-white/30"
+                          : "border-foreground/15 bg-foreground/5 text-foreground/30"
                       }`}
                     >
                       <Icon className="w-4 h-4" />
@@ -419,14 +419,14 @@ export function AutomationShowcase() {
                   <div className="min-w-[140px]">
                     <p
                       className={`text-xs font-semibold transition-colors ${
-                        isActive ? "text-white" : "text-white/40"
+                        isActive ? "text-foreground" : "text-foreground/40"
                       }`}
                     >
                       {item.title[l]}
                     </p>
                     <p
                       className={`text-[10px] leading-snug mt-0.5 transition-colors hidden lg:block ${
-                        isActive ? "text-white/50" : "text-white/20"
+                        isActive ? "text-foreground/50" : "text-foreground/20"
                       }`}
                     >
                       {item.desc[l]}
@@ -450,7 +450,7 @@ export function AutomationShowcase() {
                 >
                   <div className="flex items-center gap-2 px-4 pt-4">
                     <current.icon className="w-4 h-4 text-cyan-400" />
-                    <span className="text-xs font-semibold text-white/70">{current.title[l]}</span>
+                    <span className="text-xs font-semibold text-foreground/70">{current.title[l]}</span>
                   </div>
                   <Demo />
                 </motion.div>

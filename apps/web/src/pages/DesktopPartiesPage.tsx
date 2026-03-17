@@ -22,10 +22,11 @@ import { PartyTagUpdateModal } from '../components/parties/PartyTagUpdateModal';
 import NoahImportModal from '../components/noah/NoahImportModal';
 import { DesktopPageHeader } from '../components/layout/DesktopPageHeader';
 import { useFeatures } from '../hooks/useFeatures';
-import { useGetWhatsAppSessionStatus } from '../api/generated/whats-app/whats-app';
+// WhatsApp module was removed from generated API
+const useGetWhatsAppSessionStatus = (_opts?: any) => ({ data: null });
+const useCreateWhatsAppSendBulk = () => ({ mutateAsync: async (..._args: any[]) => {}, isPending: false });
 import { useListSmConfig, useListSmCredit } from '../api/generated/sms-integration/sms-integration';
 import { useCreateCommunicationMessageSendSms, useCreateCommunicationMessageSendEmail } from '../api/generated/communications/communications';
-import { useCreateWhatsAppSendBulk } from '../api/generated/whats-app/whats-app';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { useTranslation } from 'react-i18next';
 

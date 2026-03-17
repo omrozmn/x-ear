@@ -5,11 +5,11 @@
  * Requirements: 5.1
  */
 
-import { useListPaymentRecords } from '@/api/generated';
+import { useListSalePayments } from '@/api/generated';
 
-export const usePayments = (saleId: string): ReturnType<typeof useListPaymentRecords> => {
-  return useListPaymentRecords(
-    { saleId },
+export const usePayments = (saleId: string) => {
+  return useListSalePayments(
+    saleId,
     {
       query: {
         enabled: !!saleId,

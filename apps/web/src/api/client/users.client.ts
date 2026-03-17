@@ -13,8 +13,9 @@ export {
   getListUserMeQueryKey,
   useUpdateUserMe,
   useCreateUserMePassword,
-  useGetUserMeImpersonationConsent,
-  getGetUserMeImpersonationConsentQueryKey,
+  // TODO: removed from API
+  // useGetUserMeImpersonationConsent,
+  // getGetUserMeImpersonationConsentQueryKey,
   useUpdateUserMeImpersonationConsent,
 } from '@/api/generated/index';
 

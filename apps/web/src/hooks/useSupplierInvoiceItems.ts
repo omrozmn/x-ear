@@ -122,6 +122,7 @@ export const useAddToInventory = (supplierName?: string) => {
           reorderLevel: 1,
           description: item.productDescription || undefined,
           stockCode: item.productCode || undefined,
+          tenantId: '', // Will be set by the backend from auth context
         },
       });
 

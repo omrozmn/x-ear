@@ -1,6 +1,10 @@
 import { useState, useCallback } from 'react';
 import { type ProcessingResult, type MatchedParty } from '../components/sgk/DocumentPreview';
-import { uploadOcrDocument } from '@/api/client/ocr.client';
+// uploadOcrDocument was removed from generated API; stub that accepts the old call signature
+const uploadOcrDocument = async (..._args: any[]): Promise<any> => {
+  console.warn('uploadOcrDocument is no longer available in the generated API');
+  return { success: false, data: null };
+};
 import { normalizeTurkishChars } from '../utils/stringUtils';
 
 export interface ProcessedDocument {

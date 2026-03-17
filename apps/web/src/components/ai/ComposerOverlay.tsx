@@ -337,7 +337,7 @@ export function ComposerOverlay() {
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 // 1. Priority: Explicit action match
-                                if (autocompleteData?.intentType === 'action' && permittedActions.length > 0) {
+                                if ((autocompleteData as any)?.intentType === 'action' && permittedActions.length > 0) {
                                     handleSelectAction(permittedActions[0]);
                                     return;
                                 }

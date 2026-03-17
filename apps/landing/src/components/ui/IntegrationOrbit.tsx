@@ -89,10 +89,10 @@ function OrbitItem({ item, index, total, radius, duration, reverse, isActive, is
         <div
           className={cn(
             "w-14 h-14 rounded-2xl flex items-center justify-center text-2xl cursor-pointer transition-all duration-300",
-            "bg-white/5 border backdrop-blur-md",
+            "bg-foreground/5 border backdrop-blur-md",
             isSectorMatch
               ? "border-cyan-400/50 shadow-[0_0_20px_rgba(34,211,238,0.25)] opacity-100"
-              : "border-white/5 opacity-30",
+              : "border-foreground/5 opacity-30",
             isActive && "ring-2 ring-cyan-400 scale-110 shadow-[0_0_30px_rgba(34,211,238,0.4)]"
           )}
         >
@@ -132,8 +132,8 @@ function MobileGrid({ activeId, sector, locale, onSelect }: {
             onClick={() => onSelect(item.id)}
             className={cn(
               "flex items-center gap-3 rounded-2xl px-4 py-3 text-left transition-all duration-300",
-              "bg-white/5 border backdrop-blur-md",
-              match ? "border-cyan-400/30 opacity-100" : "border-white/5 opacity-40",
+              "bg-foreground/5 border backdrop-blur-md",
+              match ? "border-cyan-400/30 opacity-100" : "border-foreground/5 opacity-40",
               active && "ring-2 ring-cyan-400 border-cyan-400/50 shadow-[0_0_20px_rgba(34,211,238,0.2)]"
             )}
           >
@@ -201,7 +201,7 @@ export function IntegrationOrbit() {
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-block px-4 py-1.5 mb-6 text-xs font-semibold tracking-widest uppercase rounded-full border border-white/10 bg-white/5 text-accent-blue"
+            className="inline-block px-4 py-1.5 mb-6 text-xs font-semibold tracking-widest uppercase rounded-full border border-foreground/10 bg-foreground/5 text-accent-blue"
           >
             {locale === "tr" ? "Entegrasyonlar" : "Integrations"}
           </motion.span>
@@ -218,8 +218,8 @@ export function IntegrationOrbit() {
           <div className="relative w-[500px] h-[500px]">
             {/* Orbit ring guides */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-[240px] h-[240px] rounded-full border border-white/[0.04]" />
-              <div className="absolute w-[440px] h-[440px] rounded-full border border-white/[0.03]" />
+              <div className="w-[240px] h-[240px] rounded-full border border-foreground/[0.04]" />
+              <div className="absolute w-[440px] h-[440px] rounded-full border border-foreground/[0.03]" />
             </div>
 
             {/* Center logo */}
@@ -312,8 +312,8 @@ export function IntegrationOrbit() {
                 <div className="flex items-center gap-4">
                   <div className={cn(
                     "w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0",
-                    "bg-white/5 border",
-                    activeItem.sectors.includes(sector) ? "border-cyan-400/30" : "border-white/10"
+                    "bg-foreground/5 border",
+                    activeItem.sectors.includes(sector) ? "border-cyan-400/30" : "border-foreground/10"
                   )}>
                     {activeItem.icon}
                   </div>

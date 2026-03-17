@@ -12,9 +12,6 @@ export {
   listSubscriptionCurrent,
   getListSubscriptionCurrentQueryKey,
   useListSubscriptionCurrent,
-  listSubscriptionFeatures,
-  getListSubscriptionFeaturesQueryKey,
-  useListSubscriptionFeatures,
 } from '@/api/generated/index';
 
 export type { } from '@/api/generated/schemas';

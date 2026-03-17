@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Upload, Eye, Save, RefreshCw, AlertCircle, CheckCircle, X, Circle } from 'lucide-react';
-import { extractAudiogramThresholds } from '@/api/client/ocr.client';
+// extractAudiogramThresholds was removed from generated API
+const extractAudiogramThresholds = async (_opts: { file: File }): Promise<any> => { throw new Error('extractAudiogramThresholds not available'); };
 import AudiogramChart, { type ThresholdData } from './AudiogramChart';
 
 const FREQUENCIES = [125, 250, 500, 1000, 2000, 3000, 4000, 6000, 8000];

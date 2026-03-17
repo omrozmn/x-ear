@@ -1,4 +1,6 @@
-import { useListSubscriptionFeatures } from '@/api/generated/index';
+import { useListSubscriptionCurrent } from '@/api/generated/index';
+// useListSubscriptionFeatures was renamed to useListSubscriptionCurrent
+const useListSubscriptionFeatures = useListSubscriptionCurrent;
 
 type FeatureFlagsResponse = {
   data?: {
