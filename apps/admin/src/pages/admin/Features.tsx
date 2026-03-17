@@ -667,18 +667,22 @@ const Features: React.FC = () => {
                                 </button>
                             )}
 
-                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${modeBadge[v.mode]}`}>
-                                {v.mode === 'visible' ? 'Açık' : 'Kapalı'}
-                            </span>
-                            <select
-                                className={`border dark:border-gray-600 px-2 py-1 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${modeColors[v.mode]}`}
-                                value={v.mode}
-                                onChange={(e) => handleUpdateFeature(def.key, { mode: getFeatureMode(e.target.value) })}
+                            <button
+                                type="button"
+                                role="switch"
+                                aria-checked={v.mode === 'visible'}
+                                onClick={() => handleUpdateFeature(def.key, { mode: v.mode === 'visible' ? 'hidden' : 'visible' })}
                                 disabled={!canToggle || parentHidden}
+                                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                                    v.mode === 'visible' ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
+                                }`}
                             >
-                                <option value="visible">✅ Açık</option>
-                                <option value="hidden">❌ Kapalı</option>
-                            </select>
+                                <span
+                                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                                        v.mode === 'visible' ? 'translate-x-5' : 'translate-x-0'
+                                    }`}
+                                />
+                            </button>
                         </div>
                     </div>
 

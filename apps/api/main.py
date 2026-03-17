@@ -484,6 +484,14 @@ app.include_router(ai_opportunities_router, prefix="/api")
 from routers import composer
 app.include_router(composer.router, prefix="/api")
 
+# E-Commerce routers
+from routers import product_media, image_processing, stock_images, marketplace_listings, cargo_integrations
+app.include_router(product_media.router, prefix="/api")
+app.include_router(image_processing.router, prefix="/api")
+app.include_router(stock_images.router, prefix="/api")
+app.include_router(marketplace_listings.router, prefix="/api")
+app.include_router(cargo_integrations.router, prefix="/api")
+
 # --- Legacy Route Aliases ---
 from fastapi.responses import RedirectResponse
 

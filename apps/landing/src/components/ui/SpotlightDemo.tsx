@@ -168,6 +168,23 @@ const sectorQueries: Record<SectorId, Query[]> = {
       ],
     },
   ],
+  beauty: [
+    {
+      text: { tr: "Zeynep Arslan", en: "Zeynep Arslan" },
+      results: [
+        { icon: <User className={iconClass} />, title: { tr: "Zeynep Arslan", en: "Zeynep Arslan" }, badge: { tr: "Musteri", en: "Customer" } },
+        { icon: <Calendar className={iconClass} />, title: { tr: "Sac boyama - 18 Mar", en: "Hair coloring - Mar 18" }, badge: { tr: "Randevu", en: "Appointment" } },
+        { icon: <Receipt className={iconClass} />, title: { tr: "Son islem: Keratin", en: "Last service: Keratin" }, badge: { tr: "Gecmis", en: "History" } },
+      ],
+    },
+    {
+      text: { tr: "Bugun randevular", en: "Today appointments" },
+      results: [
+        { icon: <Calendar className={iconClass} />, title: { tr: "14 randevu planlandi", en: "14 appointments scheduled" }, badge: { tr: "Takvim", en: "Calendar" } },
+        { icon: <TrendingUp className={iconClass} />, title: { tr: "Doluluk: %87", en: "Occupancy: 87%" }, badge: { tr: "Analiz", en: "Analysis" } },
+      ],
+    },
+  ],
 };
 
 const labels = {

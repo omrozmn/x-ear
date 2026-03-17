@@ -76,7 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     if (!token && currentToken) {
                         // Try to fetch real user profile, fallback to rehydrated user
                         try {
-                            const response = await adminApiInstance.get('/api/admin/auth/me');
+                            const response = await adminApiInstance.get('/api/auth/me');
                             const profileUser = response.data?.data?.user || response.data?.user;
                             if (profileUser) {
                                 setAuth(mapAdminUser(profileUser), currentToken);
@@ -111,7 +111,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!refreshToken || !isAuthenticated) return;
 
         try {
-            const response = await adminApiInstance.post<ResponseEnvelopeRefreshTokenResponse>('/api/admin/auth/refresh', {}, {
+            const response = await adminApiInstance.post<ResponseEnvelopeRefreshTokenResponse>('/api/auth/refresh', {}, {
                 headers: {
                     'Authorization': `Bearer ${refreshToken}`
                 }
