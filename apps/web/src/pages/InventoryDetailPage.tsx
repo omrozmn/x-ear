@@ -24,7 +24,7 @@ import { HeaderBackButton } from '../components/layout/HeaderBackButton';
 import { ProductImagesTab } from './inventory/components/ProductImagesTab';
 import { ECommerceTab } from './inventory/components/ECommerceTab';
 import { useECommerceFeature } from '@/hooks/useECommerceFeature';
-import { useListAdminMarketplaceIntegrations } from '@/api/generated/admin-marketplaces/admin-marketplaces';
+import { useListAdminMarketplaceIntegrations } from '@/api/generated';
 
 import {
   INVENTORY_KDV_RATE,

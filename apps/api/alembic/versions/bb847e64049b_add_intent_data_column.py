@@ -19,7 +19,13 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Add intent_data column to ai_requests table
+    # intent_data may already exist from 9e4d614c2186 initial schema
+    from sqlalchemy import inspect as sa_inspect
+    conn = op.get_bind()
+    inspector = sa_inspect(conn)
+    columns = [c['name'] for c in inspector.get_columns('ai_requests')]
+    if 'intent_data' in columns:
+        return
     op.add_column('ai_requests', sa.Column('intent_data', sa.JSON(), nullable=True))
 
 

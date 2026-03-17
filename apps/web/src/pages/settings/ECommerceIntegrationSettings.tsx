@@ -9,7 +9,7 @@ import {
   useUpdateCargoIntegration, useTestCargoIntegration,
   type CargoIntegration
 } from '@/api/client/cargo-integrations.client';
-import { useListAdminMarketplaceIntegrations } from '@/api/generated/admin-marketplaces/admin-marketplaces';
+import { useListAdminMarketplaceIntegrations } from '@/api/generated';
 import { customInstance } from '@/api/orval-mutator';
 import { SettingsSectionHeader } from '../../components/layout/SettingsSectionHeader';
 

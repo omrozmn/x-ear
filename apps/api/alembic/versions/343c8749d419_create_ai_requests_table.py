@@ -19,6 +19,13 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    # ai_requests may already exist from 9e4d614c2186 initial schema
+    from sqlalchemy import inspect as sa_inspect
+    conn = op.get_bind()
+    inspector = sa_inspect(conn)
+    if 'ai_requests' in inspector.get_table_names():
+        return
+
     # Create ai_requests table
     op.create_table(
         'ai_requests',
