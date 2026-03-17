@@ -45,7 +45,7 @@ export function PaymentsPage() {
 
   const debouncedSearch = useDebounce(searchTerm, 300);
 
-  const { data, isLoading, isFetching, refetch } = useListPartyPaymentRecords({
+  const { data, isLoading, isFetching, refetch } = useListPartyPaymentRecords('', {
     page: isMobile ? 1 : currentPage,
     per_page: isMobile ? mobileVisibleCount : perPage,
   });
@@ -53,7 +53,7 @@ export function PaymentsPage() {
   const records: PaymentRow[] = useMemo(() => {
     const payload = data?.data;
     if (!Array.isArray(payload)) return [];
-    return payload.map(r => ({ ...r, partyName: r.partyName ?? undefined }));
+    return payload.map(r => ({ ...r, partyName: (r as any).partyName ?? undefined }));
   }, [data]);
 
   const totalCount = data?.meta?.total ?? records.length;
